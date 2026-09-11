@@ -311,6 +311,7 @@ internal static partial class StaticContracts
         "keys",
         "values",
         "items",
+        "pop",
     };
 
     private static readonly HashSet<string> CollectionsDequeMembers = new(StringComparer.Ordinal)
@@ -344,6 +345,7 @@ internal static partial class StaticContracts
         "items",
         "new_child",
         "copy",
+        "pop",
     };
 
     private static readonly HashSet<string> DecimalMembers = new(StringComparer.Ordinal)

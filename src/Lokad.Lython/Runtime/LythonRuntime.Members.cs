@@ -1252,6 +1252,37 @@ internal sealed partial class LythonRuntime
                     context.MemoryGovernor.Commit(64L);
                     return new DictItemsView(receiver.InnerDict);
                 }),
+                "pop" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length is < 1 or > 2)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Counter.pop(key[, default]) expects one key and an optional default.", span);
+                    }
+
+                    var key = ValidateDictionaryKey(arguments[0], span, context.MemoryGovernor);
+                    if (!counter.TryGetValue(key, out var found))
+                    {
+                        if (arguments.Length == 2)
+                        {
+                            return arguments[1];
+                        }
+
+                        var renderedKey = key switch
+                        {
+                            PyString text => text.AsString(),
+                            _ => null
+                        };
+                        throw new LythonRuntimeException(
+                            "KeyError",
+                            renderedKey is null ? "Key was not found." : $"Key '{renderedKey}' was not found.",
+                            span,
+                            null,
+                            arguments[0]);
+                    }
+
+                    counter.Remove(key);
+                    return found;
+                }, "Counter.pop", ["key", "default"], 1),
                 _ => MissingMemberValue.Instance,
             };
 

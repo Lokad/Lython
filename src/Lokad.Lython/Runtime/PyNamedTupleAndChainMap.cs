@@ -664,6 +664,11 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         ["key", "default"],
         requiredCount: 1);
 
+    private static readonly LythonCallableSignature PopCallSignature = LythonCallableSignature.Create(
+        "ChainMap.pop",
+        ["key", "default"],
+        requiredCount: 1);
+
     private readonly List<PyDict> _maps;
 
     public PyChainMap(IEnumerable<PyDict> maps)
@@ -721,6 +726,18 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         return false;
     }
 
+    internal bool TryPopFirstMap(object key, [MaybeNullWhen(false)] out object value)
+    {
+        if (_maps[0].TryGetValue(key, out value))
+        {
+            _maps[0].Remove(key);
+            return true;
+        }
+
+        value = PyNone.Instance;
+        return false;
+    }
+
     public void SetSubscript(object index, object value, LythonSourceSpan span)
     {
         var key = LythonRuntime.ValidateDictionaryKey(index, span);
@@ -744,6 +761,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
             "maps" => OwnedMapsList(),
             "parents" => CreateParents(),
             "get" => new BoundChainMapGet(this),
+            "pop" => new BoundChainMapPop(this),
             "keys" => new BoundChainMapKeys(this),
             "values" => new BoundChainMapValues(this),
             "items" => new BoundChainMapItems(this),
@@ -905,6 +923,32 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
             var bound = CallBinder.BindNamedArguments(arguments, span, GetCallSignature, PythonCallableKind.Method);
             var key = LythonRuntime.ValidateDictionaryKey(bound[0], span, context.MemoryGovernor);
             return _owner.GetOrDefault(key, bound.Length == 2 ? bound[1] : PyNone.Instance);
+        }
+    }
+
+    private sealed class BoundChainMapPop : LythonRuntime.ICallable
+    {
+        private readonly PyChainMap _owner;
+
+        public BoundChainMapPop(PyChainMap owner) => _owner = owner;
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            var bound = CallBinder.BindNamedArguments(arguments, span, PopCallSignature, PythonCallableKind.Method);
+            var key = LythonRuntime.ValidateDictionaryKey(bound[0], span, context.MemoryGovernor);
+            if (_owner.TryPopFirstMap(key, out var found))
+            {
+                return found;
+            }
+
+            if (bound.Length == 2)
+            {
+                return bound[1];
+            }
+
+            _owner.DeleteSubscript(key, span);
+            return PyNone.Instance; // Unreachable: missing keys always throw above.
         }
     }
 

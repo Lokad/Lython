@@ -83,6 +83,7 @@ internal static partial class StaticContracts
         new(AbstractValueKind.CollectionsCounter, "keys", 0, 0, "LA3114", "Counter.keys() expects no arguments."),
         new(AbstractValueKind.CollectionsCounter, "values", 0, 0, "LA3114", "Counter.values() expects no arguments."),
         new(AbstractValueKind.CollectionsCounter, "items", 0, 0, "LA3114", "Counter.items() expects no arguments."),
+        new(AbstractValueKind.CollectionsCounter, "pop", 1, 2, "LA3114", "Counter.pop(key[, default]) expects one key and an optional default.", StaticMutationKind.MutatesReceiver, parameterNames: ["key", "default"]),
         new(AbstractValueKind.CollectionsDeque, "append", 1, 1, "LA3114", "deque.append(value) expects one argument.", StaticMutationKind.MutatesReceiver, ["value"]),
         new(AbstractValueKind.CollectionsDeque, "appendleft", 1, 1, "LA3114", "deque.appendleft(value) expects one argument.", StaticMutationKind.MutatesReceiver, ["value"]),
         new(AbstractValueKind.CollectionsDeque, "pop", 0, 0, "LA3114", "deque.pop() expects no arguments.", StaticMutationKind.MutatesReceiver),
@@ -103,6 +104,7 @@ internal static partial class StaticContracts
         new(AbstractValueKind.CollectionsChainMap, "items", 0, 0, "LA3114", "ChainMap.items() expects no arguments."),
         new(AbstractValueKind.CollectionsChainMap, "new_child", 0, 1, "LA3114", "ChainMap.new_child([m]) expects zero or one argument.", parameterNames: ["m"]),
         new(AbstractValueKind.CollectionsChainMap, "copy", 0, 0, "LA3114", "ChainMap.copy() expects no arguments."),
+        new(AbstractValueKind.CollectionsChainMap, "pop", 1, 2, "LA3114", "ChainMap.pop(key[, default]) expects one key and an optional default.", StaticMutationKind.MutatesReceiver, parameterNames: ["key", "default"]),
         ];
     }
 }

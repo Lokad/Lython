@@ -6336,6 +6336,108 @@ __lython_file.close()
     }
 
     [Fact]
+    public void CounterAndChainMapPop_ResolveLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import Counter, ChainMap
+
+parts = []
+def counter_pop():
+    out = []
+    c = Counter({1: 2})
+    out.append(str(c.pop(1)))
+    out.append(str(len(c)))
+    out.append(str(c.pop(9, 42)))
+    try:
+        c.pop(9)
+    except KeyError as e:
+        out.append(str(e))
+    c2 = Counter({"a": 1})
+    try:
+        c2.pop("t")
+    except KeyError as e:
+        out.append(str(e))
+    c3 = Counter()
+    c3[slice(1, 2)] = 3
+    out.append(str(c3.pop(slice(1, 2))))
+    out.append(str(len(c3)))
+    return out
+parts.extend(counter_pop())
+
+def chainmap_pop():
+    out = []
+    cm = ChainMap({1: 2})
+    out.append(str(cm.pop(1)))
+    out.append(str(len(cm)))
+    out.append(str(cm.pop(9, 42)))
+    try:
+        cm.pop(9)
+    except KeyError as e:
+        out.append(str(e))
+    try:
+        cm.pop("t")
+    except KeyError as e:
+        out.append(str(e))
+    cm2 = ChainMap({1: 2}, {1: 5, slice(2, 3): 7})
+    out.append(str(cm2.pop(1)))
+    out.append(str(cm2.maps))
+    cm3 = ChainMap({slice(1, 2): 9})
+    out.append(str(cm3.pop(slice(1, 2))))
+    return out
+parts.extend(chainmap_pop())
+
+def dynamic_arity():
+    out = []
+    def pop0Counter(c):
+        return c.pop()
+    def pop3Counter(c):
+        return c.pop(1, 2, 3)
+    def pop0ChainMap(cm):
+        return cm.pop()
+    def pop3ChainMap(cm):
+        return cm.pop(1, 2, 3)
+    try:
+        pop0Counter(Counter({1: 2}))
+    except TypeError as e:
+        out.append(str(e))
+    try:
+        pop3Counter(Counter({1: 2}))
+    except TypeError as e:
+        out.append(str(e))
+    try:
+        pop0ChainMap(ChainMap({1: 2}))
+    except TypeError as e:
+        out.append(str(e))
+    try:
+        pop3ChainMap(ChainMap({1: 2}))
+    except TypeError as e:
+        out.append(str(e))
+    return out
+parts.extend(dynamic_arity())
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"2|0|42|9|'t'|3|0|2|0|42|'Key not found in the first mapping: 9'|""Key not found in the first mapping: 't'""|2|[{}, {1: 5, slice(2, 3, None): 7}]|9|Method 'Counter.pop' is missing argument 'key'.|Method 'Counter.pop' received too many positional arguments.|Method 'ChainMap.pop' is missing argument 'key'.|Method 'ChainMap.pop' received too many positional arguments.", host.ReadText("/out.txt"));
+
+        var invalid = new LythonEngine().Compile(
+            """
+from collections import ChainMap, Counter
+Counter().pop()
+ChainMap().pop(1, 2, 3)
+""");
+
+        Assert.False(invalid.IsValid);
+        Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3114" && d.Message.Contains("Counter.pop", StringComparison.Ordinal));
+        Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3114" && d.Message.Contains("ChainMap.pop", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();
