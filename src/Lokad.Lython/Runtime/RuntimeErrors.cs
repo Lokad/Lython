@@ -55,6 +55,12 @@ internal static class RuntimeErrors
     public static LythonRuntimeException MultiplySequenceError(object other, LythonSourceSpan? span)
         => Type($"can't multiply sequence by non-int of type '{OperandTypeName(other)}'", span);
 
+    public static LythonRuntimeException UnhashableType(object value, LythonSourceSpan? span)
+        => Type($"unhashable type: '{OperandTypeName(value)}'", span);
+
+    public static LythonRuntimeException NotAnIterator(object value, LythonSourceSpan? span)
+        => Type($"'{OperandTypeName(value)}' object is not an iterator", span);
+
     public static string OperandTypeName(object? value) => value switch
     {
         null => "NoneType",

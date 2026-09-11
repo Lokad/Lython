@@ -436,7 +436,7 @@ internal sealed partial class LythonRuntime
         {
             if (!PyUserIterator.HasNext(instance, context, span))
             {
-                throw new LythonRuntimeException("TypeError", "next() argument must be an iterator", span);
+                throw RuntimeErrors.NotAnIterator(instance, span);
             }
 
             if (PyUserIterator.TryAdvanceInstance(instance, context, span, out var item))
@@ -453,7 +453,7 @@ internal sealed partial class LythonRuntime
         }
         else
         {
-            throw new LythonRuntimeException("TypeError", "next() argument must be an iterator", span);
+            throw RuntimeErrors.NotAnIterator(arguments[0], span);
         }
 
         if (arguments.Length == 2)
@@ -476,7 +476,7 @@ internal sealed partial class LythonRuntime
         {
             if (!PyUserIterator.HasNext(instance, context, span))
             {
-                throw new LythonRuntimeException("TypeError", "next() argument must be an iterator", span);
+                throw RuntimeErrors.NotAnIterator(instance, span);
             }
 
             advanced = await PyUserIterator.TryAdvanceInstanceAsync(instance, context, span).ConfigureAwait(false);
@@ -489,7 +489,7 @@ internal sealed partial class LythonRuntime
                 IPyIteratorValue iterator => iterator.TryMoveNext(out var item)
                     ? PyIterationResult.Yield(item)
                     : PyIterationResult.End,
-                _ => throw new LythonRuntimeException("TypeError", "next() argument must be an iterator", span),
+                _ => throw RuntimeErrors.NotAnIterator(arguments[0], span),
             };
         }
 

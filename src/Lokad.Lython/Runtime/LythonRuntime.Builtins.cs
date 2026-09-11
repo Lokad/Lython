@@ -499,7 +499,7 @@ internal sealed partial class LythonRuntime
         }
         catch (InvalidOperationException)
         {
-            throw new LythonRuntimeException("TypeError", "unhashable type", span);
+            throw RuntimeErrors.UnhashableType(arguments[0], span);
         }
     }
 

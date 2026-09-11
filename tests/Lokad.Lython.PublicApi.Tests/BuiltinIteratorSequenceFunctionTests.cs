@@ -24,6 +24,32 @@ return "|".join(values)
     }
 
     [Fact]
+    public void NextOnNonIterators_NamesOperandTypes()
+    {
+        var result = new LythonEngine().Run(
+            """
+vals = []
+try:
+    next(1)
+except TypeError as err:
+    vals.append(err.message)
+try:
+    next("ab")
+except TypeError as err:
+    vals.append(err.message)
+try:
+    next([1])
+except TypeError as err:
+    vals.append(err.message)
+return "|".join(vals)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("'int' object is not an iterator|'str' object is not an iterator|'list' object is not an iterator", result.ReturnValue);
+    }
+
+    [Fact]
     public async Task RunAsync_GeneratorExpressionsAdvanceOneItemAtATime()
     {
         var result = await new LythonEngine().RunAsync(
