@@ -310,6 +310,9 @@ internal static partial class StaticStructuralDiagnostics
             AbstractValueKind.StatisticsLinearRegression or
             AbstractValueKind.OpenPyxlWorkbook or
             AbstractValueKind.Dict or
+            AbstractValueKind.CollectionsCounter or
+            AbstractValueKind.CollectionsDefaultDict or
+            AbstractValueKind.CollectionsChainMap or
             AbstractValueKind.Set or
             AbstractValueKind.SetType;
     }

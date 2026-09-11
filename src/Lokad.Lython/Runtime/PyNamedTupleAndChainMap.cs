@@ -707,6 +707,20 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         throw RuntimeErrors.MissingKey(index, span);
     }
 
+    public bool ContainsKey(object candidate, LythonSourceSpan span)
+    {
+        var key = LythonRuntime.ValidateDictionaryKey(candidate, span);
+        foreach (var map in _maps)
+        {
+            if (map.TryGetValue(key, out _))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public void SetSubscript(object index, object value, LythonSourceSpan span)
     {
         var key = LythonRuntime.ValidateDictionaryKey(index, span);

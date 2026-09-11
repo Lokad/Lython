@@ -6283,6 +6283,59 @@ __lython_file.close()
     }
 
     [Fact]
+    public void MappingMembership_ResolvesLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import Counter, defaultdict, ChainMap
+
+parts = []
+def known_shapes():
+    out = []
+    c = Counter({1: 2})
+    out.append(str(1 in c))
+    out.append(str(9 in c))
+    out.append(str(9 not in c))
+    c["x"] = 0
+    out.append(str("x" in c))
+    dd = defaultdict(list, {1: 2})
+    out.append(str(1 in dd))
+    out.append(str(1 not in dd))
+    cm = ChainMap({1: 2}, {3: 4})
+    out.append(str(1 in cm))
+    out.append(str(3 in cm))
+    out.append(str(9 in cm))
+    out.append(str(slice(1, 2) in ChainMap({slice(1, 2): 5})))
+    return out
+parts.extend(known_shapes())
+
+def dynamic_shapes():
+    out = []
+    def has(container, key):
+        return key in container
+    out.append(str(has(Counter({1: 2}), 1)))
+    out.append(str(has(Counter({1: 2}), 9)))
+    out.append(str(has(defaultdict(list, {1: 2}), 1)))
+    out.append(str(has(ChainMap({1: 2}), 1)))
+    out.append(str(has(ChainMap({1: 2}), 9)))
+    try:
+        has(Counter({1: 2}), [1])
+    except TypeError as e:
+        out.append(str(e))
+    return out
+parts.extend(dynamic_shapes())
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"True|False|True|True|True|False|True|True|False|True|True|False|True|True|False|dictionary keys must be hashable.", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();
