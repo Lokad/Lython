@@ -126,6 +126,12 @@ internal sealed partial class Parser
             MemberExpressionSyntax member => ParseAssignmentAfterFirstTarget(
                 new MemberAssignmentTargetSyntax(member.Target, member.MemberName, member.Span),
                 startPosition),
+            TupleLiteralExpressionSyntax tuple when TryConvertSequenceExpressionToTargets(tuple.Items, out var tupleTargets) => ParseAssignmentAfterFirstTarget(
+                new UnpackingAssignmentTargetGroupSyntax(tupleTargets, target.Span),
+                startPosition),
+            ListLiteralExpressionSyntax list when TryConvertSequenceExpressionToTargets(list.Items, out var listTargets) => ParseAssignmentAfterFirstTarget(
+                new UnpackingAssignmentTargetGroupSyntax(listTargets, target.Span),
+                startPosition),
             _ => AddUnsupportedAssignmentTarget(target)
         };
     }
@@ -254,6 +260,11 @@ internal sealed partial class Parser
             }
 
             ReadToken();
+            // A trailing comma still ends the target list like CPython.
+            if (CurrentToken == Token.Assign)
+            {
+                break;
+            }
         }
 
         if (!TryRead(Token.Assign, out _))
@@ -386,7 +397,7 @@ internal sealed partial class Parser
         };
     }
 
-    // Parentheses never change the target like CPython; tuples and other
+    // Parentheses never change the target like CPython; other
     // shapes stay unsupported.
     private static ExpressionSyntax UnwrapParenthesizedTarget(ExpressionSyntax target)
     {

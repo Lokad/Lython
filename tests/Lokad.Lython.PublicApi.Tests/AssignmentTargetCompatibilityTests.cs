@@ -247,8 +247,6 @@ __lython_file.close()
     [InlineData("if ((a := 1) := 2):\n    pass", "assignment expression target")]
     [InlineData("class Box:\n    pass\nbox = Box()\nbox.value: int = 1", "Unsupported assignment target")]
     [InlineData("items = [0]\nitems[0]: int = 1", "Unsupported assignment target")]
-    [InlineData("(a, b) = [1, 2]", "Unsupported assignment target")]
-    [InlineData("[a, b] = [1, 2]", "Unsupported assignment target")]
     [InlineData("(a, (b, c)) = [1, [2, 3]]", "Unsupported assignment target")]
     public void UnsupportedAssignmentTargetForms_ReportCompileDiagnostics(string source, string messageFragment)
     {
@@ -347,6 +345,69 @@ __lython_file.close()
         Assert.True(result.Success, DescribeFailure(result));
         Assert.Null(result.Failure);
         Assert.Equal("2|0|4", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public void DisplayUnpackingTargets_RunLikePython()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+a = 0
+b = 0
+(a, b) = (1, 2)
+
+c = 0
+d = 0
+[c, d] = [3, 4]
+
+e = 0
+r = []
+(e, *r) = (5, 6, 7)
+
+single = 0
+(single,) = (8,)
+
+listed = 0
+[listed] = [9]
+
+trailing = 0
+trailing, = (10,)
+
+first = 0
+second = 0
+third = 0
+fourth = 0
+first = (second,) = (11,)
+third, fourth = (12, 13)
+
+def run():
+    p = 0
+    q = 0
+    (p, q) = (14, 15)
+    return p + q
+
+values = [
+    str(a + b),
+    str(c + d),
+    str(e) + ":" + str(r),
+    str(single),
+    str(listed),
+    str(trailing),
+    str(first) + ":" + str(second),
+    str(third + fourth),
+    str(run()),
+]
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(values))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Null(result.Failure);
+        Assert.Equal("3|7|5:[6, 7]|8|9|10|(11,):11|25|29", host.ReadText("/out.txt"));
     }
 
     private static string DescribeFailure(LythonExecutionResult result)

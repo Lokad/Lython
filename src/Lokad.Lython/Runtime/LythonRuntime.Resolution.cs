@@ -516,12 +516,6 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         ExecutionContext context)
     {
-        if (targets.Count == 1 && !targets[0].IsStarred)
-        {
-            StoreName(targets[0].Name, value, context, span);
-            return;
-        }
-
         var values = MaterializeSequenceForUnpacking(value, span, context);
         var layout = UnpackingLayout.FromTargets(targets);
         if (!layout.AcceptsValueCount(values.Length))

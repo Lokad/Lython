@@ -320,6 +320,17 @@ internal sealed partial class Parser
             }
         }
 
+        // A leading bracket may open a list-display unpacking target like CPython.
+        if (CurrentToken == Token.OpenBracket)
+        {
+            var startDiagnosticCount = _diagnostics.Count;
+            var listDisplayAssignment = TryParsePostfixAssignmentStatement();
+            if (listDisplayAssignment is not null || _diagnostics.Count != startDiagnosticCount)
+            {
+                return listDisplayAssignment;
+            }
+        }
+
         {
             var startDiagnosticCount = _diagnostics.Count;
             var unsupportedTargetAssignment = TryParseUnsupportedAssignmentTargetStatement();
