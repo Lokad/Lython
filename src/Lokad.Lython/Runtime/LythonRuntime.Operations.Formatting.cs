@@ -737,7 +737,7 @@ internal sealed partial class LythonRuntime
         var formatted = type switch
         {
             null when precision is null => value.ToString(CultureInfo.InvariantCulture),
-            null => value.ToString("G" + precision.Value.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
+            null => RenderFloatDefaultPrecision(value, precision.Value, spec.Alternate),
             'f' => value.ToString("F" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
             'F' => value.ToString("F" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
             'g' => NormalizeExponentMarker(value.ToString("G" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture), upper: false),
@@ -797,6 +797,110 @@ internal sealed partial class LythonRuntime
 
     // Scaling by 100 can overflow a large finite value to infinity;
     // CPython then renders the non-finite word with the percent suffix.
+    // Unsigned null-type body with an explicit precision: CPython renders
+    // repr-style significant digits (BCL G expands exactly past 17 digits),
+    // picks fixed/scientific from the rounded digits, and strips to float
+    // form unless alternate keeps the width.
+    private static string RenderFloatDefaultPrecision(double value, int precision, bool alternate)
+    {
+        var keep = precision < 1 ? 1 : precision;
+        var negative = double.IsNegative(value);
+        // BCL G forms: [-]ddd[.ddd][E[+-]ddd]; shortest and correctly rounded.
+        var raw = Math.Abs(value).ToString("G" + keep.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
+        var unsigned = raw.StartsWith('-') ? raw[1..] : raw;
+        var marker = unsigned.IndexOf('E');
+        var exponent = 0;
+        var mantissa = unsigned;
+        if (marker >= 0)
+        {
+            exponent = int.Parse(mantissa[(marker + 1)..], CultureInfo.InvariantCulture);
+            mantissa = mantissa[..marker];
+        }
+
+        var point = mantissa.IndexOf('.');
+        var digits = point < 0 ? mantissa : mantissa[..point] + mantissa[(point + 1)..];
+        if (point >= 0)
+        {
+            exponent -= mantissa.Length - point - 1;
+        }
+
+        digits = digits.TrimStart('0');
+        var isZero = digits.Length == 0;
+        if (isZero)
+        {
+            digits = "0";
+            exponent = 0;
+        }
+
+        if (alternate && !isZero && digits.Length < keep)
+        {
+            // Alternate keeps the full width: pad the mantissa out.
+            exponent -= keep - digits.Length;
+            digits += new string('0', keep - digits.Length);
+        }
+
+        var adjusted = digits.Length - 1 + exponent;
+        string body;
+        if (adjusted < -4 || adjusted >= keep - 1)
+        {
+            body = RenderFloatDefaultScientific(digits, exponent, alternate);
+        }
+        else
+        {
+            var fraction = keep - (adjusted + 1);
+            var shifted = exponent + fraction;
+            var padded = digits + new string('0', shifted);
+            var split = padded.Length - fraction;
+            body = split <= 0
+                ? "0." + new string('0', -split) + padded
+                : padded[..split] + "." + padded[split..];
+        }
+
+        if (!alternate)
+        {
+            body = StripFloatBody(body);
+        }
+
+        if (negative)
+        {
+            body = "-" + body;
+        }
+
+        return body;
+    }
+
+    private static string RenderFloatDefaultScientific(string digits, int exponent, bool alternate)
+    {
+        var mantissa = digits.Length == 1 ? digits : digits[0] + "." + digits[1..];
+        if (alternate && digits.Length == 1)
+        {
+            mantissa += ".";
+        }
+
+        var shown = exponent + digits.Length - 1;
+        return mantissa + 'e' + (shown < 0 ? "-" : "+") + Math.Abs(shown).ToString("D2", CultureInfo.InvariantCulture);
+    }
+
+    // Strips padded zeros; a bare integer regains float form. Scientific
+    // mantissas keep their marker without further ado.
+    private static string StripFloatBody(string body)
+    {
+        var marker = body.IndexOf('e');
+        var head = marker < 0 ? body : body[..marker];
+        var tail = marker < 0 ? string.Empty : body[marker..];
+        if (head.Contains('.'))
+        {
+            head = head.TrimEnd('0').TrimEnd('.');
+        }
+
+        if (!head.Contains('.') && marker < 0)
+        {
+            head += ".0";
+        }
+
+        return head + tail;
+    }
+
     private static string FormatPercentText(double value, int? precision)
     {
         var scaled = value * 100.0;

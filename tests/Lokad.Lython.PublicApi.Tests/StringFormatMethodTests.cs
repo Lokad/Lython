@@ -240,6 +240,54 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData("format(1.5, \".3\")", "1.5")]
+    [InlineData("format(1.23456789, \".3\")", "1.23")]
+    [InlineData("format(100.0, \".3\")", "1e+02")]
+    [InlineData("format(100.0, \".6\")", "100.0")]
+    [InlineData("format(1.0, \".0\")", "1e+00")]
+    [InlineData("format(2.5, \".0\")", "2e+00")]
+    [InlineData("format(0.5, \".0\")", "0.5")]
+    [InlineData("format(99.99, \".3\")", "1e+02")]
+    [InlineData("format(19.99, \".3\")", "20.0")]
+    [InlineData("format(9.99999, \".5\")", "10.0")]
+    [InlineData("format(100.5, \".3\")", "1e+02")]
+    [InlineData("format(2.5, \".1\")", "2e+00")]
+    [InlineData("format(0.025, \".1\")", "0.03")]
+    [InlineData("format(99.95, \".3\")", "1e+02")]
+    [InlineData("format(1e-5, \".3\")", "1e-05")]
+    [InlineData("format(1e-7, \".0\")", "1e-07")]
+    [InlineData("format(0.0001, \".0\")", "0.0001")]
+    [InlineData("format(1.5, \".20\")", "1.5")]
+    [InlineData("format(0.1, \".20\")", "0.10000000000000000555")]
+    [InlineData("format(1e-5, \".20\")", "1.0000000000000000818e-05")]
+    [InlineData("format(1.0, \"#.3\")", "1.00")]
+    [InlineData("format(1.0, \"#.0\")", "1.e+00")]
+    [InlineData("format(100.0, \"#.3\")", "1.00e+02")]
+    [InlineData("format(0.0, \"#.3\")", "0.00")]
+    [InlineData("format(0.0, \"#.0\")", "0.e+00")]
+    [InlineData("format(-2.675, \".2\")", "-2.7")]
+    [InlineData("format(-0.0, \".3\")", "-0.0")]
+    [InlineData("format(-0.0, \"#.0\")", "-0.e+00")]
+    [InlineData("format(1e20, \".3\")", "1e+20")]
+    [InlineData("format(123456789.0, \".3\")", "1.23e+08")]
+    [InlineData("format(123456789.0, \".6\")", "1.23457e+08")]
+    [InlineData("format(0.125, \".2\")", "0.12")]
+    [InlineData("format(999.4999, \".3\")", "9.99e+02")]
+    [InlineData("format(999.5001, \".3\")", "1e+03")]
+    [InlineData("format(150.0, \".2\")", "1.5e+02")]
+    [InlineData("format(950.0, \".2\")", "9.5e+02")]
+    [InlineData("format(0.0999, \".1\")", "0.1")]
+    [InlineData("f\"{1.5:.3}\"", "1.5")]
+    [InlineData("\"{:.2}\".format(1.23456789)", "1.2")]
+    public void FloatDefaultPrecisionSpecs_RenderPythonShapedOutput(string expression, string expected)
+    {
+        var result = new LythonEngine().Run("return str(" + expression + ")", new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
     [InlineData("format(10**400, \".2e\")")]
     [InlineData("format(10**400, \".2f\")")]
     [InlineData("format(10**400, \"e\")")]
