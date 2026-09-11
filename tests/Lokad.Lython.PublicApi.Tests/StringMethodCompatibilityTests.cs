@@ -64,6 +64,7 @@ public sealed class StringMethodCompatibilityTests
     [InlineData("\"{{}}\".format()", "{}")]
     [InlineData("\"{0[a:b]}\".format({\"a:b\": 42})", "42")]
     [InlineData("\"{x:>5}\".format_map({\"x\": 1})", "    1")]
+    [InlineData("format(3.14159, \"#.2f\")", "3.14")]
     [InlineData("\"{}\".format([1, 2])", "[1, 2]")]
     [InlineData("\"{}|{}|{}\".format(None, True, 1.5)", "None|True|1.5")]
     [InlineData("str(\"banana\".find(\"na\", 3))", "4")]

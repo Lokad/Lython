@@ -122,20 +122,40 @@ internal sealed partial class LythonRuntime
             return PyDateTimeOps.FormatValue(value, PyString.FromString(formatSpecifier), span).AsString();
         }
 
-        var spec = ParseInterpolatedFormatSpecifier(formatSpecifier, span);
+        var spec = ParseInterpolatedFormatSpecifier(formatSpecifier, value, span);
         if (TryFormatNumericValue(value, spec, context, span, out var numericText, out var numericPrefixLength))
         {
             return ApplyInterpolatedFormatPadding(numericText, spec, numericPrefixLength, numeric: true, span, context.MemoryGovernor);
         }
 
-        if (RequiresNumericFormat(spec))
+        if (spec.Grouping is { } stringGrouping)
         {
-            throw new LythonRuntimeException("ValueError", $"Format code '{spec.Type}' requires a numeric value.", span);
+            throw new LythonRuntimeException("ValueError", $"Cannot specify '{stringGrouping}' with '{spec.Type ?? 's'}'.", span);
         }
 
-        if (spec.Sign is not null || spec.Alternate || spec.Grouping is not null || spec.Align == '=')
+        if (spec.Type is not null and not 's')
         {
-            throw new LythonRuntimeException("ValueError", $"Invalid format specifier '{formatSpecifier}' for string value.", span);
+            throw new LythonRuntimeException("ValueError", $"Unknown format code '{spec.Type}' for object of type '{RuntimeErrors.OperandTypeName(value)}'", span);
+        }
+
+        if (spec.Sign is '+' or '-')
+        {
+            throw new LythonRuntimeException("ValueError", "Sign not allowed in string format specifier", span);
+        }
+
+        if (spec.Sign is ' ')
+        {
+            throw new LythonRuntimeException("ValueError", "Space not allowed in string format specifier", span);
+        }
+
+        if (spec.Alternate)
+        {
+            throw new LythonRuntimeException("ValueError", "Alternate form (#) not allowed in string format specifier", span);
+        }
+
+        if (spec.Align == '=')
+        {
+            throw new LythonRuntimeException("ValueError", "'=' alignment not allowed in string format specifier", span);
         }
 
         var text = value switch
@@ -143,11 +163,6 @@ internal sealed partial class LythonRuntime
             PyString pyString => pyString.AsString(),
             _ => ToInterpolatedString(value, context)
         };
-
-        if (spec.Type is not null and not 's')
-        {
-            throw new LythonRuntimeException("ValueError", $"Unknown format code '{spec.Type}' for string value.", span);
-        }
 
         if (spec.Precision is { } precision)
         {
@@ -172,10 +187,10 @@ internal sealed partial class LythonRuntime
         {
             if (spec.Type is 'f' or 'F' or 'g' or 'G' or '%')
             {
-                return TryFormatFloatingValue((double)integer, spec, span, context.MemoryGovernor, out text, out numericPrefixLength);
+                return TryFormatFloatingValue((double)integer, spec, span, context.MemoryGovernor, out text, out numericPrefixLength, RuntimeErrors.OperandTypeName(value));
             }
 
-            text = FormatIntegerValue(integer, spec, span, out numericPrefixLength);
+            text = FormatIntegerValue(integer, spec, span, RuntimeErrors.OperandTypeName(value), out numericPrefixLength);
             return true;
         }
 
@@ -183,20 +198,20 @@ internal sealed partial class LythonRuntime
         {
             if (spec.Type is 'd' or 'b' or 'o' or 'x' or 'X' or 'n')
             {
-                throw new LythonRuntimeException("ValueError", $"Format code '{spec.Type}' requires an integer value.", span);
+                throw new LythonRuntimeException("ValueError", $"Unknown format code '{spec.Type}' for object of type '{RuntimeErrors.OperandTypeName(floating)}'", span);
             }
 
-            return TryFormatFloatingValue(floating, spec, span, context.MemoryGovernor, out text, out numericPrefixLength);
+            return TryFormatFloatingValue(floating, spec, span, context.MemoryGovernor, out text, out numericPrefixLength, RuntimeErrors.OperandTypeName(floating));
         }
 
         if (value is PyDecimal decimalValue)
         {
             if (spec.Type is 'd' or 'b' or 'o' or 'x' or 'X' or 'n')
             {
-                throw new LythonRuntimeException("ValueError", $"Format code '{spec.Type}' requires an integer value.", span);
+                throw new LythonRuntimeException("ValueError", $"Unknown format code '{spec.Type}' for object of type '{RuntimeErrors.OperandTypeName(decimalValue)}'", span);
             }
 
-            return TryFormatFloatingValue((double)decimalValue.Value, spec, span, context.MemoryGovernor, out text, out numericPrefixLength);
+            return TryFormatFloatingValue((double)decimalValue.Value, spec, span, context.MemoryGovernor, out text, out numericPrefixLength, RuntimeErrors.OperandTypeName(decimalValue));
         }
 
         _ = context;
@@ -226,11 +241,12 @@ internal sealed partial class LythonRuntime
         BigInteger value,
         InterpolatedFormatSpecifier spec,
         LythonSourceSpan span,
+        string typeName,
         out int numericPrefixLength)
     {
         if (spec.Precision is not null)
         {
-            throw new LythonRuntimeException("ValueError", "Precision is not allowed in integer format specifiers.", span);
+            throw new LythonRuntimeException("ValueError", "Precision not allowed in integer format specifier", span);
         }
 
         var type = spec.Type ?? 'd';
@@ -262,14 +278,14 @@ internal sealed partial class LythonRuntime
                 prefix = spec.Alternate ? "0X" : string.Empty;
                 break;
             default:
-                throw new LythonRuntimeException("ValueError", $"Unknown integer format code '{type}'.", span);
+                throw new LythonRuntimeException("ValueError", $"Unknown format code '{type}' for object of type '{typeName}'", span);
         }
 
         if (spec.Grouping is { } grouping)
         {
             if (type is not ('d' or 'n'))
             {
-                throw new LythonRuntimeException("ValueError", "Grouping is only supported for decimal integer formatting.", span);
+                throw new LythonRuntimeException("ValueError", $"Cannot specify '{grouping}' with '{type}'.", span);
             }
 
             digits = GroupDigits(digits, grouping);
@@ -286,18 +302,25 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         MemoryGovernor? governor,
         out string text,
-        out int numericPrefixLength)
+        out int numericPrefixLength,
+        string typeName)
     {
         var type = spec.Type;
         var precision = spec.Precision;
-        if (type is 's' or 'b' or 'o' or 'x' or 'X' or 'd' or 'n')
+        if (type is 'b' or 'o' or 'x' or 'X' or 'd' or 'n')
         {
             text = string.Empty;
             numericPrefixLength = 0;
             return false;
         }
 
-        if (spec.Alternate)
+        if (spec.Grouping is { } floatGrouping &&
+            type is not null and not 'f' and not 'F' and not 'g' and not 'G' and not '%' and not 'e' and not 'E')
+        {
+            throw new LythonRuntimeException("ValueError", $"Cannot specify '{floatGrouping}' with '{type}'.", span);
+        }
+
+        if (spec.Alternate && spec.Type is 'g' or 'G')
         {
             throw new LythonRuntimeException("ValueError", "Alternate floating-point formatting is not supported.", span);
         }
@@ -322,7 +345,7 @@ internal sealed partial class LythonRuntime
             'g' => value.ToString("G" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
             'G' => value.ToString("G" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture),
             '%' => (value * 100.0).ToString("F" + (precision ?? 6).ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture) + "%",
-            _ => throw new LythonRuntimeException("ValueError", $"Unknown floating-point format code '{type}'.", span)
+            _ => throw new LythonRuntimeException("ValueError", $"Unknown format code '{type}' for object of type '{typeName}'", span)
         };
 
         if (type == 'F')
@@ -340,7 +363,7 @@ internal sealed partial class LythonRuntime
         return true;
     }
 
-    private static InterpolatedFormatSpecifier ParseInterpolatedFormatSpecifier(string text, LythonSourceSpan span)
+    private static InterpolatedFormatSpecifier ParseInterpolatedFormatSpecifier(string text, object value, LythonSourceSpan span)
     {
         var index = 0;
         char? fill = null;
@@ -408,7 +431,7 @@ internal sealed partial class LythonRuntime
 
             if (precisionStart == index)
             {
-                throw new LythonRuntimeException("ValueError", $"Invalid format specifier '{text}'.", span);
+                throw new LythonRuntimeException("ValueError", "Format specifier missing precision", span);
             }
 
             precision = int.Parse(text[precisionStart..index], CultureInfo.InvariantCulture);
@@ -422,14 +445,11 @@ internal sealed partial class LythonRuntime
 
         if (index != text.Length)
         {
-            throw new LythonRuntimeException("ValueError", $"Invalid format specifier '{text}'.", span);
+            throw new LythonRuntimeException("ValueError", $"Invalid format specifier '{text}' for object of type '{RuntimeErrors.OperandTypeName(value)}'", span);
         }
 
         return new InterpolatedFormatSpecifier(fill, align, sign, alternate, zeroPad, width, grouping, precision, type);
     }
-
-    private static bool RequiresNumericFormat(InterpolatedFormatSpecifier spec)
-        => spec.Type is 'd' or 'b' or 'o' or 'x' or 'X' or 'n' or 'f' or 'F' or 'g' or 'G' or '%';
 
     private static bool IsFormatAlign(char value)
         => value is '<' or '>' or '^' or '=';

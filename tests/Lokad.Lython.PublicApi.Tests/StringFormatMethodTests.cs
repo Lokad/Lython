@@ -41,6 +41,44 @@ public sealed class StringFormatMethodTests
         Assert.Contains(message, result.Failure?.Message, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData("format(1, \"{\")", "ValueError", "Unknown format code '{' for object of type 'int'")]
+    [InlineData("format(\"a\", \"{\")", "ValueError", "Unknown format code '{' for object of type 'str'")]
+    [InlineData("format(1.5, \"{\")", "ValueError", "Unknown format code '{' for object of type 'float'")]
+    [InlineData("format(True, \"{\")", "ValueError", "Unknown format code '{' for object of type 'bool'")]
+    [InlineData("format(1, \"{}\")", "ValueError", "Invalid format specifier '{}' for object of type 'int'")]
+    [InlineData("format(\"a\", \"{}\")", "ValueError", "Invalid format specifier '{}' for object of type 'str'")]
+    [InlineData("format(1, \"}\")", "ValueError", "Unknown format code '}' for object of type 'int'")]
+    [InlineData("format(1, \"abc\")", "ValueError", "Invalid format specifier 'abc' for object of type 'int'")]
+    [InlineData("format(1, \".\")", "ValueError", "Format specifier missing precision")]
+    [InlineData("format(\"a\", \".5x\")", "ValueError", "Unknown format code 'x' for object of type 'str'")]
+    [InlineData("format(1.5, \",q\")", "ValueError", "Cannot specify ',' with 'q'.")]
+    [InlineData("format(1.5, \"#q\")", "ValueError", "Unknown format code 'q' for object of type 'float'")]
+    [InlineData("format(1, \"#,x\")", "ValueError", "Cannot specify ',' with 'x'.")]
+    [InlineData("format(\"a\", \"#q\")", "ValueError", "Unknown format code 'q' for object of type 'str'")]
+    [InlineData("format(\"a\", \",s\")", "ValueError", "Cannot specify ',' with 's'.")]
+    [InlineData("format(1, \".5d\")", "ValueError", "Precision not allowed in integer format specifier")]
+    [InlineData("format(\"a\", \"+\")", "ValueError", "Sign not allowed in string format specifier")]
+    [InlineData("format(\"a\", \" \")", "ValueError", "Space not allowed in string format specifier")]
+    [InlineData("format(\"a\", \"#\")", "ValueError", "Alternate form (#) not allowed in string format specifier")]
+    [InlineData("format(\"a\", \"_\")", "ValueError", "Cannot specify '_' with 's'.")]
+    [InlineData("format(1.5, \"d\")", "ValueError", "Unknown format code 'd' for object of type 'float'")]
+    [InlineData("format(\"a\", \"d\")", "ValueError", "Unknown format code 'd' for object of type 'str'")]
+    public void InvalidFormatSpecs_ReportPythonShapedRuntimeFailures(
+        string expression,
+        string exceptionType,
+        string message)
+    {
+        var source = "return str(" + expression + ")";
+
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal(exceptionType, result.Failure?.ExceptionType);
+        Assert.Contains(message, result.Failure?.Message, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void FormatMethod_ComposesConversionsNestedSpecsAndMapping()
     {
