@@ -292,10 +292,54 @@ internal sealed partial class LythonRuntime
         return (long)integer;
     }
 
+    // product(repeat=...) coerces through __index__ like CPython; a
+    // non-callable hook raises not-callable, negatives report the repeat
+    // error and out-of-range magnitudes the ssize_t overflow.
+    private static long ExpectProductRepeat(object value, ExecutionContext context, LythonSourceSpan span)
+    {
+        BigInteger integer;
+        if (value is PyInstance instance && instance.TryGetAttribute("__index__", context, span, out var member))
+        {
+            if (member is not ICallable)
+            {
+                throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(member, context) + "' object is not callable", span);
+            }
+
+            // The shared choke either returns an integer or raises the shaped
+            // __index__ error; the callable check above rules out its
+            // missing-hook passthrough.
+            integer = (BigInteger)CoerceIndexProtocol(instance, context, span);
+        }
+        else if (value is bool flag)
+        {
+            integer = flag ? BigInteger.One : BigInteger.Zero;
+        }
+        else if (value is int small)
+        {
+            integer = new BigInteger(small);
+        }
+        else if (!Numbers.PyNumberOps.TryAsInteger(value, out integer))
+        {
+            throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
+        }
+
+        if (integer < 0)
+        {
+            throw new LythonRuntimeException("ValueError", "repeat argument cannot be negative", span);
+        }
+
+        if (integer > long.MaxValue)
+        {
+            throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C ssize_t", span);
+        }
+
+        return (long)integer;
+    }
+
     private static object Product(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var positionalCount = 0;
-        var repeat = 1;
+        long repeat = 1L;
         for (var i = 0; i < arguments.Length; i++)
         {
             var argument = arguments[i];
@@ -309,8 +353,7 @@ internal sealed partial class LythonRuntime
             {
                 throw new LythonRuntimeException("TypeError", "itertools.product(...) only supports the keyword argument repeat=.", span);
             }
-
-            repeat = checked((int)ExpectNonNegativeLong(argument.Value, "itertools.product(..., repeat=...) expects repeat to be a non-negative integer.", span));
+            repeat = ExpectProductRepeat(argument.Value, context, span);
         }
 
         var pools = new object[positionalCount][];
@@ -337,7 +380,7 @@ internal sealed partial class LythonRuntime
         context.MemoryGovernor.Commit(64L + (16L * repeatedLength));
         var repeated = new IReadOnlyList<object>[(int)repeatedLength];
         var repeatedIndex = 0;
-        for (var i = 0; i < repeat; i++)
+        for (long i = 0; i < repeat && repeatedIndex < repeated.Length; i++)
         {
             for (var j = 0; j < pools.Length; j++)
             {
@@ -351,7 +394,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> ProductAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var positionalCount = 0;
-        var repeat = 1;
+        long repeat = 1L;
         for (var i = 0; i < arguments.Length; i++)
         {
             var argument = arguments[i];
@@ -365,8 +408,7 @@ internal sealed partial class LythonRuntime
             {
                 throw new LythonRuntimeException("TypeError", "itertools.product(...) only supports the keyword argument repeat=.", span);
             }
-
-            repeat = checked((int)ExpectNonNegativeLong(argument.Value, "itertools.product(..., repeat=...) expects repeat to be a non-negative integer.", span));
+            repeat = ExpectProductRepeat(argument.Value, context, span);
         }
 
         var pools = new object[positionalCount][];
@@ -393,7 +435,7 @@ internal sealed partial class LythonRuntime
         context.MemoryGovernor.Commit(64L + (16L * repeatedLength));
         var repeated = new IReadOnlyList<object>[(int)repeatedLength];
         var repeatedIndex = 0;
-        for (var i = 0; i < repeat; i++)
+        for (long i = 0; i < repeat && repeatedIndex < repeated.Length; i++)
         {
             for (var j = 0; j < pools.Length; j++)
             {

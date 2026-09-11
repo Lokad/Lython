@@ -5790,6 +5790,59 @@ __lython_file.close()
     }
 
     [Fact]
+    public void ProductRepeat_CoerceIndexLikeCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+import itertools
+
+class J:
+    def __index__(self):
+        return 2
+class Jbad:
+    def __index__(self):
+        return "x"
+class Jbig:
+    def __index__(self):
+        return 10**100
+class C: pass
+class NIndex:
+    __index__ = 5
+
+def pr(r):
+    return list(itertools.product("ab", repeat=r))
+
+parts = []
+parts.append(str(pr(J())))
+parts.append(str(pr(True)))
+parts.append(str(pr(0)))
+parts.append(str(list(itertools.product())))
+for v in [Jbad(), "a", None, 2.0, C(), NIndex()]:
+    try:
+        parts.append(str(pr(v)))
+    except TypeError as e:
+        parts.append(str(e))
+try:
+    parts.append(str(pr(-1)))
+except ValueError as e:
+    parts.append(str(e))
+for v in [10**100, Jbig()]:
+    try:
+        parts.append(str(pr(v)))
+    except OverflowError as e:
+        parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"[('a', 'a'), ('a', 'b'), ('b', 'a'), ('b', 'b')]|[('a',), ('b',)]|[()]|[()]|__index__ returned non-int (type str)|'str' object cannot be interpreted as an integer|'NoneType' object cannot be interpreted as an integer|'float' object cannot be interpreted as an integer|'C' object cannot be interpreted as an integer|'int' object is not callable|repeat argument cannot be negative|Python int too large to convert to C ssize_t|Python int too large to convert to C ssize_t", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();
