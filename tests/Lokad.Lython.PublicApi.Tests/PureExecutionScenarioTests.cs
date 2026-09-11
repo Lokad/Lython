@@ -5910,6 +5910,54 @@ __lython_file.close()
     }
 
     [Fact]
+    public void DequeMaxlen_MatchesCpython()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import deque
+
+class J:
+    def __index__(self):
+        return 2
+class Jbad:
+    def __index__(self):
+        return "x"
+class C: pass
+
+def dq(m):
+    return deque([1, 2, 3], maxlen=m)
+
+parts = []
+parts.append(str(dq(2)))
+parts.append(str(dq(None)))
+parts.append(str(dq(True)))
+parts.append(str(deque([1, 2, 3, 4], maxlen=2)))
+for v in [J(), Jbad(), "x", 2.0, C()]:
+    try:
+        parts.append(str(dq(v)))
+    except TypeError as e:
+        parts.append(str(e))
+try:
+    parts.append(str(dq(-1)))
+except ValueError as e:
+    parts.append(str(e))
+for v in [10**100, -10**100]:
+    try:
+        parts.append(str(dq(v)))
+    except OverflowError as e:
+        parts.append(str(e))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(@"deque([2, 3], maxlen=2)|deque([1, 2, 3])|deque([3], maxlen=1)|deque([3, 4], maxlen=2)|an integer is required|an integer is required|an integer is required|an integer is required|an integer is required|maxlen must be non-negative|Python int too large to convert to C ssize_t|Python int too large to convert to C ssize_t", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void NumericProtocol_DeclinesNotImplemented()
     {
         var host = new MockLythonHost();

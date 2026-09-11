@@ -319,7 +319,7 @@ internal sealed partial class LythonRuntime
                 }
                 else if (positionalCount == 1)
                 {
-                    maxLength = ExpectDequeMaxLength(argument.Value, span);
+                    maxLength = ExpectDequeMaxLength(argument.Value, span, context);
                     hasMaxLength = true;
                 }
                 else
@@ -350,7 +350,7 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("TypeError", "collections.deque(...) got multiple values for argument 'maxlen'.", span);
                 }
 
-                maxLength = ExpectDequeMaxLength(argument.Value, span);
+                maxLength = ExpectDequeMaxLength(argument.Value, span, context);
                 hasMaxLength = true;
                 continue;
             }
@@ -660,17 +660,30 @@ internal sealed partial class LythonRuntime
         return value;
     }
 
-    private static int? ExpectDequeMaxLength(object value, LythonSourceSpan span)
+    // deque(maxlen=...) requires an exact integer like CPython (bool and None
+    // included, but no index coercion); negatives drop the trailing period,
+    // out-of-ssize magnitudes report the ssize_t overflow and int-range
+    // overflows keep the historical too-large shape.
+    private static int? ExpectDequeMaxLength(object value, LythonSourceSpan span, ExecutionContext context)
     {
         if (value is PyNone)
         {
             return null;
         }
 
-        var integer = ExpectInteger(value, "collections.deque(..., maxlen=...) expects an integer or None.", span);
+        if (!Numbers.PyNumberOps.TryAsInteger(value, out var integer))
+        {
+            throw new LythonRuntimeException("TypeError", "an integer is required", span);
+        }
+
+        if (integer > long.MaxValue || integer < long.MinValue)
+        {
+            throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C ssize_t", span);
+        }
+
         if (integer < 0)
         {
-            throw new LythonRuntimeException("ValueError", "maxlen must be non-negative.", span);
+            throw new LythonRuntimeException("ValueError", "maxlen must be non-negative", span);
         }
 
         if (integer > int.MaxValue)
