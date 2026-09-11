@@ -4633,6 +4633,48 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData("str(type(1))", "<class 'int'>")]
+    [InlineData("repr(type(1))", "<class 'int'>")]
+    [InlineData("str(int)", "<class 'int'>")]
+    [InlineData("repr(int)", "<class 'int'>")]
+    [InlineData("str(list)", "<class 'list'>")]
+    [InlineData("f\"{dict}\"", "<class 'dict'>")]
+    [InlineData("\"{}\".format(set)", "<class 'set'>")]
+    [InlineData("str(bool)", "<class 'bool'>")]
+    [InlineData("str(float)", "<class 'float'>")]
+    [InlineData("str(tuple)", "<class 'tuple'>")]
+    [InlineData("str(bytes)", "<class 'bytes'>")]
+    [InlineData("str(range)", "<class 'range'>")]
+    [InlineData("str(zip)", "<class 'zip'>")]
+    [InlineData("str(slice)", "<class 'slice'>")]
+    [InlineData("str(ValueError)", "<class 'ValueError'>")]
+    [InlineData("str(Exception)", "<class 'Exception'>")]
+    [InlineData("str(type(1.5))", "<class 'float'>")]
+    [InlineData("str(type(None))", "<class 'NoneType'>")]
+    [InlineData("str(type(len))", "<class 'builtin_function_or_method'>")]
+    public void TypeObjects_RenderClassWrapper(string expression, string expected)
+    {
+        var result = new LythonEngine().Run("return str(" + expression + ")", new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
+    [InlineData("str(Decimal)", "<class 'decimal.Decimal'>")]
+    [InlineData("repr(type(Decimal(\"1\")))", "<class 'decimal.Decimal'>")]
+    [InlineData("str(type(datetime.datetime.now()))", "<class 'datetime.datetime'>")]
+    public void ModuleTypeObjects_RenderClassWrapper(string expression, string expected)
+    {
+        var source = "from decimal import Decimal\nimport datetime\nreturn str(" + expression + ")";
+
+        var result = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<string>(result.ReturnValue));
+    }
+
+    [Theory]
     [InlineData("import datetime\nlen(datetime.datetime.now())\n", "object of type 'datetime.datetime' has no len()")]
     [InlineData("import datetime\nlen(datetime.date.today())\n", "object of type 'datetime.date' has no len()")]
     [InlineData("from decimal import Decimal\nlen(Decimal(\"1\"))\n", "object of type 'decimal.Decimal' has no len()")]

@@ -41,7 +41,7 @@ public sealed class RendererAccountingScenarioTests
             "operator.itemgetter(0, 1)",
             "(7,)",
             "Counter({'a': 2})",
-            "defaultdict(int, {1: 2})",
+            "defaultdict(<class 'int'>, {1: 2})",
             "ChainMap({'a': 1})",
             "Box(name='x', index=5)",
         };

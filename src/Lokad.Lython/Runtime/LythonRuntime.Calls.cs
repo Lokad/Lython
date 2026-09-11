@@ -2305,7 +2305,9 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
-            return PyString.FromString(Name);
+            // Type constructors render like CPython type objects; plain
+            // builtins keep their short display name.
+            return PyString.FromString(BuiltinTypeBaseNames.ContainsKey(Name) ? $"<class '{Name}'>" : Name);
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
@@ -2771,7 +2773,7 @@ internal sealed partial class LythonRuntime
             return Zip(arguments, span, context);
         }
 
-        public PyString RenderPython(PyRenderingContext context) => PyString.FromString(Name);
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString($"<class '{Name}'>");
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
         public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
     }
@@ -2844,7 +2846,7 @@ internal sealed partial class LythonRuntime
             return Dict(arguments, span, context);
         }
 
-        public PyString RenderPython(PyRenderingContext context) => PyString.FromString(Name);
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString($"<class '{Name}'>");
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
         public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
     }

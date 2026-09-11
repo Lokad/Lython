@@ -125,7 +125,6 @@ internal static class PyTyping
     private static readonly IReadOnlyDictionary<string, PyTypingAlias> Aliases = AliasNames
         .ToDictionary(static name => name, static name => new PyTypingAlias(name), StringComparer.Ordinal);
 
-    private static readonly PyTypingAlias NoneTypeAlias = new("NoneType", qualified: false);
 
     private static readonly IReadOnlyDictionary<string, string> BuiltinOrigins = new Dictionary<string, string>(StringComparer.Ordinal)
     {
@@ -247,7 +246,7 @@ internal static class PyTyping
         }
 
         return alias.ShortName == "Optional" && alias.IsSubscripted
-            ? new PyTuple(alias.Arguments.Concat([NoneTypeAlias]))
+            ? new PyTuple(alias.Arguments.Concat([PyType.NoneType]))
             : new PyTuple(alias.Arguments);
     }
 
