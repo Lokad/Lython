@@ -63,6 +63,74 @@ internal sealed partial class LythonRuntime
                 "strip" => new RawBoundCallable((arguments, span, context) => StripBytes(bytes, "strip", arguments, span, context, BytesStripMode.Both)) { BoundName = "bytes.strip", BoundReceiver = bytes },
                 "lstrip" => new RawBoundCallable((arguments, span, context) => StripBytes(bytes, "lstrip", arguments, span, context, BytesStripMode.Left)) { BoundName = "bytes.lstrip", BoundReceiver = bytes },
                 "rstrip" => new RawBoundCallable((arguments, span, context) => StripBytes(bytes, "rstrip", arguments, span, context, BytesStripMode.Right)) { BoundName = "bytes.rstrip", BoundReceiver = bytes },
+                "split" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length == 0)
+                    {
+                        return SplitBytesWhitespace(bytes, -1, context, span);
+                    }
+
+                    int maxSplit;
+                    if (arguments[0] is PyNone)
+                    {
+                        maxSplit = arguments.Length == 2 ? RuntimeArgumentValidation.ParseInt32(arguments[1], "maxsplit", "bytes.split([sep[, maxsplit]])", span) : -1;
+                        return SplitBytesWhitespace(bytes, maxSplit, context, span);
+                    }
+
+                    if (arguments.Length is < 1 or > 2 || arguments[0] is not PyBytes separator)
+                    {
+                        throw new LythonRuntimeException("TypeError", "bytes.split([sep[, maxsplit]]) expects zero, one, or two arguments with bytes separator and optional integer maxsplit.", span);
+                    }
+
+                    maxSplit = arguments.Length == 2 ? RuntimeArgumentValidation.ParseInt32(arguments[1], "maxsplit", "bytes.split([sep[, maxsplit]])", span) : -1;
+                    try
+                    {
+                        return SplitBytes(bytes, separator, maxSplit, context, span);
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        throw new LythonRuntimeException("ValueError", ex.Message, span);
+                    }
+                }, "bytes.split", ["sep", "maxsplit"], 0),
+                "rsplit" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length == 0)
+                    {
+                        return RSplitBytesWhitespace(bytes, -1, context, span);
+                    }
+
+                    int maxSplit;
+                    if (arguments[0] is PyNone)
+                    {
+                        maxSplit = arguments.Length == 2 ? RuntimeArgumentValidation.ParseInt32(arguments[1], "maxsplit", "bytes.rsplit([sep[, maxsplit]])", span) : -1;
+                        return RSplitBytesWhitespace(bytes, maxSplit, context, span);
+                    }
+
+                    if (arguments.Length is < 1 or > 2 || arguments[0] is not PyBytes separator)
+                    {
+                        throw new LythonRuntimeException("TypeError", "bytes.rsplit([sep[, maxsplit]]) expects zero, one, or two arguments with bytes separator and optional integer maxsplit.", span);
+                    }
+
+                    maxSplit = arguments.Length == 2 ? RuntimeArgumentValidation.ParseInt32(arguments[1], "maxsplit", "bytes.rsplit([sep[, maxsplit]])", span) : -1;
+                    try
+                    {
+                        return RSplitBytes(bytes, separator, maxSplit, context, span);
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        throw new LythonRuntimeException("ValueError", ex.Message, span);
+                    }
+                }, "bytes.rsplit", ["sep", "maxsplit"], 0),
+                "splitlines" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length > 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "bytes.splitlines([keepends]) expects zero or one bool argument.", span);
+                    }
+
+                    var keepEnds = arguments.Length == 1 && IsTruthy(arguments[0]);
+                    return SplitBytesLines(bytes, keepEnds, context, span);
+                }, LythonCallableSignature.Create("bytes.splitlines", ["keepends"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 0)),
                 _ => MissingMemberValue.Instance
             };
 
@@ -1108,6 +1176,240 @@ internal sealed partial class LythonRuntime
         return stripWhitespace ? IsAsciiSpace(octet) : stripSet.IndexOf(octet) >= 0;
     }
 
+    private static PyList NewBytesPartList(MemoryGovernor? governor, LythonSourceSpan? span)
+        => governor is null ? new PyList() : new PyList([], governor, span);
+
+    private static PyBytes SliceBytesRange(ReadOnlySpan<byte> source, int start, int end, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (start >= end)
+        {
+            return CreateBytes([], context, span);
+        }
+
+        return CreateBytes(source[start..end].ToArray(), context, span);
+    }
+
+    private static PyList SplitBytesWhitespace(PyBytes value, int maxSplit, ExecutionContext context, LythonSourceSpan span)
+    {
+        var parts = NewBytesPartList(context.MemoryGovernor, span);
+        var source = value.Bytes;
+        var start = 0;
+        while (start < source.Length && IsAsciiSpace(source[start]))
+        {
+            start++;
+        }
+
+        if (start >= source.Length)
+        {
+            return parts;
+        }
+
+        if (maxSplit == 0)
+        {
+            parts.Add(SliceBytesRange(source, start, source.Length, context, span));
+            return parts;
+        }
+
+        var splits = 0;
+        while (true)
+        {
+            var end = start;
+            while (end < source.Length && !IsAsciiSpace(source[end]))
+            {
+                end++;
+            }
+
+            if (maxSplit >= 0 && splits == maxSplit)
+            {
+                parts.Add(SliceBytesRange(source, start, source.Length, context, span));
+                break;
+            }
+
+            parts.Add(SliceBytesRange(source, start, end, context, span));
+            splits++;
+            start = end;
+            while (start < source.Length && IsAsciiSpace(source[start]))
+            {
+                start++;
+            }
+
+            if (start >= source.Length)
+            {
+                break;
+            }
+        }
+
+        return parts;
+    }
+
+    private static PyList RSplitBytesWhitespace(PyBytes value, int maxSplit, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (maxSplit < 0)
+        {
+            return SplitBytesWhitespace(value, -1, context, span);
+        }
+
+        var governor = context.MemoryGovernor;
+        var source = value.Bytes;
+        var endByte = source.Length;
+        while (endByte > 0 && IsAsciiSpace(source[endByte - 1]))
+        {
+            endByte--;
+        }
+
+        var parts = new List<PyBytes>();
+        if (endByte == 0)
+        {
+            return NewBytesPartList(governor, span);
+        }
+
+        if (maxSplit == 0)
+        {
+            var only = SliceBytesRange(source, 0, endByte, context, span);
+            return governor is null ? new PyList([only]) : new PyList([only], governor, span);
+        }
+
+        var splits = 0;
+        while (endByte > 0)
+        {
+            var partEnd = endByte;
+            var partStart = endByte;
+            while (partStart > 0 && !IsAsciiSpace(source[partStart - 1]))
+            {
+                partStart--;
+            }
+
+            if (splits == maxSplit)
+            {
+                parts.Add(SliceBytesRange(source, 0, partEnd, context, span));
+                break;
+            }
+
+            parts.Add(SliceBytesRange(source, partStart, partEnd, context, span));
+            splits++;
+            endByte = partStart;
+            while (endByte > 0 && IsAsciiSpace(source[endByte - 1]))
+            {
+                endByte--;
+            }
+
+            if (endByte == 0)
+            {
+                break;
+            }
+        }
+
+        parts.Reverse();
+        var items = new object[parts.Count];
+        for (var i = 0; i < parts.Count; i++)
+        {
+            items[i] = parts[i];
+        }
+
+        return governor is null ? new PyList(items) : new PyList(items, governor, span);
+    }
+
+    private static PyList SplitBytes(PyBytes value, PyBytes separator, int maxSplit, ExecutionContext context, LythonSourceSpan span)
+    {
+        var parts = NewBytesPartList(context.MemoryGovernor, span);
+        var source = value.Bytes;
+        var needle = separator.Bytes;
+        if (needle.IsEmpty)
+        {
+            throw new InvalidOperationException("empty separator");
+        }
+
+        var offset = 0;
+        var splits = 0;
+        while (maxSplit < 0 || splits < maxSplit)
+        {
+            var found = PyString.IndexOfBytes(source[offset..], needle);
+            if (found < 0)
+            {
+                break;
+            }
+
+            parts.Add(SliceBytesRange(source, offset, offset + found, context, span));
+            offset += found + needle.Length;
+            splits++;
+        }
+
+        parts.Add(SliceBytesRange(source, offset, source.Length, context, span));
+        return parts;
+    }
+
+    private static PyList RSplitBytes(PyBytes value, PyBytes separator, int maxSplit, ExecutionContext context, LythonSourceSpan span)
+    {
+        var needle = separator.Bytes;
+        if (needle.IsEmpty)
+        {
+            throw new InvalidOperationException("empty separator");
+        }
+
+        var source = value.Bytes;
+        var matches = new List<int>();
+        var searchFrom = 0;
+        while (searchFrom <= source.Length)
+        {
+            var found = PyString.IndexOfBytes(source[searchFrom..], needle);
+            if (found < 0)
+            {
+                break;
+            }
+
+            matches.Add(searchFrom + found);
+            searchFrom += found + needle.Length;
+        }
+
+        var firstKept = maxSplit < 0 ? 0 : int.Max(0, matches.Count - maxSplit);
+        var parts = NewBytesPartList(context.MemoryGovernor, span);
+        var offset = 0;
+        for (var i = firstKept; i < matches.Count; i++)
+        {
+            parts.Add(SliceBytesRange(source, offset, matches[i], context, span));
+            offset = matches[i] + needle.Length;
+        }
+
+        parts.Add(SliceBytesRange(source, offset, source.Length, context, span));
+        return parts;
+    }
+
+    private static PyList SplitBytesLines(PyBytes value, bool keepEnds, ExecutionContext context, LythonSourceSpan span)
+    {
+        var parts = NewBytesPartList(context.MemoryGovernor, span);
+        var source = value.Bytes;
+        var start = 0;
+        var index = 0;
+        while (index < source.Length)
+        {
+            int breakLength;
+            if (source[index] == (byte)'\r')
+            {
+                breakLength = index + 1 < source.Length && source[index + 1] == (byte)'\n' ? 2 : 1;
+            }
+            else if (source[index] == (byte)'\n')
+            {
+                breakLength = 1;
+            }
+            else
+            {
+                index++;
+                continue;
+            }
+
+            var end = keepEnds ? index + breakLength : index;
+            parts.Add(SliceBytesRange(source, start, end, context, span));
+            index += breakLength;
+            start = index;
+        }
+
+        if (start < source.Length)
+        {
+            parts.Add(SliceBytesRange(source, start, source.Length, context, span));
+        }
+
+        return parts;
+    }
     private sealed class RawBoundCallable(
         Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation) : ICallable, IPyDynamicAttributes, IPyHashableValue, IPyRawBoundCallable
     {

@@ -126,6 +126,12 @@ internal static partial class StaticContracts
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "istitle", 0, 0, "LA3177", "bytes.istitle() expects no arguments."));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "isupper", 0, 0, "LA3177", "bytes.isupper() expects no arguments."));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "isupper", 0, 0, "LA3177", "bytes.isupper() expects no arguments."));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "split", 0, 2, "LA3181", "bytes.split([sep[, maxsplit]]) expects zero to two arguments.", parameterNames: ["sep", "maxsplit"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "split", 0, 2, "LA3181", "bytes.split([sep[, maxsplit]]) expects zero to two arguments.", parameterNames: ["sep", "maxsplit"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "rsplit", 0, 2, "LA3181", "bytes.rsplit([sep[, maxsplit]]) expects zero to two arguments.", parameterNames: ["sep", "maxsplit"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "rsplit", 0, 2, "LA3181", "bytes.rsplit([sep[, maxsplit]]) expects zero to two arguments.", parameterNames: ["sep", "maxsplit"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "splitlines", 0, 1, "LA3181", "bytes.splitlines([keepends]) expects zero or one argument.", parameterNames: ["keepends"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "splitlines", 0, 1, "LA3181", "bytes.splitlines([keepends]) expects zero or one argument.", parameterNames: ["keepends"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "strip", 0, 1, "LA3180", "bytes.strip([chars]) expects zero or one argument.", parameterNames: ["chars"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "strip", 0, 1, "LA3180", "bytes.strip([chars]) expects zero or one argument.", parameterNames: ["chars"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "lstrip", 0, 1, "LA3180", "bytes.lstrip([chars]) expects zero or one argument.", parameterNames: ["chars"]));
