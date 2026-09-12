@@ -445,6 +445,20 @@ __lython_file.close()
     }
 
     [Fact]
+    public async Task TimezoneRendersLikeCPython()
+    {
+        const string source = "import datetime\nz = datetime.timezone(datetime.timedelta(hours=2))\nx = datetime.timezone(datetime.timedelta(hours=2), 'X')\nreturn str(z) + \"|\" + repr(z) + \"|\" + str(datetime.timezone.utc) + \"|\" + repr(datetime.timezone.utc) + \"|\" + str(x) + \"|\" + repr(x) + \"|\" + repr(datetime.datetime(2024, 1, 2, 3, 4, 5, tzinfo=x)) + \"|\" + str(datetime.timezone(datetime.timedelta(0), 'X'))\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("UTC+02:00|datetime.timezone(datetime.timedelta(seconds=7200))|UTC|datetime.timezone.utc|X|datetime.timezone(datetime.timedelta(seconds=7200), 'X')|datetime.datetime(2024, 1, 2, 3, 4, 5, tzinfo=datetime.timezone(datetime.timedelta(seconds=7200), 'X'))|X", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("UTC+02:00|datetime.timezone(datetime.timedelta(seconds=7200))|UTC|datetime.timezone.utc|X|datetime.timezone(datetime.timedelta(seconds=7200), 'X')|datetime.datetime(2024, 1, 2, 3, 4, 5, tzinfo=datetime.timezone(datetime.timedelta(seconds=7200), 'X'))|X", asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task ReplaceDistinguishesOmittedFromNone()
     {
         const string source = "import datetime\nclass J:\n    def __index__(self):\n        return 2025\nreturn str(datetime.date(2024, 1, 1).replace(day=5)) + \"|\" + str(datetime.time(1, 2, 3).replace(fold=1)) + \"|\" + str(datetime.datetime(2024, 1, 1, tzinfo=datetime.timezone.utc).replace(tzinfo=None)) + \"|\" + str(datetime.date(2024, 1, 1).replace(year=J()))\n";

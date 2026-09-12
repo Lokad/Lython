@@ -403,7 +403,7 @@ internal static partial class PyDateTimeOps
         }
     }
 
-    private static string RenderOffsetDelta(BigInteger totalMicroseconds)
+    internal static string RenderOffsetDelta(BigInteger totalMicroseconds)
     {
         // Floor-based normalization mirrors timedelta repr for the range text.
         var days = totalMicroseconds / 86_400_000_000;

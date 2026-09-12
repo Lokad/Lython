@@ -135,19 +135,22 @@ internal sealed class PyTimedelta : IPyTruthyValue, IPyHashableValue, IPyRendera
 
 internal sealed class PyTimezone : IPyTruthyValue, IPyHashableValue, IPyRenderableValue
 {
-    public static readonly PyTimezone Utc = new(TimeSpan.Zero, "UTC");
+    public static readonly PyTimezone Utc = new(TimeSpan.Zero);
 
     public PyTimezone(TimeSpan offset) : this(offset, null) { }
 
     public PyTimezone(TimeSpan offset, string? name)
     {
         Offset = offset;
+        HasExplicitName = name is not null;
         Name = name ?? (offset == TimeSpan.Zero ? "UTC" : PyDateTimeOps.FormatOffset(offset));
     }
 
     public TimeSpan Offset { get; }
 
     public string Name { get; }
+
+    public bool HasExplicitName { get; }
 
     public bool IsTruthy() => true;
 
@@ -156,15 +159,30 @@ internal sealed class PyTimezone : IPyTruthyValue, IPyHashableValue, IPyRenderab
     public PyString RenderPython(PyRenderingContext context)
     {
         _ = context;
-        if (Offset == TimeSpan.Zero && Name == "UTC")
+        if (Offset == TimeSpan.Zero && !HasExplicitName)
         {
             return PyString.FromString("datetime.timezone.utc");
         }
 
-        return PyString.FromString($"datetime.timezone({PyDateTimeOps.FormatOffset(Offset)})");
+        var rendered = $"datetime.timezone({PyDateTimeOps.RenderOffsetDelta(new BigInteger(Offset.Ticks / 10))}";
+        if (HasExplicitName)
+        {
+            rendered += $", '{Name.Replace(@"\", @"\\").Replace("'", @"\'")}'";
+        }
+
+        return PyString.FromString(rendered + ")");
     }
 
-    public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+    public PyString RenderInterpolated(PyRenderingContext context)
+    {
+        _ = context;
+        if (HasExplicitName)
+        {
+            return PyString.FromString(Name);
+        }
+
+        return PyString.FromString(Offset == TimeSpan.Zero ? "UTC" : "UTC" + PyDateTimeOps.FormatOffset(Offset));
+    }
 
     public override bool Equals(object? obj) => obj is PyTimezone other && Offset.Equals(other.Offset);
 
