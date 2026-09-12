@@ -894,4 +894,50 @@ deque().pop()
             Assert.Contains(messageFragment, result.Failure?.Message, StringComparison.Ordinal);
         }
     }
+
+    [Fact]
+    public async Task DefaultDictCounterKeysQuoteLikePython()
+    {
+        // defaultdict and Counter string keys render through repr like
+        // CPython on the shared non-interpolated path, so quoting and
+        // escapes match plain-dict rendering (single-key Counter rows keep
+        // the test free of the separate most-common ordering gap).
+        var script = new LythonEngine().Compile("""
+            from collections import defaultdict, Counter
+            results = []
+            d = defaultdict(list)
+            d["it's"] = [1]
+            d["plain"] = 2
+            d[7] = 3
+            results.append(str(d))
+            results.append(repr(d))
+            c = Counter()
+            c["it's"] = 2
+            results.append(str(c))
+            results.append(repr(c))
+            e = defaultdict(list)
+            results.append(str(e))
+            results.append(repr(e))
+            results.append(f"{d}")
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "defaultdict(<class 'list'>, {\"it's\": [1], 'plain': 2, 7: 3})",
+            "defaultdict(<class 'list'>, {\"it's\": [1], 'plain': 2, 7: 3})",
+            "Counter({\"it's\": 2})",
+            "Counter({\"it's\": 2})",
+            "defaultdict(<class 'list'>, {})",
+            "defaultdict(<class 'list'>, {})",
+            "defaultdict(<class 'list'>, {\"it's\": [1], 'plain': 2, 7: 3})",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

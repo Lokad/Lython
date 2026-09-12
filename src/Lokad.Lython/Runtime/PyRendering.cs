@@ -241,9 +241,15 @@ internal static class PyRendering
 
     public static PyString RenderDictionaryKey(object key, PyRenderingContext context, bool interpolated)
     {
+        // String keys render through repr like CPython on the
+        // non-interpolated path (both live callers pass false), so quoting
+        // and escapes match plain-dict rendering; the interpolated path
+        // keeps its historical raw form.
         if (key is PyString text)
         {
-            return JoinRenderedSequence("'", [text], "'", context);
+            return interpolated
+                ? JoinRenderedSequence("'", [text], "'", context)
+                : ToReprPyString(text, context);
         }
 
         return interpolated ? ToInterpolatedPyString(key, context) : ToPythonPyString(key, context);
