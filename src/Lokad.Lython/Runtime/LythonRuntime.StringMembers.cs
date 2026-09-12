@@ -116,8 +116,8 @@ internal sealed partial class LythonRuntime
             {
                 throw new LythonRuntimeException("TypeError",
                     isStart
-                        ? "str.startswith(prefix[, start[, end]]) expects a string or tuple of strings, plus optional integer bounds."
-                        : "str.endswith(suffix[, start[, end]]) expects a string or tuple of strings, plus optional integer bounds.",
+                        ? "startswith first arg must be str or a tuple of str, not " + RuntimeErrors.OperandTypeName(prefixOrTuple)
+                        : "endswith first arg must be str or a tuple of str, not " + RuntimeErrors.OperandTypeName(prefixOrTuple),
                     span);
             }
 
@@ -127,8 +127,8 @@ internal sealed partial class LythonRuntime
                 {
                     throw new LythonRuntimeException("TypeError",
                         isStart
-                            ? $"tuple for startswith must only contain str, not {TypeName(item)}"
-                            : $"tuple for endswith must only contain str, not {TypeName(item)}",
+                            ? "tuple for startswith must only contain str, not " + RuntimeErrors.OperandTypeName(item)
+                            : "tuple for endswith must only contain str, not " + RuntimeErrors.OperandTypeName(item),
                         span);
                 }
 
