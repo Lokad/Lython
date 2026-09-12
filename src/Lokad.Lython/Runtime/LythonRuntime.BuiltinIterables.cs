@@ -436,7 +436,7 @@ internal sealed partial class LythonRuntime
 
         if (arguments[0] is not ICallable callable)
         {
-            throw new LythonRuntimeException("TypeError", "map(function, iterable, ...) expects function to be callable.", span);
+            throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.OperandTypeName(arguments[0]) + "' object is not callable", span);
         }
 
         var iterables = new object[arguments.Length - 1];
@@ -460,7 +460,7 @@ internal sealed partial class LythonRuntime
         {
             PyNone => null,
             ICallable callable => callable,
-            _ => throw new LythonRuntimeException("TypeError", "filter(function, iterable) expects function to be callable or None.", span)
+            _ => throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.OperandTypeName(arguments[0]) + "' object is not callable", span)
         };
 
         return new PyFilterIterator(function, arguments[1], context, span);
