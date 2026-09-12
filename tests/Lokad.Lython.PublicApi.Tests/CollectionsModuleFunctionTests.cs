@@ -633,7 +633,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("3|Counter({'a': 1, 'c': 3})|Counter({'d': 1})|Counter({'a': 2, 'c': 4, 'd': 1})|Counter({'c': 2})|Counter({'a': 1, 'c': 1})|Counter({'a': 1, 'c': 3, 'd': 2})|True", host.ReadText("/out.txt"));
+        Assert.Equal("3|Counter({'c': 3, 'a': 1})|Counter({'d': 1})|Counter({'c': 4, 'a': 2, 'd': 1})|Counter({'c': 2})|Counter({'a': 1, 'c': 1})|Counter({'c': 3, 'd': 2, 'a': 1})|True", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -699,7 +699,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("3.75|Counter({'a': 1.75, 'b': 2})|Counter({'a': 2})|Counter({'b': 1})", host.ReadText("/out.txt"));
+        Assert.Equal("3.75|Counter({'b': 2, 'a': 1.75})|Counter({'a': 2})|Counter({'b': 1})", host.ReadText("/out.txt"));
     }
 
     [Fact]
@@ -931,6 +931,70 @@ deque().pop()
             "defaultdict(<class 'list'>, {})",
             "defaultdict(<class 'list'>, {})",
             "defaultdict(<class 'list'>, {\"it's\": [1], 'plain': 2, 7: 3})",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task CounterReprOrdersByMostCommon()
+    {
+        // Like CPython repr, Counter entries order by most-common count
+        // with ties in insertion order, while unorderable values keep
+        // insertion order; string values render through repr on the same
+        // path (float rows and the most_common error shape stay out).
+        var script = new LythonEngine().Compile("""
+            from collections import Counter, defaultdict
+            results = []
+            c = Counter()
+            c["a"] = 3
+            c["b"] = 1
+            c["c"] = 2
+            results.append(str(c))
+            results.append(repr(c))
+            t = Counter()
+            t["x"] = 1
+            t["y"] = 1
+            t["z"] = 1
+            results.append(str(t))
+            results.append(repr(t))
+            z = Counter()
+            z["a"] = 0
+            z["n"] = -2
+            z["p"] = 5
+            results.append(str(z))
+            results.append(repr(z))
+            s = Counter()
+            s["a"] = 'x'
+            s["b"] = 1
+            results.append(str(s))
+            results.append(repr(s))
+            d = defaultdict(list)
+            d["k"] = 'v'
+            results.append(str(d))
+            results.append(repr(d))
+            results.append(str(Counter()))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "Counter({'a': 3, 'c': 2, 'b': 1})",
+            "Counter({'a': 3, 'c': 2, 'b': 1})",
+            "Counter({'x': 1, 'y': 1, 'z': 1})",
+            "Counter({'x': 1, 'y': 1, 'z': 1})",
+            "Counter({'p': 5, 'a': 0, 'n': -2})",
+            "Counter({'p': 5, 'a': 0, 'n': -2})",
+            "Counter({'a': 'x', 'b': 1})",
+            "Counter({'a': 'x', 'b': 1})",
+            "defaultdict(<class 'list'>, {'k': 'v'})",
+            "defaultdict(<class 'list'>, {'k': 'v'})",
+            "Counter()",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);

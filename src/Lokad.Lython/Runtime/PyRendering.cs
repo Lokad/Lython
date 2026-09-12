@@ -217,12 +217,12 @@ internal static class PyRendering
         return builder.ToPyStringAndRelease();
     }
 
-    public static PyString JoinRenderedDictionary(PyDict dict, PyRenderingContext context, bool interpolated)
+    public static PyString JoinRenderedDictionary(IEnumerable<KeyValuePair<object, object>> pairs, PyRenderingContext context, bool interpolated)
     {
         var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
         builder.AppendAscii("{");
         var first = true;
-        foreach (var pair in dict)
+        foreach (var pair in pairs)
         {
             if (!first)
             {
@@ -231,7 +231,17 @@ internal static class PyRendering
 
             builder.Append(RenderDictionaryKey(pair.Key, context, interpolated));
             builder.AppendAscii(": ");
-            builder.Append(interpolated ? ToInterpolatedPyString(pair.Value, context) : ToPythonPyString(pair.Value, context));
+            // String values render through repr like CPython on the
+            // non-interpolated path; every other value already renders
+            // identically through the value renderer.
+            if (pair.Value is PyString text && !interpolated)
+            {
+                builder.Append(ToReprPyString(text, context));
+            }
+            else
+            {
+                builder.Append(interpolated ? ToInterpolatedPyString(pair.Value, context) : ToPythonPyString(pair.Value, context));
+            }
             first = false;
         }
 

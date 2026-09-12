@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Linq;
 using System.Numerics;
+using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -231,10 +232,45 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
             return PyString.FromString("Counter()", context.Context.MemoryGovernor);
         }
 
-        return PyRendering.JoinRenderedSequence("Counter(", [PyRendering.JoinRenderedDictionary(_items, context, interpolated: false)], ")", context);
+        // Like CPython repr, entries order by most-common count with ties
+        // in insertion order; unorderable values fall back to insertion
+        // order instead of failing rendering.
+        List<KeyValuePair<object, object>> ordered;
+        try
+        {
+            ordered = _items
+                .OrderByDescending(pair => pair.Value, Comparer<object>.Create((left, right) => CompareCountsForRender(left, right)))
+                .ToList();
+        }
+        // OrderBy wraps comparer failures, so the fallback keys off the
+        // documented inner exception instead of the surface type.
+        catch (InvalidOperationException ex) when (ex.InnerException is LythonRuntimeException lythonFailure && lythonFailure.ExceptionType is "TypeError")
+        {
+            ordered = _items.ToList();
+        }
+
+        return PyRendering.JoinRenderedSequence("Counter(", [PyRendering.JoinRenderedDictionary(ordered, context, interpolated: false)], ")", context);
     }
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+    // Counts order numerically like most_common; strings order
+    // alphabetically like CPython sorting; anything else raises the shared
+    // not-comparable TypeError so rendering falls back to insertion order.
+    private static int CompareCountsForRender(object left, object right)
+    {
+        if (PyNumberOps.TryAsNumber(left, out var lhs) && PyNumberOps.TryAsNumber(right, out var rhs))
+        {
+            return PyNumberOps.Compare(lhs, rhs);
+        }
+
+        if (PyStringOps.TryAsString(left, out var leftText) && PyStringOps.TryAsString(right, out var rightText))
+        {
+            return PyString.CompareOrdinal(leftText, rightText);
+        }
+
+        throw new LythonRuntimeException("TypeError", "Values are not comparable.", null);
+    }
 
     public IEnumerator<KeyValuePair<object, object>> GetEnumerator() => _items.GetEnumerator();
 
