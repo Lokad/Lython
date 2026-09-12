@@ -5,6 +5,20 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class DateTimeModuleFunctionTests
 {
     [Fact]
+    public async Task DateTime_ReplaceAcceptsBoolFields()
+    {
+        const string source = "import datetime\nd = datetime.date(2024, 1, 1).replace(year=True)\nt = datetime.time(1).replace(hour=True)\nreturn str(d) + \"|\" + str(t)";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("0001-01-01|01:00:00", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("0001-01-01|01:00:00", asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task DateTime_MicrosecondsRoundTripLikeCpython()
     {
         const string source = "import datetime\nt = datetime.time(1, 2, 3, 1500)\nd = datetime.datetime(2024, 1, 1, 0, 0, 0, 999499)\nreturn str(t.microsecond) + \"|\" + str(d.microsecond) + \"|\" + t.isoformat() + \"|\" + repr(t)";
