@@ -24,38 +24,93 @@ internal static partial class PyDateTimeOps
         ]);
     }
 
-    private static DateOnly DateFromOrdinalValue(object value, string owner, LythonSourceSpan span)
+    private static DateOnly DateFromOrdinalValue(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        if (!Numbers.PyNumberOps.TryAsInteger(value, out var ordinal))
+        // Ordinals convert through __index__ to a C long like CPython;
+        // in-range values then resolve through the civil calendar with
+        // construction-shaped range texts.
+        var coerced = LythonRuntime.CoerceIndexProtocol(value, context, span);
+        if (!Numbers.PyNumberOps.TryAsInteger(coerced, out var ordinal))
         {
-            throw new LythonRuntimeException("TypeError", $"{owner}(ordinal) expects an integer ordinal.", span);
+            throw new LythonRuntimeException("TypeError", "'" + LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
         }
 
-        if (ordinal < BigInteger.One || ordinal > new BigInteger(DateOnly.MaxValue.DayNumber + 1))
+        if (ordinal > long.MaxValue || ordinal < long.MinValue)
         {
-            throw new LythonRuntimeException("ValueError", $"{owner}(ordinal) ordinal is out of range.", span);
+            throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C long", span);
+        }
+
+        if (ordinal < BigInteger.One)
+        {
+            throw new LythonRuntimeException("ValueError", "ordinal must be >= 1", span);
+        }
+
+        var year = CivilYearFromOrdinal((long)ordinal);
+        if (year < 1 || year > 9999)
+        {
+            throw new LythonRuntimeException("ValueError", $"year {year} is out of range", span);
         }
 
         return DateOnly.FromDayNumber((int)ordinal - 1);
     }
 
-    private static DateOnly DateFromIsoCalendarValue(object yearValue, object weekValue, object dayValue, string owner, LythonSourceSpan span)
+    private static long CivilYearFromOrdinal(long ordinal)
     {
-        if (!Numbers.PyNumberOps.TryAsInteger(yearValue, out var year) ||
-            !Numbers.PyNumberOps.TryAsInteger(weekValue, out var week) ||
-            !Numbers.PyNumberOps.TryAsInteger(dayValue, out var day))
+        // Ordinal day numbers are 1-based and the caller rejects values below
+        // 1, so every intermediate stays non-negative and truncating division
+        // matches the floor division in CPython ord_to_ymd. The bias converts
+        // days since 0001-01-01 to days since the civil 0000-03-01 epoch.
+        ulong z = (ulong)(ordinal - 1) + 306UL;
+        ulong era = z / 146097UL;
+        ulong doe = z - era * 146097UL;
+        ulong yoe = (doe - doe / 1460UL + doe / 36524UL - doe / 146096UL) / 365UL;
+        ulong y = yoe + era * 400UL;
+        ulong doy = doe - (365UL * yoe + yoe / 4UL - yoe / 100UL);
+        ulong mp = (5UL * doy + 2UL) / 153UL;
+        ulong m = mp < 10UL ? mp + 3UL : mp - 9UL;
+        return (long)(m <= 2UL ? y + 1UL : y);
+    }
+
+    private static DateOnly DateFromIsoCalendarValue(object yearValue, object weekValue, object dayValue, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        var year = CoerceIsoCalendarComponent(yearValue, span, context);
+        var week = CoerceIsoCalendarComponent(weekValue, span, context);
+        var day = CoerceIsoCalendarComponent(dayValue, span, context);
+
+        if (year < 1 || year > 9999)
         {
-            throw new LythonRuntimeException("TypeError", $"{owner}(year, week, day) expects integer fields.", span);
+            throw new LythonRuntimeException("ValueError", $"Year is out of range: {year}", span);
         }
 
-        try
+        if (week < 1 || week > ISOWeek.GetWeeksInYear(year))
         {
-            return DateFromIsoCalendarParts((int)year, (int)week, (int)day);
+            throw new LythonRuntimeException("ValueError", $"Invalid week: {week}", span);
         }
-        catch (ArgumentOutOfRangeException ex)
+
+        if (day < 1 || day > 7)
         {
-            throw new LythonRuntimeException("ValueError", ex.Message, span);
+            throw new LythonRuntimeException("ValueError", $"Invalid day: {day} (range is [1, 7])", span);
         }
+
+        return DateFromIsoCalendarParts(year, week, day);
+    }
+
+    private static int CoerceIsoCalendarComponent(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        // Components convert through __index__ to a C int like CPython;
+        // wider magnitudes fail with the ISO-specific range text.
+        var coerced = LythonRuntime.CoerceIndexProtocol(value, context, span);
+        if (!Numbers.PyNumberOps.TryAsInteger(coerced, out var integer))
+        {
+            throw new LythonRuntimeException("TypeError", "'" + LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
+        }
+
+        if (integer < int.MinValue || integer > int.MaxValue)
+        {
+            throw new LythonRuntimeException("ValueError", "ISO calendar component out of range", span);
+        }
+
+        return (int)integer;
     }
 
     private static DateOnly DateFromIsoCalendarParts(int year, int week, int day)

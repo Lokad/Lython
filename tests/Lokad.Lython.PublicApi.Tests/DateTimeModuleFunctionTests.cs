@@ -331,7 +331,7 @@ datetime.timedelta(days=1).total_seconds(1)
 
     [Theory]
     [InlineData("datetime.date(2024, 1, 2).isocalendar(1)", "expects no arguments")]
-    [InlineData("datetime.date.fromordinal(0)", "ordinal is out of range")]
+    [InlineData("datetime.date.fromordinal(0)", "ordinal must be >= 1")]
     [InlineData("datetime.datetime.fromtimestamp(\"x\")", "expects a real number")]
     [InlineData("datetime.timezone.utc.utcoffset()", "expects one argument")]
     [InlineData("datetime.time(1, fold=2)", "fold must be either 0 or 1")]

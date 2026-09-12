@@ -116,6 +116,17 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("import datetime\ndatetime.timedelta(days=\"a\")\n", "TypeError", "unsupported type for timedelta days component: str")]
     [InlineData("import datetime\ndatetime.timedelta(seconds=None)\n", "TypeError", "unsupported type for timedelta seconds component: NoneType")]
     [InlineData("import datetime\nclass J:\n pass\ndatetime.timedelta(days=J())\n", "TypeError", "unsupported type for timedelta days component: J")]
+    [InlineData("import datetime\ndatetime.date.fromordinal(0)\n", "ValueError", "ordinal must be >= 1")]
+    [InlineData("import datetime\ndatetime.date.fromordinal(3652060)\n", "ValueError", "year 10000 is out of range")]
+    [InlineData("import datetime\ndatetime.date.fromordinal(10**30)\n", "OverflowError", "Python int too large to convert to C long")]
+    [InlineData("import datetime\ndatetime.date.fromordinal(\"a\")\n", "TypeError", "'str' object cannot be interpreted as an integer")]
+    [InlineData("import datetime\ndatetime.datetime.fromordinal(1.0)\n", "TypeError", "'float' object cannot be interpreted as an integer")]
+    [InlineData("import datetime\ndatetime.date.fromisocalendar(2024, 1, 8)\n", "ValueError", "Invalid day: 8 (range is [1, 7])")]
+    [InlineData("import datetime\ndatetime.date.fromisocalendar(2024, 0, 1)\n", "ValueError", "Invalid week: 0")]
+    [InlineData("import datetime\ndatetime.date.fromisocalendar(2024, 53, 1)\n", "ValueError", "Invalid week: 53")]
+    [InlineData("import datetime\ndatetime.date.fromisocalendar(0, 1, 1)\n", "ValueError", "Year is out of range: 0")]
+    [InlineData("import datetime\ndatetime.date.fromisocalendar(10**30, 1, 1)\n", "ValueError", "ISO calendar component out of range")]
+    [InlineData("import datetime\ndatetime.date.fromisocalendar(\"a\", 1, 1)\n", "TypeError", "'str' object cannot be interpreted as an integer")]
     [InlineData("def f(x, y):\n return x[y]\nf([1], ...)\n", "TypeError", "list indices must be integers or slices, not ellipsis")]
     [InlineData("def f(x, y):\n return x[y]\nf((1,), ...)\n", "TypeError", "tuple indices must be integers or slices, not ellipsis")]
     [InlineData("from collections import Counter\ndef f(x, y):\n return x[y]\nf([1], Counter())\n", "TypeError", "list indices must be integers or slices, not Counter")]
@@ -267,6 +278,20 @@ __lython_file.close()
         var asyncResult = await script.RunAsync(new MockLythonHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("8 days, 1:00:00|0:00:01.500000|2|-1 day, 0:00:03|740993", asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task DateFromOrdinalIsoCalendar_RoundTrip()
+    {
+        const string source = "import datetime\nclass J:\n    def __index__(self):\n        return 5\nreturn str(datetime.date.fromordinal(1)) + \"|\" + str(datetime.date.fromordinal(3652059)) + \"|\" + str(datetime.date.fromordinal(J())) + \"|\" + str(datetime.date.fromisocalendar(2020, 53, 7)) + \"|\" + str(datetime.date.fromisocalendar(2015, 53, 7)) + \"|\" + str(datetime.datetime.fromisocalendar(2024, 1, J())) + \"|\" + str(datetime.datetime.fromordinal(737425))\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("0001-01-01|9999-12-31|0001-01-05|2021-01-03|2016-01-03|2024-01-05 00:00:00|2020-01-01 00:00:00", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("0001-01-01|9999-12-31|0001-01-05|2021-01-03|2016-01-03|2024-01-05 00:00:00|2020-01-01 00:00:00", asyncResult.ReturnValue);
     }
 
     [Fact]

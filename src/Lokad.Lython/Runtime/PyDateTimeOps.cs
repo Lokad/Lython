@@ -538,24 +538,22 @@ internal static partial class PyDateTimeOps
 
     public static object DateFromOrdinal(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 1)
         {
             throw new LythonRuntimeException("TypeError", "datetime.date.fromordinal(ordinal) expects one integer argument.", span);
         }
 
-        return OwnDateTimeValue(new PyDate(DateFromOrdinalValue(arguments[0], "datetime.date.fromordinal", span)), context, span);
+        return OwnDateTimeValue(new PyDate(DateFromOrdinalValue(arguments[0], span, context)), context, span);
     }
 
     public static object DateFromIsoCalendar(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 3)
         {
             throw new LythonRuntimeException("TypeError", "datetime.date.fromisocalendar(year, week, day) expects three integer arguments.", span);
         }
 
-        return new PyDate(DateFromIsoCalendarValue(arguments[0], arguments[1], arguments[2], "datetime.date.fromisocalendar", span));
+        return new PyDate(DateFromIsoCalendarValue(arguments[0], arguments[1], arguments[2], span, context));
     }
 
     public static object DateFromTimestamp(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -608,24 +606,22 @@ internal static partial class PyDateTimeOps
 
     public static object DateTimeFromOrdinal(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 1)
         {
             throw new LythonRuntimeException("TypeError", "datetime.datetime.fromordinal(ordinal) expects one integer argument.", span);
         }
 
-        return OwnDateTimeValue(new PyDateTime(DateFromOrdinalValue(arguments[0], "datetime.datetime.fromordinal", span).ToDateTime(TimeOnly.MinValue)), context, span);
+        return OwnDateTimeValue(new PyDateTime(DateFromOrdinalValue(arguments[0], span, context).ToDateTime(TimeOnly.MinValue)), context, span);
     }
 
     public static object DateTimeFromIsoCalendar(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 3)
         {
             throw new LythonRuntimeException("TypeError", "datetime.datetime.fromisocalendar(year, week, day) expects three integer arguments.", span);
         }
 
-        return OwnDateTimeValue(new PyDateTime(DateFromIsoCalendarValue(arguments[0], arguments[1], arguments[2], "datetime.datetime.fromisocalendar", span).ToDateTime(TimeOnly.MinValue)), context, span);
+        return OwnDateTimeValue(new PyDateTime(DateFromIsoCalendarValue(arguments[0], arguments[1], arguments[2], span, context).ToDateTime(TimeOnly.MinValue)), context, span);
     }
 
     public static object DateTimeFromTimestamp(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
