@@ -199,6 +199,10 @@ internal sealed class PyTimezone : IPyTruthyValue, IPyHashableValue, IPyRenderab
 
 internal sealed class PyDate : IPyTruthyValue, IPyHashableValue, IPyRenderableValue
 {
+    public static readonly PyDate Min = new(DateOnly.MinValue);
+    public static readonly PyDate Max = new(DateOnly.MaxValue);
+    public static readonly PyTimedelta Resolution = new(TimeSpan.FromDays(1));
+
     public PyDate(DateOnly value)
     {
         Value = value;
@@ -241,6 +245,10 @@ internal sealed class PyDate : IPyTruthyValue, IPyHashableValue, IPyRenderableVa
 
 internal sealed class PyTime : IPyTruthyValue, IPyHashableValue, IPyRenderableValue
 {
+    public static readonly PyTime Min = new(TimeOnly.MinValue);
+    public static readonly PyTime Max = new(new TimeOnly(23, 59, 59, 999).Add(TimeSpan.FromTicks(9990)));
+    public static readonly PyTimedelta Resolution = new(TimeSpan.FromTicks(10));
+
     public PyTime(TimeOnly value) : this(value, null, 0) { }
 
     public PyTime(TimeOnly value, PyTimezone? tzinfo) : this(value, tzinfo, 0) { }
@@ -325,6 +333,10 @@ internal sealed class PyTime : IPyTruthyValue, IPyHashableValue, IPyRenderableVa
 
 internal sealed class PyDateTime : IPyTruthyValue, IPyHashableValue, IPyRenderableValue
 {
+    public static readonly PyDateTime Min = new(DateTime.MinValue);
+    public static readonly PyDateTime Max = new(new DateTime(9999, 12, 31, 23, 59, 59, 999, DateTimeKind.Unspecified).AddTicks(9990));
+    public static readonly PyTimedelta Resolution = new(TimeSpan.FromTicks(10));
+
     public PyDateTime(DateTime value) : this(value, null, 0) { }
 
     public PyDateTime(DateTime value, PyTimezone? tzinfo) : this(value, tzinfo, 0) { }

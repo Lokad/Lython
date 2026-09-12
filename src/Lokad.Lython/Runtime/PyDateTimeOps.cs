@@ -199,9 +199,9 @@ internal static partial class PyDateTimeOps
         CreateDate,
         memberName => memberName switch
         {
-            "min" => new PyDate(DateOnly.MinValue),
-            "max" => new PyDate(DateOnly.MaxValue),
-            "resolution" => new PyTimedelta(TimeSpan.FromDays(1)),
+            "min" => PyDate.Min,
+            "max" => PyDate.Max,
+            "resolution" => PyDate.Resolution,
             "fromordinal" => new TypeMemberCallable("datetime.date.fromordinal", DateFromOrdinal, ["ordinal"]),
             "fromisoformat" => new TypeMemberCallable("datetime.date.fromisoformat", DateFromIsoFormat, ["date_string"]),
             "fromisocalendar" => new TypeMemberCallable("datetime.date.fromisocalendar", DateFromIsoCalendar, ["year", "week", "day"]),
@@ -215,9 +215,9 @@ internal static partial class PyDateTimeOps
         CreateTime,
         memberName => memberName switch
         {
-            "min" => new PyTime(TimeOnly.MinValue),
-            "max" => new PyTime(new TimeOnly(23, 59, 59, 999).Add(TimeSpan.FromTicks(9990))),
-            "resolution" => new PyTimedelta(TimeSpan.FromTicks(10)),
+            "min" => PyTime.Min,
+            "max" => PyTime.Max,
+            "resolution" => PyTime.Resolution,
             "fromisoformat" => new TypeMemberCallable("datetime.time.fromisoformat", TimeFromIsoFormat, ["time_string"]),
             _ => null
         });
@@ -227,9 +227,9 @@ internal static partial class PyDateTimeOps
         CreateDateTime,
         memberName => memberName switch
         {
-            "min" => new PyDateTime(DateTime.MinValue),
-            "max" => new PyDateTime(new DateTime(9999, 12, 31, 23, 59, 59, 999, DateTimeKind.Unspecified).AddTicks(9990)),
-            "resolution" => new PyTimedelta(TimeSpan.FromTicks(10)),
+            "min" => PyDateTime.Min,
+            "max" => PyDateTime.Max,
+            "resolution" => PyDateTime.Resolution,
             "combine" => new TypeMemberCallable("datetime.datetime.combine", DateTimeCombine, ["date", "time", "tzinfo"], 2),
             "fromordinal" => new TypeMemberCallable("datetime.datetime.fromordinal", DateTimeFromOrdinal, ["ordinal"]),
             "fromisoformat" => new TypeMemberCallable("datetime.datetime.fromisoformat", DateTimeFromIsoFormat, ["date_string"]),
