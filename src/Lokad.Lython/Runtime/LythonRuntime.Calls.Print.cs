@@ -158,7 +158,7 @@ internal sealed partial class LythonRuntime
                             ? DefaultPrintSeparator
                             : PyStringOps.TryAsString(argument.Value, out var separatorValue)
                                 ? separatorValue
-                                : throw new LythonRuntimeException("TypeError", "print(..., sep=...) expects a string or None.", span);
+                                : throw new LythonRuntimeException("TypeError", $"sep must be None or a string, not {RuntimeErrors.OperandTypeName(argument.Value)}", span);
                         seenSeparator = true;
                         break;
 
@@ -172,7 +172,7 @@ internal sealed partial class LythonRuntime
                             ? DefaultPrintEnding
                             : PyStringOps.TryAsString(argument.Value, out var endingValue)
                                 ? endingValue
-                                : throw new LythonRuntimeException("TypeError", "print(..., end=...) expects a string or None.", span);
+                                : throw new LythonRuntimeException("TypeError", $"end must be None or a string, not {RuntimeErrors.OperandTypeName(argument.Value)}", span);
                         seenEnding = true;
                         break;
 

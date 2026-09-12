@@ -32,6 +32,21 @@ print("tail")
     }
 
     [Fact]
+    public void Print_RejectsNonStringSepAndEndLikePython()
+    {
+        // Both invocation strata share BindArguments, so one run covers each.
+        var sep = new LythonEngine().Run("print(1, sep=1)\n", new MockLythonHost());
+        Assert.False(sep.Success);
+        Assert.Equal("TypeError", sep.Failure?.ExceptionType);
+        Assert.Equal("sep must be None or a string, not int", sep.Failure?.Message);
+
+        var end = new LythonEngine().Run("print(1, end=1.5)\n", new MockLythonHost());
+        Assert.False(end.Success);
+        Assert.Equal("TypeError", end.Failure?.ExceptionType);
+        Assert.Equal("end must be None or a string, not float", end.Failure?.Message);
+    }
+
+    [Fact]
     public void Print_SupportsSysStderr()
     {
         var host = new MockLythonHost();
