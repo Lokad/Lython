@@ -28,9 +28,14 @@ internal sealed partial class LythonRuntime
                             return PyStringOps.SplitWhitespace(text, maxSplit, context.MemoryGovernor, span);
                         }
 
-                        if (arguments.Length is < 1 or > 2 || !PyStringOps.TryAsString(arguments[0], out var separator))
+                        if (arguments.Length > 2)
                         {
                             throw new LythonRuntimeException("TypeError", "str.split([sep[, maxsplit]]) expects zero, one, or two arguments with string separator and optional integer maxsplit.", span);
+                        }
+
+                        if (!PyStringOps.TryAsString(arguments[0], out var separator))
+                        {
+                            throw new LythonRuntimeException("TypeError", "must be str or None, not " + RuntimeErrors.OperandTypeName(arguments[0]), span);
                         }
 
                         maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.split([sep[, maxsplit]])", span, context) : -1;
@@ -57,9 +62,14 @@ internal sealed partial class LythonRuntime
                             return PyStringOps.RSplitWhitespace(text, maxSplit, context.MemoryGovernor, span);
                         }
 
-                        if (arguments.Length is < 1 or > 2 || !PyStringOps.TryAsString(arguments[0], out var separator))
+                        if (arguments.Length > 2)
                         {
                             throw new LythonRuntimeException("TypeError", "str.rsplit([sep[, maxsplit]]) expects zero, one, or two arguments with string separator and optional integer maxsplit.", span);
+                        }
+
+                        if (!PyStringOps.TryAsString(arguments[0], out var separator))
+                        {
+                            throw new LythonRuntimeException("TypeError", "must be str or None, not " + RuntimeErrors.OperandTypeName(arguments[0]), span);
                         }
 
                         maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.rsplit([sep[, maxsplit]])", span, context) : -1;
