@@ -108,7 +108,7 @@ internal sealed partial class LythonRuntime
                         }
                         catch (KeyNotFoundException ex)
                         {
-                            throw new LythonRuntimeException("KeyError", ex.Message, span);
+                            throw new LythonRuntimeException("KeyError", ex.Message, span, null, PyString.FromString(ex.Message, context.MemoryGovernor, span));
                         }
                     }),
                     "format_map" => BoundCallable.Create((arguments, span, context) =>
@@ -140,7 +140,7 @@ internal sealed partial class LythonRuntime
                         }
                         catch (KeyNotFoundException ex)
                         {
-                            throw new LythonRuntimeException("KeyError", ex.Message, span);
+                            throw new LythonRuntimeException("KeyError", ex.Message, span, null, PyString.FromString(ex.Message, context.MemoryGovernor, span));
                         }
                     }, "str.format_map", ["mapping"]),
                     _ => MissingMemberValue.Instance,

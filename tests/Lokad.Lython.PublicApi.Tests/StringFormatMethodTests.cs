@@ -462,4 +462,45 @@ __lython_file.close()
         Assert.NotNull(result.Failure);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
     }
+
+    [Fact]
+    public async Task FormatMissingKeyCarriesKey()
+    {
+        // str.format and str.format_map misses carry the field name like
+        // CPython, so str renders the key through repr and args holds it.
+        var script = new LythonEngine().Compile("""
+            results = []
+            try:
+                '{x}'.format(y=1)
+            except KeyError as e:
+                results.append(str(e))
+                results.append(e.args == ('x',))
+            try:
+                '{x}'.format_map({'y': 1})
+            except KeyError as e:
+                results.append(str(e))
+                results.append(e.args == ('x',))
+            results.append('{x}'.format(x=1))
+            results.append('{x}'.format_map({'x': 2}))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "'x'", true, "'x'", true, "1", "2",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+
+        var failure = new LythonEngine().Run("return '{x}'.format(y=1)", new MockLythonHost());
+        Assert.False(failure.Success);
+        Assert.NotNull(failure.Failure);
+        Assert.Equal("KeyError", failure.Failure?.ExceptionType);
+        Assert.Equal("'x'", failure.Failure?.Message);
+    }
 }
