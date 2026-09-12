@@ -89,14 +89,14 @@ internal sealed partial class LythonRuntime
                 return defaultValue.Value;
             }
 
-            throw new LythonRuntimeException("ValueError", $"{operationName}() arg is an empty sequence", span);
+            throw new LythonRuntimeException("ValueError", $"{operationName}() iterable argument is empty", span);
         }
 
         var best = enumerator.Current;
         var keyCallable = keyArgument as ICallable;
         if (keyArgument is not null && keyCallable is null)
         {
-            throw new LythonRuntimeException("TypeError", $"{operationName}() key must be callable or None", span);
+            throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.OperandTypeName(keyArgument) + "' object is not callable", span);
         }
 
         var bestKey = keyCallable is null
@@ -137,13 +137,13 @@ internal sealed partial class LythonRuntime
                 return defaultValue.Value;
             }
 
-            throw new LythonRuntimeException("ValueError", $"{operationName}() arg is an empty sequence", span);
+            throw new LythonRuntimeException("ValueError", $"{operationName}() iterable argument is empty", span);
         }
 
         var keyCallable = keyArgument as ICallable;
         if (keyArgument is not null && keyCallable is null)
         {
-            throw new LythonRuntimeException("TypeError", $"{operationName}() key must be callable or None", span);
+            throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.OperandTypeName(keyArgument) + "' object is not callable", span);
         }
 
         var bestKey = keyCallable is null
@@ -181,7 +181,7 @@ internal sealed partial class LythonRuntime
         var keyCallable = keyArgument as ICallable;
         if (keyArgument is not null && keyCallable is null)
         {
-            throw new LythonRuntimeException("TypeError", "min()/max() key must be callable or None", span);
+            throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.OperandTypeName(keyArgument) + "' object is not callable", span);
         }
 
         var best = values[0];

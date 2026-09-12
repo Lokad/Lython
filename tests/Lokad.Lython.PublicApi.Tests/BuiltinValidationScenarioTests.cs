@@ -5,8 +5,11 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class BuiltinValidationScenarioTests
 {
     [Theory]
-    [InlineData("min([])\n", "ValueError", "empty sequence")]
-    [InlineData("max([])\n", "ValueError", "empty sequence")]
+    [InlineData("min([])\n", "ValueError", "min() iterable argument is empty")]
+    [InlineData("max([])\n", "ValueError", "max() iterable argument is empty")]
+    [InlineData("min([1], key=1)\n", "TypeError", "'int' object is not callable")]
+    [InlineData("max([1], key=1)\n", "TypeError", "'int' object is not callable")]
+    [InlineData("min(1, 2, key=1)\n", "TypeError", "'int' object is not callable")]
     [InlineData("range(1, 2, 0)\n", "ValueError", "must not be zero")]
     [InlineData("int(\"bad\")\n", "ValueError", "invalid literal")]
     [InlineData("float(\"bad\")\n", "ValueError", "could not convert string to float: 'bad'")]
