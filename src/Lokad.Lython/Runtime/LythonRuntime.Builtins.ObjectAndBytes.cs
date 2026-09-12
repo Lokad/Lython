@@ -650,8 +650,14 @@ internal sealed partial class LythonRuntime
                 return PyNone.Instance;
             }
 
-            // Other receivers follow statement deletion; anything else has no
-            // attribute table to delete from.
+            // Other receivers follow statement deletion, except that
+            // object.__delattr__ refuses type objects like CPython; anything
+            // else has no attribute table to delete from.
+            if (arguments[0].Value is PyType)
+            {
+                throw new LythonRuntimeException("TypeError", "can't apply this __delattr__ to type object", span);
+            }
+
             if (PyMemberAccess.TryDelete(arguments[0].Value, memberName, context, span))
             {
                 return PyNone.Instance;

@@ -946,6 +946,92 @@ __lython_file.close()
     }
 
     [Fact]
+    public void DeleteClassAttributeTargets_RunLikePython()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+class Widget:
+    size = 5
+    def render(self):
+        pass
+del Widget.size
+del Widget.render
+
+class Gadget:
+    tink = 1
+delattr(Gadget, "tink")
+
+texts = []
+texts.append(str(hasattr(Widget, "size")))
+texts.append(str(hasattr(Widget, "render")))
+texts.append(str(hasattr(Gadget, "tink")))
+
+class Base:
+    legacy = 5
+class Child(Base):
+    pass
+try:
+    del Child.legacy
+except AttributeError as e:
+    texts.append(str(e))
+texts.append(str(hasattr(Base, "legacy")))
+
+from dataclasses import dataclass, fields
+@dataclass(frozen=True)
+class Frozen:
+    mark: int = 1
+del Frozen.mark
+texts.append(str(hasattr(Frozen, "mark")))
+texts.append(str([f.name for f in fields(Frozen)]))
+texts.append(str(Frozen()))
+
+class Cookie:
+    "Baked fresh."
+    flavor = "mint"
+try:
+    del Cookie.__doc__
+except TypeError as e:
+    texts.append(str(e))
+texts.append(str(hasattr(Cookie, "__doc__")))
+
+class Jar:
+    beans = 5
+try:
+    object.__delattr__(Jar, "beans")
+except TypeError as e:
+    texts.append(str(e))
+texts.append(str(hasattr(Jar, "beans")))
+
+class Cup:
+    water = 5
+del Cup.water
+cup = Cup()
+try:
+    cup.water
+except AttributeError as e:
+    texts.append(str(e))
+
+def run():
+    class Local:
+        glow = 5
+    del Local.glow
+    return str(hasattr(Local, "glow"))
+
+texts.append(run())
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(texts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Null(result.Failure);
+        Assert.Equal("False|False|False|type object 'Child' has no attribute 'legacy'|True|False|['mark']|Frozen(mark=1)|cannot delete '__doc__' attribute of immutable type 'Cookie'|True|can't apply this __delattr__ to type object|True|'Cup' object has no attribute 'water'|False", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void ReadOnlyMemberTargets_ReportPythonTexts()
     {
         var host = new MockLythonHost();

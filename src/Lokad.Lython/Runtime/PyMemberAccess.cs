@@ -292,6 +292,17 @@ internal static class PyMemberAccess
             throw ImmutableTypeError(target, memberName, span);
         }
 
+        if (target is PyType type && type.TryGetOwnMember(memberName, out _))
+        {
+            if (memberName == "__doc__")
+            {
+                throw new LythonRuntimeException("TypeError", $"cannot delete '__doc__' attribute of immutable type '{type.Name}'", span);
+            }
+
+            type.RemoveOwnMember(memberName);
+            return true;
+        }
+
         ThrowIfReadOnlyBuiltinMember(target, memberName, span, context);
 
         return false;
