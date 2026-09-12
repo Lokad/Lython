@@ -142,11 +142,11 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
-        private static PyString? RequireFillChar(object value, string signature, LythonSourceSpan span)
+        private static PyString? RequireFillChar(object value, LythonSourceSpan span)
         {
             if (!PyStringOps.TryAsString(value, out var fill))
             {
-                throw new LythonRuntimeException("TypeError", $"{signature} expects fillchar to be a string.", span);
+                throw new LythonRuntimeException("TypeError", "The fill character must be a unicode character, not " + RuntimeErrors.OperandTypeName(value), span);
             }
 
             return fill;

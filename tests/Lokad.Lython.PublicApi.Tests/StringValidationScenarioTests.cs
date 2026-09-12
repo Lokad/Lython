@@ -57,7 +57,7 @@ public sealed class StringValidationScenarioTests
     [InlineData("\"hello\".zfill()\n", "str.zfill(width) expects one argument.")]
     [InlineData("\"hello\".expandtabs(1, 2)\n", "str.expandtabs([tabsize]) expects zero or one argument.")]
     [InlineData("\"hello\".center(5, \"..\")\n", "The fill character must be exactly one character long")]
-    [InlineData("\"hello\".ljust(5, 1)\n", "expects fillchar to be a string.")]
+    [InlineData("\"hello\".ljust(5, 1)\n", "The fill character must be a unicode character, not int")]
     [InlineData("\"hello\".rjust(5, \"..\")\n", "The fill character must be exactly one character long")]
     [InlineData("\"hello\".zfill(\"5\")\n", "'str' object cannot be interpreted as an integer")]
     [InlineData("\"a\\tb\".expandtabs(\"2\")\n", "'str' object cannot be interpreted as an integer")]

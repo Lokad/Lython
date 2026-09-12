@@ -70,7 +70,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         var width = ParseStringOptionalInt(arguments[0], "width", signature, span, context);
-                        var fill = arguments.Length == 2 ? RequireFillChar(arguments[1], signature, span) : null;
+                        var fill = arguments.Length == 2 ? RequireFillChar(arguments[1], span) : null;
                         try
                         {
                             return OwnMethodResult(operation(text, width, fill), text, context.MemoryGovernor, span);
