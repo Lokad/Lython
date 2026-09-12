@@ -176,6 +176,59 @@ return "|".join(values)
             result.ReturnValue);
     }
 
+    [Theory]
+    [InlineData("time.asctime((2024, 1, 2, 3, 4, 5, 0, 0, 2.5))\n", "TypeError", "'float' object cannot be interpreted as an integer")]
+    [InlineData("time.asctime((10**30, 1, 2, 3, 4, 5, 0, 0, 0))\n", "OverflowError", "Python int too large to convert to C long")]
+    [InlineData("time.ctime((1, 2))\n", "TypeError", "'tuple' object cannot be interpreted as an integer")]
+    [InlineData("time.localtime(\"a\")\n", "TypeError", "'str' object cannot be interpreted as an integer")]
+    public void TimeTupleFailures_ReportExactErrors(string expression, string exceptionType, string messageFragment)
+    {
+        var result = new LythonEngine().Run("import time\n" + expression, new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal(exceptionType, result.Failure?.ExceptionType);
+        Assert.Contains(messageFragment, result.Failure?.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("time.asctime((1, 2))", "asctime(): illegal time tuple argument")]
+    [InlineData("time.mktime((1, 2))", "mktime(): illegal time tuple argument")]
+    [InlineData("time.strftime(\"%Y\", (1, 2))", "strftime(): illegal time tuple argument")]
+    public async Task TimeTupleArityErrorsSpellBareNames(string expression, string message)
+    {
+        var source = "import time\nreturn " + expression + "\n";
+        var sync = new LythonEngine().Run(source, new MockLythonHost());
+        Assert.False(sync.Success);
+        Assert.Equal("TypeError", sync.Failure?.ExceptionType);
+        Assert.Equal(message, sync.Failure?.Message);
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.False(asyncResult.Success);
+        Assert.Equal("TypeError", asyncResult.Failure?.ExceptionType);
+        Assert.Equal(message, asyncResult.Failure?.Message);
+    }
+
+    [Fact]
+    public async Task TimeTupleMembersDistinguishShapes()
+    {
+        var script = new LythonEngine().Compile("""
+            import time
+            class J:
+                def __index__(self):
+                    return 0
+            return str(time.ctime(J())) + "|" + str(time.strptime("2024-01-02 GMT", "%Y-%m-%d %Z").tm_isdst) + "|" + str(time.strptime("2024-01-02", "%Y-%m-%d").tm_isdst) + "|" + str(time.asctime((2024, 1, 2, 3, 4, 5, 0, 0, 0))) + "|" + str(time.mktime((2024, 1, 2, 3, 4, 5, 0, 0, -1)))
+            """);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("Thu Jan  1 01:00:00 1970|0|-1|Mon Jan  2 03:04:05 2024|1704161045.0", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("Thu Jan  1 01:00:00 1970|0|-1|Mon Jan  2 03:04:05 2024|1704161045.0", asyncResult.ReturnValue);
+    }
+
     [Fact]
     public void StaticContractsRecognizeTimeAndItsCallShapes()
     {

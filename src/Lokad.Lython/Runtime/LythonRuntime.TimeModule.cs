@@ -268,7 +268,7 @@ internal sealed partial class LythonRuntime
             }
             else
             {
-                utc = TimestampToInstant(arguments[0], "time.gmtime", span).UtcDateTime;
+                utc = TimestampToInstant(arguments[0], span, context).UtcDateTime;
             }
 
             return TimeStructTimeValue.FromDateTime(
@@ -294,7 +294,7 @@ internal sealed partial class LythonRuntime
             else
             {
                 offset = localNow.Offset;
-                local = TimestampToInstant(arguments[0], "time.localtime", span).ToOffset(offset);
+                local = TimestampToInstant(arguments[0], span, context).ToOffset(offset);
             }
 
             return TimeStructTimeValue.FromDateTime(
@@ -309,12 +309,12 @@ internal sealed partial class LythonRuntime
         private static object Ctime(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var local = (TimeStructTimeValue)Localtime(arguments, span, context);
-            return PyString.FromString(FormatAsctime(ReadTimeTuple(local, "time.ctime", span)), context.MemoryGovernor, span);
+            return PyString.FromString(FormatAsctime(ReadTimeTuple(local, "time.ctime", span, context)), context.MemoryGovernor, span);
         }
 
         private static object Mktime(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var fields = ReadTimeTuple(arguments[0], "time.mktime", span);
+            var fields = ReadTimeTuple(arguments[0], "time.mktime", span, context);
             var local = CreateDateTime(fields, "time.mktime", span);
             try
             {
@@ -333,11 +333,11 @@ internal sealed partial class LythonRuntime
             TimeFields fields;
             if (arguments.Length == 0)
             {
-                fields = ReadTimeTuple(Localtime([], span, context), "time.asctime", span);
+                fields = ReadTimeTuple(Localtime([], span, context), "time.asctime", span, context);
             }
             else
             {
-                fields = ReadTimeTuple(arguments[0], "time.asctime", span);
+                fields = ReadTimeTuple(arguments[0], "time.asctime", span, context);
             }
 
             return PyString.FromString(FormatAsctime(fields), context.MemoryGovernor, span);
@@ -353,11 +353,11 @@ internal sealed partial class LythonRuntime
             TimeFields fields;
             if (arguments.Length < 2)
             {
-                fields = ReadTimeTuple(Localtime([], span, context), "time.strftime", span);
+                fields = ReadTimeTuple(Localtime([], span, context), "time.strftime", span, context);
             }
             else
             {
-                fields = ReadTimeTuple(arguments[1], "time.strftime", span);
+                fields = ReadTimeTuple(arguments[1], "time.strftime", span, context);
             }
 
             var dateTime = CreateDateTime(fields, "time.strftime", span);
@@ -392,7 +392,7 @@ internal sealed partial class LythonRuntime
                 object offset = parsed.TzInfo is null
                     ? PyNone.Instance
                     : new BigInteger((long)parsed.TzInfo.Offset.TotalSeconds);
-                return TimeStructTimeValue.FromDateTime(parsed.Value, -1, zone, offset, context, span);
+                return TimeStructTimeValue.FromDateTime(parsed.Value, HasZoneDirective(format) ? 0 : -1, zone, offset, context, span);
             }
             catch (FormatException ex)
             {
@@ -407,11 +407,39 @@ internal sealed partial class LythonRuntime
         private static double UnixSeconds(DateTimeOffset value)
             => (value.UtcDateTime.Ticks - DateTime.UnixEpoch.Ticks) / (double)TimeSpan.TicksPerSecond;
 
-        private static DateTimeOffset TimestampToInstant(object value, string owner, LythonSourceSpan span)
+        private static bool HasZoneDirective(string format)
         {
-            if (!PyNumberOps.TryAsNumber(value, out var number))
+            // A matched %Z reports daylight state like CPython; escaped
+            // percents do not count.
+            for (var index = 0; index + 1 < format.Length; index++)
             {
-                throw new LythonRuntimeException("TypeError", $"{owner}([secs]) expects a real number or None.", span);
+                if (format[index] != '%')
+                {
+                    continue;
+                }
+
+                if (format[index + 1] == '%')
+                {
+                    index++;
+                    continue;
+                }
+
+                if (format[index + 1] == 'Z')
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        private static DateTimeOffset TimestampToInstant(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            // Timestamps convert through __index__ like CPython; remaining
+            // rejections name the original type instead of the factory.
+            var coerced = LythonRuntime.CoerceIndexProtocol(value, context, span);
+            if (!PyNumberOps.TryAsNumber(coerced, out var number))
+            {
+                throw new LythonRuntimeException("TypeError", "'" + LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
             }
 
             var seconds = number.ToDouble();
@@ -436,7 +464,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static TimeFields ReadTimeTuple(object value, string owner, LythonSourceSpan span)
+        private static TimeFields ReadTimeTuple(object value, string owner, LythonSourceSpan span, ExecutionContext context)
         {
             IReadOnlyList<object> sequence = value switch
             {
@@ -449,28 +477,36 @@ internal sealed partial class LythonRuntime
 
             if (sequence.Count != 9)
             {
-                throw new LythonRuntimeException("TypeError", $"{owner}(): illegal time tuple argument", span);
+                throw new LythonRuntimeException("TypeError", $"{LythonRuntime.BuiltinCallable.ShortCallableName(owner)}(): illegal time tuple argument", span);
             }
 
             return new TimeFields(
-                IntegerField(sequence[0], owner, span),
-                IntegerField(sequence[1], owner, span),
-                IntegerField(sequence[2], owner, span),
-                IntegerField(sequence[3], owner, span),
-                IntegerField(sequence[4], owner, span),
-                IntegerField(sequence[5], owner, span),
-                IntegerField(sequence[6], owner, span),
-                IntegerField(sequence[7], owner, span),
-                IntegerField(sequence[8], owner, span),
+                IntegerField(sequence[0], span, context),
+                IntegerField(sequence[1], span, context),
+                IntegerField(sequence[2], span, context),
+                IntegerField(sequence[3], span, context),
+                IntegerField(sequence[4], span, context),
+                IntegerField(sequence[5], span, context),
+                IntegerField(sequence[6], span, context),
+                IntegerField(sequence[7], span, context),
+                IntegerField(sequence[8], span, context),
                 value is TimeStructTimeValue timeValue ? timeValue.Zone : PyNone.Instance,
                 value is TimeStructTimeValue offsetValue ? offsetValue.GmtOffset : PyNone.Instance);
         }
 
-        private static int IntegerField(object value, string owner, LythonSourceSpan span)
+        private static int IntegerField(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            if (!PyNumberOps.TryAsInteger(value, out var integer) || integer < int.MinValue || integer > int.MaxValue)
+            // Tuple fields convert through __index__ like CPython; the range
+            // follows the int32 C-long convention used across the runtime.
+            var coerced = LythonRuntime.CoerceIndexProtocol(value, context, span);
+            if (!PyNumberOps.TryAsInteger(coerced, out var integer))
             {
-                throw new LythonRuntimeException("TypeError", $"{owner}() requires integer time tuple fields.", span);
+                throw new LythonRuntimeException("TypeError", "'" + LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
+            }
+
+            if (integer < int.MinValue || integer > int.MaxValue)
+            {
+                throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C long", span);
             }
 
             return (int)integer;
@@ -513,7 +549,7 @@ internal sealed partial class LythonRuntime
         {
             if (fields.GmtOffset is not PyNone)
             {
-                var seconds = IntegerField(fields.GmtOffset, "time.strftime", span);
+                var seconds = IntegerField(fields.GmtOffset, span, context);
                 try
                 {
                     var name = PyStringOps.TryAsString(fields.Zone, out var zone) ? zone.AsString() : string.Empty;
