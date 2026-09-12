@@ -247,6 +247,32 @@ internal static class PyMemberAccess
             }
         }
 
+        if (target is PyException exception)
+        {
+            // __notes__ keeps its pinned read-only contract; full slot
+            // semantics land separately.
+            if (memberName == "__notes__")
+            {
+                return false;
+            }
+
+            // Assigned args replace the construction slot without entering
+            // the dict, so __dict__ stays clean like CPython.
+            if (memberName == "args")
+            {
+                var items = LythonRuntime.ToSequence(value, span, context);
+                var tuple = new PyTuple(items, context.MemoryGovernor, span);
+                context.ObserveCollectionCount(tuple.Count, span);
+                exception.ArgsOverride = tuple;
+                return true;
+            }
+
+            exception.CustomDict ??= new PyDict(context.MemoryGovernor, span);
+            exception.CustomDict.AttachMemoryGovernor(context.MemoryGovernor, span);
+            exception.CustomDict.SetItem(PyString.FromString(memberName, context.MemoryGovernor, span), value);
+            return true;
+        }
+
         if (IsImmutableBuiltinType(target, context))
         {
             throw ImmutableTypeError(target, memberName, span);
@@ -301,6 +327,27 @@ internal static class PyMemberAccess
 
             type.RemoveOwnMember(memberName);
             return true;
+        }
+
+        if (target is PyException exceptionDelete)
+        {
+            if (memberName == "args")
+            {
+                throw new LythonRuntimeException("TypeError", "args may not be deleted", span);
+            }
+
+            if (memberName == "__dict__")
+            {
+                throw new LythonRuntimeException("TypeError", "cannot delete __dict__", span);
+            }
+
+            if (exceptionDelete.CustomDict is not null &&
+                exceptionDelete.CustomDict.Remove(PyString.FromString(memberName)))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         ThrowIfReadOnlyBuiltinMember(target, memberName, span, context);

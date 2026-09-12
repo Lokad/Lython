@@ -736,6 +736,12 @@ internal sealed partial class LythonRuntime
 
                 return result;
 
+            case PyException exceptionVars:
+                // vars(e) is the live __dict__ like CPython.
+                exceptionVars.CustomDict ??= new PyDict(context.MemoryGovernor, span);
+                exceptionVars.CustomDict.AttachMemoryGovernor(context.MemoryGovernor, span);
+                return exceptionVars.CustomDict;
+
             default:
                 throw new LythonRuntimeException("TypeError", "vars(object) expects an object with a Python-shaped attribute dictionary.", span);
         }
@@ -797,10 +803,22 @@ internal sealed partial class LythonRuntime
                 names.Add("step");
                 return names;
 
-            case PyException:
+            case PyException exceptionDir:
                 names.Add("args");
                 names.Add("message");
                 names.Add("type");
+                names.Add("__dict__");
+                if (exceptionDir.CustomDict is not null)
+                {
+                    foreach (var key in exceptionDir.CustomDict.Keys)
+                    {
+                        if (key is PyString keyText)
+                        {
+                            names.Add(keyText.AsString());
+                        }
+                    }
+                }
+
                 return names;
 
             case PyString:

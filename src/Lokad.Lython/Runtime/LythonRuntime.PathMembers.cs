@@ -51,6 +51,16 @@ internal sealed partial class LythonRuntime
     {
         public static bool TryGetMember(PyException exception, string name, [MaybeNullWhen(false)] out object value)
         {
+            // Custom attributes shadow fixed members like CPython (method
+            // shadowing included); the args slot and __dict__ stay separate.
+            if (name != "args" && name != "__dict__" &&
+                exception.CustomDict is not null &&
+                exception.CustomDict.TryGetValue(PyString.FromString(name), out var customValue))
+            {
+                value = customValue;
+                return true;
+            }
+
             value = name switch
             {
                 "type" => PyString.FromString(exception.TypeName),
@@ -90,7 +100,24 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span,
             [MaybeNullWhen(false)] out object value)
         {
-            _ = span;
+            if (name == "__dict__")
+            {
+                exception.CustomDict ??= new PyDict(context.MemoryGovernor, span);
+                exception.CustomDict.AttachMemoryGovernor(context.MemoryGovernor, span);
+                value = exception.CustomDict;
+                return true;
+            }
+
+            // Contextual reads repeat the custom check so __dict__-first ordering
+            // holds even when the non-contextual fast path missed it.
+            if (name != "args" &&
+                exception.CustomDict is not null &&
+                exception.CustomDict.TryGetValue(PyString.FromString(name), out var customValue))
+            {
+                value = customValue;
+                return true;
+            }
+
             if (name == "__class__" &&
                 exception.Identity.IsBuiltin &&
                 context.TryGetBuiltin(exception.Identity.TypeName, out var typeValue) &&
@@ -160,6 +187,11 @@ internal sealed partial class LythonRuntime
 
         private static PyTuple CreateExceptionArgs(PyException exception)
         {
+            if (exception.ArgsOverride is not null)
+            {
+                return exception.ArgsOverride;
+            }
+
             if (exception.ExplicitArgs is not null)
             {
                 return exception.ExplicitArgs;

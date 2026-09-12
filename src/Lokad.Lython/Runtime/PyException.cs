@@ -30,4 +30,13 @@ internal sealed record PyException(
 
     // Notes accumulate through add_note and back the __notes__ list.
     public PyList? Notes { get; set; }
+
+    // Custom attributes live in a governed dict like CPython's instance
+    // __dict__; reads check it before fixed members so assignments shadow,
+    // while the args slot stays separate like CPython.
+    public PyDict? CustomDict { get; set; }
+
+    // Assigned args replace the construction slot without entering the dict,
+    // so __dict__ stays clean like CPython.
+    public PyTuple? ArgsOverride { get; set; }
 }

@@ -1032,6 +1032,78 @@ __lython_file.close()
     }
 
     [Fact]
+    public void ExceptionAttributeTargets_RunLikePython()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+e = ValueError("x")
+texts = []
+texts.append(str(e.custom if hasattr(e, "custom") else "missing"))
+e.custom = 1
+texts.append(str(e.custom))
+texts.append(str(e.__dict__))
+texts.append(str(vars(e) is e.__dict__))
+texts.append(str(e.__dict__ is e.__dict__))
+texts.append(str(e.args))
+e.args = (2,)
+texts.append(str(e.args))
+texts.append(str(e.__dict__))
+e.args = [1, 2]
+texts.append(str(e.args))
+e.__dict__["via_dict"] = 2
+texts.append(str(e.via_dict))
+texts.append(str("custom" in dir(e)))
+texts.append(str("__dict__" in dir(e)))
+f = ValueError("x")
+f.custom = 1
+del f.custom
+texts.append(str(f.__dict__))
+texts.append(str(hasattr(f, "custom")))
+try:
+    del f.custom
+except AttributeError as ex:
+    texts.append(str(ex))
+try:
+    del f.args
+except TypeError as ex:
+    texts.append(str(ex))
+try:
+    del f.__dict__
+except TypeError as ex:
+    texts.append(str(ex))
+setattr(f, "k", 5)
+texts.append(str(f.k))
+delattr(f, "k")
+texts.append(str(hasattr(f, "k")))
+object.__setattr__(f, "j", 6)
+texts.append(str(f.j))
+object.__delattr__(f, "j")
+texts.append(str(hasattr(f, "j")))
+f.add_note = 1
+texts.append(str(f.add_note))
+del f.add_note
+texts.append(str(callable(f.add_note)))
+
+def run():
+    local = ValueError("z")
+    local.mark = 7
+    return str(local.mark) + "|" + str(local.__dict__)
+
+texts.append(run())
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(texts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Null(result.Failure);
+        Assert.Equal("missing|1|{'custom': 1}|True|True|('x',)|(2,)|{'custom': 1}|(1, 2)|2|True|True|{}|False|'ValueError' object has no attribute 'custom'|args may not be deleted|cannot delete __dict__|5|False|6|False|1|True|7|{'mark': 7}", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void ReadOnlyMemberTargets_ReportPythonTexts()
     {
         var host = new MockLythonHost();
