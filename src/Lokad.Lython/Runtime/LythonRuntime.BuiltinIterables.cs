@@ -130,6 +130,11 @@ internal sealed partial class LythonRuntime
             return protocolResult;
         }
 
+        if (arguments[0] is PyTimedelta || arguments[1] is PyTimedelta)
+        {
+            throw RuntimeErrors.UnsupportedOperands("divmod()", arguments[0], arguments[1], span);
+        }
+
         try
         {
             return new PyTuple(

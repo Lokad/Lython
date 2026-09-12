@@ -378,7 +378,7 @@ internal sealed partial class LythonRuntime
     {
         if (left is PyTimedelta || right is PyTimedelta)
         {
-            var floored = PyDateTimeOps.FloorDivide(left, right, context, span);
+            var floored = PyDateTimeOps.FloorDivide(left, right, context, span, operation);
             return floored is BigInteger flooredInteger
                 ? OwnHeapInteger(flooredInteger, context.MemoryGovernor, span)
                 : floored;
