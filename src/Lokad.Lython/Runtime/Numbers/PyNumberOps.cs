@@ -260,7 +260,41 @@ internal static class PyNumberOps
     public static BigInteger BitwiseNot(BigInteger integer) => ~integer;
 
     public static BigInteger ParseInteger(string text)
-        => BigInteger.Parse(text.Replace("_", string.Empty, StringComparison.Ordinal), CultureInfo.InvariantCulture);
+    {
+        var digits = text.Replace("_", string.Empty, StringComparison.Ordinal);
+        if (digits.Length > 2 && digits[0] == '0')
+        {
+            var radix = digits[1] switch
+            {
+                'x' or 'X' => 16,
+                'o' or 'O' => 8,
+                'b' or 'B' => 2,
+                _ => 0,
+            };
+
+            if (radix != 0)
+            {
+                var magnitude = BigInteger.Zero;
+                foreach (var digit in digits.Substring(2))
+                {
+                    magnitude = magnitude * radix + DigitValue(digit);
+                }
+
+                return magnitude;
+            }
+        }
+
+        return BigInteger.Parse(digits, CultureInfo.InvariantCulture);
+    }
+
+    private static int DigitValue(char digit)
+        => digit switch
+        {
+            >= '0' and <= '9' => digit - '0',
+            >= 'a' and <= 'f' => digit - 'a' + 10,
+            >= 'A' and <= 'F' => digit - 'A' + 10,
+            _ => throw new InvalidOperationException($"Non-hex digit {digit} in prefixed integer literal."),
+        };
 
     public static double ParseFloat(string text)
         => double.Parse(text.Replace("_", string.Empty, StringComparison.Ordinal), CultureInfo.InvariantCulture);

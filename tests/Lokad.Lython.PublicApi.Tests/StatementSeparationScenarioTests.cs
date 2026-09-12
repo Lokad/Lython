@@ -35,7 +35,7 @@ public sealed class StatementSeparationScenarioTests
         var cases = new List<string>
         {
             "x = 1x\n",
-            "x = 0x1F\n",
+            "x = 0xFG\n",
             "x = 1j\n",
             "x = 1x = 2\n",
         };

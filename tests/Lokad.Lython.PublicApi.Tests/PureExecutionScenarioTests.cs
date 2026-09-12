@@ -7645,4 +7645,18 @@ __lython_file.close()
         Assert.Equal("ValueError", result.Failure?.ExceptionType);
         Assert.Contains(message, result.Failure?.Message, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public async Task NonDecimalIntegerLiterals_EvaluateLikeCpython()
+    {
+        const string source = "return str([0xFF, 0o17, 0b101, 0X1A, 0O7, 0B1, 0x_FF, 0b_101, 0x1_2, -0x10, 0xFFFFFFFFFFFFFFFFFF, 0b101 + 0o10 + 9])";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("[255, 15, 5, 26, 7, 1, 255, 5, 18, -16, 4722366482869645213695, 22]", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("[255, 15, 5, 26, 7, 1, 255, 5, 18, -16, 4722366482869645213695, 22]", asyncResult.ReturnValue);
+    }
 }
