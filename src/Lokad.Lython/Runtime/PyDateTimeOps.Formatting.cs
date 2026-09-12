@@ -31,7 +31,7 @@ internal static partial class PyDateTimeOps
     {
         return timespec switch
         {
-            "auto" => value.Microsecond == 0
+            "auto" => value.Millisecond == 0 && value.Microsecond == 0
                 ? value.ToString("HH:mm:ss", CultureInfo.InvariantCulture)
                 : value.ToString("HH:mm:ss.ffffff", CultureInfo.InvariantCulture),
             "hours" => value.ToString("HH", CultureInfo.InvariantCulture),

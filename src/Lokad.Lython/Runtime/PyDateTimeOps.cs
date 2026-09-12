@@ -297,24 +297,83 @@ internal static partial class PyDateTimeOps
     {
         var bound = CallBinder.BindNamedArguments(arguments, span, DateCallSignature, PythonCallableKind.Builtin);
 
-        return OwnDateTimeValue(new PyDate(new DateOnly(
-            GetInteger(ArgAt(bound, 0), "datetime.date", span),
-            GetInteger(ArgAt(bound, 1), "datetime.date", span),
-            GetInteger(ArgAt(bound, 2), "datetime.date", span))), context, span);
+        // CPython converts every component before validating ranges, so an
+        // oversized integer fails as OverflowError even beside bad ranges.
+        int year, month, day;
+        try
+        {
+            year = GetInteger(ArgAt(bound, 0), "datetime.date", span);
+            month = GetInteger(ArgAt(bound, 1), "datetime.date", span);
+            day = GetInteger(ArgAt(bound, 2), "datetime.date", span);
+        }
+        catch (OverflowException ex)
+        {
+            throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C long", span, ex);
+        }
+
+        if (year < 1 || year > 9999)
+        {
+            throw new LythonRuntimeException("ValueError", $"year {year} is out of range", span);
+        }
+
+        if (month < 1 || month > 12)
+        {
+            throw new LythonRuntimeException("ValueError", "month must be in 1..12", span);
+        }
+
+        if (day < 1 || day > DateTime.DaysInMonth(year, month))
+        {
+            throw new LythonRuntimeException("ValueError", "day is out of range for month", span);
+        }
+
+        return OwnDateTimeValue(new PyDate(new DateOnly(year, month, day)), context, span);
     }
 
     public static object CreateTime(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         var bound = CallBinder.BindNamedArguments(arguments, span, TimeCallSignature, PythonCallableKind.Builtin);
 
-        var fold = GetFold(ArgAt(bound, 5), "datetime.time", span);
+        int hour, minute, second, microsecond, fold;
+        try
+        {
+            hour = GetInteger(ArgAt(bound, 0), "datetime.time", span);
+            minute = GetInteger(ArgAt(bound, 1), "datetime.time", span);
+            second = GetInteger(ArgAt(bound, 2), "datetime.time", span);
+            microsecond = GetInteger(ArgAt(bound, 3), "datetime.time", span);
+            fold = GetInteger(ArgAt(bound, 5), "datetime.time", span);
+        }
+        catch (OverflowException ex)
+        {
+            throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C long", span, ex);
+        }
+
+        if (hour < 0 || hour > 23)
+        {
+            throw new LythonRuntimeException("ValueError", "hour must be in 0..23", span);
+        }
+
+        if (minute < 0 || minute > 59)
+        {
+            throw new LythonRuntimeException("ValueError", "minute must be in 0..59", span);
+        }
+
+        if (second < 0 || second > 59)
+        {
+            throw new LythonRuntimeException("ValueError", "second must be in 0..59", span);
+        }
+
+        if (microsecond < 0 || microsecond > 999999)
+        {
+            throw new LythonRuntimeException("ValueError", "microsecond must be in 0..999999", span);
+        }
+
+        if (fold is not 0 and not 1)
+        {
+            throw new LythonRuntimeException("ValueError", "fold must be either 0 or 1", span);
+        }
+
         return OwnDateTimeValue(new PyTime(
-            new TimeOnly(
-                GetInteger(ArgAt(bound, 0), "datetime.time", span),
-                GetInteger(ArgAt(bound, 1), "datetime.time", span),
-                GetInteger(ArgAt(bound, 2), "datetime.time", span),
-                GetInteger(ArgAt(bound, 3), "datetime.time", span) / 1000,
-                GetInteger(ArgAt(bound, 3), "datetime.time", span) % 1000),
+            new TimeOnly(hour, minute, second, microsecond / 1000, microsecond % 1000),
             GetTimezone(ArgAt(bound, 4), "datetime.time", span),
             fold), context, span);
     }
@@ -323,18 +382,65 @@ internal static partial class PyDateTimeOps
     {
         var bound = CallBinder.BindNamedArguments(arguments, span, DateTimeCallSignature, PythonCallableKind.Builtin);
 
-        var microsecond = GetInteger(ArgAt(bound, 6), "datetime.datetime", span);
-        var fold = GetFold(ArgAt(bound, 8), "datetime.datetime", span);
+        int year, month, day, hour, minute, second, microsecond, fold;
+        try
+        {
+            year = GetInteger(ArgAt(bound, 0), "datetime.datetime", span);
+            month = GetInteger(ArgAt(bound, 1), "datetime.datetime", span);
+            day = GetInteger(ArgAt(bound, 2), "datetime.datetime", span);
+            hour = GetInteger(ArgAt(bound, 3), "datetime.datetime", span);
+            minute = GetInteger(ArgAt(bound, 4), "datetime.datetime", span);
+            second = GetInteger(ArgAt(bound, 5), "datetime.datetime", span);
+            microsecond = GetInteger(ArgAt(bound, 6), "datetime.datetime", span);
+            fold = GetInteger(ArgAt(bound, 8), "datetime.datetime", span);
+        }
+        catch (OverflowException ex)
+        {
+            throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C long", span, ex);
+        }
+
+        if (year < 1 || year > 9999)
+        {
+            throw new LythonRuntimeException("ValueError", $"year {year} is out of range", span);
+        }
+
+        if (month < 1 || month > 12)
+        {
+            throw new LythonRuntimeException("ValueError", "month must be in 1..12", span);
+        }
+
+        if (day < 1 || day > DateTime.DaysInMonth(year, month))
+        {
+            throw new LythonRuntimeException("ValueError", "day is out of range for month", span);
+        }
+
+        if (hour < 0 || hour > 23)
+        {
+            throw new LythonRuntimeException("ValueError", "hour must be in 0..23", span);
+        }
+
+        if (minute < 0 || minute > 59)
+        {
+            throw new LythonRuntimeException("ValueError", "minute must be in 0..59", span);
+        }
+
+        if (second < 0 || second > 59)
+        {
+            throw new LythonRuntimeException("ValueError", "second must be in 0..59", span);
+        }
+
+        if (microsecond < 0 || microsecond > 999999)
+        {
+            throw new LythonRuntimeException("ValueError", "microsecond must be in 0..999999", span);
+        }
+
+        if (fold is not 0 and not 1)
+        {
+            throw new LythonRuntimeException("ValueError", "fold must be either 0 or 1", span);
+        }
+
         return OwnDateTimeValue(new PyDateTime(
-            new DateTime(
-                GetInteger(ArgAt(bound, 0), "datetime.datetime", span),
-                GetInteger(ArgAt(bound, 1), "datetime.datetime", span),
-                GetInteger(ArgAt(bound, 2), "datetime.datetime", span),
-                GetInteger(ArgAt(bound, 3), "datetime.datetime", span),
-                GetInteger(ArgAt(bound, 4), "datetime.datetime", span),
-                GetInteger(ArgAt(bound, 5), "datetime.datetime", span),
-                microsecond / 1000,
-                DateTimeKind.Unspecified).AddTicks((microsecond % 1000) * 10L),
+            new DateTime(year, month, day, hour, minute, second, microsecond / 1000, DateTimeKind.Unspecified).AddTicks((microsecond % 1000) * 10L),
             GetTimezone(ArgAt(bound, 7), "datetime.datetime", span),
             fold), context, span);
     }

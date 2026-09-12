@@ -145,16 +145,6 @@ internal static partial class PyDateTimeOps
         };
     }
 
-    private static int GetFold(object? value, string owner, LythonSourceSpan span)
-    {
-        var fold = GetInteger(value, owner, span);
-        if (fold is not 0 and not 1)
-        {
-            throw new LythonRuntimeException("ValueError", $"{owner} fold must be either 0 or 1.", span);
-        }
-
-        return fold;
-    }
 
     private static object? ArgAt(object[] arguments, int index) => index < arguments.Length ? arguments[index] : null;
 

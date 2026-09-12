@@ -241,7 +241,7 @@ internal sealed class PyTime : IPyTruthyValue, IPyHashableValue, IPyRenderableVa
 
     public BigInteger Second => new(Value.Second);
 
-    public BigInteger Microsecond => new(Value.Microsecond);
+    public BigInteger Microsecond => new(Value.Millisecond * 1000 + Value.Microsecond);
 
     public bool IsTruthy() => true;
 
@@ -264,14 +264,14 @@ internal sealed class PyTime : IPyTruthyValue, IPyHashableValue, IPyRenderableVa
     public PyString RenderPython(PyRenderingContext context)
     {
         var builder = new StringBuilder($"datetime.time({Value.Hour}, {Value.Minute}");
-        if (Value.Second != 0 || Value.Microsecond != 0)
+        if (Value.Second != 0 || Microsecond != 0)
         {
             builder.Append($", {Value.Second}");
         }
 
-        if (Value.Microsecond != 0)
+        if (Microsecond != 0)
         {
-            builder.Append($", {Value.Microsecond}");
+            builder.Append($", {Microsecond}");
         }
 
         if (TzInfo is not null)
@@ -331,7 +331,7 @@ internal sealed class PyDateTime : IPyTruthyValue, IPyHashableValue, IPyRenderab
 
     public BigInteger Second => new(Value.Second);
 
-    public BigInteger Microsecond => new(Value.Microsecond);
+    public BigInteger Microsecond => new(Value.Millisecond * 1000 + Value.Microsecond);
 
     public bool IsTruthy() => true;
 
@@ -368,14 +368,14 @@ internal sealed class PyDateTime : IPyTruthyValue, IPyHashableValue, IPyRenderab
     public PyString RenderPython(PyRenderingContext context)
     {
         var builder = new StringBuilder($"datetime.datetime({Value.Year}, {Value.Month}, {Value.Day}, {Value.Hour}, {Value.Minute}");
-        if (Value.Second != 0 || Value.Microsecond != 0)
+        if (Value.Second != 0 || Microsecond != 0)
         {
             builder.Append($", {Value.Second}");
         }
 
-        if (Value.Microsecond != 0)
+        if (Microsecond != 0)
         {
-            builder.Append($", {Value.Microsecond}");
+            builder.Append($", {Microsecond}");
         }
 
         if (Fold != 0)

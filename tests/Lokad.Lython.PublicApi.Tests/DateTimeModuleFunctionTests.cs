@@ -5,6 +5,20 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class DateTimeModuleFunctionTests
 {
     [Fact]
+    public async Task DateTime_MicrosecondsRoundTripLikeCpython()
+    {
+        const string source = "import datetime\nt = datetime.time(1, 2, 3, 1500)\nd = datetime.datetime(2024, 1, 1, 0, 0, 0, 999499)\nreturn str(t.microsecond) + \"|\" + str(d.microsecond) + \"|\" + t.isoformat() + \"|\" + repr(t)";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("1500|999499|01:02:03.001500|datetime.time(1, 2, 3, 1500)", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("1500|999499|01:02:03.001500|datetime.time(1, 2, 3, 1500)", asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public void DateTime_DisplayAndRepresentationFollowDistinctPythonContracts()
     {
         var host = new MockLythonHost();
