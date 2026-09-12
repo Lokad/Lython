@@ -265,9 +265,14 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            if (arguments.Length == 0 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
+            if (arguments.Length == 0 || arguments[0].IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", "functools.partial(func, ...) expects the first argument to be callable.", span);
+            }
+
+            if (arguments[0].Value is not ICallable callable)
+            {
+                throw new LythonRuntimeException("TypeError", "the first argument must be callable", span);
             }
 
             EnsureNoUnsupportedPlaceholder(arguments.AsSpan(1), span);
@@ -351,9 +356,14 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            if (arguments.Length == 0 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
+            if (arguments.Length == 0 || arguments[0].IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", "functools.partialmethod(func, ...) expects the first argument to be callable.", span);
+            }
+
+            if (arguments[0].Value is not ICallable callable)
+            {
+                throw new LythonRuntimeException("TypeError", PyRendering.ToReprPyString(arguments[0].Value, new PyRenderingContext(context)).AsString() + " is not callable or a descriptor", span);
             }
 
             EnsureNoUnsupportedPlaceholder(arguments.AsSpan(1), span);
