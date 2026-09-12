@@ -312,6 +312,9 @@ internal static class PyIndexing
         return RuntimeErrors.Type(message, span);
     }
 
+    // Names mirror the shared operand namer except where sequence indexing
+    // has its own shape; anything unlisted (callables, modules, mappings with
+    // dotted names, exotic values) resolves through that helper.
     private static string IndexTypeName(object? index) => index switch
     {
         null => "NoneType",
@@ -320,16 +323,18 @@ internal static class PyIndexing
         double => "float",
         BigInteger or int or bool => "int",
         PyList => "list",
-        PyDict or PyDefaultDict or PyCounter => "dict",
+        PyDict => "dict",
+        PyCounter => "Counter",
+        PyDefaultDict => "collections.defaultdict",
         PyTuple => "tuple",
         PySet => "set",
         PyBytes => "bytes",
         PyRange => "range",
         PySlice => "slice",
-        PyDeque => "deque",
+        PyDeque => "collections.deque",
         PyChainMap => "ChainMap",
         PyInstance instance => instance.Type.Name,
-        _ => "object",
+        _ => RuntimeErrors.OperandTypeName(index),
     };
 
     public static IEnumerable<int> SliceIndices(int length, object? start, object? end, object? step, LythonSourceSpan span)
