@@ -170,6 +170,32 @@ __lython_file.close()
     }
 
     [Fact]
+    public void OperatorModule_ConcatTupleLikes_MatchDirectSemantics()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import namedtuple
+import operator
+import time
+P = namedtuple('P', ['x', 'y'])
+vals = []
+vals.append(str(operator.concat(P(1, 2), P(3, 4))))
+vals.append(str(operator.concat((1,), P(2, 3))))
+vals.append(str(operator.iconcat(P(1, 2), P(3, 4))))
+t = time.struct_time((2024, 1, 2, 3, 4, 5, 6, 7, 8))
+vals.append(str(operator.concat(t, t)))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("(1, 2, 3, 4)|(1, 2, 3)|(1, 2, 3, 4)|(2024, 1, 2, 3, 4, 5, 6, 7, 8, 2024, 1, 2, 3, 4, 5, 6, 7, 8)", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void OperatorModule_ExpandedHelpers_MatchDirectSyntax()
     {
         var host = new MockLythonHost();

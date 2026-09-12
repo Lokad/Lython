@@ -304,7 +304,7 @@ internal sealed partial class LythonRuntime
         if (PyStringOps.TryAsString(left, out _) && PyStringOps.TryAsString(right, out _) ||
             left is PyList && right is PyList ||
             left is PyBytes && right is PyBytes ||
-            left is PyTuple && right is PyTuple ||
+            PyTupleLike.TryGetItems(left, out _) && PyTupleLike.TryGetItems(right, out _) ||
             left is PyDeque && right is PyDeque)
         {
             return EvaluateAdd(left, right, context, span);
@@ -332,7 +332,7 @@ internal sealed partial class LythonRuntime
             return RuntimeErrors.ConcatError("list", right, span);
         }
 
-        if (left is PyTuple)
+        if (PyTupleLike.TryGetItems(left, out _))
         {
             return RuntimeErrors.ConcatError("tuple", right, span);
         }
@@ -559,7 +559,7 @@ internal sealed partial class LythonRuntime
     private static object InPlaceConcat(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         => Binary(arguments, span, (left, right, innerSpan) =>
         {
-            if (left is PyList || PyStringOps.TryAsString(left, out _) && PyStringOps.TryAsString(right, out _) || left is PyTuple && right is PyTuple || left is PyBytes && right is PyBytes || left is PyDeque && right is PyDeque)
+            if (left is PyList || PyStringOps.TryAsString(left, out _) && PyStringOps.TryAsString(right, out _) || PyTupleLike.TryGetItems(left, out _) && PyTupleLike.TryGetItems(right, out _) || left is PyBytes && right is PyBytes || left is PyDeque && right is PyDeque)
             {
                 return EvaluateAugmentedAssignment(left, right, AugmentedAssignmentOperatorSyntax.Add, context, innerSpan);
             }
