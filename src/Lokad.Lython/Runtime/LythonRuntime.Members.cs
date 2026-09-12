@@ -1196,7 +1196,9 @@ internal sealed partial class LythonRuntime
                             Comparer<object>.Create((left, right) => CompareCounterCounts(left, right, span, "<")))
                             .ToList();
                     }
-                    catch (InvalidOperationException ex) when (ex.InnerException is LythonRuntimeException lythonFailure && lythonFailure.ExceptionType is "TypeError")
+                    catch (InvalidOperationException ex) when (ex.InnerException is LythonRuntimeException lythonFailure
+                        && (lythonFailure.ExceptionType is "TypeError"
+                        || lythonFailure.Identity == LythonRuntime.ModuleException("decimal", "InvalidOperation")))
                     {
                         throw lythonFailure;
                     }

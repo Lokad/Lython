@@ -1,4 +1,5 @@
 using System.Numerics;
+using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
@@ -130,6 +131,8 @@ internal static partial class PyDecimalOps
             return mixed;
         }
 
+        ThrowIfNanComparison(left, right, span);
+
         throw CompareFailed(operation, left, right, span);
     }
 
@@ -173,6 +176,24 @@ internal static partial class PyDecimalOps
         }
         comparison = (leftNum * rightDen).CompareTo(rightNum * leftDen);
         return true;
+    }
+
+    // NaN against a decimal signals decimal.InvalidOperation like CPython
+    // instead of the generic comparison TypeError; renderers without a span
+    // pass null since the error is rethrown, never reported from there.
+    internal static void ThrowIfNanComparison(object left, object right, LythonSourceSpan? span)
+    {
+        if ((left is PyDecimal || right is PyDecimal) &&
+            ((left is double leftFloat && double.IsNaN(leftFloat)) ||
+            (right is double rightFloat && double.IsNaN(rightFloat))))
+        {
+            throw new LythonRuntimeException(
+                LythonRuntime.ModuleException("decimal", "InvalidOperation"),
+                DecimalNanComparisonPayload.NanComparisonText,
+                span,
+                null,
+                new DecimalNanComparisonPayload());
+        }
     }
 
     private static bool TryExactRational(object value, out BigInteger numerator, out BigInteger denominator)
@@ -289,4 +310,19 @@ internal static partial class PyDecimalOps
 
         return result;
     }
+}
+
+// NaN-versus-decimal ordering signals decimal.InvalidOperation like
+// CPython, whose args carry the exception class in a list. The rendered
+// text is constant, so the payload only formats it at display time through
+// the display governor instead of capturing anything at the raise site.
+internal sealed class DecimalNanComparisonPayload : IPyRenderableValue
+{
+    internal const string NanComparisonText = "[<class 'decimal.InvalidOperation'>]";
+
+    public PyString RenderPython(PyRenderingContext context)
+        => PyString.FromString(NanComparisonText, context.Context.MemoryGovernor);
+
+    public PyString RenderInterpolated(PyRenderingContext context)
+        => RenderPython(context);
 }

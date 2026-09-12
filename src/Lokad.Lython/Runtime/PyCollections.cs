@@ -242,11 +242,22 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
                 .OrderByDescending(pair => pair.Value, Comparer<object>.Create((left, right) => CompareCountsForRender(left, right)))
                 .ToList();
         }
-        // OrderBy wraps comparer failures, so the fallback keys off the
-        // documented inner exception instead of the surface type.
-        catch (InvalidOperationException ex) when (ex.InnerException is LythonRuntimeException lythonFailure && lythonFailure.ExceptionType is "TypeError")
+        // OrderBy wraps comparer failures, so the handler keys off the
+        // documented inner exception instead of the surface type: ordering
+        // failures fall back to insertion, while a decimal InvalidOperation
+        // propagates like CPython repr instead of masking as a failed render.
+        catch (InvalidOperationException ex) when (ex.InnerException is LythonRuntimeException lythonFailure &&
+            (lythonFailure.ExceptionType is "TypeError"
+            || lythonFailure.Identity == LythonRuntime.ModuleException("decimal", "InvalidOperation")))
         {
-            ordered = _items.ToList();
+            if (lythonFailure.ExceptionType is "TypeError")
+            {
+                ordered = _items.ToList();
+            }
+            else
+            {
+                throw lythonFailure;
+            }
         }
 
         return PyRendering.JoinRenderedSequence("Counter(", [PyRendering.JoinRenderedDictionary(ordered, context, interpolated: false)], ")", context);
@@ -276,6 +287,9 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
             return PyString.CompareOrdinal(leftText, rightText);
         }
 
+        // NaN against a decimal propagates decimal.InvalidOperation
+        // instead of falling back, mirroring the comparison itself.
+        PyDecimalOps.ThrowIfNanComparison(left, right, null);
         throw new LythonRuntimeException("TypeError", "Values are not comparable.", null);
     }
 

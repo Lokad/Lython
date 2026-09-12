@@ -604,4 +604,75 @@ Decimal("150").quantize(Decimal("1E-28"), "ROUND_DOWN")
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task DecimalNanOrderingSignalsInvalidOperation()
+    {
+        // NaN against a decimal signals decimal.InvalidOperation like CPython
+        // (catchable, with the class-carrying argument shape), in both modes.
+        var script = new LythonEngine().Compile("""
+            import decimal
+            from decimal import Decimal
+            from collections import Counter
+            results = []
+            try:
+                Decimal('1') < float('nan')
+            except decimal.InvalidOperation as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+                results.append(repr(e))
+                results.append(str(e.args))
+            try:
+                float('nan') > Decimal('1')
+            except decimal.InvalidOperation as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            c = Counter()
+            c['a'] = Decimal('1')
+            c['b'] = float('nan')
+            try:
+                c.most_common()
+            except decimal.InvalidOperation as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                repr(c)
+            except decimal.InvalidOperation as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                sorted([Decimal('1'), float('nan')])
+            except decimal.InvalidOperation as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            results.append(str(Decimal('1') == float('nan')))
+            results.append(str(Decimal('1') != float('nan')))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "InvalidOperation",
+            "[<class 'decimal.InvalidOperation'>]",
+            "InvalidOperation([<class 'decimal.InvalidOperation'>])",
+            "([<class 'decimal.InvalidOperation'>],)",
+            "InvalidOperation",
+            "[<class 'decimal.InvalidOperation'>]",
+            "InvalidOperation",
+            "[<class 'decimal.InvalidOperation'>]",
+            "InvalidOperation",
+            "[<class 'decimal.InvalidOperation'>]",
+            "InvalidOperation",
+            "[<class 'decimal.InvalidOperation'>]",
+            "False",
+            "True",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
