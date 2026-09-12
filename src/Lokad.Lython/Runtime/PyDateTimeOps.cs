@@ -485,7 +485,7 @@ internal static partial class PyDateTimeOps
 
         if (ArgAt(bound, 0) is not PyTimedelta delta)
         {
-            throw new LythonRuntimeException("TypeError", "datetime.timezone(offset[, name]) expects a timedelta offset.", span);
+            throw new LythonRuntimeException("TypeError", $"timezone() argument 1 must be datetime.timedelta, not {NoneOrTypeName(ArgAt(bound, 0), context)}", span);
         }
 
         ValidateTimezoneOffset(delta.TotalMicroseconds, span);
