@@ -252,6 +252,8 @@ internal static partial class PyDateTimeOps
         memberName => memberName switch
         {
             "utc" => PyTimezone.Utc,
+            "min" => PyTimezone.Min,
+            "max" => PyTimezone.Max,
             _ => null
         });
 

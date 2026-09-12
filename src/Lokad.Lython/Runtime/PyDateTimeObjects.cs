@@ -137,13 +137,18 @@ internal sealed class PyTimezone : IPyTruthyValue, IPyHashableValue, IPyRenderab
 {
     public static readonly PyTimezone Utc = new(TimeSpan.Zero);
 
+    // CPython bounds fixed-offset zones strictly inside 24 hours; the
+    // edge singletons sit one minute inside each bound, unnamed.
+    public static readonly PyTimezone Min = new(TimeSpan.FromSeconds(-86340));
+    public static readonly PyTimezone Max = new(TimeSpan.FromSeconds(86340));
+
     public PyTimezone(TimeSpan offset) : this(offset, null) { }
 
     public PyTimezone(TimeSpan offset, string? name)
     {
         Offset = offset;
         HasExplicitName = name is not null;
-        Name = name ?? (offset == TimeSpan.Zero ? "UTC" : PyDateTimeOps.FormatOffset(offset));
+        Name = name ?? (offset == TimeSpan.Zero ? "UTC" : "UTC" + PyDateTimeOps.FormatOffset(offset));
     }
 
     public TimeSpan Offset { get; }

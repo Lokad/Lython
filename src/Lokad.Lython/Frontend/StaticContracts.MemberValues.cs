@@ -414,7 +414,7 @@ internal static partial class StaticContracts
             },
             "datetime.timezone" => memberName switch
             {
-                "utc" => AbstractValue.DateTimeTimezone(span),
+                "utc" or "min" or "max" => AbstractValue.DateTimeTimezone(span),
                 _ => default
             },
             "datetime.timedelta" => memberName switch
