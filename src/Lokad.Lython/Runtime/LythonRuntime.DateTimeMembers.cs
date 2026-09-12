@@ -59,14 +59,16 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.OwnDateTimeText(PyDateTimeOps.Strftime(date.Value, format, span), context.MemoryGovernor, span);
                 }, "date.strftime", ["format"]),
-                "replace" => BoundCallable.Create((arguments, span, context) =>
+                "replace" => BoundCallable.CreateWithPresence((bound, span, context) =>
                 {
+                    var arguments = bound.Values;
+                    bool IsAssigned(int index) => index < bound.Assigned.Length && bound.Assigned[index];
                     int year, month, day;
                     try
                     {
-                        year = ReplacementInt(arguments, 0, (int)date.Year, span, context);
-                        month = ReplacementInt(arguments, 1, (int)date.Month, span, context);
-                        day = ReplacementInt(arguments, 2, (int)date.Day, span, context);
+                        year = ReplacementInt(arguments, 0, (int)date.Year, span, context, IsAssigned(0));
+                        month = ReplacementInt(arguments, 1, (int)date.Month, span, context, IsAssigned(1));
+                        day = ReplacementInt(arguments, 2, (int)date.Day, span, context, IsAssigned(2));
                     }
                     catch (OverflowException ex)
                     {
@@ -146,18 +148,18 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.OwnDateTimeText(PyDateTimeOps.Strftime(time.Value, time.TzInfo, format, span), context.MemoryGovernor, span);
                 }, "time.strftime", ["format"]),
-                "replace" => BoundCallable.Create((arguments, span, context) =>
+                "replace" => BoundCallable.CreateWithPresence((bound, span, context) =>
                 {
-                    var microArg = ArgAt(arguments, 3);
-                    var foldArg = ArgAt(arguments, 5);
+                    var arguments = bound.Values;
+                    bool IsAssigned(int index) => index < bound.Assigned.Length && bound.Assigned[index];
                     int hour, minute, second, microsecond, fold;
                     try
                     {
-                        hour = ReplacementInt(arguments, 0, (int)time.Hour, span, context);
-                        minute = ReplacementInt(arguments, 1, (int)time.Minute, span, context);
-                        second = ReplacementInt(arguments, 2, (int)time.Second, span, context);
-                        microsecond = microArg is null or PyNone ? (int)time.Microsecond : ToInt(microArg, context, span);
-                        fold = foldArg is null or PyNone ? time.Fold : ToInt(foldArg, context, span);
+                        hour = ReplacementInt(arguments, 0, (int)time.Hour, span, context, IsAssigned(0));
+                        minute = ReplacementInt(arguments, 1, (int)time.Minute, span, context, IsAssigned(1));
+                        second = ReplacementInt(arguments, 2, (int)time.Second, span, context, IsAssigned(2));
+                        microsecond = ReplacementInt(arguments, 3, (int)time.Microsecond, span, context, IsAssigned(3));
+                        fold = ReplacementInt(arguments, 5, time.Fold, span, context, IsAssigned(5));
                     }
                     catch (OverflowException ex)
                     {
@@ -191,7 +193,7 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.OwnDateTimeValue(new PyTime(
                         new TimeOnly(hour, minute, second, microsecond / 1000, microsecond % 1000),
-                        ReplacementTimezone(arguments, 4, time.TzInfo, "time.replace", span),
+                        ReplacementTimezone(arguments, 4, time.TzInfo, "time.replace", span, IsAssigned(4)),
                         fold), context, span);
                 }, "time.replace", ["hour", "minute", "second", "microsecond", "tzinfo", "fold"], 0),
                 _ => MissingMemberValue.Instance
@@ -301,21 +303,21 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.OwnDateTimeText(PyDateTimeOps.Strftime(dateTime.Value, dateTime.TzInfo, format, span), context.MemoryGovernor, span);
                 }, "datetime.strftime", ["format"]),
-                "replace" => BoundCallable.Create((arguments, span, context) =>
+                "replace" => BoundCallable.CreateWithPresence((bound, span, context) =>
                 {
-                    var microArg = ArgAt(arguments, 6);
-                    var foldArg = ArgAt(arguments, 8);
+                    var arguments = bound.Values;
+                    bool IsAssigned(int index) => index < bound.Assigned.Length && bound.Assigned[index];
                     int year, month, day, hour, minute, second, microsecond, fold;
                     try
                     {
-                        year = ReplacementInt(arguments, 0, (int)dateTime.Year, span, context);
-                        month = ReplacementInt(arguments, 1, (int)dateTime.Month, span, context);
-                        day = ReplacementInt(arguments, 2, (int)dateTime.Day, span, context);
-                        hour = ReplacementInt(arguments, 3, (int)dateTime.Hour, span, context);
-                        minute = ReplacementInt(arguments, 4, (int)dateTime.Minute, span, context);
-                        second = ReplacementInt(arguments, 5, (int)dateTime.Second, span, context);
-                        microsecond = microArg is null or PyNone ? (int)dateTime.Microsecond : ToInt(microArg, context, span);
-                        fold = foldArg is null or PyNone ? dateTime.Fold : ToInt(foldArg, context, span);
+                        year = ReplacementInt(arguments, 0, (int)dateTime.Year, span, context, IsAssigned(0));
+                        month = ReplacementInt(arguments, 1, (int)dateTime.Month, span, context, IsAssigned(1));
+                        day = ReplacementInt(arguments, 2, (int)dateTime.Day, span, context, IsAssigned(2));
+                        hour = ReplacementInt(arguments, 3, (int)dateTime.Hour, span, context, IsAssigned(3));
+                        minute = ReplacementInt(arguments, 4, (int)dateTime.Minute, span, context, IsAssigned(4));
+                        second = ReplacementInt(arguments, 5, (int)dateTime.Second, span, context, IsAssigned(5));
+                        microsecond = ReplacementInt(arguments, 6, (int)dateTime.Microsecond, span, context, IsAssigned(6));
+                        fold = ReplacementInt(arguments, 8, dateTime.Fold, span, context, IsAssigned(8));
                     }
                     catch (OverflowException ex)
                     {
@@ -364,7 +366,7 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.OwnDateTimeValue(new PyDateTime(
                         new DateTime(year, month, day, hour, minute, second, microsecond / 1000, DateTimeKind.Unspecified).AddTicks((microsecond % 1000) * 10L),
-                        ReplacementTimezone(arguments, 7, dateTime.TzInfo, "datetime.replace", span),
+                        ReplacementTimezone(arguments, 7, dateTime.TzInfo, "datetime.replace", span, IsAssigned(7)),
                         fold), context, span);
                 }, "datetime.replace", ["year", "month", "day", "hour", "minute", "second", "microsecond", "tzinfo", "fold"], 0),
                 _ => MissingMemberValue.Instance
@@ -438,10 +440,11 @@ internal sealed partial class LythonRuntime
         int index,
         int currentValue,
         LythonSourceSpan span,
-        LythonRuntime.ExecutionContext context)
+        LythonRuntime.ExecutionContext context,
+        bool assigned)
     {
         var value = ArgAt(arguments, index);
-        return value is null or PyNone ? currentValue : ToInt(value, context, span);
+        return !assigned || value is null ? currentValue : ToInt(value, context, span);
     }
 
     private static PyTimezone? ReplacementTimezone(
@@ -449,14 +452,22 @@ internal sealed partial class LythonRuntime
         int index,
         PyTimezone? currentValue,
         string owner,
-        LythonSourceSpan span)
-        => ArgAt(arguments, index) switch
+        LythonSourceSpan span,
+        bool assigned)
+    {
+        if (!assigned)
+        {
+            return currentValue;
+        }
+
+        return ArgAt(arguments, index) switch
         {
             null => currentValue,
             PyNone => null,
             PyTimezone timezone => timezone,
             _ => throw new LythonRuntimeException("TypeError", $"{owner}(..., tzinfo=...) expects a timezone or None.", span),
         };
+    }
 
 
     private static string GetTimespec(object? value, string owner, LythonSourceSpan span)

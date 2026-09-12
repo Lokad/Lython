@@ -127,6 +127,12 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("import datetime\ndatetime.date.fromisocalendar(0, 1, 1)\n", "ValueError", "Year is out of range: 0")]
     [InlineData("import datetime\ndatetime.date.fromisocalendar(10**30, 1, 1)\n", "ValueError", "ISO calendar component out of range")]
     [InlineData("import datetime\ndatetime.date.fromisocalendar(\"a\", 1, 1)\n", "TypeError", "'str' object cannot be interpreted as an integer")]
+    [InlineData("import datetime\ndatetime.date(2024, 1, 1).replace(year=None)\n", "TypeError", "'NoneType' object cannot be interpreted as an integer")]
+    [InlineData("import datetime\ndatetime.date(2024, 1, 1).replace(day=None)\n", "TypeError", "'NoneType' object cannot be interpreted as an integer")]
+    [InlineData("import datetime\ndatetime.time(1, 2, 3).replace(hour=None)\n", "TypeError", "'NoneType' object cannot be interpreted as an integer")]
+    [InlineData("import datetime\ndatetime.time(1, 2, 3).replace(fold=None)\n", "TypeError", "'NoneType' object cannot be interpreted as an integer")]
+    [InlineData("import datetime\ndatetime.datetime(2024, 1, 1).replace(month=None)\n", "TypeError", "'NoneType' object cannot be interpreted as an integer")]
+    [InlineData("import datetime\ndatetime.datetime(2024, 1, 1).replace(microsecond=None)\n", "TypeError", "'NoneType' object cannot be interpreted as an integer")]
     [InlineData("import datetime\ndatetime.date.fromtimestamp(\"a\")\n", "TypeError", "'str' object cannot be interpreted as an integer")]
     [InlineData("import datetime\ndatetime.date.fromtimestamp(None)\n", "TypeError", "'NoneType' object cannot be interpreted as an integer")]
     [InlineData("import datetime\nclass K:\n pass\ndatetime.datetime.fromtimestamp(K())\n", "TypeError", "'K' object cannot be interpreted as an integer")]
@@ -371,6 +377,20 @@ __lython_file.close()
         var asyncResult = await script.RunAsync(new MockLythonHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("2024-01-02 00:00:00|2024-01-01 00:00:00", asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task ReplaceDistinguishesOmittedFromNone()
+    {
+        const string source = "import datetime\nclass J:\n    def __index__(self):\n        return 2025\nreturn str(datetime.date(2024, 1, 1).replace(day=5)) + \"|\" + str(datetime.time(1, 2, 3).replace(fold=1)) + \"|\" + str(datetime.datetime(2024, 1, 1, tzinfo=datetime.timezone.utc).replace(tzinfo=None)) + \"|\" + str(datetime.date(2024, 1, 1).replace(year=J()))\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("2024-01-05|01:02:03|2024-01-01 00:00:00|2025-01-01", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("2024-01-05|01:02:03|2024-01-01 00:00:00|2025-01-01", asyncResult.ReturnValue);
     }
 
     [Fact]
