@@ -806,4 +806,117 @@ Decimal("150").quantize(Decimal("1E-28"), "ROUND_DOWN")
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task DecimalZeroDivisorSignalsMatchCpython()
+    {
+        // Zero-divisor decimal signals match CPython in both modes: nonzero
+        // dividends keep the established shapes (house DivisionByZero for /
+        // and //, single-class InvalidOperation for %), divmod carries both
+        // classes, and zero dividends are DivisionUndefined throughout.
+        var script = new LythonEngine().Compile("""
+            import decimal
+            from decimal import Decimal
+            results = []
+            try:
+                Decimal('1') % 0
+            except decimal.InvalidOperation as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+                results.append(str(e.args))
+            try:
+                Decimal('1').remainder_near(Decimal('0'))
+            except decimal.InvalidOperation as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                divmod(Decimal('1'), 0)
+            except decimal.InvalidOperation as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+                results.append(str(e.args))
+            try:
+                divmod(Decimal('0'), Decimal('0'))
+            except decimal.InvalidOperation as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+                results.append(str(e.args))
+            try:
+                Decimal('0') / Decimal('0')
+            except decimal.InvalidOperation as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                Decimal('0') // Decimal('0')
+            except decimal.InvalidOperation as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                Decimal('0') % Decimal('0')
+            except decimal.InvalidOperation as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                Decimal('0').remainder_near(Decimal('0'))
+            except decimal.InvalidOperation as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            results.append(str(decimal.DivisionUndefined))
+            try:
+                Decimal('1') / 0
+            except decimal.DivisionByZero as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                Decimal('1') // 0
+            except decimal.DivisionByZero as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                divmod(Decimal('1'), 0)
+            except decimal.DivisionByZero:
+                results.append('caught-as-divisionbyzero')
+            except decimal.InvalidOperation as e:
+                results.append('caught-as-invalidoperation')
+                results.append(str(e.args))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "InvalidOperation",
+            "[<class 'decimal.InvalidOperation'>]",
+            "([<class 'decimal.InvalidOperation'>],)",
+            "InvalidOperation",
+            "[<class 'decimal.InvalidOperation'>]",
+            "InvalidOperation",
+            "[<class 'decimal.InvalidOperation'>, <class 'decimal.DivisionByZero'>]",
+            "([<class 'decimal.InvalidOperation'>, <class 'decimal.DivisionByZero'>],)",
+            "InvalidOperation",
+            "[<class 'decimal.DivisionUndefined'>]",
+            "([<class 'decimal.DivisionUndefined'>],)",
+            "InvalidOperation",
+            "[<class 'decimal.DivisionUndefined'>]",
+            "InvalidOperation",
+            "[<class 'decimal.DivisionUndefined'>]",
+            "InvalidOperation",
+            "[<class 'decimal.DivisionUndefined'>]",
+            "InvalidOperation",
+            "[<class 'decimal.DivisionUndefined'>]",
+            "<class 'decimal.DivisionUndefined'>",
+            "DivisionByZero",
+            "decimal division by zero",
+            "DivisionByZero",
+            "decimal floor division by zero",
+            "caught-as-invalidoperation",
+            "([<class 'decimal.InvalidOperation'>, <class 'decimal.DivisionByZero'>],)",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

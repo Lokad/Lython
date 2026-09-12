@@ -25,6 +25,25 @@ internal static partial class PyDecimalOps
             null,
             new DecimalNanComparisonPayload());
 
+    // Divmod by a zero divisor signals InvalidOperation carrying both the
+    // InvalidOperation and the DivisionByZero classes like CPython, while a
+    // zero dividend is undefined; both reuse the constant-payload shape.
+    internal static LythonRuntimeException DivmodByZero(LythonSourceSpan? span)
+        => new(
+            LythonRuntime.ModuleException("decimal", "InvalidOperation"),
+            DecimalDivmodZeroPayload.DivmodZeroText,
+            span,
+            null,
+            new DecimalDivmodZeroPayload());
+
+    internal static LythonRuntimeException DivisionUndefined(LythonSourceSpan? span)
+        => new(
+            LythonRuntime.ModuleException("decimal", "InvalidOperation"),
+            DecimalDivisionUndefinedPayload.DivisionUndefinedText,
+            span,
+            null,
+            new DecimalDivisionUndefinedPayload());
+
     public static object Add(object left, object right, LythonSourceSpan span, string operation)
         => Binary(left, right, span, operation, static (lhs, rhs) => lhs + rhs, static (lhs, rhs) => Math.Min(lhs, rhs));
 
@@ -43,6 +62,11 @@ internal static partial class PyDecimalOps
 
         if (rhs == 0m)
         {
+            if (lhs == 0m)
+            {
+                throw DivisionUndefined(span);
+            }
+
             throw DivisionByZero("decimal division by zero", span);
         }
 
@@ -65,7 +89,12 @@ internal static partial class PyDecimalOps
 
         if (rhs == 0m)
         {
-            throw DivisionByZero("decimal modulo by zero", span);
+            if (lhs == 0m)
+            {
+                throw DivisionUndefined(span);
+            }
+
+            throw InvalidOperationSignal(span);
         }
 
         try
@@ -87,6 +116,16 @@ internal static partial class PyDecimalOps
 
         if (rhs == 0m)
         {
+            if (lhs == 0m)
+            {
+                throw DivisionUndefined(span);
+            }
+
+            if (operation == "divmod()")
+            {
+                throw DivmodByZero(span);
+            }
+
             throw DivisionByZero("decimal floor division by zero", span);
         }
 
@@ -389,6 +428,33 @@ internal sealed class DecimalNanComparisonPayload : IPyRenderableValue
 
     public PyString RenderPython(PyRenderingContext context)
         => PyString.FromString(NanComparisonText, context.Context.MemoryGovernor);
+
+    public PyString RenderInterpolated(PyRenderingContext context)
+        => RenderPython(context);
+}
+
+// Divmod by a zero divisor carries both signal classes in args like
+// CPython; the text is constant, so the payload only formats it at display
+// time through the display governor like its neighbors.
+internal sealed class DecimalDivmodZeroPayload : IPyRenderableValue
+{
+    internal const string DivmodZeroText = "[<class 'decimal.InvalidOperation'>, <class 'decimal.DivisionByZero'>]";
+
+    public PyString RenderPython(PyRenderingContext context)
+        => PyString.FromString(DivmodZeroText, context.Context.MemoryGovernor);
+
+    public PyString RenderInterpolated(PyRenderingContext context)
+        => RenderPython(context);
+}
+
+// Zero divided by zero signals DivisionUndefined like CPython, whose args
+// carry just that class; same constant-payload shape as its neighbors.
+internal sealed class DecimalDivisionUndefinedPayload : IPyRenderableValue
+{
+    internal const string DivisionUndefinedText = "[<class 'decimal.DivisionUndefined'>]";
+
+    public PyString RenderPython(PyRenderingContext context)
+        => PyString.FromString(DivisionUndefinedText, context.Context.MemoryGovernor);
 
     public PyString RenderInterpolated(PyRenderingContext context)
         => RenderPython(context);

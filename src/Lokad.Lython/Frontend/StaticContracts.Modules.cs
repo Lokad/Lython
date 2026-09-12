@@ -238,6 +238,7 @@ internal static partial class StaticContracts
             "Subnormal",
             "Clamped",
             "FloatOperation",
+            "DivisionUndefined",
             "ROUND_CEILING",
             "ROUND_FLOOR",
             "ROUND_HALF_UP",

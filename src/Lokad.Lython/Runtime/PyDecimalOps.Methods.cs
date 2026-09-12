@@ -273,7 +273,12 @@ internal static partial class PyDecimalOps
 
         if (other == 0m)
         {
-            throw DivisionByZero("decimal remainder_near by zero", span);
+            if (value.Value == 0m)
+            {
+                throw DivisionUndefined(span);
+            }
+
+            throw InvalidOperationSignal(span);
         }
 
         var quotient = decimal.Round(value.Value / other, 0, MidpointRounding.ToEven);

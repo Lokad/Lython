@@ -14,6 +14,7 @@ internal sealed partial class LythonRuntime
         "Subnormal",
         "Clamped",
         "FloatOperation",
+        "DivisionUndefined",
     ];
 
     private sealed class DecimalModule : PyModule
