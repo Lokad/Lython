@@ -402,7 +402,7 @@ fail()
             });
         Assert.False(missingMember.Success);
         Assert.Equal("ImportError", missingMember.Failure?.ExceptionType);
-        Assert.Contains("Cannot import name 'missing' from 'helper'", missingMember.Failure?.Message);
+        Assert.Contains("cannot import name 'missing' from 'helper'", missingMember.Failure?.Message);
     }
 
     private sealed class CountingHost : ILythonHost, ILythonSynchronousHostCapability

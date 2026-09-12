@@ -6,10 +6,10 @@ namespace Lokad.Lython.Runtime;
 internal static class RuntimeErrors
 {
     public static LythonRuntimeException CannotImportMember(string moduleName, string memberName, LythonSourceSpan? span)
-        => new("ImportError", $"Cannot import name '{memberName}' from '{moduleName}'.", span);
+        => new("ImportError", $"cannot import name '{memberName}' from '{moduleName}'", span);
 
     public static LythonRuntimeException NoModuleNamed(string moduleName, LythonSourceSpan? span)
-        => new("ModuleNotFoundError", $"No module named '{moduleName}'.", span);
+        => new("ModuleNotFoundError", $"No module named '{moduleName}'", span);
 
     public static LythonRuntimeException CircularImport(string moduleName, LythonSourceSpan? span)
         => new("ImportError", $"Circular import of '{moduleName}'.", span);

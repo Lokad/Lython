@@ -156,8 +156,8 @@ __lython_file.close()
     }
 
     [Theory]
-    [InlineData("from re import missing\n", "ImportError", "Cannot import name 'missing' from 're'")]
-    [InlineData("from csv import nope as writer\n", "ImportError", "Cannot import name 'nope' from 'csv'")]
+    [InlineData("from re import missing\n", "ImportError", "cannot import name 'missing' from 're'")]
+    [InlineData("from csv import nope as writer\n", "ImportError", "cannot import name 'nope' from 'csv'")]
     [InlineData("import missing\n", "ModuleNotFoundError", "No module named 'missing'")]
     [InlineData("from missing import value\n", "ModuleNotFoundError", "No module named 'missing'")]
     public void FromImport_UnknownMember_FailsWithImportError(string source, string exceptionType, string messageFragment)
@@ -168,6 +168,20 @@ __lython_file.close()
         Assert.NotNull(result.Failure);
         Assert.Equal(exceptionType, result.Failure?.ExceptionType);
         Assert.Contains(messageFragment, result.Failure?.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ImportFailures_SpellLikeCpython()
+    {
+        const string source = "results = []\ntry:\n    import missing\n    results.append(\"no-error\")\nexcept ModuleNotFoundError as e:\n    results.append(str(e))\ntry:\n    from re import missing\n    results.append(\"no-error\")\nexcept ImportError as e:\n    results.append(str(e))\nreturn \"|\".join(results)";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("No module named 'missing'|cannot import name 'missing' from 're'", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("No module named 'missing'|cannot import name 'missing' from 're'", asyncResult.ReturnValue);
     }
 
     [Theory]
