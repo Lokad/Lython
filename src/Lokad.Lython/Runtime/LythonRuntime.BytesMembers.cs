@@ -94,9 +94,14 @@ internal sealed partial class LythonRuntime
                         return SplitBytesWhitespace(bytes, maxSplit, context, span);
                     }
 
-                    if (arguments.Length is < 1 or > 2 || arguments[0] is not PyBytes separator)
+                    if (arguments.Length is < 1 or > 2)
                     {
                         throw new LythonRuntimeException("TypeError", "bytes.split([sep[, maxsplit]]) expects zero, one, or two arguments with bytes separator and optional integer maxsplit.", span);
+                    }
+
+                    if (arguments[0] is not PyBytes separator)
+                    {
+                        throw new LythonRuntimeException("TypeError", "a bytes-like object is required, not '" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "'", span);
                     }
 
                     maxSplit = arguments.Length == 2 ? RuntimeArgumentValidation.ParseIndexInt32(arguments[1], "maxsplit", "bytes.split([sep[, maxsplit]])", span, context) : -1;
@@ -123,9 +128,14 @@ internal sealed partial class LythonRuntime
                         return RSplitBytesWhitespace(bytes, maxSplit, context, span);
                     }
 
-                    if (arguments.Length is < 1 or > 2 || arguments[0] is not PyBytes separator)
+                    if (arguments.Length is < 1 or > 2)
                     {
                         throw new LythonRuntimeException("TypeError", "bytes.rsplit([sep[, maxsplit]]) expects zero, one, or two arguments with bytes separator and optional integer maxsplit.", span);
+                    }
+
+                    if (arguments[0] is not PyBytes separator)
+                    {
+                        throw new LythonRuntimeException("TypeError", "a bytes-like object is required, not '" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "'", span);
                     }
 
                     maxSplit = arguments.Length == 2 ? RuntimeArgumentValidation.ParseIndexInt32(arguments[1], "maxsplit", "bytes.rsplit([sep[, maxsplit]])", span, context) : -1;

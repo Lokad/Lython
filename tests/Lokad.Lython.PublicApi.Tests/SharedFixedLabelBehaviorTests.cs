@@ -4767,7 +4767,7 @@ public sealed class SharedFixedLabelBehaviorTests
             "Method 'bytes.splitlines' received too many positional arguments.",
             "Method 'bytes.split' got an unexpected keyword argument 'x'.",
             "empty separator",
-            "bytes.rsplit([sep[, maxsplit]]) expects zero, one, or two arguments with bytes separator and optional integer maxsplit.",
+            "a bytes-like object is required, not 'int'",
             "'str' object cannot be interpreted as an integer",
         };
         var sync = script.Run(new MockLythonHost());
