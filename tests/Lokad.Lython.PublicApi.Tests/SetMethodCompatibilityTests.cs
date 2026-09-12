@@ -208,6 +208,8 @@ return "|".join(vals)
     [InlineData("return {(1, 2): 3}.items().isdisjoint([([1], 2)])\n", "hashable")]
     [InlineData("return {1: 2}.values().isdisjoint([1])\n", "has no attribute")]
     [InlineData("return {1}.union(other={2})\n", "positional")]
+    [InlineData("return set([[]])\n", "unhashable type: 'list'")]
+    [InlineData("def f(p):\n return set(p)\nf([{}])\n", "unhashable type: 'dict'")]
     public void InvalidSetMethodOperandsAndCalls_FailExplicitly(string source, string expectedFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());

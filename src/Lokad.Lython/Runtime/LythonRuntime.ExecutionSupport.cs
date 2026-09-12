@@ -23,10 +23,10 @@ internal sealed partial class LythonRuntime
         {
             PyTuple tuple => NormalizeValidatedTuple(tuple, item => ValidateSetItem(item, span, governor), governor, span),
             IPyHashableValue or bool or BigInteger or double => value,
-            _ => throw RuntimeErrors.SetElementsMustBeHashable(span)
+            _ => throw RuntimeErrors.UnhashableType(value, span)
         };
 
-        return EnsureHashableValue(normalized, span, "set elements must be hashable.");
+        return EnsureHashableValue(normalized, span);
     }
 
     internal static object ValidateDictionaryKey(object value, LythonSourceSpan? span)
@@ -38,13 +38,13 @@ internal sealed partial class LythonRuntime
         {
             PyTuple tuple => NormalizeValidatedTuple(tuple, item => ValidateDictionaryKey(item, span, governor), governor, span),
             IPyHashableValue or bool or BigInteger or double => value,
-            _ => throw new LythonRuntimeException("TypeError", "dictionary keys must be hashable.", span)
+            _ => throw RuntimeErrors.UnhashableType(value, span)
         };
 
-        return EnsureHashableValue(normalized, span, "dictionary keys must be hashable.");
+        return EnsureHashableValue(normalized, span);
     }
 
-    private static object EnsureHashableValue(object value, LythonSourceSpan? span, string message)
+    private static object EnsureHashableValue(object value, LythonSourceSpan? span)
     {
         try
         {
@@ -53,7 +53,7 @@ internal sealed partial class LythonRuntime
         }
         catch (InvalidOperationException)
         {
-            throw new LythonRuntimeException("TypeError", message, span);
+            throw RuntimeErrors.UnhashableType(value, span);
         }
     }
 

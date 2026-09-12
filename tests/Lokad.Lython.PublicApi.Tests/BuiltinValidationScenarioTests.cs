@@ -709,9 +709,9 @@ __lython_file.close()
     }
 
     [Theory]
-    [InlineData("d = {[]: 1}\n", "dictionary keys must be hashable")]
-    [InlineData("d = {1: 2}\nd[[1]] = 3\n", "dictionary keys must be hashable")]
-    [InlineData("d = {(1, []): 2}\n", "dictionary keys must be hashable")]
+    [InlineData("d = {[]: 1}\n", "unhashable type: 'list'")]
+    [InlineData("d = {1: 2}\nd[[1]] = 3\n", "unhashable type: 'list'")]
+    [InlineData("d = {(1, []): 2}\n", "unhashable type: 'list'")]
     public void DictionaryKeyHashabilityFailures_ReportTypeError(string source, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());

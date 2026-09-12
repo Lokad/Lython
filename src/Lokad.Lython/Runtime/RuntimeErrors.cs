@@ -152,6 +152,4 @@ internal static class RuntimeErrors
     public static LythonRuntimeException CannotImportModule(string moduleName, string message, LythonSourceSpan? span)
         => new("SyntaxError", $"Cannot import module '{moduleName}': {message}", span);
 
-    public static LythonRuntimeException SetElementsMustBeHashable(LythonSourceSpan? span)
-        => Type("set elements must be hashable.", span);
 }

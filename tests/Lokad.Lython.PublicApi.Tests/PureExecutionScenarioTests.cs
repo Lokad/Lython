@@ -6395,7 +6395,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal(@"True|False|True|True|True|False|True|True|False|True|True|False|True|True|False|dictionary keys must be hashable.", host.ReadText("/out.txt"));
+        Assert.Equal(@"True|False|True|True|True|False|True|True|False|True|True|False|True|True|False|unhashable type: 'list'", host.ReadText("/out.txt"));
     }
 
     [Fact]
