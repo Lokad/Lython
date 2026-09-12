@@ -292,7 +292,8 @@ __lython_file.close()
     [InlineData("map(1, [1])\n", "TypeError", "callable")]
     [InlineData("map(lambda x: x)\n", "TypeError", "at least one iterable")]
     [InlineData("filter(1, [1])\n", "TypeError", "is not callable")]
-    [InlineData("slice()\n", "TypeError", "expects one to three arguments")]
+    [InlineData("slice()\n", "TypeError", "slice expected at least 1 argument, got 0")]
+    [InlineData("slice(1, 2, 3, 4)\n", "TypeError", "slice expected at most 3 arguments, got 4")]
     [InlineData("[1, 2][slice(0, 2, 0)]\n", "ValueError", "slice step cannot be zero")]
     public void IteratorAndSequenceBuiltins_ReportExplicitFailures(string source, string exceptionType, string messageFragment)
     {

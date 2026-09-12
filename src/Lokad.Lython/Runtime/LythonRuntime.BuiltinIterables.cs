@@ -468,9 +468,14 @@ internal sealed partial class LythonRuntime
 
     private static object Slice(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        if (arguments.Length is < 1 or > 3)
+        if (arguments.Length < 1)
         {
-            throw new LythonRuntimeException("TypeError", "slice(stop) or slice(start, stop[, step]) expects one to three arguments.", span);
+            throw new LythonRuntimeException("TypeError", "slice expected at least 1 argument, got 0", span);
+        }
+
+        if (arguments.Length > 3)
+        {
+            throw new LythonRuntimeException("TypeError", "slice expected at most 3 arguments, got " + arguments.Length, span);
         }
 
         // Slice syntax never materializes an object; only explicit calls retain one.
