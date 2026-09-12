@@ -10,6 +10,9 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("min([1], key=1)\n", "TypeError", "'int' object is not callable")]
     [InlineData("max([1], key=1)\n", "TypeError", "'int' object is not callable")]
     [InlineData("min(1, 2, key=1)\n", "TypeError", "'int' object is not callable")]
+    [InlineData("sorted([3, 1], key=1)\n", "TypeError", "'int' object is not callable")]
+    [InlineData("x = [3, 1]\nx.sort(key=1)\n", "TypeError", "'int' object is not callable")]
+    [InlineData("sorted([1], key='a')\n", "TypeError", "'str' object is not callable")]
     [InlineData("range(1, 2, 0)\n", "ValueError", "must not be zero")]
     [InlineData("int(\"bad\")\n", "ValueError", "invalid literal")]
     [InlineData("float(\"bad\")\n", "ValueError", "could not convert string to float: 'bad'")]
@@ -158,7 +161,7 @@ __lython_file.close()
     }
 
     [Theory]
-    [InlineData("key = 1\nsorted([1], key = key)\n", "TypeError", "callable or None")]
+    [InlineData("key = 1\nsorted([1], key = key)\n", "TypeError", "'int' object is not callable")]
     public void SortedKeywordFailures_ReportExpectedFailure(string source, string expectedFailureKind, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());

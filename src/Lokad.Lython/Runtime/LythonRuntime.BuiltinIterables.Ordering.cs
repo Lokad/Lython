@@ -46,8 +46,7 @@ internal sealed partial class LythonRuntime
             keyArgument,
             reverse,
             span,
-            context,
-            "sorted(..., key=...) expects a callable or None.");
+            context);
 
         var result = new PyList(items, context.MemoryGovernor, span);
         context.ObserveCollectionCount(result.Count, span);
@@ -70,7 +69,7 @@ internal sealed partial class LythonRuntime
             reverse = IsTruthy(arguments[2]);
         }
 
-        using var items = await SortItemsAsync(values, keyArgument, reverse, span, context, "sorted(..., key=...) expects a callable or None.").ConfigureAwait(false);
+        using var items = await SortItemsAsync(values, keyArgument, reverse, span, context).ConfigureAwait(false);
 
         var result = new PyList(items, context.MemoryGovernor, span);
         context.ObserveCollectionCount(result.Count, span);
@@ -305,8 +304,7 @@ internal sealed partial class LythonRuntime
         object? keyArgument,
         bool reverse,
         LythonSourceSpan span,
-        ExecutionContext context,
-        string keyErrorMessage)
+        ExecutionContext context)
     {
         var entries = new PyStableSort.Buffer(context.MemoryGovernor, span);
         try
@@ -320,7 +318,7 @@ internal sealed partial class LythonRuntime
                 // R13: an invalid key fails only when it would actually be called.
                 if (keyInvalid)
                 {
-                    throw new LythonRuntimeException("TypeError", keyErrorMessage, span);
+                    throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.OperandTypeName(keyArgument) + "' object is not callable", span);
                 }
 
                 entries.Add(
@@ -354,8 +352,7 @@ internal sealed partial class LythonRuntime
         object? keyArgument,
         bool reverse,
         LythonSourceSpan span,
-        ExecutionContext context,
-        string keyErrorMessage)
+        ExecutionContext context)
     {
         var entries = new PyStableSort.Buffer(context.MemoryGovernor, span);
         try
@@ -369,7 +366,7 @@ internal sealed partial class LythonRuntime
                 // R13: an invalid key fails only when it would actually be called.
                 if (keyInvalid)
                 {
-                    throw new LythonRuntimeException("TypeError", keyErrorMessage, span);
+                    throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.OperandTypeName(keyArgument) + "' object is not callable", span);
                 }
 
                 entries.Add(

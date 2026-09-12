@@ -159,7 +159,7 @@ internal sealed partial class LythonRuntime
 
             // R13: an invalid key only fails when the list is non-empty and the
             // key would actually be called.
-            using var sorted = SortItems(list, keyArgument, reverse, span, context, "list.sort(..., key=...) expects a callable or None.");
+            using var sorted = SortItems(list, keyArgument, reverse, span, context);
             list.ReplaceAll(sorted);
             return PyNone.Instance;
         }
@@ -176,7 +176,7 @@ internal sealed partial class LythonRuntime
 
             // R13: an invalid key only fails when the list is non-empty and the
             // key would actually be called.
-            using var sorted = await SortItemsAsync(list, keyArgument, reverse, span, context, "list.sort(..., key=...) expects a callable or None.").ConfigureAwait(false);
+            using var sorted = await SortItemsAsync(list, keyArgument, reverse, span, context).ConfigureAwait(false);
             list.ReplaceAll(sorted);
             return PyNone.Instance;
         }
