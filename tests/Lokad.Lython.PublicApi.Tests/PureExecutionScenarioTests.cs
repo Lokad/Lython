@@ -4638,6 +4638,9 @@ __lython_file.close()
     [InlineData("x = list\nx + 1\n", "unsupported operand type(s) for +: 'type' and 'int'")]
     [InlineData("x = dict\nx + 1\n", "unsupported operand type(s) for +: 'type' and 'int'")]
     [InlineData("import functools\nfunctools.partial(int) + 1\n", "unsupported operand type(s) for +: 'functools.partial' and 'int'")]
+    [InlineData("import collections\ndef f(a, b):\n    return a + b\nf(collections.namedtuple, 1)\n", "unsupported operand type(s) for +: 'function' and 'int'")]
+    [InlineData("import collections\ndef f(a, b):\n    return a + b\nf(collections.OrderedDict, 1)\n", "unsupported operand type(s) for +: 'type' and 'int'")]
+    [InlineData("import collections\ndef f(a, b):\n    return a + b\nf(collections.Counter, 1)\n", "unsupported operand type(s) for +: 'type' and 'int'")]
     public void InvalidOperands_ReportPythonShapedTexts(string source, string message)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());

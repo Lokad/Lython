@@ -669,6 +669,8 @@ internal sealed partial class LythonRuntime
             PyStaticMethod => "staticmethod",
             PyClassMethod => "classmethod",
             PyPartial => "functools.partial",
+            CollectionsCallable member when member.Name is "collections.namedtuple" => "function",
+            CollectionsCallable => "type",
             PartialFactory or PartialMethodFactory => "type",
             PyZipInfo => "ZipInfo",
             PyType or PyBuiltinRuntimeType or ExceptionTypeValue => "type",
