@@ -299,50 +299,99 @@ internal static partial class PyDateTimeOps
 
     private static object? ArgAt(object[] arguments, int index) => index < arguments.Length ? arguments[index] : null;
 
-    private static bool TryGetScale(object value, out double scale)
+    private static (BigInteger Numerator, BigInteger Denominator) RatioParts(double value)
     {
-        if (Numbers.PyNumberOps.TryAsNumber(value, out var number))
+        // Exact binary decomposition (finite nonzero callers only):
+        // value == Numerator / Denominator.
+        var bits = BitConverter.DoubleToInt64Bits(value);
+        var exponent = (int)(((ulong)bits >> 52) & 0x7FFUL);
+        ulong mantissa = (ulong)(bits & 0xFFFFFFFFFFFFFL);
+        BigInteger numerator;
+        int shift;
+        if (exponent == 0)
         {
-            scale = number.ToDouble();
-            return true;
+            numerator = mantissa;
+            shift = -1074;
+        }
+        else
+        {
+            numerator = (BigInteger)(mantissa | 0x10000000000000UL);
+            shift = exponent - 1075;
         }
 
-        scale = 0.0;
-        return false;
+        if (value < 0)
+        {
+            numerator = -numerator;
+        }
+
+        return shift >= 0
+            ? (numerator << shift, BigInteger.One)
+            : (numerator, BigInteger.One << -shift);
     }
 
-    private static PyTimedelta ScaleTimedelta(PyTimedelta delta, double scale, LythonSourceSpan span)
-        => ScaleTimedelta(delta, scale, span, false, false);
-
-    private static PyTimedelta ScaleTimedelta(PyTimedelta delta, double scale, LythonSourceSpan span, bool floor)
-        => ScaleTimedelta(delta, scale, span, floor, false);
-
-    private static PyTimedelta ScaleTimedelta(PyTimedelta delta, double scale, LythonSourceSpan span, bool floor, bool checkZero)
+    private static BigInteger DivideNearest(BigInteger numerator, BigInteger denominator, LythonSourceSpan span)
     {
-        if (checkZero && double.IsInfinity(scale))
+        // Round-half-even quotient like CPython divide_nearest.
+        if (denominator.IsZero)
         {
-            throw new LythonRuntimeException("ValueError", "division by zero", span);
+            throw new LythonRuntimeException("ZeroDivisionError", "integer division or modulo by zero", span);
         }
 
-        var scaledMicroseconds = (double)delta.TotalMicroseconds * scale;
-        var roundedMicroseconds = floor
-            ? Math.Floor(scaledMicroseconds)
-            : Math.Round(scaledMicroseconds, MidpointRounding.ToEven);
-        try
+        var quotient = BigInteger.DivRem(numerator, denominator, out var remainder);
+        if (remainder.IsZero)
         {
-            return CreateTimedelta(new BigInteger(roundedMicroseconds), span);
+            return quotient;
         }
-        catch (OverflowException ex)
+
+        var doubled = BigInteger.Abs(remainder) * 2;
+        var absolute = BigInteger.Abs(denominator);
+        var comparison = doubled.CompareTo(absolute);
+        if (comparison < 0)
         {
-            throw new LythonRuntimeException("OverflowError", "timedelta is outside Python's supported day range", span, ex);
+            return quotient;
         }
+
+        var step = remainder.Sign == denominator.Sign ? BigInteger.One : BigInteger.MinusOne;
+        if (comparison > 0)
+        {
+            return quotient + step;
+        }
+
+        return quotient.IsEven ? quotient : quotient + step;
+    }
+
+    private static PyTimedelta ScaleFloat(PyTimedelta delta, double factor, bool divide, LythonSourceSpan span)
+    {
+        // Float factors convert through the exact integer ratio like CPython.
+        if (double.IsInfinity(factor))
+        {
+            throw new LythonRuntimeException("OverflowError", "cannot convert Infinity to integer ratio", span);
+        }
+
+        if (double.IsNaN(factor))
+        {
+            throw new LythonRuntimeException("ValueError", "cannot convert NaN to integer ratio", span);
+        }
+
+        var (numerator, denominator) = RatioParts(factor);
+        if (divide)
+        {
+            if (numerator.IsZero)
+            {
+                throw new LythonRuntimeException("ZeroDivisionError", "integer division or modulo by zero", span);
+            }
+
+            return CreateTimedelta(DivideNearest(delta.TotalMicroseconds * denominator, numerator, span), span);
+        }
+
+        return CreateTimedelta(DivideNearest(delta.TotalMicroseconds * numerator, denominator, span), span);
     }
 
     private static double DivideTimedeltas(PyTimedelta left, PyTimedelta right, LythonSourceSpan span)
     {
         if (right.TotalMicroseconds.IsZero)
         {
-            throw new LythonRuntimeException("ValueError", "division by zero", span);
+            throw new LythonRuntimeException("ZeroDivisionError", "division by zero", span);
         }
 
         return (double)left.TotalMicroseconds / (double)right.TotalMicroseconds;
@@ -350,6 +399,11 @@ internal static partial class PyDateTimeOps
 
     private static PyTimedelta TimedeltaModulo(PyTimedelta left, PyTimedelta right, LythonSourceSpan span)
     {
+        if (right.TotalMicroseconds.IsZero)
+        {
+            throw new LythonRuntimeException("ZeroDivisionError", "integer modulo by zero", span);
+        }
+
         var quotient = FloorDivideMicroseconds(left.TotalMicroseconds, right.TotalMicroseconds, span);
         return CreateTimedelta(left.TotalMicroseconds - quotient * right.TotalMicroseconds, span);
     }
@@ -358,7 +412,7 @@ internal static partial class PyDateTimeOps
     {
         if (right.IsZero)
         {
-            throw new LythonRuntimeException("ValueError", "integer division or modulo by zero", span);
+            throw new LythonRuntimeException("ZeroDivisionError", "integer division or modulo by zero", span);
         }
 
         var quotient = BigInteger.DivRem(left, right, out var remainder);
@@ -372,16 +426,45 @@ internal static partial class PyDateTimeOps
 
     private static PyTimedelta CreateTimedelta(BigInteger totalMicroseconds, LythonSourceSpan span)
     {
-        try
+        // Day counts funnel through a C-int conversion before the magnitude
+        // check like CPython microseconds_to_delta; the floor division matches
+        // the constructor domain exactly, so the construction below holds.
+        var days = FloorDivRem(totalMicroseconds, PyTimedelta.MicrosecondsPerDay, out _);
+        if (days < int.MinValue || days > int.MaxValue)
         {
-            return new PyTimedelta(totalMicroseconds);
+            throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C int", span);
         }
-        catch (OverflowException ex)
+
+        var dayCount = (int)days;
+        if (dayCount < -999_999_999 || dayCount > 999_999_999)
         {
-            throw new LythonRuntimeException("OverflowError", "timedelta is outside Python's supported day range", span, ex);
+            throw new LythonRuntimeException("OverflowError", $"days={dayCount}; must have magnitude <= 999999999", span);
         }
+
+        return new PyTimedelta(totalMicroseconds);
     }
 
-    private static int GetDateDeltaDays(PyTimedelta delta)
-        => (int)delta.Days;
+    private static PyDate AddDaysToDate(PyDate date, BigInteger deltaDays, LythonSourceSpan span)
+    {
+        // Only whole days shift the date, using the floor-normalized day
+        // count like CPython (callers pass delta.Days or its negation).
+        var dayNumber = (BigInteger)date.Value.DayNumber + deltaDays;
+        if (dayNumber < 0 || dayNumber > DateOnly.MaxValue.DayNumber)
+        {
+            throw new LythonRuntimeException("OverflowError", "date value out of range", span);
+        }
+
+        return new PyDate(DateOnly.FromDayNumber((int)dayNumber));
+    }
+
+    private static PyDateTime AddDeltaToDateTime(PyDateTime dateTime, BigInteger deltaMicroseconds, LythonSourceSpan span)
+    {
+        var ticks = (BigInteger)dateTime.Value.Ticks + deltaMicroseconds * 10;
+        if (ticks < DateTime.MinValue.Ticks || ticks > DateTime.MaxValue.Ticks)
+        {
+            throw new LythonRuntimeException("OverflowError", "date value out of range", span);
+        }
+
+        return new PyDateTime(new DateTime((long)ticks, dateTime.Value.Kind), dateTime.TzInfo, dateTime.Fold);
+    }
 }

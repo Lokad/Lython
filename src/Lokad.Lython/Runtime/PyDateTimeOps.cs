@@ -295,20 +295,7 @@ internal static partial class PyDateTimeOps
             totalMicroseconds += (BigInteger)whole;
         }
 
-        var secondsTotal = FloorDivRem(totalMicroseconds, new BigInteger(1_000_000), out _);
-        var days = FloorDivRem(secondsTotal, new BigInteger(86_400), out _);
-        if (days < int.MinValue || days > int.MaxValue)
-        {
-            throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C int", span);
-        }
-
-        var dayCount = (int)days;
-        if (dayCount < -999_999_999 || dayCount > 999_999_999)
-        {
-            throw new LythonRuntimeException("OverflowError", $"days={dayCount}; must have magnitude <= 999999999", span);
-        }
-
-        return OwnDateTimeValue(new PyTimedelta(totalMicroseconds), context, span);
+        return OwnDateTimeValue(CreateTimedelta(totalMicroseconds, span), context, span);
     }
 
     private static BigInteger FloorDivRem(BigInteger value, BigInteger divisor, out BigInteger remainder)
@@ -826,10 +813,10 @@ internal static partial class PyDateTimeOps
         return (left, right) switch
         {
             (PyTimedelta lhs, PyTimedelta rhs) => OwnDateTimeValue(CreateTimedelta(lhs.TotalMicroseconds + rhs.TotalMicroseconds, span), context, span),
-            (PyDate date, PyTimedelta delta) => OwnDateTimeValue(new PyDate(date.Value.AddDays(GetDateDeltaDays(delta))), context, span),
-            (PyTimedelta delta, PyDate date) => OwnDateTimeValue(new PyDate(date.Value.AddDays(GetDateDeltaDays(delta))), context, span),
-            (PyDateTime dateTime, PyTimedelta delta) => OwnDateTimeValue(new PyDateTime(dateTime.Value + delta.Value, dateTime.TzInfo, dateTime.Fold), context, span),
-            (PyTimedelta delta, PyDateTime dateTime) => OwnDateTimeValue(new PyDateTime(dateTime.Value + delta.Value, dateTime.TzInfo, dateTime.Fold), context, span),
+            (PyDate date, PyTimedelta delta) => OwnDateTimeValue(AddDaysToDate(date, delta.Days, span), context, span),
+            (PyTimedelta delta, PyDate date) => OwnDateTimeValue(AddDaysToDate(date, delta.Days, span), context, span),
+            (PyDateTime dateTime, PyTimedelta delta) => OwnDateTimeValue(AddDeltaToDateTime(dateTime, delta.TotalMicroseconds, span), context, span),
+            (PyTimedelta delta, PyDateTime dateTime) => OwnDateTimeValue(AddDeltaToDateTime(dateTime, delta.TotalMicroseconds, span), context, span),
             _ => throw RuntimeErrors.UnsupportedOperands(operation ?? "+", left, right, span)
         };
     }
@@ -839,9 +826,9 @@ internal static partial class PyDateTimeOps
         return (left, right) switch
         {
             (PyTimedelta lhs, PyTimedelta rhs) => OwnDateTimeValue(CreateTimedelta(lhs.TotalMicroseconds - rhs.TotalMicroseconds, span), context, span),
-            (PyDate lhs, PyTimedelta rhs) => OwnDateTimeValue(new PyDate(lhs.Value.AddDays(-GetDateDeltaDays(rhs))), context, span),
+            (PyDate lhs, PyTimedelta rhs) => OwnDateTimeValue(AddDaysToDate(lhs, -rhs.Days, span), context, span),
             (PyDate lhs, PyDate rhs) => OwnDateTimeValue(new PyTimedelta(TimeSpan.FromDays(lhs.Value.DayNumber - rhs.Value.DayNumber)), context, span),
-            (PyDateTime lhs, PyTimedelta rhs) => OwnDateTimeValue(new PyDateTime(lhs.Value - rhs.Value, lhs.TzInfo, lhs.Fold), context, span),
+            (PyDateTime lhs, PyTimedelta rhs) => OwnDateTimeValue(AddDeltaToDateTime(lhs, -rhs.TotalMicroseconds, span), context, span),
             (PyDateTime lhs, PyDateTime rhs) => OwnDateTimeValue(SubtractDateTimes(lhs, rhs, span), context, span),
             _ => throw RuntimeErrors.UnsupportedOperands(operation ?? "-", left, right, span)
         };
@@ -860,8 +847,10 @@ internal static partial class PyDateTimeOps
     {
         return (left, right) switch
         {
-            (PyTimedelta delta, _) when TryGetScale(right, out var scale) => OwnDateTimeValue(ScaleTimedelta(delta, scale, span), context, span),
-            (_, PyTimedelta delta) when TryGetScale(left, out var scale) => OwnDateTimeValue(ScaleTimedelta(delta, scale, span), context, span),
+            (PyTimedelta delta, _) when Numbers.PyNumberOps.TryAsInteger(right, out var factor) => OwnDateTimeValue(CreateTimedelta(delta.TotalMicroseconds * factor, span), context, span),
+            (PyTimedelta delta, _) when Numbers.PyNumberOps.TryAsNumber(right, out var number) && number.IsFloat => OwnDateTimeValue(ScaleFloat(delta, number.Floating, divide: false, span), context, span),
+            (_, PyTimedelta delta) when Numbers.PyNumberOps.TryAsInteger(left, out var leftFactor) => OwnDateTimeValue(CreateTimedelta(delta.TotalMicroseconds * leftFactor, span), context, span),
+            (_, PyTimedelta delta) when Numbers.PyNumberOps.TryAsNumber(left, out var leftNumber) && leftNumber.IsFloat => OwnDateTimeValue(ScaleFloat(delta, leftNumber.Floating, divide: false, span), context, span),
             _ => throw RuntimeErrors.UnsupportedOperands(operation ?? "*", left, right, span)
         };
     }
@@ -871,7 +860,8 @@ internal static partial class PyDateTimeOps
         return (left, right) switch
         {
             (PyTimedelta delta, PyTimedelta other) => DivideTimedeltas(delta, other, span),
-            (PyTimedelta delta, _) when TryGetScale(right, out var scale) => OwnDateTimeValue(ScaleTimedelta(delta, 1.0 / scale, span, floor: false, checkZero: true), context, span),
+            (PyTimedelta delta, _) when Numbers.PyNumberOps.TryAsInteger(right, out var divisor) => OwnDateTimeValue(CreateTimedelta(DivideNearest(delta.TotalMicroseconds, divisor, span), span), context, span),
+            (PyTimedelta delta, _) when Numbers.PyNumberOps.TryAsNumber(right, out var number) && number.IsFloat => OwnDateTimeValue(ScaleFloat(delta, number.Floating, divide: true, span), context, span),
             _ => throw RuntimeErrors.UnsupportedOperands(operation ?? "/", left, right, span)
         };
     }
@@ -881,7 +871,7 @@ internal static partial class PyDateTimeOps
         return (left, right) switch
         {
             (PyTimedelta delta, PyTimedelta other) => FloorDivideMicroseconds(delta.TotalMicroseconds, other.TotalMicroseconds, span),
-            (PyTimedelta delta, _) when TryGetScale(right, out var scale) => OwnDateTimeValue(ScaleTimedelta(delta, 1.0 / scale, span, floor: true, checkZero: true), context, span),
+            (PyTimedelta delta, _) when Numbers.PyNumberOps.TryAsInteger(right, out var divisor) => OwnDateTimeValue(CreateTimedelta(FloorDivideMicroseconds(delta.TotalMicroseconds, divisor, span), span), context, span),
             _ => throw RuntimeErrors.UnsupportedOperands(operation ?? "//", left, right, span)
         };
     }

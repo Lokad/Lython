@@ -144,6 +144,26 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("import datetime\ndatetime.datetime.fromtimestamp(9223372036854775808)\n", "OverflowError", "timestamp out of range for platform time_t")]
     [InlineData("import datetime\ndatetime.datetime.fromtimestamp(-9223372036854775809)\n", "OverflowError", "timestamp out of range for platform time_t")]
     [InlineData("import datetime\ndatetime.datetime.utcfromtimestamp(10**30)\n", "OverflowError", "timestamp out of range for platform time_t")]
+    [InlineData("import datetime\ndatetime.date(9999, 12, 31) + datetime.timedelta(days=1)\n", "OverflowError", "date value out of range")]
+    [InlineData("import datetime\ndatetime.date(1, 1, 1) - datetime.timedelta(days=1)\n", "OverflowError", "date value out of range")]
+    [InlineData("import datetime\ndatetime.datetime.max + datetime.timedelta(days=1)\n", "OverflowError", "date value out of range")]
+    [InlineData("import datetime\ndatetime.timedelta.max + datetime.timedelta(days=1)\n", "OverflowError", "days=1000000000; must have magnitude <= 999999999")]
+    [InlineData("import datetime\ndatetime.timedelta.min - datetime.timedelta(days=1)\n", "OverflowError", "days=-1000000000; must have magnitude <= 999999999")]
+    [InlineData("import datetime\n-datetime.timedelta.max\n", "OverflowError", "days=-1000000000; must have magnitude <= 999999999")]
+    [InlineData("import datetime\ndatetime.timedelta(days=1) * 10**30\n", "OverflowError", "Python int too large to convert to C int")]
+    [InlineData("import datetime\ndatetime.timedelta(days=999999999) * 3\n", "OverflowError", "Python int too large to convert to C int")]
+    [InlineData("import datetime\ndatetime.timedelta(seconds=1) / 0\n", "ZeroDivisionError", "integer division or modulo by zero")]
+    [InlineData("import datetime\ndatetime.timedelta(seconds=1) // 0\n", "ZeroDivisionError", "integer division or modulo by zero")]
+    [InlineData("import datetime\ndatetime.timedelta(seconds=1) % datetime.timedelta(0)\n", "ZeroDivisionError", "integer modulo by zero")]
+    [InlineData("import datetime\ndatetime.timedelta(seconds=1) / datetime.timedelta(0)\n", "ZeroDivisionError", "division by zero")]
+    [InlineData("import datetime\ndatetime.timedelta(days=1) * float(\"inf\")\n", "OverflowError", "cannot convert Infinity to integer ratio")]
+    [InlineData("import datetime\ndatetime.timedelta(days=1) * float(\"nan\")\n", "ValueError", "cannot convert NaN to integer ratio")]
+    [InlineData("import datetime\ndatetime.timedelta(days=1) / 0.0\n", "ZeroDivisionError", "integer division or modulo by zero")]
+    [InlineData("import datetime\ndatetime.timedelta(seconds=5) // 2.0\n", "TypeError", "unsupported operand type(s) for //: 'datetime.timedelta' and 'float'")]
+    [InlineData("import datetime\ndivmod(datetime.timedelta(5), datetime.timedelta(0))\n", "ZeroDivisionError", "integer division or modulo by zero")]
+    [InlineData("import datetime\ndatetime.timedelta(days=1) / 1e-30\n", "OverflowError", "Python int too large to convert to C int")]
+    [InlineData("import datetime\ndatetime.timedelta(days=1) * 1e300\n", "OverflowError", "Python int too large to convert to C int")]
+    [InlineData("import datetime\ndatetime.timedelta(days=10000000000)\n", "OverflowError", "Python int too large to convert to C int")]
     [InlineData("import datetime\ndatetime.date.fromisoformat(\"2024-02-30\")\n", "ValueError", "day is out of range for month")]
     [InlineData("import datetime\ndatetime.date.fromisoformat(\"2024-13-01\")\n", "ValueError", "month must be in 1..12")]
     [InlineData("import datetime\ndatetime.date.fromisoformat(\"0000-01-01\")\n", "ValueError", "year 0 is out of range")]
@@ -456,6 +476,34 @@ __lython_file.close()
         var asyncResult = await script.RunAsync(new MockLythonHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("UTC+02:00|datetime.timezone(datetime.timedelta(seconds=7200))|UTC|datetime.timezone.utc|X|datetime.timezone(datetime.timedelta(seconds=7200), 'X')|datetime.datetime(2024, 1, 2, 3, 4, 5, tzinfo=datetime.timezone(datetime.timedelta(seconds=7200), 'X'))|X", asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task DateArithmeticUsesWholeDays()
+    {
+        const string source = "import datetime\nreturn str(datetime.date(2024, 1, 1) + datetime.timedelta(hours=36)) + \"|\" + str(datetime.date(2024, 1, 1) - datetime.timedelta(hours=36)) + \"|\" + str(datetime.date(2024, 1, 1) + datetime.timedelta(hours=-36)) + \"|\" + str(datetime.date(2024, 1, 1) + datetime.timedelta(hours=-12))\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("2024-01-02|2023-12-31|2023-12-30|2023-12-31", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("2024-01-02|2023-12-31|2023-12-30|2023-12-31", asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task TimedeltaScalesExactly()
+    {
+        const string source = "import datetime\nreturn str(datetime.timedelta(seconds=5) // 3) + \"|\" + str(datetime.timedelta(seconds=5) / 3) + \"|\" + str(datetime.timedelta(microseconds=1) * (2**31)) + \"|\" + str(datetime.timedelta(seconds=5) // True) + \"|\" + str(datetime.datetime(2024, 1, 1) + datetime.timedelta(days=200000))\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("0:00:01.666666|0:00:01.666667|0:35:47.483648|0:00:05|2571-08-01 00:00:00", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("0:00:01.666666|0:00:01.666667|0:35:47.483648|0:00:05|2571-08-01 00:00:00", asyncResult.ReturnValue);
     }
 
     [Fact]
