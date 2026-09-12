@@ -1044,4 +1044,38 @@ deque().pop()
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task CounterReprOrdersDecimalCounts()
+    {
+        // Decimal counts order numerically in repr like most_common,
+        // mirroring the PyComparison domain order in both modes.
+        var script = new LythonEngine().Compile("""
+            from decimal import Decimal
+            from collections import Counter
+            results = []
+            d = Counter()
+            d['a'] = Decimal('1.5')
+            d['b'] = Decimal('2')
+            d['c'] = Decimal('0.25')
+            results.append(str(d))
+            results.append(repr(d))
+            results.append(str(d.most_common()))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "Counter({'b': Decimal('2'), 'a': Decimal('1.5'), 'c': Decimal('0.25')})",
+            "Counter({'b': Decimal('2'), 'a': Decimal('1.5'), 'c': Decimal('0.25')})",
+            "[('b', Decimal('2')), ('a', Decimal('1.5')), ('c', Decimal('0.25'))]",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

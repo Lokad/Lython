@@ -254,11 +254,17 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
-    // Counts order numerically like most_common; strings order
-    // alphabetically like CPython sorting; anything else raises the shared
+    // Counts order like most_common: decimals compare in the decimal
+    // domain first (mirroring PyComparison), then plain numerics, then
+    // strings alphabetically; anything else raises the shared
     // not-comparable TypeError so rendering falls back to insertion order.
     private static int CompareCountsForRender(object left, object right)
     {
+        if (PyDecimalOps.TryAsDecimal(left, out var lhsDecimal) && PyDecimalOps.TryAsDecimal(right, out var rhsDecimal))
+        {
+            return lhsDecimal.CompareTo(rhsDecimal);
+        }
+
         if (PyNumberOps.TryAsNumber(left, out var lhs) && PyNumberOps.TryAsNumber(right, out var rhs))
         {
             return PyNumberOps.Compare(lhs, rhs);
