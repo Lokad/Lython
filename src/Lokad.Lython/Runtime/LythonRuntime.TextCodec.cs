@@ -88,6 +88,23 @@ internal sealed partial class LythonRuntime
         };
     }
 
+    // str()/bytes() reject non-string codec names up front with a per-argument
+    // TypeError, unlike the shared Parse helpers which serve hosts that accept
+    // None and report values. CPython names the offending type; bytes() spells
+    // a None name bare while str() uses the type name.
+    private static void RequireCodecNameType(object value, string owner, string argument, LythonSourceSpan span)
+    {
+        if (PyStringOps.TryAsString(value, out _))
+        {
+            return;
+        }
+
+        var typeName = value is PyNone && owner == "bytes()"
+            ? "None"
+            : RuntimeErrors.OperandTypeName(value);
+        throw new LythonRuntimeException("TypeError", $"{owner} argument '{argument}' must be str, not {typeName}", span);
+    }
+
     private static LythonRuntimeException UnsupportedTextErrors(string owner, LythonSourceSpan span)
         => new(
             "ValueError",

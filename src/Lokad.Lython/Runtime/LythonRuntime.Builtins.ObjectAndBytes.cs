@@ -174,9 +174,16 @@ internal sealed partial class LythonRuntime
 
         if (arguments.Length >= 2)
         {
+            // CPython validates the codec names before the source.
+            RequireCodecNameType(arguments[1], "bytes()", "encoding", span);
+            if (arguments.Length == 3)
+            {
+                RequireCodecNameType(arguments[2], "bytes()", "errors", span);
+            }
+
             if (!PyStringOps.TryAsString(arguments[0], out var text))
             {
-                throw new LythonRuntimeException("TypeError", "bytes(source, encoding[, errors]) expects source to be a string.", span);
+                throw new LythonRuntimeException("TypeError", "encoding without a string argument", span);
             }
 
             var encoding = ParseTextEncoding(arguments[1], "bytes()", span);

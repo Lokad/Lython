@@ -190,16 +190,35 @@ internal sealed partial class LythonRuntime
             return PyRendering.ToInterpolatedPyString(arguments[0], new PyRenderingContext(context));
         }
 
-        if (arguments.Length > 3 || arguments[0] is not PyBytes bytes)
+        if (arguments.Length == 2 || arguments.Length == 3)
         {
-            throw new LythonRuntimeException("TypeError", "str(object='', encoding='utf-8', errors='strict') expects bytes when encoding or errors are provided.", span);
+            // CPython validates the codec names before the object, and refuses
+            // to decode strings outright.
+            RequireCodecNameType(arguments[1], "str()", "encoding", span);
+            if (arguments.Length == 3)
+            {
+                RequireCodecNameType(arguments[2], "str()", "errors", span);
+            }
+
+            if (arguments[0] is PyString || arguments[0] is string)
+            {
+                throw new LythonRuntimeException("TypeError", "decoding str is not supported", span);
+            }
+
+            if (arguments[0] is not PyBytes bytes)
+            {
+                throw new LythonRuntimeException("TypeError", "decoding to str: need a bytes-like object, " + RuntimeErrors.OperandTypeName(arguments[0]) + " found", span);
+            }
+
+            var encoding = ParseTextEncoding(arguments[1], "str()", span);
+            var errors = arguments.Length == 3
+                ? ParseTextErrors(arguments[2], "str()", span)
+                : TextErrorMode.Strict;
+            return DecodeText(bytes.ToArray(), encoding, context, span, errors, TextNewlineMode.PreserveUniversal);
         }
 
-        var encoding = ParseTextEncoding(arguments[1], "str()", span);
-        var errors = arguments.Length == 3
-            ? ParseTextErrors(arguments[2], "str()", span)
-            : TextErrorMode.Strict;
-        return DecodeText(bytes.ToArray(), encoding, context, span, errors, TextNewlineMode.PreserveUniversal);
+        // Overlong calls are rejected by the binder first; this guards direct uses.
+        throw new LythonRuntimeException("TypeError", "str(object=', encoding='utf-8', errors='strict') expects bytes when encoding or errors are provided.", span);
     }
 
     private static object Repr(object[] arguments, LythonSourceSpan span, ExecutionContext context)
