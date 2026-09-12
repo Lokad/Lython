@@ -220,9 +220,20 @@ internal sealed class PyZipIterator : PyIteratorBase
             _finished = true;
             if (_strict)
             {
-                if (i > 0 || _cursors.Skip(i + 1).Any(cursor => cursor.TryMoveNext(out _)))
+                // Like CPython, an exhausted cursor behind earlier yielders
+                // is shorter; only the first cursor peeks ahead for a longer
+                // tail, naming the first diverging argument.
+                if (i > 0)
                 {
-                    throw new LythonRuntimeException("ValueError", "zip() argument lengths differ", _span);
+                    throw new LythonRuntimeException("ValueError", "zip() argument " + (i + 1) + " is shorter than " + StrictOthers(i), _span);
+                }
+
+                for (var j = i + 1; j < _cursors.Length; j++)
+                {
+                    if (_cursors[j].TryMoveNext(out _))
+                    {
+                        throw new LythonRuntimeException("ValueError", "zip() argument " + (j + 1) + " is longer than " + StrictOthers(j), _span);
+                    }
                 }
             }
 
@@ -233,6 +244,9 @@ internal sealed class PyZipIterator : PyIteratorBase
         value = new PyTuple(items, _governor, _span);
         return true;
     }
+
+    private static string StrictOthers(int index)
+        => index == 1 ? "argument 1" : "arguments 1-" + index;
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<zip object>");
 }

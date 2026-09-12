@@ -92,6 +92,33 @@ return "|".join(values)
     }
 
     [Fact]
+    public void ZipStrictMismatch_NamesArgumentsLikeCpython()
+    {
+        var result = new LythonEngine().Run(
+            """
+def strict_error(*seqs):
+    try:
+        list(zip(*seqs, strict=True))
+    except ValueError as e:
+        return str(e)
+    return "no error"
+vals = []
+vals.append(strict_error([1, 2], [3]))
+vals.append(strict_error([1], [2, 3]))
+vals.append(strict_error([1], [2], [3, 4]))
+vals.append(strict_error([1, 2], [3, 4], [5]))
+vals.append(strict_error([1, 2], [3], [4, 5]))
+vals.append(strict_error([1], [2, 3], [4]))
+vals.append(str(list(zip([1], [2], strict=True))))
+return "|".join(vals)
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("zip() argument 2 is shorter than argument 1|zip() argument 2 is longer than argument 1|zip() argument 3 is longer than arguments 1-2|zip() argument 3 is shorter than arguments 1-2|zip() argument 2 is shorter than argument 1|zip() argument 2 is longer than argument 1|[(1, 2)]", result.ReturnValue);
+    }
+
+    [Fact]
     public void EnumerateStart_CoercesIndexLikeCpython()
     {
         var result = new LythonEngine().Run(
