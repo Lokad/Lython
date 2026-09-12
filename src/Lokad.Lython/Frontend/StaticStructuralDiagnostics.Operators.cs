@@ -132,9 +132,11 @@ internal static partial class StaticStructuralDiagnostics
                 StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right) ||
                 StaticAbstractFacts.TryGetDateTimeBinaryResultKind(op, left, right, out _),
             BinaryOperatorSyntax.Power => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right),
-            BinaryOperatorSyntax.BitwiseOr or
+            BinaryOperatorSyntax.BitwiseOr => StaticAbstractFacts.IsIntegerLike(left) && StaticAbstractFacts.IsIntegerLike(right) || StaticAbstractFacts.IsSetLike(left) && StaticAbstractFacts.IsSetLike(right) ||
+                left.Kind == AbstractValueKind.Dict && right.Kind == AbstractValueKind.Dict ||
+                left.Kind == AbstractValueKind.CollectionsCounter && right.Kind == AbstractValueKind.CollectionsCounter,
             BinaryOperatorSyntax.BitwiseAnd => StaticAbstractFacts.IsIntegerLike(left) && StaticAbstractFacts.IsIntegerLike(right) || StaticAbstractFacts.IsSetLike(left) && StaticAbstractFacts.IsSetLike(right) ||
-            left.Kind == AbstractValueKind.CollectionsCounter && right.Kind == AbstractValueKind.CollectionsCounter,
+                left.Kind == AbstractValueKind.CollectionsCounter && right.Kind == AbstractValueKind.CollectionsCounter,
             BinaryOperatorSyntax.BitwiseXor => StaticAbstractFacts.IsIntegerLike(left) && StaticAbstractFacts.IsIntegerLike(right) || StaticAbstractFacts.IsSetLike(left) && StaticAbstractFacts.IsSetLike(right),
             BinaryOperatorSyntax.LeftShift or
             BinaryOperatorSyntax.RightShift => StaticAbstractFacts.IsIntegerLike(left) && StaticAbstractFacts.IsIntegerLike(right),

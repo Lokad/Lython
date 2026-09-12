@@ -1171,6 +1171,30 @@ return str(d) + "|" + str(d.pop("missing", None)) + "|" + str(d.pop("other", 9))
     }
 
     [Fact]
+    public void DictionaryUnionOperatorsMatchPythonForms()
+    {
+        var result = new LythonEngine().Run(
+            """
+import operator
+merged = {'a': 1} | {'b': 2}
+over = {'a': 1, 'b': 1} | {'b': 2, 'c': 3}
+grown = {}
+grown |= {'x': 9}
+base = {'k': 1}
+ref = base
+ref |= {'y': 2}
+op = operator.or_({'m': 1}, {'n': 2})
+acc = {'m': 1}
+operator.ior(acc, {'n': 2})
+return "|".join([str(merged), str(over), str(grown), str(base is ref), str(base), str(op), str(acc)])
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("{'a': 1, 'b': 2}|{'a': 1, 'b': 2, 'c': 3}|{'x': 9}|True|{'k': 1, 'y': 2}|{'m': 1, 'n': 2}|{'m': 1, 'n': 2}", result.ReturnValue);
+    }
+
+    [Fact]
     public void DictionaryUpdateAcceptsSetsOfPairs()
     {
         var result = new LythonEngine().Run(

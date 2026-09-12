@@ -756,6 +756,17 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        if (op == AugmentedAssignmentOperatorSyntax.BitwiseOr &&
+            currentValue is PyDict currentDict && right is PyDict rightDict)
+        {
+            foreach (var pair in rightDict)
+            {
+                currentDict.SetItem(pair.Key, pair.Value);
+            }
+
+            return currentDict;
+        }
+
         return op switch
         {
             AugmentedAssignmentOperatorSyntax.Add => EvaluateAdd(currentValue, right, context, span, "+="),

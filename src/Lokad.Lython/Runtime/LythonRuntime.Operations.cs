@@ -100,6 +100,17 @@ internal sealed partial class LythonRuntime
             return result;
         }
 
+        if (left is PyDict leftDict && right is PyDict rightDict)
+        {
+            var merged = new PyDict(leftDict, context.MemoryGovernor, span);
+            foreach (var pair in rightDict)
+            {
+                merged.SetItem(pair.Key, pair.Value);
+            }
+
+            return merged;
+        }
+
         if (!TryGetIntegerOperands(left, right, out var lhs, out var rhs))
         {
             throw RuntimeErrors.UnsupportedOperands(operation ?? "|", left, right, span);
