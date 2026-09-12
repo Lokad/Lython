@@ -512,7 +512,7 @@ internal static partial class PyDateTimeOps
         _ = context;
         if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var text))
         {
-            throw new LythonRuntimeException("TypeError", "datetime.date.fromisoformat(date_string) expects one string argument.", span);
+            throw new LythonRuntimeException("TypeError", "fromisoformat: argument must be str", span);
         }
 
         try
@@ -562,7 +562,7 @@ internal static partial class PyDateTimeOps
         _ = context;
         if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var text))
         {
-            throw new LythonRuntimeException("TypeError", "datetime.time.fromisoformat(time_string) expects one string argument.", span);
+            throw new LythonRuntimeException("TypeError", "fromisoformat: argument must be str", span);
         }
 
         try
@@ -580,7 +580,7 @@ internal static partial class PyDateTimeOps
         _ = context;
         if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var text))
         {
-            throw new LythonRuntimeException("TypeError", "datetime.datetime.fromisoformat(date_string) expects one string argument.", span);
+            throw new LythonRuntimeException("TypeError", "fromisoformat: argument must be str", span);
         }
 
         try
@@ -679,12 +679,19 @@ internal static partial class PyDateTimeOps
 
     public static object DateTimeStrptime(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        _ = context;
-        if (arguments.Length != 2 ||
-            !PyStringOps.TryAsString(arguments[0], out var text) ||
-            !PyStringOps.TryAsString(arguments[1], out var format))
+        if (arguments.Length != 2)
         {
             throw new LythonRuntimeException("TypeError", "datetime.datetime.strptime(date_string, format) expects two string arguments.", span);
+        }
+
+        if (!PyStringOps.TryAsString(arguments[0], out var text))
+        {
+            throw new LythonRuntimeException("TypeError", $"strptime() argument 1 must be str, not {NoneOrTypeName(arguments[0], context)}", span);
+        }
+
+        if (!PyStringOps.TryAsString(arguments[1], out var format))
+        {
+            throw new LythonRuntimeException("TypeError", $"strptime() argument 2 must be str, not {NoneOrTypeName(arguments[1], context)}", span);
         }
 
         try
