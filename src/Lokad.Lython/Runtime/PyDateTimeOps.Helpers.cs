@@ -151,6 +151,14 @@ internal static partial class PyDateTimeOps
             throw new LythonRuntimeException("ValueError", "Invalid value NaN (not a number)", span);
         }
 
+        // Whole seconds beyond the time_t range fail before scaling like
+        // CPython; narrower overflows stay host-shaped (libc-dependent).
+        var wholeSeconds = number.IsFloat ? (BigInteger)Math.Truncate(number.Floating) : number.Integer;
+        if (wholeSeconds > long.MaxValue || wholeSeconds < long.MinValue)
+        {
+            throw new LythonRuntimeException("OverflowError", "timestamp out of range for platform time_t", span);
+        }
+
         return timestamp;
     }
 
