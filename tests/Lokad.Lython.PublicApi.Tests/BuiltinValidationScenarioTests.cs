@@ -14,6 +14,8 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("sum([b\"a\"])\n", "TypeError", "string or bytes operands")]
     [InlineData("raise \"bad\"\n", "TypeError", "exceptions must derive from BaseException")]
     [InlineData("raise int\n", "TypeError", "exceptions must derive from BaseException")]
+    [InlineData("raise ValueError(\"x\") from 1\n", "TypeError", "exception causes must derive from BaseException")]
+    [InlineData("def f():\n    raise ValueError(\"x\") from 1\nf()\n", "TypeError", "exception causes must derive from BaseException")]
     [InlineData("isinstance(1, 1)\n", "TypeError", "isinstance() arg 2 must be a type, a tuple of types, or a union")]
     [InlineData("isinstance(\"x\", (1, str))\n", "TypeError", "isinstance() arg 2 must be a type, a tuple of types, or a union")]
     [InlineData("issubclass(1, int)\n", "TypeError", "issubclass() arg 1 must be a class")]

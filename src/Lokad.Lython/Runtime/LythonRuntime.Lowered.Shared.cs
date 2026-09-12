@@ -514,7 +514,7 @@ internal sealed partial class LythonRuntime
             return constructed;
         }
 
-        throw new LythonRuntimeException("TypeError", "Exception causes must derive from BaseException.", span);
+        throw new LythonRuntimeException("TypeError", "exception causes must derive from BaseException", span);
     }
 
     // An explicit raise chains the active handler exception as its context
