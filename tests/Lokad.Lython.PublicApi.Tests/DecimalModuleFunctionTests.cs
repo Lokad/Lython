@@ -1169,4 +1169,23 @@ from decimal import Decimal
         Assert.False(invalid.IsValid);
         Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3113" && d.Message.Contains("decimal.Decimal", StringComparison.Ordinal) && d.Message.Contains("bogus", StringComparison.Ordinal));
     }
+
+    [Fact]
+    public void DecimalModule_FloatMixesResolveUnknown()
+    {
+        // Decimal-float mixes fail at runtime instead of producing a float,
+        // so they resolve unknown statically: member chains compile
+        // instead of misreporting float members.
+        var valid = new LythonEngine().Compile(
+            """
+from decimal import Decimal
+(Decimal('1') + 2.0).as_tuple()
+(Decimal('1') + 2.0).bogus()
+(2.0 + Decimal('1')).as_tuple()
+x = Decimal('1') * 2.0
+x.as_tuple()
+""");
+
+        Assert.True(valid.IsValid, string.Join(" | ", valid.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+    }
 }

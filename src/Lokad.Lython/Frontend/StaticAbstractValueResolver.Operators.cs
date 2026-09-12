@@ -150,7 +150,12 @@ internal static partial class StaticAbstractValueResolver
             return true;
         }
 
-        if (StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right))
+        // Decimal-float mixes fail at runtime instead of producing a float,
+        // so they resolve unknown rather than FloatType.
+        if (StaticAbstractFacts.IsNumericLike(left) &&
+            StaticAbstractFacts.IsNumericLike(right) &&
+            left.Kind != AbstractValueKind.Decimal &&
+            right.Kind != AbstractValueKind.Decimal)
         {
             value = AbstractValue.FloatType(binary.Span);
             return true;
@@ -193,8 +198,8 @@ internal static partial class StaticAbstractValueResolver
         out AbstractValue value)
     {
         // Decimal arithmetic over decimals and integers stays decimal like
-        // the runtime; float mixes keep the historical fallback below since
-        // they fail at runtime instead.
+        // the runtime; float mixes resolve unknown below since they fail
+        // at runtime instead.
         if (op is not (
                 BinaryOperatorSyntax.Add or
                 BinaryOperatorSyntax.Subtract or
