@@ -576,7 +576,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "getattr(object, name[, default]) expects two or three arguments.", span);
         }
 
-        var name = ExpectAttributeName(arguments[1], "getattr(object, name[, default])", span);
+        var name = ExpectAttributeName(arguments[1], span);
         try
         {
             if (PyMemberAccess.TryResolve(arguments[0], name, context, span, out var value))
@@ -604,7 +604,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "hasattr(object, name) expects two arguments.", span);
         }
 
-        var name = ExpectAttributeName(arguments[1], "hasattr(object, name)", span);
+        var name = ExpectAttributeName(arguments[1], span);
         if (arguments[0] is PyException && name == "message")
         {
             return false;
@@ -626,7 +626,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "setattr(object, name, value) expects three arguments.", span);
         }
 
-        var name = ExpectAttributeName(arguments[1], "setattr(object, name, value)", span);
+        var name = ExpectAttributeName(arguments[1], span);
         if (!PyMemberAccess.TryAssign(arguments[0], name, arguments[2], context, span))
         {
             throw PyMemberAccess.CreateMissingMemberError(arguments[0], name, span, context, operation: MissingMemberOperation.Write);
@@ -642,7 +642,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "delattr(object, name) expects two arguments.", span);
         }
 
-        var name = ExpectAttributeName(arguments[1], "delattr(object, name)", span);
+        var name = ExpectAttributeName(arguments[1], span);
         if (!PyMemberAccess.TryDelete(arguments[0], name, context, span))
         {
             throw PyMemberAccess.CreateMissingMemberError(arguments[0], name, span, context, operation: MissingMemberOperation.Delete);
@@ -745,15 +745,15 @@ internal sealed partial class LythonRuntime
                 return exceptionVars.CustomDict;
 
             default:
-                throw new LythonRuntimeException("TypeError", "vars(object) expects an object with a Python-shaped attribute dictionary.", span);
+                throw new LythonRuntimeException("TypeError", "vars() argument must have __dict__ attribute", span);
         }
     }
 
-    private static string ExpectAttributeName(object value, string owner, LythonSourceSpan span)
+    private static string ExpectAttributeName(object value, LythonSourceSpan span)
     {
         if (!PyStringOps.TryAsString(value, out var name))
         {
-            throw new LythonRuntimeException("TypeError", $"{owner} expects name to be a string.", span);
+            throw new LythonRuntimeException("TypeError", $"attribute name must be string, not '{RuntimeErrors.OperandTypeName(value)}'", span);
         }
 
         return name.AsString();

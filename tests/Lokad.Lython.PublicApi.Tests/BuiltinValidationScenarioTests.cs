@@ -29,6 +29,13 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("import datetime\ndatetime.timezone(1)\n", "TypeError", "expects a timedelta offset")]
     [InlineData("import datetime\ndatetime.date.fromisoformat(\"bad\")\n", "ValueError", "Invalid isoformat string")]
     [InlineData("import datetime\ndatetime.datetime.now(1)\n", "TypeError", "expects tz to be a timezone or None")]
+    [InlineData("hasattr(1, 2)\n", "TypeError", "attribute name must be string, not 'int'")]
+    [InlineData("getattr(1, 2)\n", "TypeError", "attribute name must be string, not 'int'")]
+    [InlineData("setattr(1, 2, 3)\n", "TypeError", "attribute name must be string, not 'int'")]
+    [InlineData("delattr(1, 2)\n", "TypeError", "attribute name must be string, not 'int'")]
+    [InlineData("hasattr(1, None)\n", "TypeError", "attribute name must be string, not 'NoneType'")]
+    [InlineData("vars(1)\n", "TypeError", "vars() argument must have __dict__ attribute")]
+    [InlineData("vars(\"x\")\n", "TypeError", "vars() argument must have __dict__ attribute")]
     public void BuiltinContractFailure_ReportsExpectedException(string source, string exceptionType, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());
