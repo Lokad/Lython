@@ -26,7 +26,7 @@ internal sealed partial class LythonRuntime
             call.Target.Span,
             call.Span,
             context,
-            () => CallExpansion.ExpandRawArguments(call.Arguments, context, EvaluateExpression));
+            () => CallExpansion.ExpandRawArguments(call.Arguments, context, EvaluateExpression, target));
     }
 
     private static object InvokeCallableTarget(

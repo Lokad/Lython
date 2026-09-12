@@ -479,7 +479,7 @@ internal sealed partial class LythonRuntime
                 call.Call.Target.Span,
                 call.Span,
                 context,
-                () => CallExpansion.ExpandLoweredArgumentsAsync(call.Arguments, context, EvaluateLoweredExpressionAsync))
+                () => CallExpansion.ExpandLoweredArgumentsAsync(call.Arguments, context, EvaluateLoweredExpressionAsync, target))
             .ConfigureAwait(false);
     }
 

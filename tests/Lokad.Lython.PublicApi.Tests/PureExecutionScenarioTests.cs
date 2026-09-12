@@ -7514,7 +7514,7 @@ __lython_file.close()
     [InlineData("set([[1]])\n", "TypeError", "hashable")]
     [InlineData("value = {[]}\n", "TypeError", "hashable")]
     [InlineData("value = {[item] for item in [1]}\n", "TypeError", "hashable")]
-    [InlineData("f = lambda x: x\nf(**1)\n", "TypeError", "expects a dictionary")]
+    [InlineData("f = lambda x: x\nf(**1)\n", "TypeError", "__main__.<lambda>() argument after ** must be a mapping, not int")]
     [InlineData("a, *rest = [1]\n__lython_file = open(\"/out.txt\", \"w\")\n__lython_file.write(str(rest))\n__lython_file.close()\n", null, "[]")]
     public void SetAndSplattingEdgeCases_ArePinned(string source, string? exceptionType, string expectedFragment)
     {

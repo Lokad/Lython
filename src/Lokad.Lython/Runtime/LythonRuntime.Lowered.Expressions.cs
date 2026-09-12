@@ -482,7 +482,7 @@ internal sealed partial class LythonRuntime
             call.Call.Target.Span,
             call.Span,
             context,
-            () => CallExpansion.ExpandLoweredArguments(call.Arguments, context, EvaluateLoweredExpression));
+            () => CallExpansion.ExpandLoweredArguments(call.Arguments, context, EvaluateLoweredExpression, target));
     }
 
     private static void InvokeInitSubclass(PyType type, CallArgumentValue[] keywordArguments, LythonSourceSpan span, ExecutionContext context)

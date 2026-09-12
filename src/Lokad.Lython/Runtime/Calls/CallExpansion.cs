@@ -8,40 +8,46 @@ internal static class CallExpansion
     public static CallArgumentValue[] ExpandRawArguments(
         IReadOnlyList<CallArgumentSyntax> arguments,
         LythonRuntime.ExecutionContext context,
-        Func<ExpressionSyntax, LythonRuntime.ExecutionContext, object> evaluateExpression)
+        Func<ExpressionSyntax, LythonRuntime.ExecutionContext, object> evaluateExpression,
+        object target)
     {
         return ExpandArguments(
             arguments,
             argument => argument.Form,
             argument => argument.Expression.Span,
             argument => evaluateExpression(argument.Expression, context),
-            context);
+            context,
+            target);
     }
 
     public static CallArgumentValue[] ExpandLoweredArguments(
         IReadOnlyList<LoweredCallArgument> arguments,
         LythonRuntime.ExecutionContext context,
-        Func<LoweredExpression, LythonRuntime.ExecutionContext, object> evaluateExpression)
+        Func<LoweredExpression, LythonRuntime.ExecutionContext, object> evaluateExpression,
+        object target)
     {
         return ExpandArguments(
             arguments,
             argument => argument.Form,
             argument => argument.Expression.Span,
             argument => evaluateExpression(argument.Expression, context),
-            context);
+            context,
+            target);
     }
 
     public static ValueTask<CallArgumentValue[]> ExpandLoweredArgumentsAsync(
         IReadOnlyList<LoweredCallArgument> arguments,
         LythonRuntime.ExecutionContext context,
-        Func<LoweredExpression, LythonRuntime.ExecutionContext, ValueTask<object>> evaluateExpression)
+        Func<LoweredExpression, LythonRuntime.ExecutionContext, ValueTask<object>> evaluateExpression,
+        object target)
     {
         return ExpandArgumentsAsync(
             arguments,
             argument => argument.Form,
             argument => argument.Expression.Span,
             argument => evaluateExpression(argument.Expression, context),
-            context);
+            context,
+            target);
     }
 
     private static CallArgumentValue[] ExpandArguments<TArgument>(
@@ -49,7 +55,8 @@ internal static class CallExpansion
         Func<TArgument, CallArgumentForm> getForm,
         Func<TArgument, LythonSourceSpan> getSpan,
         Func<TArgument, object> evaluateValue,
-        LythonRuntime.ExecutionContext context)
+        LythonRuntime.ExecutionContext context,
+        object target)
     {
         if (!HasStarExpansion(arguments, getForm))
         {
@@ -80,14 +87,10 @@ internal static class CallExpansion
                         expanded.Add(CallArgumentValue.Keyword(form.KeywordName, LythonRuntime.RuntimeValue(evaluateValue(argument))), span);
                         break;
                     case CallArgumentKind.StarredList:
-                        foreach (var value in PyIteration.ToSequence(evaluateValue(argument), getSpan(argument), context))
-                        {
-                            expanded.Add(CallArgumentValue.Positional(value), getSpan(argument));
-                        }
-
+                        expanded = AppendStarredValues(evaluateValue(argument), getSpan(argument), expanded, target, context);
                         break;
                     case CallArgumentKind.StarredDictionary:
-                        expanded = AppendStarredDictionary(evaluateValue(argument), getSpan(argument), expanded);
+                        expanded = AppendStarredDictionary(evaluateValue(argument), getSpan(argument), expanded, target, context);
                         break;
                     default:
                         throw new InvalidOperationException($"Unknown call argument kind: {form.Kind}");
@@ -107,7 +110,8 @@ internal static class CallExpansion
         Func<TArgument, CallArgumentForm> getForm,
         Func<TArgument, LythonSourceSpan> getSpan,
         Func<TArgument, ValueTask<object>> evaluateValue,
-        LythonRuntime.ExecutionContext context)
+        LythonRuntime.ExecutionContext context,
+        object target)
     {
         if (!HasStarExpansion(arguments, getForm))
         {
@@ -140,14 +144,10 @@ internal static class CallExpansion
                         expanded.Add(CallArgumentValue.Keyword(form.KeywordName, LythonRuntime.RuntimeValue(await evaluateValue(argument).ConfigureAwait(false))), span);
                         break;
                     case CallArgumentKind.StarredList:
-                        await foreach (var value in PyIteration.ToSequenceAsync(await evaluateValue(argument).ConfigureAwait(false), getSpan(argument), context).ConfigureAwait(false))
-                        {
-                            expanded.Add(CallArgumentValue.Positional(value), getSpan(argument));
-                        }
-
+                        expanded = await AppendStarredValuesAsync(await evaluateValue(argument).ConfigureAwait(false), getSpan(argument), expanded, target, context).ConfigureAwait(false);
                         break;
                     case CallArgumentKind.StarredDictionary:
-                        expanded = AppendStarredDictionary(await evaluateValue(argument).ConfigureAwait(false), getSpan(argument), expanded);
+                        expanded = AppendStarredDictionary(await evaluateValue(argument).ConfigureAwait(false), getSpan(argument), expanded, target, context);
                         break;
                     default:
                         throw new InvalidOperationException($"Unknown call argument kind: {form.Kind}");
@@ -188,11 +188,19 @@ internal static class CallExpansion
     private static CallArgumentAccumulator AppendStarredDictionary(
         object value,
         LythonSourceSpan span,
-        CallArgumentAccumulator expanded)
+        CallArgumentAccumulator expanded,
+        object target,
+        LythonRuntime.ExecutionContext context)
     {
         if (value is not PyDict mapping)
         {
-            throw new LythonRuntimeException("TypeError", "Call ** unpacking expects a dictionary.", span);
+            var calleeName = CallsiteCallableName(target, context);
+            if (calleeName is null)
+            {
+                throw new LythonRuntimeException("TypeError", "Call ** unpacking expects a dictionary.", span);
+            }
+
+            throw new LythonRuntimeException("TypeError", calleeName + " argument after ** must be a mapping, not " + RuntimeErrors.OperandTypeName(value), span);
         }
 
         foreach (var pair in mapping)
@@ -206,6 +214,99 @@ internal static class CallExpansion
         }
 
         return expanded;
+    }
+
+    private static CallArgumentAccumulator AppendStarredValues(
+        object value,
+        LythonSourceSpan span,
+        CallArgumentAccumulator expanded,
+        object target,
+        LythonRuntime.ExecutionContext context)
+    {
+        try
+        {
+            foreach (var item in PyIteration.ToSequence(value, span, context))
+            {
+                expanded.Add(CallArgumentValue.Positional(item), span);
+            }
+        }
+        catch (LythonRuntimeException ex) when (IsNonIterableSplatFailure(ex, value))
+        {
+            var calleeName = CallsiteCallableName(target, context);
+            if (calleeName is null)
+            {
+                throw;
+            }
+
+            throw new LythonRuntimeException("TypeError", calleeName + " argument after * must be an iterable, not " + RuntimeErrors.OperandTypeName(value), span);
+        }
+
+        return expanded;
+    }
+
+    private static async ValueTask<CallArgumentAccumulator> AppendStarredValuesAsync(
+        object value,
+        LythonSourceSpan span,
+        CallArgumentAccumulator expanded,
+        object target,
+        LythonRuntime.ExecutionContext context)
+    {
+        try
+        {
+            await foreach (var item in PyIteration.ToSequenceAsync(value, span, context).ConfigureAwait(false))
+            {
+                expanded.Add(CallArgumentValue.Positional(item), span);
+            }
+        }
+        catch (LythonRuntimeException ex) when (IsNonIterableSplatFailure(ex, value))
+        {
+            var calleeName = CallsiteCallableName(target, context);
+            if (calleeName is null)
+            {
+                throw;
+            }
+
+            throw new LythonRuntimeException("TypeError", calleeName + " argument after * must be an iterable, not " + RuntimeErrors.OperandTypeName(value), span);
+        }
+
+        return expanded;
+    }
+
+    private static bool IsNonIterableSplatFailure(LythonRuntimeException ex, object value)
+        => ex.ExceptionType == "TypeError"
+            && (ex.Message == "Object is not iterable."
+                || (value is PyInstance instance && ex.Message == "'" + instance.Type.Name + "' object is not iterable"));
+
+    // Call-site splat failures name the callee like CPython: module-qualified
+    // Python functions, bare C names, and the repr for values without a qualname.
+    // The name resolves lazily so success paths never render.
+    private static string? CallsiteCallableName(object target, LythonRuntime.ExecutionContext context)
+    {
+        if (target is IPyDynamicAttributes attributes &&
+            attributes.TryGetMember("__qualname__", out var qualname) &&
+            qualname is PyString qualnameText)
+        {
+            var name = qualnameText.AsString();
+            if (attributes.TryGetMember("__module__", out var module) &&
+                module is PyString moduleText &&
+                moduleText.AsString() is string moduleName &&
+                moduleName.Length != 0 &&
+                moduleName != "builtins")
+            {
+                return moduleName + "." + name + "()";
+            }
+
+            return name + "()";
+        }
+
+        try
+        {
+            return PyRendering.ToReprPyString(target, new PyRenderingContext(context)).AsString();
+        }
+        catch (LythonRuntimeException)
+        {
+            return null;
+        }
     }
 
     private struct CallArgumentAccumulator : IDisposable

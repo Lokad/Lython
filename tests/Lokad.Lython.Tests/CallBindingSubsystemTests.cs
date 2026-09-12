@@ -17,6 +17,9 @@ public sealed class CallBindingSubsystemTests
         requiredCount: 1);
     private static readonly LythonCallableSignature RequiredDemoSignature = LythonCallableSignature.Create("demo", ["first"]);
     private static readonly LythonCallableSignature NoParameterNamesDemoSignature = LythonCallableSignature.Create("demo");
+    // Direct expansion tests exercise argument handling, never callee naming:
+    // the placeholder target is never read on their paths.
+    private static readonly object UnnamedExpansionTarget = PyNone.Instance;
 
     [Fact]
     public void BindNamedArguments_CombinesPositionalKeywordAndOptionalTail()
@@ -109,8 +112,8 @@ public sealed class CallBindingSubsystemTests
                 new CallArgumentSyntax(CallArgumentForm.StarredDictionary, new IdentifierExpressionSyntax("mapping", Span)),
             ],
             context,
-            InvokeEvaluateExpression);
-
+            InvokeEvaluateExpression,
+            UnnamedExpansionTarget);
         var lowered = CallExpansion.ExpandLoweredArguments(
             [
                 new LoweredCallArgument(CallArgumentForm.Positional, LoweredScript.LowerStandaloneExpression(new StringLiteralExpressionSyntax("head", Span))),
@@ -118,8 +121,8 @@ public sealed class CallBindingSubsystemTests
                 new LoweredCallArgument(CallArgumentForm.StarredDictionary, LoweredScript.LowerStandaloneExpression(new IdentifierExpressionSyntax("mapping", Span))),
             ],
             context,
-            InvokeEvaluateLoweredExpression);
-
+            InvokeEvaluateLoweredExpression,
+            UnnamedExpansionTarget);
         Assert.Equal(raw, lowered);
     }
 
@@ -134,13 +137,13 @@ public sealed class CallBindingSubsystemTests
         var rawEx = Assert.Throws<LythonRuntimeException>(() => CallExpansion.ExpandRawArguments(
             [new CallArgumentSyntax(CallArgumentForm.StarredDictionary, new IdentifierExpressionSyntax("mapping", Span))],
             context,
-            InvokeEvaluateExpression));
-
+            InvokeEvaluateExpression,
+            UnnamedExpansionTarget));
         var loweredEx = Assert.Throws<LythonRuntimeException>(() => CallExpansion.ExpandLoweredArguments(
             [new LoweredCallArgument(CallArgumentForm.StarredDictionary, LoweredScript.LowerStandaloneExpression(new IdentifierExpressionSyntax("mapping", Span)))],
             context,
-            InvokeEvaluateLoweredExpression));
-
+            InvokeEvaluateLoweredExpression,
+            UnnamedExpansionTarget));
         Assert.Equal("TypeError", rawEx.ExceptionType);
         Assert.Equal(rawEx.ExceptionType, loweredEx.ExceptionType);
         Assert.Equal(rawEx.Message, loweredEx.Message);
