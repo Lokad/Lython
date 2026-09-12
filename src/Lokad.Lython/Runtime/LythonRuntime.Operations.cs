@@ -680,7 +680,7 @@ internal sealed partial class LythonRuntime
         context.ObserveCollectionCount(result.Count, setSpan);
     }
 
-    private static IEnumerable<KeyValuePair<object, object>> EnumerateMappingItems(
+    internal static IEnumerable<KeyValuePair<object, object>> EnumerateMappingItems(
         object mapping,
         ExecutionContext context,
         LythonSourceSpan span)

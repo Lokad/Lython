@@ -34,6 +34,7 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("len(*None)\n", "TypeError", "len() argument after * must be an iterable, not NoneType")]
     [InlineData("import functools\ndef f(p):\n return p(*1)\nf(functools.partial(int))\n", "TypeError", "functools.partial(<class 'int'>) argument after * must be an iterable, not int")]
     [InlineData("class C:\n def __call__(self, a):\n  return a\nC()(*1)\n", "TypeError", "<C object> argument after * must be an iterable, not int")]
+    [InlineData("class C:\n pass\ndef f(**k):\n return 0\nf(**C())\n", "TypeError", "__main__.f() argument after ** must be a mapping, not C")]
     [InlineData("range(1, 2, 0)\n", "ValueError", "must not be zero")]
     [InlineData("int(\"bad\")\n", "ValueError", "invalid literal")]
     [InlineData("float(\"bad\")\n", "ValueError", "could not convert string to float: 'bad'")]
@@ -130,6 +131,20 @@ __lython_file.close()
 
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("3|13|0|6|3.5", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
+    public async Task CallDoubleStarMapping_AcceptsMappings()
+    {
+        const string source = "from collections import Counter, defaultdict, ChainMap\ndef f(**k):\n    return sorted(k)\nreturn str(f(**Counter(x=1))) + \"|\" + str(f(**defaultdict(int, y=2))) + \"|\" + str(f(**ChainMap({\"z\": 3}))) + \"|\" + str(f(**{\"w\": 4}))\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("['x']|['y']|['z']|['w']", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("['x']|['y']|['z']|['w']", asyncResult.ReturnValue);
     }
 
     [Theory]
@@ -781,7 +796,7 @@ f(**{1: 2})
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("TypeError", result.Failure?.ExceptionType);
-        Assert.Contains("string keys", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.Contains("keywords must be strings", result.Failure?.Message, StringComparison.Ordinal);
     }
 
     [Fact]

@@ -192,7 +192,12 @@ internal static class CallExpansion
         object target,
         LythonRuntime.ExecutionContext context)
     {
-        if (value is not PyDict mapping)
+        IEnumerable<KeyValuePair<object, object>> pairs;
+        try
+        {
+            pairs = LythonRuntime.EnumerateMappingItems(value, context, span);
+        }
+        catch (LythonRuntimeException ex) when (IsMappingSplatFailure(ex, value))
         {
             var calleeName = CallsiteCallableName(target, context);
             if (calleeName is null)
@@ -203,11 +208,11 @@ internal static class CallExpansion
             throw new LythonRuntimeException("TypeError", calleeName + " argument after ** must be a mapping, not " + RuntimeErrors.OperandTypeName(value), span);
         }
 
-        foreach (var pair in mapping)
+        foreach (var pair in pairs)
         {
             if (pair.Key is not PyString key)
             {
-                throw new LythonRuntimeException("TypeError", "Call ** unpacking expects string keys.", span);
+                throw new LythonRuntimeException("TypeError", "keywords must be strings", span);
             }
 
             expanded.Add(CallArgumentValue.Keyword(key.AsString(), pair.Value), span);
@@ -271,6 +276,10 @@ internal static class CallExpansion
 
         return expanded;
     }
+
+    private static bool IsMappingSplatFailure(LythonRuntimeException ex, object value)
+        => ex.ExceptionType == "TypeError"
+            && ex.Message == "'" + RuntimeErrors.OperandTypeName(value) + "' object is not a mapping";
 
     private static bool IsNonIterableSplatFailure(LythonRuntimeException ex, object value)
         => ex.ExceptionType == "TypeError"
