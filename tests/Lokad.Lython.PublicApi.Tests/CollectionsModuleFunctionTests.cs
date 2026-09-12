@@ -1004,4 +1004,44 @@ deque().pop()
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task CounterMostCommonReportsComparisonTypeError()
+    {
+        // most_common on unorderable values surfaces the comparison
+        // TypeError like CPython instead of the BCL comparer wrap; funded
+        // paths keep most-common order in both modes.
+        var script = new LythonEngine().Compile("""
+            from collections import Counter
+            results = []
+            c = Counter()
+            c["a"] = 'x'
+            c["b"] = 1
+            try:
+                c.most_common()
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            results.append(str(Counter({"p": 1, "q": 2}).most_common()))
+            results.append(str(Counter('aab').most_common()))
+            results.append(str(Counter({"p": 1, "q": 2}).most_common(1)))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "TypeError",
+            "'<' not supported between instances of 'str' and 'int'",
+            "[('q', 2), ('p', 1)]",
+            "[('a', 2), ('b', 1)]",
+            "[('q', 2)]",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

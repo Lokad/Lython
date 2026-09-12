@@ -1187,11 +1187,19 @@ internal sealed partial class LythonRuntime
                     // heapq.nlargest matches sorted(reverse) even on ties, so equal
                     // counts keep insertion order; List.Sort is unstable, while
                     // OrderByDescending is documented stable.
-                    var sortedItems = counter.Items
-                        .OrderByDescending(
+                    List<KeyValuePair<object, object>> sortedItems;
+                    try
+                    {
+                        sortedItems = counter.Items
+                            .OrderByDescending(
                             pair => pair.Value,
-                            Comparer<object>.Create((left, right) => CompareCounterCounts(left, right, span)))
-                        .ToList();
+                            Comparer<object>.Create((left, right) => CompareCounterCounts(left, right, span, "<")))
+                            .ToList();
+                    }
+                    catch (InvalidOperationException ex) when (ex.InnerException is LythonRuntimeException lythonFailure && lythonFailure.ExceptionType is "TypeError")
+                    {
+                        throw lythonFailure;
+                    }
 
                     int? limit = null;
                     if (arguments.Length == 1)

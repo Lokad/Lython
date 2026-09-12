@@ -384,8 +384,8 @@ internal sealed partial class LythonRuntime
                 ? PyNumberOps.Negate(number)
                 : throw new LythonRuntimeException("TypeError", "Counter mapping values must be numeric.", span);
 
-    private static int CompareCounterCounts(object left, object right, LythonSourceSpan span)
-        => PyComparison.Compare(left, right, span);
+    private static int CompareCounterCounts(object left, object right, LythonSourceSpan span, string? operation = null)
+        => PyComparison.Compare(left, right, span, operation);
 
     // most_common gates on n == 1, then n >= size through full operator
     // dispatch like CPython (heapq.nlargest does the same); the general path
