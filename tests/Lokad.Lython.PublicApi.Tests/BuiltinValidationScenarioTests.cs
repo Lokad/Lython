@@ -102,6 +102,13 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("import datetime\ndatetime.datetime(2024, 1, 1).replace(year=0)\n", "ValueError", "year 0 is out of range")]
     [InlineData("import datetime\ndatetime.date(2024, 1, 1).replace(year=10**30)\n", "OverflowError", "Python int too large to convert to C int")]
     [InlineData("import datetime\ndatetime.time(1, 2, 3).replace(microsecond=2000000, fold=2)\n", "ValueError", "microsecond must be in 0..999999")]
+    [InlineData("import datetime\ndatetime.date(\"a\", 1, 1)\n", "TypeError", "'str' object cannot be interpreted as an integer")]
+    [InlineData("import datetime\ndatetime.time(1, 2.0, 3)\n", "TypeError", "'float' object cannot be interpreted as an integer")]
+    [InlineData("import datetime\nclass K:\n pass\ndatetime.datetime(2024, 1, K())\n", "TypeError", "'K' object cannot be interpreted as an integer")]
+    [InlineData("import datetime\nclass J:\n def __index__(self):\n  return \"x\"\ndatetime.date(J(), 1, 1)\n", "TypeError", "__index__ returned non-int (type str)")]
+    [InlineData("import datetime\nclass J:\n def __index__(self):\n  return 10**30\ndatetime.date(J(), 1, 1)\n", "OverflowError", "Python int too large to convert to C long")]
+    [InlineData("import datetime\ndatetime.date(2024, 1, 1).replace(year=\"a\")\n", "TypeError", "'str' object cannot be interpreted as an integer")]
+    [InlineData("import datetime\ndatetime.time(1, 2, None)\n", "TypeError", "'NoneType' object cannot be interpreted as an integer")]
     [InlineData("def f(x, y):\n return x[y]\nf([1], ...)\n", "TypeError", "list indices must be integers or slices, not ellipsis")]
     [InlineData("def f(x, y):\n return x[y]\nf((1,), ...)\n", "TypeError", "tuple indices must be integers or slices, not ellipsis")]
     [InlineData("from collections import Counter\ndef f(x, y):\n return x[y]\nf([1], Counter())\n", "TypeError", "list indices must be integers or slices, not Counter")]
@@ -223,6 +230,20 @@ __lython_file.close()
         var asyncResult = await script.RunAsync(new MockLythonHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("['x']|['y']|['z']|['w']", asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task DateTimeConstruction_AcceptsIndexOperands()
+    {
+        const string source = "import datetime\nclass J:\n    def __init__(self, v):\n        self.v = v\n    def __index__(self):\n        return self.v\nreturn str(datetime.date(J(2024), J(1), J(2))) + \"|\" + str(datetime.time(J(3), J(4), J(5), J(6))) + \"|\" + str(datetime.datetime(J(2024), J(1), J(2), J(3))) + \"|\" + str(datetime.date(2024, 1, 1).replace(year=J(2025))) + \"|\" + str(datetime.time(1, 2, 3).replace(hour=J(4), fold=J(1))) + \"|\" + str(datetime.date(True, True, True))\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("2024-01-02|03:04:05.000006|2024-01-02 03:00:00|2025-01-01|04:02:03|0001-01-01", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("2024-01-02|03:04:05.000006|2024-01-02 03:00:00|2025-01-01|04:02:03|0001-01-01", asyncResult.ReturnValue);
     }
 
     [Theory]

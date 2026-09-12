@@ -295,16 +295,18 @@ internal static partial class PyDateTimeOps
 
     public static object CreateDate(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        var bound = CallBinder.BindNamedArguments(arguments, span, DateCallSignature, PythonCallableKind.Builtin);
+        var boundArguments = CallBinder.BindNamedArgumentsWithPresence(arguments, span, DateCallSignature, PythonCallableKind.Builtin);
+        var bound = boundArguments.Values;
+        bool IsAssigned(int index) => index < boundArguments.Assigned.Length && boundArguments.Assigned[index];
 
         // CPython converts every component before validating ranges, so an
         // oversized integer fails as OverflowError even beside bad ranges.
         int year, month, day;
         try
         {
-            year = GetInteger(ArgAt(bound, 0), "datetime.date", span);
-            month = GetInteger(ArgAt(bound, 1), "datetime.date", span);
-            day = GetInteger(ArgAt(bound, 2), "datetime.date", span);
+            year = GetInteger(ArgAt(bound, 0), IsAssigned(0), span, context);
+            month = GetInteger(ArgAt(bound, 1), IsAssigned(1), span, context);
+            day = GetInteger(ArgAt(bound, 2), IsAssigned(2), span, context);
         }
         catch (OverflowException ex)
         {
@@ -331,16 +333,18 @@ internal static partial class PyDateTimeOps
 
     public static object CreateTime(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        var bound = CallBinder.BindNamedArguments(arguments, span, TimeCallSignature, PythonCallableKind.Builtin);
+        var boundArguments = CallBinder.BindNamedArgumentsWithPresence(arguments, span, TimeCallSignature, PythonCallableKind.Builtin);
+        var bound = boundArguments.Values;
+        bool IsAssigned(int index) => index < boundArguments.Assigned.Length && boundArguments.Assigned[index];
 
         int hour, minute, second, microsecond, fold;
         try
         {
-            hour = GetInteger(ArgAt(bound, 0), "datetime.time", span);
-            minute = GetInteger(ArgAt(bound, 1), "datetime.time", span);
-            second = GetInteger(ArgAt(bound, 2), "datetime.time", span);
-            microsecond = GetInteger(ArgAt(bound, 3), "datetime.time", span);
-            fold = GetInteger(ArgAt(bound, 5), "datetime.time", span);
+            hour = GetInteger(ArgAt(bound, 0), IsAssigned(0), span, context);
+            minute = GetInteger(ArgAt(bound, 1), IsAssigned(1), span, context);
+            second = GetInteger(ArgAt(bound, 2), IsAssigned(2), span, context);
+            microsecond = GetInteger(ArgAt(bound, 3), IsAssigned(3), span, context);
+            fold = GetInteger(ArgAt(bound, 5), IsAssigned(5), span, context);
         }
         catch (OverflowException ex)
         {
@@ -380,19 +384,21 @@ internal static partial class PyDateTimeOps
 
     public static object CreateDateTime(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        var bound = CallBinder.BindNamedArguments(arguments, span, DateTimeCallSignature, PythonCallableKind.Builtin);
+        var boundArguments = CallBinder.BindNamedArgumentsWithPresence(arguments, span, DateTimeCallSignature, PythonCallableKind.Builtin);
+        var bound = boundArguments.Values;
+        bool IsAssigned(int index) => index < boundArguments.Assigned.Length && boundArguments.Assigned[index];
 
         int year, month, day, hour, minute, second, microsecond, fold;
         try
         {
-            year = GetInteger(ArgAt(bound, 0), "datetime.datetime", span);
-            month = GetInteger(ArgAt(bound, 1), "datetime.datetime", span);
-            day = GetInteger(ArgAt(bound, 2), "datetime.datetime", span);
-            hour = GetInteger(ArgAt(bound, 3), "datetime.datetime", span);
-            minute = GetInteger(ArgAt(bound, 4), "datetime.datetime", span);
-            second = GetInteger(ArgAt(bound, 5), "datetime.datetime", span);
-            microsecond = GetInteger(ArgAt(bound, 6), "datetime.datetime", span);
-            fold = GetInteger(ArgAt(bound, 8), "datetime.datetime", span);
+            year = GetInteger(ArgAt(bound, 0), IsAssigned(0), span, context);
+            month = GetInteger(ArgAt(bound, 1), IsAssigned(1), span, context);
+            day = GetInteger(ArgAt(bound, 2), IsAssigned(2), span, context);
+            hour = GetInteger(ArgAt(bound, 3), IsAssigned(3), span, context);
+            minute = GetInteger(ArgAt(bound, 4), IsAssigned(4), span, context);
+            second = GetInteger(ArgAt(bound, 5), IsAssigned(5), span, context);
+            microsecond = GetInteger(ArgAt(bound, 6), IsAssigned(6), span, context);
+            fold = GetInteger(ArgAt(bound, 8), IsAssigned(8), span, context);
         }
         catch (OverflowException ex)
         {

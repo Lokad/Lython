@@ -64,9 +64,9 @@ internal sealed partial class LythonRuntime
                     int year, month, day;
                     try
                     {
-                        year = ReplacementInt(arguments, 0, (int)date.Year, "date.replace", span);
-                        month = ReplacementInt(arguments, 1, (int)date.Month, "date.replace", span);
-                        day = ReplacementInt(arguments, 2, (int)date.Day, "date.replace", span);
+                        year = ReplacementInt(arguments, 0, (int)date.Year, span, context);
+                        month = ReplacementInt(arguments, 1, (int)date.Month, span, context);
+                        day = ReplacementInt(arguments, 2, (int)date.Day, span, context);
                     }
                     catch (OverflowException ex)
                     {
@@ -153,11 +153,11 @@ internal sealed partial class LythonRuntime
                     int hour, minute, second, microsecond, fold;
                     try
                     {
-                        hour = ReplacementInt(arguments, 0, (int)time.Hour, "time.replace", span);
-                        minute = ReplacementInt(arguments, 1, (int)time.Minute, "time.replace", span);
-                        second = ReplacementInt(arguments, 2, (int)time.Second, "time.replace", span);
-                        microsecond = microArg is null or PyNone ? (int)time.Microsecond : ToInt(microArg, "time.replace", span);
-                        fold = foldArg is null or PyNone ? time.Fold : ToInt(foldArg, "time.replace", span);
+                        hour = ReplacementInt(arguments, 0, (int)time.Hour, span, context);
+                        minute = ReplacementInt(arguments, 1, (int)time.Minute, span, context);
+                        second = ReplacementInt(arguments, 2, (int)time.Second, span, context);
+                        microsecond = microArg is null or PyNone ? (int)time.Microsecond : ToInt(microArg, context, span);
+                        fold = foldArg is null or PyNone ? time.Fold : ToInt(foldArg, context, span);
                     }
                     catch (OverflowException ex)
                     {
@@ -308,14 +308,14 @@ internal sealed partial class LythonRuntime
                     int year, month, day, hour, minute, second, microsecond, fold;
                     try
                     {
-                        year = ReplacementInt(arguments, 0, (int)dateTime.Year, "datetime.replace", span);
-                        month = ReplacementInt(arguments, 1, (int)dateTime.Month, "datetime.replace", span);
-                        day = ReplacementInt(arguments, 2, (int)dateTime.Day, "datetime.replace", span);
-                        hour = ReplacementInt(arguments, 3, (int)dateTime.Hour, "datetime.replace", span);
-                        minute = ReplacementInt(arguments, 4, (int)dateTime.Minute, "datetime.replace", span);
-                        second = ReplacementInt(arguments, 5, (int)dateTime.Second, "datetime.replace", span);
-                        microsecond = microArg is null or PyNone ? (int)dateTime.Microsecond : ToInt(microArg, "datetime.replace", span);
-                        fold = foldArg is null or PyNone ? dateTime.Fold : ToInt(foldArg, "datetime.replace", span);
+                        year = ReplacementInt(arguments, 0, (int)dateTime.Year, span, context);
+                        month = ReplacementInt(arguments, 1, (int)dateTime.Month, span, context);
+                        day = ReplacementInt(arguments, 2, (int)dateTime.Day, span, context);
+                        hour = ReplacementInt(arguments, 3, (int)dateTime.Hour, span, context);
+                        minute = ReplacementInt(arguments, 4, (int)dateTime.Minute, span, context);
+                        second = ReplacementInt(arguments, 5, (int)dateTime.Second, span, context);
+                        microsecond = microArg is null or PyNone ? (int)dateTime.Microsecond : ToInt(microArg, context, span);
+                        fold = foldArg is null or PyNone ? dateTime.Fold : ToInt(foldArg, context, span);
                     }
                     catch (OverflowException ex)
                     {
@@ -415,30 +415,33 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static int ToInt(object value, string owner, LythonSourceSpan span)
+    private static int ToInt(object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        if (value is bool flag)
+        // Replacement fields coerce through __index__ like CPython; remaining
+        // rejections name the original type instead of the factory.
+        var coerced = LythonRuntime.CoerceIndexProtocol(value, context, span);
+        if (coerced is bool flag)
         {
             return flag ? 1 : 0;
         }
 
-        if (value is BigInteger integer)
+        if (coerced is BigInteger integer)
         {
             return (int)integer;
         }
 
-        throw new LythonRuntimeException("TypeError", $"{owner} expects integer fields.", span);
+        throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
     }
 
     private static int ReplacementInt(
         object[] arguments,
         int index,
         int currentValue,
-        string owner,
-        LythonSourceSpan span)
+        LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context)
     {
         var value = ArgAt(arguments, index);
-        return value is null or PyNone ? currentValue : ToInt(value, owner, span);
+        return value is null or PyNone ? currentValue : ToInt(value, context, span);
     }
 
     private static PyTimezone? ReplacementTimezone(

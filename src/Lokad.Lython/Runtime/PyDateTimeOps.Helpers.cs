@@ -120,16 +120,20 @@ internal static partial class PyDateTimeOps
         return number.ToDouble();
     }
 
-    private static int GetInteger(object? value, string owner, LythonSourceSpan span)
+    private static int GetInteger(object? value, bool assigned, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        if (value is null or PyNone)
+        // Omitted optionals keep their zero default; every explicitly supplied
+        // value (including None) coerces through __index__ like CPython, and
+        // remaining rejections name the original type instead of the factory.
+        if (!assigned || value is null)
         {
             return 0;
         }
 
-        if (!Numbers.PyNumberOps.TryAsInteger(value, out var integer))
+        var coerced = LythonRuntime.CoerceIndexProtocol(value, context, span);
+        if (!Numbers.PyNumberOps.TryAsInteger(coerced, out var integer))
         {
-            throw new LythonRuntimeException("TypeError", $"{owner} expects integer fields.", span);
+            throw new LythonRuntimeException("TypeError", "'" + LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
         }
 
         return (int)integer;
