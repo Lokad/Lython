@@ -21,6 +21,26 @@ return type(1).__name__ + "|" + str(issubclass(bool, int)) + "|" + str(issubclas
     }
 
     [Fact]
+    public void GlobalsAndLocalsExposeScopeNamespaces()
+    {
+        var result = new LythonEngine().Run(
+            """
+x = 1
+def f(a, b=2):
+    y = a + b
+    return (sorted(globals().keys()), sorted(locals().keys()))
+g = sorted(globals().keys())
+l = sorted(locals().keys())
+fg, fl = f(10)
+return "|".join([";".join(g), ";".join(l), ";".join(fg), ";".join(fl)])
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("__name__;f;x|__name__;f;g;x|__name__;f;g;l;x|a;b;y", result.ReturnValue);
+    }
+
+    [Fact]
     public void DictViewsExposeDirNames()
     {
         var result = new LythonEngine().Run(

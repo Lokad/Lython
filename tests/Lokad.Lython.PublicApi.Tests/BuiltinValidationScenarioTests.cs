@@ -266,6 +266,8 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("import datetime\ndivmod(0, datetime.timedelta(1))\n", "TypeError", "unsupported operand type(s) for divmod(): 'int' and 'datetime.timedelta'")]
     [InlineData("import datetime\ndivmod(datetime.timedelta(5), True)\n", "TypeError", "unsupported operand type(s) for divmod(): 'datetime.timedelta' and 'bool'")]
     [InlineData("import datetime\ndivmod(datetime.timedelta(5), 0.0)\n", "TypeError", "unsupported operand type(s) for divmod(): 'datetime.timedelta' and 'float'")]
+    [InlineData("globals(1)\n", "TypeError", "globals() takes no arguments (1 given)")]
+    [InlineData("locals(1, 2)\n", "TypeError", "locals() takes no arguments (2 given)")]
     [InlineData("b'a' + 1\n", "compile", "can't concat int to bytes")]
     [InlineData("b'a' * 'x'\n", "compile", "can't multiply sequence by non-int of type 'str'")]
     [InlineData("1000 in b'abc'\n", "ValueError", "byte must be in range(0, 256)")]

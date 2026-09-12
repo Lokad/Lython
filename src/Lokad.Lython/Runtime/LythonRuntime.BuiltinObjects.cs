@@ -675,29 +675,81 @@ internal sealed partial class LythonRuntime
         return CreateNameList(names, context, span);
     }
 
+    private static object Globals(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length != 0)
+        {
+            throw new LythonRuntimeException("TypeError", "globals() takes no arguments (" + arguments.Length + " given)", span);
+        }
+
+        return BuildGlobalsDictionary(context, span);
+    }
+
+    // Globals resolve through the root context like name loads: module
+    // assignments live in the module executable frame unless mirrored,
+    // so the frame wins over the context variables on collision.
+    private static PyDict BuildGlobalsDictionary(ExecutionContext context, LythonSourceSpan span)
+    {
+        var globalContext = GetGlobalContext(context);
+        var scope = new PyDict(context.MemoryGovernor, span);
+        foreach (var pair in globalContext.Variables)
+        {
+            if (!ExecutionState.BuiltinNames.Contains(pair.Key))
+            {
+                scope.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
+            }
+        }
+
+        if (globalContext.CurrentExecutableFrame is not null)
+        {
+            foreach (var pair in globalContext.CurrentExecutableFrame.EnumerateLocals())
+            {
+                scope.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
+            }
+        }
+
+        context.ObserveCollectionCount(scope.Count, span);
+        return scope;
+    }
+
+    private static object Locals(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length != 0)
+        {
+            throw new LythonRuntimeException("TypeError", "locals() takes no arguments (" + arguments.Length + " given)", span);
+        }
+
+        return BuildScopeDictionary(context, span, includeFrameLocals: true);
+    }
+
+    private static PyDict BuildScopeDictionary(ExecutionContext context, LythonSourceSpan span, bool includeFrameLocals)
+    {
+        var scope = new PyDict(context.MemoryGovernor, span);
+        foreach (var pair in context.Variables)
+        {
+            if (!ExecutionState.BuiltinNames.Contains(pair.Key))
+            {
+                scope.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
+            }
+        }
+
+        if (includeFrameLocals && context.CurrentExecutableFrame is not null)
+        {
+            foreach (var pair in context.CurrentExecutableFrame.EnumerateLocals())
+            {
+                scope.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
+            }
+        }
+
+        context.ObserveCollectionCount(scope.Count, span);
+        return scope;
+    }
+
     private static object Vars(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length == 0)
         {
-            var locals = new PyDict(context.MemoryGovernor, span);
-            foreach (var pair in context.Variables)
-            {
-                if (!ExecutionState.BuiltinNames.Contains(pair.Key))
-                {
-                    locals.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
-                }
-            }
-
-            if (context.CurrentExecutableFrame is not null)
-            {
-                foreach (var pair in context.CurrentExecutableFrame.EnumerateLocals())
-                {
-                    locals.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
-                }
-            }
-
-            context.ObserveCollectionCount(locals.Count, span);
-            return locals;
+            return BuildScopeDictionary(context, span, includeFrameLocals: true);
         }
 
         if (arguments.Length != 1)

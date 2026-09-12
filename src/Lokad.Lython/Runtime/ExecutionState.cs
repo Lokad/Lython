@@ -20,7 +20,7 @@ internal sealed class ExecutionState
         "GeneratorExit", "KeyboardInterrupt",
         "bool", "int", "float", "bytes",
         "staticmethod", "classmethod", "property", "super", "isinstance", "issubclass",
-        "getattr", "hasattr", "setattr", "delattr", "dir", "vars",
+        "getattr", "hasattr", "setattr", "delattr", "dir", "vars", "globals", "locals",
         "list", "tuple", "dict", "set", "Ellipsis", "NotImplemented"
     ];
 

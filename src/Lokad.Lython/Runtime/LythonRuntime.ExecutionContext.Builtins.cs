@@ -129,6 +129,8 @@ internal sealed partial class LythonRuntime
                 ["delattr"] = BuiltinCallable.Create("delattr", DelAttr, ["object", "name"], requiredCount: 2),
                 ["dir"] = BuiltinCallable.Create("dir", Dir, ["object"], requiredCount: 0),
                 ["vars"] = BuiltinCallable.Create("vars", Vars, ["object"], requiredCount: 0),
+                ["globals"] = BuiltinCallable.Create("globals", Globals),
+                ["locals"] = BuiltinCallable.Create("locals", Locals),
                 ["callable"] = BuiltinCallable.Create("callable", Callable, ["object"]),
                 ["hash"] = BuiltinCallable.Create("hash", Hash, ["object"]),
                 ["list"] = BuiltinCallable.Create(LythonCallableSignature.Create("list", ["iterable"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), List, ListAsync),
