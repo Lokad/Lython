@@ -133,6 +133,14 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("import datetime\nclass J:\n def __index__(self):\n  return \"x\"\ndatetime.date.fromtimestamp(J())\n", "TypeError", "__index__ returned non-int (type str)")]
     [InlineData("import datetime\ndatetime.datetime.fromtimestamp(float(\"inf\"))\n", "OverflowError", "timestamp out of range for platform time_t")]
     [InlineData("import datetime\ndatetime.datetime.fromtimestamp(float(\"nan\"))\n", "ValueError", "Invalid value NaN (not a number)")]
+    [InlineData("import datetime\ndatetime.date.fromisoformat(\"2024-02-30\")\n", "ValueError", "day is out of range for month")]
+    [InlineData("import datetime\ndatetime.date.fromisoformat(\"2024-13-01\")\n", "ValueError", "month must be in 1..12")]
+    [InlineData("import datetime\ndatetime.date.fromisoformat(\"0000-01-01\")\n", "ValueError", "year 0 is out of range")]
+    [InlineData("import datetime\ndatetime.time.fromisoformat(\"25:00\")\n", "ValueError", "hour must be in 0..23")]
+    [InlineData("import datetime\ndatetime.time.fromisoformat(\"03:61:00\")\n", "ValueError", "minute must be in 0..59")]
+    [InlineData("import datetime\ndatetime.time.fromisoformat(\"03:04:60\")\n", "ValueError", "second must be in 0..59")]
+    [InlineData("import datetime\ndatetime.datetime.fromisoformat(\"2024-01-02T25:00:00\")\n", "ValueError", "hour must be in 0..23")]
+    [InlineData("import datetime\ndatetime.datetime.fromisoformat(\"2024-13-01T03:04:05\")\n", "ValueError", "month must be in 1..12")]
     [InlineData("def f(x, y):\n return x[y]\nf([1], ...)\n", "TypeError", "list indices must be integers or slices, not ellipsis")]
     [InlineData("def f(x, y):\n return x[y]\nf((1,), ...)\n", "TypeError", "tuple indices must be integers or slices, not ellipsis")]
     [InlineData("from collections import Counter\ndef f(x, y):\n return x[y]\nf([1], Counter())\n", "TypeError", "list indices must be integers or slices, not Counter")]
@@ -312,6 +320,20 @@ __lython_file.close()
         var asyncResult = await script.RunAsync(new MockLythonHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("1970-01-01T00:00:00+00:00|1970-01-01T00:00:01+00:00|1970-01-01T00:00:00.500000+00:00", asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task IsoFormatTruncatesLongFractions()
+    {
+        const string source = "import datetime\nreturn str(datetime.time.fromisoformat(\"030405.1234567\")) + \"|\" + str(datetime.time.fromisoformat(\"03:04:05,1234567\"))\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("03:04:05.123456|03:04:05.123456", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("03:04:05.123456|03:04:05.123456", asyncResult.ReturnValue);
     }
 
     [Fact]

@@ -68,7 +68,7 @@ internal static partial class PyDateTimeOps
         @"^(?:(?<year>\d{4})-W(?<week>\d{2})(?:-(?<weekday>\d))?|(?<basicYear>\d{4})W(?<basicWeek>\d{2})(?<basicWeekday>\d)?)$",
         RegexOptions.CultureInvariant);
     private static readonly Regex ExtendedTimeRegex = new(
-        @"^(?<hour>\d{2})(?::(?<minute>\d{2})(?::(?<second>\d{2})(?:[.,](?<fraction>\d{1,6}))?)?)?$",
+        @"^(?<hour>\d{2})(?::(?<minute>\d{2})(?::(?<second>\d{2})(?:[.,](?<fraction>\d+))?)?)?$",
         RegexOptions.CultureInvariant);
 
     internal sealed class TypeMemberCallable : LythonRuntime.ICallable, IPyDynamicAttributes, IPyContextualDynamicAttributes
@@ -528,7 +528,7 @@ internal static partial class PyDateTimeOps
 
         try
         {
-            return OwnDateTimeValue(new PyDate(ParseIsoDate(text.AsString())), context, span);
+            return OwnDateTimeValue(new PyDate(ParseIsoDate(text.AsString(), span)), context, span);
         }
         catch (FormatException)
         {
@@ -578,7 +578,7 @@ internal static partial class PyDateTimeOps
 
         try
         {
-            return ParseTime(text.AsString());
+            return ParseTime(text.AsString(), span);
         }
         catch (FormatException)
         {
@@ -596,7 +596,7 @@ internal static partial class PyDateTimeOps
 
         try
         {
-            return ParseDateTime(text.AsString());
+            return ParseDateTime(text.AsString(), span);
         }
         catch (FormatException)
         {

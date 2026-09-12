@@ -259,7 +259,7 @@ internal static partial class PyDateTimeOps
             : null;
     }
 
-    private static PyTime ParseTime(string text)
+    private static PyTime ParseTime(string text, LythonSourceSpan span)
     {
         text = NormalizeIsoText(text);
         if (text.StartsWith('T'))
@@ -274,13 +274,13 @@ internal static partial class PyDateTimeOps
 
         if (TryParseTrailingOffset(text, out var body, out var offset))
         {
-            return new PyTime(ParseIsoTime(body), new PyTimezone(offset));
+            return new PyTime(ParseIsoTime(body, span), new PyTimezone(offset));
         }
 
-        return new PyTime(ParseIsoTime(text));
+        return new PyTime(ParseIsoTime(text, span));
     }
 
-    private static PyDateTime ParseDateTime(string text)
+    private static PyDateTime ParseDateTime(string text, LythonSourceSpan span)
     {
         text = NormalizeIsoText(text);
         if (text.EndsWith("Z", StringComparison.Ordinal))
@@ -290,13 +290,13 @@ internal static partial class PyDateTimeOps
 
         if (TryParseTrailingOffset(text, out var body, out var offset))
         {
-            return ParseIsoDateTime(body, new PyTimezone(offset));
+            return ParseIsoDateTime(body, new PyTimezone(offset), span);
         }
 
-        return ParseIsoDateTime(text, null);
+        return ParseIsoDateTime(text, null, span);
     }
 
-    private static DateOnly ParseIsoDate(string text)
+    private static DateOnly ParseIsoDate(string text, LythonSourceSpan span)
     {
         var calendarMatch = CalendarDateRegex.Match(text);
         if (calendarMatch.Success)
@@ -305,14 +305,7 @@ internal static partial class PyDateTimeOps
             var year = ParseIsoComponent(calendarMatch, basic ? "basicYear" : "year");
             var month = ParseIsoComponent(calendarMatch, basic ? "basicMonth" : "month");
             var day = ParseIsoComponent(calendarMatch, basic ? "basicDay" : "day");
-            try
-            {
-                return new DateOnly(year, month, day);
-            }
-            catch (ArgumentOutOfRangeException ex)
-            {
-                throw new FormatException("Invalid ISO calendar date.", ex);
-            }
+            return CreateParsedDate(year, month, day, span);
         }
 
         var weekMatch = WeekDateRegex.Match(text);
@@ -351,7 +344,7 @@ internal static partial class PyDateTimeOps
         throw new FormatException("Invalid ISO date string.");
     }
 
-    private static PyDateTime ParseIsoDateTime(string text, PyTimezone? timezone)
+    private static PyDateTime ParseIsoDateTime(string text, PyTimezone? timezone, LythonSourceSpan span)
     {
         foreach (var dateLength in IsoDatePrefixLengths)
         {
@@ -363,7 +356,7 @@ internal static partial class PyDateTimeOps
             DateOnly date;
             try
             {
-                date = ParseIsoDate(text[..dateLength]);
+                date = ParseIsoDate(text[..dateLength], span);
             }
             catch (FormatException)
             {
@@ -380,14 +373,14 @@ internal static partial class PyDateTimeOps
                 continue;
             }
 
-            var time = ParseIsoTime(text[(dateLength + 1)..]);
+            var time = ParseIsoTime(text[(dateLength + 1)..], span);
             return new PyDateTime(date.ToDateTime(time), timezone);
         }
 
         throw new FormatException("Invalid ISO datetime string.");
     }
 
-    private static TimeOnly ParseIsoTime(string text)
+    private static TimeOnly ParseIsoTime(string text, LythonSourceSpan span)
     {
         var match = ExtendedTimeRegex.Match(text);
         int hour;
@@ -407,7 +400,7 @@ internal static partial class PyDateTimeOps
             var digits = fractionSeparator < 0 ? text : text[..fractionSeparator];
             var fraction = fractionSeparator < 0 ? string.Empty : text[(fractionSeparator + 1)..];
             if (digits.Length is not (2 or 4 or 6) || !digits.All(char.IsAsciiDigit) ||
-                fraction.Length > 6 || fraction.Any(ch => !char.IsAsciiDigit(ch)) ||
+                fraction.Any(ch => !char.IsAsciiDigit(ch)) ||
                 fraction.Length > 0 && digits.Length != 6)
             {
                 throw new FormatException("Invalid ISO time string.");
@@ -416,24 +409,63 @@ internal static partial class PyDateTimeOps
             hour = int.Parse(digits[..2], CultureInfo.InvariantCulture);
             minute = digits.Length >= 4 ? int.Parse(digits.Substring(2, 2), CultureInfo.InvariantCulture) : 0;
             second = digits.Length == 6 ? int.Parse(digits.Substring(4, 2), CultureInfo.InvariantCulture) : 0;
-            microsecond = fraction.Length == 0 ? 0 : int.Parse(fraction.PadRight(6, '0'), CultureInfo.InvariantCulture);
+            microsecond = ParseIsoFractionText(fraction);
         }
 
-        try
+        return CreateParsedTime(hour, minute, second, microsecond, span);
+    }
+
+    private static DateOnly CreateParsedDate(int year, int month, int day, LythonSourceSpan span)
+    {
+        // Well-shaped components fail with the construction range texts like
+        // CPython instead of the generic malformed-string text.
+        if (year < 1 || year > 9999)
         {
-            return new TimeOnly(hour, minute, second, microsecond / 1000, microsecond % 1000);
+            throw new LythonRuntimeException("ValueError", $"year {year} is out of range", span);
         }
-        catch (ArgumentOutOfRangeException ex)
+
+        if (month < 1 || month > 12)
         {
-            throw new FormatException("Invalid ISO time string.", ex);
+            throw new LythonRuntimeException("ValueError", "month must be in 1..12", span);
         }
+
+        if (day < 1 || day > DateTime.DaysInMonth(year, month))
+        {
+            throw new LythonRuntimeException("ValueError", "day is out of range for month", span);
+        }
+
+        return new DateOnly(year, month, day);
+    }
+
+    private static TimeOnly CreateParsedTime(int hour, int minute, int second, int microsecond, LythonSourceSpan span)
+    {
+        if (hour < 0 || hour > 23)
+        {
+            throw new LythonRuntimeException("ValueError", "hour must be in 0..23", span);
+        }
+
+        if (minute < 0 || minute > 59)
+        {
+            throw new LythonRuntimeException("ValueError", "minute must be in 0..59", span);
+        }
+
+        if (second < 0 || second > 59)
+        {
+            throw new LythonRuntimeException("ValueError", "second must be in 0..59", span);
+        }
+
+        return new TimeOnly(hour, minute, second, microsecond / 1000, microsecond % 1000);
     }
 
     private static int ParseIsoComponent(Match match, string groupName)
         => int.Parse(match.Groups[groupName].Value, CultureInfo.InvariantCulture);
 
     private static int ParseIsoFraction(Group group)
-        => group.Success ? int.Parse(group.Value.PadRight(6, '0'), CultureInfo.InvariantCulture) : 0;
+        => group.Success ? ParseIsoFractionText(group.Value) : 0;
+
+    private static int ParseIsoFractionText(string fraction)
+        // Extra digits truncate like CPython instead of failing the shape.
+        => fraction.Length == 0 ? 0 : int.Parse(fraction.Length > 6 ? fraction[..6] : fraction.PadRight(6, '0'), CultureInfo.InvariantCulture);
 
     private static bool TryParseTrailingOffset(string text, out string body, out TimeSpan offset)
     {
