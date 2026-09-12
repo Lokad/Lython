@@ -1,14 +1,19 @@
+using System.Numerics;
+using System.Runtime.CompilerServices;
+
 namespace Lokad.Lython.Runtime;
 
 internal sealed class ExecutionState
 {
     private Dictionary<object, RuntimeMemberCacheEntry>? _runtimeMemberCaches;
+    private readonly ConditionalWeakTable<object, StrongBox<long>> _objectIds = new();
+    private long _nextObjectId;
 
     public static readonly HashSet<string> BuiltinNames =
     [
         "object", "type", "open", "print", "input", "str", "repr", "ascii", "format",
         "len", "sorted", "any", "all", "min", "max", "sum", "abs", "pow", "round", "divmod",
-        "bin", "oct", "hex", "chr", "ord", "callable", "hash",
+        "bin", "oct", "hex", "chr", "ord", "callable", "hash", "id",
         "range", "enumerate", "zip", "iter", "next", "reversed", "map", "filter", "slice",
         "BaseException", "Exception", "ArithmeticError", "LookupError", "UnicodeError", "Warning",
         "TypeError", "ValueError", "KeyError", "IndexError", "RuntimeError",
@@ -131,6 +136,18 @@ internal sealed class ExecutionState
     public HostTextOutputHandle Stdout { get; }
 
     public HostTextOutputHandle Stderr { get; }
+
+    // id() exposes stable per-run object identity: the same live object
+    // keeps its number while distinct live objects get distinct numbers.
+    // Numbers are opaque like CPython, but only shared boxes (such as
+    // repeated literals) share numbers; separately computed integers box
+    // fresh, so id(a) == id(b) may be False for equal ints.
+    public BigInteger GetObjectId(object? value)
+    {
+        var key = value ?? PyNone.Instance;
+        var box = _objectIds.GetValue(key, _ => new StrongBox<long>(Interlocked.Increment(ref _nextObjectId)));
+        return new BigInteger(box.Value);
+    }
 
     public bool TryReadRuntimeMemberCache(
         object cacheSite,

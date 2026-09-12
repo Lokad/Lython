@@ -133,6 +133,7 @@ internal sealed partial class LythonRuntime
                 ["locals"] = BuiltinCallable.Create("locals", Locals),
                 ["callable"] = BuiltinCallable.Create("callable", Callable, ["object"]),
                 ["hash"] = BuiltinCallable.Create("hash", Hash, ["object"]),
+                ["id"] = BuiltinCallable.Create("id", Id),
                 ["list"] = BuiltinCallable.Create(LythonCallableSignature.Create("list", ["iterable"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), List, ListAsync),
                 ["tuple"] = BuiltinCallable.Create(LythonCallableSignature.Create("tuple", ["iterable"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Tuple, TupleAsync),
                 ["dict"] = new DictCallable(),

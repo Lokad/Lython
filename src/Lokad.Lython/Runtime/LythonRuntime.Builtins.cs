@@ -620,6 +620,16 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private static object Id(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length != 1)
+        {
+            throw new LythonRuntimeException("TypeError", "id() takes exactly one argument (" + arguments.Length + " given)", span);
+        }
+
+        return context.State.GetObjectId(arguments[0]);
+    }
+
     private static int ToInt32(BigInteger value, string owner, LythonSourceSpan span)
     {
         if (value < int.MinValue || value > int.MaxValue)

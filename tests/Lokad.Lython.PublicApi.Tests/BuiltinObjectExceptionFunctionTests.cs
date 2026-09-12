@@ -41,6 +41,33 @@ return "|".join([";".join(g), ";".join(l), ";".join(fg), ";".join(fl)])
     }
 
     [Fact]
+    public void IdExposesStablePerRunObjectIdentity()
+    {
+        var result = new LythonEngine().Run(
+            """
+x = object()
+y = object()
+return str(isinstance(id(x), int)) + "|" + str(id(x) == id(x)) + "|" + str(id(x) != id(y)) + "|" + str(id(None) == id(None))
+""",
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("True|True|True|True", result.ReturnValue);
+    }
+
+    [Fact]
+    public void IdIsDeterministicAcrossRuns()
+    {
+        const string source = "x = object()\nreturn str(id(x))\n";
+        var first = new LythonEngine().Run(source, new MockLythonHost());
+        var second = new LythonEngine().Run(source, new MockLythonHost());
+
+        Assert.True(first.Success, first.Failure?.Message);
+        Assert.True(second.Success, second.Failure?.Message);
+        Assert.Equal(first.ReturnValue, second.ReturnValue);
+    }
+
+    [Fact]
     public void DictViewsExposeDirNames()
     {
         var result = new LythonEngine().Run(
