@@ -127,6 +127,12 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("import datetime\ndatetime.date.fromisocalendar(0, 1, 1)\n", "ValueError", "Year is out of range: 0")]
     [InlineData("import datetime\ndatetime.date.fromisocalendar(10**30, 1, 1)\n", "ValueError", "ISO calendar component out of range")]
     [InlineData("import datetime\ndatetime.date.fromisocalendar(\"a\", 1, 1)\n", "TypeError", "'str' object cannot be interpreted as an integer")]
+    [InlineData("import datetime\ndatetime.date.fromtimestamp(\"a\")\n", "TypeError", "'str' object cannot be interpreted as an integer")]
+    [InlineData("import datetime\ndatetime.date.fromtimestamp(None)\n", "TypeError", "'NoneType' object cannot be interpreted as an integer")]
+    [InlineData("import datetime\nclass K:\n pass\ndatetime.datetime.fromtimestamp(K())\n", "TypeError", "'K' object cannot be interpreted as an integer")]
+    [InlineData("import datetime\nclass J:\n def __index__(self):\n  return \"x\"\ndatetime.date.fromtimestamp(J())\n", "TypeError", "__index__ returned non-int (type str)")]
+    [InlineData("import datetime\ndatetime.datetime.fromtimestamp(float(\"inf\"))\n", "OverflowError", "timestamp out of range for platform time_t")]
+    [InlineData("import datetime\ndatetime.datetime.fromtimestamp(float(\"nan\"))\n", "ValueError", "Invalid value NaN (not a number)")]
     [InlineData("def f(x, y):\n return x[y]\nf([1], ...)\n", "TypeError", "list indices must be integers or slices, not ellipsis")]
     [InlineData("def f(x, y):\n return x[y]\nf((1,), ...)\n", "TypeError", "tuple indices must be integers or slices, not ellipsis")]
     [InlineData("from collections import Counter\ndef f(x, y):\n return x[y]\nf([1], Counter())\n", "TypeError", "list indices must be integers or slices, not Counter")]
@@ -292,6 +298,20 @@ __lython_file.close()
         var asyncResult = await script.RunAsync(new MockLythonHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("0001-01-01|9999-12-31|0001-01-05|2021-01-03|2016-01-03|2024-01-05 00:00:00|2020-01-01 00:00:00", asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task FromTimestampAcceptsIndexOperands()
+    {
+        const string source = "import datetime\nclass J:\n    def __index__(self):\n        return 0\nreturn datetime.datetime.fromtimestamp(J(), tz=datetime.timezone.utc).isoformat() + \"|\" + datetime.datetime.fromtimestamp(True, tz=datetime.timezone.utc).isoformat() + \"|\" + datetime.datetime.fromtimestamp(0.5, tz=datetime.timezone.utc).isoformat()\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("1970-01-01T00:00:00+00:00|1970-01-01T00:00:01+00:00|1970-01-01T00:00:00.500000+00:00", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("1970-01-01T00:00:00+00:00|1970-01-01T00:00:01+00:00|1970-01-01T00:00:00.500000+00:00", asyncResult.ReturnValue);
     }
 
     [Fact]

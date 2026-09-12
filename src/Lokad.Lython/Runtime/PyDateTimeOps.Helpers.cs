@@ -130,17 +130,25 @@ internal static partial class PyDateTimeOps
         return DateOnly.FromDateTime(ISOWeek.ToDateTime(year, week, dayOfWeek));
     }
 
-    private static double GetTimestamp(object value, string owner, LythonSourceSpan span)
+    private static double GetTimestamp(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        if (!Numbers.PyNumberOps.TryAsNumber(value, out var number))
+        // Timestamps convert through __index__ like CPython; remaining
+        // rejections name the original type instead of the factory.
+        var coerced = LythonRuntime.CoerceIndexProtocol(value, context, span);
+        if (!Numbers.PyNumberOps.TryAsNumber(coerced, out var number))
         {
-            throw new LythonRuntimeException("TypeError", $"{owner}(timestamp) expects a real number.", span);
+            throw new LythonRuntimeException("TypeError", "'" + LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
         }
 
         var timestamp = number.ToDouble();
-        if (!double.IsFinite(timestamp))
+        if (double.IsInfinity(timestamp))
         {
-            throw new LythonRuntimeException("ValueError", $"{owner}(timestamp) timestamp is out of range.", span);
+            throw new LythonRuntimeException("OverflowError", "timestamp out of range for platform time_t", span);
+        }
+
+        if (double.IsNaN(timestamp))
+        {
+            throw new LythonRuntimeException("ValueError", "Invalid value NaN (not a number)", span);
         }
 
         return timestamp;
