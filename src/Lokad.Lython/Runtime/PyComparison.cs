@@ -27,6 +27,11 @@ internal static class PyComparison
             return PyString.CompareOrdinal(leftText, rightText);
         }
 
+        if (left is PyBytes leftBytes && right is PyBytes rightBytes)
+        {
+            return leftBytes.Memory.Span.SequenceCompareTo(rightBytes.Memory.Span);
+        }
+
         if (left is PyPath leftPath && right is PyPath rightPath)
         {
             return PyString.CompareOrdinal(leftPath.Value, rightPath.Value);

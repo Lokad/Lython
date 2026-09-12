@@ -297,6 +297,7 @@ internal static partial class StaticStructuralDiagnostics
            left.Kind == AbstractValueKind.DateTimeTime && right.Kind == AbstractValueKind.DateTimeTime ||
            left.Kind == AbstractValueKind.Path && right.Kind == AbstractValueKind.Path ||
            StaticAbstractFacts.IsListLike(left) && StaticAbstractFacts.IsListLike(right) ||
+           StaticAbstractFacts.IsBytesLike(left) && StaticAbstractFacts.IsBytesLike(right) ||
            left.Kind == AbstractValueKind.Tuple && right.Kind == AbstractValueKind.Tuple ||
            StaticAbstractFacts.IsSetLike(left) && StaticAbstractFacts.IsSetLike(right);
 
@@ -305,6 +306,11 @@ internal static partial class StaticStructuralDiagnostics
         if (container.IsStringLike)
         {
             return candidate.IsStringLike;
+        }
+
+        if (StaticAbstractFacts.IsBytesLike(container))
+        {
+            return StaticAbstractFacts.IsIntegerLike(candidate) || StaticAbstractFacts.IsBytesLike(candidate);
         }
 
         return container.Kind is AbstractValueKind.List or
