@@ -66,7 +66,6 @@ internal sealed partial class LythonRuntime
                 "type" => PyString.FromString(exception.TypeName),
                 "message" => PyString.FromString(exception.Message),
                 "args" => CreateExceptionArgs(exception),
-                "__notes__" => (object?)exception.Notes ?? MissingMemberValue.Instance,
                 "add_note" => BoundCallable.Create(
                     (arguments, span, context) => AddExceptionNote(exception, arguments, span, context),
                     "add_note",
@@ -158,9 +157,27 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "add_note(note) expects one string argument.", span);
             }
 
-            exception.Notes ??= new PyList([], context.MemoryGovernor, span);
-            exception.Notes.Add(note);
-            context.ObserveCollectionCount(exception.Notes.Count, span);
+            // Notes live in the custom dict like CPython: add_note appends to
+            // the __notes__ list entry, creating it governed on first use.
+            if (exception.CustomDict is not null &&
+                exception.CustomDict.TryGetValue(PyString.FromString("__notes__"), out var existingNotes))
+            {
+                if (existingNotes is not PyList notes)
+                {
+                    throw new LythonRuntimeException("TypeError", "Cannot add note: __notes__ is not a list", span);
+                }
+
+                notes.Add(note);
+                context.ObserveCollectionCount(notes.Count, span);
+                return PyNone.Instance;
+            }
+
+            exception.CustomDict ??= new PyDict(context.MemoryGovernor, span);
+            exception.CustomDict.AttachMemoryGovernor(context.MemoryGovernor, span);
+            var freshNotes = new PyList([], context.MemoryGovernor, span);
+            freshNotes.Add(note);
+            exception.CustomDict.SetItem(PyString.FromString("__notes__", context.MemoryGovernor, span), freshNotes);
+            context.ObserveCollectionCount(freshNotes.Count, span);
             return PyNone.Instance;
         }
 

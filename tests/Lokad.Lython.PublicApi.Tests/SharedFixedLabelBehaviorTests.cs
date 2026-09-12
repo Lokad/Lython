@@ -5731,9 +5731,9 @@ public sealed class SharedFixedLabelBehaviorTests
     [Fact]
     public async Task ExceptionNotes()
     {
-        // add_note accumulates governed notes like CPython while
-        // __notes__ stays missing until the first note; writes stay
-        // unsupported like every other exception attribute.
+        // Notes live in the instance dict like CPython: __notes__ stays
+        // missing until the first note, plain writes and deletes flow
+        // through the dict, and add_note appends to the stored list.
         var script = new LythonEngine().Compile("""
             e = ValueError("v")
             results = []
@@ -5743,22 +5743,35 @@ public sealed class SharedFixedLabelBehaviorTests
             results.append(len(e.__notes__) == 2)
             results.append(e.__notes__[0] == "n1")
             results.append(e.__notes__ is e.__notes__)
+            results.append(e.__dict__ == {"__notes__": ["n1", "n2"]})
             try:
                 e.add_note(42)
             except TypeError:
                 results.append("note-type")
             e2 = ValueError("w")
             results.append(hasattr(e2, "__notes__"))
+            e2.__notes__ = ["x"]
+            results.append(e2.__notes__ == ["x"])
+            results.append(e2.__dict__ == {"__notes__": ["x"]})
+            e2.add_note("y")
+            results.append(e2.__notes__ == ["x", "y"])
+            del e2.__notes__
+            results.append(hasattr(e2, "__notes__"))
+            e2.add_note("z")
+            results.append(e2.__notes__ == ["z"])
+            e3 = ValueError("u")
+            e3.__notes__ = "plain"
+            results.append(e3.__notes__ == "plain")
             try:
-                e.__notes__ = ["x"]
-            except TypeError:
-                results.append("read-only")
+                e3.add_note("w")
+            except TypeError as ex:
+                results.append(str(ex) == "Cannot add note: __notes__ is not a list")
             return results
             """);
         Assert.True(script.IsValid);
         var expected = new List<object?>
         {
-            false, true, true, true, "note-type", false, "read-only",
+            false, true, true, true, true, "note-type", false, true, true, true, false, true, true, true,
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);
@@ -5768,7 +5781,6 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
-
     [Fact]
     public async Task GeneratedMethodModule()
     {

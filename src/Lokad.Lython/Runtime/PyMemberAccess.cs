@@ -249,13 +249,6 @@ internal static class PyMemberAccess
 
         if (target is PyException exception)
         {
-            // __notes__ keeps its pinned read-only contract; full slot
-            // semantics land separately.
-            if (memberName == "__notes__")
-            {
-                return false;
-            }
-
             // Assigned args replace the construction slot without entering
             // the dict, so __dict__ stays clean like CPython.
             if (memberName == "args")

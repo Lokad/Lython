@@ -31,9 +31,6 @@ internal sealed record PyException(
     // Direct __suppress_context__ assignment writes this slot like CPython.
     public bool SuppressContext { get; set; }
 
-    // Notes accumulate through add_note and back the __notes__ list.
-    public PyList? Notes { get; set; }
-
     // Custom attributes live in a governed dict like CPython's instance
     // __dict__; reads check it before fixed members so assignments shadow,
     // while the args slot stays separate like CPython.
