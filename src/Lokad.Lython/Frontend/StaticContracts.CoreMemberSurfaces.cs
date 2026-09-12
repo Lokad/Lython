@@ -382,6 +382,7 @@ internal static partial class StaticContracts
         "max",
         "min_mag",
         "max_mag",
+        "fma",
     };
 
     private static readonly HashSet<string> DecimalContextMembers = new(StringComparer.Ordinal)

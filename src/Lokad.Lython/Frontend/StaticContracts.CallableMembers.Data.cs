@@ -145,6 +145,7 @@ internal static partial class StaticContracts
         new(AbstractValueKind.Decimal, "shift", 1, 1, "LA3156", "Decimal.shift(other) expects one argument.", parameterNames: ["other"]),
         new(AbstractValueKind.Decimal, "rotate", 1, 1, "LA3156", "Decimal.rotate(other) expects one argument.", parameterNames: ["other"]),
         new(AbstractValueKind.Decimal, "same_quantum", 1, 1, "LA3156", "Decimal.same_quantum(other) expects one argument.", parameterNames: ["other"]),
+        new(AbstractValueKind.Decimal, "fma", 2, 3, "LA3156", "Decimal.fma(other, third[, context]) expects two or three arguments.", parameterNames: ["other", "third", "context"]),
         new(AbstractValueKind.Decimal, "remainder_near", 1, 2, "LA3156", "Decimal.remainder_near(other[, context]) expects one or two arguments.", parameterNames: ["other", "context"]),
         new(AbstractValueKind.Decimal, "min", 1, 2, "LA3156", "Decimal.min(other[, context]) expects one or two arguments.", parameterNames: ["other", "context"]),
         new(AbstractValueKind.Decimal, "max", 1, 2, "LA3156", "Decimal.max(other[, context]) expects one or two arguments.", parameterNames: ["other", "context"]),

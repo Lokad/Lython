@@ -192,6 +192,7 @@ internal static partial class StaticContracts
         new(AbstractValueKind.Decimal, "shift", StaticReturnShape.Decimal),
         new(AbstractValueKind.Decimal, "rotate", StaticReturnShape.Decimal),
         new(AbstractValueKind.Decimal, "same_quantum", StaticReturnShape.Boolean),
+        new(AbstractValueKind.Decimal, "fma", StaticReturnShape.Decimal),
         new(AbstractValueKind.Decimal, "remainder_near", StaticReturnShape.Decimal),
         new(AbstractValueKind.Decimal, "min", StaticReturnShape.Decimal),
         new(AbstractValueKind.Decimal, "max", StaticReturnShape.Decimal),

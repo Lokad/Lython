@@ -258,6 +258,8 @@ d.adjusted()
 d.compare(Decimal("2"))
 d.is_finite()
 d.scaleb(2)
+d.fma(Decimal("2"), Decimal("3"))
+d.fma(Decimal("2"), Decimal("3")).as_tuple()
 Decimal(DecimalTuple(0, (1, 2), -1))
 """);
 
@@ -269,6 +271,7 @@ from decimal import Decimal, Context
 
 Decimal(1, 2, 3)
 Decimal("1").as_tuple(1)
+Decimal("1").fma(Decimal("1"))
 Decimal("1").bogus()
 Context().copy(1)
 """);
@@ -278,6 +281,7 @@ Context().copy(1)
         Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3156" && d.Message.Contains("Decimal.as_tuple", StringComparison.Ordinal));
         Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3113" && d.Message.Contains("bogus", StringComparison.Ordinal));
         Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3156" && d.Message.Contains("Context.copy", StringComparison.Ordinal));
+        Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3156" && d.Message.Contains("Decimal.fma", StringComparison.Ordinal));
     }
 
     [Theory]
@@ -1187,5 +1191,76 @@ x.as_tuple()
 """);
 
         Assert.True(valid.IsValid, string.Join(" | ", valid.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+    }
+
+    [Fact]
+    public async Task DecimalFusedMultiplyAddMatchesCpython()
+    {
+        // Decimal.fma computes the BCL multiply-add like CPython wherever
+        // no double-rounding occurs (always Decimal), with house validation
+        // for arity and operand kinds, in both modes.
+        var script = new LythonEngine().Compile("""
+            from decimal import Decimal
+            results = []
+            results.append(str(Decimal('2').fma(3, 4)))
+            results.append(repr(Decimal('2').fma(3, 4)))
+            results.append(type(Decimal('2').fma(3, 4)).__name__)
+            results.append(str(Decimal('2.5').fma(Decimal('4'), Decimal('0.5'))))
+            results.append(str(Decimal('-2').fma(3, -7)))
+            results.append(str(Decimal('0').fma(Decimal('0'), Decimal('0'))))
+            results.append(str(Decimal('-0').fma(Decimal('-0'), Decimal('-0'))))
+            results.append(str(Decimal('1.5').fma(Decimal('1.5'), Decimal('0.25'))))
+            results.append(str(Decimal('2').fma(True, 1)))
+            results.append(str(Decimal('2').fma(3, 4).as_tuple()))
+            def fma_s(s):
+                return Decimal('2').fma(s, 4)
+            try:
+                fma_s('x')
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            def fma_1(d, a):
+                return d.fma(a)
+            try:
+                fma_1(Decimal('2'), 3)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            def fma_4(d, a, b, c, e):
+                return d.fma(a, b, c, e)
+            try:
+                fma_4(Decimal('2'), 1, 2, 3, 4)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "10",
+            "Decimal('10')",
+            "Decimal",
+            "10.5",
+            "-13",
+            "0",
+            "0",
+            "2.50",
+            "3",
+            "DecimalTuple(sign=0, digits=(1, 0), exponent=0)",
+            "TypeError",
+            "Decimal.fma(other, third[, context]) expects two Decimal-compatible arguments.",
+            "TypeError",
+            "Method 'Decimal.fma' is missing argument 'third'.",
+            "TypeError",
+            "Method 'Decimal.fma' received too many positional arguments.",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
     }
 }

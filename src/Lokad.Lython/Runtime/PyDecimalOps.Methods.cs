@@ -285,6 +285,20 @@ internal static partial class PyDecimalOps
         return new PyDecimal(value.Value - quotient * other);
     }
 
+    public static PyDecimal FusedMultiplyAdd(PyDecimal value, object[] arguments, LythonSourceSpan span)
+    {
+        if (arguments.Length is < 2 or > 3 || !TryAsDecimal(arguments[0], out _) || !TryAsDecimal(arguments[1], out _))
+        {
+            throw new LythonRuntimeException("TypeError", "Decimal.fma(other, third[, context]) expects two Decimal-compatible arguments.", span);
+        }
+
+        // Lython has no context-precision core, so fma shares the exact
+        // BCL semantics of a separate multiply and add (including its
+        // zero signs and overflow), matching CPython wherever no
+        // double-rounding occurs.
+        return (PyDecimal)PyDecimalOps.Add(PyDecimalOps.Multiply(value, arguments[0], span, "*"), arguments[1], span, "+");
+    }
+
     public static PyDecimal MinMax(PyDecimal value, object[] arguments, string name, LythonSourceSpan span)
     {
         if (arguments.Length is < 1 or > 2 || !TryAsDecimal(arguments[0], out var other))
