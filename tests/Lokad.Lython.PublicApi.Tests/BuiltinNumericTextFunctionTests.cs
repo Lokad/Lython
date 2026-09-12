@@ -303,7 +303,7 @@ return "|".join([
     [InlineData("bin(1.2)\n", "TypeError", "integer")]
     [InlineData("chr(1114112)\n", "ValueError", "range")]
     [InlineData("ord('ab')\n", "TypeError", "character")]
-    [InlineData("format(1, 2)\n", "TypeError", "format_spec")]
+    [InlineData("format(1, 2)\n", "TypeError", "format() argument 2 must be str, not int")]
     [InlineData("hash([])\n", "TypeError", "unhashable type: 'list'")]
     [InlineData("hash({})\n", "TypeError", "unhashable type: 'dict'")]
     [InlineData("hash({1})\n", "TypeError", "unhashable type: 'set'")]

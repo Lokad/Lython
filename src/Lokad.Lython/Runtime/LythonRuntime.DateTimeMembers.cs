@@ -43,18 +43,28 @@ internal sealed partial class LythonRuntime
                 "isoformat" => BoundCallable.CreateNoArguments(date, "date.isoformat", static (receiver, span, context) => PyDateTimeOps.OwnDateTimeText(receiver.IsoFormat(), context.MemoryGovernor, span)),
                 "__format__" => BoundCallable.Create((arguments, span, context) =>
                 {
-                    if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var format))
+                    if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "date.__format__(format_spec) expects one string argument.", span);
+                    }
+
+                    if (!PyStringOps.TryAsString(arguments[0], out var format))
+                    {
+                        throw new LythonRuntimeException("TypeError", $"__format__() argument 1 must be str, not {IsoformatTypeName(arguments[0], context)}", span);
                     }
 
                     return PyDateTimeOps.OwnDateTimeText(PyDateTimeOps.FormatValue(date, format, span), context.MemoryGovernor, span);
                 }, "date.__format__", ["format_spec"]),
                 "strftime" => BoundCallable.Create((arguments, span, context) =>
                 {
-                    if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var format))
+                    if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "date.strftime(format) expects one string argument.", span);
+                    }
+
+                    if (!PyStringOps.TryAsString(arguments[0], out var format))
+                    {
+                        throw new LythonRuntimeException("TypeError", $"strftime() argument 1 must be str, not {IsoformatTypeName(arguments[0], context)}", span);
                     }
 
                     return PyDateTimeOps.OwnDateTimeText(PyDateTimeOps.Strftime(date.Value, format, span), context.MemoryGovernor, span);
@@ -132,18 +142,28 @@ internal sealed partial class LythonRuntime
                 }, "time.isoformat", ["timespec"], 0),
                 "__format__" => BoundCallable.Create((arguments, span, context) =>
                 {
-                    if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var format))
+                    if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "time.__format__(format_spec) expects one string argument.", span);
+                    }
+
+                    if (!PyStringOps.TryAsString(arguments[0], out var format))
+                    {
+                        throw new LythonRuntimeException("TypeError", $"__format__() argument 1 must be str, not {IsoformatTypeName(arguments[0], context)}", span);
                     }
 
                     return PyDateTimeOps.OwnDateTimeText(PyDateTimeOps.FormatValue(time, format, span), context.MemoryGovernor, span);
                 }, "time.__format__", ["format_spec"]),
                 "strftime" => BoundCallable.Create((arguments, span, context) =>
                 {
-                    if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var format))
+                    if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "time.strftime(format) expects one string argument.", span);
+                    }
+
+                    if (!PyStringOps.TryAsString(arguments[0], out var format))
+                    {
+                        throw new LythonRuntimeException("TypeError", $"strftime() argument 1 must be str, not {IsoformatTypeName(arguments[0], context)}", span);
                     }
 
                     return PyDateTimeOps.OwnDateTimeText(PyDateTimeOps.Strftime(time.Value, time.TzInfo, format, span), context.MemoryGovernor, span);
@@ -287,18 +307,28 @@ internal sealed partial class LythonRuntime
                 }, "datetime.isoformat", ["sep", "timespec"], 0),
                 "__format__" => BoundCallable.Create((arguments, span, context) =>
                 {
-                    if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var format))
+                    if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "datetime.__format__(format_spec) expects one string argument.", span);
+                    }
+
+                    if (!PyStringOps.TryAsString(arguments[0], out var format))
+                    {
+                        throw new LythonRuntimeException("TypeError", $"__format__() argument 1 must be str, not {IsoformatTypeName(arguments[0], context)}", span);
                     }
 
                     return PyDateTimeOps.OwnDateTimeText(PyDateTimeOps.FormatValue(dateTime, format, span), context.MemoryGovernor, span);
                 }, "datetime.__format__", ["format_spec"]),
                 "strftime" => BoundCallable.Create((arguments, span, context) =>
                 {
-                    if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var format))
+                    if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "datetime.strftime(format) expects one string argument.", span);
+                    }
+
+                    if (!PyStringOps.TryAsString(arguments[0], out var format))
+                    {
+                        throw new LythonRuntimeException("TypeError", $"strftime() argument 1 must be str, not {IsoformatTypeName(arguments[0], context)}", span);
                     }
 
                     return PyDateTimeOps.OwnDateTimeText(PyDateTimeOps.Strftime(dateTime.Value, dateTime.TzInfo, format, span), context.MemoryGovernor, span);

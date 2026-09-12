@@ -253,7 +253,7 @@ internal sealed partial class LythonRuntime
         {
             if (!PyStringOps.TryAsString(arguments[1], out var formatSpec))
             {
-                throw new LythonRuntimeException("TypeError", "format(value[, format_spec]) expects format_spec to be a string.", span);
+                throw new LythonRuntimeException("TypeError", $"format() argument 2 must be str, not {IsoformatTypeName(arguments[1], context)}", span);
             }
 
             spec = formatSpec.AsString();
