@@ -11,17 +11,21 @@ internal static partial class PyDateTimeOps
 {
     public static string FormatOffset(TimeSpan offset)
     {
+        // Totals, not components: TimeSpan fractions split milliseconds from
+        // microseconds, and hours cap at a day.
         var sign = offset < TimeSpan.Zero ? "-" : "+";
-        offset = offset.Duration();
-        var text = $"{sign}{offset.Hours:00}:{offset.Minutes:00}";
-        if (offset.Seconds != 0 || offset.Microseconds != 0)
+        var totalMicroseconds = offset.Duration().Ticks / 10;
+        var totalSeconds = totalMicroseconds / 1_000_000;
+        var microseconds = totalMicroseconds % 1_000_000;
+        var text = $"{sign}{totalSeconds / 3600:00}:{totalSeconds % 3600 / 60:00}";
+        if (totalSeconds % 60 != 0 || microseconds != 0)
         {
-            text += $":{offset.Seconds:00}";
+            text += $":{totalSeconds % 60:00}";
         }
 
-        if (offset.Microseconds != 0)
+        if (microseconds != 0)
         {
-            text += $".{offset.Microseconds:000000}";
+            text += $".{microseconds:000000}";
         }
 
         return text;

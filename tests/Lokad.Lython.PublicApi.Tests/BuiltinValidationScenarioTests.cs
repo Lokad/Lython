@@ -159,6 +159,15 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("import datetime\ndatetime.datetime.strptime(\"2024-01-02junk\", \"%Y-%m-%d\")\n", "ValueError", "unconverted data remains: junk")]
     [InlineData("import datetime\ndatetime.datetime.strptime(\"2024 53 1\", \"%G %V %u\")\n", "ValueError", "Invalid week: 53")]
     [InlineData("import datetime\ndatetime.datetime.strptime(\"9999-366\", \"%Y-%j\")\n", "ValueError", "year 10000 is out of range")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"2024-01-02 03:04:05 +02:0030\", \"%Y-%m-%d %H:%M:%S %z\")\n", "ValueError", "Inconsistent use of : in +02:0030")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"2024-01-02 03:04:05 +0200:30\", \"%Y-%m-%d %H:%M:%S %z\")\n", "ValueError", "invalid literal for int() with base 10: ':3'")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"2024-01-02 03:04:05 +25:00\", \"%Y-%m-%d %H:%M:%S %z\")\n", "ValueError", "offset must be a timedelta strictly between -timedelta(hours=24) and timedelta(hours=24), not datetime.timedelta(days=1, seconds=3600).")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"2024-01-02 03:04:05 -25:00\", \"%Y-%m-%d %H:%M:%S %z\")\n", "ValueError", "offset must be a timedelta strictly between -timedelta(hours=24) and timedelta(hours=24), not datetime.timedelta(days=-2, seconds=82800).")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"2024-01-02 03:04:05 +24:00\", \"%Y-%m-%d %H:%M:%S %z\")\n", "ValueError", "offset must be a timedelta strictly between -timedelta(hours=24) and timedelta(hours=24), not datetime.timedelta(days=1).")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"2024-01-02 03:04:05 z\", \"%Y-%m-%d %H:%M:%S %z\")\n", "ValueError", "time data '2024-01-02 03:04:05 z' does not match format '%Y-%m-%d %H:%M:%S %z'")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"2024-01-02 03:04:05 +02:00:61\", \"%Y-%m-%d %H:%M:%S %z\")\n", "ValueError", "unconverted data remains: :61")]
+    [InlineData("import datetime\ndatetime.timezone(datetime.timedelta(hours=25))\n", "ValueError", "offset must be a timedelta strictly between -timedelta(hours=24) and timedelta(hours=24), not datetime.timedelta(days=1, seconds=3600).")]
+    [InlineData("import datetime\ndatetime.timezone(datetime.timedelta(hours=24))\n", "ValueError", "offset must be a timedelta strictly between -timedelta(hours=24) and timedelta(hours=24), not datetime.timedelta(days=1).")]
     [InlineData("import datetime\ndatetime.datetime.strptime(\"Xyz\", \"%a\")\n", "ValueError", "time data 'Xyz' does not match format '%a'")]
     [InlineData("import datetime\ndatetime.datetime.strptime(\"Jan 02\", \"%B %d\")\n", "ValueError", "time data 'Jan 02' does not match format '%B %d'")]
     [InlineData("import datetime\ndatetime.datetime.strptime(\"Tue\", \"%A\")\n", "ValueError", "time data 'Tue' does not match format '%A'")]
@@ -377,6 +386,20 @@ __lython_file.close()
         var asyncResult = await script.RunAsync(new MockLythonHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("2024-01-02 00:00:00|2024-01-01 00:00:00", asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task StrptimeParsesOffsetSeconds()
+    {
+        const string source = "import datetime\nreturn datetime.datetime.strptime(\"2024-01-02 03:04:05 +02:00:30\", \"%Y-%m-%d %H:%M:%S %z\").isoformat() + \"|\" + datetime.datetime.strptime(\"2024-01-02 03:04:05 +020030\", \"%Y-%m-%d %H:%M:%S %z\").isoformat() + \"|\" + datetime.datetime.strptime(\"2024-01-02 03:04:05 +02:00:30.123456\", \"%Y-%m-%d %H:%M:%S %z\").isoformat() + \"|\" + datetime.datetime.strptime(\"2024-01-02 03:04:05 +23:59:59.999999\", \"%Y-%m-%d %H:%M:%S %z\").isoformat() + \"|\" + datetime.datetime.strptime(\"2024-01-02 03:04:05 -02:00:30\", \"%Y-%m-%d %H:%M:%S %z\").isoformat() + \"|\" + datetime.datetime.strptime(\"2024-01-02 03:04:05 -00:00\", \"%Y-%m-%d %H:%M:%S %z\").isoformat()\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("2024-01-02T03:04:05+02:00:30|2024-01-02T03:04:05+02:00:30|2024-01-02T03:04:05+02:00:30.123456|2024-01-02T03:04:05+23:59:59.999999|2024-01-02T03:04:05-02:00:30|2024-01-02T03:04:05+00:00", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("2024-01-02T03:04:05+02:00:30|2024-01-02T03:04:05+02:00:30|2024-01-02T03:04:05+02:00:30.123456|2024-01-02T03:04:05+23:59:59.999999|2024-01-02T03:04:05-02:00:30|2024-01-02T03:04:05+00:00", asyncResult.ReturnValue);
     }
 
     [Fact]

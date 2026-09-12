@@ -501,10 +501,7 @@ internal static partial class PyDateTimeOps
             throw new LythonRuntimeException("TypeError", "datetime.timezone(offset[, name]) expects a timedelta offset.", span);
         }
 
-        if (delta.TotalMicroseconds <= -86_400_000_000 || delta.TotalMicroseconds >= 86_400_000_000)
-        {
-            throw new LythonRuntimeException("ValueError", "datetime.timezone(...) offset must be strictly between -24h and +24h.", span);
-        }
+        ValidateTimezoneOffset(delta.TotalMicroseconds, span);
 
         var name = ArgAt(bound, 1) switch
         {

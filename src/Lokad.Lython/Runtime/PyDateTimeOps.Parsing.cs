@@ -201,7 +201,7 @@ internal static partial class PyDateTimeOps
         var parsedTime = CreateParsedTime(hour, minute, second, microsecond, span);
         var value = parsedDate.ToDateTime(parsedTime);
 
-        var timezone = ParseStrptimeTimezone(Capture('z'), Capture('Z'));
+        var timezone = ParseStrptimeTimezone(Capture('z'), Capture('Z'), span);
         return new PyDateTime(value, timezone);
     }
 
@@ -261,7 +261,7 @@ internal static partial class PyDateTimeOps
             'M' => @"[0-5]\d|\d",
             'S' => @"6[0-1]|[0-5]\d|\d",
             'f' => @"[0-9]{1,6}",
-            'z' => @"Z|[+-]\d{2}:?\d{2}",
+            'z' => @"(?-i:Z)|[+-]\d\d:?[0-5]\d(:?[0-5]\d(\.\d{1,6})?)?",
             'Z' => @"[A-Za-z_][A-Za-z0-9_+-]*",
             'a' => @"Mon|Tue|Wed|Thu|Fri|Sat|Sun",
             'A' => @"Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday",
@@ -329,15 +329,12 @@ internal static partial class PyDateTimeOps
         return int.Parse(text.PadRight(6, '0'), CultureInfo.InvariantCulture);
     }
 
-    private static PyTimezone? ParseStrptimeTimezone(string? offsetText, string? nameText)
+    private static PyTimezone? ParseStrptimeTimezone(string? offsetText, string? nameText, LythonSourceSpan span)
     {
         if (!string.IsNullOrEmpty(offsetText))
         {
-            if (!TryParseOffsetText(offsetText, out var offset))
-            {
-                throw new FormatException("timezone offset is not recognized.");
-            }
-
+            var offset = ParseStrptimeOffset(offsetText, span);
+            ValidateTimezoneOffset(new BigInteger(offset.Ticks / 10), span);
             return new PyTimezone(offset);
         }
 
@@ -346,6 +343,104 @@ internal static partial class PyDateTimeOps
              string.Equals(nameText, "GMT", StringComparison.OrdinalIgnoreCase))
             ? PyTimezone.Utc
             : null;
+    }
+
+    private static TimeSpan ParseStrptimeOffset(string text, LythonSourceSpan span)
+    {
+        // The directive shape already constrains minutes, seconds and the
+        // fraction; inconsistent colons and the non-numeric seconds slice
+        // report exactly like CPython.
+        if (text == "Z")
+        {
+            return TimeSpan.Zero;
+        }
+
+        var negative = text[0] == '-';
+        var hours = int.Parse(text.Substring(1, 2), CultureInfo.InvariantCulture);
+        int minutes;
+        string rest;
+        if (text[3] == ':')
+        {
+            minutes = int.Parse(text.Substring(4, 2), CultureInfo.InvariantCulture);
+            rest = text.Length > 6 ? text[6..] : string.Empty;
+            if (rest.Length != 0 && !rest.StartsWith(':'))
+            {
+                throw new FormatException($"Inconsistent use of : in {text}");
+            }
+
+            rest = rest.Length == 0 ? string.Empty : rest[1..];
+        }
+        else
+        {
+            minutes = int.Parse(text.Substring(3, 2), CultureInfo.InvariantCulture);
+            rest = text.Length > 5 ? text[5..] : string.Empty;
+            if (rest.Length != 0 && rest[0] == ':')
+            {
+                throw new LythonRuntimeException("ValueError", $"invalid literal for int() with base 10: '{text.Substring(5, Math.Min(2, text.Length - 5))}'", span);
+            }
+        }
+
+        var seconds = 0;
+        var microseconds = 0;
+        if (rest.Length != 0)
+        {
+            seconds = int.Parse(rest.Substring(0, 2), CultureInfo.InvariantCulture);
+            if (rest.Length > 2)
+            {
+                microseconds = int.Parse(rest.Substring(3).PadRight(6, '0'), CultureInfo.InvariantCulture);
+            }
+        }
+
+        var ticks = ((hours * 3600L + minutes * 60L + seconds) * TimeSpan.TicksPerSecond) + microseconds * 10L;
+        return TimeSpan.FromTicks(negative ? -ticks : ticks);
+    }
+
+    private static void ValidateTimezoneOffset(BigInteger totalMicroseconds, LythonSourceSpan span)
+    {
+        if (totalMicroseconds <= -86_400_000_000 || totalMicroseconds >= 86_400_000_000)
+        {
+            throw new LythonRuntimeException("ValueError", $"offset must be a timedelta strictly between -timedelta(hours=24) and timedelta(hours=24), not {RenderOffsetDelta(totalMicroseconds)}.", span);
+        }
+    }
+
+    private static string RenderOffsetDelta(BigInteger totalMicroseconds)
+    {
+        // Floor-based normalization mirrors timedelta repr for the range text.
+        var days = totalMicroseconds / 86_400_000_000;
+        var remainder = totalMicroseconds % 86_400_000_000;
+        if (remainder.Sign < 0)
+        {
+            days -= BigInteger.One;
+            remainder += 86_400_000_000;
+        }
+
+        var seconds = remainder / 1_000_000;
+        var microseconds = remainder % 1_000_000;
+        var builder = new StringBuilder("datetime.timedelta(");
+        var separator = string.Empty;
+        if (!days.IsZero)
+        {
+            builder.Append("days=").Append(days.ToString(CultureInfo.InvariantCulture));
+            separator = ", ";
+        }
+
+        if (!seconds.IsZero)
+        {
+            builder.Append(separator).Append("seconds=").Append(seconds.ToString(CultureInfo.InvariantCulture));
+            separator = ", ";
+        }
+
+        if (!microseconds.IsZero)
+        {
+            builder.Append(separator).Append("microseconds=").Append(microseconds.ToString(CultureInfo.InvariantCulture));
+        }
+
+        if (separator.Length == 0)
+        {
+            builder.Append('0');
+        }
+
+        return builder.Append(')').ToString();
     }
 
     private static PyTime ParseTime(string text, LythonSourceSpan span)
