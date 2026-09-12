@@ -90,10 +90,20 @@ internal sealed partial class LythonRuntime
         }
 
         var total = arguments.Length == 2 ? arguments[1] : BigInteger.Zero;
-        EnsureSummableValue(total, span);
+        // A string or bytes start fails up front with the join hint like
+        // CPython; item failures surface through binary dispatch instead.
+        if (PyStringOps.TryAsString(total, out _))
+        {
+            throw new LythonRuntimeException("TypeError", "sum() can't sum strings [use ''.join(seq) instead]", span);
+        }
+
+        if (total is PyBytes)
+        {
+            throw new LythonRuntimeException("TypeError", "sum() can't sum bytes [use b''.join(seq) instead]", span);
+        }
+
         foreach (var item in ToSequence(arguments[0], span, context))
         {
-            EnsureSummableValue(item, span);
             // Instances resolve __add__/__radd__ through operator dispatch like
             // CPython; plain values take the direct path with identical results.
             total = total is PyInstance || item is PyInstance
@@ -112,10 +122,20 @@ internal sealed partial class LythonRuntime
         }
 
         var total = arguments.Length == 2 ? arguments[1] : BigInteger.Zero;
-        EnsureSummableValue(total, span);
+        // A string or bytes start fails up front with the join hint like
+        // CPython; item failures surface through binary dispatch instead.
+        if (PyStringOps.TryAsString(total, out _))
+        {
+            throw new LythonRuntimeException("TypeError", "sum() can't sum strings [use ''.join(seq) instead]", span);
+        }
+
+        if (total is PyBytes)
+        {
+            throw new LythonRuntimeException("TypeError", "sum() can't sum bytes [use b''.join(seq) instead]", span);
+        }
+
         await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
         {
-            EnsureSummableValue(item, span);
             total = total is PyInstance || item is PyInstance
                 ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Add, total, item, context, span).ConfigureAwait(false)
                 : EvaluateAdd(total, item, context, span);
@@ -124,11 +144,4 @@ internal sealed partial class LythonRuntime
         return total;
     }
 
-    private static void EnsureSummableValue(object value, LythonSourceSpan span)
-    {
-        if (PyStringOps.TryAsString(value, out _) || value is PyBytes)
-        {
-            throw new LythonRuntimeException("TypeError", "sum() does not support string or bytes operands.", span);
-        }
-    }
 }

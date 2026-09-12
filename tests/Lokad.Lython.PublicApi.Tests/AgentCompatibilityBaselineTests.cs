@@ -28,16 +28,16 @@ __lython_file.close()
     }
 
     [Theory]
-    [InlineData("sum([\"a\"])\n")]
-    [InlineData("sum([b\"a\"])\n")]
-    public void Sum_RejectsStringAndBytesOperands(string source)
+    [InlineData("sum([\"a\"])\n", "unsupported operand type(s) for +: 'int' and 'str'")]
+    [InlineData("sum([b\"a\"])\n", "unsupported operand type(s) for +: 'int' and 'bytes'")]
+    public void Sum_RejectsStringAndBytesOperands(string source, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("TypeError", result.Failure?.ExceptionType);
-        Assert.Contains("string or bytes operands", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.Contains(messageFragment, result.Failure?.Message, StringComparison.Ordinal);
     }
 
     [Theory]
