@@ -185,7 +185,7 @@ internal sealed partial class LythonRuntime
 
         private void AppendInteger(object value, PercentSpecifier specifier)
         {
-            var integer = CoerceInteger(value, allowFloat: specifier.Conversion is 'd' or 'i' or 'u');
+            var integer = CoerceInteger(value, specifier.Conversion);
             var negative = integer.Sign < 0;
             var magnitude = BigInteger.Abs(integer);
             var upper = specifier.Conversion == 'X';
@@ -243,7 +243,7 @@ internal sealed partial class LythonRuntime
             }
             else
             {
-                var integer = CoerceInteger(value, allowFloat: false);
+                var integer = CoerceInteger(value, 'c');
                 if (integer < 0 || integer > 0x10ffff || integer >= 0xd800 && integer <= 0xdfff)
                 {
                     throw new LythonRuntimeException("OverflowError", "%c arg not in range(0x110000)", _span);
@@ -258,8 +258,10 @@ internal sealed partial class LythonRuntime
             AppendPadded(character, specifier.Width, specifier.LeftAdjust);
         }
 
-        private BigInteger CoerceInteger(object value, bool allowFloat)
+        private BigInteger CoerceInteger(object value, char conversion)
         {
+            var allowFloat = conversion is 'd' or 'i' or 'u';
+
             if (PyNumberOps.TryAsInteger(value, out var integer))
             {
                 return integer;
@@ -300,9 +302,15 @@ internal sealed partial class LythonRuntime
                 }
             }
 
+            if (conversion == 'c')
+            {
+                throw PercentTypeError("%c requires int or char");
+            }
+
+            var typeName = RuntimeErrors.OperandTypeName(value);
             throw PercentTypeError(allowFloat
-                ? "%d format: a number is required"
-                : "integer format: an integer is required");
+                ? $"%{conversion} format: a real number is required, not {typeName}"
+                : $"%{conversion} format: an integer is required, not {typeName}");
         }
 
         private double CoerceFloat(object value)
@@ -338,7 +346,7 @@ internal sealed partial class LythonRuntime
                         throw PercentTypeError("__float__ returned non-float");
                     }
                 default:
-                    throw PercentTypeError("must be real number, not non-numeric value");
+                    throw PercentTypeError("must be real number, not " + RuntimeErrors.OperandTypeName(value));
             }
         }
 
