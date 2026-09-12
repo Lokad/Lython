@@ -111,7 +111,7 @@ internal static partial class PyDateTimeOps
 
             if (i + 1 >= format.Length)
             {
-                throw new LythonRuntimeException("ValueError", "strftime format string cannot end with '%'.", span);
+                throw new LythonRuntimeException("ValueError", "Invalid format string", span);
             }
 
             var directive = format[++i];
@@ -206,7 +206,7 @@ internal static partial class PyDateTimeOps
                     builder.Append(value.ToString("HH:mm:ss", CultureInfo.InvariantCulture));
                     break;
                 default:
-                    throw new LythonRuntimeException("ValueError", $"strftime directive '%{directive}' is not supported in Lython yet.", span);
+                    throw new LythonRuntimeException("ValueError", "Invalid format string", span);
             }
         }
 

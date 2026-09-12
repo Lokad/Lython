@@ -120,14 +120,14 @@ internal sealed partial class LythonRuntime
                     "time.tzname",
                     static (receiver, span, context) => receiver.TzInfo is null ? PyNone.Instance : PyDateTimeOps.OwnDateTimeText(PyString.FromString(receiver.TzInfo.Name), context.MemoryGovernor, span)),
                 "dst" => BoundCallable.CreateNoArguments(time, "time.dst", static (_, _, _) => PyNone.Instance),
-                "isoformat" => BoundCallable.Create((arguments, span, context) =>
+                "isoformat" => BoundCallable.CreateWithPresence((bound, span, context) =>
                 {
-                    if (arguments.Length > 1)
+                    if (bound.Values.Length > 1)
                     {
                         throw new LythonRuntimeException("TypeError", "time.isoformat([timespec]) expects zero or one argument.", span);
                     }
 
-                    var timespec = GetTimespec(ArgAt(arguments, 0), "time.isoformat", span);
+                    var timespec = GetTimespec(ArgAt(bound.Values, 0), 1, span, context, IsAssigned(bound, 0));
                     return PyDateTimeOps.OwnDateTimeText(time.IsoFormat(timespec), context.MemoryGovernor, span);
                 }, "time.isoformat", ["timespec"], 0),
                 "__format__" => BoundCallable.Create((arguments, span, context) =>
@@ -274,15 +274,15 @@ internal sealed partial class LythonRuntime
                     context.RegisterHostCall(span);
                     return PyDateTimeOps.OwnDateTimeValue(PyDateTimeOps.Astimezone(dateTime, targetTimezone, context.Host.LocalNow.Offset, span), context, span);
                 }, "datetime.astimezone", ["tz"], 0),
-                "isoformat" => BoundCallable.Create((arguments, span, context) =>
+                "isoformat" => BoundCallable.CreateWithPresence((bound, span, context) =>
                 {
-                    if (arguments.Length > 2)
+                    if (bound.Values.Length > 2)
                     {
                         throw new LythonRuntimeException("TypeError", "datetime.isoformat([sep][, timespec]) expects zero to two arguments.", span);
                     }
 
-                    var separator = GetSeparator(ArgAt(arguments, 0), "datetime.isoformat", span);
-                    var timespec = GetTimespec(ArgAt(arguments, 1), "datetime.isoformat", span);
+                    var separator = GetSeparator(ArgAt(bound.Values, 0), span, context, IsAssigned(bound, 0));
+                    var timespec = GetTimespec(ArgAt(bound.Values, 1), 2, span, context, IsAssigned(bound, 1));
                     return PyDateTimeOps.OwnDateTimeText(dateTime.IsoFormat(separator, timespec), context.MemoryGovernor, span);
                 }, "datetime.isoformat", ["sep", "timespec"], 0),
                 "__format__" => BoundCallable.Create((arguments, span, context) =>
@@ -470,38 +470,46 @@ internal sealed partial class LythonRuntime
     }
 
 
-    private static string GetTimespec(object? value, string owner, LythonSourceSpan span)
+    private static string GetTimespec(object? value, int position, LythonSourceSpan span, LythonRuntime.ExecutionContext context, bool assigned)
     {
-        if (value is null or PyNone)
+        // Omitted values keep the default; every explicit value (including
+        // None) validates like CPython, which numbers the argument.
+        if (!assigned || value is null)
         {
             return "auto";
         }
 
         if (!PyStringOps.TryAsString(value, out var text))
         {
-            throw new LythonRuntimeException("TypeError", $"{owner}(..., timespec=...) expects a string.", span);
+            throw new LythonRuntimeException("TypeError", $"isoformat() argument {position} must be str, not {IsoformatTypeName(value, context)}", span);
         }
 
         var timespec = text.AsString();
         return timespec is "auto" or "hours" or "minutes" or "seconds" or "milliseconds" or "microseconds"
             ? timespec
-            : throw new LythonRuntimeException("ValueError", "Unknown timespec value.", span);
+            : throw new LythonRuntimeException("ValueError", "Unknown timespec value", span);
     }
 
-    private static string GetSeparator(object? value, string owner, LythonSourceSpan span)
+    private static string GetSeparator(object? value, LythonSourceSpan span, LythonRuntime.ExecutionContext context, bool assigned)
     {
-        if (value is null or PyNone)
+        if (!assigned || value is null)
         {
             return "T";
         }
 
         if (!PyStringOps.TryAsString(value, out var text) || text.Length != 1)
         {
-            throw new LythonRuntimeException("TypeError", $"{owner}(..., sep=...) expects a one-character string.", span);
+            throw new LythonRuntimeException("TypeError", $"isoformat() argument 1 must be a unicode character, not {IsoformatTypeName(value, context)}", span);
         }
 
         return text.AsString();
     }
+
+    private static bool IsAssigned(BoundCallArguments bound, int index)
+        => index < bound.Assigned.Length && bound.Assigned[index];
+
+    private static string IsoformatTypeName(object? value, LythonRuntime.ExecutionContext context)
+        => value is null or PyNone ? "None" : LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context);
 
     private static object? ArgAt(object[] arguments, int index) => index < arguments.Length ? arguments[index] : null;
 }

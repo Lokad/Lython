@@ -336,7 +336,7 @@ datetime.timedelta(days=1).total_seconds(1)
     [InlineData("datetime.timezone.utc.utcoffset()", "expects one argument")]
     [InlineData("datetime.time(1, fold=2)", "fold must be either 0 or 1")]
     [InlineData("datetime.time(1).isoformat(timespec=\"centuries\")", "Unknown timespec")]
-    [InlineData("datetime.datetime(2024, 1, 2).strftime(\"%Q\")", "directive '%Q'")]
+    [InlineData("datetime.datetime(2024, 1, 2).strftime(\"%Q\")", "Invalid format string")]
     public void DateTimeModule_NearMisses_FailPrecisely(string expression, string messageFragment)
     {
         var source = $$"""

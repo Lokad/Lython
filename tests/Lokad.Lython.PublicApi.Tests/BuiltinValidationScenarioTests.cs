@@ -188,6 +188,13 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("import datetime\ndatetime.datetime.strptime(\"2024-01-02 03:04:05 +02:00:61\", \"%Y-%m-%d %H:%M:%S %z\")\n", "ValueError", "unconverted data remains: :61")]
     [InlineData("import datetime\ndatetime.timezone(datetime.timedelta(hours=25))\n", "ValueError", "offset must be a timedelta strictly between -timedelta(hours=24) and timedelta(hours=24), not datetime.timedelta(days=1, seconds=3600).")]
     [InlineData("import datetime\ndatetime.timezone(datetime.timedelta(hours=24))\n", "ValueError", "offset must be a timedelta strictly between -timedelta(hours=24) and timedelta(hours=24), not datetime.timedelta(days=1).")]
+    [InlineData("import datetime\ndatetime.time(1, 2, 3).isoformat(timespec=None)\n", "TypeError", "isoformat() argument 1 must be str, not None")]
+    [InlineData("import datetime\ndatetime.datetime(2024, 1, 2).isoformat(timespec=None)\n", "TypeError", "isoformat() argument 2 must be str, not None")]
+    [InlineData("import datetime\ndatetime.datetime(2024, 1, 2).isoformat(sep=1)\n", "TypeError", "isoformat() argument 1 must be a unicode character, not int")]
+    [InlineData("import datetime\ndatetime.datetime(2024, 1, 2).isoformat(sep=None)\n", "TypeError", "isoformat() argument 1 must be a unicode character, not None")]
+    [InlineData("import datetime\ndatetime.datetime(2024, 1, 2).isoformat(sep=\"ab\")\n", "TypeError", "isoformat() argument 1 must be a unicode character, not str")]
+    [InlineData("import datetime\ndatetime.time(1, 2, 3).isoformat(timespec=1)\n", "TypeError", "isoformat() argument 1 must be str, not int")]
+    [InlineData("import datetime\ndatetime.time(1, 2, 3).strftime(\"%Q\")\n", "ValueError", "Invalid format string")]
     [InlineData("import datetime\ndatetime.datetime.strptime(\"Xyz\", \"%a\")\n", "ValueError", "time data 'Xyz' does not match format '%a'")]
     [InlineData("import datetime\ndatetime.datetime.strptime(\"Jan 02\", \"%B %d\")\n", "ValueError", "time data 'Jan 02' does not match format '%B %d'")]
     [InlineData("import datetime\ndatetime.datetime.strptime(\"Tue\", \"%A\")\n", "ValueError", "time data 'Tue' does not match format '%A'")]
@@ -462,6 +469,20 @@ __lython_file.close()
         var asyncResult = await script.RunAsync(new MockLythonHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("8307-10-01T19:33:21+00:00", asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task IsoformatDefaultsOmittedOptions()
+    {
+        const string source = "import datetime\nreturn datetime.datetime(2024, 1, 2).isoformat(timespec=\"seconds\") + \"|\" + datetime.datetime(2024, 1, 2).isoformat(sep=\"|\") + \"|\" + datetime.time(1, 2, 3).isoformat()\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("2024-01-02T00:00:00|2024-01-02|00:00:00|01:02:03", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("2024-01-02T00:00:00|2024-01-02|00:00:00|01:02:03", asyncResult.ReturnValue);
     }
 
     [Fact]
