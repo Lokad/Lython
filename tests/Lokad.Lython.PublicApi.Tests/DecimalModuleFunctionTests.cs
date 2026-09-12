@@ -919,4 +919,53 @@ Decimal("150").quantize(Decimal("1E-28"), "ROUND_DOWN")
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task DecimalUnaryPlusMinusYieldPositiveZero()
+    {
+        // Unary minus and plus yield positive zero for zero operands like
+        // CPython (unlike the pure sign flip of copy_negate), at any
+        // exponent, in both modes.
+        var script = new LythonEngine().Compile("""
+            import operator
+            from decimal import Decimal
+            results = []
+            results.append(str(-Decimal('0')))
+            results.append(repr(-Decimal('0')))
+            results.append(str(-Decimal('-0')))
+            results.append(str(-Decimal('0.00')))
+            results.append(repr(-Decimal('0.00')))
+            results.append(str(+Decimal('-0')))
+            results.append(str(+Decimal('-0.00')))
+            results.append(str(-Decimal('1.5')))
+            results.append(str(Decimal('0').copy_negate()))
+            results.append(str((-Decimal('0')).as_tuple()))
+            results.append(str(operator.neg(Decimal('0'))))
+            results.append(str(operator.pos(Decimal('-0'))))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "0",
+            "Decimal('0')",
+            "0",
+            "0.00",
+            "Decimal('0.00')",
+            "0",
+            "0.00",
+            "-1.5",
+            "-0",
+            "DecimalTuple(sign=0, digits=(0,), exponent=0)",
+            "0",
+            "0",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

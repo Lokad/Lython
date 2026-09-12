@@ -247,9 +247,13 @@ internal sealed partial class LythonRuntime
             return operand;
         }
 
-        if (operand is PyDecimal)
+        if (operand is PyDecimal positiveDecimal)
         {
-            return operand;
+            // CPython plus yields positive zero for a signed-zero operand
+            // (like minus), at any exponent; anything else is identity.
+            return positiveDecimal.Value == 0m && positiveDecimal.IsSigned
+                ? OwnDecimalValue(new PyDecimal(0m, positiveDecimal.Exponent), context, span)
+                : operand;
         }
 
         if (StatisticsModule.TryUnaryNormalDist(operand, negative: false, out var positiveNormalDist))
@@ -279,7 +283,12 @@ internal sealed partial class LythonRuntime
 
         if (operand is PyDecimal decimalValue)
         {
-            return OwnDecimalValue(new PyDecimal(-decimalValue.Value, decimalValue.Exponent), context, span);
+            // CPython minus yields positive zero for zero operands (unlike
+            // the pure sign flip of copy_negate), at any exponent.
+            return OwnDecimalValue(
+                new PyDecimal(decimalValue.Value == 0m ? 0m : -decimalValue.Value, decimalValue.Exponent),
+                context,
+                span);
         }
 
         if (StatisticsModule.TryUnaryNormalDist(operand, negative: true, out var negativeNormalDist))
