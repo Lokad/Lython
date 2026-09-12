@@ -484,9 +484,16 @@ internal static class PyRendering
         var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
         builder.AppendString(exception.TypeName);
         builder.AppendAscii("(");
-        var args = exception.ArgsOverride ?? exception.ExplicitArgs ?? (ReferenceEquals(exception.Value, PyNone.Instance)
-            ? PyTuple.Empty
-            : PyTuple.FromOwnedArray([exception.Value]));
+        // Mirrors the .args fallback: message-carrying internal raises
+        // render their lone argument instead of empty parens. The transient
+        // string stays ungoverned like the neighboring read so rendering a
+        // failure can never mask it with a budget error.
+        var args = exception.ArgsOverride ?? exception.ExplicitArgs ?? (
+            ReferenceEquals(exception.Value, PyNone.Instance)
+                ? (string.IsNullOrEmpty(exception.Message)
+                    ? PyTuple.Empty
+                    : PyTuple.FromOwnedArray([PyString.FromString(exception.Message)]))
+                : PyTuple.FromOwnedArray([exception.Value]));
         for (var i = 0; i < args.Count; i++)
         {
             if (i > 0)

@@ -246,9 +246,15 @@ internal sealed partial class LythonRuntime
                 return PyTuple.FromOwnedArray([timeoutCommand, timeout]);
             }
 
+            // Internally raised errors carry their message without
+            // construction args; like CPython single-argument construction,
+            // the message reads back as the lone argument. Empty messages
+            // (bare raises) keep the empty tuple. The transient string
+            // follows the neighboring ungoverned read convention.
             return exception.Value switch
             {
-                PyNone => PyTuple.Empty,
+                PyNone when string.IsNullOrEmpty(exception.Message) => PyTuple.Empty,
+                PyNone => PyTuple.FromOwnedArray([PyString.FromString(exception.Message)]),
                 _ => PyTuple.FromOwnedArray([exception.Value])
             };
         }

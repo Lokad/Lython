@@ -6268,4 +6268,78 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task InternalErrorArgsCarryMessage()
+    {
+        // Internally raised errors carry their message without construction
+        // args; like CPython single-argument construction, the message reads
+        // back as the lone argument in args and repr, while bare raises keep
+        // the empty tuple.
+        var script = new LythonEngine().Compile("""
+            results = []
+            try:
+                x = 1 / 0
+            except ZeroDivisionError as e:
+                results.append(str(e))
+                results.append(repr(e))
+                results.append(e.args == ('division by zero',))
+            try:
+                x = 1.0 / 0.0
+            except ZeroDivisionError as e:
+                results.append(str(e))
+                results.append(repr(e))
+                results.append(e.args == ('float division by zero',))
+            try:
+                x = 1 // 0
+            except ZeroDivisionError as e:
+                results.append(str(e))
+                results.append(repr(e))
+                results.append(e.args == ('integer division or modulo by zero',))
+            def get(i):
+                return [1, 2][i]
+            try:
+                get(5)
+            except IndexError as e:
+                results.append(str(e))
+                results.append(repr(e))
+                results.append(e.args == ('list index out of range',))
+            try:
+                int('x')
+            except ValueError as e:
+                results.append(str(e))
+                results.append(e.args == ("invalid literal for int() with base 10: 'x'",))
+            try:
+                raise ValueError
+            except ValueError as e:
+                results.append(str(e))
+                results.append(repr(e))
+                results.append(e.args == ())
+            try:
+                raise ValueError()
+            except ValueError as e:
+                results.append(str(e))
+                results.append(repr(e))
+                results.append(e.args == ())
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "division by zero", "ZeroDivisionError('division by zero')", true,
+            "float division by zero", "ZeroDivisionError('float division by zero')", true,
+            "integer division or modulo by zero", "ZeroDivisionError('integer division or modulo by zero')", true,
+            "list index out of range", "IndexError('list index out of range')", true,
+            "invalid literal for int() with base 10: 'x'", true,
+            "", "ValueError()", true,
+            "", "ValueError()", true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
