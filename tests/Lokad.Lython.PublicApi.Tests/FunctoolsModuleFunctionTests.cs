@@ -273,6 +273,13 @@ f.register(1, f)
 """,
         "TypeError",
         "supported class")]
+    [InlineData(
+        """
+import functools
+functools.reduce(lambda a, b: a + b, [])
+""",
+        "TypeError",
+        "reduce() of empty iterable with no initial value")]
     public void FunctoolsModule_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());
@@ -281,6 +288,16 @@ f.register(1, f)
         Assert.NotNull(result.Failure);
         Assert.Equal(exceptionType, result.Failure?.ExceptionType);
         Assert.Contains(messageFragment, result.Failure?.Message, StringComparison.Ordinal);
+    }
+    [Fact]
+    public void ReduceEmptyFailure_MatchesCpythonExactly()
+    {
+        var result = new LythonEngine().Run("import functools\nfunctools.reduce(lambda a, b: a + b, [])\n", new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("TypeError", result.Failure?.ExceptionType);
+        Assert.Equal("reduce() of empty iterable with no initial value", result.Failure?.Message);
     }
 
     [Fact]

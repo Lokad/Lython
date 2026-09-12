@@ -96,7 +96,7 @@ internal sealed partial class LythonRuntime
             var values = MaterializeSequence(value, span, context);
             if (values.Count != expectedCount)
             {
-                throw new LythonRuntimeException("ValueError", $"{owner} expects one weight per population item.", span);
+                throw new LythonRuntimeException("ValueError", "The number of weights does not match the population", span);
             }
 
             // The converted copy coexists with the drained values, so it

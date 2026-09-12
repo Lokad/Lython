@@ -124,7 +124,7 @@ internal sealed partial class LythonRuntime
             var items = MaterializePopulation(arguments[0], "random.choice", span, context);
             if (items.Count == 0)
             {
-                throw new LythonRuntimeException("IndexError", "Cannot choose from an empty sequence.", span);
+                throw new LythonRuntimeException("IndexError", "Cannot choose from an empty sequence", span);
             }
 
             return items[(int)state.NextBelow((ulong)items.Count)];
@@ -140,7 +140,7 @@ internal sealed partial class LythonRuntime
             var population = MaterializePopulation(arguments[0], "random.choices", span, context);
             if (population.Count == 0)
             {
-                throw new LythonRuntimeException("IndexError", "Cannot choose from an empty sequence.", span);
+                throw new LythonRuntimeException("IndexError", "Cannot choose from an empty sequence", span);
             }
 
             var weights = arguments.Length >= 2 && arguments[1] is not PyNone ? ReadWeights(arguments[1], population.Count, "random.choices(..., weights=...)", span, context) : null;

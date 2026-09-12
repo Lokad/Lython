@@ -291,6 +291,20 @@ random.expovariate(0)
 """,
         "ValueError",
         "non-zero")]
+    [InlineData(
+        """
+import random
+random.choices([1, 2], weights=[1])
+""",
+        "ValueError",
+        "The number of weights does not match the population")]
+    [InlineData(
+        """
+import random
+random.choices([1, 2], cum_weights=[1])
+""",
+        "ValueError",
+        "The number of weights does not match the population")]
     public void RandomModule_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());
@@ -299,6 +313,17 @@ random.expovariate(0)
         Assert.NotNull(result.Failure);
         Assert.Equal(exceptionType, result.Failure?.ExceptionType);
         Assert.Contains(messageFragment, result.Failure?.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void EmptyChoiceFailure_MatchesCpythonExactly()
+    {
+        var result = new LythonEngine().Run("import random\nrandom.choice([])\n", new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("IndexError", result.Failure?.ExceptionType);
+        Assert.Equal("Cannot choose from an empty sequence", result.Failure?.Message);
     }
 }
 

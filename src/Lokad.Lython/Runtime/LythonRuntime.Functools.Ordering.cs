@@ -250,7 +250,7 @@ internal sealed partial class LythonRuntime
         {
             if (!enumerator.MoveNext())
             {
-                throw new LythonRuntimeException("TypeError", "functools.reduce() of empty sequence with no initial value.", span);
+                throw new LythonRuntimeException("TypeError", "reduce() of empty iterable with no initial value", span);
             }
 
             accumulator = RuntimeValue(enumerator.Current);
