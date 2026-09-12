@@ -385,7 +385,7 @@ internal sealed partial class LythonRuntime
                 : "%a %b %d %H:%M:%S %Y";
             try
             {
-                var parsed = PyDateTimeOps.ParseStrptime(text.AsString(), format, span);
+                var parsed = PyDateTimeOps.ParseStrptime(text.AsString(), format, span, context);
                 object zone = parsed.TzInfo is not null && format.Contains("%Z", StringComparison.Ordinal)
                     ? PyString.FromString(parsed.TzInfo.Name, context.MemoryGovernor, span)
                     : PyNone.Instance;

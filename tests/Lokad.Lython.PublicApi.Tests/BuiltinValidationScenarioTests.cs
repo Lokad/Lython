@@ -141,6 +141,13 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("import datetime\ndatetime.time.fromisoformat(\"03:04:60\")\n", "ValueError", "second must be in 0..59")]
     [InlineData("import datetime\ndatetime.datetime.fromisoformat(\"2024-01-02T25:00:00\")\n", "ValueError", "hour must be in 0..23")]
     [InlineData("import datetime\ndatetime.datetime.fromisoformat(\"2024-13-01T03:04:05\")\n", "ValueError", "month must be in 1..12")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"2024-13-45\", \"%Y-%m-%d\")\n", "ValueError", "time data '2024-13-45' does not match format '%Y-%m-%d'")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"2024-02-30\", \"%Y-%m-%d\")\n", "ValueError", "day is out of range for month")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"0000-01-01\", \"%Y-%m-%d\")\n", "ValueError", "year 0 is out of range")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"2024-01-02 03:04:61\", \"%Y-%m-%d %H:%M:%S\")\n", "ValueError", "second must be in 0..59")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"2024-01-02junk\", \"%Y-%m-%d\")\n", "ValueError", "unconverted data remains: junk")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"2024 53 1\", \"%G %V %u\")\n", "ValueError", "Invalid week: 53")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"9999-366\", \"%Y-%j\")\n", "ValueError", "year 10000 is out of range")]
     [InlineData("def f(x, y):\n return x[y]\nf([1], ...)\n", "TypeError", "list indices must be integers or slices, not ellipsis")]
     [InlineData("def f(x, y):\n return x[y]\nf((1,), ...)\n", "TypeError", "tuple indices must be integers or slices, not ellipsis")]
     [InlineData("from collections import Counter\ndef f(x, y):\n return x[y]\nf([1], Counter())\n", "TypeError", "list indices must be integers or slices, not Counter")]
@@ -334,6 +341,20 @@ __lython_file.close()
         var asyncResult = await script.RunAsync(new MockLythonHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("03:04:05.123456|03:04:05.123456", asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task StrptimeAcceptsRelaxedShapes()
+    {
+        const string source = "import datetime\nreturn str(datetime.datetime.strptime(\"2024-01- 2\", \"%Y-%m-%d\")) + \"|\" + str(datetime.datetime.strptime(\"2023-366\", \"%Y-%j\"))\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("2024-01-02 00:00:00|2024-01-01 00:00:00", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("2024-01-02 00:00:00|2024-01-01 00:00:00", asyncResult.ReturnValue);
     }
 
     [Fact]

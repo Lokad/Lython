@@ -701,7 +701,7 @@ internal static partial class PyDateTimeOps
 
         try
         {
-            return ParseStrptime(text.AsString(), format.AsString(), span);
+            return ParseStrptime(text.AsString(), format.AsString(), span, context);
         }
         catch (FormatException ex)
         {

@@ -9,7 +9,7 @@ namespace Lokad.Lython.Runtime;
 
 internal static partial class PyDateTimeOps
 {
-    public static PyDateTime ParseStrptime(string text, string format, LythonSourceSpan span)
+    public static PyDateTime ParseStrptime(string text, string format, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         format = ExpandCompositeStrptimeDirectives(format);
         var pattern = new StringBuilder(format.Length * 3);
@@ -55,11 +55,15 @@ internal static partial class PyDateTimeOps
             pattern.Append("(?<").Append(groupName).Append('>').Append(StrptimeDirectivePattern(directive, span)).Append(')');
         }
 
-        pattern.Append('$');
         var match = Regex.Match(text, pattern.ToString(), RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
         if (!match.Success)
         {
-            throw new FormatException("time data does not match format.");
+            throw new FormatException($"time data '{text}' does not match format '{format}'");
+        }
+
+        if (match.Length != text.Length)
+        {
+            throw new FormatException($"unconverted data remains: {text[match.Length..]}");
         }
 
         string? Capture(char directive)
@@ -79,10 +83,12 @@ internal static partial class PyDateTimeOps
                 throw new FormatException("ISO year, week, and weekday directives must be used together.");
             }
 
-            var isoDate = DateFromIsoCalendarParts(
-                int.Parse(Capture('G').RequireNotNull(), CultureInfo.InvariantCulture),
-                int.Parse(Capture('V').RequireNotNull(), CultureInfo.InvariantCulture),
-                int.Parse(Capture('u').RequireNotNull(), CultureInfo.InvariantCulture));
+            var isoDate = DateFromIsoCalendarValue(
+                new BigInteger(int.Parse(Capture('G').RequireNotNull(), CultureInfo.InvariantCulture)),
+                new BigInteger(int.Parse(Capture('V').RequireNotNull(), CultureInfo.InvariantCulture)),
+                new BigInteger(int.Parse(Capture('u').RequireNotNull(), CultureInfo.InvariantCulture)),
+                span,
+                context);
             year = isoDate.Year;
             month = isoDate.Month;
             day = isoDate.Day;
@@ -90,12 +96,9 @@ internal static partial class PyDateTimeOps
         else if (Capture('j') is { } dayOfYearText)
         {
             var dayOfYear = int.Parse(dayOfYearText, CultureInfo.InvariantCulture);
-            var date = new DateTime(year, 1, 1).AddDays(dayOfYear - 1);
-            if (date.Year != year)
-            {
-                throw new FormatException("day of year out of range.");
-            }
-
+            var start = CreateParsedDate(year, 1, 1, span);
+            var date = DateFromOrdinalValue(new BigInteger(start.DayNumber + dayOfYear), span, context);
+            year = date.Year;
             month = date.Month;
             day = date.Day;
         }
@@ -113,8 +116,9 @@ internal static partial class PyDateTimeOps
         var minute = ParseInt(Capture('M'), 0);
         var second = ParseInt(Capture('S'), 0);
         var microsecond = ParseMicrosecond(Capture('f'));
-        var value = new DateTime(year, month, day, hour, minute, second, microsecond / 1000, DateTimeKind.Unspecified)
-            .AddTicks((microsecond % 1000) * 10L);
+        var parsedDate = CreateParsedDate(year, month, day, span);
+        var parsedTime = CreateParsedTime(hour, minute, second, microsecond, span);
+        var value = parsedDate.ToDateTime(parsedTime);
 
         var timezone = ParseStrptimeTimezone(Capture('z'), Capture('Z'));
         return new PyDateTime(value, timezone);
@@ -162,28 +166,30 @@ internal static partial class PyDateTimeOps
 
     private static string StrptimeDirectivePattern(char directive, LythonSourceSpan span)
     {
+        // Numeric shapes mirror CPython TimeRE so out-of-shape values fail
+        // matching (rather than construction) exactly like CPython.
         return directive switch
         {
-            'Y' => @"\d{1,4}",
-            'y' => @"\d{2}",
-            'm' => @"\d{1,2}",
-            'd' => @"\d{1,2}",
-            'H' => @"\d{1,2}",
-            'I' => @"\d{1,2}",
+            'Y' => @"\d\d\d\d",
+            'y' => @"\d\d",
+            'm' => @"1[0-2]|0[1-9]|[1-9]",
+            'd' => @"3[0-1]|[1-2]\d|0[1-9]|[1-9]| [1-9]",
+            'H' => @"2[0-3]|[0-1]\d|\d",
+            'I' => @"1[0-2]|0[1-9]|[1-9]",
             'p' => @"AM|PM|am|pm",
-            'M' => @"\d{1,2}",
-            'S' => @"\d{1,2}",
-            'f' => @"\d{1,6}",
+            'M' => @"[0-5]\d|\d",
+            'S' => @"6[0-1]|[0-5]\d|\d",
+            'f' => @"[0-9]{1,6}",
             'z' => @"Z|[+-]\d{2}:?\d{2}",
             'Z' => @"[A-Za-z_][A-Za-z0-9_+-]*",
             'a' or 'A' => @"[A-Za-z]+",
             'b' or 'h' or 'B' => @"[A-Za-z]+",
-            'j' => @"\d{1,3}",
-            'w' => @"\d",
-            'u' => @"\d",
-            'U' or 'W' => @"\d{1,2}",
-            'G' => @"\d{1,4}",
-            'V' => @"\d{1,2}",
+            'j' => @"36[0-6]|3[0-5]\d|[1-2]\d\d|0[1-9]\d|00[1-9]|[1-9]\d|0[1-9]|[1-9]",
+            'w' => @"[0-6]",
+            'u' => @"[1-7]",
+            'U' or 'W' => @"5[0-3]|[0-4]\d|\d",
+            'G' => @"\d\d\d\d",
+            'V' => @"5[0-3]|[0-4]\d|\d",
             _ => throw new LythonRuntimeException("ValueError", $"strptime directive '%{directive}' is not supported in Lython yet.", span)
         };
     }
