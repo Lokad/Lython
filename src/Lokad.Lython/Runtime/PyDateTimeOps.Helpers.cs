@@ -32,7 +32,7 @@ internal static partial class PyDateTimeOps
         var coerced = LythonRuntime.CoerceIndexProtocol(value, context, span);
         if (!Numbers.PyNumberOps.TryAsInteger(coerced, out var ordinal))
         {
-            throw new LythonRuntimeException("TypeError", "'" + LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
+            throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
         }
 
         if (ordinal > long.MaxValue || ordinal < long.MinValue)
@@ -102,7 +102,7 @@ internal static partial class PyDateTimeOps
         var coerced = LythonRuntime.CoerceIndexProtocol(value, context, span);
         if (!Numbers.PyNumberOps.TryAsInteger(coerced, out var integer))
         {
-            throw new LythonRuntimeException("TypeError", "'" + LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
+            throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
         }
 
         if (integer < int.MinValue || integer > int.MaxValue)
@@ -137,7 +137,7 @@ internal static partial class PyDateTimeOps
         var coerced = LythonRuntime.CoerceIndexProtocol(value, context, span);
         if (!Numbers.PyNumberOps.TryAsNumber(coerced, out var number))
         {
-            throw new LythonRuntimeException("TypeError", "'" + LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
+            throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
         }
 
         var timestamp = number.ToDouble();
@@ -280,7 +280,7 @@ internal static partial class PyDateTimeOps
         var coerced = LythonRuntime.CoerceIndexProtocol(value, context, span);
         if (!Numbers.PyNumberOps.TryAsInteger(coerced, out var integer))
         {
-            throw new LythonRuntimeException("TypeError", "'" + LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
+            throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
         }
 
         return (int)integer;

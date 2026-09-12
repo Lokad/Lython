@@ -66,7 +66,7 @@ internal static class RuntimeArgumentValidation
                 : (int)integer,
             int integer => integer,
             bool flag => flag ? 1 : 0,
-            _ => throw new LythonRuntimeException("TypeError", "'" + LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span)
+            _ => throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span)
         };
     }
 

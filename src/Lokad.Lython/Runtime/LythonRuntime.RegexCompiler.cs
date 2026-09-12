@@ -263,7 +263,7 @@ internal sealed partial class LythonRuntime
             }
             else if (coerced is not BigInteger big)
             {
-                throw new LythonRuntimeException("TypeError", "'" + LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
+                throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
             }
             else
             {
@@ -399,7 +399,7 @@ internal sealed partial class LythonRuntime
                 int small => small,
                 BigInteger big when big >= int.MinValue && big <= int.MaxValue => (int)big,
                 BigInteger => throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C int", span),
-                _ => throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span),
+                _ => throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span),
             };
 
         private static int ParseLeadingInlinePythonFlags(string pattern)

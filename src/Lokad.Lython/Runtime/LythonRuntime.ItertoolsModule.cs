@@ -192,7 +192,7 @@ internal sealed partial class LythonRuntime
         }
         else if (coerced is not BigInteger big)
         {
-            throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
+            throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
         }
         else
         {
@@ -320,7 +320,7 @@ internal sealed partial class LythonRuntime
         }
         else if (!Numbers.PyNumberOps.TryAsInteger(value, out integer))
         {
-            throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
+            throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
         }
 
         if (integer < 0)

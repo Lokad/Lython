@@ -100,7 +100,7 @@ internal sealed class PySlice : IPyDynamicAttributes, IPyRenderableValue, IPyHas
             }
             else if (!PyNumberOps.TryAsInteger(coercedLength, out bigLength))
             {
-                throw new LythonRuntimeException("TypeError", "'" + LythonRuntime.UnboundTypeMethod.PythonTypeName(length, context) + "' object cannot be interpreted as an integer", span);
+                throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(length, context) + "' object cannot be interpreted as an integer", span);
             }
 
             if (bigLength < 0)

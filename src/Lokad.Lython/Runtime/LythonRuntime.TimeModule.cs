@@ -467,7 +467,7 @@ internal sealed partial class LythonRuntime
             var coerced = LythonRuntime.CoerceIndexProtocol(value, context, span);
             if (!PyNumberOps.TryAsNumber(coerced, out var number))
             {
-                throw new LythonRuntimeException("TypeError", "'" + LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
+                throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
             }
 
             var seconds = number.ToDouble();
@@ -529,7 +529,7 @@ internal sealed partial class LythonRuntime
             var coerced = LythonRuntime.CoerceIndexProtocol(value, context, span);
             if (!PyNumberOps.TryAsInteger(coerced, out var integer))
             {
-                throw new LythonRuntimeException("TypeError", "'" + LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
+                throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
             }
 
             if (integer < int.MinValue || integer > int.MaxValue)

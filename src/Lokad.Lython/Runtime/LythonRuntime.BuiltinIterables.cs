@@ -208,7 +208,7 @@ internal sealed partial class LythonRuntime
             var coerced = CoerceIndexProtocol(value, context, span);
             if (!PyNumberOps.TryAsInteger(coerced, out var bound))
             {
-                throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
+                throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
             }
 
             return bound;
@@ -239,7 +239,7 @@ internal sealed partial class LythonRuntime
             var coerced = CoerceIndexProtocol(arguments[1], context, span);
             if (!PyNumberOps.TryAsInteger(coerced, out var startValue))
             {
-                throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(arguments[1], context) + "' object cannot be interpreted as an integer", span);
+                throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(arguments[1], context) + "' object cannot be interpreted as an integer", span);
             }
 
             index = startValue;

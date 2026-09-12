@@ -30,7 +30,7 @@ internal sealed partial class LythonRuntime
                 return integer;
             }
 
-            throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span);
+            throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
         }
 
         private static BigInteger ComputeRangeCount(BigInteger start, BigInteger stop, BigInteger step, string emptyMessage, LythonSourceSpan span)

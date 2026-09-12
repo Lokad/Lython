@@ -297,7 +297,7 @@ internal sealed partial class LythonRuntime
                 BigInteger big => big,
                 int small => new BigInteger(small),
                 bool flag => flag ? BigInteger.One : BigInteger.Zero,
-                _ => throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(arguments[1], context) + "' object cannot be interpreted as an integer", span),
+                _ => throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(arguments[1], context) + "' object cannot be interpreted as an integer", span),
             };
 
             if (requestedBase < 0 || requestedBase > 36 || requestedBase == 1)
@@ -365,16 +365,11 @@ internal sealed partial class LythonRuntime
 
         if (!PyNumberOps.TryAsNumber(value, out var number))
         {
-            throw new LythonRuntimeException("TypeError", "bad operand type for abs(): '" + DatetimeQualifiedTypeName(value, context) + "'", span);
+            throw new LythonRuntimeException("TypeError", "bad operand type for abs(): '" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "'", span);
         }
 
         return number.IsFloat ? Math.Abs(number.Floating) : OwnHeapInteger(BigInteger.Abs(number.Integer), context.MemoryGovernor, span);
     }
-
-    private static string DatetimeQualifiedTypeName(object? value, ExecutionContext context)
-        => value is PyDate or PyTime or PyDateTime or PyTimedelta or PyTimezone
-            ? "datetime." + UnboundTypeMethod.PythonTypeName(value, context)
-            : UnboundTypeMethod.PythonTypeName(value, context);
 
     private static object Pow(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
@@ -532,7 +527,7 @@ internal sealed partial class LythonRuntime
         var index = CoerceIndexProtocol(arguments[0], context, span);
         if (!PyNumberOps.TryAsInteger(index, out var codePoint))
         {
-            throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "' object cannot be interpreted as an integer", span);
+            throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(arguments[0], context) + "' object cannot be interpreted as an integer", span);
         }
         if (codePoint < BigInteger.Zero || codePoint > new BigInteger(0x10FFFF))
         {
@@ -645,7 +640,7 @@ internal sealed partial class LythonRuntime
         var indexed = CoerceIndexProtocol(arguments[0], context, span);
         if (!PyNumberOps.TryAsInteger(indexed, out var integer))
         {
-            throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "' object cannot be interpreted as an integer", span);
+            throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(arguments[0], context) + "' object cannot be interpreted as an integer", span);
         }
         var sign = integer < BigInteger.Zero ? "-" : string.Empty;
         var digits = ToUnsignedBaseString(BigInteger.Abs(integer), radix, upper: !lower);

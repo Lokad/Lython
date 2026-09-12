@@ -1761,7 +1761,7 @@ internal sealed partial class LythonRuntime
             BigInteger big => big,
             int small => new BigInteger(small),
             bool flag => flag ? BigInteger.One : BigInteger.Zero,
-            _ => throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(value, context) + "' object cannot be interpreted as an integer", span),
+            _ => throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span),
         };
     }
 
