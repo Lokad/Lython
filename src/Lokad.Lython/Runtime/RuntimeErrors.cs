@@ -65,6 +65,8 @@ internal static class RuntimeErrors
     {
         null => "NoneType",
         PyNone => "NoneType",
+        PyEllipsis => "ellipsis",
+        PyNotImplemented => "NotImplementedType",
         PyString => "str",
         double => "float",
         bool => "bool",
