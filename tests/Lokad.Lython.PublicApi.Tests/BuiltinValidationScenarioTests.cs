@@ -148,6 +148,11 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("import datetime\ndatetime.datetime.strptime(\"2024-01-02junk\", \"%Y-%m-%d\")\n", "ValueError", "unconverted data remains: junk")]
     [InlineData("import datetime\ndatetime.datetime.strptime(\"2024 53 1\", \"%G %V %u\")\n", "ValueError", "Invalid week: 53")]
     [InlineData("import datetime\ndatetime.datetime.strptime(\"9999-366\", \"%Y-%j\")\n", "ValueError", "year 10000 is out of range")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"Xyz\", \"%a\")\n", "ValueError", "time data 'Xyz' does not match format '%a'")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"Jan 02\", \"%B %d\")\n", "ValueError", "time data 'Jan 02' does not match format '%B %d'")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"Tue\", \"%A\")\n", "ValueError", "time data 'Tue' does not match format '%A'")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"Jan\", \"%h\")\n", "ValueError", "'h' is a bad directive in format '%h'")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"2024\", \"%Y-%Q\")\n", "ValueError", "'Q' is a bad directive in format '%Y-%Q'")]
     [InlineData("import datetime\ndatetime.datetime.strptime(\"2024 01\", \"%G %V\")\n", "ValueError", "ISO year directive '%G' must be used with the ISO week directive '%V' and a weekday directive")]
     [InlineData("import datetime\ndatetime.datetime.strptime(\"2024 100\", \"%G %j\")\n", "ValueError", "Day of the year directive '%j' is not compatible with ISO year directive '%G'")]
     [InlineData("import datetime\ndatetime.datetime.strptime(\"2024 01 1\", \"%Y %V %u\")\n", "ValueError", "ISO week directive '%V' is incompatible with the year directive '%Y'")]
@@ -375,6 +380,34 @@ __lython_file.close()
         var asyncResult = await script.RunAsync(new MockLythonHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("2022-12-26 00:00:00|2024-01-08 00:00:00|2024-01-07 00:00:00|2024-01-01 00:00:00|2024-01-11 00:00:00|1900-01-07 00:00:00|2024-01-07 00:00:00|1900-01-02 00:00:00|2024-04-09 00:00:00|2023-01-01 00:00:00", asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task StrptimeResolvesWeekdayNames()
+    {
+        const string source = "import datetime\nreturn str(datetime.datetime.strptime(\"2024-W01-Tue\", \"%G-W%V-%a\")) + \"|\" + str(datetime.datetime.strptime(\"2024 01 Tue\", \"%Y %U %a\")) + \"|\" + str(datetime.datetime.strptime(\"2024-W01-Tuesday\", \"%G-W%V-%A\")) + \"|\" + str(datetime.datetime.strptime(\"2024 01 Wednesday\", \"%Y %U %A\")) + \"|\" + str(datetime.datetime.strptime(\"Tuesday\", \"%A\")) + \"|\" + str(datetime.datetime.strptime(\"September 02\", \"%B %d\"))\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("2024-01-02 00:00:00|2024-01-09 00:00:00|2024-01-02 00:00:00|2024-01-10 00:00:00|1900-01-01 00:00:00|1900-09-02 00:00:00", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("2024-01-02 00:00:00|2024-01-09 00:00:00|2024-01-02 00:00:00|2024-01-10 00:00:00|1900-01-01 00:00:00|1900-09-02 00:00:00", asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task StrptimeMatchesTrailingPercent()
+    {
+        const string source = "import datetime\nreturn str(datetime.datetime.strptime(\"2024%\", \"%Y%\"))\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("2024-01-01 00:00:00", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("2024-01-01 00:00:00", asyncResult.ReturnValue);
     }
 
     [Fact]

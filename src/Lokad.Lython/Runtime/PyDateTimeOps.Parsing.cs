@@ -11,6 +11,7 @@ internal static partial class PyDateTimeOps
 {
     public static PyDateTime ParseStrptime(string text, string format, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
+        var originalFormat = format;
         format = ExpandCompositeStrptimeDirectives(format);
         var pattern = new StringBuilder(format.Length * 3);
         var groups = new Dictionary<char, string>();
@@ -31,15 +32,10 @@ internal static partial class PyDateTimeOps
                 continue;
             }
 
-            if (ch != '%')
+            if (ch != '%' || i + 1 >= format.Length)
             {
                 pattern.Append(Regex.Escape(ch.ToString()));
                 continue;
-            }
-
-            if (i + 1 >= format.Length)
-            {
-                throw new LythonRuntimeException("ValueError", "strptime format string cannot end with '%'.", span);
             }
 
             var directive = format[++i];
@@ -52,7 +48,7 @@ internal static partial class PyDateTimeOps
             var groupName = "g" + groupIndex.ToString(CultureInfo.InvariantCulture);
             groupIndex++;
             groups[directive] = groupName;
-            pattern.Append("(?<").Append(groupName).Append('>').Append(StrptimeDirectivePattern(directive, span)).Append(')');
+            pattern.Append("(?<").Append(groupName).Append('>').Append(StrptimeDirectivePattern(directive, originalFormat, span)).Append(')');
         }
 
         var match = Regex.Match(text, pattern.ToString(), RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
@@ -97,6 +93,14 @@ internal static partial class PyDateTimeOps
             else if (directive == 'u' && Capture('u') is { } mondayBased)
             {
                 weekday = int.Parse(mondayBased, CultureInfo.InvariantCulture) - 1;
+            }
+            else if (directive == 'a' && Capture('a') is { } abbreviatedDay)
+            {
+                weekday = WeekdayFromName(abbreviatedDay, abbreviated: true);
+            }
+            else if (directive == 'A' && Capture('A') is { } fullDay)
+            {
+                weekday = WeekdayFromName(fullDay, abbreviated: false);
             }
             else if (directive == 'U' && Capture('U') is { } sundayWeek)
             {
@@ -241,7 +245,7 @@ internal static partial class PyDateTimeOps
         return expanded.ToString();
     }
 
-    private static string StrptimeDirectivePattern(char directive, LythonSourceSpan span)
+    private static string StrptimeDirectivePattern(char directive, string format, LythonSourceSpan span)
     {
         // Numeric shapes mirror CPython TimeRE so out-of-shape values fail
         // matching (rather than construction) exactly like CPython.
@@ -259,15 +263,17 @@ internal static partial class PyDateTimeOps
             'f' => @"[0-9]{1,6}",
             'z' => @"Z|[+-]\d{2}:?\d{2}",
             'Z' => @"[A-Za-z_][A-Za-z0-9_+-]*",
-            'a' or 'A' => @"[A-Za-z]+",
-            'b' or 'h' or 'B' => @"[A-Za-z]+",
+            'a' => @"Mon|Tue|Wed|Thu|Fri|Sat|Sun",
+            'A' => @"Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday",
+            'b' => @"Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec",
+            'B' => @"January|February|March|April|May|June|July|August|September|October|November|December",
             'j' => @"36[0-6]|3[0-5]\d|[1-2]\d\d|0[1-9]\d|00[1-9]|[1-9]\d|0[1-9]|[1-9]",
             'w' => @"[0-6]",
             'u' => @"[1-7]",
             'U' or 'W' => @"5[0-3]|[0-4]\d|\d",
             'G' => @"\d\d\d\d",
             'V' => @"5[0-3]|[0-4]\d|\d",
-            _ => throw new LythonRuntimeException("ValueError", $"strptime directive '%{directive}' is not supported in Lython yet.", span)
+            _ => throw new LythonRuntimeException("ValueError", $"'{directive}' is a bad directive in format '{format}'", span)
         };
     }
 
@@ -538,6 +544,24 @@ internal static partial class PyDateTimeOps
         }
 
         return new TimeOnly(hour, minute, second, microsecond / 1000, microsecond % 1000);
+    }
+
+    private static readonly string[] AbbreviatedDayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    private static readonly string[] FullDayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+    private static int WeekdayFromName(string name, bool abbreviated)
+    {
+        // Tight directive shapes guarantee a hit; the scan stays defensive.
+        var table = abbreviated ? AbbreviatedDayNames : FullDayNames;
+        for (var index = 0; index < table.Length; index++)
+        {
+            if (string.Equals(name, table[index], StringComparison.OrdinalIgnoreCase))
+            {
+                return index;
+            }
+        }
+
+        return 0;
     }
 
     private static int CalcJulianFromWeek(int year, int weekOfYear, int dayOfWeek, bool weekStartsMonday, LythonSourceSpan span)
