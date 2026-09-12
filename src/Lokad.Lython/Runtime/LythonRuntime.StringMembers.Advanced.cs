@@ -26,14 +26,16 @@ internal sealed partial class LythonRuntime
 
                         IEnumerable<PyString> EnumerateParts()
                         {
+                            var index = 0;
                             foreach (var part in ToSequence(arguments[0], span, context))
                             {
                                 if (!PyStringOps.TryAsString(part, out var partText))
                                 {
-                                    throw new LythonRuntimeException("TypeError", "str.join(iterable) expects an iterable of strings.", span);
+                                    throw new LythonRuntimeException("TypeError", "sequence item " + index + ": expected str instance, " + RuntimeErrors.OperandTypeName(part) + " found", span);
                                 }
 
                                 yield return partText;
+                                index++;
                             }
                         }
                     }, "str.join", ["iterable"]),
