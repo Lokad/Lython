@@ -20,13 +20,16 @@ internal sealed record PyException(
 
     // Explicit raise causes ride alongside the value; handlers rewrap
     // through the thrown CLR exception, which carries the same slot.
-    public PyException? Cause { get; init; }
+    // Direct __cause__ assignment writes this slot like CPython.
+    public PyException? Cause { get; set; }
 
     // Implicit chaining follows the active handler like CPython: the context
     // is captured at raise time while suppression comes from `raise ... from`.
-    public PyException? Context { get; init; }
+    // Direct __context__ assignment writes this slot like CPython.
+    public PyException? Context { get; set; }
 
-    public bool SuppressContext { get; init; }
+    // Direct __suppress_context__ assignment writes this slot like CPython.
+    public bool SuppressContext { get; set; }
 
     // Notes accumulate through add_note and back the __notes__ list.
     public PyList? Notes { get; set; }

@@ -1192,6 +1192,71 @@ __lython_file.close()
         Assert.Null(result.Failure);
         Assert.Equal("x|ValueError('x')|2|ValueError(2)|True|ValueError()|(1, 2)|ValueError(1, 2)|('k2',)|(7, 8)|ValueError(7, 8)", host.ReadText("/out.txt"));
     }
+
+    [Fact]
+    public void ExceptionChainingSlots_RunLikePython()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+e = ValueError("x")
+e.__cause__ = ValueError("y")
+e.__context__ = ValueError("z")
+e.__suppress_context__ = True
+texts = []
+texts.append(repr(e.__cause__))
+texts.append(repr(e.__context__))
+texts.append(str(e.__suppress_context__))
+texts.append(str(e.__dict__))
+e.__cause__ = None
+texts.append(str(e.__cause__))
+texts.append(str(e.__dict__))
+setattr(e, "__context__", ValueError("w"))
+texts.append(repr(e.__context__))
+e.__dict__["__cause__"] = 1
+texts.append(str(e.__cause__))
+try:
+    e.__cause__ = 1
+except TypeError as ex:
+    texts.append(str(ex))
+try:
+    e.__context__ = 1
+except TypeError as ex:
+    texts.append(str(ex))
+try:
+    e.__suppress_context__ = 1
+except TypeError as ex:
+    texts.append(str(ex))
+try:
+    del e.__cause__
+except TypeError as ex:
+    texts.append(str(ex))
+try:
+    del e.__context__
+except TypeError as ex:
+    texts.append(str(ex))
+try:
+    del e.__suppress_context__
+except TypeError as ex:
+    texts.append(str(ex))
+
+def run():
+    local = ValueError("q")
+    local.__cause__ = ValueError("c")
+    return repr(local.__cause__) + "|" + str(local.__dict__)
+
+texts.append(run())
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(texts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Null(result.Failure);
+        Assert.Equal("ValueError('y')|ValueError('z')|True|{}|None|{}|ValueError('w')|None|exception cause must be None or derive from BaseException|exception context must be None or derive from BaseException|attribute value type must be bool|__cause__ may not be deleted|__context__ may not be deleted|can't delete numeric/char attribute|ValueError('c')|{}", host.ReadText("/out.txt"));
+    }
     [Fact]
     public void ReadOnlyMemberTargets_ReportPythonTexts()
     {

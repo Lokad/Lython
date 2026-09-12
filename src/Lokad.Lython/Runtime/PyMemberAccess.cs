@@ -267,6 +267,53 @@ internal static class PyMemberAccess
                 return true;
             }
 
+            // Chaining slots validate like CPython instead of entering the
+            // dict, so __dict__ stays clean for them too.
+            if (memberName == "__cause__")
+            {
+                if (value is PyException chainedCause)
+                {
+                    exception.Cause = chainedCause;
+                    return true;
+                }
+
+                if (value is PyNone)
+                {
+                    exception.Cause = null;
+                    return true;
+                }
+
+                throw new LythonRuntimeException("TypeError", "exception cause must be None or derive from BaseException", span);
+            }
+
+            if (memberName == "__context__")
+            {
+                if (value is PyException chainedContext)
+                {
+                    exception.Context = chainedContext;
+                    return true;
+                }
+
+                if (value is PyNone)
+                {
+                    exception.Context = null;
+                    return true;
+                }
+
+                throw new LythonRuntimeException("TypeError", "exception context must be None or derive from BaseException", span);
+            }
+
+            if (memberName == "__suppress_context__")
+            {
+                if (value is bool suppress)
+                {
+                    exception.SuppressContext = suppress;
+                    return true;
+                }
+
+                throw new LythonRuntimeException("TypeError", "attribute value type must be bool", span);
+            }
+
             // __dict__ assignment swaps the whole dict like CPython instead
             // of storing a "__dict__" entry; entries are snapshotted first so
             // self-assignment keeps every entry.
@@ -361,6 +408,21 @@ internal static class PyMemberAccess
             if (memberName == "__dict__")
             {
                 throw new LythonRuntimeException("TypeError", "cannot delete __dict__", span);
+            }
+
+            if (memberName == "__cause__")
+            {
+                throw new LythonRuntimeException("TypeError", "__cause__ may not be deleted", span);
+            }
+
+            if (memberName == "__context__")
+            {
+                throw new LythonRuntimeException("TypeError", "__context__ may not be deleted", span);
+            }
+
+            if (memberName == "__suppress_context__")
+            {
+                throw new LythonRuntimeException("TypeError", "can't delete numeric/char attribute", span);
             }
 
             if (exceptionDelete.CustomDict is not null &&

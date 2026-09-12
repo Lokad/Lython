@@ -52,8 +52,8 @@ internal sealed partial class LythonRuntime
         public static bool TryGetMember(PyException exception, string name, [MaybeNullWhen(false)] out object value)
         {
             // Custom attributes shadow fixed members like CPython (method
-            // shadowing included); the args slot and __dict__ stay separate.
-            if (name != "args" && name != "__dict__" &&
+            // shadowing included); the args, chaining and __dict__ slots stay separate.
+            if (name != "args" && name != "__dict__" && name != "__cause__" && name != "__context__" && name != "__suppress_context__" &&
                 exception.CustomDict is not null &&
                 exception.CustomDict.TryGetValue(PyString.FromString(name), out var customValue))
             {
@@ -110,7 +110,7 @@ internal sealed partial class LythonRuntime
 
             // Contextual reads repeat the custom check so __dict__-first ordering
             // holds even when the non-contextual fast path missed it.
-            if (name != "args" &&
+            if (name != "args" && name != "__cause__" && name != "__context__" && name != "__suppress_context__" &&
                 exception.CustomDict is not null &&
                 exception.CustomDict.TryGetValue(PyString.FromString(name), out var customValue))
             {
