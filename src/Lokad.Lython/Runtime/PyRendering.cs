@@ -19,6 +19,32 @@ internal static class PyRendering
     // payload keep the stored message.
     private static PyString RenderExceptionMessage(PyException exception, PyRenderingContext context)
     {
+        // Assigned args recompute the message like CPython instead of serving
+        // the construction text: empty for no args, str of the single arg
+        // (repr for KeyError), repr of the tuple otherwise.
+        if (exception.ArgsOverride is not null)
+        {
+            var overrideArgs = exception.ArgsOverride;
+            if (overrideArgs.Count == 0)
+            {
+                return PyString.FromString(string.Empty, context.Context.MemoryGovernor);
+            }
+
+            if (overrideArgs.Count == 1 &&
+                string.Equals(exception.TypeName, "KeyError", StringComparison.Ordinal) &&
+                exception.Identity.IsBuiltin)
+            {
+                return ToReprPyString(overrideArgs[0], context);
+            }
+
+            if (overrideArgs.Count == 1)
+            {
+                return ToInterpolatedPyString(overrideArgs[0], context);
+            }
+
+            return ToReprPyString(overrideArgs, context);
+        }
+
         if (string.Equals(exception.TypeName, "KeyError", StringComparison.Ordinal) &&
             exception.Identity.IsBuiltin &&
             exception.ExplicitArgs is null &&
@@ -458,7 +484,7 @@ internal static class PyRendering
         var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
         builder.AppendString(exception.TypeName);
         builder.AppendAscii("(");
-        var args = exception.ExplicitArgs ?? (ReferenceEquals(exception.Value, PyNone.Instance)
+        var args = exception.ArgsOverride ?? exception.ExplicitArgs ?? (ReferenceEquals(exception.Value, PyNone.Instance)
             ? PyTuple.Empty
             : PyTuple.FromOwnedArray([exception.Value]));
         for (var i = 0; i < args.Count; i++)

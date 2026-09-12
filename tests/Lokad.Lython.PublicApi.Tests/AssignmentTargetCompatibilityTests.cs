@@ -1153,6 +1153,46 @@ __lython_file.close()
     }
 
     [Fact]
+    public void ExceptionArgsRendering_RunLikePython()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+e = ValueError("x")
+texts = []
+texts.append(str(e))
+texts.append(repr(e))
+e.args = (2,)
+texts.append(str(e))
+texts.append(repr(e))
+e.args = ()
+texts.append(str(str(e) == ""))
+texts.append(repr(e))
+e.args = (1, 2)
+texts.append(str(e))
+texts.append(repr(e))
+k = KeyError("k")
+k.args = ("k2",)
+texts.append(str(k.args))
+
+def run():
+    local = ValueError("q")
+    local.args = [7, 8]
+    return str(local) + "|" + repr(local)
+
+texts.append(run())
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(texts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Null(result.Failure);
+        Assert.Equal("x|ValueError('x')|2|ValueError(2)|True|ValueError()|(1, 2)|ValueError(1, 2)|('k2',)|(7, 8)|ValueError(7, 8)", host.ReadText("/out.txt"));
+    }
+    [Fact]
     public void ReadOnlyMemberTargets_ReportPythonTexts()
     {
         var host = new MockLythonHost();
