@@ -284,7 +284,7 @@ internal static class CallExpansion
     private static bool IsNonIterableSplatFailure(LythonRuntimeException ex, object value)
         => ex.ExceptionType == "TypeError"
             && (ex.Message == "Object is not iterable."
-                || (value is PyInstance instance && ex.Message == "'" + instance.Type.Name + "' object is not iterable"));
+                || ex.Message == "'" + RuntimeErrors.OperandTypeName(value) + "' object is not iterable");
 
     // Call-site splat failures name the callee like CPython: module-qualified
     // Python functions, bare C names, and the repr for values without a qualname.

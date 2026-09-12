@@ -1884,7 +1884,7 @@ internal sealed partial class LythonRuntime
         }
         catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" &&
             (ex.Message == "Object is not iterable." ||
-                (source is PyInstance instance && ex.Message == "'" + instance.Type.Name + "' object is not iterable")))
+                ex.Message == "'" + RuntimeErrors.OperandTypeName(source) + "' object is not iterable"))
         {
             throw new LythonRuntimeException("TypeError", "cannot convert '" + UnboundTypeMethod.PythonTypeName(source, context) + "' object to bytes", span);
         }

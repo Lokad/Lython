@@ -841,7 +841,7 @@ from collections import Counter
 Counter("aab").keys().isdisjoint(1)
 """,
         "TypeError",
-        "not iterable")]
+        "'int' object is not iterable")]
     [InlineData(
         """
 from collections import Counter
@@ -855,14 +855,14 @@ from collections import defaultdict
 defaultdict(int, {"a": 1}).items().isdisjoint(5)
 """,
         "TypeError",
-        "not iterable")]
+        "'int' object is not iterable")]
     [InlineData(
         """
 from collections import ChainMap
 ChainMap({"a": 1}).keys().isdisjoint(1)
 """,
         "TypeError",
-        "not iterable")]
+        "'int' object is not iterable")]
     [InlineData(
         """
 from collections import ChainMap

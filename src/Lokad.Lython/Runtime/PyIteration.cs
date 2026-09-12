@@ -119,13 +119,13 @@ internal static class PyIteration
     {
         return value switch
         {
-            PyNone => throw RuntimeErrors.Type("Object is not iterable.", span),
+            PyNone => throw RuntimeErrors.NotIterable(value, span),
             PyDict dict => dict.Keys,
             IPyIteratorValue iterator => EnumerateIterator(iterator),
             IPyIterableValue iterable => iterable.Iterate(),
             IEnumerable<object> typed => typed,
             System.Collections.IEnumerable untyped => EnumerateUntyped(untyped),
-            _ => throw RuntimeErrors.Type("Object is not iterable.", span)
+            _ => throw RuntimeErrors.NotIterable(value, span)
         };
     }
 

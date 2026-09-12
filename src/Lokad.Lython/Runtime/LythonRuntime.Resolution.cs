@@ -607,7 +607,7 @@ internal sealed partial class LythonRuntime
     private static bool IsNonIterableFailure(LythonRuntimeException ex, object value)
         => ex.ExceptionType == "TypeError"
             && (ex.Message == "Object is not iterable."
-                || (value is PyInstance instance && ex.Message == "'" + instance.Type.Name + "' object is not iterable"));
+                || ex.Message == "'" + RuntimeErrors.OperandTypeName(value) + "' object is not iterable");
 
     private static string DescribeLoopArityMismatch(int targetCount, int valueCount)
         => valueCount > targetCount

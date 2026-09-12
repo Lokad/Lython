@@ -313,7 +313,10 @@ __lython_file.close()
     }
 
     [Theory]
-    [InlineData("iter(1)\n", "TypeError", "not iterable")]
+    [InlineData("iter(1)\n", "TypeError", "'int' object is not iterable")]
+    [InlineData("iter(None)\n", "TypeError", "'NoneType' object is not iterable")]
+    [InlineData("def f(a):\n return list(a)\nf(1)\n", "TypeError", "'int' object is not iterable")]
+    [InlineData("def f(a):\n return sorted(a)\nf(None)\n", "TypeError", "'NoneType' object is not iterable")]
     [InlineData("iter(1, 0)\n", "TypeError", "callable")]
     [InlineData("reversed(1)\n", "TypeError", "reversible")]
     [InlineData("map(1, [1])\n", "TypeError", "callable")]

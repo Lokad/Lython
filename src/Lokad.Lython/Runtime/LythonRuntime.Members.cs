@@ -1350,7 +1350,7 @@ internal sealed partial class LythonRuntime
                     {
                         PopulateCounter(_counter, source.RequireNotNull(), span, context, _subtract);
                     }
-                    catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" && ex.Message == "Object is not iterable.")
+                    catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" && (ex.Message == "Object is not iterable." || ex.Message == "'" + RuntimeErrors.OperandTypeName(source) + "' object is not iterable"))
                     {
                         throw new LythonRuntimeException("TypeError", $"Counter.{Name}(iterable) expects one iterable or mapping argument.", span);
                     }

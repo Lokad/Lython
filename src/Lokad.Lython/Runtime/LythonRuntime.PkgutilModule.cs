@@ -147,7 +147,7 @@ internal sealed partial class LythonRuntime
                     values.Add(path);
                 }
             }
-            catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" && ex.Message == "Object is not iterable.")
+            catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" && (ex.Message == "Object is not iterable." || ex.Message == "'" + RuntimeErrors.OperandTypeName(arguments[0]) + "' object is not iterable"))
             {
                 return arguments[0];
             }
@@ -411,7 +411,7 @@ internal sealed partial class LythonRuntime
                     paths.Add(NormalizeDiscoveryPath(itemPath.AsString(), context));
                 }
             }
-            catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" && ex.Message == "Object is not iterable.")
+            catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" && (ex.Message == "Object is not iterable." || ex.Message == "'" + RuntimeErrors.OperandTypeName(path) + "' object is not iterable"))
             {
                 throw new LythonRuntimeException("TypeError", $"{owner} expects a path string or iterable of path strings.", span);
             }

@@ -4917,7 +4917,7 @@ public sealed class SharedFixedLabelBehaviorTests
             "bytes.join() takes exactly one argument (0 given)",
             "bytes.join() takes exactly one argument (2 given)",
             "bytes.join() takes no keyword arguments",
-            "Object is not iterable.",
+            "'int' object is not iterable",
             "sequence item 1: expected a bytes-like object, str found",
             "sequence item 1: expected a bytes-like object, NoneType found",
             "sequence item 0: expected a bytes-like object, int found",

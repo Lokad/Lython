@@ -352,7 +352,7 @@ internal sealed partial class LythonRuntime
                         : throw new LythonRuntimeException("TypeError", $"{owner} expects an iterable of strings.", span))
                     .ToArray();
             }
-            catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" && ex.Message == "Object is not iterable.")
+            catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" && (ex.Message == "Object is not iterable." || ex.Message == "'" + RuntimeErrors.OperandTypeName(value) + "' object is not iterable"))
             {
                 throw new LythonRuntimeException("TypeError", $"{owner} expects an iterable of strings.", span);
             }
@@ -368,7 +368,7 @@ internal sealed partial class LythonRuntime
                         : throw new LythonRuntimeException("TypeError", $"{owner} expects an iterable of bytes.", span))
                     .ToArray();
             }
-            catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" && ex.Message == "Object is not iterable.")
+            catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" && (ex.Message == "Object is not iterable." || ex.Message == "'" + RuntimeErrors.OperandTypeName(value) + "' object is not iterable"))
             {
                 throw new LythonRuntimeException("TypeError", $"{owner} expects an iterable of bytes.", span);
             }
@@ -402,7 +402,7 @@ internal sealed partial class LythonRuntime
                     }
                 }
             }
-            catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" && ex.Message == "Object is not iterable.")
+            catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" && (ex.Message == "Object is not iterable." || ex.Message == "'" + RuntimeErrors.OperandTypeName(value) + "' object is not iterable"))
             {
                 throw new LythonRuntimeException("TypeError", "difflib.SequenceMatcher sequence arguments must be iterable.", span);
             }
