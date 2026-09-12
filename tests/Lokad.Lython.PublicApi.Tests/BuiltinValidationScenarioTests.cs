@@ -166,7 +166,9 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("import math\nmath.isclose(1, 2, -1)\n", "ValueError", "non-negative")]
     [InlineData("import math\nmath.prod([1, \"x\"])\n", "TypeError", "iterable of real numbers")]
     [InlineData("import math\nmath.floor(\"x\")\n", "compile", "expects a real number")]
-    [InlineData("import datetime\na = datetime.datetime(2024, 1, 1)\nb = datetime.datetime(2024, 1, 1, tzinfo=datetime.timezone.utc)\na < b\n", "TypeError", "naive and timezone-aware datetimes")]
+    [InlineData("import datetime\na = datetime.datetime(2024, 1, 1)\nb = datetime.datetime(2024, 1, 1, tzinfo=datetime.timezone.utc)\na < b\n", "TypeError", "can't compare offset-naive and offset-aware datetimes")]
+    [InlineData("import datetime\na = datetime.datetime(2024, 1, 1)\nb = datetime.datetime(2024, 1, 1, tzinfo=datetime.timezone.utc)\na - b\n", "TypeError", "can't subtract offset-naive and offset-aware datetimes")]
+    [InlineData("import datetime\na = datetime.time(1, 2)\nb = datetime.time(1, 2, tzinfo=datetime.timezone.utc)\na > b\n", "TypeError", "can't compare offset-naive and offset-aware times")]
     [InlineData("import datetime\ndatetime.timezone(1)\n", "TypeError", "expects a timedelta offset")]
     [InlineData("import datetime\ndatetime.date.fromisoformat(\"bad\")\n", "ValueError", "Invalid isoformat string")]
     [InlineData("import datetime\ndatetime.datetime.now(1)\n", "TypeError", "expects tz to be a timezone or None")]
@@ -265,6 +267,20 @@ __lython_file.close()
         var asyncResult = await script.RunAsync(new MockLythonHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("8 days, 1:00:00|0:00:01.500000|2|-1 day, 0:00:03|740993", asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task NaiveAwareEquality_ComparesUnequal()
+    {
+        const string source = "import datetime\na = datetime.datetime(2024, 1, 1)\nb = datetime.datetime(2024, 1, 1, tzinfo=datetime.timezone.utc)\nc = datetime.time(1, 2)\nd = datetime.time(1, 2, tzinfo=datetime.timezone.utc)\nreturn str(a == b) + \"|\" + str(a != b) + \"|\" + str(c == d) + \"|\" + str(c != d)\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("False|True|False|True", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("False|True|False|True", asyncResult.ReturnValue);
     }
 
     [Theory]

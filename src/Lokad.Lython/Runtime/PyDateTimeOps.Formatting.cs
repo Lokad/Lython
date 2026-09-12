@@ -213,7 +213,7 @@ internal static partial class PyDateTimeOps
     {
         if ((left.TzInfo is null) != (right.TzInfo is null))
         {
-            throw new LythonRuntimeException("TypeError", "Cannot mix naive and timezone-aware datetimes.", span);
+            throw new LythonRuntimeException("TypeError", "can't subtract offset-naive and offset-aware datetimes", span);
         }
 
         return left.TzInfo is null
@@ -225,7 +225,7 @@ internal static partial class PyDateTimeOps
     {
         if ((left.TzInfo is null) != (right.TzInfo is null))
         {
-            throw new LythonRuntimeException("TypeError", "Cannot compare naive and timezone-aware datetimes.", span);
+            throw new LythonRuntimeException("TypeError", "can't compare offset-naive and offset-aware datetimes", span);
         }
 
         return left.TzInfo is null
@@ -237,7 +237,7 @@ internal static partial class PyDateTimeOps
     {
         if ((left.TzInfo is null) != (right.TzInfo is null))
         {
-            throw new LythonRuntimeException("TypeError", "Cannot compare naive and timezone-aware times.", span);
+            throw new LythonRuntimeException("TypeError", "can't compare offset-naive and offset-aware times", span);
         }
 
         if (left.TzInfo is null)
