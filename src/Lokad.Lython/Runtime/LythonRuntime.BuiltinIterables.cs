@@ -344,7 +344,7 @@ internal sealed partial class LythonRuntime
         {
             if (arguments[0] is not ICallable callable)
             {
-                throw new LythonRuntimeException("TypeError", "iter(callable, sentinel) expects the first argument to be callable.", span);
+                throw new LythonRuntimeException("TypeError", "iter(v, w): v must be callable", span);
             }
 
             return new PyCallableSentinelIterator(callable, arguments[1], context, span);

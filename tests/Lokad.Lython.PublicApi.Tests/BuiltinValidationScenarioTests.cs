@@ -24,6 +24,8 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("list(map(1, [2]))\n", "TypeError", "'int' object is not callable")]
     [InlineData("list(filter(1, [2]))\n", "TypeError", "'int' object is not callable")]
     [InlineData("list(map(None, [1]))\n", "TypeError", "'NoneType' object is not callable")]
+    [InlineData("iter(1, 2)\n", "TypeError", "iter(v, w): v must be callable")]
+    [InlineData("iter(None, 1)\n", "TypeError", "iter(v, w): v must be callable")]
     [InlineData("reversed(1)\n", "TypeError", "'int' object is not reversible")]
     [InlineData("reversed(None)\n", "TypeError", "'NoneType' object is not reversible")]
     [InlineData("from dataclasses import field\ndefault_factory = list\nfield(default = 1, default_factory = default_factory)\n", "compile", "cannot specify both default and default_factory")]
