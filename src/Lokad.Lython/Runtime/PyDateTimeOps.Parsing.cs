@@ -76,32 +76,109 @@ internal static partial class PyDateTimeOps
         var month = ParseMonth(Capture('m'), Capture('b'), Capture('B'));
         var day = ParseInt(Capture('d'), 1);
 
-        if (Capture('G') is not null || Capture('V') is not null || Capture('u') is not null)
+        var hasYear = Capture('Y') is not null || Capture('y') is not null;
+        var hasIsoYear = Capture('G') is not null;
+        var hasIsoWeek = Capture('V') is not null;
+        var hasJulian = Capture('j') is not null;
+
+        // Week dates resolve through a Monday-based weekday and an optional
+        // Sunday- or Monday-start week number; later directives win like the
+        // CPython group walk. Weekday names stay unresolved (own slice).
+        int? weekday = null;
+        int? weekOfYear = null;
+        var weekStartsMonday = false;
+        foreach (var directive in groups.Keys)
         {
-            if (Capture('G') is null || Capture('V') is null || Capture('u') is null)
+            if (directive == 'w' && Capture('w') is { } sundayBased)
             {
-                throw new FormatException("ISO year, week, and weekday directives must be used together.");
+                var sundayZero = int.Parse(sundayBased, CultureInfo.InvariantCulture);
+                weekday = sundayZero == 0 ? 6 : sundayZero - 1;
+            }
+            else if (directive == 'u' && Capture('u') is { } mondayBased)
+            {
+                weekday = int.Parse(mondayBased, CultureInfo.InvariantCulture) - 1;
+            }
+            else if (directive == 'U' && Capture('U') is { } sundayWeek)
+            {
+                weekOfYear = int.Parse(sundayWeek, CultureInfo.InvariantCulture);
+                weekStartsMonday = false;
+            }
+            else if (directive == 'W' && Capture('W') is { } mondayWeek)
+            {
+                weekOfYear = int.Parse(mondayWeek, CultureInfo.InvariantCulture);
+                weekStartsMonday = true;
+            }
+        }
+
+        if (hasIsoYear)
+        {
+            if (hasJulian)
+            {
+                throw new FormatException("Day of the year directive '%j' is not compatible with ISO year directive '%G'. Use '%Y' instead.");
             }
 
-            var isoDate = DateFromIsoCalendarValue(
-                new BigInteger(int.Parse(Capture('G').RequireNotNull(), CultureInfo.InvariantCulture)),
-                new BigInteger(int.Parse(Capture('V').RequireNotNull(), CultureInfo.InvariantCulture)),
-                new BigInteger(int.Parse(Capture('u').RequireNotNull(), CultureInfo.InvariantCulture)),
-                span,
-                context);
-            year = isoDate.Year;
-            month = isoDate.Month;
-            day = isoDate.Day;
+            if (!hasIsoWeek || weekday is null)
+            {
+                throw new FormatException("ISO year directive '%G' must be used with the ISO week directive '%V' and a weekday directive ('%A', '%a', '%w', or '%u').");
+            }
         }
-        else if (Capture('j') is { } dayOfYearText)
+        else if (hasIsoWeek)
         {
-            var dayOfYear = int.Parse(dayOfYearText, CultureInfo.InvariantCulture);
-            var start = CreateParsedDate(year, 1, 1, span);
-            var date = DateFromOrdinalValue(new BigInteger(start.DayNumber + dayOfYear), span, context);
-            year = date.Year;
-            month = date.Month;
-            day = date.Day;
+            if (!hasYear || weekday is null)
+            {
+                throw new FormatException("ISO week directive '%V' must be used with the ISO year directive '%G' and a weekday directive ('%A', '%a', '%w', or '%u').");
+            }
+
+            throw new FormatException("ISO week directive '%V' is incompatible with the year directive '%Y'. Use the ISO year '%G' instead.");
         }
+
+        var computationYear = year;
+        var leapYearFix = !hasYear && month == 2 && day == 29;
+        if (leapYearFix)
+        {
+            computationYear = 1904;
+        }
+
+        int? julian = hasJulian ? int.Parse(Capture('j').RequireNotNull(), CultureInfo.InvariantCulture) : null;
+        DateOnly? resolved = null;
+        if (julian is null && weekday is not null)
+        {
+            if (weekOfYear is not null)
+            {
+                julian = CalcJulianFromWeek(computationYear, weekOfYear.Value, weekday.Value, weekStartsMonday, span);
+            }
+            else if (hasIsoYear && hasIsoWeek)
+            {
+                resolved = DateFromIsoCalendarValue(
+                    new BigInteger(int.Parse(Capture('G').RequireNotNull(), CultureInfo.InvariantCulture)),
+                    new BigInteger(int.Parse(Capture('V').RequireNotNull(), CultureInfo.InvariantCulture)),
+                    new BigInteger(weekday.Value + 1),
+                    span,
+                    context);
+            }
+        }
+
+        if (resolved is null)
+        {
+            if (julian is null)
+            {
+                resolved = CreateParsedDate(computationYear, month, day, span);
+            }
+            else
+            {
+                var start = CreateParsedDate(computationYear, 1, 1, span);
+                resolved = DateFromOrdinalValue(new BigInteger(start.DayNumber + julian.Value), span, context);
+            }
+        }
+
+        if (leapYearFix)
+        {
+            resolved = CreateParsedDate(1900, resolved.Value.Month, resolved.Value.Day, span);
+        }
+
+        year = resolved.Value.Year;
+        month = resolved.Value.Month;
+        day = resolved.Value.Day;
 
         var hour = ParseInt(Capture('H'), 0);
         if (Capture('I') is { } hour12Text)
@@ -463,6 +540,23 @@ internal static partial class PyDateTimeOps
         return new TimeOnly(hour, minute, second, microsecond / 1000, microsecond % 1000);
     }
 
+    private static int CalcJulianFromWeek(int year, int weekOfYear, int dayOfWeek, bool weekStartsMonday, LythonSourceSpan span)
+    {
+        // Mirrors CPython _calc_julian_from_U_or_W with Monday-based weekdays.
+        var start = CreateParsedDate(year, 1, 1, span);
+        var firstWeekday = ((int)start.DayOfWeek + 6) % 7;
+        if (!weekStartsMonday)
+        {
+            firstWeekday = (firstWeekday + 1) % 7;
+            dayOfWeek = (dayOfWeek + 1) % 7;
+        }
+
+        var weekZeroLength = (7 - firstWeekday) % 7;
+        return weekOfYear == 0
+            ? 1 + dayOfWeek - firstWeekday
+            : 1 + weekZeroLength + 7 * (weekOfYear - 1) + dayOfWeek;
+
+    }
     private static int ParseIsoComponent(Match match, string groupName)
         => int.Parse(match.Groups[groupName].Value, CultureInfo.InvariantCulture);
 

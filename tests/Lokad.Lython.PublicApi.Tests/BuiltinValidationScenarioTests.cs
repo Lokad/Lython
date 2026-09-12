@@ -148,6 +148,12 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("import datetime\ndatetime.datetime.strptime(\"2024-01-02junk\", \"%Y-%m-%d\")\n", "ValueError", "unconverted data remains: junk")]
     [InlineData("import datetime\ndatetime.datetime.strptime(\"2024 53 1\", \"%G %V %u\")\n", "ValueError", "Invalid week: 53")]
     [InlineData("import datetime\ndatetime.datetime.strptime(\"9999-366\", \"%Y-%j\")\n", "ValueError", "year 10000 is out of range")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"2024 01\", \"%G %V\")\n", "ValueError", "ISO year directive '%G' must be used with the ISO week directive '%V' and a weekday directive")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"2024 100\", \"%G %j\")\n", "ValueError", "Day of the year directive '%j' is not compatible with ISO year directive '%G'")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"2024 01 1\", \"%Y %V %u\")\n", "ValueError", "ISO week directive '%V' is incompatible with the year directive '%Y'")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"01\", \"%V\")\n", "ValueError", "ISO week directive '%V' must be used with the ISO year directive '%G'")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"02 29\", \"%m %d\")\n", "ValueError", "day is out of range for month")]
+    [InlineData("import datetime\ndatetime.datetime.strptime(\"2024 01 2\", \"%G %U %u\")\n", "ValueError", "ISO year directive '%G' must be used with the ISO week directive '%V'")]
     [InlineData("def f(x, y):\n return x[y]\nf([1], ...)\n", "TypeError", "list indices must be integers or slices, not ellipsis")]
     [InlineData("def f(x, y):\n return x[y]\nf((1,), ...)\n", "TypeError", "tuple indices must be integers or slices, not ellipsis")]
     [InlineData("from collections import Counter\ndef f(x, y):\n return x[y]\nf([1], Counter())\n", "TypeError", "list indices must be integers or slices, not Counter")]
@@ -355,6 +361,20 @@ __lython_file.close()
         var asyncResult = await script.RunAsync(new MockLythonHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("2024-01-02 00:00:00|2024-01-01 00:00:00", asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task StrptimeComputesWeekDates()
+    {
+        const string source = "import datetime\nreturn str(datetime.datetime.strptime(\"2023 00 1\", \"%Y %W %u\")) + \"|\" + str(datetime.datetime.strptime(\"2024 01 1\", \"%Y %U %w\")) + \"|\" + str(datetime.datetime.strptime(\"2024 01 0\", \"%Y %U %w\")) + \"|\" + str(datetime.datetime.strptime(\"2024 01\", \"%Y %U\")) + \"|\" + str(datetime.datetime.strptime(\"2024 02 29 01 4\", \"%Y %m %d %U %w\")) + \"|\" + str(datetime.datetime.strptime(\"02 29 01 4\", \"%m %d %U %w\")) + \"|\" + str(datetime.datetime.strptime(\"2024 01 7\", \"%Y %U %u\")) + \"|\" + str(datetime.datetime.strptime(\"2024 01 2 02 29\", \"%G %V %u %m %d\")) + \"|\" + str(datetime.datetime.strptime(\"2024 100 01\", \"%Y %j %U\")) + \"|\" + str(datetime.datetime.strptime(\"2023 00 0\", \"%Y %U %w\"))\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("2022-12-26 00:00:00|2024-01-08 00:00:00|2024-01-07 00:00:00|2024-01-01 00:00:00|2024-01-11 00:00:00|1900-01-07 00:00:00|2024-01-07 00:00:00|1900-01-02 00:00:00|2024-04-09 00:00:00|2023-01-01 00:00:00", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("2022-12-26 00:00:00|2024-01-08 00:00:00|2024-01-07 00:00:00|2024-01-01 00:00:00|2024-01-11 00:00:00|1900-01-07 00:00:00|2024-01-07 00:00:00|1900-01-02 00:00:00|2024-04-09 00:00:00|2023-01-01 00:00:00", asyncResult.ReturnValue);
     }
 
     [Fact]
