@@ -353,13 +353,23 @@ internal sealed partial class LythonRuntime
             return OwnDecimalValue(new PyDecimal(decimal.Abs(decimalValue.Value), decimalValue.Exponent), context, span);
         }
 
+        if (arguments[0] is PyTimedelta delta)
+        {
+            return PyDateTimeOps.Abs(delta, context, span);
+        }
+
         if (!PyNumberOps.TryAsNumber(arguments[0], out var number))
         {
-            throw new LythonRuntimeException("TypeError", "bad operand type for abs(): '" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "'", span);
+            throw new LythonRuntimeException("TypeError", "bad operand type for abs(): '" + DatetimeQualifiedTypeName(arguments[0], context) + "'", span);
         }
 
         return number.IsFloat ? Math.Abs(number.Floating) : OwnHeapInteger(BigInteger.Abs(number.Integer), context.MemoryGovernor, span);
     }
+
+    private static string DatetimeQualifiedTypeName(object? value, ExecutionContext context)
+        => value is PyDate or PyTime or PyDateTime or PyTimedelta or PyTimezone
+            ? "datetime." + UnboundTypeMethod.PythonTypeName(value, context)
+            : UnboundTypeMethod.PythonTypeName(value, context);
 
     private static object Pow(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {

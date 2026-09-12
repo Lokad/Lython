@@ -854,6 +854,13 @@ internal static partial class PyDateTimeOps
         };
     }
 
+    public static object Abs(PyTimedelta delta, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        return delta.TotalMicroseconds.Sign < 0
+            ? OwnDateTimeValue(CreateTimedelta(-delta.TotalMicroseconds, span), context, span)
+            : delta;
+    }
+
     public static object Multiply(object left, object right, LythonRuntime.ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         return (left, right) switch

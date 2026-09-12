@@ -231,6 +231,11 @@ internal sealed partial class LythonRuntime
             return BuildCounterUnaryResult(positiveCounter, count => count, keepPositiveOnly: true, span);
         }
 
+        if (operand is PyTimedelta)
+        {
+            return operand;
+        }
+
         if (operand is PyDecimal)
         {
             return operand;

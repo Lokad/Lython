@@ -48,7 +48,7 @@ internal sealed partial class LythonRuntime
             BigInteger integer => RoundInteger(integer, digits, span),
             double floating => RoundFloat(floating, digits, span),
             PyDecimal decimalValue => RoundDecimal(decimalValue, digits, context.DecimalContext, span),
-            _ => throw new LythonRuntimeException("TypeError", $"type {UnboundTypeMethod.PythonTypeName(arguments[0], context)} doesn't define __round__ method", span)
+            _ => throw new LythonRuntimeException("TypeError", $"type {DatetimeQualifiedTypeName(arguments[0], context)} doesn't define __round__ method", span)
         };
 
         // Decimal rounding reuses the input past 28 digits; charge only fresh values.
