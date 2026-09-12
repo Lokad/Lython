@@ -258,14 +258,14 @@ internal sealed partial class LythonRuntime
             return matched;
         }
 
-        throw new LythonRuntimeException("TypeError", "isinstance(value, type) expects a class or tuple of classes.", span);
+        throw new LythonRuntimeException("TypeError", "isinstance() arg 2 must be a type, a tuple of types, or a union", span);
     }
 
     private static bool IsSubclassOf(object type, object baseSpec, LythonSourceSpan span)
     {
         if (!IsSupportedTypeSpecifier(type))
         {
-            throw new LythonRuntimeException("TypeError", "issubclass(type, base) expects the first argument to be a class.", span);
+            throw new LythonRuntimeException("TypeError", "issubclass() arg 1 must be a class", span);
         }
 
         if (TryMatchTypeTuple(baseSpec, candidate => IsSubclassAgainstSingleType(type, candidate), out var matched))
@@ -273,7 +273,7 @@ internal sealed partial class LythonRuntime
             return matched;
         }
 
-        throw new LythonRuntimeException("TypeError", "issubclass(type, base) expects a class or tuple of classes.", span);
+        throw new LythonRuntimeException("TypeError", "issubclass() arg 2 must be a class, a tuple of classes, or a union", span);
     }
 
     private static bool TryMatchTypeTuple(object typeSpec, Func<object, bool> predicate, out bool matched)

@@ -136,7 +136,7 @@ internal static class RuntimeErrors
         => new("NameError", $"name '{name}' is not defined", span);
 
     public static LythonRuntimeException RaiseExpectsException(LythonSourceSpan? span)
-        => Type("raise expects an exception instance.", span);
+        => Type("exceptions must derive from BaseException", span);
 
     public static LythonRuntimeException ImportedModuleReturned(string moduleName, LythonSourceSpan? span)
         => Runtime($"Imported module '{moduleName}' returned from top level.", span);
