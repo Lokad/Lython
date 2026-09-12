@@ -6342,4 +6342,61 @@ public sealed class SharedFixedLabelBehaviorTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task ReprQuoteStyleSwitchesLikePython()
+    {
+        // Like CPython, repr wraps strings holding a single quote but no
+        // double quote in double quotes instead of escaping; every other
+        // shape keeps single quotes. Containers, conversions and exception
+        // rendering all flow through the shared literal renderer.
+        var script = new LythonEngine().Compile("""
+            results = []
+            s1 = "it's"
+            s2 = 'say "hi"'
+            results.append(repr(s1))
+            results.append(repr(s2))
+            results.append(repr(chr(34) + "a" + chr(39) + "b" + chr(34)))
+            results.append(repr(""))
+            results.append(str([s1, s2]))
+            results.append(str((s1,)))
+            results.append(str({s1: s2}))
+            results.append(str({s2: s1}))
+            results.append(f"{s1!r}")
+            results.append("%r" % s1)
+            results.append("{0!r}".format(s1))
+            try:
+                raise ValueError("oops'")
+            except ValueError as e:
+                results.append(str(e))
+                results.append(repr(e))
+                results.append(e.args == ("oops'",))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "\"it's\"",
+            "'say \"hi\"'",
+            "'\"a\\'b\"'",
+            "''",
+            "[\"it's\", 'say \"hi\"']",
+            "(\"it's\",)",
+            "{\"it's\": 'say \"hi\"'}",
+            "{'say \"hi\"': \"it's\"}",
+            "\"it's\"",
+            "\"it's\"",
+            "\"it's\"",
+            "oops'",
+            "ValueError(\"oops'\")",
+            true,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

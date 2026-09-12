@@ -82,7 +82,7 @@ return str(values)
 
         Assert.True(result.Success, Describe(result));
         Assert.Equal(
-            "[['\\'alpha beta\\'', 'gamma'], ['a\\\\', 'b', 'c'], ['a\\'\\'b', '\"\"'], ['alphabeta'], ['trailing\\\\']]",
+            "[[\"'alpha beta'\", 'gamma'], ['a\\\\', 'b', 'c'], [\"a''b\", '\"\"'], ['alphabeta'], ['trailing\\\\']]",
             result.ReturnValue);
     }
 

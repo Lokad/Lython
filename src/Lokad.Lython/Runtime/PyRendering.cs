@@ -297,17 +297,25 @@ internal static class PyRendering
     private static PyString RenderStringLiteral(string text, PyRenderingContext context)
     {
         var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
-        builder.AppendAscii("'");
+        // Like CPython, a string holding a single quote but no double quote
+        // renders wrapped in double quotes with its singles left bare;
+        // strings holding both, neither, or only doubles keep single quotes.
+        var quote = text.IndexOf((char)39) >= 0 && text.IndexOf((char)34) < 0 ? (char)34 : (char)39;
+        builder.Append((byte)quote);
         for (var i = 0; i < text.Length; i++)
         {
             var ch = text[i];
+            if (ch == quote)
+            {
+                builder.Append((byte)92);
+                builder.Append((byte)quote);
+                continue;
+            }
+
             switch (ch)
             {
                 case '\\':
                     builder.AppendAscii("\\\\");
-                    break;
-                case '\'':
-                    builder.AppendAscii("\\'");
                     break;
                 case '\n':
                     builder.AppendAscii("\\n");
@@ -345,7 +353,7 @@ internal static class PyRendering
             }
         }
 
-        builder.AppendAscii("'");
+        builder.Append((byte)quote);
         return builder.ToPyStringAndRelease();
     }
 
