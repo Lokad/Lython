@@ -534,7 +534,7 @@ internal sealed partial class LythonRuntime
         var current = context.Services.CurrentException;
         if (current is null)
         {
-            throw RuntimeErrors.Runtime("No active exception to re-raise.", span);
+            throw RuntimeErrors.Runtime("No active exception to reraise", span);
         }
 
         // A bare raise continues the active chain instead of starting a new

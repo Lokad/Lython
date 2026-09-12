@@ -78,6 +78,7 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("def f(b):\n return b.split(1)\nf(b\"a,b\")\n", "TypeError", "a bytes-like object is required, not 'int'")]
     [InlineData("def f(b):\n return b.rsplit(1)\nf(b\"a,b\")\n", "TypeError", "a bytes-like object is required, not 'int'")]
     [InlineData("def f(b):\n return b.split(\"a\")\nf(b\"a,b\")\n", "TypeError", "a bytes-like object is required, not 'str'")]
+    [InlineData("raise\n", "RuntimeError", "No active exception to reraise")]
     [InlineData("range(1, 2, 0)\n", "ValueError", "must not be zero")]
     [InlineData("int(\"bad\")\n", "ValueError", "invalid literal")]
     [InlineData("float(\"bad\")\n", "ValueError", "could not convert string to float: 'bad'")]
