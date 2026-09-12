@@ -13,20 +13,20 @@ internal static partial class PyDecimalOps
     internal static LythonRuntimeException DecimalOverflow(LythonSourceSpan span)
         => new(LythonRuntime.ModuleException("decimal", "Overflow"), "Decimal arithmetic overflowed Lython's fixed-precision range.", span);
 
-    public static object Add(object left, object right, LythonSourceSpan span)
-        => Binary(left, right, span, static (lhs, rhs) => lhs + rhs, static (lhs, rhs) => Math.Min(lhs, rhs));
+    public static object Add(object left, object right, LythonSourceSpan span, string operation)
+        => Binary(left, right, span, operation, static (lhs, rhs) => lhs + rhs, static (lhs, rhs) => Math.Min(lhs, rhs));
 
-    public static object Subtract(object left, object right, LythonSourceSpan span)
-        => Binary(left, right, span, static (lhs, rhs) => lhs - rhs, static (lhs, rhs) => Math.Min(lhs, rhs));
+    public static object Subtract(object left, object right, LythonSourceSpan span, string operation)
+        => Binary(left, right, span, operation, static (lhs, rhs) => lhs - rhs, static (lhs, rhs) => Math.Min(lhs, rhs));
 
-    public static object Multiply(object left, object right, LythonSourceSpan span)
-        => Binary(left, right, span, static (lhs, rhs) => lhs * rhs, static (lhs, rhs) => checked(lhs + rhs));
+    public static object Multiply(object left, object right, LythonSourceSpan span, string operation)
+        => Binary(left, right, span, operation, static (lhs, rhs) => lhs * rhs, static (lhs, rhs) => checked(lhs + rhs));
 
-    public static object Divide(object left, object right, LythonSourceSpan span)
+    public static object Divide(object left, object right, LythonSourceSpan span, string operation)
     {
         if (!TryAsDecimal(left, out var lhs) || !TryAsDecimal(right, out var rhs))
         {
-            throw new LythonRuntimeException("TypeError", "Decimal arithmetic requires Decimal and integer operands.", span);
+            throw RuntimeErrors.UnsupportedOperands(operation, left, right, span);
         }
 
         if (rhs == 0m)
@@ -44,11 +44,11 @@ internal static partial class PyDecimalOps
         }
     }
 
-    public static object Modulo(object left, object right, LythonSourceSpan span)
+    public static object Modulo(object left, object right, LythonSourceSpan span, string operation)
     {
         if (!TryAsDecimal(left, out var lhs) || !TryAsDecimal(right, out var rhs))
         {
-            throw new LythonRuntimeException("TypeError", "Decimal arithmetic requires Decimal and integer operands.", span);
+            throw RuntimeErrors.UnsupportedOperands(operation, left, right, span);
         }
 
         if (rhs == 0m)
@@ -66,11 +66,11 @@ internal static partial class PyDecimalOps
         }
     }
 
-    public static object Power(object left, object right, LythonSourceSpan span)
+    public static object Power(object left, object right, LythonSourceSpan span, string operation)
     {
         if (!TryAsDecimal(left, out var lhs) || !Numbers.PyNumberOps.TryAsInteger(right, out var exponent))
         {
-            throw new LythonRuntimeException("TypeError", "Decimal power requires a Decimal base and an integer exponent.", span);
+            throw RuntimeErrors.UnsupportedOperands(operation, left, right, span);
         }
 
         if (exponent < int.MinValue || exponent > int.MaxValue)
@@ -254,17 +254,18 @@ internal static partial class PyDecimalOps
         object left,
         object right,
         LythonSourceSpan span,
-        Func<decimal, decimal, decimal> operation,
+        string operation,
+        Func<decimal, decimal, decimal> operate,
         Func<int, int, int> combineExponent)
     {
         if (!TryAsDecimal(left, out var lhs) || !TryAsDecimal(right, out var rhs))
         {
-            throw new LythonRuntimeException("TypeError", "Decimal arithmetic requires Decimal and integer operands.", span);
+            throw RuntimeErrors.UnsupportedOperands(operation, left, right, span);
         }
 
         try
         {
-            var result = operation(lhs, rhs);
+            var result = operate(lhs, rhs);
             return new PyDecimal(
                 result,
                 ConsistentExponent(result, combineExponent(GetOperandExponent(left, lhs), GetOperandExponent(right, rhs))));

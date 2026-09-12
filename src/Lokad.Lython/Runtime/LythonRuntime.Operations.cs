@@ -357,7 +357,7 @@ internal sealed partial class LythonRuntime
         right = ExpectCounterCount(right, span);
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.Add(left, right, span), governor, span);
+            return OwnDecimalValue(PyDecimalOps.Add(left, right, span, "+"), governor, span);
         }
 
         PyNumberOps.TryAsNumber(left, out var lhs);
@@ -369,7 +369,7 @@ internal sealed partial class LythonRuntime
     {
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.Subtract(left, right, span), governor, span);
+            return OwnDecimalValue(PyDecimalOps.Subtract(left, right, span, "-"), governor, span);
         }
 
         PyNumberOps.TryAsNumber(left, out var lhs);

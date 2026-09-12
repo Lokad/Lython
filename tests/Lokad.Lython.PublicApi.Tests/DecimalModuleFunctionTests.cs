@@ -294,7 +294,7 @@ from decimal import Decimal
 Decimal("1") + 1.5
 """,
         "TypeError",
-        "Decimal and integer operands")]
+        "unsupported operand type(s) for +: 'decimal.Decimal' and 'float'")]
     [InlineData(
         """
 from decimal import Decimal
@@ -492,6 +492,109 @@ Decimal("150").quantize(Decimal("1E-28"), "ROUND_DOWN")
             "True",
             "True",
             "(Decimal('0.5'), Decimal('0.5'))",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task DecimalOperatorTextsNameOperands()
+    {
+        // Decimal operator failures name the operation and both operand
+        // types like CPython instead of the shared house text, in both modes.
+        var script = new LythonEngine().Compile("""
+            from decimal import Decimal
+            results = []
+            def add_s(s):
+                return Decimal('1') + s
+            def pow_s(s):
+                return Decimal('2') ** s
+            def mod_s(s):
+                return Decimal('1') % s
+            def iaug(d):
+                q = Decimal('1')
+                q += d
+                return q
+            try:
+                Decimal('1.5') + 2.0
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                Decimal('1.5') - 2.0
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                Decimal('1.5') * 2.0
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                Decimal('1.5') / 2.0
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                Decimal('1.5') % 2.0
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                Decimal('2') ** 2.0
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                2.0 + Decimal('1.5')
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                add_s('x')
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                pow_s('x')
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                mod_s('x')
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                Decimal('1') // 2.0
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                iaug(2.0)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                pow(Decimal('2'), 2.0)
+            except TypeError as e:
+                results.append(str(e))
+            try:
+                divmod(Decimal('1'), 2.0)
+            except TypeError as e:
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "unsupported operand type(s) for +: 'decimal.Decimal' and 'float'",
+            "unsupported operand type(s) for -: 'decimal.Decimal' and 'float'",
+            "unsupported operand type(s) for *: 'decimal.Decimal' and 'float'",
+            "unsupported operand type(s) for /: 'decimal.Decimal' and 'float'",
+            "unsupported operand type(s) for %: 'decimal.Decimal' and 'float'",
+            "unsupported operand type(s) for ** or pow(): 'decimal.Decimal' and 'float'",
+            "unsupported operand type(s) for +: 'float' and 'decimal.Decimal'",
+            "unsupported operand type(s) for +: 'decimal.Decimal' and 'str'",
+            "unsupported operand type(s) for ** or pow(): 'decimal.Decimal' and 'str'",
+            "unsupported operand type(s) for %: 'decimal.Decimal' and 'str'",
+            "unsupported operand type(s) for //: 'decimal.Decimal' and 'float'",
+            "unsupported operand type(s) for +=: 'decimal.Decimal' and 'float'",
+            "unsupported operand type(s) for ** or pow(): 'decimal.Decimal' and 'float'",
+            "unsupported operand type(s) for divmod(): 'decimal.Decimal' and 'float'",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);

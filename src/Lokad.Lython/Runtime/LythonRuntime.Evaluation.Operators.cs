@@ -41,7 +41,7 @@ internal sealed partial class LythonRuntime
     {
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.Add(left, right, span), context, span);
+            return OwnDecimalValue(PyDecimalOps.Add(left, right, span, operation ?? "+"), context, span);
         }
 
         if (PyStringOps.TryAsString(left, out var leftText) && PyStringOps.TryAsString(right, out var rightText))
@@ -177,7 +177,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.Subtract(left, right, span), context, span);
+            return OwnDecimalValue(PyDecimalOps.Subtract(left, right, span, operation ?? "-"), context, span);
         }
 
         if (left is PyTimedelta or PyDate or PyDateTime || right is PyTimedelta or PyDate or PyDateTime)
@@ -209,7 +209,7 @@ internal sealed partial class LythonRuntime
     {
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.Multiply(left, right, span), context, span);
+            return OwnDecimalValue(PyDecimalOps.Multiply(left, right, span, operation ?? "*"), context, span);
         }
 
         if (PyStringOps.TryAsString(left, out var leftText) && TryRepeatCount(right, context, span, out var rightCount))
@@ -341,7 +341,7 @@ internal sealed partial class LythonRuntime
     {
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.Divide(left, right, span), context, span);
+            return OwnDecimalValue(PyDecimalOps.Divide(left, right, span, operation ?? "/"), context, span);
         }
 
         if (left is PyPath leftPath)
@@ -430,7 +430,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.Modulo(left, right, span), context, span);
+            return OwnDecimalValue(PyDecimalOps.Modulo(left, right, span, operation ?? "%"), context, span);
         }
 
         if (left is PyTimedelta || right is PyTimedelta)
@@ -464,7 +464,7 @@ internal sealed partial class LythonRuntime
     {
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.Power(left, right, span), context, span);
+            return OwnDecimalValue(PyDecimalOps.Power(left, right, span, operation ?? "** or pow()"), context, span);
         }
 
         if (!TryGetNumericOperands(left, right, out var lhs, out var rhs))
