@@ -34,11 +34,22 @@ internal sealed partial class LythonRuntime
                     }, "str.encode", ["encoding", "errors"], 0),
                     "replace" => BoundCallable.Create((arguments, span, context) =>
                     {
-                        if (arguments.Length is < 2 or > 3 ||
-                            !PyStringOps.TryAsString(arguments[0], out var oldValue) ||
-                            !PyStringOps.TryAsString(arguments[1], out var newValue))
+                        if (arguments.Length is < 2 or > 3)
                         {
                             throw new LythonRuntimeException("TypeError", "str.replace(old, new[, count]) expects two string arguments and an optional integer count.", span);
+                        }
+
+                        if (!PyStringOps.TryAsString(arguments[0], out var oldValue))
+                        {
+                            // CPython numbers the bad argument, spelling a None value bare.
+                            var oldType = arguments[0] is PyNone ? "None" : RuntimeErrors.OperandTypeName(arguments[0]);
+                            throw new LythonRuntimeException("TypeError", $"replace() argument 1 must be str, not {oldType}", span);
+                        }
+
+                        if (!PyStringOps.TryAsString(arguments[1], out var newValue))
+                        {
+                            var newType = arguments[1] is PyNone ? "None" : RuntimeErrors.OperandTypeName(arguments[1]);
+                            throw new LythonRuntimeException("TypeError", $"replace() argument 2 must be str, not {newType}", span);
                         }
 
                         var count = arguments.Length == 3 ? ParseStringOptionalInt(arguments[2], "count", "str.replace(old, new[, count])", span, context) : -1;
