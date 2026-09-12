@@ -696,6 +696,8 @@ __lython_file.close()
 
     [Theory]
     [InlineData("dict([([], 1)])\n", "TypeError", "hashable")]
+    [InlineData("def f(p):\n return dict(p)\nf([42])\n", "TypeError", "cannot convert dictionary update sequence element #0 to a sequence")]
+    [InlineData("def f(p):\n return dict(p)\nf([(1, 2), 42])\n", "TypeError", "cannot convert dictionary update sequence element #1 to a sequence")]
     public void DictConstructorFailure_ReportsExpectedException(string source, string exceptionType, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());

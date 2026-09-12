@@ -422,6 +422,22 @@ internal sealed partial class LythonRuntime
     // pay a proportional transient for the message.
     private const int BoundedPairValidationCount = 100;
 
+    // Non-sequence pair elements report the CPython conversion failure (with
+    // the element index) instead of leaking the underlying iteration error.
+    private static IEnumerator<object> ToPairEnumerator(object pair, int elementIndex, LythonSourceSpan span, ExecutionContext context)
+    {
+        try
+        {
+            return ToSequence(pair, span, context).GetEnumerator();
+        }
+        catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" &&
+            (ex.Message == "Object is not iterable." ||
+                ex.Message == "'" + RuntimeErrors.OperandTypeName(pair) + "' object is not iterable"))
+        {
+            throw new LythonRuntimeException("TypeError", "cannot convert dictionary update sequence element #" + elementIndex + " to a sequence", span);
+        }
+    }
+
     private static void ReadUpdatePair(object pair, int elementIndex, ExecutionContext context, LythonSourceSpan span, out object key, out object elementValue)
     {
         if (TryGetPairLength(pair, out var knownLength) && knownLength != 2)
@@ -429,7 +445,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("ValueError", "dictionary update sequence element #" + elementIndex + " has length " + knownLength + "; 2 is required", span);
         }
 
-        using var enumerator = ToSequence(pair, span, context).GetEnumerator();
+        using var enumerator = ToPairEnumerator(pair, elementIndex, span, context);
         key = PyNone.Instance;
         elementValue = PyNone.Instance;
         var pulled = 0;

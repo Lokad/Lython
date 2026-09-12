@@ -43,7 +43,7 @@ public sealed class DictUpdatePairsAccountingScenarioTests
             ("[(97,)]", "ValueError", "dictionary update sequence element #0 has length 1; 2 is required"),
             ("[()]", "ValueError", "dictionary update sequence element #0 has length 0; 2 is required"),
             ("[(x for x in range(10))]", "ValueError", "dictionary update sequence element #0 has length 10; 2 is required"),
-            ("[42]", "TypeError", null),
+            ("[42]", "TypeError", "cannot convert dictionary update sequence element #0 to a sequence"),
         };
         foreach (var (source, expectedType, expectedMessage) in cases)
         {
