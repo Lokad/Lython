@@ -12,7 +12,7 @@ internal sealed partial class LythonRuntime
     /// current field values (header offset, sizes, flags), matching CPython,
     /// so cross-archive and manually constructed infos behave uniformly.
     /// </summary>
-    private sealed class PyZipInfo : IPyDynamicAttributes, IPyMutableDynamicAttributes, IPyRenderableValue, IPyHashableValue, IPyGovernedValue
+    private sealed class PyZipInfo : IPyDynamicAttributes, IPyMutableDynamicAttributes, IPyDeletableDynamicAttributes, IPyRenderableValue, IPyHashableValue, IPyGovernedValue
     {
         // Constructed infos retain the 12-field wrapper beside governed payloads;
         // charge the constructed-value unit at the guest factory. Directory-backed
@@ -33,6 +33,13 @@ internal sealed partial class LythonRuntime
         private BigInteger _crc;
         private BigInteger _headerOffset;
         private BigInteger _flags;
+
+        // Deleted slots stay allocated but read as missing like CPython
+        // __slots__ removal; at most the twelve fixed names, charged per name
+        // at the instance-attribute slot rate.
+        private HashSet<string>? _absent;
+        private long _committedAbsentBytes;
+        private const long AbsentSlotBytes = 64;
 
         public PyZipInfo(PyString filename, PyTuple dateTime, MemoryGovernor? governor = null, LythonSourceSpan? allocationSpan = null)
         {
@@ -56,7 +63,14 @@ internal sealed partial class LythonRuntime
 
         public LythonSourceSpan? AllocationSpan => _allocationSpan;
 
-        public string FileName => _filename.AsString();
+        public string FileName
+        {
+            get
+            {
+                RequirePresent("filename", null);
+                return _filename.AsString();
+            }
+        }
 
         internal readonly record struct ZipStoredFields(
             string FileName,
@@ -75,6 +89,15 @@ internal sealed partial class LythonRuntime
         /// <summary>Reads the current fields for archive staging.</summary>
         internal ZipStoredFields ReadStoredFields(LythonSourceSpan? span)
         {
+            // Staging observes unset slots like CPython instead of reading
+            // stale backing values.
+            RequirePresent("filename", span);
+            RequirePresent("date_time", span);
+            RequirePresent("compress_type", span);
+            RequirePresent("comment", span);
+            RequirePresent("extra", span);
+            RequirePresent("create_system", span);
+            RequirePresent("external_attr", span);
             var items = _dateTime.ToArray();
             var parts = new int[6];
             for (var i = 0; i < 6; i++)
@@ -164,6 +187,13 @@ internal sealed partial class LythonRuntime
         /// <summary>Reads the current field values with range validation for member access.</summary>
         internal ZipReadFields ReadFields(LythonSourceSpan? span)
         {
+            RequirePresent("filename", span);
+            RequirePresent("compress_type", span);
+            RequirePresent("flag_bits", span);
+            RequirePresent("CRC", span);
+            RequirePresent("compress_size", span);
+            RequirePresent("file_size", span);
+            RequirePresent("header_offset", span);
             return new ZipReadFields(
                 FileName,
                 RequireUShort(_compressType, "ZipInfo compress_type", span),
@@ -206,6 +236,13 @@ internal sealed partial class LythonRuntime
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
+            // Unset slots fail with CPython's dotted getset text rather than
+            // the short missing shape used for unknown names.
+            if (IsStoredFieldName(name))
+            {
+                RequirePresent(name, null);
+            }
+
             value = name switch
             {
                 "filename" => _filename,
@@ -227,28 +264,66 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
+        private static bool IsStoredFieldName(string name) => name switch
+        {
+            "filename" or "date_time" or "compress_type" or "comment" or "extra" or "create_system" or "external_attr" or "file_size" or "compress_size" or "CRC" or "header_offset" or "flag_bits" => true,
+            _ => false,
+        };
+
+        private void RequirePresent(string name, LythonSourceSpan? span)
+        {
+            if (_absent is not null && _absent.Contains(name))
+            {
+                throw new LythonRuntimeException("AttributeError", $"'zipfile.ZipInfo' object has no attribute '{name}'", span);
+            }
+        }
+
         public bool TrySetMember(string name, object value)
         {
-            switch (name)
+            if (!IsStoredFieldName(name))
             {
-                case "filename":
-                case "date_time":
-                case "compress_type":
-                case "comment":
-                case "extra":
-                case "create_system":
-                case "external_attr":
-                case "file_size":
-                case "compress_size":
-                case "CRC":
-                case "header_offset":
-                case "flag_bits":
-                    break;
-                default:
-                    return false;
+                return false;
             }
 
             SetMember(name, value, span: null);
+            if (_absent is not null && _absent.Remove(name) && _memoryGovernor is not null && _committedAbsentBytes >= AbsentSlotBytes)
+            {
+                _memoryGovernor.Release(AbsentSlotBytes);
+                _committedAbsentBytes -= AbsentSlotBytes;
+            }
+
+            return true;
+        }
+
+        public bool TryDeleteMember(string name, LythonSourceSpan? span)
+        {
+            // Methods report the read-only shape like other builtin members;
+            // unknown names stay missing like the delete builtin.
+            if (name == "is_dir")
+            {
+                throw new LythonRuntimeException("AttributeError", $"'ZipInfo' object attribute '{name}' is read-only", span);
+            }
+
+            if (!IsStoredFieldName(name))
+            {
+                return false;
+            }
+
+            // Re-deleting an unset slot reports the bare slot name like CPython.
+            if (_absent is not null && _absent.Contains(name))
+            {
+                throw new LythonRuntimeException("AttributeError", name, span);
+            }
+
+            _absent ??= new HashSet<string>(StringComparer.Ordinal);
+            _absent.Add(name);
+            if (_memoryGovernor is not null)
+            {
+                _memoryGovernor.Reserve(AbsentSlotBytes, _allocationSpan);
+                _memoryGovernor.Commit(AbsentSlotBytes);
+                _committedAbsentBytes += AbsentSlotBytes;
+            }
+
             return true;
         }
 
@@ -302,6 +377,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
+            RequirePresent("file_size", null);
             return PyString.FromString($"<ZipInfo filename='{FileName}' file_size={_fileSize}>");
         }
 

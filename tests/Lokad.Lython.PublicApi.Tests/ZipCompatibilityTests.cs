@@ -2085,6 +2085,77 @@ return texts
             },
             Assert.IsType<List<object?>>(result.ReturnValue));
     }
+
+    [Fact]
+    public void ZipInfoSlotDeletes_BehaveLikePython()
+    {
+        var result = new LythonEngine().Run(
+            """
+import zipfile
+texts = []
+z = zipfile.ZipInfo("a.txt")
+del z.filename
+try:
+    z.filename
+except AttributeError as ex:
+    texts.append(str(ex))
+try:
+    del z.filename
+except AttributeError as ex:
+    texts.append(str(ex))
+try:
+    del z.is_dir
+except AttributeError as ex:
+    texts.append(str(ex))
+try:
+    del z.missing
+except AttributeError as ex:
+    texts.append(str(ex))
+delattr(z, "comment")
+texts.append(str(hasattr(z, "comment")))
+object.__delattr__(z, "extra")
+texts.append(str(hasattr(z, "extra")))
+z.filename = "b.txt"
+texts.append(z.filename)
+w = zipfile.ZipInfo("s.txt")
+with zipfile.ZipFile("/staged.zip", "w") as archive:
+    archive.writestr(w, b"hi")
+with zipfile.ZipFile("/staged.zip") as archive:
+    texts.append(str(archive.namelist()))
+d = zipfile.ZipInfo("gone.txt")
+del d.filename
+try:
+    with zipfile.ZipFile("/broken.zip", "w") as archive:
+        archive.writestr(d, b"hi")
+except AttributeError as ex:
+    texts.append(str(ex))
+
+def run():
+    local = zipfile.ZipInfo("c.txt")
+    del local.compress_type
+    return str(hasattr(local, "compress_type"))
+
+texts.append(run())
+return texts
+""",
+            new ZipPublicHost());
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(
+            new List<object?>
+            {
+                "'zipfile.ZipInfo' object has no attribute 'filename'",
+                "filename",
+                "'ZipInfo' object attribute 'is_dir' is read-only",
+                "'ZipInfo' object has no attribute 'missing' and no __dict__ for setting new attributes",
+                "False",
+                "False",
+                "b.txt",
+                "['s.txt']",
+                "'zipfile.ZipInfo' object has no attribute 'filename'",
+                "False",
+            },
+            Assert.IsType<List<object?>>(result.ReturnValue));
+    }
     [Fact]
     public void ZipInfoDefaultsAndErrorAlias()
     {

@@ -391,6 +391,13 @@ internal static class PyMemberAccess
             return true;
         }
 
+        // Deletable dynamic targets (ZipInfo slots) own their removal;
+        // unknown names keep the shared missing path below.
+        if (target is IPyDeletableDynamicAttributes deletable && deletable.TryDeleteMember(memberName, span))
+        {
+            return true;
+        }
+
         if (target is PyException exceptionDelete)
         {
             if (memberName == "args")

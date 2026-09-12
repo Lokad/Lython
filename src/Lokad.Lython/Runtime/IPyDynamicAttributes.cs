@@ -9,3 +9,8 @@ internal interface IPyMutableDynamicAttributes : IPyDynamicAttributes
 {
     bool TrySetMember(string name, object value);
 }
+
+internal interface IPyDeletableDynamicAttributes
+{
+    bool TryDeleteMember(string name, LythonSourceSpan? span);
+}
