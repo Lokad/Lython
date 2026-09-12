@@ -66,7 +66,49 @@ internal sealed partial class Parser
             return null;
         }
 
+        for (var i = 0; i + 1 < cases.Count; i++)
+        {
+            // Like CPython, an unguarded irrefutable case makes the cases
+            // after it unreachable; guarded and trailing irrefutables stay valid.
+            if (cases[i].Guard is not null)
+            {
+                continue;
+            }
+
+            if (FindIrrefutableCapture(cases[i].Pattern, out var captureName))
+            {
+                AddDiagnostic("LA1106", captureName is null ? "wildcard makes remaining patterns unreachable" : $"name capture '{captureName}' makes remaining patterns unreachable", cases[i].Pattern.Span);
+                return null;
+            }
+        }
+
         return new MatchStatementSyntax(subject, cases, Merge(SpanOf(matchToken), cases[^1].Span));
+    }
+
+    private static bool FindIrrefutableCapture(PatternSyntax pattern, out string? name)
+    {
+        switch (pattern)
+        {
+            case MatchCapturePatternSyntax capture:
+                name = capture.Name;
+                return true;
+            case MatchWildcardPatternSyntax:
+                name = null;
+                return true;
+            case MatchOrPatternSyntax or:
+                foreach (var alternative in or.Patterns)
+                {
+                    if (FindIrrefutableCapture(alternative, out name))
+                    {
+                        return true;
+                    }
+                }
+
+                break;
+        }
+
+        name = null;
+        return false;
     }
 
     private MatchCaseSyntax? ParseMatchCase()

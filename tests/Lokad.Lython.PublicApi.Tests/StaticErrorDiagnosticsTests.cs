@@ -3009,4 +3009,77 @@ print(random.choices([1, 2], k=True))
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("b|2|a|b", asyncHost.ReadText("/out.txt"));
     }
+
+    [Fact]
+    public void MatchCaseReachability_ReportsUnreachablePatterns()
+    {
+        var capture = new LythonEngine().Compile(
+            """
+            x = 1
+            match x:
+                case y:
+                    print(y)
+                case z:
+                    print(z)
+            """);
+        Assert.False(capture.IsValid);
+        Assert.Contains(capture.Diagnostics, d => d.Code == "LA1106" && d.Message.Contains("name capture 'y' makes remaining patterns unreachable", StringComparison.Ordinal));
+
+        var wildcard = new LythonEngine().Compile(
+            """
+            x = 1
+            match x:
+                case _:
+                    print(1)
+                case 2:
+                    print(2)
+            """);
+        Assert.False(wildcard.IsValid);
+        Assert.Contains(wildcard.Diagnostics, d => d.Code == "LA1106" && d.Message.Contains("wildcard makes remaining patterns unreachable", StringComparison.Ordinal));
+
+        var nestedOr = new LythonEngine().Compile(
+            """
+            x = 1
+            match x:
+                case 1 | y:
+                    print(1)
+                case 2:
+                    print(2)
+            """);
+        Assert.False(nestedOr.IsValid);
+        Assert.Contains(nestedOr.Diagnostics, d => d.Code == "LA1106" && d.Message.Contains("name capture 'y' makes remaining patterns unreachable", StringComparison.Ordinal));
+
+        var guarded = new LythonEngine().Compile(
+            """
+            x = 1
+            match x:
+                case y if y > 0:
+                    print(1)
+                case 2:
+                    print(2)
+            """);
+        Assert.True(guarded.IsValid);
+
+        var trailing = new LythonEngine().Compile(
+            """
+            x = 1
+            match x:
+                case 1:
+                    print(1)
+                case _:
+                    print(2)
+            """);
+        Assert.True(trailing.IsValid);
+
+        var starred = new LythonEngine().Compile(
+            """
+            x = [1]
+            match x:
+                case [*rest]:
+                    print(1)
+                case 2:
+                    print(2)
+            """);
+        Assert.True(starred.IsValid);
+    }
 }
