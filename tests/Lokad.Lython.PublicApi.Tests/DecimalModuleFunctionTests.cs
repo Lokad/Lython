@@ -444,4 +444,61 @@ Decimal("150").quantize(Decimal("1E-28"), "ROUND_DOWN")
         Assert.Equal(exceptionType, result.Failure?.ExceptionType);
         Assert.Contains(messageFragment, result.Failure?.Message, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public async Task DecimalFloatComparisonsCompareExactly()
+    {
+        // Decimal compares exactly against floats and huge integers like
+        // CPython instead of refusing mixed domains, in both modes.
+        var script = new LythonEngine().Compile("""
+            from decimal import Decimal
+            results = []
+            results.append(str(Decimal('1.5') == 1.5))
+            results.append(str(Decimal('1.5') < 2.0))
+            results.append(str(2.0 > Decimal('1.5')))
+            results.append(str(Decimal('1') == 1))
+            results.append(str(Decimal('1') == 1.0))
+            results.append(str(Decimal('1') < 10**100))
+            results.append(str(sorted([Decimal('1.5'), 2.0])))
+            results.append(str(Decimal('0.1') < 0.1))
+            results.append(str(Decimal('1') < float('inf')))
+            results.append(str(Decimal('1') > float('-inf')))
+            results.append(str(Decimal('1') == float('inf')))
+            results.append(str(Decimal('1') == float('nan')))
+            results.append(str(Decimal('1.5') != 1.5))
+            results.append(str(Decimal('1.5') <= 1.5))
+            results.append(str(Decimal('2') >= 2.0))
+            results.append(str(1.5 in [Decimal('1.5')]))
+            results.append(str((min(Decimal('0.5'), 1), max(Decimal('0.5'), 0))))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "[Decimal('1.5'), 2.0]",
+            "True",
+            "True",
+            "True",
+            "False",
+            "False",
+            "False",
+            "True",
+            "True",
+            "True",
+            "(Decimal('0.5'), Decimal('0.5'))",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
