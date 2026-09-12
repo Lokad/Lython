@@ -813,6 +813,7 @@ internal sealed partial class LythonRuntime
                 {
                     BuiltinCallable builtin => BuiltinCallable.ShortCallableName(builtin.Name),
                     PyBuiltinRuntimeType runtimeType => BuiltinCallable.ShortCallableName(runtimeType.Name),
+                    TimeStructTimeType => "time.struct_time",
                     PyType type => type.Name,
                     INamedRuntimeCallable named => BuiltinCallable.ShortCallableName(named.Name),
                     _ => "object",

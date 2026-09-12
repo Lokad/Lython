@@ -93,6 +93,7 @@ internal static class RuntimeErrors
         PyTimedelta => "datetime.timedelta",
         PyTimezone => "datetime.timezone",
         LythonRuntime.StatisticsModule.PyNormalDist => "NormalDist",
+        LythonRuntime.TimeStructTimeValue => "time.struct_time",
         LythonRuntime.RandomModule.PyRandom => "Random",
         LythonRuntime.RePatternObject => "re.Pattern",
         LythonRuntime.ReMatchObject => "re.Match",

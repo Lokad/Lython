@@ -4644,6 +4644,8 @@ __lython_file.close()
     [InlineData("import time\ndef f(a, b):\n    return a + b\nf(time.gmtime(), 1)\n", "can only concatenate tuple (not \"int\") to tuple")]
     [InlineData("import time\ndef f(a, b):\n    return a * b\nf(time.gmtime(), \"a\")\n", "can't multiply sequence by non-int of type 'str'")]
     [InlineData("import time\nt = time.gmtime()\nt += 1\n", "can only concatenate tuple (not \"int\") to tuple")]
+    [InlineData("import time\ndef f(a, b):\n    return a < b\nf(time.gmtime(), 1)\n", "'<' not supported between instances of 'time.struct_time' and 'int'")]
+    [InlineData("import time\ndef f(a):\n    return next(a)\nf(time.gmtime())\n", "'time.struct_time' object is not an iterator")]
     [InlineData("import random\ndef f(a, b):\n    return a + b\nf(random.Random(), 1)\n", "unsupported operand type(s) for +: 'Random' and 'int'")]
     [InlineData("import re\ndef f(a, b):\n    return a + b\nf(re.compile('x'), 1)\n", "unsupported operand type(s) for +: 're.Pattern' and 'int'")]
     [InlineData("import re\ndef f(a, b):\n    return a + b\nf(re.compile('x').match('x'), 1)\n", "unsupported operand type(s) for +: 're.Match' and 'int'")]
@@ -4660,6 +4662,19 @@ __lython_file.close()
 
         Assert.Equal("TypeError", result.Failure.ExceptionType);
         Assert.Contains(message, result.Failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void StructTimeMemberNaming_ReportsDottedName()
+    {
+        var result = new LythonEngine().Run(
+            "import time\ntime.gmtime().missing\n",
+            new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("AttributeError", result.Failure?.ExceptionType);
+        Assert.Contains("'time.struct_time' object has no attribute 'missing'", result.Failure?.Message, StringComparison.Ordinal);
     }
 
     [Theory]
