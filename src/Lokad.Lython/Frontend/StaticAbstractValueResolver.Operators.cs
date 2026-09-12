@@ -97,6 +97,18 @@ internal static partial class StaticAbstractValueResolver
             return true;
         }
 
+        if (left.Kind == AbstractValueKind.Bytes && right.Kind == AbstractValueKind.Bytes)
+        {
+            value = AbstractValue.Bytes(left.RequireBytes().Concat(right.RequireBytes()).ToArray(), binary.Span);
+            return true;
+        }
+
+        if (StaticAbstractFacts.IsBytesLike(left) && StaticAbstractFacts.IsBytesLike(right))
+        {
+            value = AbstractValue.BytesType(binary.Span);
+            return true;
+        }
+
         if (left.Kind == AbstractValueKind.List && right.Kind == AbstractValueKind.List)
         {
             value = AbstractValue.List(

@@ -115,7 +115,9 @@ internal static partial class StaticStructuralDiagnostics
                 left.IsStringLike && StaticAbstractFacts.IsIntegerLike(right) ||
                 StaticAbstractFacts.IsIntegerLike(left) && right.IsStringLike ||
                 StaticAbstractFacts.IsListLike(left) && StaticAbstractFacts.IsIntegerLike(right) ||
+                StaticAbstractFacts.IsBytesLike(left) && StaticAbstractFacts.IsIntegerLike(right) ||
                 StaticAbstractFacts.IsIntegerLike(left) && StaticAbstractFacts.IsListLike(right) ||
+                StaticAbstractFacts.IsIntegerLike(left) && StaticAbstractFacts.IsBytesLike(right) ||
                 StaticAbstractFacts.IsTupleLike(left) && StaticAbstractFacts.IsIntegerLike(right) ||
                 StaticAbstractFacts.IsIntegerLike(left) && StaticAbstractFacts.IsTupleLike(right) ||
                 left.Kind == AbstractValueKind.CollectionsDeque && StaticAbstractFacts.IsIntegerLike(right) ||
@@ -281,6 +283,7 @@ internal static partial class StaticStructuralDiagnostics
            StaticAbstractFacts.IsNormalDistAdditivePair(left, right) ||
            StaticAbstractFacts.TryGetDateTimeBinaryResultKind(BinaryOperatorSyntax.Add, left, right, out _) ||
            StaticAbstractFacts.IsListLike(left) && StaticAbstractFacts.IsListLike(right) ||
+           StaticAbstractFacts.IsBytesLike(left) && StaticAbstractFacts.IsBytesLike(right) ||
            left.Kind == AbstractValueKind.Tuple && right.Kind == AbstractValueKind.Tuple ||
            left.Kind == AbstractValueKind.CollectionsDeque && right.Kind == AbstractValueKind.CollectionsDeque ||
            left.Kind == AbstractValueKind.CollectionsCounter && right.Kind == AbstractValueKind.CollectionsCounter;

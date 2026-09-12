@@ -49,6 +49,11 @@ internal sealed partial class LythonRuntime
             return ConcatStrings(leftText, rightText, context, span);
         }
 
+        if (left is PyBytes leftBytes && right is PyBytes rightBytes)
+        {
+            return ConcatBytes(leftBytes, rightBytes, span);
+        }
+
         if (left is PyList leftList && right is PyList rightList)
         {
             var governor = leftList.OwnerMemoryGovernor ?? rightList.OwnerMemoryGovernor;
@@ -225,6 +230,16 @@ internal sealed partial class LythonRuntime
         if (right is PyList rightList && TryRepeatCount(left, context, span, out var leftRepeatCount))
         {
             return RepeatList(rightList, leftRepeatCount, context, span);
+        }
+
+        if (left is PyBytes leftBytes && TryRepeatCount(right, context, span, out var rightByteCount))
+        {
+            return RepeatBytes(leftBytes, rightByteCount, span);
+        }
+
+        if (right is PyBytes rightBytes && TryRepeatCount(left, context, span, out var leftByteCount))
+        {
+            return RepeatBytes(rightBytes, leftByteCount, span);
         }
 
         if (left is PyDeque leftDeque && TryRepeatCount(right, context, span, out var rightDequeRepeatCount))

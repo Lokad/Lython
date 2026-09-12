@@ -1254,7 +1254,7 @@ Path("/repo/out.txt").write_text(numbers[0])
 data = bytes("abc")
 Path("/repo/out.txt").write_text(data[0])
 
-b"a" + b"b"
+b"a" - b"b"
 """);
 
         Assert.False(compiled.IsValid);
@@ -1473,7 +1473,7 @@ Path("/repo") + "child"
 "text" // 1
 "text" & 1
 "text" ** 2
-b"a" + b"b"
+b"a" - b"b"
 1.5 | 2
 {} ^ {}
 "text" << 1

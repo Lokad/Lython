@@ -453,6 +453,26 @@ internal sealed partial class LythonRuntime
         return left.Concat(right, context.MemoryGovernor, span);
     }
 
+    // Bytes concatenation mirrors the list path: results owned by the
+    // inputs stay charged to their governor, while combinations of shared
+    // constants stay free like their inputs.
+    private static PyBytes ConcatBytes(PyBytes left, PyBytes right, LythonSourceSpan span)
+    {
+        var leftSpan = left.Bytes;
+        var rightSpan = right.Bytes;
+        var total = (long)leftSpan.Length + rightSpan.Length;
+        if (total > int.MaxValue)
+        {
+            throw new LythonRuntimeException("OverflowError", "Bytes concatenation is too large.", span);
+        }
+
+        var combined = new byte[(int)total];
+        leftSpan.CopyTo(combined);
+        rightSpan.CopyTo(combined.AsSpan(leftSpan.Length));
+        var governor = left.OwnerMemoryGovernor ?? right.OwnerMemoryGovernor;
+        return governor is null ? new PyBytes(combined) : new PyBytes(combined, governor, span);
+    }
+
     // String methods build results from receiver storage, so a result derived
     // from an unowned (shared-constant) receiver would escape accounting. Adopt
     // fresh results here; aliases and the shared empty string stay free.
@@ -501,6 +521,38 @@ internal sealed partial class LythonRuntime
         }
 
         return text.Repeat((int)count, context.MemoryGovernor, span);
+    }
+
+    // Bytes repetition mirrors RepeatString without a string-length cap:
+    // the byte budget flows through the memory governor instead.
+    private static PyBytes RepeatBytes(PyBytes value, BigInteger count, LythonSourceSpan span)
+    {
+        if (count <= BigInteger.Zero || value.Length == 0)
+        {
+            return new PyBytes([]);
+        }
+
+        if (count > int.MaxValue)
+        {
+            throw new LythonRuntimeException("RuntimeError", "Bytes repetition is too large.", span);
+        }
+
+        var total = (long)value.Length * (long)count;
+        if (total > int.MaxValue)
+        {
+            throw new LythonRuntimeException("RuntimeError", "Bytes repetition is too large.", span);
+        }
+
+        var source = value.Bytes;
+        var combined = new byte[(int)total];
+        for (var offset = 0; offset < combined.Length; offset += source.Length)
+        {
+            source.CopyTo(combined.AsSpan(offset));
+        }
+
+        return value.OwnerMemoryGovernor is { } governor
+            ? new PyBytes(combined, governor, span)
+            : new PyBytes(combined);
     }
 
     private static PyList RepeatList(PyList list, BigInteger count, ExecutionContext context, LythonSourceSpan span)
