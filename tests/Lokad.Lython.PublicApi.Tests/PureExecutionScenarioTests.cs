@@ -4641,6 +4641,9 @@ __lython_file.close()
     [InlineData("import collections\ndef f(a, b):\n    return a + b\nf(collections.namedtuple, 1)\n", "unsupported operand type(s) for +: 'function' and 'int'")]
     [InlineData("import collections\ndef f(a, b):\n    return a + b\nf(collections.OrderedDict, 1)\n", "unsupported operand type(s) for +: 'type' and 'int'")]
     [InlineData("import collections\ndef f(a, b):\n    return a + b\nf(collections.Counter, 1)\n", "unsupported operand type(s) for +: 'type' and 'int'")]
+    [InlineData("import random\ndef f(a, b):\n    return a + b\nf(random.Random(), 1)\n", "unsupported operand type(s) for +: 'Random' and 'int'")]
+    [InlineData("import re\ndef f(a, b):\n    return a + b\nf(re.compile('x'), 1)\n", "unsupported operand type(s) for +: 're.Pattern' and 'int'")]
+    [InlineData("import re\ndef f(a, b):\n    return a + b\nf(re.compile('x').match('x'), 1)\n", "unsupported operand type(s) for +: 're.Match' and 'int'")]
     public void InvalidOperands_ReportPythonShapedTexts(string source, string message)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());
