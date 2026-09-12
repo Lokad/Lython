@@ -138,6 +138,44 @@ return str({1} < {1, 2}) + "|" + str({1} <= {1}) + "|" + str({1, 2} > {2}) + "|"
     }
 
     [Fact]
+    public async Task ReversedDictKeys_MatchPython()
+    {
+        const string script = """
+            values = []
+            values.append(str(list(reversed({"a": 1, "b": 2}))))
+            values.append(str(list(reversed({}))))
+            from collections import defaultdict, Counter
+            values.append(str(list(reversed(defaultdict(int, {"x": 1})))))
+            values.append(str(list(reversed(Counter("ab")))))
+            d = {"a": 1}
+            r = reversed(d)
+            d["b"] = 2
+            try:
+                list(r)
+            except RuntimeError as ex:
+                values.append(str(ex))
+            it1 = reversed({"m": 1, "n": 2})
+            it2 = reversed({"m": 1, "n": 2})
+            values.append(str(next(it1)))
+            values.append(str(list(it2)))
+            values.append(str(list(it1)))
+            __lython_file = open("/out.txt", "w")
+            __lython_file.write("|".join(values))
+            __lython_file.close()
+            """;
+        const string expected = "['b', 'a']|[]|['x']|['b', 'a']|dictionary changed size during iteration|n|['n', 'm']|['m']";
+
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(script, host);
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(expected, host.ReadText("/out.txt"));
+
+        var asyncHost = new MockLythonHost();
+        var asyncResult = await new LythonEngine().RunAsync(script, asyncHost);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncHost.ReadText("/out.txt"));
+    }
+    [Fact]
     public void IteratorAndSequenceBuiltins_MatchPythonShapedCoreBehavior()
     {
         var host = new MockLythonHost();

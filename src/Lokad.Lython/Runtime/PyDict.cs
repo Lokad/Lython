@@ -187,6 +187,52 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     public IEnumerable<object> Iterate() => Keys;
 
+    // Builds a reverse-keys iterator over a governed snapshot: the snapshot
+    // rides a transient reservation for its peak scratch while the retained
+    // backing stays on the shared per-run allowance like merged ChainMap
+    // iteration scratch. Size changes fail with the shared dictionary text.
+    public PyIteratorBase CreateReversedKeysIterator(MemoryGovernor? governor, LythonSourceSpan? span)
+    {
+        using var scratch = governor?.ReserveTemporary(checked(16L * Count), span);
+        return new ReversedKeysIterator(this, Keys.ToArray(), _version);
+    }
+
+    private sealed class ReversedKeysIterator : PyIteratorBase
+    {
+        private readonly PyDict _owner;
+        private readonly object[] _snapshot;
+        private readonly int _expectedVersion;
+        private int _nextIndex;
+
+        public ReversedKeysIterator(PyDict owner, object[] snapshot, int expectedVersion)
+        {
+            _owner = owner;
+            _snapshot = snapshot;
+            _expectedVersion = expectedVersion;
+            _nextIndex = snapshot.Length - 1;
+        }
+
+        public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+        {
+            _owner.EnsureUnmodified(_expectedVersion);
+            if (_nextIndex < 0)
+            {
+                value = PyNone.Instance;
+                return false;
+            }
+
+            value = _snapshot[_nextIndex];
+            _nextIndex--;
+            return true;
+        }
+
+        public override PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<reversed object>");
+        }
+    }
+
     public PyString RenderPython(PyRenderingContext context) => PyRendering.ToReprPyString(this, context);
 
     public PyString RenderInterpolated(PyRenderingContext context) => PyRendering.ToReprPyString(this, context);

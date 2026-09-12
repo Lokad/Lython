@@ -404,6 +404,26 @@ internal sealed partial class LythonRuntime
             return new PyReversedIterator(text.Length, text.Index);
         }
 
+        // Dict-backed mappings reverse over governed key snapshots with
+        // the shared size-change discipline.
+        if (target is PyDict dict)
+        {
+            PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
+            return dict.CreateReversedKeysIterator(context.MemoryGovernor, span);
+        }
+
+        if (target is PyDefaultDict defaultDict)
+        {
+            PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
+            return defaultDict.InnerDict.CreateReversedKeysIterator(context.MemoryGovernor, span);
+        }
+
+        if (target is PyCounter counter)
+        {
+            PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
+            return counter.InnerDict.CreateReversedKeysIterator(context.MemoryGovernor, span);
+        }
+
         throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.OperandTypeName(target) + "' object is not reversible", span);
     }
 
