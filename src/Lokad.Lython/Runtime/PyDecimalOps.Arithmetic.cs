@@ -45,10 +45,10 @@ internal static partial class PyDecimalOps
             new DecimalDivisionUndefinedPayload());
 
     public static object Add(object left, object right, LythonSourceSpan span, string operation)
-        => Binary(left, right, span, operation, static (lhs, rhs) => lhs + rhs, static (lhs, rhs) => Math.Min(lhs, rhs));
+        => Binary(left, right, span, operation, static (lhs, rhs) => lhs + rhs, static (lhs, rhs) => Math.Min(lhs, rhs), static (lhs, rhs) => IsSigned(lhs) && IsSigned(rhs));
 
     public static object Subtract(object left, object right, LythonSourceSpan span, string operation)
-        => Binary(left, right, span, operation, static (lhs, rhs) => lhs - rhs, static (lhs, rhs) => Math.Min(lhs, rhs));
+        => Binary(left, right, span, operation, static (lhs, rhs) => lhs - rhs, static (lhs, rhs) => Math.Min(lhs, rhs), static (lhs, rhs) => IsSigned(lhs) && !IsSigned(rhs));
 
     public static object Multiply(object left, object right, LythonSourceSpan span, string operation)
         => Binary(left, right, span, operation, static (lhs, rhs) => lhs * rhs, static (lhs, rhs) => checked(lhs + rhs));
@@ -409,7 +409,8 @@ internal static partial class PyDecimalOps
         LythonSourceSpan span,
         string operation,
         Func<decimal, decimal, decimal> operate,
-        Func<int, int, int> combineExponent)
+        Func<int, int, int> combineExponent,
+        Func<decimal, decimal, bool>? negativeZero = null)
     {
         if (!TryAsDecimal(left, out var lhs) || !TryAsDecimal(right, out var rhs))
         {
@@ -419,6 +420,13 @@ internal static partial class PyDecimalOps
         try
         {
             var result = operate(lhs, rhs);
+            if (negativeZero is not null && result == 0m && IsSigned(result) != negativeZero(lhs, rhs))
+            {
+                // A zero sum or difference takes its sign from the operands
+                // like CPython instead of the BCL order-dependent bit; the
+                // negation only flips the sign, keeping the exact scale.
+                result = decimal.Negate(result);
+            }
             return new PyDecimal(
                 result,
                 ConsistentExponent(result, combineExponent(GetOperandExponent(left, lhs), GetOperandExponent(right, rhs))));

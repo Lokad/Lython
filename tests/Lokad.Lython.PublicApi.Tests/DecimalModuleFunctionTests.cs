@@ -1073,4 +1073,60 @@ pow(Decimal('10'), Decimal('30'), 10 ** 100)
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task DecimalZeroSumDifferenceSignsMatchCpython()
+    {
+        // Zero sums and differences take their sign from the operands like
+        // CPython (opposite-signed zeros add to +0, only -0 + -0 and
+        // -0 - +0 stay negative), at any exponent, in both modes.
+        var script = new LythonEngine().Compile("""
+            from decimal import Decimal
+            results = []
+            results.append(str(Decimal('-0') + Decimal('0')))
+            results.append(str(Decimal('0') + Decimal('-0')))
+            results.append(str(Decimal('-0') + Decimal('-0')))
+            results.append(str(Decimal('-0') - Decimal('0')))
+            results.append(str(Decimal('-0') - Decimal('-0')))
+            results.append(str(Decimal('-1') + Decimal('1')))
+            results.append(str(Decimal('-1.5') - Decimal('-1.5')))
+            results.append(str(Decimal('-0.00') + Decimal('0.00')))
+            results.append(repr(Decimal('-1') + Decimal('1')))
+            results.append(str(Decimal('-0') * Decimal('-0')))
+            def add_assign():
+                q = Decimal('-1')
+                q += Decimal('1')
+                return q
+            results.append(str(add_assign()))
+            def sub_assign():
+                r = Decimal('-0')
+                r -= Decimal('-0')
+                return r
+            results.append(str(sub_assign()))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "0",
+            "0",
+            "-0",
+            "-0",
+            "0",
+            "0",
+            "0.0",
+            "0.00",
+            "Decimal('0')",
+            "0",
+            "0",
+            "0",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
