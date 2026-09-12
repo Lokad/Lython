@@ -641,6 +641,40 @@ internal sealed partial class LythonRuntime
         return TryGetValueClass(target, context, out typeValue) && typeValue is not null;
     }
 
+    // Names callable and type-denoting values for operator errors like CPython,
+    // mirroring TryGetValueClass without needing its run context. Engine
+    // one-off callables without class identity (itertools factories and kin)
+    // keep the shared object fallback like the type builtin does.
+
+    internal static string CallableOperandTypeName(object value)
+    {
+        return value switch
+        {
+            PyBoundMethod method => method.Function switch
+            {
+                IPySlotWrapper => "method-wrapper",
+                IPyBoundEngineMethod => "builtin_function_or_method",
+                _ => "method",
+            },
+            PyFunctionBase or LambdaFunction or FunctionNewMethod => "function",
+            PyDataclass.DataclassInitMethod or PyDataclass.DataclassReprMethod or PyDataclass.DataclassEqMethod or PyDataclass.DataclassOrderMethod or PyDataclass.DataclassHashMethod or PyDataclass.DataclassFrozenSetAttrMethod or PyDataclass.DataclassFrozenDelAttrMethod => "function",
+            BuiltinCallable ctor when BuiltinTypeBaseNames.ContainsKey(ctor.Name) => "type",
+            DictCallable or ZipCallable or ReModule.RegexFlagFactory or ZipInfoCallable or ZipFileCallable or PathlibModule.PathlibPathType => "type",
+            BuiltinCallable or IPyBoundEngineMethod or IPyRawBoundCallable or MinMaxCallable or OpenCallable or PrintCallable or PyDateTimeOps.TypeMemberCallable or BuiltinTypeMethod or ObjectNewMethod => "builtin_function_or_method",
+            UnboundTypeMethod or ObjectFormatMethod or ObjectDirMethod => "method_descriptor",
+            IPySlotWrapper => "wrapper_descriptor",
+            BuiltinDataDescriptor dataDescriptor => dataDescriptor.Kind == DataDescriptorKind.Member ? "member_descriptor" : "getset_descriptor",
+            TupleGetter => "collections._tuplegetter",
+            PyStaticMethod => "staticmethod",
+            PyClassMethod => "classmethod",
+            PyPartial => "functools.partial",
+            PartialFactory or PartialMethodFactory => "type",
+            PyType or PyBuiltinRuntimeType or ExceptionTypeValue => "type",
+            PyModule => "module",
+            _ => "object",
+        };
+    }
+
     private static object? TryGetModuleMemberOrNull(ExecutionContext context, string moduleName, string memberName)
     {
         if (!context.State.ImportedModules.TryGetValue(moduleName, out var module) ||

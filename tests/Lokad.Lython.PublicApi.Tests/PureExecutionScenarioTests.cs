@@ -4624,6 +4624,20 @@ __lython_file.close()
     [InlineData("from collections import Counter\nCounter() * 2.5\n", "unsupported operand type(s) for *: 'Counter' and 'float'")]
     [InlineData("from collections import Counter\ndef f(a, b):\n    return a + b\nf(Counter(), 1)\n", "unsupported operand type(s) for +: 'Counter' and 'int'")]
     [InlineData("from collections import Counter\ndef f(a, b):\n    return a * b\nf(Counter(), \"a\")\n", "can't multiply sequence by non-int of type 'Counter'")]
+    [InlineData("l = [1]\nl.append + 1\n", "unsupported operand type(s) for +: 'builtin_function_or_method' and 'int'")]
+    [InlineData("l = [1]\nl.append += 1\n", "unsupported operand type(s) for +=: 'builtin_function_or_method' and 'int'")]
+    [InlineData("x = len\nx + 1\n", "unsupported operand type(s) for +: 'builtin_function_or_method' and 'int'")]
+    [InlineData("x = object.__new__\nx + 1\n", "unsupported operand type(s) for +: 'builtin_function_or_method' and 'int'")]
+    [InlineData("def f():\n    pass\nf + 1\n", "unsupported operand type(s) for +: 'function' and 'int'")]
+    [InlineData("(lambda: 0) + 1\n", "unsupported operand type(s) for +: 'function' and 'int'")]
+    [InlineData("class A:\n    def m(self):\n        pass\na = A()\na.m + 1\n", "unsupported operand type(s) for +: 'method' and 'int'")]
+    [InlineData("class A:\n    def m(self):\n        pass\na = A()\na.m += 1\n", "unsupported operand type(s) for +=: 'method' and 'int'")]
+    [InlineData("x = list.append\nx + 1\n", "unsupported operand type(s) for +: 'method_descriptor' and 'int'")]
+    [InlineData("x = staticmethod(len)\nx + 1\n", "unsupported operand type(s) for +: 'staticmethod' and 'int'")]
+    [InlineData("import math\nmath + 1\n", "unsupported operand type(s) for +: 'module' and 'int'")]
+    [InlineData("x = list\nx + 1\n", "unsupported operand type(s) for +: 'type' and 'int'")]
+    [InlineData("x = dict\nx + 1\n", "unsupported operand type(s) for +: 'type' and 'int'")]
+    [InlineData("import functools\nfunctools.partial(int) + 1\n", "unsupported operand type(s) for +: 'functools.partial' and 'int'")]
     public void InvalidOperands_ReportPythonShapedTexts(string source, string message)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());

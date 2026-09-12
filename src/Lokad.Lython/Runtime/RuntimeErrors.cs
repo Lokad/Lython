@@ -94,7 +94,7 @@ internal static class RuntimeErrors
         PyTimezone => "datetime.timezone",
         LythonRuntime.StatisticsModule.PyNormalDist => "NormalDist",
         PyInstance instance => instance.Type.Name,
-        _ => "object",
+        _ => LythonRuntime.CallableOperandTypeName(value),
     };
 
     public static LythonRuntimeException Value(string message, LythonSourceSpan? span)

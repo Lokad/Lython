@@ -411,6 +411,7 @@ internal static partial class StaticStructuralDiagnostics
             AbstractValueKind.Float => "float",
             AbstractValueKind.Boolean => "bool",
             AbstractValueKind.None => "NoneType",
+            AbstractValueKind.Module => "module",
             AbstractValueKind.Ellipsis => "ellipsis",
             AbstractValueKind.List => "list",
             AbstractValueKind.Tuple => "tuple",
