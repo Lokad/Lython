@@ -395,7 +395,7 @@ internal static partial class PyDateTimeOps
 
         return OwnDateTimeValue(new PyTime(
             new TimeOnly(hour, minute, second, microsecond / 1000, microsecond % 1000),
-            GetTimezone(ArgAt(bound, 4), "datetime.time", span),
+            GetTimezone(ArgAt(bound, 4), span, context),
             fold), context, span);
     }
 
@@ -464,7 +464,7 @@ internal static partial class PyDateTimeOps
 
         return OwnDateTimeValue(new PyDateTime(
             new DateTime(year, month, day, hour, minute, second, microsecond / 1000, DateTimeKind.Unspecified).AddTicks((microsecond % 1000) * 10L),
-            GetTimezone(ArgAt(bound, 7), "datetime.datetime", span),
+            GetTimezone(ArgAt(bound, 7), span, context),
             fold), context, span);
     }
 
@@ -494,13 +494,16 @@ internal static partial class PyDateTimeOps
         {
             null or PyNone => null,
             _ when PyStringOps.TryAsString(ArgAt(bound, 1).RequireNotNull(), out var text) => text.AsString(),
-            _ => throw new LythonRuntimeException("TypeError", "datetime.timezone(offset[, name]) expects name to be a string or None.", span)
+            _ => throw new LythonRuntimeException("TypeError", $"timezone() argument 2 must be str, not {TimezoneArgumentTypeName(ArgAt(bound, 1), context)}", span)
         };
 
         return delta.TotalMicroseconds.IsZero && name is null
             ? PyTimezone.Utc
             : OwnDateTimeValue(new PyTimezone(delta.Value, name), context, span);
     }
+
+    private static string TimezoneArgumentTypeName(object? value, LythonRuntime.ExecutionContext context)
+        => value is null or PyNone ? "None" : LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context);
 
     public static object DateFromIsoFormat(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {

@@ -193,7 +193,7 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.OwnDateTimeValue(new PyTime(
                         new TimeOnly(hour, minute, second, microsecond / 1000, microsecond % 1000),
-                        ReplacementTimezone(arguments, 4, time.TzInfo, "time.replace", span, IsAssigned(4)),
+                        ReplacementTimezone(arguments, 4, time.TzInfo, span, context, IsAssigned(4)),
                         fold), context, span);
                 }, "time.replace", ["hour", "minute", "second", "microsecond", "tzinfo", "fold"], 0),
                 _ => MissingMemberValue.Instance
@@ -366,7 +366,7 @@ internal sealed partial class LythonRuntime
 
                     return PyDateTimeOps.OwnDateTimeValue(new PyDateTime(
                         new DateTime(year, month, day, hour, minute, second, microsecond / 1000, DateTimeKind.Unspecified).AddTicks((microsecond % 1000) * 10L),
-                        ReplacementTimezone(arguments, 7, dateTime.TzInfo, "datetime.replace", span, IsAssigned(7)),
+                        ReplacementTimezone(arguments, 7, dateTime.TzInfo, span, context, IsAssigned(7)),
                         fold), context, span);
                 }, "datetime.replace", ["year", "month", "day", "hour", "minute", "second", "microsecond", "tzinfo", "fold"], 0),
                 _ => MissingMemberValue.Instance
@@ -451,8 +451,8 @@ internal sealed partial class LythonRuntime
         object[] arguments,
         int index,
         PyTimezone? currentValue,
-        string owner,
         LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context,
         bool assigned)
     {
         if (!assigned)
@@ -465,7 +465,7 @@ internal sealed partial class LythonRuntime
             null => currentValue,
             PyNone => null,
             PyTimezone timezone => timezone,
-            _ => throw new LythonRuntimeException("TypeError", $"{owner}(..., tzinfo=...) expects a timezone or None.", span),
+            _ => throw new LythonRuntimeException("TypeError", $"tzinfo argument must be None or of a tzinfo subclass, not type '{LythonRuntime.UnboundTypeMethod.PythonTypeName(ArgAt(arguments, index), context)}'", span),
         };
     }
 

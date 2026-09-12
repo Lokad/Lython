@@ -286,13 +286,13 @@ internal static partial class PyDateTimeOps
         return (int)integer;
     }
 
-    private static PyTimezone? GetTimezone(object? value, string owner, LythonSourceSpan span)
+    private static PyTimezone? GetTimezone(object? value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         return value switch
         {
             null or PyNone => null,
             PyTimezone timezone => timezone,
-            _ => throw new LythonRuntimeException("TypeError", $"{owner} only supports timezone values created by datetime.timezone(...).", span)
+            _ => throw new LythonRuntimeException("TypeError", $"tzinfo argument must be None or of a tzinfo subclass, not type '{LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context)}'", span)
         };
     }
 
