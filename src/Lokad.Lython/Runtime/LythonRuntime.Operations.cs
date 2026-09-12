@@ -711,7 +711,7 @@ internal sealed partial class LythonRuntime
                     new KeyValuePair<object, object>(key, GetUserItem(instance, key, context, span)));
         }
 
-        throw new LythonRuntimeException("TypeError", "Object is not a mapping.", span);
+        throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.OperandTypeName(mapping) + "' object is not a mapping", span);
     }
 
 }
