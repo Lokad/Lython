@@ -1129,4 +1129,44 @@ pow(Decimal('10'), Decimal('30'), 10 ** 100)
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public void DecimalModule_ArithmeticResultsResolveDecimal()
+    {
+        // Decimal arithmetic over decimals and integers resolves decimal
+        // statically (not float), so member chains compile and unknown
+        // members name decimal.Decimal.
+        var valid = new LythonEngine().Compile(
+            """
+from decimal import Decimal
+(Decimal('1') + Decimal('2')).as_tuple()
+(Decimal('1') - 2).as_tuple()
+(2 * Decimal('1')).as_tuple()
+d = Decimal('1') / Decimal('2')
+d.as_tuple()
+e = Decimal('4') // Decimal('2')
+e.as_tuple()
+f = Decimal('5') % Decimal('2')
+f.as_tuple()
+g = Decimal('2') ** 2
+g.as_tuple()
+h = -Decimal('1')
+h.as_tuple()
+j = +Decimal('1')
+j.as_tuple()
+k = 2 ** Decimal('3')
+k.as_tuple()
+""");
+
+        Assert.True(valid.IsValid, string.Join(" | ", valid.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+
+        var invalid = new LythonEngine().Compile(
+            """
+from decimal import Decimal
+(Decimal('1') + Decimal('2')).bogus()
+""");
+
+        Assert.False(invalid.IsValid);
+        Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3113" && d.Message.Contains("decimal.Decimal", StringComparison.Ordinal) && d.Message.Contains("bogus", StringComparison.Ordinal));
+    }
 }

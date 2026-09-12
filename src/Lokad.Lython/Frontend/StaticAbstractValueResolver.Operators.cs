@@ -34,7 +34,8 @@ internal static partial class StaticAbstractValueResolver
                 BinaryOperatorSyntax.Multiply or
                 BinaryOperatorSyntax.Divide or
                 BinaryOperatorSyntax.FloorDivide or
-                BinaryOperatorSyntax.Modulo) ||
+                BinaryOperatorSyntax.Modulo or
+                BinaryOperatorSyntax.Power) ||
             !TryResolve(binary.Left, bindings, out var left) ||
             !TryResolve(binary.Right, bindings, out var right))
         {
@@ -54,6 +55,11 @@ internal static partial class StaticAbstractValueResolver
         }
 
         if (TryResolveStatisticsBinaryAbstractValue(binary.Operator, left, right, binary.Span, out value))
+        {
+            return true;
+        }
+
+        if (TryResolveDecimalBinaryAbstractValue(binary.Operator, left, right, binary.Span, out value))
         {
             return true;
         }
@@ -179,6 +185,41 @@ internal static partial class StaticAbstractValueResolver
         return true;
     }
 
+    private static bool TryResolveDecimalBinaryAbstractValue(
+        BinaryOperatorSyntax op,
+        AbstractValue left,
+        AbstractValue right,
+        LythonSourceSpan span,
+        out AbstractValue value)
+    {
+        // Decimal arithmetic over decimals and integers stays decimal like
+        // the runtime; float mixes keep the historical fallback below since
+        // they fail at runtime instead.
+        if (op is not (
+                BinaryOperatorSyntax.Add or
+                BinaryOperatorSyntax.Subtract or
+                BinaryOperatorSyntax.Multiply or
+                BinaryOperatorSyntax.Divide or
+                BinaryOperatorSyntax.FloorDivide or
+                BinaryOperatorSyntax.Modulo or
+                BinaryOperatorSyntax.Power) ||
+            (left.Kind != AbstractValueKind.Decimal && right.Kind != AbstractValueKind.Decimal) ||
+            StaticAbstractFacts.IsFloatLike(left) ||
+            StaticAbstractFacts.IsFloatLike(right) ||
+            !IsDecimalArithmeticPeer(left) ||
+            !IsDecimalArithmeticPeer(right))
+        {
+            value = default;
+            return false;
+        }
+
+        value = AbstractValue.Decimal(span);
+        return true;
+
+        static bool IsDecimalArithmeticPeer(AbstractValue value)
+            => value.Kind == AbstractValueKind.Decimal || StaticAbstractFacts.IsIntegerLike(value);
+    }
+
     private static bool TryResolveStatisticsBinaryAbstractValue(
         BinaryOperatorSyntax op,
         AbstractValue left,
@@ -222,6 +263,12 @@ internal static partial class StaticAbstractValueResolver
         if (StaticAbstractFacts.IsFloatLike(operand))
         {
             value = AbstractValue.FloatType(unary.Span);
+            return true;
+        }
+
+        if (operand.Kind == AbstractValueKind.Decimal)
+        {
+            value = AbstractValue.Decimal(unary.Span);
             return true;
         }
 
