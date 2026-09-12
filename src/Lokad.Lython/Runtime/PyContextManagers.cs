@@ -125,7 +125,7 @@ internal static class PyContextManagers
         if (!PyMemberAccess.TryResolve(target, "__enter__", context, span, out var enter) || enter is not LythonRuntime.ICallable enterCallable ||
             !PyMemberAccess.TryResolve(target, "__exit__", context, span, out var exit) || exit is not LythonRuntime.ICallable exitCallable)
         {
-            throw RuntimeErrors.Type("Object does not support the context manager protocol.", span);
+            throw RuntimeErrors.Type("'" + RuntimeErrors.OperandTypeName(target) + "' object does not support the context manager protocol", span);
         }
 
         return new CallableContextManager(enterCallable, exitCallable, span, context);

@@ -57,7 +57,7 @@ internal sealed partial class LythonRuntime
             return manager;
         }
 
-        throw RuntimeErrors.Type("Object does not support the context manager protocol.", span);
+        throw RuntimeErrors.Type("'" + RuntimeErrors.OperandTypeName(value) + "' object does not support the context manager protocol", span);
     }
 
     private static object ExecuteExecutableSlice(ExecutableValueStack stack, ExecutableSliceParts parts, LythonSourceSpan span, ExecutionContext context)
