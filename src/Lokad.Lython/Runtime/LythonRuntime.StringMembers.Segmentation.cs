@@ -115,7 +115,7 @@ internal sealed partial class LythonRuntime
                         }
                         else if (!PyStringOps.TryAsString(arguments[0], out var chars))
                         {
-                            throw new LythonRuntimeException("TypeError", $"str.{methodName}([chars]) expects zero or one string argument.", span);
+                            throw new LythonRuntimeException("TypeError", $"{methodName} arg must be None or str", span);
                         }
                         else
                         {
