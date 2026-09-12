@@ -19,9 +19,16 @@ internal sealed partial class LythonRuntime
                 {
                     "removeprefix" => BoundCallable.Create((arguments, span, context) =>
                     {
-                        if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var prefix))
+                        if (arguments.Length != 1)
                         {
                             throw new LythonRuntimeException("TypeError", "str.removeprefix(prefix) expects one string argument.", span);
+                        }
+
+                        if (!PyStringOps.TryAsString(arguments[0], out var prefix))
+                        {
+                            // CPython numbers no argument here and spells a None value bare.
+                            var prefixType = arguments[0] is PyNone ? "None" : RuntimeErrors.OperandTypeName(arguments[0]);
+                            throw new LythonRuntimeException("TypeError", $"removeprefix() argument must be str, not {prefixType}", span);
                         }
 
                         return prefix.Length != 0 && text.StartsWith(prefix)
@@ -30,9 +37,15 @@ internal sealed partial class LythonRuntime
                     }, "str.removeprefix", ["prefix"]),
                     "removesuffix" => BoundCallable.Create((arguments, span, context) =>
                     {
-                        if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var suffix))
+                        if (arguments.Length != 1)
                         {
                             throw new LythonRuntimeException("TypeError", "str.removesuffix(suffix) expects one string argument.", span);
+                        }
+
+                        if (!PyStringOps.TryAsString(arguments[0], out var suffix))
+                        {
+                            var suffixType = arguments[0] is PyNone ? "None" : RuntimeErrors.OperandTypeName(arguments[0]);
+                            throw new LythonRuntimeException("TypeError", $"removesuffix() argument must be str, not {suffixType}", span);
                         }
 
                         return suffix.Length != 0 && text.EndsWith(suffix)
@@ -140,9 +153,14 @@ internal sealed partial class LythonRuntime
                     Func<PyString, PyString, MemoryGovernor, LythonSourceSpan?, PyTuple> operation)
                     => BoundCallable.Create((arguments, span, context) =>
                     {
-                        if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var separator))
+                        if (arguments.Length != 1)
                         {
                             throw new LythonRuntimeException("TypeError", $"str.{methodName}(sep) expects one string argument.", span);
+                        }
+
+                        if (!PyStringOps.TryAsString(arguments[0], out var separator))
+                        {
+                            throw new LythonRuntimeException("TypeError", "must be str, not " + RuntimeErrors.OperandTypeName(arguments[0]), span);
                         }
 
                         try
