@@ -494,7 +494,7 @@ internal static partial class PyDateTimeOps
         {
             null or PyNone => null,
             _ when PyStringOps.TryAsString(ArgAt(bound, 1).RequireNotNull(), out var text) => text.AsString(),
-            _ => throw new LythonRuntimeException("TypeError", $"timezone() argument 2 must be str, not {TimezoneArgumentTypeName(ArgAt(bound, 1), context)}", span)
+            _ => throw new LythonRuntimeException("TypeError", $"timezone() argument 2 must be str, not {NoneOrTypeName(ArgAt(bound, 1), context)}", span)
         };
 
         return delta.TotalMicroseconds.IsZero && name is null
@@ -502,7 +502,9 @@ internal static partial class PyDateTimeOps
             : OwnDateTimeValue(new PyTimezone(delta.Value, name), context, span);
     }
 
-    private static string TimezoneArgumentTypeName(object? value, LythonRuntime.ExecutionContext context)
+    internal static LythonRuntimeException InvalidTimezone(object? value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => new("TypeError", $"tzinfo argument must be None or of a tzinfo subclass, not type '{LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context)}'", span);
+    private static string NoneOrTypeName(object? value, LythonRuntime.ExecutionContext context)
         => value is null or PyNone ? "None" : LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context);
 
     public static object DateFromIsoFormat(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -619,7 +621,7 @@ internal static partial class PyDateTimeOps
         }
 
         var instant = DateTimeOffsetFromTimestamp(TimestampToMicroseconds(CoerceTimestampNumber(arguments[0], span, context)), span);
-        if (arguments.Length == 1 || arguments[1] is PyNone)
+        if (arguments.Length == 1 || arguments[1] is null or PyNone)
         {
             context.RegisterHostCall(span);
             return OwnDateTimeValue(new PyDateTime(DateTime.SpecifyKind(instant.ToOffset(context.Host.LocalNow.Offset).DateTime, DateTimeKind.Unspecified)), context, span);
@@ -627,7 +629,7 @@ internal static partial class PyDateTimeOps
 
         if (arguments[1] is not PyTimezone tz)
         {
-            throw new LythonRuntimeException("TypeError", "datetime.datetime.fromtimestamp(timestamp[, tz]) expects tz to be a timezone or None.", span);
+            throw InvalidTimezone(arguments[1], context, span);
         }
 
         return OwnDateTimeValue(new PyDateTime(DateTime.SpecifyKind(instant.UtcDateTime + tz.Offset, DateTimeKind.Unspecified), tz), context, span);
@@ -646,7 +648,6 @@ internal static partial class PyDateTimeOps
 
     public static object DateTimeCombine(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length is < 2 or > 3)
         {
             throw new LythonRuntimeException("TypeError", "datetime.datetime.combine(date, time[, tzinfo]) expects two or three arguments.", span);
@@ -656,21 +657,21 @@ internal static partial class PyDateTimeOps
         {
             PyDate value => value.Value,
             PyDateTime value => DateOnly.FromDateTime(value.Value),
-            _ => throw new LythonRuntimeException("TypeError", "datetime.datetime.combine(date, time[, tzinfo]) expects a date and a time.", span)
+            _ => throw new LythonRuntimeException("TypeError", "combine() argument 1 must be datetime.date, not " + NoneOrTypeName(arguments[0], context), span)
         };
 
         if (arguments[1] is not PyTime time)
         {
-            throw new LythonRuntimeException("TypeError", "datetime.datetime.combine(date, time[, tzinfo]) expects a date and a time.", span);
+            throw new LythonRuntimeException("TypeError", "combine() argument 2 must be datetime.time, not " + NoneOrTypeName(arguments[1], context), span);
         }
 
         var timezone = arguments.Length == 2
             ? time.TzInfo
             : arguments[2] switch
             {
-                PyNone => null,
+                null or PyNone => null,
                 PyTimezone tz => tz,
-                _ => throw new LythonRuntimeException("TypeError", "datetime.datetime.combine(date, time[, tzinfo]) expects tzinfo to be a timezone or None.", span)
+                _ => throw InvalidTimezone(arguments[2], context, span)
             };
 
         return OwnDateTimeValue(new PyDateTime(date.ToDateTime(time.Value), timezone, time.Fold), context, span);
@@ -710,7 +711,7 @@ internal static partial class PyDateTimeOps
             throw new LythonRuntimeException("TypeError", "datetime.datetime.now([tz]) expects zero or one argument.", span);
         }
 
-        if (arguments.Length == 0 || arguments[0] is PyNone)
+        if (arguments.Length == 0 || arguments[0] is null or PyNone)
         {
             context.RegisterHostCall(span);
             var localNow = context.Host.LocalNow;
@@ -719,7 +720,7 @@ internal static partial class PyDateTimeOps
 
         if (arguments[0] is not PyTimezone tz)
         {
-            throw new LythonRuntimeException("TypeError", "datetime.datetime.now(tz) expects tz to be a timezone or None.", span);
+            throw InvalidTimezone(arguments[0], context, span);
         }
 
         context.RegisterHostCall(span);

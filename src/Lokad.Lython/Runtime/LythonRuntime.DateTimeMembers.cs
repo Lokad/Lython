@@ -268,7 +268,7 @@ internal sealed partial class LythonRuntime
                     {
                         null or PyNone => null,
                         PyTimezone tz => tz,
-                        _ => throw new LythonRuntimeException("TypeError", "datetime.astimezone(tz) expects tz to be a timezone or None.", span)
+                        _ => throw PyDateTimeOps.InvalidTimezone(ArgAt(arguments, 0), context, span)
                     };
 
                     context.RegisterHostCall(span);
