@@ -264,33 +264,63 @@ internal static partial class PyDateTimeOps
 
     public static object CreateTimedelta(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        var bound = CallBinder.BindNamedArguments(arguments, span, TimedeltaCallSignature, PythonCallableKind.Builtin);
+        var boundArguments = CallBinder.BindNamedArgumentsWithPresence(arguments, span, TimedeltaCallSignature, PythonCallableKind.Builtin);
+        var bound = boundArguments.Values;
+        bool IsAssigned(int index) => index < boundArguments.Assigned.Length && boundArguments.Assigned[index];
 
-        var days = GetReal(ArgAt(bound, 0), "datetime.timedelta", span);
-        var seconds = GetReal(ArgAt(bound, 1), "datetime.timedelta", span);
-        var microseconds = GetReal(ArgAt(bound, 2), "datetime.timedelta", span);
-        var milliseconds = GetReal(ArgAt(bound, 3), "datetime.timedelta", span);
-        var minutes = GetReal(ArgAt(bound, 4), "datetime.timedelta", span);
-        var hours = GetReal(ArgAt(bound, 5), "datetime.timedelta", span);
-        var weeks = GetReal(ArgAt(bound, 6), "datetime.timedelta", span);
+        // CPython accumulates every component exactly in microseconds, splits
+        // whole units only at the end, and rounds a leftover fraction half to
+        // even; the day count passes through a C-int conversion before the
+        // magnitude check, so huge totals fail as OverflowError instead of
+        // leaking host arithmetic failures.
+        var totalMicroseconds = BigInteger.Zero;
+        var leftover = 0.0;
+        totalMicroseconds = AccumulateTimedeltaComponent("microseconds", ArgAt(bound, 2), IsAssigned(2), BigInteger.One, totalMicroseconds, ref leftover, span, context);
+        totalMicroseconds = AccumulateTimedeltaComponent("milliseconds", ArgAt(bound, 3), IsAssigned(3), new BigInteger(1_000), totalMicroseconds, ref leftover, span, context);
+        totalMicroseconds = AccumulateTimedeltaComponent("seconds", ArgAt(bound, 1), IsAssigned(1), new BigInteger(1_000_000), totalMicroseconds, ref leftover, span, context);
+        totalMicroseconds = AccumulateTimedeltaComponent("minutes", ArgAt(bound, 4), IsAssigned(4), new BigInteger(60_000_000), totalMicroseconds, ref leftover, span, context);
+        totalMicroseconds = AccumulateTimedeltaComponent("hours", ArgAt(bound, 5), IsAssigned(5), new BigInteger(3_600_000_000L), totalMicroseconds, ref leftover, span, context);
+        totalMicroseconds = AccumulateTimedeltaComponent("days", ArgAt(bound, 0), IsAssigned(0), new BigInteger(86_400_000_000L), totalMicroseconds, ref leftover, span, context);
+        totalMicroseconds = AccumulateTimedeltaComponent("weeks", ArgAt(bound, 6), IsAssigned(6), new BigInteger(604_800_000_000L), totalMicroseconds, ref leftover, span, context);
 
-        var totalMicroseconds =
-            (decimal)weeks * 7m * 86_400_000_000m +
-            (decimal)days * 86_400_000_000m +
-            (decimal)hours * 3_600_000_000m +
-            (decimal)minutes * 60_000_000m +
-            (decimal)seconds * 1_000_000m +
-            (decimal)milliseconds * 1_000m +
-            (decimal)microseconds;
-
-        try
+        if (leftover != 0.0)
         {
-            return OwnDateTimeValue(new PyTimedelta(new BigInteger(Math.Round(totalMicroseconds, MidpointRounding.ToEven))), context, span);
+            var whole = Math.Round(leftover, MidpointRounding.ToEven);
+            if (Math.Abs(whole - leftover) == 0.5)
+            {
+                var odd = !totalMicroseconds.IsEven;
+                whole = 2.0 * Math.Round((leftover + (odd ? 1.0 : 0.0)) * 0.5, MidpointRounding.ToEven) - (odd ? 1.0 : 0.0);
+            }
+
+            totalMicroseconds += (BigInteger)whole;
         }
-        catch (OverflowException ex)
+
+        var secondsTotal = FloorDivRem(totalMicroseconds, new BigInteger(1_000_000), out _);
+        var days = FloorDivRem(secondsTotal, new BigInteger(86_400), out _);
+        if (days < int.MinValue || days > int.MaxValue)
         {
-            throw new LythonRuntimeException("OverflowError", "timedelta is outside Python's supported day range", span, ex);
+            throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C int", span);
         }
+
+        var dayCount = (int)days;
+        if (dayCount < -999_999_999 || dayCount > 999_999_999)
+        {
+            throw new LythonRuntimeException("OverflowError", $"days={dayCount}; must have magnitude <= 999999999", span);
+        }
+
+        return OwnDateTimeValue(new PyTimedelta(totalMicroseconds), context, span);
+    }
+
+    private static BigInteger FloorDivRem(BigInteger value, BigInteger divisor, out BigInteger remainder)
+    {
+        var quotient = BigInteger.DivRem(value, divisor, out remainder);
+        if (remainder.Sign < 0)
+        {
+            quotient -= BigInteger.One;
+            remainder += divisor;
+        }
+
+        return quotient;
     }
 
     public static object CreateDate(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)

@@ -109,6 +109,13 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("import datetime\nclass J:\n def __index__(self):\n  return 10**30\ndatetime.date(J(), 1, 1)\n", "OverflowError", "Python int too large to convert to C long")]
     [InlineData("import datetime\ndatetime.date(2024, 1, 1).replace(year=\"a\")\n", "TypeError", "'str' object cannot be interpreted as an integer")]
     [InlineData("import datetime\ndatetime.time(1, 2, None)\n", "TypeError", "'NoneType' object cannot be interpreted as an integer")]
+    [InlineData("import datetime\ndatetime.timedelta(days=10**30)\n", "OverflowError", "Python int too large to convert to C int")]
+    [InlineData("import datetime\ndatetime.timedelta(seconds=float(\"inf\"))\n", "OverflowError", "cannot convert float infinity to integer")]
+    [InlineData("import datetime\ndatetime.timedelta(seconds=float(\"nan\"))\n", "ValueError", "cannot convert float NaN to integer")]
+    [InlineData("import datetime\ndatetime.timedelta(days=1000000000)\n", "OverflowError", "days=1000000000; must have magnitude <= 999999999")]
+    [InlineData("import datetime\ndatetime.timedelta(days=\"a\")\n", "TypeError", "unsupported type for timedelta days component: str")]
+    [InlineData("import datetime\ndatetime.timedelta(seconds=None)\n", "TypeError", "unsupported type for timedelta seconds component: NoneType")]
+    [InlineData("import datetime\nclass J:\n pass\ndatetime.timedelta(days=J())\n", "TypeError", "unsupported type for timedelta days component: J")]
     [InlineData("def f(x, y):\n return x[y]\nf([1], ...)\n", "TypeError", "list indices must be integers or slices, not ellipsis")]
     [InlineData("def f(x, y):\n return x[y]\nf((1,), ...)\n", "TypeError", "tuple indices must be integers or slices, not ellipsis")]
     [InlineData("from collections import Counter\ndef f(x, y):\n return x[y]\nf([1], Counter())\n", "TypeError", "list indices must be integers or slices, not Counter")]
@@ -244,6 +251,20 @@ __lython_file.close()
         var asyncResult = await script.RunAsync(new MockLythonHost());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("2024-01-02|03:04:05.000006|2024-01-02 03:00:00|2025-01-01|04:02:03|0001-01-01", asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task TimedeltaConstruction_AccumulatesExactly()
+    {
+        const string source = "import datetime\nreturn str(datetime.timedelta(weeks=1, hours=25)) + \"|\" + str(datetime.timedelta(milliseconds=1500)) + \"|\" + str(datetime.timedelta(microseconds=1.5).microseconds) + \"|\" + str(datetime.timedelta(days=-1, seconds=3)) + \"|\" + str(datetime.timedelta(microseconds=9007199254740993).microseconds)\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("8 days, 1:00:00|0:00:01.500000|2|-1 day, 0:00:03|740993", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("8 days, 1:00:00|0:00:01.500000|2|-1 day, 0:00:03|740993", asyncResult.ReturnValue);
     }
 
     [Theory]

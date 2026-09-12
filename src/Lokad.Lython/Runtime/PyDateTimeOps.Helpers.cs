@@ -105,19 +105,55 @@ internal static partial class PyDateTimeOps
         }
     }
 
-    private static double GetReal(object? value, string owner, LythonSourceSpan span)
+    private static BigInteger AccumulateTimedeltaComponent(
+        string name,
+        object? value,
+        bool assigned,
+        BigInteger factor,
+        BigInteger sofar,
+        ref double leftover,
+        LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context)
     {
-        if (value is null or PyNone)
+        // Omitted components contribute nothing; only exact integers and
+        // floats convert (no __index__), everything else names its type.
+        if (!assigned || value is null)
         {
-            return 0.0;
+            return sofar;
         }
 
-        if (!Numbers.PyNumberOps.TryAsNumber(value, out var number))
+        switch (value)
         {
-            throw new LythonRuntimeException("TypeError", $"{owner} expects real numbers.", span);
-        }
+            case bool flag:
+                return flag ? sofar + factor : sofar;
+            case BigInteger integer:
+                return sofar + integer * factor;
+            case double floating:
+                if (double.IsInfinity(floating))
+                {
+                    throw new LythonRuntimeException("OverflowError", "cannot convert float infinity to integer", span);
+                }
 
-        return number.ToDouble();
+                if (double.IsNaN(floating))
+                {
+                    throw new LythonRuntimeException("ValueError", "cannot convert float NaN to integer", span);
+                }
+
+                var intPart = Math.Truncate(floating);
+                var total = sofar + (BigInteger)intPart * factor;
+                var fracPart = floating - intPart;
+                if (fracPart == 0.0)
+                {
+                    return total;
+                }
+
+                var scaled = (double)factor * fracPart;
+                var fracInt = Math.Truncate(scaled);
+                leftover += scaled - fracInt;
+                return total + (BigInteger)fracInt;
+            default:
+                throw new LythonRuntimeException("TypeError", $"unsupported type for timedelta {name} component: {LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context)}", span);
+        }
     }
 
     private static int GetInteger(object? value, bool assigned, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
