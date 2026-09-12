@@ -11,15 +11,18 @@ internal static class PyContainment
             PyRange range => LythonRuntime.RangeContains(range, candidate),
             IPyContainsValue contains => contains.Contains(candidate, span),
             PyString text when PyStringOps.TryAsString(candidate, out var part) => text.Contains(part),
+            PyString => throw new LythonRuntimeException("TypeError", "'in <string>' requires string as left operand, not " + RuntimeErrors.OperandTypeName(candidate), span),
             PyBytes haystack => ContainsInBytes(haystack, candidate, span),
             PyDict dict => dict.ContainsKey(LythonRuntime.ValidateDictionaryKey(candidate, span)),
             PyCounter counter => counter.TryGetValue(LythonRuntime.ValidateDictionaryKey(candidate, span), out _),
             PyDefaultDict defaultDict => defaultDict.TryGetValue(LythonRuntime.ValidateDictionaryKey(candidate, span), out _),
             PyChainMap chainMap => chainMap.ContainsKey(candidate, span),
-            PySet set => set.Contains(candidate),
+            PySet set => ContainsInSet(set, candidate, span),
+            LythonRuntime.DictKeysView keysView => ContainsInValidatedView(keysView, candidate, span),
+            LythonRuntime.DictItemsView itemsView => ContainsInValidatedView(itemsView, candidate, span),
             IEnumerable<object> sequence => ContainsInTypedSequence(sequence, candidate),
             System.Collections.IEnumerable sequence => ContainsInUntypedSequence(sequence, candidate),
-            _ => throw new LythonRuntimeException("TypeError", "Right operand does not support membership testing.", span),
+            _ => throw RuntimeErrors.ArgumentNotIterable(container, span),
         };
     }
 
@@ -49,6 +52,36 @@ internal static class PyContainment
         }
 
         return haystack.Memory.Span.IndexOf((byte)integer) >= 0;
+    }
+
+    // Set membership validates hashability through the shared helper so
+    // unhashable candidates report the CPython type error instead of leaking
+    // the internal control-flow exception. The empty set gets an explicit
+    // check because the underlying lookup short-circuits without hashing.
+    private static bool ContainsInSet(PySet set, object candidate, LythonSourceSpan span)
+    {
+        try
+        {
+            if (set.Count == 0)
+            {
+                _ = PyValueComparer.Instance.GetHashCode(candidate);
+            }
+
+            return set.Contains(candidate);
+        }
+        catch (PyUnhashableException)
+        {
+            throw RuntimeErrors.UnhashableType(candidate, span);
+        }
+    }
+
+    // Dict key/item views hash their candidates like CPython instead of
+    // scanning past unhashable ones, so validate first through the shared
+    // key helper (which names the inner type for tuples).
+    private static bool ContainsInValidatedView(IEnumerable<object> view, object candidate, LythonSourceSpan span)
+    {
+        LythonRuntime.ValidateDictionaryKey(candidate, span);
+        return ContainsInTypedSequence(view, candidate);
     }
 
     private static bool ContainsInTypedSequence(IEnumerable<object> sequence, object candidate)
