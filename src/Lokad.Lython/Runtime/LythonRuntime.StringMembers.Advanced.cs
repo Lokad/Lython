@@ -88,9 +88,16 @@ internal sealed partial class LythonRuntime
                     => BoundCallable.Create((arguments, span, context) =>
                     {
                         var signature = $"str.{methodName}(sub[, start[, end]])";
-                        if (arguments.Length is < 1 or > 3 || !PyStringOps.TryAsString(arguments[0], out var needle))
+                        if (arguments.Length is < 1 or > 3)
                         {
                             throw new LythonRuntimeException("TypeError", $"{signature} expects one string argument plus optional integer bounds.", span);
+                        }
+
+                        if (!PyStringOps.TryAsString(arguments[0], out var needle))
+                        {
+                            // CPython names the offending type, spelling a None needle bare.
+                            var needleType = arguments[0] is PyNone ? "None" : RuntimeErrors.OperandTypeName(arguments[0]);
+                            throw new LythonRuntimeException("TypeError", $"{methodName}() argument 1 must be str, not {needleType}", span);
                         }
 
                         var (start, end, _) = ParseStringBounds(text.Length, arguments, span, context, signature);
