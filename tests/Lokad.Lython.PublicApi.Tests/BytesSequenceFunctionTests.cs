@@ -27,6 +27,7 @@ vals.append(str(scaled))
 vals.append(str(operator.add(b'd', b'e')))
 vals.append(str(operator.mul(b'ab', 3)))
 vals.append(str(operator.concat(b'd', b'e')))
+vals.append(str(operator.iconcat(b'd', b'e')))
 vals.append(str(97 in b'abc'))
 vals.append(str(98 in b'abc'))
 vals.append(str(b'bc' in b'abc'))
@@ -45,6 +46,6 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("b'abcd'|b'ababab'|b'abab'|b''|b''|b'ab'|b'abcd'|b'abab'|b'de'|b'ababab'|b'de'|True|True|True|True|True|True|True|True|True|True|True", host.ReadText("/out.txt"));
+        Assert.Equal("b'abcd'|b'ababab'|b'abab'|b''|b''|b'ab'|b'abcd'|b'abab'|b'de'|b'ababab'|b'de'|b'de'|True|True|True|True|True|True|True|True|True|True|True", host.ReadText("/out.txt"));
     }
 }

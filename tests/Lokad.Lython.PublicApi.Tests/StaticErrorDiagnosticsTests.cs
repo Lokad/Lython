@@ -1268,6 +1268,7 @@ b"a" - b"b"
     [InlineData("1 + \"a\"\n", "LA3141", "unsupported operand type(s) for +: 'int' and 'str'")]
     [InlineData("[1] - {2}\n", "LA3141", "unsupported operand type(s) for -: 'list' and 'set'")]
     [InlineData("1.5 | 2\n", "LA3141", "unsupported operand type(s) for |: 'float' and 'int'")]
+    [InlineData("from collections import deque\ndeque([1]) + 2\n", "LA3141", "can only concatenate deque (not \"int\") to deque")]
     [InlineData("2 ** \"a\"\n", "LA3141", "unsupported operand type(s) for ** or pow(): 'int' and 'str'")]
     [InlineData("import math\nmath + 1\n", "LA3141", "unsupported operand type(s) for +: 'module' and 'int'")]
     [InlineData("-\"a\"\n", "LA3144", "bad operand type for unary -: 'str'")]

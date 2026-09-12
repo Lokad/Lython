@@ -280,13 +280,6 @@ operator.matmul(1, 2)
     [InlineData(
         """
 import operator
-operator.concat(1, 2)
-""",
-        "TypeError",
-        "sequence")]
-    [InlineData(
-        """
-import operator
 operator.length_hint(1, -1)
 """,
         "ValueError",
@@ -352,6 +345,63 @@ operator.add('d', datetime.datetime(2024, 1, 2))
 """,
         "TypeError",
         "can only concatenate str (not \"datetime.datetime\") to str")]
+    [InlineData(
+        """
+import operator
+operator.concat('d', 1)
+""",
+        "TypeError",
+        "can only concatenate str (not \"int\") to str")]
+    [InlineData(
+        """
+import operator
+operator.concat(1, 2)
+""",
+        "TypeError",
+        "'int' object can't be concatenated")]
+    [InlineData(
+        """
+import operator
+operator.concat([1], 2)
+""",
+        "TypeError",
+        "can only concatenate list (not \"int\") to list")]
+    [InlineData(
+        """
+import operator
+operator.concat((1,), 2)
+""",
+        "TypeError",
+        "can only concatenate tuple (not \"int\") to tuple")]
+    [InlineData(
+        """
+import operator
+operator.concat(b'd', 1)
+""",
+        "TypeError",
+        "can't concat int to bytes")]
+    [InlineData(
+        """
+import operator
+operator.concat(None, None)
+""",
+        "TypeError",
+        "'NoneType' object can't be concatenated")]
+    [InlineData(
+        """
+from collections import deque
+import operator
+operator.concat(deque([1]), 2)
+""",
+        "TypeError",
+        "can only concatenate deque (not \"int\") to deque")]
+    [InlineData(
+        """
+import operator
+operator.iconcat('d', 1)
+""",
+        "TypeError",
+        "can only concatenate str (not \"int\") to str")]
     public void OperatorModule_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());

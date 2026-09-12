@@ -310,7 +310,39 @@ internal sealed partial class LythonRuntime
             return EvaluateAdd(left, right, context, span);
         }
 
-        throw new LythonRuntimeException("TypeError", "operator.concat(a, b) expects two compatible sequence values.", span);
+        throw ConcatMismatch(left, right, span);
+    }
+
+    // Concatenation mismatch errors mirror the + operator arms for sequence
+    // left operands; anything else is not concatenable at all.
+    private static LythonRuntimeException ConcatMismatch(object left, object right, LythonSourceSpan span)
+    {
+        if (left is PyString)
+        {
+            return RuntimeErrors.ConcatError("str", right, span);
+        }
+
+        if (left is PyBytes)
+        {
+            return RuntimeErrors.CantConcatToBytes(right, span);
+        }
+
+        if (left is PyList)
+        {
+            return RuntimeErrors.ConcatError("list", right, span);
+        }
+
+        if (left is PyTuple)
+        {
+            return RuntimeErrors.ConcatError("tuple", right, span);
+        }
+
+        if (left is PyDeque)
+        {
+            return RuntimeErrors.ConcatError("deque", right, span);
+        }
+
+        return RuntimeErrors.Type($"'{RuntimeErrors.OperandTypeName(left)}' object can't be concatenated", span);
     }
 
     private static object CompareBool(object[] arguments, LythonSourceSpan span, Func<object, object, LythonSourceSpan, bool> operation)
@@ -527,12 +559,12 @@ internal sealed partial class LythonRuntime
     private static object InPlaceConcat(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         => Binary(arguments, span, (left, right, innerSpan) =>
         {
-            if (left is PyList || PyStringOps.TryAsString(left, out _) && PyStringOps.TryAsString(right, out _) || left is PyTuple && right is PyTuple)
+            if (left is PyList || PyStringOps.TryAsString(left, out _) && PyStringOps.TryAsString(right, out _) || left is PyTuple && right is PyTuple || left is PyBytes && right is PyBytes || left is PyDeque && right is PyDeque)
             {
                 return EvaluateAugmentedAssignment(left, right, AugmentedAssignmentOperatorSyntax.Add, context, innerSpan);
             }
 
-            throw new LythonRuntimeException("TypeError", "operator.iconcat(a, b) expects sequence-compatible values.", innerSpan);
+            throw ConcatMismatch(left, right, innerSpan);
         });
 
     private static object CallTarget(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)

@@ -383,6 +383,9 @@ internal static partial class StaticStructuralDiagnostics
             case AbstractValueKind.String:
                 name = "str";
                 return true;
+            case AbstractValueKind.CollectionsDeque:
+                name = "deque";
+                return true;
             case AbstractValueKind.Bytes:
                 name = "bytes";
                 return true;
