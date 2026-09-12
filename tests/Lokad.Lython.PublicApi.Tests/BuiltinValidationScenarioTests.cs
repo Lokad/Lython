@@ -19,6 +19,8 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("issubclass(1, int)\n", "TypeError", "issubclass() arg 1 must be a class")]
     [InlineData("issubclass(int, 1)\n", "TypeError", "issubclass() arg 2 must be a class, a tuple of classes, or a union")]
     [InlineData("issubclass(int, (str, 1))\n", "TypeError", "issubclass() arg 2 must be a class, a tuple of classes, or a union")]
+    [InlineData("reversed(1)\n", "TypeError", "'int' object is not reversible")]
+    [InlineData("reversed(None)\n", "TypeError", "'NoneType' object is not reversible")]
     [InlineData("from dataclasses import field\ndefault_factory = list\nfield(default = 1, default_factory = default_factory)\n", "compile", "cannot specify both default and default_factory")]
     [InlineData("from dataclasses import field\nfield(metadata = 1)\n", "TypeError", "metadata=...) expects a dict or None")]
     [InlineData("from dataclasses import dataclass\n@dataclass(order=True, eq=False)\nclass Bad:\n    x: int\n", "TypeError", "requires eq=True")]

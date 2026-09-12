@@ -404,7 +404,7 @@ internal sealed partial class LythonRuntime
             return new PyReversedIterator(text.Length, text.Index);
         }
 
-        throw new LythonRuntimeException("TypeError", "reversed(sequence) expects a reversible sequence.", span);
+        throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.OperandTypeName(target) + "' object is not reversible", span);
     }
 
     private static object Map(object[] arguments, LythonSourceSpan span, ExecutionContext context)
