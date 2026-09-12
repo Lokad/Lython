@@ -6,9 +6,14 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    // Per-expression evaluation intentionally does not track interpreter depth:
+    // depth is tracked once per Python nesting level (calls, bodies,
+    // compound statements), so deep-but-shallow expression trees cannot
+    // exhaust the counter budget while genuine nesting still trips it.
+    // Execution steps are still counted for every node (MG25).
     internal static async ValueTask<object> EvaluateLoweredExpressionAsync(LoweredExpression expression, ExecutionContext context)
     {
-        context.EnterInterpreterFrame(expression.Span);
+        context.CheckExecutionBudget(expression.Span);
         try
         {
             var value = await DispatchLoweredExpressionAsync(
@@ -24,10 +29,6 @@ internal sealed partial class LythonRuntime
         {
             ex.SetSourcePathIfMissing(context.SourcePath);
             throw;
-        }
-        finally
-        {
-            context.LeaveInterpreterFrame();
         }
     }
 

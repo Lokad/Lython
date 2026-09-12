@@ -223,23 +223,25 @@ internal sealed partial class LythonRuntime
         ILythonHost host,
         LythonRunOptions? options)
     {
+        return RunOnDedicatedStack(() =>
+        {
+            ExecutionContext? context = null;
+            try
+            {
+                context = new ExecutionContext(host, options);
+                ExecuteExecutableCodeObject(script.EntryPoint, context);
 
-        ExecutionContext? context = null;
-        try
-        {
-            context = new ExecutionContext(host, options);
-            ExecuteExecutableCodeObject(script.EntryPoint, context);
-
-            return CreateSuccessfulResult(context, null, options);
-        }
-        catch (ReturnSignal signal)
-        {
-            return CreateReturnedResult(signal, context, options);
-        }
-        catch (LythonRuntimeException ex)
-        {
-            return CreateRuntimeFailureResult(ex, context, options);
-        }
+                return CreateSuccessfulResult(context, null, options);
+            }
+            catch (ReturnSignal signal)
+            {
+                return CreateReturnedResult(signal, context, options);
+            }
+            catch (LythonRuntimeException ex)
+            {
+                return CreateRuntimeFailureResult(ex, context, options);
+            }
+        });
     }
 
     internal static void ExecuteExecutableCodeObject(ExecutableCodeObject codeObject, ExecutionContext context)

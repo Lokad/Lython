@@ -244,12 +244,14 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    // Assignments do not track interpreter depth (MG25): depth is tracked
+    // once per Python nesting level (calls, bodies, compound statements), and
+    // assignment targets nest shallowly enough for the frontend bound plus the
+    // stack probe. Execution steps are still counted for every statement.
     private static void ExecuteLoweredAssignment(LoweredAssignmentStatement assignment, ExecutionContext context)
     {
-        context.EnterInterpreterFrame(assignment.Span);
-        try
-        {
-            switch (assignment)
+        context.CheckExecutionBudget(assignment.Span);
+        switch (assignment)
             {
                 case LoweredNameAssignmentStatement simple:
                     StoreName(simple.Assignment.Name, EvaluateLoweredExpression(simple.Expression, context), context, simple.Span);
@@ -312,11 +314,6 @@ internal sealed partial class LythonRuntime
                 default:
                     throw new InvalidOperationException($"Unsupported lowered assignment: {assignment.GetType().Name}");
             }
-        }
-        finally
-        {
-            context.LeaveInterpreterFrame();
-        }
     }
 
     private static void ExecuteLoweredSliceAssignment(

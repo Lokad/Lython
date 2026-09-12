@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Lokad.Lython.Runtime;
 
 namespace Lokad.Lython;
 
@@ -155,7 +156,12 @@ public sealed class LythonCompiledScript
         {
             try
             {
-                return await _asyncRunner(runHost, runOptions).ConfigureAwait(false);
+                // MG25: the synchronous prefix of an async run (including deep
+                // recursion that never genuinely yields) executes on the same
+                // dedicated large stack as synchronous runs; continuations
+                // after genuine yields resume on pool threads with fresh
+                // stacks while the persisted counters keep bounding them.
+                return await LythonRuntime.RunAsyncOnDedicatedStack(() => _asyncRunner(runHost, runOptions)).ConfigureAwait(false);
             }
             finally
             {

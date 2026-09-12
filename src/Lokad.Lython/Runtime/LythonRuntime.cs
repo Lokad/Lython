@@ -6,6 +6,8 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Runtime.ExceptionServices;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Utf8Regex.PythonRe;
@@ -225,27 +227,106 @@ internal sealed partial class LythonRuntime
         ILythonHost host,
         LythonRunOptions? options)
     {
-
-        ExecutionContext? context = null;
-        try
+        return RunOnDedicatedStack(() =>
         {
-            context = new ExecutionContext(host, options);
-            var signal = ExecuteStatements(script.Statements, context);
-            if (signal is BreakSignal or ContinueSignal)
+            ExecutionContext? context = null;
+            try
             {
-                throw RuntimeErrors.TopLevelLoopControl(null);
-            }
+                context = new ExecutionContext(host, options);
+                var signal = ExecuteStatements(script.Statements, context);
+                if (signal is BreakSignal or ContinueSignal)
+                {
+                    throw RuntimeErrors.TopLevelLoopControl(null);
+                }
 
-            return CreateSuccessfulResult(context, null, options);
-        }
-        catch (ReturnSignal signal)
+                return CreateSuccessfulResult(context, null, options);
+            }
+            catch (ReturnSignal signal)
+            {
+                return CreateReturnedResult(signal, context, options);
+            }
+            catch (LythonRuntimeException ex)
+            {
+                return CreateRuntimeFailureResult(ex, context, options);
+            }
+        });
+    }
+
+    // MG25: synchronous execution hops to a dedicated thread with a large
+    // stack. Python-level nesting burns kilobytes of CLR stack per level
+    // while the depth caps allow hundreds of levels, and even a catchable
+    // trip needs room to throw and unwind hundreds of live frames; on small
+    // host stacks neither the caps nor the probe backstop can fit. The
+    // dedicated reserve makes the caps (and their deterministic errors)
+    // reachable on every host, keeps funded depths working, and keeps
+    // behavior identical across 1MB/8MB host stacks. 16MB covers the worst
+    // measured level cost (order 12KB, Debug-fat) through both caps several
+    // times over with unwind room to spare. The async entry below hops the
+    // same way for its synchronous prefix. Unexpected failures marshal
+    // back with their original stack preserved.
+    private const int SyncExecutionStackBytes = 16 * 1024 * 1024;
+
+    private static LythonExecutionResult RunOnDedicatedStack(Func<LythonExecutionResult> runner)
+    {
+        LythonExecutionResult? result = null;
+        ExceptionDispatchInfo? failure = null;
+        var thread = new Thread(
+            () =>
+            {
+                try
+                {
+                    result = runner();
+                }
+                catch (Exception ex)
+                {
+                    failure = ExceptionDispatchInfo.Capture(ex);
+                }
+            },
+            SyncExecutionStackBytes)
         {
-            return CreateReturnedResult(signal, context, options);
-        }
-        catch (LythonRuntimeException ex)
+            IsBackground = true,
+            Name = "Lython sync execution",
+        };
+        thread.Start();
+        thread.Join();
+        if (failure is not null)
         {
-            return CreateRuntimeFailureResult(ex, context, options);
+            failure.Throw();
         }
+
+        return result ?? throw new InvalidOperationException("Lython sync execution ended without a result.");
+    }
+
+    // Async counterpart of the dedicated-stack hop above: the synchronous
+    // prefix (argument binding, the first interpreter frames, and any deep
+    // recursion that never genuinely yields) runs with the large reserve,
+    // while continuations after genuine host yields resume on pool threads.
+    // Those hops start shallow with the persisted counters intact, so the
+    // caps keep bounding them. The worker parks (it never pumps user code),
+    // and completions flow through ConfigureAwait(false) continuations, so
+    // blocking on the returned task cannot deadlock the worker.
+    internal static Task<LythonExecutionResult> RunAsyncOnDedicatedStack(Func<Task<LythonExecutionResult>> runner)
+    {
+        var completion = new TaskCompletionSource<LythonExecutionResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var thread = new Thread(
+            () =>
+            {
+                try
+                {
+                    completion.TrySetResult(runner().GetAwaiter().GetResult());
+                }
+                catch (Exception ex)
+                {
+                    completion.TrySetException(ex);
+                }
+            },
+            SyncExecutionStackBytes)
+        {
+            IsBackground = true,
+            Name = "Lython async execution",
+        };
+        thread.Start();
+        return completion.Task;
     }
 
     private static LythonExecutionResult CreateSuccessfulResult(ExecutionContext context, object? returnValue, LythonRunOptions? options)
@@ -451,7 +532,11 @@ internal sealed partial class LythonRuntime
         try
         {
             context = new ExecutionContext(host, options);
-            await Task.Yield();
+            // MG25: no initial yield here. Yielding first would abandon the
+            // calling thread (in particular the dedicated large stack the
+            // public async entry runs on) to the pool before doing any work,
+            // so deep recursion that never genuinely yields would nest on a
+            // small pool thread instead. Genuine host delays still yield.
             var signal = await ExecuteStatementsAsync(script.Statements, context).ConfigureAwait(false);
             if (signal is BreakSignal or ContinueSignal)
             {

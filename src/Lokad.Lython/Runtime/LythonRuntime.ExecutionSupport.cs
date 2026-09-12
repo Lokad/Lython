@@ -98,7 +98,25 @@ internal sealed partial class LythonRuntime
 
         // Counters stay 64-bit wide: reaching 2^63 increments is infeasible, so
     // enforcement can never wrap around to negative and switch itself off.
+    // Bounds interpreter nesting (and, through it, every execution path that
+    // nests Python calls) at a fixed count. Depth is tracked once per Python
+    // nesting level (calls, bodies, compound statements), not per syntax
+    // node, so funded depths fit with margin on every path. Synchronous roots
+    // run on a dedicated large stack. Deep-copy shares this bound
+    // (MG20 pin: 512-deep copies succeed, 600-deep fail).
     public const int MaxInterpreterDepth = 512;
+
+    // Stack-probe backstop (MG25): the counters above cannot trip first when
+    // the CLR stack is nearly exhausted, so nesting past this depth also
+    // proves real stack headroom before deepening. The trip fires while fewer
+    // than the headroom bytes remain (see StackRuler); it is a last-resort
+    // backstop for stacks the counters cannot see (exotic hosts, pool-thread
+    // continuations), not the primary limiter, so it stays small enough to
+    // never disturb funded depths. The threshold keeps shallow programs
+    // (and synthetic counter drills, which nest no CLR frames) on the
+    // counter-only fast path.
+    public const int StackProbeDepthThreshold = 32;
+    public const long StackProbeHeadroomBytes = 96 * 1024;
 
         public long ExecutionStepCount { get; set; }
 

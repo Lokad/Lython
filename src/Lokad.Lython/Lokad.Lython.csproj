@@ -33,6 +33,13 @@
     <None Include="..\..\icon.png" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 
+  <!-- AllowUnsafeBlocks covers only ExecutionBudgetGuards.StackRuler, which reads
+       the current stack address (never dereferenced) because safe C# exposes no
+       stack telemetry for the MG25 recursion backstop. -->
+  <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Lokad.Parsing" />
     <PackageReference Include="Lokad.Utf8Regex.PythonRe" />

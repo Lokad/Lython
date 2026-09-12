@@ -2,6 +2,9 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <AssemblyName>Lokad.Lython.WhiteBox.Tests</AssemblyName>
+    <!-- Production sources compile into this assembly, including the unsafe
+         stack-pointer read in ExecutionBudgetGuards.StackRuler. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
