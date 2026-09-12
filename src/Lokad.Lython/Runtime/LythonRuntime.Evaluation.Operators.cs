@@ -103,7 +103,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.ConcatError("list", right, span);
         }
 
-        if (left is PyTuple or PyNamedTupleObject or PyTypingNamedTupleObject)
+        if (left is PyTuple or PyNamedTupleObject or PyTypingNamedTupleObject or LythonRuntime.TimeStructTimeValue)
         {
             throw RuntimeErrors.ConcatError("tuple", right, span);
         }
@@ -304,7 +304,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static bool IsSequenceOperand(object value)
-        => value is PyList or PyTuple or PyNamedTupleObject or PyTypingNamedTupleObject or PyString or PyBytes or PyDeque;
+        => value is PyList or PyTuple or PyNamedTupleObject or PyTypingNamedTupleObject or LythonRuntime.TimeStructTimeValue or PyString or PyBytes or PyDeque;
 
     private static (MemoryGovernor? Governor, LythonSourceSpan? Span) TupleLikeOwnership(object value) => value switch
     {
