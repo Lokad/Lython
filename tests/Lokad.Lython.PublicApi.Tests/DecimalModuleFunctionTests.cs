@@ -675,4 +675,135 @@ Decimal("150").quantize(Decimal("1E-28"), "ROUND_DOWN")
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task DecimalFloorDivisionTruncatesAndPowersAcceptIntegralDecimals()
+    {
+        // Decimal // truncates toward zero (with signed-zero quotients) and
+        // divmod, //= and operator.floordiv follow it, while integral-valued
+        // decimals count as integer exponents and zero to the zeroth power
+        // signals InvalidOperation, all like CPython in both modes.
+        var script = new LythonEngine().Compile("""
+            import decimal
+            import operator
+            from decimal import Decimal
+            results = []
+            results.append(str(Decimal('7') // 3))
+            results.append(str(7 // Decimal('2')))
+            results.append(str(Decimal('-7') // 3))
+            results.append(str(Decimal('7') // -3))
+            results.append(str(Decimal('-7') // Decimal('-3')))
+            results.append(str(Decimal('-1') // Decimal('2')))
+            results.append(str(Decimal('1') // Decimal('3')))
+            results.append(str(Decimal('7') // True))
+            results.append(str(Decimal('1') // Decimal('0.5')))
+            results.append(str(Decimal('7.5') // Decimal('2')))
+            results.append(repr(Decimal('7') // 3))
+            results.append(type(Decimal('7') // 3).__name__)
+            results.append(str(divmod(Decimal('7'), 3)))
+            results.append(str(divmod(7, Decimal('2'))))
+            results.append(str(divmod(Decimal('-7'), 3)))
+            results.append(str(divmod(Decimal('-1'), Decimal('2'))))
+            def floordiv_assign():
+                q = Decimal('7')
+                q //= 3
+                return q
+            results.append(str(floordiv_assign()))
+            results.append(str(operator.floordiv(Decimal('7'), 3)))
+            results.append(str(Decimal('2') ** Decimal('3')))
+            results.append(str(2 ** Decimal('3')))
+            results.append(str(Decimal('2') ** Decimal('-1')))
+            results.append(str(2 ** Decimal('-1')))
+            results.append(str(Decimal('2') ** Decimal('3.0')))
+            results.append(str(Decimal('2') ** True))
+            results.append(str(Decimal('5') ** Decimal('0')))
+            results.append(str(2 ** Decimal('0')))
+            results.append(type(2 ** Decimal('-1')).__name__)
+            results.append(repr(2 ** Decimal('-1')))
+            try:
+                Decimal('1') // 0
+            except decimal.DivisionByZero as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                Decimal('7.9e28') // Decimal('0.01')
+            except decimal.Overflow as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                Decimal('4') ** Decimal('0.5')
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                pow(Decimal('2'), Decimal('3'), 5)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                Decimal('0') ** 0
+            except decimal.InvalidOperation as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+                results.append(str(e.args))
+            try:
+                Decimal('0') ** Decimal('0')
+            except decimal.InvalidOperation as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "2",
+            "3",
+            "-2",
+            "-2",
+            "2",
+            "-0",
+            "0",
+            "7",
+            "2",
+            "3",
+            "Decimal('2')",
+            "Decimal",
+            "(Decimal('2'), Decimal('1'))",
+            "(Decimal('3'), Decimal('1'))",
+            "(Decimal('-2'), Decimal('-1'))",
+            "(Decimal('-0'), Decimal('-1'))",
+            "2",
+            "2",
+            "8",
+            "8",
+            "0.5",
+            "0.5",
+            "8",
+            "2",
+            "1",
+            "1",
+            "Decimal",
+            "Decimal('0.5')",
+            "DivisionByZero",
+            "decimal floor division by zero",
+            "Overflow",
+            "Decimal arithmetic overflowed Lython's fixed-precision range.",
+            "TypeError",
+            "unsupported operand type(s) for ** or pow(): 'decimal.Decimal' and 'decimal.Decimal'",
+            "TypeError",
+            "unsupported operand type(s) for ** or pow(): 'decimal.Decimal', 'decimal.Decimal', 'int'",
+            "InvalidOperation",
+            "[<class 'decimal.InvalidOperation'>]",
+            "([<class 'decimal.InvalidOperation'>],)",
+            "InvalidOperation",
+            "[<class 'decimal.InvalidOperation'>]",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

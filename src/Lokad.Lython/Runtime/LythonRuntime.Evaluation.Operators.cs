@@ -391,6 +391,11 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateFloorDivide(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
+        if (left is PyDecimal || right is PyDecimal)
+        {
+            return OwnDecimalValue(PyDecimalOps.FloorDivide(left, right, span, operation ?? "//"), context, span);
+        }
+
         if (left is PyTimedelta || right is PyTimedelta)
         {
             var floored = PyDateTimeOps.FloorDivide(left, right, context, span, operation);

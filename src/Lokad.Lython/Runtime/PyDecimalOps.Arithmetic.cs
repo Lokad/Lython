@@ -14,6 +14,17 @@ internal static partial class PyDecimalOps
     internal static LythonRuntimeException DecimalOverflow(LythonSourceSpan span)
         => new(LythonRuntime.ModuleException("decimal", "Overflow"), "Decimal arithmetic overflowed Lython's fixed-precision range.", span);
 
+    // Zero to the zeroth power signals plain decimal.InvalidOperation like
+    // CPython, whose message and args carry just the exception class -- the
+    // same shape as the NaN ordering signal, so both share its payload.
+    internal static LythonRuntimeException InvalidOperationSignal(LythonSourceSpan? span)
+        => new(
+            LythonRuntime.ModuleException("decimal", "InvalidOperation"),
+            DecimalNanComparisonPayload.NanComparisonText,
+            span,
+            null,
+            new DecimalNanComparisonPayload());
+
     public static object Add(object left, object right, LythonSourceSpan span, string operation)
         => Binary(left, right, span, operation, static (lhs, rhs) => lhs + rhs, static (lhs, rhs) => Math.Min(lhs, rhs));
 
@@ -67,9 +78,39 @@ internal static partial class PyDecimalOps
         }
     }
 
+    public static object FloorDivide(object left, object right, LythonSourceSpan span, string operation)
+    {
+        if (!TryAsDecimal(left, out var lhs) || !TryAsDecimal(right, out var rhs))
+        {
+            throw RuntimeErrors.UnsupportedOperands(operation, left, right, span);
+        }
+
+        if (rhs == 0m)
+        {
+            throw DivisionByZero("decimal floor division by zero", span);
+        }
+
+        // CPython truncates decimal // toward zero (unlike int and float
+        // floor), so divide the exact integer scalings instead of truncating
+        // the rounded BCL quotient, which can round across an integer boundary.
+        var (leftNumerator, leftDenominator) = ExactDecimalParts(lhs);
+        var (rightNumerator, rightDenominator) = ExactDecimalParts(rhs);
+        var quotient = leftNumerator * rightDenominator / (rightNumerator * leftDenominator);
+        if (quotient > (BigInteger)decimal.MaxValue || quotient < (BigInteger)decimal.MinValue)
+        {
+            throw DecimalOverflow(span);
+        }
+
+        // A quotient truncated to zero keeps the sign of the exact value
+        // like CPython, so a negative exact quotient yields negative zero.
+        var truncated = (decimal)quotient;
+        return new PyDecimal(
+            quotient == BigInteger.Zero && IsSigned(lhs) != IsSigned(rhs) ? decimal.Negate(truncated) : truncated);
+    }
+
     public static object Power(object left, object right, LythonSourceSpan span, string operation)
     {
-        if (!TryAsDecimal(left, out var lhs) || !Numbers.PyNumberOps.TryAsInteger(right, out var exponent))
+        if (!TryAsDecimal(left, out var lhs) || !TryGetIntegerExponent(right, out var exponent))
         {
             throw RuntimeErrors.UnsupportedOperands(operation, left, right, span);
         }
@@ -82,6 +123,11 @@ internal static partial class PyDecimalOps
         var exponentInt = (int)exponent;
         if (exponentInt == 0)
         {
+            if (lhs == 0m)
+            {
+                throw InvalidOperationSignal(span);
+            }
+
             return new PyDecimal(1m);
         }
 
@@ -299,6 +345,27 @@ internal static partial class PyDecimalOps
 
     private static int GetOperandExponent(object value, decimal numericValue)
         => value is PyDecimal pyDecimal ? pyDecimal.Exponent : -GetScale(numericValue);
+
+    // Integral valued decimals count as integer exponents like CPython
+    // (fractional ones keep the unsupported operands refusal); deliberately
+    // local so indexing and the other TryAsInteger callers keep rejecting
+    // decimals.
+    private static bool TryGetIntegerExponent(object value, out BigInteger exponent)
+    {
+        if (Numbers.PyNumberOps.TryAsInteger(value, out exponent))
+        {
+            return true;
+        }
+
+        if (value is PyDecimal pyDecimal && decimal.Truncate(pyDecimal.Value) == pyDecimal.Value)
+        {
+            exponent = new BigInteger(pyDecimal.Value);
+            return true;
+        }
+
+        exponent = default;
+        return false;
+    }
 
     private static decimal Pow(decimal value, int exponent)
     {
