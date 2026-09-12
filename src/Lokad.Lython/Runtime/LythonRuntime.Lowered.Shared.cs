@@ -527,6 +527,7 @@ internal sealed partial class LythonRuntime
     {
         var current = context.Services.CurrentException;
         thrown.PythonContext = ReferenceEquals(instance, current) ? null : current;
+        thrown.PythonExplicitArgs = instance.ArgsOverride ?? instance.ExplicitArgs;
     }
 
     private static void ThrowReraisedException(LythonSourceSpan span, ExecutionContext context)

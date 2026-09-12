@@ -49,6 +49,11 @@ internal sealed class LythonRuntimeException : Exception
 
     public PyException? PythonCause { get; set; }
 
+    // Explicit construction args (or an assigned override) travel beside the
+    // value so handler rewraps rebuild the same args on the next catch.
+    // Null means the error was never constructed with args in Python.
+    public PyTuple? PythonExplicitArgs { get; set; }
+
     // Implicit raise context and explicit-cause suppression travel beside the
     // cause so handler rewraps rebuild the same chain on the next catch.
     public PyException? PythonContext { get; set; }

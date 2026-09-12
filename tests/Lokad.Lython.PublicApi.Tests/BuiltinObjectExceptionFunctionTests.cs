@@ -251,6 +251,52 @@ return "|".join(values)
         Assert.Equal("('bad', 3)|ValueError('bad', 3)|('bad', 3)|False|caught|missing", result.ReturnValue);
     }
 
+    [Fact]
+    public async Task RaisedExceptionArgsSurviveHandlerRewrap()
+    {
+        const string source = """
+            values = []
+            try:
+                raise ValueError("x", 1)
+            except ValueError as e:
+                values.append(str(e.args))
+                values.append(repr(e))
+            try:
+                raise ValueError(("x", 1))
+            except ValueError as e:
+                values.append(str(e.args))
+            try:
+                raise ValueError("solo")
+            except ValueError as e:
+                values.append(str(e.args))
+            try:
+                raise ValueError()
+            except ValueError as e:
+                values.append(str(e.args))
+            try:
+                raise ValueError("x", 1)
+            except ValueError as e:
+                e.args = (9,)
+                values.append(str(e.args))
+                try:
+                    raise e
+                except ValueError as e2:
+                    values.append(str(e2.args))
+            return "|".join(values)
+            """;
+        const string expected = "('x', 1)|ValueError('x', 1)|(('x', 1),)|('solo',)|()|(9,)|(9,)";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
 
 
 

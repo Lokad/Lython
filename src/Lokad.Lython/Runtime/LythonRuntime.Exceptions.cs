@@ -25,6 +25,7 @@ internal sealed partial class LythonRuntime
             Cause = exception.PythonCause,
             Context = exception.PythonContext,
             SuppressContext = exception.SuppressPythonContext,
+            ExplicitArgs = exception.PythonExplicitArgs,
         };
 
     private static bool MatchesCaughtException(
