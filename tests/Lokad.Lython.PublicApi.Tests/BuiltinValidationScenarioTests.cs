@@ -380,6 +380,48 @@ __lython_file.close()
     }
 
     [Fact]
+    public async Task FromTimestampRoundsDustHalfEven()
+    {
+        const string source = "import datetime\nreturn datetime.datetime.fromtimestamp(1.00000055, tz=datetime.timezone.utc).isoformat() + \"|\" + datetime.datetime.fromtimestamp(1.00000045, tz=datetime.timezone.utc).isoformat() + \"|\" + datetime.datetime.fromtimestamp(2.0000005, tz=datetime.timezone.utc).isoformat() + \"|\" + datetime.datetime.fromtimestamp(-1.0000005, tz=datetime.timezone.utc).isoformat() + \"|\" + datetime.datetime.fromtimestamp(0.30000000000000004, tz=datetime.timezone.utc).isoformat()\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("1970-01-01T00:00:01.000001+00:00|1970-01-01T00:00:01+00:00|1970-01-01T00:00:02.000001+00:00|1969-12-31T23:59:58.999999+00:00|1970-01-01T00:00:00.300000+00:00", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("1970-01-01T00:00:01.000001+00:00|1970-01-01T00:00:01+00:00|1970-01-01T00:00:02.000001+00:00|1969-12-31T23:59:58.999999+00:00|1970-01-01T00:00:00.300000+00:00", asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task FromTimestampFloorsDateDust()
+    {
+        const string source = "import datetime\nreturn str(datetime.date.fromtimestamp(82799.99999999))\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("1970-01-01", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("1970-01-01", asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task FromTimestampKeepsIntegerPrecision()
+    {
+        const string source = "import datetime\nreturn datetime.datetime.fromtimestamp(200000000001, tz=datetime.timezone.utc).isoformat()\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("8307-10-01T19:33:21+00:00", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("8307-10-01T19:33:21+00:00", asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task ReplaceDistinguishesOmittedFromNone()
     {
         const string source = "import datetime\nclass J:\n    def __index__(self):\n        return 2025\nreturn str(datetime.date(2024, 1, 1).replace(day=5)) + \"|\" + str(datetime.time(1, 2, 3).replace(fold=1)) + \"|\" + str(datetime.datetime(2024, 1, 1, tzinfo=datetime.timezone.utc).replace(tzinfo=None)) + \"|\" + str(datetime.date(2024, 1, 1).replace(year=J()))\n";

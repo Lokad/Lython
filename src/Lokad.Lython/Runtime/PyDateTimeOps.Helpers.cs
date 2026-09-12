@@ -130,7 +130,7 @@ internal static partial class PyDateTimeOps
         return DateOnly.FromDateTime(ISOWeek.ToDateTime(year, week, dayOfWeek));
     }
 
-    private static double GetTimestamp(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    private static Numbers.PyNumber CoerceTimestampNumber(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         // Timestamps convert through __index__ like CPython; remaining
         // rejections name the original type instead of the factory.
@@ -159,21 +159,61 @@ internal static partial class PyDateTimeOps
             throw new LythonRuntimeException("OverflowError", "timestamp out of range for platform time_t", span);
         }
 
-        return timestamp;
+        return number;
     }
 
-    private static DateTimeOffset DateTimeOffsetFromTimestamp(double timestamp, LythonSourceSpan span)
+    private static BigInteger TimestampToMicroseconds(Numbers.PyNumber number)
     {
-        try
+        // Datetime paths round half to even at the microsecond like CPython;
+        // integers stay exact at any magnitude instead of double-rounding.
+        if (!number.IsFloat)
         {
-            var ticks = checked((long)Math.Round(timestamp * TimeSpan.TicksPerSecond, MidpointRounding.ToEven));
-            ticks -= ticks % 10;
-            return UnixEpoch.AddTicks(ticks);
+            return number.Integer * 1_000_000;
         }
-        catch (Exception ex) when (ex is OverflowException or ArgumentOutOfRangeException)
+
+        var intPart = Math.Truncate(number.Floating);
+        var total = (BigInteger)intPart * 1_000_000;
+        var fracPart = number.Floating - intPart;
+        if (fracPart == 0.0)
+        {
+            return total;
+        }
+
+        var scaled = fracPart * 1_000_000.0;
+        var fracInt = Math.Truncate(scaled);
+        var dust = scaled - fracInt;
+        total += (BigInteger)fracInt;
+        if (dust == 0.0)
+        {
+            return total;
+        }
+
+        var whole = Math.Round(dust, MidpointRounding.ToEven);
+        if (Math.Abs(whole - dust) == 0.5)
+        {
+            var odd = !total.IsEven;
+            whole = 2.0 * Math.Round((dust + (odd ? 1.0 : 0.0)) * 0.5, MidpointRounding.ToEven) - (odd ? 1.0 : 0.0);
+        }
+
+        return total + (BigInteger)whole;
+    }
+
+    private static BigInteger TimestampToFlooredSeconds(Numbers.PyNumber number)
+    {
+        // The date path truncates toward the floor like CPython instead of
+        // rounding sub-second dust across midnight.
+        return number.IsFloat ? (BigInteger)Math.Floor(number.Floating) : number.Integer;
+    }
+
+    private static DateTimeOffset DateTimeOffsetFromTimestamp(BigInteger totalMicroseconds, LythonSourceSpan span)
+    {
+        var ticks = totalMicroseconds * 10;
+        if (ticks < -UnixEpoch.Ticks || ticks > DateTimeOffset.MaxValue.Ticks - UnixEpoch.Ticks)
         {
             throw new LythonRuntimeException("ValueError", "timestamp out of range.", span);
         }
+
+        return UnixEpoch.AddTicks((long)ticks);
     }
 
     private static BigInteger AccumulateTimedeltaComponent(

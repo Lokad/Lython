@@ -564,7 +564,7 @@ internal static partial class PyDateTimeOps
         }
 
         context.RegisterHostCall(span);
-        var instant = DateTimeOffsetFromTimestamp(GetTimestamp(arguments[0], span, context), span);
+        var instant = DateTimeOffsetFromTimestamp(TimestampToFlooredSeconds(CoerceTimestampNumber(arguments[0], span, context)) * 1_000_000, span);
         return OwnDateTimeValue(new PyDate(DateOnly.FromDateTime(instant.ToOffset(context.Host.LocalNow.Offset).DateTime)), context, span);
     }
 
@@ -631,7 +631,7 @@ internal static partial class PyDateTimeOps
             throw new LythonRuntimeException("TypeError", "datetime.datetime.fromtimestamp(timestamp[, tz]) expects one or two arguments.", span);
         }
 
-        var instant = DateTimeOffsetFromTimestamp(GetTimestamp(arguments[0], span, context), span);
+        var instant = DateTimeOffsetFromTimestamp(TimestampToMicroseconds(CoerceTimestampNumber(arguments[0], span, context)), span);
         if (arguments.Length == 1 || arguments[1] is PyNone)
         {
             context.RegisterHostCall(span);
@@ -654,7 +654,7 @@ internal static partial class PyDateTimeOps
             throw new LythonRuntimeException("TypeError", "datetime.datetime.utcfromtimestamp(timestamp) expects one argument.", span);
         }
 
-        return OwnDateTimeValue(new PyDateTime(DateTime.SpecifyKind(DateTimeOffsetFromTimestamp(GetTimestamp(arguments[0], span, context), span).UtcDateTime, DateTimeKind.Unspecified)), context, span);
+        return OwnDateTimeValue(new PyDateTime(DateTime.SpecifyKind(DateTimeOffsetFromTimestamp(TimestampToMicroseconds(CoerceTimestampNumber(arguments[0], span, context)), span).UtcDateTime, DateTimeKind.Unspecified)), context, span);
     }
 
     public static object DateTimeCombine(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
