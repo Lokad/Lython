@@ -537,7 +537,8 @@ internal sealed partial class LythonRuntime
             "datetime.timezone" or
             "datetime.tzinfo" or
             "statistics.NormalDist" or
-            "random.Random";
+            "random.Random" or
+            "zipfile.ZipInfo";
     }
 
     internal static bool DoesObjectMatchBuiltinType(string typeName, object value)
@@ -562,6 +563,7 @@ internal sealed partial class LythonRuntime
             "datetime.timezone" => value is PyTimezone,
             "datetime.tzinfo" => value is PyTimezone,
             "statistics.NormalDist" => value is StatisticsModule.PyNormalDist,
+            "zipfile.ZipInfo" => value is PyZipInfo,
             "random.Random" => value is RandomModule.PyRandom,
             _ => false
         };
@@ -795,6 +797,22 @@ internal sealed partial class LythonRuntime
                     names.Add(name);
                 }
 
+                return names;
+
+            case PyZipInfo:
+                names.Add("CRC");
+                names.Add("comment");
+                names.Add("compress_size");
+                names.Add("compress_type");
+                names.Add("create_system");
+                names.Add("date_time");
+                names.Add("external_attr");
+                names.Add("extra");
+                names.Add("file_size");
+                names.Add("filename");
+                names.Add("flag_bits");
+                names.Add("header_offset");
+                names.Add("is_dir");
                 return names;
 
             case PySlice:

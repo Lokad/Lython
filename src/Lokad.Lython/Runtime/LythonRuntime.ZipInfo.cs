@@ -302,7 +302,7 @@ internal sealed partial class LythonRuntime
         public PyString RenderPython(PyRenderingContext context)
         {
             _ = context;
-            return PyString.FromString($"<zipfile.ZipInfo filename='{FileName}' file_size={_fileSize}>");
+            return PyString.FromString($"<ZipInfo filename='{FileName}' file_size={_fileSize}>");
         }
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);

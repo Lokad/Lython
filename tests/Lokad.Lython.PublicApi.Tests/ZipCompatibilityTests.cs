@@ -2025,6 +2025,67 @@ with zipfile.ZipFile("/t.zip") as archive:
     }
 
     [Fact]
+    public void ZipInfoMemberSurface_BehavesLikePython()
+    {
+        var result = new LythonEngine().Run(
+            """
+import zipfile
+texts = []
+z = zipfile.ZipInfo("a.txt")
+texts.append(str(type(z) is zipfile.ZipInfo))
+texts.append(str(z.__class__ is zipfile.ZipInfo))
+texts.append(str(isinstance(z, zipfile.ZipInfo)))
+texts.append(repr(z))
+texts.append(str(dir(z)))
+z.file_size += 10
+texts.append(str(z.file_size))
+z.filename = "b.txt"
+texts.append(z.filename)
+try:
+    z.missing
+except AttributeError as ex:
+    texts.append(str(ex))
+try:
+    z.custom = 1
+except AttributeError as ex:
+    texts.append(str(ex))
+try:
+    del z.custom
+except AttributeError as ex:
+    texts.append(str(ex))
+try:
+    z + 1
+except TypeError as ex:
+    texts.append(str(ex))
+
+def run():
+    local = zipfile.ZipInfo("c.txt")
+    return str(type(local) is zipfile.ZipInfo) + "|" + local.filename
+
+texts.append(run())
+return texts
+""",
+            new ZipPublicHost());
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(
+            new List<object?>
+            {
+                "True",
+                "True",
+                "True",
+                "<ZipInfo filename='a.txt' file_size=0>",
+                "['CRC', 'comment', 'compress_size', 'compress_type', 'create_system', 'date_time', 'external_attr', 'extra', 'file_size', 'filename', 'flag_bits', 'header_offset', 'is_dir']",
+                "10",
+                "b.txt",
+                "'ZipInfo' object has no attribute 'missing'",
+                "'ZipInfo' object has no attribute 'custom' and no __dict__ for setting new attributes",
+                "'ZipInfo' object has no attribute 'custom' and no __dict__ for setting new attributes",
+                "unsupported operand type(s) for +: 'ZipInfo' and 'int'",
+                "True|c.txt",
+            },
+            Assert.IsType<List<object?>>(result.ReturnValue));
+    }
+    [Fact]
     public void ZipInfoDefaultsAndErrorAlias()
     {
         var result = new LythonEngine().Run(
