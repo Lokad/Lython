@@ -279,19 +279,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static object EvaluateAbsolute(object value, ExecutionContext context, LythonSourceSpan span)
-    {
-        if (value is PyDecimal decimalValue)
-        {
-            return OwnDecimalValue(new PyDecimal(decimal.Abs(decimalValue.Value), decimalValue.Exponent), context, span);
-        }
-
-        if (!PyNumberOps.TryAsNumber(value, out var number))
-        {
-            throw new LythonRuntimeException("TypeError", "operator.abs(obj) expects a numeric value.", span);
-        }
-
-        return number.IsFloat ? Math.Abs(number.Floating) : OwnHeapInteger(BigInteger.Abs(number.Integer), context.MemoryGovernor, span);
-    }
+        => AbsValue(value, context, span);
 
     private static object EvaluateIndex(object value, ExecutionContext context, LythonSourceSpan span)
     {

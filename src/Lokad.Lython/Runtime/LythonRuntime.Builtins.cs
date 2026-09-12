@@ -342,25 +342,30 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "abs(x) expects one argument.", span);
         }
 
-        if (arguments[0] is PyInstance absInstance &&
+        return AbsValue(arguments[0], context, span);
+    }
+
+    private static object AbsValue(object value, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (value is PyInstance absInstance &&
             TryInvokeUnarySpecialMethod(absInstance, "__abs__", context, span, out var absolute))
         {
             return absolute;
         }
 
-        if (arguments[0] is PyDecimal decimalValue)
+        if (value is PyDecimal decimalValue)
         {
             return OwnDecimalValue(new PyDecimal(decimal.Abs(decimalValue.Value), decimalValue.Exponent), context, span);
         }
 
-        if (arguments[0] is PyTimedelta delta)
+        if (value is PyTimedelta delta)
         {
             return PyDateTimeOps.Abs(delta, context, span);
         }
 
-        if (!PyNumberOps.TryAsNumber(arguments[0], out var number))
+        if (!PyNumberOps.TryAsNumber(value, out var number))
         {
-            throw new LythonRuntimeException("TypeError", "bad operand type for abs(): '" + DatetimeQualifiedTypeName(arguments[0], context) + "'", span);
+            throw new LythonRuntimeException("TypeError", "bad operand type for abs(): '" + DatetimeQualifiedTypeName(value, context) + "'", span);
         }
 
         return number.IsFloat ? Math.Abs(number.Floating) : OwnHeapInteger(BigInteger.Abs(number.Integer), context.MemoryGovernor, span);

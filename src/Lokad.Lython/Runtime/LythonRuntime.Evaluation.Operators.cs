@@ -88,6 +88,11 @@ internal sealed partial class LythonRuntime
             return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => AddCounterCounts(lhs, rhs, span, leftCounter.OwnerMemoryGovernor ?? rightCounter.OwnerMemoryGovernor), keepPositiveOnly: true, span);
         }
 
+        if (left is PyString)
+        {
+            throw RuntimeErrors.ConcatError("str", right, span);
+        }
+
         if (left is PyTimedelta or PyDate or PyDateTime || right is PyTimedelta or PyDate or PyDateTime)
         {
             return PyDateTimeOps.Add(left, right, context, span, operation);

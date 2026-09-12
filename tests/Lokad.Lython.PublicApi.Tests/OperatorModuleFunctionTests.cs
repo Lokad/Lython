@@ -147,6 +147,29 @@ __lython_file.close()
     }
 
     [Fact]
+    public void OperatorModule_AbsAndAdd_MatchDirectDatetimeSemantics()
+    {
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+import datetime
+import operator
+vals = []
+vals.append(str(operator.abs(datetime.timedelta(days=-1))))
+vals.append(str(operator.abs(datetime.timedelta(days=2))))
+vals.append(str(operator.neg(datetime.timedelta(days=1))))
+vals.append(str(operator.pos(datetime.timedelta(days=-1))))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("1 day, 0:00:00|2 days, 0:00:00|-1 day, 0:00:00|-1 day, 0:00:00", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void OperatorModule_ExpandedHelpers_MatchDirectSyntax()
     {
         var host = new MockLythonHost();
@@ -289,6 +312,46 @@ operator.attrgetter("a..b")
 """,
         "TypeError",
         "non-empty")]
+    [InlineData(
+        """
+import datetime
+import operator
+operator.abs(datetime.date(2024, 1, 2))
+""",
+        "TypeError",
+        "bad operand type for abs(): 'datetime.date'")]
+    [InlineData(
+        """
+import datetime
+import operator
+operator.abs(datetime.timezone.utc)
+""",
+        "TypeError",
+        "bad operand type for abs(): 'datetime.timezone'")]
+    [InlineData(
+        """
+import datetime
+import operator
+operator.add('d', datetime.timedelta(1))
+""",
+        "TypeError",
+        "can only concatenate str (not \"datetime.timedelta\") to str")]
+    [InlineData(
+        """
+import datetime
+import operator
+operator.add('d', datetime.date(2024, 1, 2))
+""",
+        "TypeError",
+        "can only concatenate str (not \"datetime.date\") to str")]
+    [InlineData(
+        """
+import datetime
+import operator
+operator.add('d', datetime.datetime(2024, 1, 2))
+""",
+        "TypeError",
+        "can only concatenate str (not \"datetime.datetime\") to str")]
     public void OperatorModule_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());
