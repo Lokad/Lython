@@ -199,6 +199,53 @@ internal static partial class PyDecimalOps
         }
     }
 
+    public static object PowerMod(object value, object exponentValue, object modulusValue, LythonSourceSpan span)
+    {
+        if (!IsIntegerOperand(value) || !IsIntegerOperand(exponentValue) || !IsIntegerOperand(modulusValue))
+        {
+            throw new LythonRuntimeException(
+                "TypeError",
+                $"unsupported operand type(s) for ** or pow(): '{RuntimeErrors.OperandTypeName(value)}', '{RuntimeErrors.OperandTypeName(exponentValue)}', '{RuntimeErrors.OperandTypeName(modulusValue)}'",
+                span);
+        }
+
+        if (!TryGetIntegerOperand(value, out var integerBase) ||
+            !TryGetIntegerOperand(exponentValue, out var exponent) ||
+            !TryGetIntegerOperand(modulusValue, out var modulus))
+        {
+            throw InvalidOperationSignal(span);
+        }
+
+        if (exponent < BigInteger.Zero || modulus == BigInteger.Zero)
+        {
+            throw InvalidOperationSignal(span);
+        }
+
+        // Binary modular exponentiation reducing with the truncated BCL
+        // remainder at every step, which is exactly the decimal %
+        // convention CPython power_modulo follows (including for negative
+        // moduli, where int pow would floor instead).
+        var result = BigInteger.One % modulus;
+        var factor = integerBase % modulus;
+        while (exponent > BigInteger.Zero)
+        {
+            if (!exponent.IsEven)
+            {
+                result = result * factor % modulus;
+            }
+
+            factor = factor * factor % modulus;
+            exponent >>= 1;
+        }
+
+        if (result > (BigInteger)decimal.MaxValue || result < (BigInteger)decimal.MinValue)
+        {
+            throw DecimalOverflow(span);
+        }
+
+        return new PyDecimal((decimal)result);
+    }
+
     private static LythonRuntimeException CompareFailed(string? operation, object left, object right, LythonSourceSpan span)
         => operation is null
             ? new LythonRuntimeException("TypeError", "Values are not comparable.", span)
@@ -385,24 +432,29 @@ internal static partial class PyDecimalOps
     private static int GetOperandExponent(object value, decimal numericValue)
         => value is PyDecimal pyDecimal ? pyDecimal.Exponent : -GetScale(numericValue);
 
-    // Integral valued decimals count as integer exponents like CPython
-    // (fractional ones keep the unsupported operands refusal); deliberately
-    // local so indexing and the other TryAsInteger callers keep rejecting
-    // decimals.
+    // Integral valued decimals count as integers like CPython (fractional
+    // ones keep the unsupported operands refusal); deliberately local so
+    // indexing and the other TryAsInteger callers keep rejecting decimals.
     private static bool TryGetIntegerExponent(object value, out BigInteger exponent)
+        => TryGetIntegerOperand(value, out exponent);
+
+    private static bool IsIntegerOperand(object value)
+        => value is PyDecimal || Numbers.PyNumberOps.TryAsInteger(value, out _);
+
+    private static bool TryGetIntegerOperand(object value, out BigInteger integer)
     {
-        if (Numbers.PyNumberOps.TryAsInteger(value, out exponent))
+        if (Numbers.PyNumberOps.TryAsInteger(value, out integer))
         {
             return true;
         }
 
         if (value is PyDecimal pyDecimal && decimal.Truncate(pyDecimal.Value) == pyDecimal.Value)
         {
-            exponent = new BigInteger(pyDecimal.Value);
+            integer = new BigInteger(pyDecimal.Value);
             return true;
         }
 
-        exponent = default;
+        integer = default;
         return false;
     }
 

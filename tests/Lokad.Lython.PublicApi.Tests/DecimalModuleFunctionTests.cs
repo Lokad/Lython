@@ -435,6 +435,13 @@ Decimal("150").quantize(Decimal("1E-28"), "ROUND_DOWN")
 """,
         "InvalidOperation",
         "quantize result")]
+    [InlineData(
+        """
+from decimal import Decimal
+pow(Decimal('10'), Decimal('30'), 10 ** 100)
+""",
+        "Overflow",
+        "overflowed")]
     public void DecimalModule_NearMissContracts_FailPrecisely(string source, string exceptionType, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());
@@ -735,11 +742,8 @@ Decimal("150").quantize(Decimal("1E-28"), "ROUND_DOWN")
             except TypeError as e:
                 results.append(type(e).__name__)
                 results.append(str(e))
-            try:
-                pow(Decimal('2'), Decimal('3'), 5)
-            except TypeError as e:
-                results.append(type(e).__name__)
-                results.append(str(e))
+            results.append(str(pow(Decimal('2'), Decimal('3'), 5)))
+            results.append(type(pow(Decimal('2'), Decimal('3'), 5)).__name__)
             try:
                 Decimal('0') ** 0
             except decimal.InvalidOperation as e:
@@ -790,8 +794,8 @@ Decimal("150").quantize(Decimal("1E-28"), "ROUND_DOWN")
             "Decimal arithmetic overflowed Lython's fixed-precision range.",
             "TypeError",
             "unsupported operand type(s) for ** or pow(): 'decimal.Decimal' and 'decimal.Decimal'",
-            "TypeError",
-            "unsupported operand type(s) for ** or pow(): 'decimal.Decimal', 'decimal.Decimal', 'int'",
+            "3",
+            "Decimal",
             "InvalidOperation",
             "[<class 'decimal.InvalidOperation'>]",
             "([<class 'decimal.InvalidOperation'>],)",
@@ -959,6 +963,107 @@ Decimal("150").quantize(Decimal("1E-28"), "ROUND_DOWN")
             "DecimalTuple(sign=0, digits=(0,), exponent=0)",
             "0",
             "0",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task DecimalModularPowerMatchesCpython()
+    {
+        // Three-argument pow with integral decimal operands computes the
+        // truncated-remainder modular power like CPython (always Decimal
+        // when a decimal is involved), while negative exponents, zero
+        // moduli and fractional operands signal InvalidOperation, in both
+        // modes.
+        var script = new LythonEngine().Compile("""
+            import decimal
+            from decimal import Decimal
+            results = []
+            results.append(str(pow(Decimal('2'), Decimal('3'), 5)))
+            results.append(repr(pow(Decimal('2'), Decimal('3'), 5)))
+            results.append(type(pow(Decimal('2'), Decimal('3'), 5)).__name__)
+            results.append(str(pow(Decimal('2'), 3, 5)))
+            results.append(str(pow(2, Decimal('3'), 5)))
+            results.append(type(pow(2, Decimal('3'), 5)).__name__)
+            results.append(str(pow(Decimal('2'), Decimal('3'), Decimal('5'))))
+            results.append(str(pow(Decimal('2'), Decimal('0'), 5)))
+            results.append(str(pow(Decimal('2'), Decimal('3'), 1)))
+            results.append(str(pow(Decimal('2'), Decimal('3'), -5)))
+            results.append(str(pow(Decimal('-2'), Decimal('3'), Decimal('-5'))))
+            results.append(str(pow(Decimal('-2'), Decimal('3'), 5)))
+            results.append(str(pow(Decimal('2'), True, 5)))
+            results.append(str(pow(Decimal('2'), Decimal('100'), 1000)))
+            results.append(str(pow(Decimal('2.0'), Decimal('3'), 5)))
+            try:
+                pow(Decimal('2'), Decimal('-1'), 5)
+            except decimal.InvalidOperation as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+                results.append(str(e.args))
+            try:
+                pow(Decimal('2'), Decimal('3'), 0)
+            except decimal.InvalidOperation as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                pow(Decimal('2.5'), Decimal('3'), 5)
+            except decimal.InvalidOperation as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                pow(Decimal('2'), Decimal('0.5'), 5)
+            except decimal.InvalidOperation as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                pow(Decimal('2'), 2.0, 5)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                pow(Decimal('2'), 'x', 5)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "3",
+            "Decimal('3')",
+            "Decimal",
+            "3",
+            "3",
+            "Decimal",
+            "3",
+            "1",
+            "0",
+            "3",
+            "-3",
+            "-3",
+            "2",
+            "376",
+            "3",
+            "InvalidOperation",
+            "[<class 'decimal.InvalidOperation'>]",
+            "([<class 'decimal.InvalidOperation'>],)",
+            "InvalidOperation",
+            "[<class 'decimal.InvalidOperation'>]",
+            "InvalidOperation",
+            "[<class 'decimal.InvalidOperation'>]",
+            "InvalidOperation",
+            "[<class 'decimal.InvalidOperation'>]",
+            "TypeError",
+            "pow() 3rd argument not allowed unless all arguments are integers",
+            "TypeError",
+            "unsupported operand type(s) for ** or pow(): 'decimal.Decimal', 'str', 'int'",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);

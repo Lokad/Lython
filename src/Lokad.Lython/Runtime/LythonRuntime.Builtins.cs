@@ -396,6 +396,11 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("TypeError", "pow() 3rd argument not allowed unless all arguments are integers", span);
                 }
 
+                if (arguments[0] is PyDecimal || arguments[1] is PyDecimal || arguments[2] is PyDecimal)
+                {
+                    return OwnDecimalValue(PyDecimalOps.PowerMod(arguments[0], arguments[1], arguments[2], span), context, span);
+                }
+
                 throw new LythonRuntimeException("TypeError", $"unsupported operand type(s) for ** or pow(): '{RuntimeErrors.OperandTypeName(arguments[0])}', '{RuntimeErrors.OperandTypeName(arguments[1])}', '{RuntimeErrors.OperandTypeName(arguments[2])}'", span);
             }
 
