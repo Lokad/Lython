@@ -1104,6 +1104,55 @@ __lython_file.close()
     }
 
     [Fact]
+    public void ExceptionDictReplacement_RunLikePython()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+e = ValueError("x")
+e.custom = 1
+e.__dict__ = {"a": 2}
+texts = []
+texts.append(str(e.__dict__))
+texts.append(str(e.a))
+texts.append(str(hasattr(e, "custom")))
+e.__dict__ = e.__dict__
+texts.append(str(e.__dict__))
+e.__dict__ = {}
+texts.append(str(e.__dict__))
+e.fresh = 5
+texts.append(str(e.__dict__))
+texts.append(str(vars(e) is e.__dict__))
+setattr(e, "__dict__", {"k": 9})
+texts.append(str(e.k))
+texts.append(str(e.__dict__))
+e.__dict__["live"] = 3
+texts.append(str(e.live))
+try:
+    e.__dict__ = 1
+except TypeError as ex:
+    texts.append(str(ex))
+
+def run():
+    local = ValueError("z")
+    local.old = 1
+    local.__dict__ = {"swapped": 2}
+    return str(local.__dict__) + "|" + str(local.swapped) + "|" + str(hasattr(local, "old"))
+
+texts.append(run())
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(texts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, DescribeFailure(result));
+        Assert.Null(result.Failure);
+        Assert.Equal("{'a': 2}|2|False|{'a': 2}|{}|{'fresh': 5}|True|9|{'k': 9}|3|__dict__ must be set to a dictionary, not a 'int'|{'swapped': 2}|2|False", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void ReadOnlyMemberTargets_ReportPythonTexts()
     {
         var host = new MockLythonHost();

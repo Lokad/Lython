@@ -267,6 +267,28 @@ internal static class PyMemberAccess
                 return true;
             }
 
+            // __dict__ assignment swaps the whole dict like CPython instead
+            // of storing a "__dict__" entry; entries are snapshotted first so
+            // self-assignment keeps every entry.
+            if (memberName == "__dict__")
+            {
+                if (value is not PyDict replacement)
+                {
+                    throw new LythonRuntimeException("TypeError", $"__dict__ must be set to a dictionary, not a '{LythonRuntime.UnboundTypeMethod.PythonTypeName(value, context)}'", span);
+                }
+
+                exception.CustomDict ??= new PyDict(context.MemoryGovernor, span);
+                exception.CustomDict.AttachMemoryGovernor(context.MemoryGovernor, span);
+                var entries = new List<KeyValuePair<object, object>>(replacement);
+                exception.CustomDict.Clear();
+                foreach (var entry in entries)
+                {
+                    exception.CustomDict.SetItem(entry.Key, entry.Value);
+                }
+
+                return true;
+            }
+
             exception.CustomDict ??= new PyDict(context.MemoryGovernor, span);
             exception.CustomDict.AttachMemoryGovernor(context.MemoryGovernor, span);
             exception.CustomDict.SetItem(PyString.FromString(memberName, context.MemoryGovernor, span), value);
