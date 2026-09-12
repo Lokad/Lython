@@ -172,7 +172,7 @@ return "|".join(values)
 
         Assert.True(result.Success, Describe(result));
         Assert.Equal(
-            "TypeError|ValueError|OverflowError|TypeError|TypeError|ValueError|TypeError|TypeError|ValueError|NotImplementedError",
+            "TypeError|ValueError|OverflowError|TypeError|TypeError|TypeError|TypeError|ValueError|NotImplementedError",
             result.ReturnValue);
     }
 
@@ -181,6 +181,11 @@ return "|".join(values)
     [InlineData("time.asctime((10**30, 1, 2, 3, 4, 5, 0, 0, 0))\n", "OverflowError", "Python int too large to convert to C long")]
     [InlineData("time.ctime((1, 2))\n", "TypeError", "'tuple' object cannot be interpreted as an integer")]
     [InlineData("time.localtime(\"a\")\n", "TypeError", "'str' object cannot be interpreted as an integer")]
+    [InlineData("time.asctime((2024, 13, 2, 3, 4, 5, 0, 0, 0))\n", "ValueError", "month out of range")]
+    [InlineData("time.asctime((2024, 1, 32, 3, 4, 5, 0, 0, 0))\n", "ValueError", "day of month out of range")]
+    [InlineData("time.asctime((2024, 1, 2, 25, 4, 5, 0, 0, 0))\n", "ValueError", "hour out of range")]
+    [InlineData("time.asctime((2024, 1, 2, 3, 61, 5, 0, 0, 0))\n", "ValueError", "minute out of range")]
+    [InlineData("time.asctime((2024, 1, 2, 3, 4, 62, 0, 0, 0))\n", "ValueError", "seconds out of range")]
     public void TimeTupleFailures_ReportExactErrors(string expression, string exceptionType, string messageFragment)
     {
         var result = new LythonEngine().Run("import time\n" + expression, new MockLythonHost());
@@ -208,6 +213,20 @@ return "|".join(values)
         Assert.False(asyncResult.Success);
         Assert.Equal("TypeError", asyncResult.Failure?.ExceptionType);
         Assert.Equal(message, asyncResult.Failure?.Message);
+    }
+
+    [Fact]
+    public async Task MktimeNormalizesOutOfRangeFields()
+    {
+        const string source = "import time\nreturn str(time.mktime((2024, 13, 2, 3, 4, 5, 0, 0, 0))) + \"|\" + str(time.mktime((2024, 0, 15, 3, 4, 5, 0, 0, 0))) + \"|\" + str(time.mktime((2024, 1, 0, 3, 4, 5, 0, 0, 0))) + \"|\" + str(time.mktime((2024, 1, 2, 25, 4, 5, 0, 0, 0))) + \"|\" + str(time.mktime((2024, 1, 2, 3, 61, 5, 0, 0, 0))) + \"|\" + str(time.mktime((2024, 2, 30, 3, 4, 5, 0, 0, 0))) + \"|\" + str(time.mktime((2024, 1, -1, 3, 4, 5, 0, 0, 0)))\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("1735783445.0|1702605845.0|1703988245.0|1704240245.0|1704164465.0|1709258645.0|1703901845.0", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("1735783445.0|1702605845.0|1703988245.0|1704240245.0|1704164465.0|1709258645.0|1703901845.0", asyncResult.ReturnValue);
     }
 
     [Fact]

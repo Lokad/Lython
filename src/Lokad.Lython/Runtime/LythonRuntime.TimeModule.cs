@@ -309,23 +309,51 @@ internal sealed partial class LythonRuntime
         private static object Ctime(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var local = (TimeStructTimeValue)Localtime(arguments, span, context);
-            return PyString.FromString(FormatAsctime(ReadTimeTuple(local, "time.ctime", span, context)), context.MemoryGovernor, span);
+            return PyString.FromString(FormatAsctime(ReadTimeTuple(local, "time.ctime", span, context), span), context.MemoryGovernor, span);
         }
 
         private static object Mktime(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var fields = ReadTimeTuple(arguments[0], "time.mktime", span, context);
-            var local = CreateDateTime(fields, "time.mktime", span);
-            try
+            context.RegisterHostCall(span);
+            return NormalizeFieldsToEpochSeconds(fields, context.Host.LocalNow.Offset);
+        }
+
+        private static double NormalizeFieldsToEpochSeconds(TimeFields fields, TimeSpan offset)
+        {
+            // Out-of-range calendar and clock fields carry like libc mktime,
+            // keeping everything in integer arithmetic for determinism.
+            var totalMonths = (long)fields.Year * 12 + (fields.Month - 1);
+            var year = FloorDiv(totalMonths, 12, out var monthRemainder);
+            var month = (int)monthRemainder + 1;
+            var days = DaysFromCivil(year, month) + (fields.MonthDay - 1);
+            var daySeconds = (long)fields.Hour * 3600 + (long)fields.Minute * 60 + fields.Second;
+            var totalSeconds = days * 86_400L + daySeconds - (long)offset.TotalSeconds;
+            return totalSeconds;
+        }
+
+        private static long FloorDiv(long value, long divisor, out long remainder)
+        {
+            var quotient = value / divisor;
+            remainder = value % divisor;
+            if (remainder != 0 && (remainder < 0) != (divisor < 0))
             {
-                context.RegisterHostCall(span);
-                var offset = context.Host.LocalNow.Offset;
-                return UnixSeconds(new DateTimeOffset(local, offset));
+                quotient -= 1;
+                remainder += divisor;
             }
-            catch (ArgumentException ex)
-            {
-                throw new LythonRuntimeException("OverflowError", ex.Message, span);
-            }
+
+            return quotient;
+        }
+
+        private static long DaysFromCivil(long year, int month)
+        {
+            // Days since 1970-01-01 for any proleptic Gregorian year.
+            var adjustedYear = month <= 2 ? year - 1 : year;
+            var era = adjustedYear >= 0 ? adjustedYear / 400 : (adjustedYear - 399) / 400;
+            var yearOfEra = adjustedYear - era * 400;
+            var dayOfYear = (153 * (month + (month > 2 ? -3 : 9)) + 2) / 5;
+            var dayOfEra = yearOfEra * 365 + yearOfEra / 4 - yearOfEra / 100 + dayOfYear;
+            return era * 146097 + dayOfEra - 719468;
         }
 
         private static object Asctime(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -340,7 +368,7 @@ internal sealed partial class LythonRuntime
                 fields = ReadTimeTuple(arguments[0], "time.asctime", span, context);
             }
 
-            return PyString.FromString(FormatAsctime(fields), context.MemoryGovernor, span);
+            return PyString.FromString(FormatAsctime(fields, span), context.MemoryGovernor, span);
         }
 
         private static object Strftime(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -531,14 +559,38 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static string FormatAsctime(TimeFields fields)
+        private static string FormatAsctime(TimeFields fields, LythonSourceSpan span)
         {
             string[] weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
             string[] months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            if (fields.Weekday is < 0 or > 6 || fields.Month is < 1 or > 12 || fields.MonthDay is < 1 or > 31 ||
-                fields.Hour is < 0 or > 23 || fields.Minute is < 0 or > 59 || fields.Second is < 0 or > 61)
+            if (fields.Month is < 1 or > 12)
             {
-                throw new LythonRuntimeException("ValueError", "invalid time tuple fields", null);
+                throw new LythonRuntimeException("ValueError", "month out of range", span);
+            }
+
+            if (fields.MonthDay is < 1 or > 31)
+            {
+                throw new LythonRuntimeException("ValueError", "day of month out of range", span);
+            }
+
+            if (fields.Hour is < 0 or > 23)
+            {
+                throw new LythonRuntimeException("ValueError", "hour out of range", span);
+            }
+
+            if (fields.Minute is < 0 or > 59)
+            {
+                throw new LythonRuntimeException("ValueError", "minute out of range", span);
+            }
+
+            if (fields.Second is < 0 or > 61)
+            {
+                throw new LythonRuntimeException("ValueError", "seconds out of range", span);
+            }
+
+            if (fields.Weekday is < 0 or > 6)
+            {
+                throw new LythonRuntimeException("ValueError", "invalid time tuple fields", span);
             }
 
             return FormattableString.Invariant(
