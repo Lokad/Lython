@@ -21,9 +21,21 @@ internal static partial class PyStringOps
     private static PyString SliceTrimmed(PyString value, bool trimStart, bool trimEnd)
         => SliceTrimmed(value, trimStart, trimEnd, null);
 
+    // MG06: trimming compares runes directly over the UTF-8 span and slices
+    // once. Slicing a governed rune string per boundary character committed
+    // durable scratch beside the result on padding-heavy inputs.
     private static PyString SliceTrimmed(PyString value, bool trimStart, bool trimEnd, PyString? chars)
     {
-        HashSet<PyString>? trimChars = chars is null ? null : new HashSet<PyString>(chars.EnumerateRunes());
+        HashSet<int>? trimRunes = null;
+        if (chars is not null)
+        {
+            trimRunes = new HashSet<int>();
+            foreach (var trimRune in chars.AsString().EnumerateRunes())
+            {
+                trimRunes.Add(trimRune.Value);
+            }
+        }
+
         var source = value.Utf8Bytes.Span;
         var startByte = 0;
         var endByte = source.Length;
@@ -32,9 +44,8 @@ internal static partial class PyStringOps
         {
             while (startByte < endByte)
             {
-                Rune.DecodeFromUtf8(source[startByte..], out _, out var runeLength);
-                var rune = SliceUtf8(value, startByte, startByte + runeLength, value.OwnerMemoryGovernor, value.AllocationSpan);
-                if (!ShouldTrim(rune, trimChars))
+                Rune.DecodeFromUtf8(source[startByte..], out var rune, out var runeLength);
+                if (!ShouldTrim(rune, trimRunes))
                 {
                     break;
                 }
@@ -48,8 +59,8 @@ internal static partial class PyStringOps
             while (endByte > startByte)
             {
                 var runeStart = GetPreviousRuneStart(source, endByte);
-                var rune = SliceUtf8(value, runeStart, endByte, value.OwnerMemoryGovernor, value.AllocationSpan);
-                if (!ShouldTrim(rune, trimChars))
+                Rune.DecodeFromUtf8(source[runeStart..endByte], out var rune, out var _);
+                if (!ShouldTrim(rune, trimRunes))
                 {
                     break;
                 }
@@ -150,11 +161,11 @@ internal static partial class PyStringOps
         return sawRune;
     }
 
-    private static bool ShouldTrim(PyString rune, HashSet<PyString>? trimChars)
+    private static bool ShouldTrim(Rune rune, HashSet<int>? trimRunes)
     {
-        return trimChars is null
-            ? Rune.IsWhiteSpace(DecodeSingleRune(rune))
-            : trimChars.Contains(rune);
+        return trimRunes is null
+            ? Rune.IsWhiteSpace(rune)
+            : trimRunes.Contains(rune.Value);
     }
 
     internal static int LastIndexOfBytes(ReadOnlySpan<byte> haystack, ReadOnlySpan<byte> needle)
@@ -275,11 +286,6 @@ internal static partial class PyStringOps
         return SliceUtf8(value, startByte, endByte, value.OwnerMemoryGovernor, value.AllocationSpan);
     }
 
-    private static Rune DecodeSingleRune(PyString rune)
-    {
-        Rune.DecodeFromUtf8(rune.Utf8Bytes.Span, out var decoded, out _);
-        return decoded;
-    }
 
     private static GovernedByteBuilder CreateBuilder(PyString value)
         => CreateBuilder(value, 0);
