@@ -101,20 +101,28 @@ internal sealed partial class LythonRuntime
     {
         foreach (var pair in InPlaceMergePairs(source, span))
         {
-            var current = counter.TryGetValue(pair.Key, out var found) ? found : BigInteger.Zero;
-            var count = CompareCounterCounts(pair.Value, current, span, ">") >= 0 ? pair.Value : current;
-            if (CompareCounterCounts(count, BigInteger.Zero, span, ">") > 0)
-            {
-                counter.SetItem(pair.Key, count);
-            }
-            else
-            {
-                counter.Remove(pair.Key);
-            }
+            MergeCounterUnionPair(counter, pair.Key, pair.Value, span);
         }
 
-        // Purge pre-existing non-positive counts like CPython, surfacing
-        // comparison failures for non-numeric occupants.
+        PurgeCounterNonPositive(counter, span);
+    }
+
+    // Union keeps the incoming count only when strictly greater, so ties
+    // keep the incumbent object exactly like CPython (if other_count >
+    // count: self[elem] = other_count).
+    private static void MergeCounterUnionPair(PyCounter counter, object key, object otherCount, LythonSourceSpan span)
+    {
+        var current = counter.TryGetValue(key, out var found) ? found : BigInteger.Zero;
+        if (CompareCounterCounts(otherCount, current, span, ">") > 0)
+        {
+            counter.SetItem(key, otherCount);
+        }
+    }
+
+    // Purge pre-existing non-positive counts like CPython, surfacing
+    // comparison failures for non-numeric occupants.
+    private static void PurgeCounterNonPositive(PyCounter counter, LythonSourceSpan span)
+    {
         var stale = new List<object>();
         foreach (var pair in counter.Items)
         {
@@ -301,7 +309,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
-            return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) <= 0 ? lhs : rhs, keepPositiveOnly: true, span);
+            return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) < 0 ? lhs : rhs, keepPositiveOnly: true, span);
         }
 
         if (left is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView || right is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView)

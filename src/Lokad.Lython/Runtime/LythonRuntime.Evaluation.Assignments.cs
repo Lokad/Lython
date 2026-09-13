@@ -766,9 +766,13 @@ internal sealed partial class LythonRuntime
         }
 
         if (op == AugmentedAssignmentOperatorSyntax.BitwiseOr &&
-            currentValue is PyDict currentDict && IsInPlaceMergeOperand(right))
+            currentValue is PyDict currentDict)
         {
-            foreach (var pair in InPlaceMergePairs(right, span))
+            // Stage through a temporary like dict.update so pair
+            // iterables merge exactly like mappings.
+            var stagedDict = new PyDict(context.MemoryGovernor, span);
+            UpdateDictionaryFromSource(stagedDict, right, context, span);
+            foreach (var pair in stagedDict)
             {
                 currentDict.SetItem(pair.Key, pair.Value);
             }
@@ -777,9 +781,11 @@ internal sealed partial class LythonRuntime
         }
 
         if (op == AugmentedAssignmentOperatorSyntax.BitwiseOr &&
-            currentValue is PyDefaultDict currentDefault && IsInPlaceMergeOperand(right))
+            currentValue is PyDefaultDict currentDefault)
         {
-            foreach (var pair in InPlaceMergePairs(right, span))
+            var stagedDefault = new PyDict(context.MemoryGovernor, span);
+            UpdateDictionaryFromSource(stagedDefault, right, context, span);
+            foreach (var pair in stagedDefault)
             {
                 currentDefault.SetItem(pair.Key, pair.Value);
             }

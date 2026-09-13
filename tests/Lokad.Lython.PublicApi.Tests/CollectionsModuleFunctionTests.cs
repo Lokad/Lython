@@ -1564,4 +1564,267 @@ deque().pop()
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task DefaultdictOperatorDundersAdvanceLikeCpython()
+    {
+        // defaultdict direct calls merge plainly with the binary-| factory
+        // rule (left wins, so __ror__ keeps the other factory), NotImplemented
+        // outside mappings, and an in-place form that stages pairs exactly
+        // like dict.__ior__; |= statements accept pair iterables as well.
+        var script = new LythonEngine().Compile("""
+            from collections import Counter, defaultdict, ChainMap
+            def call2(f, a, b):
+                return f(a, b)
+            results = []
+            dd = defaultdict(list, {"a": [1]})
+            results.append(str(dd.__or__({"b": 2})))
+            results.append(str(dd.__or__({"b": 2}).default_factory.__name__))
+            results.append(str(dd.__ror__({"b": 2})))
+            results.append(str(dd.__ror__({"b": 2}).default_factory.__name__))
+            results.append(str((defaultdict(int, {"a": 1}) | defaultdict(list, {"b": 2})).default_factory.__name__))
+            results.append(str(defaultdict(list, {"b": 2}).__ror__(defaultdict(int, {"a": 1})).default_factory.__name__))
+            results.append(str(defaultdict(int, {"a": 1}).__ror__(defaultdict(list, {"b": 2})).default_factory.__name__))
+            results.append(str(dd.__or__(Counter({"b": 2}))))
+            results.append(str(dd.__ror__(Counter({"b": 2}))))
+            results.append(str(dd.__or__([(1, 2)])))
+            results.append(str(dd.__ror__([(1, 2)])))
+            results.append(str(dd.__or__(ChainMap({"x": 1}))))
+            results.append(str(dd.__ror__(ChainMap({"x": 1}))))
+            d2 = defaultdict(list, {"a": [1]})
+            r2 = d2.__ior__([(1, 2)])
+            results.append(str(r2))
+            results.append(str(r2 is d2))
+            try:
+                defaultdict(list).__ior__(5)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            d = {"x": 1}
+            d |= [(1, 2)]
+            results.append(str(d))
+            dd3 = defaultdict(list, {"a": [1]})
+            dd3 |= [(1, 2)]
+            results.append(str(dd3))
+            try:
+                dd4 = defaultdict(list)
+                dd4 |= 5
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            for (f, a, b) in [(defaultdict(list).__or__, {}, {}), (defaultdict(list).__ror__, {}, {}), (defaultdict(list).__ior__, {}, {})]:
+                try:
+                    call2(f, a, b)
+                except TypeError as e:
+                    results.append(type(e).__name__)
+                    results.append(str(e))
+            results.append(str(hasattr(defaultdict(list), "__or__")))
+            results.append(str(hasattr(defaultdict(list), "__ror__")))
+            results.append(str(hasattr(defaultdict(list), "__ior__")))
+            results.append(str(hasattr(defaultdict(list), "__and__")))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "defaultdict(<class 'list'>, {'a': [1], 'b': 2})",
+            "list",
+            "defaultdict(<class 'list'>, {'b': 2, 'a': [1]})",
+            "list",
+            "int",
+            "int",
+            "list",
+            "defaultdict(<class 'list'>, {'a': [1], 'b': 2})",
+            "defaultdict(<class 'list'>, {'b': 2, 'a': [1]})",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "defaultdict(<class 'list'>, {'a': [1], 1: 2})",
+            "True",
+            "TypeError",
+            "'int' object is not iterable",
+            "{'x': 1, 1: 2}",
+            "defaultdict(<class 'list'>, {'a': [1], 1: 2})",
+            "TypeError",
+            "'int' object is not iterable",
+            "TypeError",
+            "Method 'defaultdict.__or__' received too many positional arguments.",
+            "TypeError",
+            "Method 'defaultdict.__ror__' received too many positional arguments.",
+            "TypeError",
+            "Method 'defaultdict.__ior__' received too many positional arguments.",
+            "True",
+            "True",
+            "True",
+            "False",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task CounterOperatorDundersAdvanceLikeCpython()
+    {
+        // Counter multiset members take Counters (NotImplemented otherwise),
+        // __ror__ is a plain-dict merge like dict, and the in-place forms
+        // mutate with max-plus-purge semantics through other.items(), keeping
+        // the incumbent object on ties exactly like CPython.
+        var script = new LythonEngine().Compile("""
+            from collections import Counter, ChainMap
+            def call2(f, a, b):
+                return f(a, b)
+            results = []
+            c = Counter("aab")
+            results.append(str(c.__or__(Counter("abb"))))
+            results.append(str(c.__and__(Counter("abb"))))
+            results.append(str(c.__sub__(Counter("abb"))))
+            results.append(str(Counter("aab").__sub__(Counter("xyz"))))
+            results.append(str(c.__or__({"a": 1})))
+            results.append(str(c.__and__({"a": 1})))
+            results.append(str(c.__sub__({"a": 1})))
+            results.append(str(c.__or__(ChainMap({"a": 1}))))
+            results.append(str(c.__ror__({"a": 1, "b": 9})))
+            results.append(str(type(c.__ror__({"a": 1})).__name__))
+            results.append(str(c.__ror__([(1, 2)])))
+            results.append(str(c.__ror__(ChainMap({"x": 1}))))
+            oc = Counter({"a": 1.0}) | Counter({"a": 1})
+            results.append(str(type(oc["a"]).__name__))
+            ac = Counter({"a": 1.0}) & Counter({"a": 1})
+            results.append(str(type(ac["a"]).__name__))
+            ci = Counter("aab")
+            ri = ci.__ior__({"b": 9})
+            results.append(str(ri))
+            results.append(str(ri is ci))
+            results.append(str(ci))
+            results.append(str(Counter("aab").__ior__(Counter("abb"))))
+            ct = Counter({"a": 1.0})
+            ct.__ior__({"a": 1})
+            results.append(str(type(ct["a"]).__name__))
+            ct2 = Counter({"a": 1.0})
+            ct2.__iand__({"a": 1})
+            results.append(str(type(ct2["a"]).__name__))
+            ck = Counter({"a": -1, "b": 2})
+            results.append(str(ck.__ior__({"c": 3})))
+            cm = Counter("aab")
+            rm = cm.__iand__({"a": 1, "b": 9})
+            results.append(str(rm))
+            results.append(str(rm is cm))
+            results.append(str(Counter("aab").__iand__(Counter("abb"))))
+            try:
+                Counter("aab").__iand__({})
+            except KeyError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                Counter("aab").__iand__([(1, 2)])
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                Counter("aab").__ior__([(1, 2)])
+            except AttributeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                Counter("aab").__ior__(5)
+            except AttributeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            class M:
+                def items(self):
+                    return [("b", 9)]
+            cb = Counter("aab")
+            results.append(str(cb.__ior__(M())))
+            results.append(str(cb))
+            cs = Counter("aab")
+            try:
+                cs |= [(1, 2)]
+            except AttributeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            cl = Counter({"a": 0, "b": 2})
+            results.append(str(cl.__iand__({"a": 5, "b": 1})))
+            for (f, a, b) in [(Counter().__or__, Counter(), Counter()), (Counter().__and__, Counter(), Counter()), (Counter().__sub__, Counter(), Counter()), (Counter().__ror__, {}, {}), (Counter().__ior__, {}, {}), (Counter().__iand__, {}, {})]:
+                try:
+                    call2(f, a, b)
+                except TypeError as e:
+                    results.append(type(e).__name__)
+                    results.append(str(e))
+            results.append(str(hasattr(Counter(), "__or__")))
+            results.append(str(hasattr(Counter(), "__and__")))
+            results.append(str(hasattr(Counter(), "__iand__")))
+            results.append(str(hasattr(Counter(), "__rand__")))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "Counter({'a': 2, 'b': 2})",
+            "Counter({'a': 1, 'b': 1})",
+            "Counter({'a': 1})",
+            "Counter({'a': 2, 'b': 1})",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "{'a': 2, 'b': 1}",
+            "dict",
+            "NotImplemented",
+            "NotImplemented",
+            "float",
+            "int",
+            "Counter({'b': 9, 'a': 2})",
+            "True",
+            "Counter({'b': 9, 'a': 2})",
+            "Counter({'a': 2, 'b': 2})",
+            "float",
+            "float",
+            "Counter({'c': 3, 'b': 2})",
+            "Counter({'a': 1, 'b': 1})",
+            "True",
+            "Counter({'a': 1, 'b': 1})",
+            "KeyError",
+            "'a'",
+            "TypeError",
+            "list indices must be integers or slices, not str",
+            "AttributeError",
+            "'list' object has no attribute 'items'",
+            "AttributeError",
+            "'int' object has no attribute 'items'",
+            "Counter({'b': 9, 'a': 2})",
+            "Counter({'b': 9, 'a': 2})",
+            "AttributeError",
+            "'list' object has no attribute 'items'",
+            "Counter({'b': 1})",
+            "TypeError",
+            "Method 'Counter.__or__' received too many positional arguments.",
+            "TypeError",
+            "Method 'Counter.__and__' received too many positional arguments.",
+            "TypeError",
+            "Method 'Counter.__sub__' received too many positional arguments.",
+            "TypeError",
+            "Method 'Counter.__ror__' received too many positional arguments.",
+            "TypeError",
+            "Method 'Counter.__ior__' received too many positional arguments.",
+            "TypeError",
+            "Method 'Counter.__iand__' received too many positional arguments.",
+            "True",
+            "True",
+            "True",
+            "False",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

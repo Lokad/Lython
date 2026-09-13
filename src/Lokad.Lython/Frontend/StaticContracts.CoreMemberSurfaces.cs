@@ -357,6 +357,9 @@ internal static partial class StaticContracts
         "__getitem__",
         "__setitem__",
         "__delitem__",
+        "__or__",
+        "__ror__",
+        "__ior__",
     };
 
     private static readonly HashSet<string> CollectionsCounterMembers = new(StringComparer.Ordinal)
@@ -380,6 +383,12 @@ internal static partial class StaticContracts
         "__getitem__",
         "__setitem__",
         "__delitem__",
+        "__or__",
+        "__and__",
+        "__sub__",
+        "__ror__",
+        "__ior__",
+        "__iand__",
     };
 
     private static readonly HashSet<string> CollectionsDequeMembers = new(StringComparer.Ordinal)

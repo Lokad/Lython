@@ -1492,6 +1492,70 @@ internal sealed partial class LythonRuntime
                     DeleteSubscriptValue(dict, arguments[0], span, context);
                     return PyNone.Instance;
                 }, "defaultdict.__delitem__", ["index"]),
+                "__or__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "defaultdict.__or__(value) expects one argument.", span);
+                    }
+
+                    if (MergeUnionPairs(arguments[0]) is null)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    var factory = dict.DefaultFactory;
+                    var merged = new PyDict(context.MemoryGovernor, span);
+                    foreach (var pair in dict.Items)
+                    {
+                        merged.SetItem(pair.Key, pair.Value);
+                    }
+
+                    foreach (var pair in MergeUnionPairs(arguments[0]).RequireNotNull())
+                    {
+                        merged.SetItem(pair.Key, pair.Value);
+                    }
+
+                    return new PyDefaultDict(factory, merged);
+                }, "defaultdict.__or__", ["value"]),
+                "__ror__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "defaultdict.__ror__(value) expects one argument.", span);
+                    }
+
+                    if (MergeUnionPairs(arguments[0]) is null)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    var factory = arguments[0] is PyDefaultDict leftDefault ? leftDefault.DefaultFactory : dict.DefaultFactory;
+                    var merged = new PyDict(context.MemoryGovernor, span);
+                    foreach (var pair in MergeUnionPairs(arguments[0]).RequireNotNull())
+                    {
+                        merged.SetItem(pair.Key, pair.Value);
+                    }
+
+                    foreach (var pair in dict.Items)
+                    {
+                        merged.SetItem(pair.Key, pair.Value);
+                    }
+
+                    return new PyDefaultDict(factory, merged);
+                }, "defaultdict.__ror__", ["value"]),
+                "__ior__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "defaultdict.__ior__(value) expects one argument.", span);
+                    }
+
+                    dict.AttachMemoryGovernor(context.MemoryGovernor, span);
+                    UpdateDictionaryFromSource(dict.InnerDict, arguments[0], context, span);
+                    context.ObserveCollectionCount(dict.Count, span);
+                    return dict;
+                }, "defaultdict.__ior__", ["value"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1715,6 +1779,146 @@ internal sealed partial class LythonRuntime
                     DeleteSubscriptValue(counter, arguments[0], span, context);
                     return PyNone.Instance;
                 }, "Counter.__delitem__", ["index"]),
+                "__or__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Counter.__or__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyCounter right)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return BuildCounterBinaryResult(counter, right, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) >= 0 ? lhs : rhs, keepPositiveOnly: true, span);
+                }, "Counter.__or__", ["value"]),
+                "__and__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Counter.__and__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyCounter right)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return BuildCounterBinaryResult(counter, right, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) < 0 ? lhs : rhs, keepPositiveOnly: true, span);
+                }, "Counter.__and__", ["value"]),
+                "__sub__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Counter.__sub__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyCounter right)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return BuildCounterBinaryResult(counter, right, (lhs, rhs) => SubtractCounterCounts(lhs, rhs, span, counter.OwnerMemoryGovernor ?? right.OwnerMemoryGovernor), keepPositiveOnly: true, span);
+                }, "Counter.__sub__", ["value"]),
+                "__ror__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Counter.__ror__(value) expects one argument.", span);
+                    }
+
+                    if (MergeUnionPairs(arguments[0]) is null)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    var merged = new PyDict(context.MemoryGovernor, span);
+                    foreach (var pair in MergeUnionPairs(arguments[0]).RequireNotNull())
+                    {
+                        merged.SetItem(pair.Key, pair.Value);
+                    }
+
+                    foreach (var pair in counter.Items)
+                    {
+                        merged.SetItem(pair.Key, pair.Value);
+                    }
+
+                    return merged;
+                }, "Counter.__ror__", ["value"]),
+                "__ior__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Counter.__ior__(value) expects one argument.", span);
+                    }
+
+                    var other = arguments[0];
+                    if (IsInPlaceMergeOperand(other))
+                    {
+                        MergeCounterUnionInPlace(counter, other, span);
+                        return counter;
+                    }
+
+                    // CPython unions through other.items(), so exotic
+                    // mappings flow through the same max-merge instead of
+                    // failing; a missing items member is the house
+                    // AttributeError like the |= statement path.
+                    if (!TryResolveRuntimeMember(other, "items", context, span, out var itemsMember))
+                    {
+                        throw PyMemberAccess.CreateMissingMemberError(other, "items", span, context);
+                    }
+
+                    if (itemsMember is not ICallable itemsCallable)
+                    {
+                        throw new LythonRuntimeException("TypeError", " + RuntimeErrors.OperandTypeName(itemsMember) +  object is not callable", span);
+                    }
+
+                    foreach (var element in ToSequence(RuntimeValue(itemsCallable.Invoke([], span, context)), span, context))
+                    {
+                        var values = MaterializeUnpackingSequence(element, span, context);
+                        if (values.Length != 2)
+                        {
+                            throw new LythonRuntimeException("ValueError", DescribeLoopArityMismatch(2, values.Length), span);
+                        }
+
+                        MergeCounterUnionPair(counter, values[0], values[1], span);
+                    }
+
+                    PurgeCounterNonPositive(counter, span);
+                    return counter;
+                }, "Counter.__ior__", ["value"]),
+                "__iand__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Counter.__iand__(value) expects one argument.", span);
+                    }
+
+                    var other = arguments[0];
+                    var keys = new List<object>();
+                    foreach (var pair in counter.Items)
+                    {
+                        keys.Add(pair.Key);
+                    }
+
+                    foreach (var key in keys)
+                    {
+                        var otherCount = ReadSubscriptValue(other, key, span, _);
+                        var current = counter.TryGetValue(key, out var found) ? found : BigInteger.Zero;
+                        var count = CompareCounterCounts(otherCount, current, span, "<") < 0 ? otherCount : current;
+                        if (CompareCounterCounts(count, BigInteger.Zero, span, ">") > 0)
+                        {
+                            counter.SetItem(key, count);
+                        }
+                        else
+                        {
+                            counter.Remove(key);
+                        }
+                    }
+
+                    return counter;
+                }, "Counter.__iand__", ["value"]),
                 _ => MissingMemberValue.Instance,
             };
 
