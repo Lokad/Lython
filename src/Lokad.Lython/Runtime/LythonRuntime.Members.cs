@@ -1192,6 +1192,78 @@ internal sealed partial class LythonRuntime
 
                     return PyContainment.Contains(view, arguments[0], span);
                 }, "dict_keys.__contains__", ["item"]),
+                "__or__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_keys.__or__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateBitwiseOr(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
+                }, "dict_keys.__or__", ["value"]),
+                "__ror__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_keys.__ror__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateBitwiseOr(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
+                }, "dict_keys.__ror__", ["value"]),
+                "__and__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_keys.__and__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateBitwiseAnd(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
+                }, "dict_keys.__and__", ["value"]),
+                "__rand__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_keys.__rand__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateBitwiseAnd(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
+                }, "dict_keys.__rand__", ["value"]),
+                "__sub__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_keys.__sub__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateSubtract(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
+                }, "dict_keys.__sub__", ["value"]),
+                "__rsub__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_keys.__rsub__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateSubtract(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
+                }, "dict_keys.__rsub__", ["value"]),
+                "__xor__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_keys.__xor__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateBitwiseXor(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
+                }, "dict_keys.__xor__", ["value"]),
+                "__rxor__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_keys.__rxor__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateBitwiseXor(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
+                }, "dict_keys.__rxor__", ["value"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1239,6 +1311,78 @@ internal sealed partial class LythonRuntime
 
                     return PyContainment.Contains(view, arguments[0], span);
                 }, "dict_items.__contains__", ["item"]),
+                "__or__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_items.__or__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateBitwiseOr(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
+                }, "dict_items.__or__", ["value"]),
+                "__ror__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_items.__ror__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateBitwiseOr(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
+                }, "dict_items.__ror__", ["value"]),
+                "__and__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_items.__and__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateBitwiseAnd(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
+                }, "dict_items.__and__", ["value"]),
+                "__rand__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_items.__rand__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateBitwiseAnd(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
+                }, "dict_items.__rand__", ["value"]),
+                "__sub__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_items.__sub__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateSubtract(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
+                }, "dict_items.__sub__", ["value"]),
+                "__rsub__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_items.__rsub__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateSubtract(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
+                }, "dict_items.__rsub__", ["value"]),
+                "__xor__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_items.__xor__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateBitwiseXor(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
+                }, "dict_items.__xor__", ["value"]),
+                "__rxor__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_items.__rxor__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateBitwiseXor(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
+                }, "dict_items.__rxor__", ["value"]),
                 _ => MissingMemberValue.Instance,
             };
 

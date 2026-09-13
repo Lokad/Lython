@@ -372,4 +372,126 @@ return "|".join(vals)
             "True|True",
             result.ReturnValue);
     }
+    private const string DictViewOperatorDundersSource =
+        """
+def two_args(f, a, b):
+    return f(a, b)
+vals = []
+d = {1: "x", 2: "y"}
+k = d.keys()
+vals.append(str(sorted(k.__or__({2, 3}))))
+vals.append(str(sorted(k.__and__({2, 3}))))
+vals.append(str(sorted(k.__sub__({2}))))
+vals.append(str(sorted(k.__xor__({2, 3}))))
+vals.append(str(sorted(k.__ror__([2, 3]))))
+vals.append(str(sorted(k.__rand__([1, 3]))))
+vals.append(str(sorted(k.__rsub__([0, 1, 3]))))
+vals.append(str(sorted(k.__rxor__([2, 3]))))
+vals.append(str(type(k.__or__({3})).__name__))
+vals.append(str(type(k.__and__({3})).__name__))
+vals.append(str(type(k.__sub__({3})).__name__))
+vals.append(str(type(k.__xor__({3})).__name__))
+vals.append(str(k.__or__({"a"}) == {1, 2, "a"}))
+vals.append(str(k.__or__(d.items()) == {1, 2, (1, "x"), (2, "y")}))
+vals.append(str(d.items().__sub__(k) == {(1, "x"), (2, "y")}))
+it = {1: 10, 2: 20}.items()
+vals.append(str(sorted(it.__and__({(1, 10), (3, 30)}))))
+vals.append(str(sorted(it.__sub__({(1, 10), (3, 30)}))))
+vals.append(str(sorted(it.__or__({(3, 30)}))))
+vals.append(str(sorted(it.__xor__({(1, 10), (3, 30)}))))
+vals.append(str(sorted(it.__rsub__([(1, 10), (3, 30)]))))
+vals.append(str(type(it.__or__({(3, 30)})).__name__))
+vals.append(str(sorted([1, 2] | k)))
+vals.append(str(sorted([1, 3] & k)))
+vals.append(str(sorted([0, 1, 3] - k)))
+vals.append(str(sorted([2, 3] ^ k)))
+try:
+    k.__or__(5)
+except TypeError as e:
+    vals.append(type(e).__name__)
+    vals.append(str(e))
+try:
+    k.__and__(5)
+except TypeError as e:
+    vals.append(type(e).__name__)
+    vals.append(str(e))
+try:
+    it.__or__(5)
+except TypeError as e:
+    vals.append(type(e).__name__)
+    vals.append(str(e))
+try:
+    k.__or__([[1]])
+except TypeError as e:
+    vals.append(type(e).__name__)
+    vals.append(str(e))
+try:
+    {"a": [1]}.items() | {("a", 1)}
+except TypeError as e:
+    vals.append(type(e).__name__)
+    vals.append(str(e))
+try:
+    {1: "x"}.values().__or__({1})
+except AttributeError as e:
+    vals.append(type(e).__name__)
+    vals.append(str(e))
+for f in [k.__or__, k.__ror__, k.__and__, k.__rand__, k.__sub__, k.__rsub__, k.__xor__, k.__rxor__, it.__or__, it.__ror__, it.__and__, it.__rand__, it.__sub__, it.__rsub__, it.__xor__, it.__rxor__]:
+    try:
+        two_args(f, 1, 2)
+    except TypeError as e:
+        vals.append(type(e).__name__)
+        vals.append(str(e))
+vals.append(str(hasattr(k, "__or__")))
+vals.append(str(hasattr(it, "__xor__")))
+vals.append(str(hasattr({1: "x"}.values(), "__or__")))
+vals.append(str(hasattr(k, "__ior__")))
+vals.append(str(callable(k.__and__)))
+return "|".join(vals)
+""";
+
+    [Fact]
+    public void DictViewOperatorDundersAdvanceLikeCpython()
+    {
+        var result = new LythonEngine().Run(DictViewOperatorDundersSource, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal(
+            "[1, 2, 3]|[2]|[1]|[1, 3]|[1, 2, 3]|[1]|" +
+            "[0, 3]|[1, 3]|set|set|set|set|" +
+            "True|True|True|[(1, 10)]|[(2, 20)]|[(1, 10), (2, 20), (3, 30)]|" +
+            "[(2, 20), (3, 30)]|[(3, 30)]|set|[1, 2]|[1]|[0, 3]|" +
+            "[1, 3]|TypeError|'int' object is not iterable|TypeError|'int' object is not iterable|TypeError|" +
+            "'int' object is not iterable|TypeError|unhashable type: 'list'|TypeError|unhashable type: 'list'|AttributeError|" +
+            "'dict_values' object has no attribute '__or__'|TypeError|Method 'dict_keys.__or__' received too many positional arguments.|TypeError|Method 'dict_keys.__ror__' received too many positional arguments.|TypeError|" +
+            "Method 'dict_keys.__and__' received too many positional arguments.|TypeError|Method 'dict_keys.__rand__' received too many positional arguments.|TypeError|Method 'dict_keys.__sub__' received too many positional arguments.|TypeError|" +
+            "Method 'dict_keys.__rsub__' received too many positional arguments.|TypeError|Method 'dict_keys.__xor__' received too many positional arguments.|TypeError|Method 'dict_keys.__rxor__' received too many positional arguments.|TypeError|" +
+            "Method 'dict_items.__or__' received too many positional arguments.|TypeError|Method 'dict_items.__ror__' received too many positional arguments.|TypeError|Method 'dict_items.__and__' received too many positional arguments.|TypeError|" +
+            "Method 'dict_items.__rand__' received too many positional arguments.|TypeError|Method 'dict_items.__sub__' received too many positional arguments.|TypeError|Method 'dict_items.__rsub__' received too many positional arguments.|TypeError|" +
+            "Method 'dict_items.__xor__' received too many positional arguments.|TypeError|Method 'dict_items.__rxor__' received too many positional arguments.|True|True|False|" +
+            "False|True",
+            result.ReturnValue);
+    }
+
+    [Fact]
+    public async Task RunAsync_DictViewOperatorDundersUseTheSameSurface()
+    {
+        var result = await new LythonEngine().RunAsync(DictViewOperatorDundersSource, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal(
+            "[1, 2, 3]|[2]|[1]|[1, 3]|[1, 2, 3]|[1]|" +
+            "[0, 3]|[1, 3]|set|set|set|set|" +
+            "True|True|True|[(1, 10)]|[(2, 20)]|[(1, 10), (2, 20), (3, 30)]|" +
+            "[(2, 20), (3, 30)]|[(3, 30)]|set|[1, 2]|[1]|[0, 3]|" +
+            "[1, 3]|TypeError|'int' object is not iterable|TypeError|'int' object is not iterable|TypeError|" +
+            "'int' object is not iterable|TypeError|unhashable type: 'list'|TypeError|unhashable type: 'list'|AttributeError|" +
+            "'dict_values' object has no attribute '__or__'|TypeError|Method 'dict_keys.__or__' received too many positional arguments.|TypeError|Method 'dict_keys.__ror__' received too many positional arguments.|TypeError|" +
+            "Method 'dict_keys.__and__' received too many positional arguments.|TypeError|Method 'dict_keys.__rand__' received too many positional arguments.|TypeError|Method 'dict_keys.__sub__' received too many positional arguments.|TypeError|" +
+            "Method 'dict_keys.__rsub__' received too many positional arguments.|TypeError|Method 'dict_keys.__xor__' received too many positional arguments.|TypeError|Method 'dict_keys.__rxor__' received too many positional arguments.|TypeError|" +
+            "Method 'dict_items.__or__' received too many positional arguments.|TypeError|Method 'dict_items.__ror__' received too many positional arguments.|TypeError|Method 'dict_items.__and__' received too many positional arguments.|TypeError|" +
+            "Method 'dict_items.__rand__' received too many positional arguments.|TypeError|Method 'dict_items.__sub__' received too many positional arguments.|TypeError|Method 'dict_items.__rsub__' received too many positional arguments.|TypeError|" +
+            "Method 'dict_items.__xor__' received too many positional arguments.|TypeError|Method 'dict_items.__rxor__' received too many positional arguments.|True|True|False|" +
+            "False|True",
+            result.ReturnValue);
+    }
 }
