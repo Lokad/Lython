@@ -18,6 +18,9 @@ public sealed class HostReadPrereservationTests
 
         public int TextReads;
         public int BinaryReads;
+        public int TextRangeReads;
+        public long TextRangeBytes;
+        public int MaxTextRangeBytes;
 
         public string Cwd => _inner.Cwd;
         public DateTimeOffset LocalNow => _inner.LocalNow;
@@ -30,6 +33,15 @@ public sealed class HostReadPrereservationTests
         {
             TextReads++;
             return _inner.ReadTextUtf8Async(path, cancellationToken);
+        }
+
+        public async ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8RangeAsync(string path, long offset, int count, CancellationToken cancellationToken)
+        {
+            var payload = await _inner.ReadTextUtf8RangeAsync(path, offset, count, cancellationToken).ConfigureAwait(false);
+            TextRangeReads++;
+            TextRangeBytes += payload.Length;
+            MaxTextRangeBytes = Math.Max(MaxTextRangeBytes, payload.Length);
+            return payload;
         }
 
         public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
@@ -96,6 +108,9 @@ public sealed class HostReadPrereservationTests
     [Fact]
     public async Task FundedTextReadReachesHost()
     {
+        // MG21: open() streams fixed windows through ranged reads, so a funded
+        // file arrives with no whole-file transfer: every ranged call stays
+        // within the window and the windows cover the file exactly once.
         var script = new LythonEngine().Compile("return len(open(\"/data.txt\").read())\n");
         Assert.True(script.IsValid);
         var expected = new BigInteger(100000);
@@ -104,14 +119,20 @@ public sealed class HostReadPrereservationTests
         var sync = script.Run(host);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
-        Assert.Equal(1, host.TextReads);
+        Assert.Equal(0, host.TextReads);
+        Assert.Equal(100000, host.TextRangeBytes);
+        Assert.True(host.TextRangeReads > 1);
+        Assert.True(host.MaxTextRangeBytes <= 16 * 1024, "no single ranged call exceeds the engine window");
 
         var host2 = new CountingHost();
         host2.SeedFile("/data.txt", new string('y', 100000));
         var asyncResult = await script.RunAsync(host2);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
-        Assert.Equal(1, host2.TextReads);
+        Assert.Equal(0, host2.TextReads);
+        Assert.Equal(100000, host2.TextRangeBytes);
+        Assert.True(host2.TextRangeReads > 1);
+        Assert.True(host2.MaxTextRangeBytes <= 16 * 1024, "no single ranged call exceeds the engine window");
     }
 
     [Fact]

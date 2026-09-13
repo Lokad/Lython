@@ -67,7 +67,17 @@ internal sealed partial class LythonRuntime
                     }
 
                     return handle.Read(ParseOptionalSize(arguments, "file.read([size])", span));
-                }, "file.read", ["size"], 0),
+                },
+                LythonCallableSignature.Create("file.read", ["size"], 0),
+                async (arguments, span, _) =>
+                {
+                    if (arguments.Length > 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "file.read([size]) expects zero or one integer argument.", span);
+                    }
+
+                    return await handle.ReadAsync(ParseOptionalSize(arguments, "file.read([size])", span)).ConfigureAwait(false);
+                }),
                 "readline" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length > 1)
@@ -76,7 +86,17 @@ internal sealed partial class LythonRuntime
                     }
 
                     return handle.ReadLine(ParseOptionalSize(arguments, "file.readline([size])", span));
-                }, "file.readline", ["size"], 0),
+                },
+                LythonCallableSignature.Create("file.readline", ["size"], 0),
+                async (arguments, span, _) =>
+                {
+                    if (arguments.Length > 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "file.readline([size]) expects zero or one integer argument.", span);
+                    }
+
+                    return await handle.ReadLineAsync(ParseOptionalSize(arguments, "file.readline([size])", span)).ConfigureAwait(false);
+                }),
                 "readlines" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length > 1)
@@ -85,7 +105,17 @@ internal sealed partial class LythonRuntime
                     }
 
                     return handle.ReadLines(ParseOptionalSize(arguments, "file.readlines([hint])", span));
-                }, "file.readlines", ["hint"], 0),
+                },
+                LythonCallableSignature.Create("file.readlines", ["hint"], 0),
+                async (arguments, span, _) =>
+                {
+                    if (arguments.Length > 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "file.readlines([hint]) expects zero or one integer argument.", span);
+                    }
+
+                    return await handle.ReadLinesAsync(ParseOptionalSize(arguments, "file.readlines([hint])", span)).ConfigureAwait(false);
+                }),
                 "write" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var text))
@@ -119,6 +149,16 @@ internal sealed partial class LythonRuntime
                     if (receiver.TryMoveNext(out var item))
                     {
                         return LythonRuntime.RuntimeValue(item);
+                    }
+
+                    throw new LythonRuntimeException("StopIteration", "", span);
+                },
+                static async (receiver, span, _) =>
+                {
+                    var advanced = await receiver.TryMoveNextAsync().ConfigureAwait(false);
+                    if (advanced.HasValue)
+                    {
+                        return LythonRuntime.RuntimeValue(advanced.Value);
                     }
 
                     throw new LythonRuntimeException("StopIteration", "", span);

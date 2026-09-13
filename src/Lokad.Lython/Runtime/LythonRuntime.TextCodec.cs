@@ -322,7 +322,22 @@ internal sealed partial class LythonRuntime
             return PyString.Empty;
         }
 
-        var source = payload.Span;
+        // Latin-1 expands to at most two UTF-8 bytes per input byte: gate the
+        // transient before decoding so an undersized budget fails before the
+        // host-sized allocation, matching the previous gate-first order.
+        context.MemoryGovernor.EnsureCanReserve(PyString.EstimateApproximateBytes(checked(2 * payload.Length)), span);
+        var utf8 = DecodeLatin1ToBytes(payload.Span, newline);
+        context.MemoryGovernor.EnsureCanReserve(PyString.EstimateApproximateBytes(utf8.Length), span);
+        return PyString.FromOwnedUtf8(utf8, context.MemoryGovernor, span);
+    }
+
+    // Shared latin-1 window decoder: every byte maps to exactly one latin-1
+    // character (two UTF-8 bytes above 0x7F), so windows need no character
+    // carry, only the universal-newline carriage-return holdback applied by
+    // the caller. Chunked readers reuse this so latin-1 cannot drift from
+    // whole-buffer decoding.
+    private static byte[] DecodeLatin1ToBytes(ReadOnlySpan<byte> source, TextNewlineMode newline)
+    {
         var outputLength = 0;
         for (var i = 0; i < source.Length; i++)
         {
@@ -340,7 +355,6 @@ internal sealed partial class LythonRuntime
             outputLength = checked(outputLength + (source[i] < 0x80 ? 1 : 2));
         }
 
-        context.MemoryGovernor.EnsureCanReserve(PyString.EstimateApproximateBytes(outputLength), span);
         var utf8 = new byte[outputLength];
         var offset = 0;
         for (var i = 0; i < source.Length; i++)
@@ -368,7 +382,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        return PyString.FromOwnedUtf8(utf8, context.MemoryGovernor, span);
+        return utf8;
     }
 
     private static PyString StripUtf8Bom(PyString text, TextEncodingMode encoding)

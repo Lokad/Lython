@@ -8,7 +8,7 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
-        internal sealed class TextFileHandle : IPyAsyncContextManager, IPyIteratorValue
+        internal sealed class TextFileHandle : IPyAsyncContextManager, IPyIteratorValue, IPyAsyncIteratorValue
         {
             private TextFileHandle(
                 string path,
@@ -53,7 +53,7 @@ internal sealed partial class LythonRuntime
             public bool IsReadable()
             {
                 EnsureOpen();
-                return _state is TextFileReadState;
+                return _state is ChunkedTextFileReadState;
             }
 
             public bool IsWritable()
@@ -73,7 +73,7 @@ internal sealed partial class LythonRuntime
                 EnsureOpen();
                 return _state switch
                 {
-                    TextFileReadState reader => reader.Position,
+                    ChunkedTextFileReadState reader => reader.Position,
                     TextFileWriteState writer => writer.Position,
                     _ => throw new UnreachableException(),
                 };
@@ -122,24 +122,10 @@ internal sealed partial class LythonRuntime
                 TextErrorMode errors,
                 TextNewlineMode newline)
             {
-                PyString text;
-                if (encoding == TextEncodingMode.Latin1)
-                {
-                    using var payload = ReadGovernedHostBytes(path, context, null);
-                    text = DecodeText(payload.Memory, encoding, context, null, errors, newline);
-                }
-                else
-                {
-                    text = ReadGovernedHostText(path, context, null, errors, newline);
-                    if (encoding == TextEncodingMode.Utf8Bom)
-                    {
-                        text = StripUtf8Bom(text, encoding);
-                    }
-                }
-
-                context.ObserveString(text, null);
+                var state = OpenChunkedReader(path, context, encoding, errors, newline);
+                state.Prime();
                 ChargeFileHandleValue(context.MemoryGovernor, null);
-                return new TextFileHandle(path, new TextFileReadState(text, newline), context, encoding, errors);
+                return new TextFileHandle(path, state, context, encoding, errors);
             }
 
             public static async ValueTask<TextFileHandle> ForReadAsync(
@@ -149,25 +135,76 @@ internal sealed partial class LythonRuntime
                 TextErrorMode errors,
                 TextNewlineMode newline)
             {
-                PyString text;
-                if (encoding == TextEncodingMode.Latin1)
+                var state = await OpenChunkedReaderAsync(path, context, encoding, errors, newline).ConfigureAwait(false);
+                await state.PrimeAsync().ConfigureAwait(false);
+                ChargeFileHandleValue(context.MemoryGovernor, null);
+                return new TextFileHandle(path, state, context, encoding, errors);
+            }
+
+            // Stats and pre-reserves exactly like the buffered reads this replaces,
+            // then streams windows on demand. Latin-1 keeps the binary-read cap and
+            // the smaller overhead its single-byte decoding was pre-reserved with.
+            // The asynchronous opener stats through the async pump so delayed hosts
+            // suspend instead of failing the synchronous capability check.
+            private static async ValueTask<ChunkedTextFileReadState> OpenChunkedReaderAsync(
+                string path,
+                ExecutionContext context,
+                TextEncodingMode encoding,
+                TextErrorMode errors,
+                TextNewlineMode newline)
+            {
+                context.RegisterHostCall(null);
+                var stat = await context.HostStatAsync(path, null).ConfigureAwait(false);
+                CheckOpenStat(context, encoding, stat);
+                context.RegisterHostCall(null);
+                return new ChunkedTextFileReadState(path, context, encoding, errors, newline, WindowForKnownSize(stat));
+            }
+
+            private static ChunkedTextFileReadState OpenChunkedReader(
+                string path,
+                ExecutionContext context,
+                TextEncodingMode encoding,
+                TextErrorMode errors,
+                TextNewlineMode newline)
+            {
+                context.RegisterHostCall(null);
+                var stat = context.HostStat(path, null);
+                CheckOpenStat(context, encoding, stat);
+                context.RegisterHostCall(null);
+                return new ChunkedTextFileReadState(path, context, encoding, errors, newline, WindowForKnownSize(stat));
+            }
+
+            private static void CheckOpenStat(
+                ExecutionContext context,
+                TextEncodingMode encoding,
+                LythonPathStat stat)
+            {
+                if (stat.Exists && stat.IsFile && context.Limits.MaxHostReadBytes is { } maxHostReadBytes &&
+                    stat.Size > new BigInteger(maxHostReadBytes))
                 {
-                    using var payload = await ReadGovernedHostBytesAsync(path, context, null).ConfigureAwait(false);
-                    text = DecodeText(payload.Memory, encoding, context, null, errors, newline);
-                }
-                else
-                {
-                    text = await ReadGovernedHostTextAsync(path, context, null, errors, newline).ConfigureAwait(false);
-                    if (encoding == TextEncodingMode.Utf8Bom)
-                    {
-                        text = StripUtf8Bom(text, encoding);
-                    }
+                    throw encoding == TextEncodingMode.Latin1
+                        ? RuntimeErrors.Runtime($"host binary read exceeded maximum bytes ({maxHostReadBytes})", null)
+                        : RuntimeErrors.Runtime($"host text read exceeded maximum bytes ({maxHostReadBytes})", null);
                 }
 
-                context.ObserveString(text, null);
-                ChargeFileHandleValue(context.MemoryGovernor, null);
-                return new TextFileHandle(path, new TextFileReadState(text, newline), context, encoding, errors);
+                EnsureExecutionMemoryForKnownLength(stat, encoding == TextEncodingMode.Latin1 ? 32L : 128L, context, null);
             }
+
+            // Small honest files stream through small windows so bounded
+            // infrastructure never prices them out of tight budgets; unknown or
+            // huge sizes stream through the default window instead.
+            private static int WindowForKnownSize(LythonPathStat stat)
+            {
+                if (stat.Exists && stat.IsFile && stat.Size > BigInteger.Zero &&
+                    stat.Size <= new BigInteger(ChunkedTextFileReadState.DefaultWindowBytes))
+                {
+                    var size = (int)stat.Size;
+                    return Math.Max(ChunkedTextFileReadState.MinimumWindowBytes, size);
+                }
+
+                return ChunkedTextFileReadState.DefaultWindowBytes;
+            }
+
 
             public static TextFileHandle ForWrite(string path, ExecutionContext context)
                 => ForWrite(path, context, TextEncodingMode.Utf8, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
@@ -243,6 +280,11 @@ internal sealed partial class LythonRuntime
                     writer.Release();
                 }
 
+                if (_state is ChunkedTextFileReadState reader)
+                {
+                    reader.Release();
+                }
+
                 IsClosed = true;
                 return false;
             }
@@ -258,6 +300,11 @@ internal sealed partial class LythonRuntime
                 {
                     await writer.FlushAsync(null).ConfigureAwait(false);
                     writer.Release();
+                }
+
+                if (_state is ChunkedTextFileReadState reader)
+                {
+                    reader.Release();
                 }
 
                 IsClosed = true;
@@ -315,6 +362,8 @@ internal sealed partial class LythonRuntime
 
             public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
 
+            public IAsyncEnumerable<object> IterateAsync() => PyIteration.EnumerateAsyncIterator(this);
+
             public bool TryMoveNext([MaybeNullWhen(false)] out object value)
             {
                 var line = ReadLine();
@@ -326,6 +375,54 @@ internal sealed partial class LythonRuntime
 
                 value = line;
                 return true;
+            }
+
+            public async ValueTask<PyIterationResult> TryMoveNextAsync()
+            {
+                var line = await ReadLineAsync(-1).ConfigureAwait(false);
+                if (line.Length == 0)
+                {
+                    return PyIterationResult.End;
+                }
+
+                return PyIterationResult.Yield(line);
+            }
+
+            public async ValueTask<PyString> ReadAsync(int size)
+            {
+                EnsureOpen();
+                return await RequireReader().ReadAsync(size).ConfigureAwait(false);
+            }
+
+            public async ValueTask<PyString> ReadLineAsync(int size)
+            {
+                EnsureOpen();
+                return await RequireReader().ReadLineAsync(size).ConfigureAwait(false);
+            }
+
+            public async ValueTask<PyList> ReadLinesAsync(int hint)
+            {
+                EnsureOpen();
+                var reader = RequireReader();
+                var items = new List<object>();
+                var totalBytes = 0;
+                while (true)
+                {
+                    var line = await reader.ReadLineAsync(-1).ConfigureAwait(false);
+                    if (line.Length == 0)
+                    {
+                        break;
+                    }
+
+                    items.Add(line);
+                    totalBytes += line.Utf8Bytes.Length;
+                    if (hint > 0 && totalBytes > hint)
+                    {
+                        break;
+                    }
+                }
+
+                return new PyList(items, _context.MemoryGovernor, null);
             }
 
             public BigInteger Write(PyString text)
@@ -368,8 +465,8 @@ internal sealed partial class LythonRuntime
                     errors);
             }
 
-            private TextFileReadState RequireReader()
-                => _state as TextFileReadState
+            private ChunkedTextFileReadState RequireReader()
+                => _state as ChunkedTextFileReadState
                     ?? throw new LythonRuntimeException("ValueError", "file is not open for reading", null);
 
             private TextFileWriteState RequireWriter()
@@ -386,7 +483,7 @@ internal sealed partial class LythonRuntime
 
         }
 
-        private enum TextFileMode
+        internal enum TextFileMode
         {
             Read,
             Write,
@@ -399,7 +496,7 @@ internal sealed partial class LythonRuntime
             Append,
         }
 
-        private abstract class TextFileState(TextFileMode mode)
+        internal abstract class TextFileState(TextFileMode mode)
         {
             public TextFileMode Mode { get; } = mode;
         }
