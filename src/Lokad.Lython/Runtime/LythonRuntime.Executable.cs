@@ -16,6 +16,9 @@ internal sealed partial class LythonRuntime
         public ExecutableCell(object value) => Value = value;
 
         public object Value { get; set; }
+
+        // MG11: set once a closure owns this cell (first-wins sharing).
+        internal bool RetentionCharged;
     }
 
     internal sealed class ExecutableFrameState

@@ -148,6 +148,14 @@ internal sealed partial class LythonRuntime
         // contribute no segment). Set once per invocation frame.
         public string? FunctionName { get; internal set; }
 
+        // MG11: closure-retention ownership marks. A function value retains its
+        // defining context chain, so the first definition below a context owns
+        // the context storage (base plus per-variable slots); later definitions
+        // sharing the context pay only for variables bound since.
+        internal bool ClosureRetentionCharged;
+
+        internal int ClosureChargedVariableCount;
+
         public ExecutionContext FunctionClosureContext { get; }
 
         internal ScopeDirectiveFacts ScopeFacts { get; }

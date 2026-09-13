@@ -291,6 +291,10 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    // MG11: one cells-array object plus one reference slot per captured name.
+    private const long ExecutableCellsArrayBaseBytes = 32;
+    private const long ExecutableCellsArraySlotBytes = 8;
+
     private static void ExecuteExecutableFunctionDefinition(
         ExecutableCodeObject codeObject,
         ExecutableFunctionBinding functionBinding,
@@ -324,7 +328,6 @@ internal sealed partial class LythonRuntime
             }
             ChargeClosureRetention(
                 context.FunctionClosureContext,
-                functionBinding.CodeObject?.ClosureNames.Count ?? context.FunctionClosureContext.Variables.Count,
                 context.MemoryGovernor,
                 functionBinding.Function.Span);
             var decorated = ApplyDecorators(function, functionBinding.Function.Decorators, functionBinding.Function.Span, context);
@@ -407,6 +410,30 @@ internal sealed partial class LythonRuntime
             }
 
             cells[i] = cell;
+        }
+
+        // MG11: captured cells outlive the invocation frame through the new
+        // function value, so the cells array plus each newly retained cell is
+        // owned here. Marks commit after the charge, so a tripped attempt pays
+        // nothing and a retry fails closed again instead of slipping through.
+        var uncharged = 0;
+        foreach (var cell in cells)
+        {
+            if (!cell.RetentionCharged)
+            {
+                uncharged++;
+            }
+        }
+
+        var retainedBytes = checked(
+            ExecutableCellsArrayBaseBytes +
+            ExecutableCellsArraySlotBytes * (long)cells.Length +
+            ClosureCellSlotBytes * (long)uncharged);
+        context.MemoryGovernor.Reserve(retainedBytes, span);
+        context.MemoryGovernor.Commit(retainedBytes);
+        foreach (var cell in cells)
+        {
+            cell.RetentionCharged = true;
         }
 
         return cells;

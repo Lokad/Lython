@@ -163,24 +163,54 @@ internal sealed partial class LythonRuntime
         context?.MemoryGovernor.Commit(FunctionValueBytes);
     }
 
-    // A function value retains its defining context for the run: the context,
-    // frame and variable tables plus one slot per captured entry. Module-level
-    // definitions share the run-rooted module frame, so only nested definitions
-    // pay. The function CLR wrapper itself stays MG04-owned; shared frames may
-    // pay once per definition.
+    // A function value retains its defining context chain for as long as the
+    // function is retained: intermediate invocation contexts plus the variable
+    // tables mirroring their locals stay alive through the closure, so each
+    // executed def or lambda owns the so-far-unowned storage of every context
+    // it retains. Run-rooted module frames stay exempt (shared, with globals
+    // owned at export); shared intermediate frames pay once (first-wins
+    // aliasing), with later definitions paying only for variables bound since.
+    // The function CLR wrapper itself stays MG04-owned.
     private const long ClosureContextBaseBytes = 512;
     private const long ClosureCellSlotBytes = 32;
 
-    internal static void ChargeClosureRetention(ExecutionContext? closure, int capturedCount, MemoryGovernor? governor, LythonSourceSpan? span)
+    internal static void ChargeClosureRetention(ExecutionContext? closure, MemoryGovernor? governor, LythonSourceSpan? span)
     {
-        if (closure is null || governor is null || closure.Frame.Parent is null)
+        if (closure is null || governor is null)
         {
             return;
         }
 
-        var bytes = checked(ClosureContextBaseBytes + ClosureCellSlotBytes * (long)Math.Max(capturedCount, 0));
-        governor.Reserve(bytes, span);
-        governor.Commit(bytes);
+        for (var current = closure; current is not null; current = current.ParentContext)
+        {
+            if (current.Frame.Parent is null)
+            {
+                continue;
+            }
+
+            if (!current.ClosureRetentionCharged)
+            {
+                var bytes = checked(ClosureContextBaseBytes + ClosureCellSlotBytes * (long)current.Frame.Variables.Count);
+                governor.Reserve(bytes, span);
+                governor.Commit(bytes);
+                current.ClosureRetentionCharged = true;
+                current.ClosureChargedVariableCount = current.Frame.Variables.Count;
+                continue;
+            }
+
+            var uncharged = current.Frame.Variables.Count - current.ClosureChargedVariableCount;
+            if (uncharged > 0)
+            {
+                var delta = checked(ClosureCellSlotBytes * (long)uncharged);
+                governor.Reserve(delta, span);
+                governor.Commit(delta);
+                current.ClosureChargedVariableCount = current.Frame.Variables.Count;
+            }
+
+            // A paid context implies paid ancestors: every walk covers the whole
+            // chain and chains only grow at the leaf, so the walk ends here.
+            break;
+        }
     }
 
     internal static Dictionary<string, object> BuildDefaultArgumentMap(
