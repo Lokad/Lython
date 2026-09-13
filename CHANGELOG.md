@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.9.0 - 2026-09-13
 
-The upcoming release remains in development. ZIP compression finalization, asynchronous host routing, lifecycle handling, and resource accounting still require hardening before release.
+This release delivers the contained ZIP subset, standard-library hardening and bounded CSV streaming developed since 0.8.0, with memory-governor containment extended across readers, writers and conversions.
 
 - Added a contained `zipfile` subset across `r`, `w`, and `a` modes, with ordered duplicate-preserving listings, STORED/DEFLATED member reads, CRC validation, staged archive creation, single-writer member handles, append support, and destination-contained extraction through host capabilities.
 - Isolated mutable builtin module exports between executions while preserving their identity within each run.
