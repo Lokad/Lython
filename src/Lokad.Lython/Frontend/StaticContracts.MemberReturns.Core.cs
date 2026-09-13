@@ -178,6 +178,7 @@ internal static partial class StaticContracts
         new(AbstractValueKind.CollectionsChainMap, "items", StaticReturnShape.Unknown),
         new(AbstractValueKind.CollectionsChainMap, "new_child", StaticReturnShape.CollectionsChainMap),
         new(AbstractValueKind.CollectionsChainMap, "copy", StaticReturnShape.CollectionsChainMap),
+        new(AbstractValueKind.CollectionsChainMap, "update", StaticReturnShape.None),
         new(AbstractValueKind.CollectionsChainMap, "__len__", StaticReturnShape.Integer),
         new(AbstractValueKind.CollectionsChainMap, "__setitem__", StaticReturnShape.None),
         new(AbstractValueKind.CollectionsChainMap, "__delitem__", StaticReturnShape.None),

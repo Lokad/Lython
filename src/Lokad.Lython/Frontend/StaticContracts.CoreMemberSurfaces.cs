@@ -398,6 +398,7 @@ internal static partial class StaticContracts
         "__getitem__",
         "__setitem__",
         "__delitem__",
+        "update",
     };
 
     private static readonly HashSet<string> DecimalMembers = new(StringComparer.Ordinal)

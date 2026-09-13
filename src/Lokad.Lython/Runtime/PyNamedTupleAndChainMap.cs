@@ -774,6 +774,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
             "__getitem__" => new BoundChainMapGetItem(this),
             "__setitem__" => new BoundChainMapSetItem(this),
             "__delitem__" => new BoundChainMapDeleteItem(this),
+            "update" => new BoundChainMapUpdate(this),
             _ => PyNone.Instance
         };
 
@@ -1078,6 +1079,33 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
             context.CheckExecutionBudget(span);
             var bound = CallBinder.BindNamedArguments(arguments, span, GetItemCallSignature, PythonCallableKind.Method);
             return LythonRuntime.ReadSubscriptValue(_owner, bound[0], span, context);
+        }
+    }
+
+    private sealed class BoundChainMapUpdate : LythonRuntime.ICallable
+    {
+        private readonly PyChainMap _owner;
+
+        public BoundChainMapUpdate(PyChainMap owner) => _owner = owner;
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            var positional = 0;
+            foreach (var argument in arguments)
+            {
+                if (argument.IsPositional)
+                {
+                    positional++;
+                }
+            }
+
+            if (positional > 1)
+            {
+                throw new LythonRuntimeException("TypeError", "ChainMap.update expected at most 1 positional argument.", span);
+            }
+
+            return LythonRuntime.UpdateDictionary(_owner.Maps[0], arguments, span, context);
         }
     }
 

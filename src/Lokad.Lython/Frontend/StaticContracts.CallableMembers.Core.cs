@@ -129,6 +129,7 @@ internal static partial class StaticContracts
         new(AbstractValueKind.CollectionsChainMap, "items", 0, 0, "LA3114", "ChainMap.items() expects no arguments."),
         new(AbstractValueKind.CollectionsChainMap, "new_child", 0, 1, "LA3114", "ChainMap.new_child([m]) expects zero or one argument.", parameterNames: ["m"]),
         new(AbstractValueKind.CollectionsChainMap, "copy", 0, 0, "LA3114", "ChainMap.copy() expects no arguments."),
+        new(AbstractValueKind.CollectionsChainMap, "update", 0, ArgumentCountLimit.Unbounded, "LA3114", "ChainMap.update([mapping]) expects zero or one mapping argument.", StaticMutationKind.MutatesReceiver, ["mapping"], allowsExtraKeywords: true),
         new(AbstractValueKind.CollectionsChainMap, "pop", 1, 2, "LA3114", "ChainMap.pop(key[, default]) expects one key and an optional default.", StaticMutationKind.MutatesReceiver, parameterNames: ["key", "default"]),
         ];
     }

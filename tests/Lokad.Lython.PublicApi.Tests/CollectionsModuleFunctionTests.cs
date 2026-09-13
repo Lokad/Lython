@@ -1283,4 +1283,52 @@ deque().pop()
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task ChainMapUpdateWritesFirstMapLikeCpython()
+    {
+        // ChainMap.update writes mappings, pair sequences and keywords
+        // into the first map like CPython.
+        var script = new LythonEngine().Compile("""
+            from collections import ChainMap
+            results = []
+            cm = ChainMap({"a": 1})
+            results.append(str(cm.update({"b": 2})))
+            results.append(str(list(cm.items())))
+            cm.update([("c", 3)], d=4)
+            results.append(str(sorted(cm.items())))
+            cm2 = ChainMap({"a": 1}, {"b": 2})
+            cm2.update({"c": 3})
+            results.append(str(list(cm2.maps[0].items())))
+            results.append(str(list(cm2.maps[1].items())))
+            def update_arg(m, a, b):
+                return m.update(a, b)
+            try:
+                update_arg(ChainMap({}), {"a": 1}, {"b": 2})
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            results.append(str(hasattr(ChainMap({}), "update")))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "None",
+            "[('a', 1), ('b', 2)]",
+            "[('a', 1), ('b', 2), ('c', 3), ('d', 4)]",
+            "[('a', 1), ('c', 3)]",
+            "[('b', 2)]",
+            "TypeError",
+            "ChainMap.update expected at most 1 positional argument.",
+            "True",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
