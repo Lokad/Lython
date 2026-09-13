@@ -510,7 +510,8 @@ return results
     {
         // int/float conversion dunders delegate to the same cores as the
         // int/float/round builtins (including bankers rounding, exact
-        // int-float conversion and None-ndigits rejection), exactly like
+        // int-float conversion, int-slot None-ndigits rejection and float-slot
+        // None-ndigits absence), exactly like
         // CPython; float has no __index__ on either side.
         var script = new LythonEngine().Compile("""
 def call1(f, a):
@@ -542,11 +543,7 @@ except TypeError as e:
     results.append(type(e).__name__)
     results.append(str(e))
 results.append(str((1.5).__round__(2)))
-try:
-    (1.5).__round__(None)
-except TypeError as e:
-    results.append(type(e).__name__)
-    results.append(str(e))
+results.append(str((1.5).__round__(None)))
 try:
     int(float("inf"))
 except OverflowError as e:
@@ -622,8 +619,7 @@ return results
             "TypeError",
             "'str' object cannot be interpreted as an integer",
             "1.5",
-            "TypeError",
-            "'NoneType' object cannot be interpreted as an integer",
+            "2",
             "OverflowError",
             "cannot convert float infinity to integer",
             "OverflowError",

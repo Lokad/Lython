@@ -481,6 +481,68 @@ internal sealed partial class LythonRuntime
 
                     return ComputeBuiltinHash(decimalValue, span);
                 }, "Decimal.__hash__"),
+                "__int__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Decimal.__int__() expects no arguments.", span);
+                    }
+
+                    return OwnHeapInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, span);
+                }, "Decimal.__int__"),
+                "__float__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Decimal.__float__() expects no arguments.", span);
+                    }
+
+                    return (double)decimalValue.Value;
+                }, "Decimal.__float__"),
+                "__trunc__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Decimal.__trunc__() expects no arguments.", span);
+                    }
+
+                    return OwnHeapInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, span);
+                }, "Decimal.__trunc__"),
+                "__floor__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Decimal.__floor__() expects no arguments.", span);
+                    }
+
+                    return OwnHeapInteger(new BigInteger(decimal.Floor(decimalValue.Value)), context.MemoryGovernor, span);
+                }, "Decimal.__floor__"),
+                "__ceil__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Decimal.__ceil__() expects no arguments.", span);
+                    }
+
+                    return OwnHeapInteger(new BigInteger(decimal.Ceiling(decimalValue.Value)), context.MemoryGovernor, span);
+                }, "Decimal.__ceil__"),
+                "__round__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length > 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Decimal.__round__([ndigits]) expects zero or one argument.", span);
+                    }
+
+                    // Unlike int/float slots, Decimal rejects everything but
+                    // integers (bool included) with its own message instead
+                    // of consulting __index__.
+                    if (arguments.Length == 1 && arguments[0] is not BigInteger && arguments[0] is not int && arguments[0] is not bool)
+                    {
+                        throw new LythonRuntimeException("TypeError", "optional arg must be an integer", span);
+                    }
+
+                    return Round(arguments.Length == 0 ? [decimalValue] : [decimalValue, arguments[0]], span, context);
+                }, "Decimal.__round__"),
                 _ => MissingMemberValue.Instance,
             };
 

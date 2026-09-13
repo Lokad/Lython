@@ -1251,11 +1251,6 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "float.__round__([ndigits]) expects zero or one argument.", span);
                     }
 
-                    if (arguments.Length == 1 && arguments[0] is PyNone)
-                    {
-                        throw new LythonRuntimeException("TypeError", "'NoneType' object cannot be interpreted as an integer", span);
-                    }
-
                     return Round(arguments.Length == 0 ? [number] : [number, arguments[0]], span, context);
                 }, "float.__round__"),
                 _ => MissingMemberValue.Instance,

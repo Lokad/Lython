@@ -1608,4 +1608,168 @@ return results
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+    [Fact]
+    public async Task DecimalConversionDundersAdvanceLikeCpython()
+    {
+        // Decimal conversion dunders delegate to the same cores as the
+        // int/float/round builtins (exact semantics, int-only ndigits with
+        // the slot message), exactly like CPython; there is no __index__.
+        var script = new LythonEngine().Compile("""
+from decimal import Decimal
+def call1(f, a):
+    return f(a)
+def call2(f, a, b):
+    return f(a, b)
+results = []
+results.append(str(Decimal("1.9").__int__()))
+results.append(str(Decimal("-1.9").__int__()))
+results.append(str(Decimal("1.1").__float__()))
+results.append(str(Decimal("1.9").__trunc__()))
+results.append(str(Decimal("1.1").__floor__()))
+results.append(str(Decimal("1.9").__ceil__()))
+results.append(str(Decimal("2.5").__round__()))
+results.append(str(Decimal("1.55").__round__(1)))
+results.append(str(Decimal("1E+5").__int__()))
+results.append(str(Decimal("1E+5").__float__()))
+results.append(str(Decimal("1E+5").__floor__()))
+results.append(str(Decimal("0").__int__()))
+results.append(str(Decimal("-0.0").__int__()))
+results.append(str(Decimal("1").__eq__(1)))
+results.append(str(Decimal("1").__int__() == int(Decimal("1"))))
+results.append(str(Decimal("1.5").__float__() == float(Decimal("1.5"))))
+results.append(str(Decimal("2.5").__round__() == round(Decimal("2.5"))))
+try:
+    Decimal("1").__int__("x")
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    Decimal("1").__round__(None)
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    Decimal("1").__round__("a")
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    Decimal("1").__round__(1, 2)
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+results.append(str(hasattr(Decimal("1"), "__int__")))
+results.append(str(hasattr(Decimal("1"), "__float__")))
+results.append(str(hasattr(Decimal("1"), "__trunc__")))
+results.append(str(hasattr(Decimal("1"), "__floor__")))
+results.append(str(hasattr(Decimal("1"), "__ceil__")))
+results.append(str(hasattr(Decimal("1"), "__round__")))
+results.append(str(hasattr(Decimal("1"), "__index__")))
+results.append(str(hasattr(Decimal("1"), "__rindex__")))
+results.append(str((5.0).__round__(None)))
+results.append(str((5.0).__round__(True)))
+results.append(str((5).__round__(True)))
+results.append(str(Decimal("1.55").__round__(True)))
+try:
+    Decimal("1.55").__round__(2.0)
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    (5).__round__(None)
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    (5).__round__("a")
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    (5.0).__round__("a")
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+for f in [Decimal("1").__int__, Decimal("1").__float__, Decimal("1").__trunc__, Decimal("1").__floor__, Decimal("1").__ceil__]:
+    try:
+        call1(f, 1)
+    except TypeError as e:
+        results.append(type(e).__name__)
+        results.append(str(e))
+try:
+    call2(Decimal("1").__round__, 1, 2)
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+return results
+""");
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "1",
+            "-1",
+            "1.1",
+            "1",
+            "1",
+            "2",
+            "2",
+            "1.6",
+            "100000",
+            "100000.0",
+            "100000",
+            "0",
+            "0",
+            "True",
+            "True",
+            "True",
+            "True",
+            "TypeError",
+            "Decimal.__int__() expects no arguments.",
+            "TypeError",
+            "optional arg must be an integer",
+            "TypeError",
+            "optional arg must be an integer",
+            "TypeError",
+            "Decimal.__round__([ndigits]) expects zero or one argument.",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "False",
+            "False",
+            "5",
+            "5.0",
+            "5",
+            "1.6",
+            "TypeError",
+            "optional arg must be an integer",
+            "TypeError",
+            "'NoneType' object cannot be interpreted as an integer",
+            "TypeError",
+            "'str' object cannot be interpreted as an integer",
+            "TypeError",
+            "'str' object cannot be interpreted as an integer",
+            "TypeError",
+            "Decimal.__int__() expects no arguments.",
+            "TypeError",
+            "Decimal.__float__() expects no arguments.",
+            "TypeError",
+            "Decimal.__trunc__() expects no arguments.",
+            "TypeError",
+            "Decimal.__floor__() expects no arguments.",
+            "TypeError",
+            "Decimal.__ceil__() expects no arguments.",
+            "TypeError",
+            "Decimal.__round__([ndigits]) expects zero or one argument.",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
