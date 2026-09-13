@@ -84,7 +84,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal sealed class CollectionsCallable : ICallable, IPyRenderableValue, INamedRuntimeCallable, IPyDynamicAttributes
+    internal sealed class CollectionsCallable : ICallable, IPyRenderableValue, INamedRuntimeCallable, IPyDynamicAttributes, IPyContextualDynamicAttributes
     {
         private readonly Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> _implementation;
 
@@ -119,6 +119,65 @@ internal sealed partial class LythonRuntime
 
             value = PyNone.Instance;
             return false;
+        }
+
+        public bool TryGetMember(string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+        {
+            // Collection types expose CPython-style __bases__ (dict for the
+            // dict-backed kinds, object otherwise since ABCs are absent)
+            // and an __mro__ running from the factory through object.
+            if ((memberName == "__bases__" || memberName == "__mro__") && IsCollectionType(Name) &&
+                GetFactoryBaseObjects(Name, context) is { } bases &&
+                context.TryGetBuiltin("object", out var objectBase) && objectBase is not null)
+            {
+                if (memberName == "__bases__")
+                {
+                    value = new PyTuple(bases, context.MemoryGovernor, span);
+                    return true;
+                }
+
+                // __mro__ runs from the factory itself and terminates at
+                // object like CPython.
+                var mroLength = bases.Length + 1;
+                if (!ReferenceEquals(bases[bases.Length - 1], objectBase))
+                {
+                    mroLength++;
+                }
+
+                var mro = new object[mroLength];
+                mro[0] = this;
+                Array.Copy(bases, 0, mro, 1, bases.Length);
+                if (mroLength > bases.Length + 1)
+                {
+                    mro[mroLength - 1] = objectBase;
+                }
+
+                value = new PyTuple(mro, context.MemoryGovernor, span);
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
+
+        private static object[]? GetFactoryBaseObjects(string name, LythonRuntime.ExecutionContext context)
+        {
+            if (!context.TryGetBuiltin("object", out var obj) || obj is null)
+            {
+                return null;
+            }
+
+            if (name is "collections.defaultdict" or "collections.Counter" or "collections.OrderedDict")
+            {
+                if (!context.TryGetBuiltin("dict", out var dict) || dict is null)
+                {
+                    return null;
+                }
+
+                return [dict];
+            }
+
+            return [obj];
         }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)

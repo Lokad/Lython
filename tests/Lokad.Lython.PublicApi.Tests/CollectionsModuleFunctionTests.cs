@@ -1435,4 +1435,42 @@ deque().pop()
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task CollectionFactoriesExposeBasesLikeCpython()
+    {
+        // Collection factories report CPython-style __bases__ (dict for
+        // the dict-backed kinds, object otherwise since ABCs are absent)
+        // and an __mro__ running through object.
+        var script = new LythonEngine().Compile("""
+            from collections import defaultdict, Counter, deque, ChainMap
+            results = []
+            results.append(str(defaultdict.__bases__))
+            results.append(str(Counter.__bases__))
+            results.append(str(deque.__bases__))
+            results.append(str(ChainMap.__bases__))
+            results.append(str([b.__name__ for b in defaultdict.__mro__]))
+            results.append(str([b.__name__ for b in deque.__mro__]))
+            results.append(str([b.__name__ for b in ChainMap.__mro__]))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "(<class 'dict'>,)",
+            "(<class 'dict'>,)",
+            "(<class 'object'>,)",
+            "(<class 'object'>,)",
+            "['defaultdict', 'dict', 'object']",
+            "['deque', 'object']",
+            "['ChainMap', 'object']",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
