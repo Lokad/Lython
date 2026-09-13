@@ -117,7 +117,9 @@ internal sealed partial class LythonRuntime
             case LoweredBytesLiteralExpression bytes:
                 return SharedBytesLiteral(bytes);
             case LoweredIntegerLiteralExpression integer:
-                return ParseInteger(integer.Literal);
+                // MG08: heap-sized integer literals own their magnitude storage like
+                // arithmetic results; inline-range values stay free.
+                return OwnHeapInteger(ParseInteger(integer.Literal), context.MemoryGovernor, integer.Span);
             case LoweredFloatLiteralExpression floating:
                 return ParseFloat(floating.Literal);
             case LoweredBooleanLiteralExpression boolean:
