@@ -281,9 +281,10 @@ from decimal import Decimal, Context
 Decimal(1, 2, 3)
 Decimal("1").as_tuple(1)
 Decimal("1").fma(Decimal("1"))
-Decimal("1").fma(Decimal("1"))
 Decimal("1").logb(1, 2)
 Decimal("1").radix(1)
+Decimal("1").copy_abs(1)
+Decimal("1").copy_negate(1)
 Decimal("1").bogus()
 Context().copy(1)
 """);
@@ -296,6 +297,8 @@ Context().copy(1)
         Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3156" && d.Message.Contains("Decimal.fma", StringComparison.Ordinal));
         Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3156" && d.Message.Contains("Decimal.logb", StringComparison.Ordinal));
         Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3156" && d.Message.Contains("Decimal.radix", StringComparison.Ordinal));
+        Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3156" && d.Message.Contains("Decimal.copy_abs", StringComparison.Ordinal));
+        Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3156" && d.Message.Contains("Decimal.copy_negate", StringComparison.Ordinal));
     }
 
     [Theory]
@@ -1366,6 +1369,154 @@ x.as_tuple()
             "Method 'Decimal.canonical' received too many positional arguments.",
             "TypeError",
             "Method 'Decimal.as_integer_ratio' received too many positional arguments.",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task DecimalMethodContextsValidateUniformly()
+    {
+        // Optional decimal-method context arguments accept a Context or
+        // None like CPython and fail uniformly otherwise (copy_abs and
+        // copy_negate take no context at all), in both modes.
+        var script = new LythonEngine().Compile("""
+            from decimal import Decimal, Context
+            results = []
+            results.append(str(Decimal('4').sqrt(None)))
+            results.append(str(Decimal('4').sqrt(Context())))
+            try:
+                Decimal('4').sqrt(1)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                Decimal('2').ln(1)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                Decimal('2.50').normalize(1)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                Decimal('10').logb(1)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                Decimal('1').exp(1)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            def copy_abs_1(d, x):
+                return d.copy_abs(x)
+            try:
+                copy_abs_1(Decimal('-2'), None)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                copy_abs_1(Decimal('-2'), 1)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            def copy_negate_1(d, x):
+                return d.copy_negate(x)
+            try:
+                copy_negate_1(Decimal('-2'), None)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                copy_negate_1(Decimal('-2'), 1)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                Decimal('1').compare(Decimal('2'), 1)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                Decimal('1').compare_signal(Decimal('2'), 1)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                Decimal('7').remainder_near(Decimal('2'), 1)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                Decimal('1').min(Decimal('2'), 1)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                Decimal('2').scaleb(3, 1)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                Decimal('2').fma(3, 4, 1)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                Decimal('1.5').to_integral_value('ROUND_DOWN', 1)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            results.append(str(Decimal('-2').copy_abs()))
+            results.append(str(Decimal('-2').copy_negate()))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "2",
+            "2",
+            "TypeError",
+            "Decimal method context argument expects a Context or None.",
+            "TypeError",
+            "Decimal method context argument expects a Context or None.",
+            "TypeError",
+            "Decimal method context argument expects a Context or None.",
+            "TypeError",
+            "Decimal method context argument expects a Context or None.",
+            "TypeError",
+            "Decimal method context argument expects a Context or None.",
+            "TypeError",
+            "Decimal.copy_abs() expects no arguments.",
+            "TypeError",
+            "Decimal.copy_abs() expects no arguments.",
+            "TypeError",
+            "Decimal.copy_negate() expects no arguments.",
+            "TypeError",
+            "Decimal.copy_negate() expects no arguments.",
+            "TypeError",
+            "Decimal method context argument expects a Context or None.",
+            "TypeError",
+            "Decimal method context argument expects a Context or None.",
+            "TypeError",
+            "Decimal method context argument expects a Context or None.",
+            "TypeError",
+            "Decimal method context argument expects a Context or None.",
+            "TypeError",
+            "Decimal method context argument expects a Context or None.",
+            "TypeError",
+            "Decimal method context argument expects a Context or None.",
+            "TypeError",
+            "Decimal method context argument expects a Context or None.",
+            "2",
+            "-2",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);

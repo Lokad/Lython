@@ -45,18 +45,39 @@ internal static partial class PyDecimalOps
             throw new LythonRuntimeException("TypeError", $"Decimal.{name}([context]) expects zero or one argument.", span);
         }
 
+        if (arguments.Length == 1)
+        {
+            ExpectContextOrNone(arguments[0], span);
+        }
+
         return name switch
         {
             "sqrt" => new PyDecimal((decimal)Math.Sqrt((double)value.Value)),
             "exp" => FromDouble(Math.Exp((double)value.Value), span),
             "ln" => new PyDecimal((decimal)Math.Log((double)value.Value)),
             "log10" => new PyDecimal((decimal)Math.Log10((double)value.Value)),
-            "copy_abs" => new PyDecimal(decimal.Abs(value.Value), value.Exponent),
-            "copy_negate" => new PyDecimal(decimal.Negate(value.Value), value.Exponent),
             "normalize" => Normalize(value),
             _ => throw new InvalidOperationException($"Unknown decimal unary op: {name}")
         };
     }
+
+    // copy_abs and copy_negate take no context in CPython (unlike the other
+    // Unary ops), so they validate strictly through this dedicated path.
+    public static PyDecimal CopyAbsNegate(PyDecimal value, object[] arguments, bool negate, LythonSourceSpan span)
+    {
+        if (arguments.Length != 0)
+        {
+            throw new LythonRuntimeException("TypeError", negate ? "Decimal.copy_negate() expects no arguments." : "Decimal.copy_abs() expects no arguments.", span);
+        }
+
+        var magnitude = decimal.Abs(value.Value);
+        return new PyDecimal(negate ? decimal.Negate(magnitude) : magnitude, value.Exponent);
+    }
+
+    internal static PyDecimalContext? ExpectContextOrNone(object value, LythonSourceSpan span)
+        => value is PyNone
+            ? null
+            : value as PyDecimalContext ?? throw new LythonRuntimeException("TypeError", "Decimal method context argument expects a Context or None.", span);
 
     public static PyDecimal CopySign(PyDecimal value, object[] arguments, LythonSourceSpan span)
     {
@@ -132,7 +153,17 @@ internal static partial class PyDecimalOps
 
     public static PyDecimal CompareValue(PyDecimal value, object[] arguments, LythonSourceSpan span)
     {
-        if (arguments.Length is < 1 or > 2 || !TryAsDecimal(arguments[0], out var other))
+        if (arguments.Length is < 1 or > 2)
+        {
+            throw new LythonRuntimeException("TypeError", "Decimal.compare(other[, context]) expects one Decimal-compatible argument.", span);
+        }
+
+        if (arguments.Length == 2)
+        {
+            ExpectContextOrNone(arguments[1], span);
+        }
+
+        if (!TryAsDecimal(arguments[0], out var other))
         {
             throw new LythonRuntimeException("TypeError", "Decimal.compare(other[, context]) expects one Decimal-compatible argument.", span);
         }
@@ -181,15 +212,21 @@ internal static partial class PyDecimalOps
         var context = arguments.Length >= 2 ? ExpectContextOrNone(arguments[1], span) ?? defaultContext : defaultContext;
         return new PyDecimal(Round(value.Value, 0, rounding, context, span), 0);
 
-        static PyDecimalContext? ExpectContextOrNone(object value, LythonSourceSpan span)
-            => value is PyNone
-                ? null
-                : value as PyDecimalContext ?? throw new LythonRuntimeException("TypeError", "Decimal method context argument expects a Context or None.", span);
     }
 
     public static PyDecimal ScaleB(PyDecimal value, object[] arguments, LythonSourceSpan span)
     {
-        if (arguments.Length is < 1 or > 2 || !Numbers.PyNumberOps.TryAsInteger(arguments[0], out var exponent))
+        if (arguments.Length is < 1 or > 2)
+        {
+            throw new LythonRuntimeException("TypeError", "Decimal.scaleb(other[, context]) expects one integer exponent.", span);
+        }
+
+        if (arguments.Length == 2)
+        {
+            ExpectContextOrNone(arguments[1], span);
+        }
+
+        if (!Numbers.PyNumberOps.TryAsInteger(arguments[0], out var exponent))
         {
             throw new LythonRuntimeException("TypeError", "Decimal.scaleb(other[, context]) expects one integer exponent.", span);
         }
@@ -266,7 +303,17 @@ internal static partial class PyDecimalOps
 
     public static PyDecimal RemainderNear(PyDecimal value, object[] arguments, LythonSourceSpan span)
     {
-        if (arguments.Length is < 1 or > 2 || !TryAsDecimal(arguments[0], out var other))
+        if (arguments.Length is < 1 or > 2)
+        {
+            throw new LythonRuntimeException("TypeError", "Decimal.remainder_near(other[, context]) expects one Decimal-compatible argument.", span);
+        }
+
+        if (arguments.Length == 2)
+        {
+            ExpectContextOrNone(arguments[1], span);
+        }
+
+        if (!TryAsDecimal(arguments[0], out var other))
         {
             throw new LythonRuntimeException("TypeError", "Decimal.remainder_near(other[, context]) expects one Decimal-compatible argument.", span);
         }
@@ -287,7 +334,17 @@ internal static partial class PyDecimalOps
 
     public static PyDecimal FusedMultiplyAdd(PyDecimal value, object[] arguments, LythonSourceSpan span)
     {
-        if (arguments.Length is < 2 or > 3 || !TryAsDecimal(arguments[0], out _) || !TryAsDecimal(arguments[1], out _))
+        if (arguments.Length is < 2 or > 3)
+        {
+            throw new LythonRuntimeException("TypeError", "Decimal.fma(other, third[, context]) expects two Decimal-compatible arguments.", span);
+        }
+
+        if (arguments.Length == 3)
+        {
+            ExpectContextOrNone(arguments[2], span);
+        }
+
+        if (!TryAsDecimal(arguments[0], out _) || !TryAsDecimal(arguments[1], out _))
         {
             throw new LythonRuntimeException("TypeError", "Decimal.fma(other, third[, context]) expects two Decimal-compatible arguments.", span);
         }
@@ -306,6 +363,11 @@ internal static partial class PyDecimalOps
             throw new LythonRuntimeException("TypeError", "Decimal.logb([context]) expects zero or one argument.", span);
         }
 
+        if (arguments.Length == 1)
+        {
+            ExpectContextOrNone(arguments[0], span);
+        }
+
         if (value.Value == 0m)
         {
             throw DivisionByZero("decimal division by zero", span);
@@ -316,7 +378,17 @@ internal static partial class PyDecimalOps
 
     public static PyDecimal CompareSignal(PyDecimal value, object[] arguments, LythonSourceSpan span)
     {
-        if (arguments.Length is < 1 or > 2 || !TryAsDecimal(arguments[0], out var other))
+        if (arguments.Length is < 1 or > 2)
+        {
+            throw new LythonRuntimeException("TypeError", "Decimal.compare_signal(other[, context]) expects one Decimal-compatible argument.", span);
+        }
+
+        if (arguments.Length == 2)
+        {
+            ExpectContextOrNone(arguments[1], span);
+        }
+
+        if (!TryAsDecimal(arguments[0], out var other))
         {
             throw new LythonRuntimeException("TypeError", "Decimal.compare_signal(other[, context]) expects one Decimal-compatible argument.", span);
         }
@@ -338,7 +410,17 @@ internal static partial class PyDecimalOps
 
     public static PyDecimal MinMax(PyDecimal value, object[] arguments, string name, LythonSourceSpan span)
     {
-        if (arguments.Length is < 1 or > 2 || !TryAsDecimal(arguments[0], out var other))
+        if (arguments.Length is < 1 or > 2)
+        {
+            throw new LythonRuntimeException("TypeError", $"Decimal.{name}(other[, context]) expects one Decimal-compatible argument.", span);
+        }
+
+        if (arguments.Length == 2)
+        {
+            ExpectContextOrNone(arguments[1], span);
+        }
+
+        if (!TryAsDecimal(arguments[0], out var other))
         {
             throw new LythonRuntimeException("TypeError", $"Decimal.{name}(other[, context]) expects one Decimal-compatible argument.", span);
         }
