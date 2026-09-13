@@ -472,6 +472,7 @@ internal sealed partial class LythonRuntime
     {
         result.PeakExecutionMemoryBytes = context?.State.MemoryGovernor.PeakAccountedBytes ?? 0;
         result.PeakProjectionMemoryBytes = budget?.CurrentBytes ?? 0;
+        result.DeniedReservationBytes = context?.State.MemoryGovernor.LastDeniedReservationBytes ?? 0;
         return result;
     }
 

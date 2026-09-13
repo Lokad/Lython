@@ -103,6 +103,13 @@ public sealed class LythonExecutionResult
     /// </summary>
     public long PeakProjectionMemoryBytes { get; internal set; }
 
+    /// <summary>
+    /// Gets the requested size in bytes of the most recent denied execution
+    /// memory reservation, for failure attribution. Zero when the run never
+    /// exceeded its execution budget; see the SPEC memory-budget section.
+    /// </summary>
+    public long DeniedReservationBytes { get; internal set; }
+
     /// <summary>Gets projected Python exception details for a runtime failure.</summary>
     public LythonRuntimeFailure? Failure => (State as RuntimeFailedState)?.Failure;
 

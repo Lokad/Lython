@@ -25,6 +25,10 @@ internal sealed class MemoryGovernor
 
     public long PeakAccountedBytes { get; private set; }
 
+    // MG24: the most recent denied reservation size, for failure attribution.
+    // Stays zero when nothing was ever denied; a later denial overwrites it.
+    public long LastDeniedReservationBytes { get; private set; }
+
     public void EnsureCanReserve(long bytes, LythonSourceSpan? span)
     {
         if (bytes <= 0)
@@ -36,6 +40,7 @@ internal sealed class MemoryGovernor
         var nextAccounted = AddChecked(nextReserved, CurrentCommittedBytes, span);
         if (MaxAccountedBytes is { } maxAccountedBytes && nextAccounted > maxAccountedBytes)
         {
+            LastDeniedReservationBytes = bytes;
             throw RuntimeErrors.Memory($"execution memory budget exceeded ({maxAccountedBytes})", span);
         }
     }
