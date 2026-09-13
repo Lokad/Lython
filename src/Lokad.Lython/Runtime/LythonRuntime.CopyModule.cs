@@ -187,6 +187,16 @@ internal sealed partial class LythonRuntime
 
         public void Dispose() => _scratch?.Dispose();
 
+        // Escape acceptance (MG03/MG20): a hook may retain this internal view
+        // past the copy, keeping every entry alive after the transient scratch
+        // releases (verified: 200 stashed memos hold 201 entries with only the
+        // ordinary construction peak showing). Those retained entries stay uncharged
+        // (~100B each in view slots plus identity keys; copied values stay owned by
+        // their own construction). Governing the view instead would either leak
+        // backing charges for ordinary transient memos or require clearing retained
+        // views, diverging from CPython where a stashed memo keeps working. Only
+        // deliberately adversarial guest code stashes the implicit memo, so this
+        // stays documented acceptance, not a drive-by charge.
         public PyDict ExternalView => _external;
 
         public static CopyMemo FromExternal(object value, ExecutionContext context, LythonSourceSpan span)
