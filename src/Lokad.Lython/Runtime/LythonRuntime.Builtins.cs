@@ -319,8 +319,8 @@ internal sealed partial class LythonRuntime
                 BigInteger integer => integer,
                 double floating => OwnHeapInteger(FloatToInteger(floating, span, Math.Truncate), context.MemoryGovernor, span),
                 PyDecimal decimalValue => OwnHeapInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, span),
-                PyString text => OwnHeapInteger(ParsePythonIntegerText(text.AsString(), numberBase, span, PyRendering.ToReprPyString(text, new PyRenderingContext(context)).AsString()), context.MemoryGovernor, span),
-                PyBytes bytes => OwnHeapInteger(ParsePythonIntegerText(System.Text.Encoding.ASCII.GetString(bytes.Bytes), numberBase, span, PyRendering.ToReprPyString(bytes, new PyRenderingContext(context)).AsString()), context.MemoryGovernor, span),
+                PyString text => OwnHeapInteger(ParsePythonIntegerText(text.AsString(), numberBase, span, text, context), context.MemoryGovernor, span),
+                PyBytes bytes => OwnHeapInteger(ParsePythonIntegerText(System.Text.Encoding.ASCII.GetString(bytes.Bytes), numberBase, span, bytes, context), context.MemoryGovernor, span),
                 bool boolean => boolean ? BigInteger.One : BigInteger.Zero,
                 _ => throw new LythonRuntimeException("TypeError", "int() argument must be a string, a bytes-like object or a real number, not '" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "'", span)
             };
@@ -670,7 +670,13 @@ internal sealed partial class LythonRuntime
         return PyString.FromString(sign + prefix + digits, context.MemoryGovernor, span);
     }
 
-    private static BigInteger ParsePythonIntegerText(string text, int numberBase, LythonSourceSpan span, string literal)
+    // Shared int() conversion failure: quotes the offending source like CPython
+    // (str form for strings, bytes form for bytes). Rendered lazily like the
+    // float() path: building it eagerly committed a retained repr per call.
+    private static string IntFailureDisplay(object source, ExecutionContext context)
+        => PyRendering.ToReprPyString(source, new PyRenderingContext(context)).AsString();
+
+    private static BigInteger ParsePythonIntegerText(string text, int numberBase, LythonSourceSpan span, object displaySource, ExecutionContext context)
     {
         var value = text.Trim();
         var negative = false;
@@ -704,7 +710,7 @@ internal sealed partial class LythonRuntime
         detectedBase = detectedBase == 0 ? 10 : detectedBase;
         if (value.Length == 0 || value.StartsWith('_') || value.EndsWith('_') || value.Contains("__", StringComparison.Ordinal))
         {
-            throw new LythonRuntimeException("ValueError", $"invalid literal for int() with base {numberBase}: {literal}", span);
+            throw new LythonRuntimeException("ValueError", $"invalid literal for int() with base {numberBase}: {IntFailureDisplay(displaySource, context)}", span);
         }
 
         var result = BigInteger.Zero;
@@ -725,7 +731,7 @@ internal sealed partial class LythonRuntime
             };
             if (digit < 0 || digit >= detectedBase)
             {
-                throw new LythonRuntimeException("ValueError", $"invalid literal for int() with base {numberBase}: {literal}", span);
+                throw new LythonRuntimeException("ValueError", $"invalid literal for int() with base {numberBase}: {IntFailureDisplay(displaySource, context)}", span);
             }
 
             sawNonZero |= digit != 0;
@@ -734,7 +740,7 @@ internal sealed partial class LythonRuntime
 
         if (numberBase == 0 && detectedBase == 10 && value.Length > 1 && value[0] == '0' && sawNonZero)
         {
-            throw new LythonRuntimeException("ValueError", $"invalid literal for int() with base 0: {literal}", span);
+            throw new LythonRuntimeException("ValueError", $"invalid literal for int() with base 0: {IntFailureDisplay(displaySource, context)}", span);
         }
 
         return negative ? -result : result;

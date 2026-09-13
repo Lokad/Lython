@@ -1,4 +1,5 @@
 using Lokad.Lython.Frontend;
+using System.Runtime.CompilerServices;
 using Lokad.Lython.Runtime.Calls;
 using Lokad.Lython.Runtime.Text;
 
@@ -6,6 +7,24 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    // String and bytes literals evaluate to shared compile-time constants like
+    // the executable engine's interned constants: rebuilding (and recharging)
+    // them per evaluation made every loop-carried literal sticky in
+    // tree-walked runs, where expressions evaluate directly instead of loading
+    // constants. Entries key on the lowered node, bounding them by program
+    // text; values stay ungoverned exactly like the executable constants, and
+    // length limits still apply per evaluation through ValidateLoweredString.
+    private static readonly ConditionalWeakTable<LoweredExpression, object> SharedLiteralCache = new();
+
+    private static PyString SharedStringLiteral(LoweredStringLiteralExpression text)
+        => (PyString)SharedLiteralCache.GetValue(
+            text,
+            static node => PyString.FromString(((LoweredStringLiteralExpression)node).Literal.Value));
+
+    private static PyBytes SharedBytesLiteral(LoweredBytesLiteralExpression bytes)
+        => (PyBytes)SharedLiteralCache.GetValue(
+            bytes,
+            static node => new PyBytes(((LoweredBytesLiteralExpression)node).Literal.Value.ToArray()));
     private delegate ValueTask<ControlSignal?> LoweredStatementBlockExecutor(
         IReadOnlyList<LoweredStatement> statements,
         ExecutionContext context);
@@ -94,9 +113,9 @@ internal sealed partial class LythonRuntime
             case LoweredIdentifierExpression identifier:
                 return ResolveIdentifier(identifier.Identifier, context);
             case LoweredStringLiteralExpression text:
-                return ValidateLoweredString(CreateString(text.Literal.Value, context, text.Span), context, text.Span);
+                return ValidateLoweredString(SharedStringLiteral(text), context, text.Span);
             case LoweredBytesLiteralExpression bytes:
-                return CreateBytes(bytes.Literal.Value.ToArray(), context, bytes.Span);
+                return SharedBytesLiteral(bytes);
             case LoweredIntegerLiteralExpression integer:
                 return ParseInteger(integer.Literal);
             case LoweredFloatLiteralExpression floating:

@@ -230,14 +230,14 @@ public sealed class CsvWriterAccountingScenarioTests
     [Fact]
     public async Task WriterStaysUsableAfterOversizedConversionFailure()
     {
-        // MG02: an oversized integer trips the conversion reservation before
-        // formatting, so the failed row retains nothing and the writer stays
-        // usable for later rows.
+        // MG02: an oversized value trips the budget while converting the
+        // guarded row (before unbounded retained growth), so the failed row
+        // retains nothing and the writer stays usable for later rows.
         var script = new LythonEngine().Compile("""
             import csv
             w = csv.writer()
             try:
-                w.writerow([int("9" * 20000)])
+                w.writerow([int("9" * 100000)])
             except MemoryError:
                 pass
             w.writerow(["a"])
