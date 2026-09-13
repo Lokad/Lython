@@ -1234,6 +1234,17 @@ The default dialect is:
 - quote character `"`
 - line terminator `\n`
 
+Failed rows retain nothing uncharged and leave writers usable: a row that
+raises during conversion or reservation is dropped without keeping partial
+state, prior successful rows (including earlier `writerows` rows) stay valid,
+and later rows still write. In-memory history and every escaping `getvalue()`
+result stay governed, so retaining them accumulates charges and excessive
+retention raises `MemoryError`. File-backed writers stream output without
+retaining row history; buffered output publishes on flush or close, so a
+failed host write leaves no partial row and a run cancelled mid-stream leaves
+no file behind. Oversized fields, records and conversions trip the execution
+budget before unbounded growth rather than materializing first.
+
 If a script requests structured-text behavior outside the supported subset, the runtime must fail explicitly.
 
 ### 11.10 Filename Matching
