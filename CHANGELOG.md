@@ -18,7 +18,7 @@ The upcoming release remains in development. ZIP compression finalization, async
 
 ## 0.8.0 - 2026-08-11
 
-This release closes the Studio compatibility findings gathered from coding-agent workloads while preserving Lython's explicit, host-mediated execution model.
+This release closes the host-embedder compatibility findings gathered from coding-agent workloads while preserving Lython's explicit, host-mediated execution model.
 
 ### Python Language Compatibility
 
