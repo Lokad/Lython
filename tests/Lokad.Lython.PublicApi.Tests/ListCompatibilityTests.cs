@@ -478,4 +478,128 @@ return "|".join([str(digits), str(indexed), outcome])
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("10001|100000000000000000000000000000|caught", result.ReturnValue);
     }
+    [Fact]
+    public async Task SequenceComparisonDundersAdvanceLikeCpython()
+    {
+        // list slots take lists only and tuple slots take tuple-likes (namedtuples included), computing through the shared recursive cores and declining everything else with NotImplemented on every dunder, ordering included, exactly like CPython.
+        var script = new LythonEngine().Compile("""
+def call2(f, a, b):
+    return f(a, b)
+results = []
+results.append(str([1, 2].__eq__([1, 2])))
+results.append(str([1, 2].__ne__([1])))
+results.append(str([1, 2].__lt__([1, 3])))
+results.append(str([1, 2].__le__([1, 2])))
+results.append(str([1, 2].__gt__([1])))
+results.append(str([1, 2].__ge__([2, 0])))
+results.append(str([1, 2].__eq__((1, 2))))
+results.append(str([1, 2].__lt__((1, 3))))
+results.append(str([1, 2].__eq__("12")))
+results.append(str([1, 2].__eq__(None)))
+results.append(str([[1], [2]].__eq__([[1], [2]])))
+results.append(str([1, [2, 3]].__lt__([1, [2, 4]])))
+results.append(str((1, 2).__eq__((1, 2))))
+results.append(str((1, 2).__ne__((1,))))
+results.append(str((1, 2).__lt__((1, 3))))
+results.append(str((1,).__ge__((1,))))
+results.append(str((1, 2).__eq__([1, 2])))
+results.append(str((1, 2).__lt__([1, 3])))
+from collections import namedtuple
+P = namedtuple("P", ["x", "y"])
+results.append(str((1, 2).__eq__(P(1, 2))))
+results.append(str(P(1, 2).__eq__((1, 2))))
+results.append(str(P(1, 2).__lt__(P(1, 3))))
+try:
+    (1,).__lt__(("a",))
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    [1].__lt__([None])
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+results.append(str([].__eq__([])))
+results.append(str(().__eq__(())))
+for (f, a, b) in [([1].__eq__, 1, 2), ([1].__ne__, 1, 2), ([1].__lt__, 1, 2), ([1].__le__, 1, 2), ([1].__gt__, 1, 2), ([1].__ge__, 1, 2), ((1,).__eq__, 1, 2), ((1,).__ne__, 1, 2), ((1,).__lt__, 1, 2), ((1,).__le__, 1, 2), ((1,).__gt__, 1, 2), ((1,).__ge__, 1, 2)]:
+    try:
+        call2(f, a, b)
+    except TypeError as e:
+        results.append(type(e).__name__)
+        results.append(str(e))
+results.append(str(hasattr([1], "__eq__")))
+results.append(str(hasattr((1,), "__lt__")))
+results.append(str(hasattr([1], "__rlt__")))
+results.append(str(hasattr((1,), "__req__")))
+results.append(str(callable([1].__eq__)))
+return results
+""");
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "False",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "NotImplemented",
+            "NotImplemented",
+            "True",
+            "True",
+            "True",
+            "TypeError",
+            "'<' not supported between instances of 'int' and 'str'",
+            "TypeError",
+            "'<' not supported between instances of 'int' and 'NoneType'",
+            "True",
+            "True",
+            "TypeError",
+            "Method 'list.__eq__' received too many positional arguments.",
+            "TypeError",
+            "Method 'list.__ne__' received too many positional arguments.",
+            "TypeError",
+            "Method 'list.__lt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'list.__le__' received too many positional arguments.",
+            "TypeError",
+            "Method 'list.__gt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'list.__ge__' received too many positional arguments.",
+            "TypeError",
+            "Method 'tuple.__eq__' received too many positional arguments.",
+            "TypeError",
+            "Method 'tuple.__ne__' received too many positional arguments.",
+            "TypeError",
+            "Method 'tuple.__lt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'tuple.__le__' received too many positional arguments.",
+            "TypeError",
+            "Method 'tuple.__gt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'tuple.__ge__' received too many positional arguments.",
+            "True",
+            "True",
+            "False",
+            "False",
+            "True",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

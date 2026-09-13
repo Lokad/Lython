@@ -494,4 +494,147 @@ return "|".join(vals)
             "False|True",
             result.ReturnValue);
     }
+    [Fact]
+    public async Task DictSetComparisonDundersAdvanceLikeCpython()
+    {
+        // dict __eq__/__ne__ take mappings only while ordering always declines, set dunders take sets only with subset semantics, and view __eq__/__ne__ take sets or views only, all through the shared cores exactly like CPython.
+        var script = new LythonEngine().Compile("""
+from collections import defaultdict, Counter
+def call2(f, a, b):
+    return f(a, b)
+results = []
+results.append(str({1: 2}.__eq__({1: 2})))
+results.append(str({1: 2}.__ne__({1: 3})))
+results.append(str({}.__lt__({})))
+results.append(str({}.__le__({})))
+results.append(str({}.__eq__([])))
+results.append(str({}.__ne__([])))
+results.append(str({}.__eq__(defaultdict(list))))
+results.append(str({"a": 1}.__eq__(Counter({"a": 1}))))
+results.append(str({}.__lt__(defaultdict(list))))
+results.append(str({}.__ge__(Counter())))
+results.append(str({1: 2}.__eq__((1, 2))))
+results.append(str({1, 2}.__eq__({1, 2})))
+results.append(str({1, 2}.__ne__({1})))
+results.append(str({1}.__lt__({1, 2})))
+results.append(str({1, 2}.__le__({1, 2})))
+results.append(str({1, 2}.__gt__({1})))
+results.append(str({1, 2}.__ge__({1, 2})))
+results.append(str(set().__lt__(set())))
+results.append(str(set().__le__(set())))
+results.append(str({1, 2}.__eq__([1, 2])))
+results.append(str({1}.__lt__([1, 2])))
+d = {1: 2, 3: 4}
+results.append(str(d.keys().__eq__({1, 3})))
+results.append(str(d.keys().__eq__([1, 3])))
+results.append(str(d.keys().__ne__({1})))
+results.append(str(d.items().__eq__({(1, 2), (3, 4)})))
+results.append(str(d.items().__eq__([(1, 2)])))
+results.append(str(d.items().__ne__({(1, 2)})))
+results.append(str(d.items().__eq__([(1, 2), (3, 4)])))
+results.append(str(d.items().__ne__([(1, 2)])))
+results.append(str(d.keys().__ne__([1, 3])))
+try:
+    {"a": [1]}.items().__eq__({("a", 1)})
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+for (f, a, b) in [({}.__eq__, {}, {}), ({}.__ne__, {}, {}), ({}.__lt__, {}, {}), ({}.__le__, {}, {}), ({}.__gt__, {}, {}), ({}.__ge__, {}, {}), ({1}.__eq__, {1}, {1}), ({1}.__ne__, {1}, {1}), ({1}.__lt__, {1}, {1}), ({1}.__le__, {1}, {1}), ({1}.__gt__, {1}, {1}), ({1}.__ge__, {1}, {1}), (d.keys().__eq__, 1, 2), (d.keys().__ne__, 1, 2), (d.items().__eq__, 1, 2), (d.items().__ne__, 1, 2)]:
+    try:
+        call2(f, a, b)
+    except TypeError as e:
+        results.append(type(e).__name__)
+        results.append(str(e))
+results.append(str(hasattr({}, "__eq__")))
+results.append(str(hasattr({1}, "__lt__")))
+results.append(str(hasattr(d.keys(), "__eq__")))
+results.append(str(hasattr(d.items(), "__ne__")))
+results.append(str(hasattr({}, "__rlt__")))
+results.append(str(hasattr({1}, "__req__")))
+results.append(str(callable({1}.__eq__)))
+return results
+""");
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "True",
+            "True",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "True",
+            "True",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "False",
+            "True",
+            "NotImplemented",
+            "NotImplemented",
+            "True",
+            "NotImplemented",
+            "True",
+            "True",
+            "NotImplemented",
+            "True",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "TypeError",
+            "unhashable type: 'list'",
+            "TypeError",
+            "Method 'dict.__eq__' received too many positional arguments.",
+            "TypeError",
+            "Method 'dict.__ne__' received too many positional arguments.",
+            "TypeError",
+            "Method 'dict.__lt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'dict.__le__' received too many positional arguments.",
+            "TypeError",
+            "Method 'dict.__gt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'dict.__ge__' received too many positional arguments.",
+            "TypeError",
+            "Method 'set.__eq__' received too many positional arguments.",
+            "TypeError",
+            "Method 'set.__ne__' received too many positional arguments.",
+            "TypeError",
+            "Method 'set.__lt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'set.__le__' received too many positional arguments.",
+            "TypeError",
+            "Method 'set.__gt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'set.__ge__' received too many positional arguments.",
+            "TypeError",
+            "Method 'dict_keys.__eq__' received too many positional arguments.",
+            "TypeError",
+            "Method 'dict_keys.__ne__' received too many positional arguments.",
+            "TypeError",
+            "Method 'dict_items.__eq__' received too many positional arguments.",
+            "TypeError",
+            "Method 'dict_items.__ne__' received too many positional arguments.",
+            "True",
+            "True",
+            "True",
+            "True",
+            "False",
+            "False",
+            "True",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

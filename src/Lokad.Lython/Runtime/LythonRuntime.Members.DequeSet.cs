@@ -621,6 +621,90 @@ internal sealed partial class LythonRuntime
                     set.SymmetricExceptWith(right);
                     return set;
                 }, "set.__ixor__", ["value"]),
+                "__eq__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "set.__eq__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PySet other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return set.SetEquals(other);
+                }, "set.__eq__", ["value"]),
+                "__ne__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "set.__ne__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PySet other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return !set.SetEquals(other);
+                }, "set.__ne__", ["value"]),
+                "__lt__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "set.__lt__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PySet other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return set.IsProperSubsetOf(other);
+                }, "set.__lt__", ["value"]),
+                "__le__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "set.__le__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PySet other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return set.IsSubsetOf(other);
+                }, "set.__le__", ["value"]),
+                "__gt__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "set.__gt__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PySet other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return set.IsProperSupersetOf(other);
+                }, "set.__gt__", ["value"]),
+                "__ge__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "set.__ge__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PySet other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return set.IsSupersetOf(other);
+                }, "set.__ge__", ["value"]),
                 _ => MissingMemberValue.Instance,
             };
 

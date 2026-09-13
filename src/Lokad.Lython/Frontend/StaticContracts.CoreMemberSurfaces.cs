@@ -218,6 +218,12 @@ internal static partial class StaticContracts
         "__add__",
         "__mul__",
         "__rmul__",
+        "__eq__",
+        "__ne__",
+        "__lt__",
+        "__le__",
+        "__gt__",
+        "__ge__",
     };
 
     private static readonly HashSet<string> FloatMembers = new(StringComparer.Ordinal)
@@ -280,6 +286,12 @@ internal static partial class StaticContracts
         "__add__",
         "__mul__",
         "__rmul__",
+        "__eq__",
+        "__ne__",
+        "__lt__",
+        "__le__",
+        "__gt__",
+        "__ge__",
     };
 
     private static readonly HashSet<string> DictMembers = new(StringComparer.Ordinal)
@@ -304,6 +316,12 @@ internal static partial class StaticContracts
         "__or__",
         "__ror__",
         "__ior__",
+        "__eq__",
+        "__ne__",
+        "__lt__",
+        "__le__",
+        "__gt__",
+        "__ge__",
     };
 
     private static readonly HashSet<string> SetMembers = new(StringComparer.Ordinal)
@@ -340,6 +358,12 @@ internal static partial class StaticContracts
         "__iand__",
         "__isub__",
         "__ixor__",
+        "__eq__",
+        "__ne__",
+        "__lt__",
+        "__le__",
+        "__gt__",
+        "__ge__",
     };
 
     private static readonly HashSet<string> PopenMembers = new(StringComparer.Ordinal)

@@ -243,6 +243,12 @@ internal static partial class StaticContracts
             AddNonMutatingListCallableContract(contracts, "__add__", 1, 1, "LA3124", "list.__add__(value) expects one argument.", "value");
             AddNonMutatingListCallableContract(contracts, "__mul__", 1, 1, "LA3124", "list.__mul__(value) expects one argument.", "value");
             AddNonMutatingListCallableContract(contracts, "__rmul__", 1, 1, "LA3124", "list.__rmul__(value) expects one argument.", "value");
+            AddNonMutatingListCallableContract(contracts, "__eq__", 1, 1, "LA3124", "list.__eq__(value) expects one argument.", "value");
+            AddNonMutatingListCallableContract(contracts, "__ne__", 1, 1, "LA3124", "list.__ne__(value) expects one argument.", "value");
+            AddNonMutatingListCallableContract(contracts, "__lt__", 1, 1, "LA3124", "list.__lt__(value) expects one argument.", "value");
+            AddNonMutatingListCallableContract(contracts, "__le__", 1, 1, "LA3124", "list.__le__(value) expects one argument.", "value");
+            AddNonMutatingListCallableContract(contracts, "__gt__", 1, 1, "LA3124", "list.__gt__(value) expects one argument.", "value");
+            AddNonMutatingListCallableContract(contracts, "__ge__", 1, 1, "LA3124", "list.__ge__(value) expects one argument.", "value");
             AddListCallableContract(contracts, "__setitem__", 2, 2, "LA3124", "list.__setitem__(index, value) expects two arguments.", StaticMutationKind.MutatesReceiver, "index", "value");
             AddListCallableContract(contracts, "__delitem__", 1, 1, "LA3124", "list.__delitem__(index) expects one argument.", StaticMutationKind.MutatesReceiver, "index");
             AddListCallableContract(contracts, "clear", 0, 0, "LA3125", "list.clear() expects no arguments.", StaticMutationKind.MutatesReceiver);
