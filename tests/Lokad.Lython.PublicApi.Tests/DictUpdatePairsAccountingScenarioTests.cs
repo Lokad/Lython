@@ -112,4 +112,34 @@ public sealed class DictUpdatePairsAccountingScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task UpdateAcceptsDequePairSequences()
+    {
+        // A deque of pairs is a valid update source like CPython; the
+        // static gate used to reject the deque kind although the runtime
+        // validates pair elements the same way as for lists.
+        var script = new LythonEngine().Compile("""
+            from collections import deque
+            d = {}
+            d.update(deque([("a", 1), ("b", 2)]))
+            results = []
+            results.append(str(d))
+            results.append(str(dict(deque([("x", 9)]))))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "{'a': 1, 'b': 2}",
+            "{'x': 9}",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

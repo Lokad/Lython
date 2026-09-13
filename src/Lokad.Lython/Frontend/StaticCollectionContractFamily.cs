@@ -272,7 +272,8 @@ internal static class StaticCollectionContractFamily
 
         if (StaticAbstractValueResolver.TryResolve(mappingExpression, bindings, out var value))
         {
-            if (value.Kind == AbstractValueKind.List || value.Kind == AbstractValueKind.Tuple || value.Kind == AbstractValueKind.Set)
+            if (value.Kind == AbstractValueKind.List || value.Kind == AbstractValueKind.Tuple || value.Kind == AbstractValueKind.Set ||
+                value.Kind == AbstractValueKind.CollectionsDeque)
             {
                 // Pair sequences validate their elements at runtime like CPython.
                 return;
