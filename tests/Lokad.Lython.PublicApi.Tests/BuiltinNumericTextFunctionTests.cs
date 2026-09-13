@@ -505,4 +505,174 @@ return results
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+    [Fact]
+    public async Task NumericConversionDundersAdvanceLikeCpython()
+    {
+        // int/float conversion dunders delegate to the same cores as the
+        // int/float/round builtins (including bankers rounding, exact
+        // int-float conversion and None-ndigits rejection), exactly like
+        // CPython; float has no __index__ on either side.
+        var script = new LythonEngine().Compile("""
+def call1(f, a):
+    return f(a)
+def call2(f, a, b):
+    return f(a, b)
+results = []
+results.append(str((5).__int__()))
+results.append(str((5).__float__()))
+results.append(str((5).__trunc__()))
+results.append(str((5).__floor__()))
+results.append(str((5).__ceil__()))
+results.append(str((5).__round__()))
+results.append(str((123).__round__(-1)))
+results.append(str(True.__int__()))
+results.append(str(True.__index__()))
+results.append(str((5.9).__int__()))
+results.append(str((-5.9).__int__()))
+results.append(str((5.5).__round__()))
+results.append(str((2.5).__round__()))
+results.append(str((5.5).__floor__()))
+results.append(str((-5.5).__ceil__()))
+results.append(str((5.5).__trunc__()))
+results.append(str(True.__float__()))
+results.append(str((1.5).__float__()))
+try:
+    (5).__round__("a")
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+results.append(str((1.5).__round__(2)))
+try:
+    (1.5).__round__(None)
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    int(float("inf"))
+except OverflowError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    float("inf").__int__()
+except OverflowError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    int(float("nan"))
+except ValueError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    float("nan").__int__()
+except ValueError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    (10 ** 400).__float__()
+except OverflowError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+results.append(str(hasattr(5, "__int__")))
+results.append(str(hasattr(5.5, "__float__")))
+results.append(str(hasattr(True, "__index__")))
+results.append(str(hasattr(5.5, "__index__")))
+results.append(str(hasattr(5, "__rindex__")))
+results.append(str(hasattr("a", "__int__")))
+for f in [(5).__int__, (5).__float__, (5).__trunc__, (5).__floor__, (5).__ceil__, (5).__index__]:
+    try:
+        call1(f, 1)
+    except TypeError as e:
+        results.append(type(e).__name__)
+        results.append(str(e))
+for f in [(5.5).__int__, (5.5).__float__, (5.5).__trunc__, (5.5).__floor__, (5.5).__ceil__]:
+    try:
+        call1(f, 1)
+    except TypeError as e:
+        results.append(type(e).__name__)
+        results.append(str(e))
+for f in [(5).__round__, (5.5).__round__]:
+    try:
+        call2(f, 1, 2)
+    except TypeError as e:
+        results.append(type(e).__name__)
+        results.append(str(e))
+return results
+""");
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "5",
+            "5.0",
+            "5",
+            "5",
+            "5",
+            "5",
+            "120",
+            "1",
+            "1",
+            "5",
+            "-5",
+            "6",
+            "2",
+            "5",
+            "-5",
+            "5",
+            "1.0",
+            "1.5",
+            "TypeError",
+            "'str' object cannot be interpreted as an integer",
+            "1.5",
+            "TypeError",
+            "'NoneType' object cannot be interpreted as an integer",
+            "OverflowError",
+            "cannot convert float infinity to integer",
+            "OverflowError",
+            "cannot convert float infinity to integer",
+            "ValueError",
+            "cannot convert float NaN to integer",
+            "ValueError",
+            "cannot convert float NaN to integer",
+            "OverflowError",
+            "int too large to convert to float",
+            "True",
+            "True",
+            "True",
+            "False",
+            "False",
+            "False",
+            "TypeError",
+            "int.__int__() expects no arguments.",
+            "TypeError",
+            "int.__float__() expects no arguments.",
+            "TypeError",
+            "int.__trunc__() expects no arguments.",
+            "TypeError",
+            "int.__floor__() expects no arguments.",
+            "TypeError",
+            "int.__ceil__() expects no arguments.",
+            "TypeError",
+            "int.__index__() expects no arguments.",
+            "TypeError",
+            "float.__int__() expects no arguments.",
+            "TypeError",
+            "float.__float__() expects no arguments.",
+            "TypeError",
+            "float.__trunc__() expects no arguments.",
+            "TypeError",
+            "float.__floor__() expects no arguments.",
+            "TypeError",
+            "float.__ceil__() expects no arguments.",
+            "TypeError",
+            "int.__round__([ndigits]) expects zero or one argument.",
+            "TypeError",
+            "float.__round__([ndigits]) expects zero or one argument.",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

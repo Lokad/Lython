@@ -970,6 +970,81 @@ internal sealed partial class LythonRuntime
 
                     return ComputeBuiltinHash(integer.Value, span);
                 }, "int.__hash__"),
+                "__int__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "int.__int__() expects no arguments.", span);
+                    }
+
+                    return integer.Value;
+                }, "int.__int__"),
+                "__index__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "int.__index__() expects no arguments.", span);
+                    }
+
+                    return integer.Value;
+                }, "int.__index__"),
+                "__trunc__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "int.__trunc__() expects no arguments.", span);
+                    }
+
+                    return integer.Value;
+                }, "int.__trunc__"),
+                "__floor__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "int.__floor__() expects no arguments.", span);
+                    }
+
+                    return integer.Value;
+                }, "int.__floor__"),
+                "__ceil__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "int.__ceil__() expects no arguments.", span);
+                    }
+
+                    return integer.Value;
+                }, "int.__ceil__"),
+                "__float__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "int.__float__() expects no arguments.", span);
+                    }
+
+                    try
+                    {
+                        return PyNumberOps.BigIntegerToDouble(integer.Value);
+                    }
+                    catch (OverflowException ex)
+                    {
+                        throw new LythonRuntimeException("OverflowError", ex.Message, span);
+                    }
+                }, "int.__float__"),
+                "__round__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length > 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "int.__round__([ndigits]) expects zero or one argument.", span);
+                    }
+
+                    if (arguments.Length == 1 && arguments[0] is PyNone)
+                    {
+                        throw new LythonRuntimeException("TypeError", "'NoneType' object cannot be interpreted as an integer", span);
+                    }
+
+                    return Round(arguments.Length == 0 ? [integer.Value] : [integer.Value, arguments[0]], span, context);
+                }, "int.__round__"),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1124,6 +1199,65 @@ internal sealed partial class LythonRuntime
 
                     return ComputeBuiltinHash(number, span);
                 }, "float.__hash__"),
+                "__int__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "float.__int__() expects no arguments.", span);
+                    }
+
+                    return OwnHeapInteger(FloatToInteger(number, span, Math.Truncate), context.MemoryGovernor, span);
+                }, "float.__int__"),
+                "__float__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "float.__float__() expects no arguments.", span);
+                    }
+
+                    return number;
+                }, "float.__float__"),
+                "__trunc__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "float.__trunc__() expects no arguments.", span);
+                    }
+
+                    return OwnHeapInteger(FloatToInteger(number, span, Math.Truncate), context.MemoryGovernor, span);
+                }, "float.__trunc__"),
+                "__floor__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "float.__floor__() expects no arguments.", span);
+                    }
+
+                    return OwnHeapInteger(FloatToInteger(number, span, Math.Floor), context.MemoryGovernor, span);
+                }, "float.__floor__"),
+                "__ceil__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "float.__ceil__() expects no arguments.", span);
+                    }
+
+                    return OwnHeapInteger(FloatToInteger(number, span, Math.Ceiling), context.MemoryGovernor, span);
+                }, "float.__ceil__"),
+                "__round__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length > 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "float.__round__([ndigits]) expects zero or one argument.", span);
+                    }
+
+                    if (arguments.Length == 1 && arguments[0] is PyNone)
+                    {
+                        throw new LythonRuntimeException("TypeError", "'NoneType' object cannot be interpreted as an integer", span);
+                    }
+
+                    return Round(arguments.Length == 0 ? [number] : [number, arguments[0]], span, context);
+                }, "float.__round__"),
                 _ => MissingMemberValue.Instance,
             };
 
