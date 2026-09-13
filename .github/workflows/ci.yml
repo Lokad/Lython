@@ -30,6 +30,12 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.13'
+      # Two suites shell out to LythonProbe.dll, which no test project
+      # references, so plain `dotnet test` never builds it: build the probe
+      # explicitly first (same rule as local development).
+      - name: Build probe
+        shell: pwsh
+        run: dotnet build tools/LythonProbe/LythonProbe.csproj -c Release
       - name: Test Release
         shell: pwsh
         run: |
