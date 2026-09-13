@@ -487,7 +487,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object ReadSubscriptValue(object target, object index, LythonSourceSpan span, ExecutionContext context)
+    internal static object ReadSubscriptValue(object target, object index, LythonSourceSpan span, ExecutionContext context)
     {
         if (target is PyDefaultDict defaultDict)
         {

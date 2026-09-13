@@ -181,6 +181,15 @@ internal sealed partial class LythonRuntime
 
                     return PyContainment.Contains(deque, arguments[0], span);
                 }, "deque.__contains__", ["item"]),
+                "__getitem__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "deque.__getitem__(index) expects one argument.", span);
+                    }
+
+                    return ReadSubscriptValue(deque, arguments[0], span, context);
+                }, "deque.__getitem__", ["index"]),
                 _ => MissingMemberValue.Instance,
             };
 

@@ -769,6 +769,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
             "copy" => new BoundChainMapCopy(this),
             "__len__" => new BoundChainMapLen(this),
             "__contains__" => new BoundChainMapContains(this),
+            "__getitem__" => new BoundChainMapGetItem(this),
             _ => PyNone.Instance
         };
 
@@ -1054,6 +1055,25 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
             var maps = new List<PyDict> { new(_owner._maps[0], context.MemoryGovernor, span) };
             maps.AddRange(_owner._maps.Skip(1));
             return new PyChainMap(maps);
+        }
+    }
+
+    private sealed class BoundChainMapGetItem : LythonRuntime.ICallable
+    {
+        private static readonly LythonCallableSignature GetItemCallSignature = LythonCallableSignature.Create(
+            "ChainMap.__getitem__",
+            ["index"],
+            requiredCount: 1);
+
+        private readonly PyChainMap _owner;
+
+        public BoundChainMapGetItem(PyChainMap owner) => _owner = owner;
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            var bound = CallBinder.BindNamedArguments(arguments, span, GetItemCallSignature, PythonCallableKind.Method);
+            return LythonRuntime.ReadSubscriptValue(_owner, bound[0], span, context);
         }
     }
 

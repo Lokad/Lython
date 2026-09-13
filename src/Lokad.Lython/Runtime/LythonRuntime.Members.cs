@@ -152,6 +152,15 @@ internal sealed partial class LythonRuntime
 
                     return PyContainment.Contains(list, arguments[0], span);
                 }, "list.__contains__", ["item"]),
+                "__getitem__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "list.__getitem__(index) expects one argument.", span);
+                    }
+
+                    return ReadSubscriptValue(list, arguments[0], span, context);
+                }, "list.__getitem__", ["index"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -336,6 +345,15 @@ internal sealed partial class LythonRuntime
 
                     return PyContainment.Contains(source, arguments[0], span);
                 }, "tuple.__contains__", ["item"]),
+                "__getitem__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "tuple.__getitem__(index) expects one argument.", span);
+                    }
+
+                    return ReadSubscriptValue(source, arguments[0], span, context);
+                }, "tuple.__getitem__", ["index"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -841,6 +859,15 @@ internal sealed partial class LythonRuntime
 
                     return PyContainment.Contains(range, arguments[0], span);
                 }, "range.__contains__", ["item"]),
+                "__getitem__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "range.__getitem__(index) expects one argument.", span);
+                    }
+
+                    return ReadSubscriptValue(range, arguments[0], span, context);
+                }, "range.__getitem__", ["index"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -964,6 +991,15 @@ internal sealed partial class LythonRuntime
 
                     return PyContainment.Contains(dict, arguments[0], span);
                 }, "dict.__contains__", ["item"]),
+                "__getitem__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict.__getitem__(index) expects one argument.", span);
+                    }
+
+                    return ReadSubscriptValue(dict, arguments[0], span, context);
+                }, "dict.__getitem__", ["index"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1271,6 +1307,15 @@ internal sealed partial class LythonRuntime
 
                     return PyContainment.Contains(dict, arguments[0], span);
                 }, "defaultdict.__contains__", ["item"]),
+                "__getitem__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "defaultdict.__getitem__(index) expects one argument.", span);
+                    }
+
+                    return ReadSubscriptValue(dict, arguments[0], span, context);
+                }, "defaultdict.__getitem__", ["index"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1465,6 +1510,15 @@ internal sealed partial class LythonRuntime
 
                     return PyContainment.Contains(counter, arguments[0], span);
                 }, "Counter.__contains__", ["item"]),
+                "__getitem__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Counter.__getitem__(index) expects one argument.", span);
+                    }
+
+                    return ReadSubscriptValue(counter, arguments[0], span, context);
+                }, "Counter.__getitem__", ["index"]),
                 _ => MissingMemberValue.Instance,
             };
 

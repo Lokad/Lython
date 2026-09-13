@@ -1081,4 +1081,125 @@ return "|".join(results)
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task ContainerGetItemDundersAdvanceLikeCpython()
+    {
+        // Subscriptable builtins expose __getitem__ with exactly the []
+        // value, like CPython (sets and views have none, like CPython).
+        var script = new LythonEngine().Compile("""
+            from collections import defaultdict, Counter, deque, ChainMap
+            def getitem_arg(x, i, j):
+                return x.__getitem__(i, j)
+            results = []
+            results.append(str([10, 20].__getitem__(0)))
+            results.append(str([10, 20].__getitem__(-1)))
+            results.append(str("abc".__getitem__(1)))
+            results.append(str((7, 8).__getitem__(1)))
+            results.append(str({"a": 1}.__getitem__("a")))
+            results.append(str(b"ab".__getitem__(0)))
+            results.append(str(range(5).__getitem__(2)))
+            dd = defaultdict(list, {"a": [1]})
+            results.append(str(dd.__getitem__("a")))
+            results.append(str(dd.__getitem__("missing")))
+            results.append(str("missing" in dd))
+            results.append(str(Counter("aab").__getitem__("a")))
+            results.append(str(Counter("aab").__getitem__("z")))
+            results.append(str(deque([7, 8]).__getitem__(1)))
+            results.append(str(ChainMap({"a": 1}, {"b": 2}).__getitem__("b")))
+            results.append(str([10, 20, 30].__getitem__(slice(0, 2))))
+            results.append(str("abcdef".__getitem__(slice(1, 5, 2))))
+            try:
+                [1].__getitem__(5)
+            except IndexError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                "ab".__getitem__("x")
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                {"a": 1}.__getitem__([])
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                {"a": 1}.__getitem__("z")
+            except KeyError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            vals = [([1], 0, 1), ((1,), 0, 1), ({"a": 1}, "a", 1), ("ab", 0, 1), (b"ab", 0, 1), (range(2), 0, 1), (defaultdict(list), "a", 1), (Counter(), "a", 1), (deque([1]), 0, 1), (ChainMap({"a": 1}), "a", 1)]
+            for (v, i, j) in vals:
+                try:
+                    getitem_arg(v, i, j)
+                except TypeError as e:
+                    results.append(type(e).__name__)
+                    results.append(str(e))
+            results.append(str(hasattr([1], "__getitem__")))
+            results.append(str(hasattr({1}, "__getitem__")))
+            results.append(str(hasattr({}.keys(), "__getitem__")))
+            results.append(str(callable("ab".__getitem__)))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "10",
+            "20",
+            "b",
+            "8",
+            "1",
+            "97",
+            "2",
+            "[1]",
+            "[]",
+            "True",
+            "2",
+            "0",
+            "8",
+            "2",
+            "[10, 20]",
+            "bd",
+            "IndexError",
+            "list index out of range",
+            "TypeError",
+            "string indices must be integers, not 'str'",
+            "TypeError",
+            "unhashable type: 'list'",
+            "KeyError",
+            "'z'",
+            "TypeError",
+            "Method 'list.__getitem__' received too many positional arguments.",
+            "TypeError",
+            "Method 'tuple.__getitem__' received too many positional arguments.",
+            "TypeError",
+            "Method 'dict.__getitem__' received too many positional arguments.",
+            "TypeError",
+            "Method 'str.__getitem__' received too many positional arguments.",
+            "TypeError",
+            "Method 'bytes.__getitem__' received too many positional arguments.",
+            "TypeError",
+            "Method 'range.__getitem__' received too many positional arguments.",
+            "TypeError",
+            "Method 'defaultdict.__getitem__' received too many positional arguments.",
+            "TypeError",
+            "Method 'Counter.__getitem__' received too many positional arguments.",
+            "TypeError",
+            "Method 'deque.__getitem__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.__getitem__' received too many positional arguments.",
+            "True",
+            "False",
+            "False",
+            "True",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
