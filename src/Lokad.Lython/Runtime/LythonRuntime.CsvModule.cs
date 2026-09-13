@@ -451,7 +451,7 @@ internal sealed partial class LythonRuntime
 
                 if (_completed)
                 {
-                    row = null;
+                    row = null!;
                     return false;
                 }
 
@@ -590,7 +590,7 @@ internal sealed partial class LythonRuntime
         {
             if (_readyHead >= _ready.Count)
             {
-                row = null;
+                row = null!;
                 return false;
             }
 

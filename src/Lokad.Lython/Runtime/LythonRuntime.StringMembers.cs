@@ -406,11 +406,12 @@ internal sealed partial class LythonRuntime
 
                     var memberName = suffix[start..index];
                     var memberTarget = current;
-                    if (!PyMemberAccess.TryResolve(memberTarget, memberName, context, span, out current))
+                    if (!PyMemberAccess.TryResolve(memberTarget, memberName, context, span, out var resolved))
                     {
                         throw PyMemberAccess.CreateMissingMemberError(memberTarget, memberName, span, context);
                     }
 
+                    current = resolved;
                     continue;
                 }
 

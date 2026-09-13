@@ -252,7 +252,7 @@ internal sealed partial class LythonRuntime
 
         // Misses keep the character like CPython (only LookupError shapes
         // are swallowed); anything unindexable fails explicitly.
-        private static bool TryLookupTranslation(object table, int ordinal, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+        private static bool TryLookupTranslation(object? table, int ordinal, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
             if (table is PyDict dict)
             {
@@ -314,7 +314,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(table, context) + "' object is not subscriptable", span);
         }
 
-        private static bool TryLookupSequenceItem(object table, int ordinal, [MaybeNullWhen(false)] out object value)
+        private static bool TryLookupSequenceItem(object? table, int ordinal, [MaybeNullWhen(false)] out object value)
         {
             switch (table)
             {

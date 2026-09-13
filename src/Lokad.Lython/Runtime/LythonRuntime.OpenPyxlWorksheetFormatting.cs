@@ -91,7 +91,7 @@ internal sealed partial class LythonRuntime
         IPyRenderableValue
     {
         private readonly OpenPyxlWorksheet _worksheet;
-        private readonly MemoryGovernor _governor;
+        private readonly MemoryGovernor? _governor;
         private readonly LythonSourceSpan? _allocationSpan;
 
         public OpenPyxlConditionalFormattingCollection(OpenPyxlWorksheet worksheet)

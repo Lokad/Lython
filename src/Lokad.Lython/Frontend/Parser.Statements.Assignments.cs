@@ -63,7 +63,7 @@ internal sealed partial class Parser
             _ => null,
         };
 
-        if (assignmentTarget is null || CurrentToken != Token.Colon)
+        if (target is null || assignmentTarget is null || CurrentToken != Token.Colon)
         {
             _position = startPosition;
             if (_diagnostics.Count > startDiagnosticCount)

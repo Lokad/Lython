@@ -1148,7 +1148,7 @@ return helper(payload["items"]) + "|" + text
                         yield return expression;
                     }
                     break;
-                case LoweredRaiseStatement raiseStatement:
+                case LoweredRaiseStatement raiseStatement when raiseStatement.Expression is not null:
                     foreach (var expression in FlattenExpressions(raiseStatement.Expression))
                     {
                         yield return expression;

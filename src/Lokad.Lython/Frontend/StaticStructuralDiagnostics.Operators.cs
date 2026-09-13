@@ -459,7 +459,7 @@ internal static partial class StaticStructuralDiagnostics
             AbstractValueKind.BooleanType or
             AbstractValueKind.ListType or
             AbstractValueKind.SetType => "type",
-            _ => null,
+            _ => string.Empty,
         };
 
         return name is not null;

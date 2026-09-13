@@ -1754,7 +1754,7 @@ internal sealed partial class LythonRuntime
 
     // __index__-style operands (including user slots through the shared
     // protocol) with the exact CPython rejection text.
-    private static BigInteger InterpretByteInteger(object? value, ExecutionContext context, LythonSourceSpan span)
+    private static BigInteger InterpretByteInteger(object value, ExecutionContext context, LythonSourceSpan span)
     {
         var coerced = CoerceIndexProtocol(value, context, span);
         return coerced switch
@@ -2707,7 +2707,7 @@ internal sealed partial class LythonRuntime
         {
             if (name == "__self__")
             {
-                value = _receiver;
+                value = _receiver!;
                 return true;
             }
 

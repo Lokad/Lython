@@ -291,7 +291,9 @@ internal static class PyEquality
         foreach (var pair in leftPairs)
         {
             var (found, other) = rightLookup(pair.Key);
-            if (!found || !AreEqual(pair.Value, other))
+            // A miss carries the null (short-circuited above); every hit flows
+            // from a successful TryGetValue whose contract guarantees non-null.
+            if (!found || !AreEqual(pair.Value, other!))
             {
                 return false;
             }
