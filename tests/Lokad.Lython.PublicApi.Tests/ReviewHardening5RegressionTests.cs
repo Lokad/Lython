@@ -48,13 +48,12 @@ return matcher.ratio()
     [Fact]
     public async Task MatchingHonorsMidRunCancellation()
     {
-        // 16M inner match iterations keep the run alive far past the 50ms
-        // cancel point; the per-64 work checks observe the token deterministically.
+        // 12000-char identical inputs cost ~0.8s in Release locally, keeping the run alive far past the 50ms cancel point on any host: the 4000-char shape it replaced measured ~140ms here and completed before the cancel point on a faster CI host (ubuntu), flipping this pin to Success. Cancellation is observed at CheckExecutionBudget sites inside the matcher loops (FindLongestMatch, ChainB), so the work-vs-delay margin is what makes this deterministic; there is no per-64 cadence.
         using var cts = new CancellationTokenSource();
         var runTask = Task.Run(() => new LythonEngine().Run(
             """
 import difflib
-matcher = difflib.SequenceMatcher(None, "x" * 4000, "x" * 4000, autojunk=False)
+matcher = difflib.SequenceMatcher(None, "x" * 12000, "x" * 12000, autojunk=False)
 return matcher.ratio()
 """,
             new MockLythonHost(),
