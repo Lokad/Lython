@@ -153,6 +153,39 @@ __lython_file.close()
     }
 
     [Fact]
+    public void Collections_Counter_UpdateAcceptsMappings()
+    {
+        // Counter.update/subtract take mapping values (not key counts)
+        // from defaultdict and ChainMap sources like CPython.
+        var host = new MockLythonHost();
+        var result = new LythonEngine().Run(
+            """
+from collections import Counter, ChainMap, defaultdict
+
+c = Counter()
+c.update(ChainMap({"a": 2, "b": 3}))
+c2 = Counter()
+c2.update(defaultdict(int, {"x": 4}))
+c3 = Counter({"a": 5})
+c3.subtract(ChainMap({"a": 2}))
+c4 = Counter("aab")
+c4.update(Counter({"a": 1}))
+vals = []
+vals.append(str(c))
+vals.append(str(c2))
+vals.append(str(c3))
+vals.append(str(c4))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(vals))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("Counter({'b': 3, 'a': 2})|Counter({'x': 4})|Counter({'a': 3})|Counter({'a': 3, 'b': 1})", host.ReadText("/out.txt"));
+    }
+
+    [Fact]
     public void Collections_ChainMap_ViewsAreLive()
     {
         var host = new MockLythonHost();

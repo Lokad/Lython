@@ -628,6 +628,30 @@ internal sealed partial class LythonRuntime
             return;
         }
 
+        if (source is PyDefaultDict defaultdict)
+        {
+            foreach (var pair in defaultdict.Items)
+            {
+                var delta = ExpectCounterCount(pair.Value, span);
+                counter.Increment(pair.Key, subtract ? NegateCounterCount(delta, span, counter.OwnerMemoryGovernor) : delta, span);
+                context.ObserveCollectionCount(counter.Count, span);
+            }
+
+            return;
+        }
+
+        if (source is PyChainMap chainMap)
+        {
+            foreach (var key in chainMap.BuildMergedKeys())
+            {
+                var delta = ExpectCounterCount(chainMap.GetSubscript(key, span), span);
+                counter.Increment(key, subtract ? NegateCounterCount(delta, span, counter.OwnerMemoryGovernor) : delta, span);
+                context.ObserveCollectionCount(counter.Count, span);
+            }
+
+            return;
+        }
+
         foreach (var item in ToSequence(source, span, context))
         {
             counter.Increment(RuntimeValue(item), subtract ? -BigInteger.One : BigInteger.One, span);
