@@ -1827,4 +1827,105 @@ deque().pop()
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+    [Fact]
+    public async Task RangeDefaultdictCounterEqualityDundersAdvanceLikeCpython()
+    {
+        // range slots take ranges only, defaultdict __eq__/__ne__ take mappings (Counter included, now content-equal through the shared core) with always-decline ordering, and Counter __eq__/__ne__ take Counters only with missing-as-zero multiset semantics, exactly like CPython.
+        var script = new LythonEngine().Compile("""
+from collections import defaultdict, Counter
+def call2(f, a, b):
+    return f(a, b)
+results = []
+results.append(str(range(3).__eq__(range(3))))
+results.append(str(range(3).__ne__(range(4))))
+results.append(str(range(3).__eq__([0, 1, 2])))
+results.append(str(range(0).__eq__(range(5, 5))))
+results.append(str(range(3).__lt__(range(4))))
+results.append(str(range(3).__ge__(range(3))))
+results.append(str(defaultdict(list).__eq__(defaultdict(list))))
+results.append(str(defaultdict(list, {"a": 1}).__eq__({"a": 1})))
+results.append(str(defaultdict(list, {"a": 1}).__ne__({"a": 2})))
+results.append(str(defaultdict(list).__eq__([(1, 2)])))
+results.append(str(defaultdict(list).__lt__(defaultdict(list))))
+results.append(str(defaultdict(list).__ge__({"a": 1})))
+results.append(str(defaultdict(list, {"a": 1}).__eq__(Counter({"a": 1}))))
+results.append(str(Counter("aab").__eq__(Counter("aab"))))
+results.append(str(Counter("aab").__ne__(Counter("abb"))))
+results.append(str(Counter("aab").__eq__({"a": 2, "b": 1})))
+results.append(str(Counter("aab").__eq__(Counter({"a": 2, "b": 1, "c": 0}))))
+for (f, a, b) in [(range(3).__eq__, 1, 2), (range(3).__ne__, 1, 2), (range(3).__lt__, 1, 2), (range(3).__le__, 1, 2), (range(3).__gt__, 1, 2), (range(3).__ge__, 1, 2), (defaultdict(list).__eq__, {}, {}), (defaultdict(list).__ne__, {}, {}), (defaultdict(list).__lt__, {}, {}), (defaultdict(list).__le__, {}, {}), (defaultdict(list).__gt__, {}, {}), (defaultdict(list).__ge__, {}, {}), (Counter("aab").__eq__, Counter(), Counter()), (Counter("aab").__ne__, Counter(), Counter())]:
+    try:
+        call2(f, a, b)
+    except TypeError as e:
+        results.append(type(e).__name__)
+        results.append(str(e))
+results.append(str(hasattr(range(3), "__eq__")))
+results.append(str(hasattr(defaultdict(list), "__eq__")))
+results.append(str(hasattr(Counter("aab"), "__ne__")))
+results.append(str(hasattr(range(3), "__rlt__")))
+results.append(str(hasattr(Counter("aab"), "__rlt__")))
+return results
+""");
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "True",
+            "True",
+            "NotImplemented",
+            "True",
+            "NotImplemented",
+            "NotImplemented",
+            "True",
+            "True",
+            "True",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "True",
+            "True",
+            "True",
+            "NotImplemented",
+            "True",
+            "TypeError",
+            "Method 'range.__eq__' received too many positional arguments.",
+            "TypeError",
+            "Method 'range.__ne__' received too many positional arguments.",
+            "TypeError",
+            "Method 'range.__lt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'range.__le__' received too many positional arguments.",
+            "TypeError",
+            "Method 'range.__gt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'range.__ge__' received too many positional arguments.",
+            "TypeError",
+            "Method 'defaultdict.__eq__' received too many positional arguments.",
+            "TypeError",
+            "Method 'defaultdict.__ne__' received too many positional arguments.",
+            "TypeError",
+            "Method 'defaultdict.__lt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'defaultdict.__le__' received too many positional arguments.",
+            "TypeError",
+            "Method 'defaultdict.__gt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'defaultdict.__ge__' received too many positional arguments.",
+            "TypeError",
+            "Method 'Counter.__eq__' received too many positional arguments.",
+            "TypeError",
+            "Method 'Counter.__ne__' received too many positional arguments.",
+            "True",
+            "True",
+            "True",
+            "False",
+            "False",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

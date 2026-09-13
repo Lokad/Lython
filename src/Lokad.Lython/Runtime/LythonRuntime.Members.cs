@@ -1314,6 +1314,70 @@ internal sealed partial class LythonRuntime
 
                     return ReadSubscriptValue(range, arguments[0], span, context);
                 }, "range.__getitem__", ["index"]),
+                "__eq__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "range.__eq__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyRange other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return PyEquality.AreEqual(range, other);
+                }, "range.__eq__", ["value"]),
+                "__ne__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "range.__ne__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyRange other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return !PyEquality.AreEqual(range, other);
+                }, "range.__ne__", ["value"]),
+                "__lt__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "range.__lt__(value) expects one argument.", span);
+                    }
+
+                    return PyNotImplemented.Instance;
+                }, "range.__lt__", ["value"]),
+                "__le__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "range.__le__(value) expects one argument.", span);
+                    }
+
+                    return PyNotImplemented.Instance;
+                }, "range.__le__", ["value"]),
+                "__gt__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "range.__gt__(value) expects one argument.", span);
+                    }
+
+                    return PyNotImplemented.Instance;
+                }, "range.__gt__", ["value"]),
+                "__ge__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "range.__ge__(value) expects one argument.", span);
+                    }
+
+                    return PyNotImplemented.Instance;
+                }, "range.__ge__", ["value"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1728,6 +1792,62 @@ internal sealed partial class LythonRuntime
 
                     return !SetMembers.AsSetOperand(view, span, context).SetEquals(SetMembers.AsSetOperand(arguments[0], span, context));
                 }, "dict_keys.__ne__", ["value"]),
+                "__lt__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_keys.__lt__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return SetMembers.AsSetOperand(view, span, context).IsProperSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
+                }, "dict_keys.__lt__", ["value"]),
+                "__le__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_keys.__le__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return SetMembers.AsSetOperand(view, span, context).IsSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
+                }, "dict_keys.__le__", ["value"]),
+                "__gt__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_keys.__gt__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return SetMembers.AsSetOperand(view, span, context).IsProperSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
+                }, "dict_keys.__gt__", ["value"]),
+                "__ge__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_keys.__ge__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return SetMembers.AsSetOperand(view, span, context).IsSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
+                }, "dict_keys.__ge__", ["value"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1875,6 +1995,62 @@ internal sealed partial class LythonRuntime
 
                     return !SetMembers.AsSetOperand(view, span, context).SetEquals(SetMembers.AsSetOperand(arguments[0], span, context));
                 }, "dict_items.__ne__", ["value"]),
+                "__lt__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_items.__lt__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return SetMembers.AsSetOperand(view, span, context).IsProperSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
+                }, "dict_items.__lt__", ["value"]),
+                "__le__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_items.__le__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return SetMembers.AsSetOperand(view, span, context).IsSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
+                }, "dict_items.__le__", ["value"]),
+                "__gt__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_items.__gt__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return SetMembers.AsSetOperand(view, span, context).IsProperSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
+                }, "dict_items.__gt__", ["value"]),
+                "__ge__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_items.__ge__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return SetMembers.AsSetOperand(view, span, context).IsSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
+                }, "dict_items.__ge__", ["value"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -2192,6 +2368,70 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(dict.Count, span);
                     return dict;
                 }, "defaultdict.__ior__", ["value"]),
+                "__eq__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "defaultdict.__eq__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not (PyDict or PyDefaultDict or PyCounter))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return PyEquality.AreEqual(dict, arguments[0]);
+                }, "defaultdict.__eq__", ["value"]),
+                "__ne__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "defaultdict.__ne__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not (PyDict or PyDefaultDict or PyCounter))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return !PyEquality.AreEqual(dict, arguments[0]);
+                }, "defaultdict.__ne__", ["value"]),
+                "__lt__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "defaultdict.__lt__(value) expects one argument.", span);
+                    }
+
+                    return PyNotImplemented.Instance;
+                }, "defaultdict.__lt__", ["value"]),
+                "__le__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "defaultdict.__le__(value) expects one argument.", span);
+                    }
+
+                    return PyNotImplemented.Instance;
+                }, "defaultdict.__le__", ["value"]),
+                "__gt__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "defaultdict.__gt__(value) expects one argument.", span);
+                    }
+
+                    return PyNotImplemented.Instance;
+                }, "defaultdict.__gt__", ["value"]),
+                "__ge__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "defaultdict.__ge__(value) expects one argument.", span);
+                    }
+
+                    return PyNotImplemented.Instance;
+                }, "defaultdict.__ge__", ["value"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -2555,6 +2795,34 @@ internal sealed partial class LythonRuntime
 
                     return counter;
                 }, "Counter.__iand__", ["value"]),
+                "__eq__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Counter.__eq__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyCounter other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return PyEquality.CountersEqual(counter, other);
+                }, "Counter.__eq__", ["value"]),
+                "__ne__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Counter.__ne__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyCounter other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return !PyEquality.CountersEqual(counter, other);
+                }, "Counter.__ne__", ["value"]),
                 _ => MissingMemberValue.Instance,
             };
 

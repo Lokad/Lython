@@ -637,4 +637,80 @@ return results
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+    [Fact]
+    public async Task DictViewSubsetDundersAdvanceLikeCpython()
+    {
+        // dict key/item views take sets or views only for subset ordering through the shared set core, declining everything else with NotImplemented, exactly like CPython.
+        var script = new LythonEngine().Compile("""
+d = {1: 2, 3: 4}
+k = d.keys()
+def call2(f, a, b):
+    return f(a, b)
+results = []
+results.append(str(k.__lt__({1, 3, 5})))
+results.append(str(k.__le__({1, 3})))
+results.append(str(k.__gt__({1})))
+results.append(str(k.__ge__({1, 3})))
+results.append(str(k.__lt__({1})))
+results.append(str(k.__ge__({1, 5})))
+results.append(str(k.__lt__([1, 3, 5])))
+results.append(str(k.__lt__({1: 9})))
+results.append(str(k.__lt__(k)))
+results.append(str(d.items().__lt__({(1, 2)})))
+results.append(str(d.items().__le__({(1, 2), (3, 4)})))
+results.append(str(d.items().__gt__({(1, 2)})))
+for (f, a, b) in [(k.__lt__, 1, 2), (k.__le__, 1, 2), (k.__gt__, 1, 2), (k.__ge__, 1, 2), (d.items().__lt__, 1, 2), (d.items().__le__, 1, 2), (d.items().__gt__, 1, 2), (d.items().__ge__, 1, 2)]:
+    try:
+        call2(f, a, b)
+    except TypeError as e:
+        results.append(type(e).__name__)
+        results.append(str(e))
+results.append(str(hasattr(k, "__lt__")))
+results.append(str(hasattr(d.items(), "__ge__")))
+results.append(str(hasattr(k, "__rlt__")))
+return results
+""");
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "True",
+            "True",
+            "True",
+            "True",
+            "False",
+            "False",
+            "NotImplemented",
+            "NotImplemented",
+            "False",
+            "False",
+            "True",
+            "True",
+            "TypeError",
+            "Method 'dict_keys.__lt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'dict_keys.__le__' received too many positional arguments.",
+            "TypeError",
+            "Method 'dict_keys.__gt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'dict_keys.__ge__' received too many positional arguments.",
+            "TypeError",
+            "Method 'dict_items.__lt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'dict_items.__le__' received too many positional arguments.",
+            "TypeError",
+            "Method 'dict_items.__gt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'dict_items.__ge__' received too many positional arguments.",
+            "True",
+            "True",
+            "False",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

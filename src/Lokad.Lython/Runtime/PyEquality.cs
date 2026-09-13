@@ -146,26 +146,6 @@ internal static class PyEquality
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
             return CountersEqual(leftCounter, rightCounter);
-
-            static bool CountersEqual(PyCounter left, PyCounter right)
-            {
-                // Counter equality treats absent keys as having a zero count, unlike
-                // ordinary dictionary equality, so compare the union of both key sets.
-                var keys = new HashSet<object>(left.Keys, PyValueComparer.Instance);
-                keys.UnionWith(right.Keys);
-
-                foreach (var key in keys)
-                {
-                    var leftValue = left.TryGetValue(key, out var foundLeft) ? foundLeft : BigInteger.Zero;
-                    var rightValue = right.TryGetValue(key, out var foundRight) ? foundRight : BigInteger.Zero;
-                    if (!AreEqual(leftValue, rightValue))
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
         }
 
         if (left is PySet leftSet && right is PySet rightSet)
@@ -320,6 +300,27 @@ internal static class PyEquality
         return true;
     }
 
+    // Counter equality treats absent keys as having a zero count, unlike
+    // ordinary dictionary equality, so compare the union of both key sets.
+    internal static bool CountersEqual(PyCounter left, PyCounter right)
+    {
+        var keys = new HashSet<object>(left.Keys, PyValueComparer.Instance);
+        keys.UnionWith(right.Keys);
+
+        foreach (var key in keys)
+        {
+            var leftValue = left.TryGetValue(key, out var foundLeft) ? foundLeft : BigInteger.Zero;
+            var rightValue = right.TryGetValue(key, out var foundRight) ? foundRight : BigInteger.Zero;
+            if (!AreEqual(leftValue, rightValue))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
     // A Counter facing a plain or default dict compares exactly like dicts;
     // only Counter-facing-Counter fills absent keys with zero counts.
     private static bool CounterDictContentEquals(PyCounter counter, object other)
@@ -363,6 +364,17 @@ internal static class PyEquality
                 candidate.Items,
                 fellow.Count,
                 key => fellow.TryGetValue(key, out var value) ? (true, value) : (false, null));
+        }
+
+        // A Counter is a dict for equality like CPython, so compare by
+        // content instead of declining.
+        if (other is PyCounter counter)
+        {
+            return DictContentEqual(
+                candidate.Count,
+                candidate.Items,
+                counter.Count,
+                key => counter.TryGetValue(key, out var value) ? (true, value) : (false, null));
         }
 
         return false;
