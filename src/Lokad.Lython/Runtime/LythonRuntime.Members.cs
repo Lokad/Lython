@@ -1740,6 +1740,27 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    // abc views decline non-iterables with NotImplemented on set-operation
+    // dunders (unlike C dict views, which raise); the probe enumerates
+    // nothing, so one-shot iterables reach the real conversion intact.
+    private static bool IsIterableOperand(object value, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (value is PyInstance instance)
+        {
+            return instance.TryGetAttribute("__iter__", context, span, out _);
+        }
+
+        try
+        {
+            _ = PyIteration.ToSequence(value, span);
+            return true;
+        }
+        catch (LythonRuntimeException ex) when (IsNonIterableFailure(ex, value))
+        {
+            return false;
+        }
+    }
+
     internal static class DictViewMembers
     {
         public static bool TryGetKeysMember(DictKeysView view, string name, [MaybeNullWhen(false)] out object value)
@@ -2161,6 +2182,210 @@ internal sealed partial class LythonRuntime
 
                     return PyContainment.Contains(view, arguments[0], span);
                 }, "ChainMap.keys.__contains__", ["item"]),
+                "__or__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.keys.__or__(value) expects one argument.", span);
+                    }
+
+                    if (!IsIterableOperand(arguments[0], span, context))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+
+                    return EvaluateBitwiseOr(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
+                }, "ChainMap.keys.__or__", ["value"]),
+                "__ror__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.keys.__ror__(value) expects one argument.", span);
+                    }
+
+                    if (!IsIterableOperand(arguments[0], span, context))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+
+                    return EvaluateBitwiseOr(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
+                }, "ChainMap.keys.__ror__", ["value"]),
+                "__and__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.keys.__and__(value) expects one argument.", span);
+                    }
+
+                    if (!IsIterableOperand(arguments[0], span, context))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+
+                    return EvaluateBitwiseAnd(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
+                }, "ChainMap.keys.__and__", ["value"]),
+                "__rand__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.keys.__rand__(value) expects one argument.", span);
+                    }
+
+                    if (!IsIterableOperand(arguments[0], span, context))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+
+                    return EvaluateBitwiseAnd(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
+                }, "ChainMap.keys.__rand__", ["value"]),
+                "__sub__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.keys.__sub__(value) expects one argument.", span);
+                    }
+
+                    if (!IsIterableOperand(arguments[0], span, context))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+
+                    return EvaluateSubtract(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
+                }, "ChainMap.keys.__sub__", ["value"]),
+                "__rsub__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.keys.__rsub__(value) expects one argument.", span);
+                    }
+
+                    if (!IsIterableOperand(arguments[0], span, context))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+
+                    return EvaluateSubtract(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
+                }, "ChainMap.keys.__rsub__", ["value"]),
+                "__xor__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.keys.__xor__(value) expects one argument.", span);
+                    }
+
+                    if (!IsIterableOperand(arguments[0], span, context))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+
+                    return EvaluateBitwiseXor(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
+                }, "ChainMap.keys.__xor__", ["value"]),
+                "__rxor__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.keys.__rxor__(value) expects one argument.", span);
+                    }
+
+                    if (!IsIterableOperand(arguments[0], span, context))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+
+                    return EvaluateBitwiseXor(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
+                }, "ChainMap.keys.__rxor__", ["value"]),
+                "__eq__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.keys.__eq__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return SetMembers.AsSetOperand(view, span, context).SetEquals(SetMembers.AsSetOperand(arguments[0], span, context));
+                }, "ChainMap.keys.__eq__", ["value"]),
+                "__ne__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.keys.__ne__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return !SetMembers.AsSetOperand(view, span, context).SetEquals(SetMembers.AsSetOperand(arguments[0], span, context));
+                }, "ChainMap.keys.__ne__", ["value"]),
+                "__lt__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.keys.__lt__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return SetMembers.AsSetOperand(view, span, context).IsProperSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
+                }, "ChainMap.keys.__lt__", ["value"]),
+                "__le__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.keys.__le__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return SetMembers.AsSetOperand(view, span, context).IsSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
+                }, "ChainMap.keys.__le__", ["value"]),
+                "__gt__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.keys.__gt__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return SetMembers.AsSetOperand(view, span, context).IsProperSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
+                }, "ChainMap.keys.__gt__", ["value"]),
+                "__ge__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.keys.__ge__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return SetMembers.AsSetOperand(view, span, context).IsSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
+                }, "ChainMap.keys.__ge__", ["value"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -2196,6 +2421,210 @@ internal sealed partial class LythonRuntime
 
                     return PyContainment.Contains(view, arguments[0], span);
                 }, "ChainMap.items.__contains__", ["item"]),
+                "__or__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.items.__or__(value) expects one argument.", span);
+                    }
+
+                    if (!IsIterableOperand(arguments[0], span, context))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+
+                    return EvaluateBitwiseOr(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
+                }, "ChainMap.items.__or__", ["value"]),
+                "__ror__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.items.__ror__(value) expects one argument.", span);
+                    }
+
+                    if (!IsIterableOperand(arguments[0], span, context))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+
+                    return EvaluateBitwiseOr(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
+                }, "ChainMap.items.__ror__", ["value"]),
+                "__and__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.items.__and__(value) expects one argument.", span);
+                    }
+
+                    if (!IsIterableOperand(arguments[0], span, context))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+
+                    return EvaluateBitwiseAnd(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
+                }, "ChainMap.items.__and__", ["value"]),
+                "__rand__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.items.__rand__(value) expects one argument.", span);
+                    }
+
+                    if (!IsIterableOperand(arguments[0], span, context))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+
+                    return EvaluateBitwiseAnd(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
+                }, "ChainMap.items.__rand__", ["value"]),
+                "__sub__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.items.__sub__(value) expects one argument.", span);
+                    }
+
+                    if (!IsIterableOperand(arguments[0], span, context))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+
+                    return EvaluateSubtract(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
+                }, "ChainMap.items.__sub__", ["value"]),
+                "__rsub__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.items.__rsub__(value) expects one argument.", span);
+                    }
+
+                    if (!IsIterableOperand(arguments[0], span, context))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+
+                    return EvaluateSubtract(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
+                }, "ChainMap.items.__rsub__", ["value"]),
+                "__xor__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.items.__xor__(value) expects one argument.", span);
+                    }
+
+                    if (!IsIterableOperand(arguments[0], span, context))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+
+                    return EvaluateBitwiseXor(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
+                }, "ChainMap.items.__xor__", ["value"]),
+                "__rxor__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.items.__rxor__(value) expects one argument.", span);
+                    }
+
+                    if (!IsIterableOperand(arguments[0], span, context))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+
+                    return EvaluateBitwiseXor(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
+                }, "ChainMap.items.__rxor__", ["value"]),
+                "__eq__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.items.__eq__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return SetMembers.AsSetOperand(view, span, context).SetEquals(SetMembers.AsSetOperand(arguments[0], span, context));
+                }, "ChainMap.items.__eq__", ["value"]),
+                "__ne__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.items.__ne__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return !SetMembers.AsSetOperand(view, span, context).SetEquals(SetMembers.AsSetOperand(arguments[0], span, context));
+                }, "ChainMap.items.__ne__", ["value"]),
+                "__lt__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.items.__lt__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return SetMembers.AsSetOperand(view, span, context).IsProperSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
+                }, "ChainMap.items.__lt__", ["value"]),
+                "__le__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.items.__le__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return SetMembers.AsSetOperand(view, span, context).IsSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
+                }, "ChainMap.items.__le__", ["value"]),
+                "__gt__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.items.__gt__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return SetMembers.AsSetOperand(view, span, context).IsProperSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
+                }, "ChainMap.items.__gt__", ["value"]),
+                "__ge__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.items.__ge__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not (PySet or DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return SetMembers.AsSetOperand(view, span, context).IsSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
+                }, "ChainMap.items.__ge__", ["value"]),
                 _ => MissingMemberValue.Instance,
             };
 

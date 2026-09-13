@@ -713,4 +713,223 @@ return results
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+    [Fact]
+    public async Task ChainMapViewSetComparisonDundersAdvanceLikeCpython()
+    {
+        // ChainMap key/item views convert any iterable for set operations
+        // (declining non-iterables, unlike C dict views) and take sets or
+        // views for equality and subset ordering, all through the shared
+        // set core exactly like CPython.
+        var script = new LythonEngine().Compile("""
+from collections import ChainMap
+def call2(f, a, b):
+    return f(a, b)
+results = []
+cm = ChainMap({"a": 1, "b": 2}, {"c": 3})
+k = cm.keys()
+results.append(str(sorted(k.__or__({"x"}))))
+results.append(str(sorted(k.__and__({"a", "z"}))))
+results.append(str(sorted(k.__sub__({"a"}))))
+results.append(str(sorted(k.__xor__({"a", "x"}))))
+results.append(str(k.__ror__([1, 2]) == {1, 2, "a", "b", "c"}))
+results.append(str(k.__rand__([1, "a"]) == {"a"}))
+results.append(str(k.__rsub__([1, "a", "x"]) == {1, "x"}))
+results.append(str(k.__rxor__([1, "a", "x"]) == {1, "x", "b", "c"}))
+results.append(str(sorted(k.__or__({"x": 9}.keys()))))
+results.append(str(type(k.__or__({1})).__name__))
+results.append(str(type(k.__and__({1})).__name__))
+results.append(str(type(k.__sub__({1})).__name__))
+results.append(str(type(k.__xor__({1})).__name__))
+results.append(str(k.__eq__({"a", "b", "c"})))
+results.append(str(k.__ne__({"a"})))
+results.append(str(k.__eq__({"a": 1, "b": 2, "c": 3}.keys())))
+results.append(str(k.__eq__([1, 2])))
+results.append(str(k.__lt__({"a", "b", "c", "x"})))
+results.append(str(k.__le__({"a": 1, "b": 2, "c": 3}.keys())))
+results.append(str(k.__gt__({"a"})))
+results.append(str(k.__ge__({"a": 1, "b": 2, "c": 3}.keys())))
+results.append(str(k.__lt__(k)))
+results.append(str(k.__or__(5)))
+results.append(str(k.__ror__(5)))
+results.append(str(k.__and__(5)))
+results.append(str(k.__rand__(5)))
+results.append(str(k.__sub__(5)))
+results.append(str(k.__rsub__(5)))
+results.append(str(k.__xor__(5)))
+results.append(str(k.__rxor__(5)))
+try:
+    k.__or__([[1]])
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+class It:
+    def __iter__(self):
+        return iter([1, 2])
+results.append(str(k.__or__(It()) == {1, 2, "a", "b", "c"}))
+results.append(str(k.__or__(iter([1, 2])) == {1, 2, "a", "b", "c"}))
+results.append(str(([1, 2] | k) == {1, 2, "a", "b", "c"}))
+results.append(str(sorted([1, "a"] & k)))
+it = cm.items()
+results.append(str(sorted(it.__and__({("a", 1)}))))
+results.append(str(sorted(it.__sub__({("a", 1)}))))
+results.append(str(sorted(it.__or__({("z", 9)}))))
+results.append(str(sorted(it.__xor__({("a", 1), ("z", 9)}))))
+results.append(str(it.__eq__({("a", 1), ("b", 2), ("c", 3)})))
+results.append(str(it.__eq__([[("a", 1)]])))
+results.append(str(it.__ne__({("a", 1)})))
+results.append(str(it.__lt__({("a", 1), ("b", 2), ("c", 3), ("z", 9)})))
+results.append(str(it.__le__({("a", 1), ("b", 2), ("c", 3)})))
+results.append(str(it.__gt__({("a", 1)})))
+results.append(str(it.__or__(5)))
+results.append(str(it.__rxor__(5)))
+class Pairs:
+    def __iter__(self):
+        return iter([("a", 1), ("z", 9)])
+results.append(str(it.__and__(Pairs()) == {("a", 1)}))
+results.append(str(it.__or__(Pairs()) == {("a", 1), ("b", 2), ("c", 3), ("z", 9)}))
+try:
+    ChainMap({"a": [1]}).items().__eq__({("a", 1)})
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+for (f, a, b) in [(k.__or__, 1, 2), (k.__ror__, 1, 2), (k.__and__, 1, 2), (k.__rand__, 1, 2), (k.__sub__, 1, 2), (k.__rsub__, 1, 2), (k.__xor__, 1, 2), (k.__rxor__, 1, 2), (k.__eq__, 1, 2), (k.__ne__, 1, 2), (k.__lt__, 1, 2), (k.__le__, 1, 2), (k.__gt__, 1, 2), (k.__ge__, 1, 2), (it.__or__, 1, 2), (it.__ror__, 1, 2), (it.__and__, 1, 2), (it.__rand__, 1, 2), (it.__sub__, 1, 2), (it.__rsub__, 1, 2), (it.__xor__, 1, 2), (it.__rxor__, 1, 2), (it.__eq__, 1, 2), (it.__ne__, 1, 2), (it.__lt__, 1, 2), (it.__le__, 1, 2), (it.__gt__, 1, 2), (it.__ge__, 1, 2)]:
+    try:
+        call2(f, a, b)
+    except TypeError as e:
+        results.append(type(e).__name__)
+        results.append(str(e))
+results.append(str(hasattr(k, "__or__")))
+results.append(str(hasattr(it, "__eq__")))
+results.append(str(hasattr(k, "__lt__")))
+results.append(str(hasattr(cm.values(), "__or__")))
+results.append(str(hasattr(k, "__rlt__")))
+results.append(str(callable(k.__and__)))
+return results
+""");
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "['a', 'b', 'c', 'x']",
+            "['a']",
+            "['b', 'c']",
+            "['b', 'c', 'x']",
+            "True",
+            "True",
+            "True",
+            "True",
+            "['a', 'b', 'c', 'x']",
+            "set",
+            "set",
+            "set",
+            "set",
+            "True",
+            "True",
+            "True",
+            "NotImplemented",
+            "True",
+            "True",
+            "True",
+            "True",
+            "False",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "TypeError",
+            "unhashable type: 'list'",
+            "True",
+            "True",
+            "True",
+            "['a']",
+            "[('a', 1)]",
+            "[('b', 2), ('c', 3)]",
+            "[('a', 1), ('b', 2), ('c', 3), ('z', 9)]",
+            "[('b', 2), ('c', 3), ('z', 9)]",
+            "True",
+            "NotImplemented",
+            "True",
+            "True",
+            "True",
+            "True",
+            "NotImplemented",
+            "NotImplemented",
+            "True",
+            "True",
+            "TypeError",
+            "unhashable type: 'list'",
+            "TypeError",
+            "Method 'ChainMap.keys.__or__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.keys.__ror__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.keys.__and__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.keys.__rand__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.keys.__sub__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.keys.__rsub__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.keys.__xor__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.keys.__rxor__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.keys.__eq__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.keys.__ne__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.keys.__lt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.keys.__le__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.keys.__gt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.keys.__ge__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.items.__or__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.items.__ror__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.items.__and__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.items.__rand__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.items.__sub__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.items.__rsub__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.items.__xor__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.items.__rxor__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.items.__eq__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.items.__ne__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.items.__lt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.items.__le__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.items.__gt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.items.__ge__' received too many positional arguments.",
+            "True",
+            "True",
+            "True",
+            "False",
+            "False",
+            "True",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
