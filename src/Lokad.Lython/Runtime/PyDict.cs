@@ -232,6 +232,98 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             return PyString.FromString("<reversed object>");
         }
     }
+    // Builds a reverse-items iterator over a governed snapshot like the keys
+    // shape above; tuples materialize per step exactly like forward items
+    // iteration, and size changes fail with the same shared text.
+    public PyIteratorBase CreateReversedItemsIterator(MemoryGovernor? governor, LythonSourceSpan? span)
+    {
+        using var scratch = governor?.ReserveTemporary(checked(32L * Count), span);
+        return new ReversedItemsIterator(this, Items.ToArray(), _version);
+    }
+
+    private sealed class ReversedItemsIterator : PyIteratorBase
+    {
+        private readonly PyDict _owner;
+        private readonly KeyValuePair<object, object>[] _snapshot;
+        private readonly int _expectedVersion;
+        private int _nextIndex;
+
+        public ReversedItemsIterator(PyDict owner, KeyValuePair<object, object>[] snapshot, int expectedVersion)
+        {
+            _owner = owner;
+            _snapshot = snapshot;
+            _expectedVersion = expectedVersion;
+            _nextIndex = snapshot.Length - 1;
+        }
+
+        public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+        {
+            _owner.EnsureUnmodified(_expectedVersion);
+            if (_nextIndex < 0)
+            {
+                value = PyNone.Instance;
+                return false;
+            }
+
+            var pair = _snapshot[_nextIndex];
+            _nextIndex--;
+            var governor = _owner.OwnerMemoryGovernor;
+            value = governor is null
+                ? PyTuple.FromOwnedArray([pair.Key, pair.Value])
+                : PyTuple.FromOwnedArray([pair.Key, pair.Value], governor, _owner.AllocationSpan);
+            return true;
+        }
+
+        public override PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<reversed object>");
+        }
+    }
+
+    // Builds a reverse-values iterator over a governed snapshot like the
+    // keys shape above; size changes fail with the same shared text.
+    public PyIteratorBase CreateReversedValuesIterator(MemoryGovernor? governor, LythonSourceSpan? span)
+    {
+        using var scratch = governor?.ReserveTemporary(checked(16L * Count), span);
+        return new ReversedValuesIterator(this, Values.ToArray(), _version);
+    }
+
+    private sealed class ReversedValuesIterator : PyIteratorBase
+    {
+        private readonly PyDict _owner;
+        private readonly object[] _snapshot;
+        private readonly int _expectedVersion;
+        private int _nextIndex;
+
+        public ReversedValuesIterator(PyDict owner, object[] snapshot, int expectedVersion)
+        {
+            _owner = owner;
+            _snapshot = snapshot;
+            _expectedVersion = expectedVersion;
+            _nextIndex = snapshot.Length - 1;
+        }
+
+        public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
+        {
+            _owner.EnsureUnmodified(_expectedVersion);
+            if (_nextIndex < 0)
+            {
+                value = PyNone.Instance;
+                return false;
+            }
+
+            value = _snapshot[_nextIndex];
+            _nextIndex--;
+            return true;
+        }
+
+        public override PyString RenderPython(PyRenderingContext context)
+        {
+            _ = context;
+            return PyString.FromString("<reversed object>");
+        }
+    }
 
     public PyString RenderPython(PyRenderingContext context) => PyRendering.ToReprPyString(this, context);
 

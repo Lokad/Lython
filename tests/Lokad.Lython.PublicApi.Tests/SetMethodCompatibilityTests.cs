@@ -932,4 +932,106 @@ return results
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+    [Fact]
+    public async Task DictViewReversedDundersAdvanceLikeCpython()
+    {
+        // Dict key/item/value views build governed reverse iterators with
+        // the shared size-change discipline, exactly like CPython.
+        var script = new LythonEngine().Compile("""
+def call1(f, a):
+    return f(a)
+results = []
+d = {"a": 1, "b": 2}
+results.append(str(list(d.keys().__reversed__())))
+results.append(str(list(d.items().__reversed__())))
+results.append(str(list(d.values().__reversed__())))
+results.append(str(list(reversed(d.keys()))))
+results.append(str(list(reversed(d.items()))))
+results.append(str(list(reversed(d.values()))))
+results.append(str(list({}.keys().__reversed__())))
+results.append(str(list({}.items().__reversed__())))
+results.append(str(list({}.values().__reversed__())))
+from collections import defaultdict
+dd = defaultdict(list, {"a": [1], "b": [2]})
+results.append(str(list(dd.keys().__reversed__())))
+results.append(str(list(dd.items().__reversed__())))
+results.append(str(list(dd.values().__reversed__())))
+results.append(str(list(reversed(dd.keys()))))
+results.append(str(list(d.keys().__reversed__()) == list(reversed(d.keys()))))
+results.append(str(list(d.items().__reversed__()) == list(reversed(d.items()))))
+results.append(str(list(d.values().__reversed__()) == list(reversed(d.values()))))
+results.append(str(next(d.keys().__reversed__())))
+it = d.items().__reversed__()
+results.append(str(next(it)))
+d["c"] = 3
+try:
+    next(it)
+except RuntimeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+it2 = d.keys().__reversed__()
+results.append(str(next(it2)))
+d["d"] = 4
+try:
+    next(it2)
+except RuntimeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+for f in [d.keys().__reversed__, d.items().__reversed__, d.values().__reversed__]:
+    try:
+        call1(f, 1)
+    except TypeError as e:
+        results.append(type(e).__name__)
+        results.append(str(e))
+results.append(str(hasattr(d.keys(), "__reversed__")))
+results.append(str(hasattr(d.items(), "__reversed__")))
+results.append(str(hasattr(d.values(), "__reversed__")))
+results.append(str(hasattr(d.keys(), "__rreversed__")))
+return results
+""");
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "['b', 'a']",
+            "[('b', 2), ('a', 1)]",
+            "[2, 1]",
+            "['b', 'a']",
+            "[('b', 2), ('a', 1)]",
+            "[2, 1]",
+            "[]",
+            "[]",
+            "[]",
+            "['b', 'a']",
+            "[('b', [2]), ('a', [1])]",
+            "[[2], [1]]",
+            "['b', 'a']",
+            "True",
+            "True",
+            "True",
+            "b",
+            "('b', 2)",
+            "RuntimeError",
+            "dictionary changed size during iteration",
+            "c",
+            "RuntimeError",
+            "dictionary changed size during iteration",
+            "TypeError",
+            "dict_keys.__reversed__() expects no arguments.",
+            "TypeError",
+            "dict_items.__reversed__() expects no arguments.",
+            "TypeError",
+            "dict_values.__reversed__() expects no arguments.",
+            "True",
+            "True",
+            "True",
+            "False",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

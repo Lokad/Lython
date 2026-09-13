@@ -2060,6 +2060,16 @@ internal sealed partial class LythonRuntime
                     return SetMembers.AsSetOperand(view, span, context).IsSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
                 }, "dict_keys.__ge__", ["value"]),
                 "__hash__" => PyNone.Instance,
+                "__reversed__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_keys.__reversed__() expects no arguments.", span);
+                    }
+
+                    PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
+                    return view.Source.CreateReversedKeysIterator(context.MemoryGovernor, span);
+                }, "dict_keys.__reversed__"),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -2073,6 +2083,16 @@ internal sealed partial class LythonRuntime
                 "__iter__" => BoundCallable.CreateNoArguments(view, "dict_values.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 "__len__" => BoundCallable.CreateNoArguments(view, "dict_values.__len__", static (receiver, span, context) => Len([receiver], span, context)),
                 "__hash__" => PyNone.Instance,
+                "__reversed__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_values.__reversed__() expects no arguments.", span);
+                    }
+
+                    PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
+                    return view.Source.CreateReversedValuesIterator(context.MemoryGovernor, span);
+                }, "dict_values.__reversed__"),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -2265,6 +2285,16 @@ internal sealed partial class LythonRuntime
                     return SetMembers.AsSetOperand(view, span, context).IsSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
                 }, "dict_items.__ge__", ["value"]),
                 "__hash__" => PyNone.Instance,
+                "__reversed__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_items.__reversed__() expects no arguments.", span);
+                    }
+
+                    PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
+                    return view.Source.CreateReversedItemsIterator(context.MemoryGovernor, span);
+                }, "dict_items.__reversed__"),
                 _ => MissingMemberValue.Instance,
             };
 
