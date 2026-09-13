@@ -31,7 +31,8 @@ internal sealed partial class LythonRuntime
     // Fails before the host allocates and transfers a payload the run budget
     // cannot hold. Unknown, missing or empty lengths fall through to the
     // post-read actual-length checks below; host-side whole-buffer behavior
-    // stays accepted by design (bounded streaming needs a host capability).
+    // stays accepted by design for whole-read APIs, while streaming file
+    // opens bound acquisition through ranged reads instead.
     // A check (not a hold) keeps funded peaks exact; single-threaded runs
     // cannot interleave engine allocations between the check and the commit.
     private static void EnsureExecutionMemoryForKnownLength(LythonPathStat stat, long estimateOverhead, ExecutionContext context, LythonSourceSpan? span)
