@@ -10,6 +10,7 @@ internal static partial class StaticContracts
         "__le__",
         "__gt__",
         "__ge__",
+        "__bool__",
     };
 
     private static readonly HashSet<string> StringMembers = new(StringComparer.Ordinal)
@@ -251,6 +252,7 @@ internal static partial class StaticContracts
         "__le__",
         "__gt__",
         "__ge__",
+        "__bool__",
     };
 
     private static readonly HashSet<string> IntMembers = new(StringComparer.Ordinal)
@@ -272,6 +274,7 @@ internal static partial class StaticContracts
         "__le__",
         "__gt__",
         "__ge__",
+        "__bool__",
     };
 
     private static readonly HashSet<string> ListMembers = new(StringComparer.Ordinal)
@@ -560,6 +563,7 @@ internal static partial class StaticContracts
         "__le__",
         "__gt__",
         "__ge__",
+        "__bool__",
     };
 
     private static readonly HashSet<string> DecimalContextMembers = new(StringComparer.Ordinal)

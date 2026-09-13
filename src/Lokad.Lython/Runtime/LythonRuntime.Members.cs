@@ -709,6 +709,15 @@ internal sealed partial class LythonRuntime
 
                     return PyNotImplemented.Instance;
                 }, "None.__ge__", ["value"]),
+                "__bool__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "None.__bool__() expects no arguments.", span);
+                    }
+
+                    return false;
+                }, "None.__bool__"),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -885,6 +894,15 @@ internal sealed partial class LythonRuntime
 
                     return integer.Value.CompareTo(other) >= 0;
                 }, "int.__ge__", ["value"]),
+                "__bool__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "int.__bool__() expects no arguments.", span);
+                    }
+
+                    return integer.Value != BigInteger.Zero;
+                }, "int.__bool__"),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1021,6 +1039,15 @@ internal sealed partial class LythonRuntime
 
                     return PyNumberOps.TryCompare(PyNumber.FromFloat(number), other, out var comparison) && comparison >= 0;
                 }, "float.__ge__", ["value"]),
+                "__bool__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "float.__bool__() expects no arguments.", span);
+                    }
+
+                    return number != 0.0;
+                }, "float.__bool__"),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1455,6 +1482,15 @@ internal sealed partial class LythonRuntime
 
                     return PyNotImplemented.Instance;
                 }, "range.__ge__", ["value"]),
+                "__bool__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "range.__bool__() expects no arguments.", span);
+                    }
+
+                    return range.IsTruthy();
+                }, "range.__bool__"),
                 _ => MissingMemberValue.Instance,
             };
 

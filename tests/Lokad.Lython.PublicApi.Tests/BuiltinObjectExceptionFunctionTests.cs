@@ -485,4 +485,95 @@ return results
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+    [Fact]
+    public async Task BoolDundersAdvanceLikeCpython()
+    {
+        // __bool__ members delegate to each type truthiness core (ints by
+        // nonzero, floats including nan, ranges and Decimals by their own
+        // IsTruthy), exactly like CPython.
+        var script = new LythonEngine().Compile("""
+from decimal import Decimal
+def call1(f, a):
+    return f(a)
+results = []
+results.append(str((1).__bool__()))
+results.append(str((0).__bool__()))
+results.append(str((-5).__bool__()))
+results.append(str(True.__bool__()))
+results.append(str(False.__bool__()))
+results.append(str((10 ** 30).__bool__()))
+results.append(str((0.0).__bool__()))
+results.append(str((-0.0).__bool__()))
+results.append(str(float("nan").__bool__()))
+results.append(str((2.5).__bool__()))
+results.append(str(None.__bool__()))
+results.append(str(range(0).__bool__()))
+results.append(str(range(5).__bool__()))
+results.append(str(range(5, 0).__bool__()))
+results.append(str(Decimal("0").__bool__()))
+results.append(str(Decimal("1.5").__bool__()))
+results.append(str(Decimal("-0.0").__bool__()))
+for f in [(1).__bool__, (1.0).__bool__, None.__bool__, range(3).__bool__, Decimal("1").__bool__]:
+    try:
+        call1(f, 1)
+    except TypeError as e:
+        results.append(type(e).__name__)
+        results.append(str(e))
+results.append(str(hasattr(1, "__bool__")))
+results.append(str(hasattr(1.0, "__bool__")))
+results.append(str(hasattr(None, "__bool__")))
+results.append(str(hasattr(range(3), "__bool__")))
+results.append(str(hasattr("", "__bool__")))
+results.append(str(hasattr([], "__bool__")))
+results.append(str(bool(0)))
+results.append(str(bool([])))
+return results
+""");
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "True",
+            "False",
+            "True",
+            "True",
+            "False",
+            "True",
+            "False",
+            "False",
+            "True",
+            "True",
+            "False",
+            "False",
+            "True",
+            "False",
+            "False",
+            "True",
+            "False",
+            "TypeError",
+            "int.__bool__() expects no arguments.",
+            "TypeError",
+            "float.__bool__() expects no arguments.",
+            "TypeError",
+            "None.__bool__() expects no arguments.",
+            "TypeError",
+            "range.__bool__() expects no arguments.",
+            "TypeError",
+            "Decimal.__bool__() expects no arguments.",
+            "True",
+            "True",
+            "True",
+            "True",
+            "False",
+            "False",
+            "False",
+            "False",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

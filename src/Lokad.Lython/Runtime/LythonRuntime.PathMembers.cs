@@ -454,6 +454,15 @@ internal sealed partial class LythonRuntime
 
                     return PyDecimalOps.Compare(decimalValue, arguments[0], span, ">=") >= 0;
                 }, "Decimal.__ge__", ["value"]),
+                "__bool__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Decimal.__bool__() expects no arguments.", span);
+                    }
+
+                    return decimalValue.IsTruthy();
+                }, "Decimal.__bool__"),
                 _ => MissingMemberValue.Instance,
             };
 
