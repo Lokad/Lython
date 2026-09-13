@@ -184,8 +184,8 @@ internal sealed partial class LythonRuntime
     // function is retained: intermediate invocation contexts plus the variable
     // tables mirroring their locals stay alive through the closure, so each
     // executed def or lambda owns the so-far-unowned storage of every context
-    // it retains. Run-rooted module frames stay exempt (shared, with globals
-    // owned at export); shared intermediate frames pay once (first-wins
+    // it retains, module frames included (imported modules keep per-module
+    // scopes alive through their functions). Shared frames pay once (first-wins
     // aliasing), with later definitions paying only for variables bound since.
     // The function CLR wrapper itself stays MG04-owned.
     private const long ClosureContextBaseBytes = 512;
@@ -200,34 +200,51 @@ internal sealed partial class LythonRuntime
 
         for (var current = closure; current is not null; current = current.ParentContext)
         {
-            if (current.Frame.Parent is null)
-            {
-                continue;
-            }
+            var owned = current.Frame.Parent is null
+                ? CountOwnedModuleVariables(current)
+                : current.Frame.Variables.Count;
 
             if (!current.ClosureRetentionCharged)
             {
-                var bytes = checked(ClosureContextBaseBytes + ClosureCellSlotBytes * (long)current.Frame.Variables.Count);
+                var bytes = checked(ClosureContextBaseBytes + ClosureCellSlotBytes * (long)owned);
                 governor.Reserve(bytes, span);
                 governor.Commit(bytes);
                 current.ClosureRetentionCharged = true;
-                current.ClosureChargedVariableCount = current.Frame.Variables.Count;
+                current.ClosureChargedVariableCount = owned;
                 continue;
             }
 
-            var uncharged = current.Frame.Variables.Count - current.ClosureChargedVariableCount;
+            var uncharged = owned - current.ClosureChargedVariableCount;
             if (uncharged > 0)
             {
                 var delta = checked(ClosureCellSlotBytes * (long)uncharged);
                 governor.Reserve(delta, span);
                 governor.Commit(delta);
-                current.ClosureChargedVariableCount = current.Frame.Variables.Count;
+                current.ClosureChargedVariableCount = owned;
             }
 
             // A paid context implies paid ancestors: every walk covers the whole
             // chain and chains only grow at the leaf, so the walk ends here.
             break;
         }
+    }
+
+    // Module frames start as copies of the run builtins table; those aliases
+    // stay owned by the run, so only genuinely module-owned entries count here.
+    // Shadowing assignments replace the shared reference and count normally.
+    private static int CountOwnedModuleVariables(ExecutionContext context)
+    {
+        var builtins = context.Services.State.BuiltinVariables;
+        var owned = 0;
+        foreach (var pair in context.Frame.Variables)
+        {
+            if (!builtins.TryGetValue(pair.Key, out var shared) || !ReferenceEquals(shared, pair.Value))
+            {
+                owned++;
+            }
+        }
+
+        return owned;
     }
 
     internal static Dictionary<string, object> BuildDefaultArgumentMap(
