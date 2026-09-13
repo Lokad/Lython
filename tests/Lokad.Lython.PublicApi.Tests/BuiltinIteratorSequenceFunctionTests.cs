@@ -729,4 +729,64 @@ return "|".join(results)
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task ChainMapViewDundersAdvanceLikeCpython()
+    {
+        // ChainMap views expose __iter__ with the same values as iter(),
+        // like CPython (single-map rows; multi-map order is separate).
+        var script = new LythonEngine().Compile("""
+            from collections import ChainMap
+            def iter_arg(x):
+                return x.__iter__(1)
+            results = []
+            cm = ChainMap({"a": 1})
+            results.append(str(list(cm.keys().__iter__())))
+            results.append(str(list(cm.values().__iter__())))
+            results.append(str(list(cm.items().__iter__())))
+            results.append(str(cm.keys().__iter__() is cm.keys()))
+            it = cm.items().__iter__()
+            results.append(str(it.__next__()))
+            try:
+                it.__next__()
+            except StopIteration as e:
+                results.append(type(e).__name__)
+                results.append(str(e.args))
+            for v in [cm.keys(), cm.values(), cm.items()]:
+                try:
+                    iter_arg(v)
+                except TypeError as e:
+                    results.append(type(e).__name__)
+                    results.append(str(e))
+            results.append(str(hasattr(ChainMap({}).keys(), "__iter__")))
+            results.append(str(callable(ChainMap({}).values().__iter__)))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "['a']",
+            "[1]",
+            "[('a', 1)]",
+            "False",
+            "('a', 1)",
+            "StopIteration",
+            "()",
+            "TypeError",
+            "ChainMap.keys.__iter__() expects no arguments.",
+            "TypeError",
+            "ChainMap.values.__iter__() expects no arguments.",
+            "TypeError",
+            "ChainMap.items.__iter__() expects no arguments.",
+            "True",
+            "True",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

@@ -1008,6 +1008,7 @@ internal sealed partial class LythonRuntime
 
                     return true;
                 }, OnePositional("ChainMap.keys.isdisjoint", "other")),
+                "__iter__" => BoundCallable.CreateNoArguments(view, "ChainMap.keys.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1032,6 +1033,18 @@ internal sealed partial class LythonRuntime
 
                     return true;
                 }, OnePositional("ChainMap.items.isdisjoint", "other")),
+                "__iter__" => BoundCallable.CreateNoArguments(view, "ChainMap.items.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
+                _ => MissingMemberValue.Instance,
+            };
+
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
+        }
+
+        public static bool TryGetChainMapValuesMember(ChainMapValuesView view, string name, [MaybeNullWhen(false)] out object value)
+        {
+            value = name switch
+            {
+                "__iter__" => BoundCallable.CreateNoArguments(view, "ChainMap.values.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 _ => MissingMemberValue.Instance,
             };
 
