@@ -84,7 +84,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal sealed class CollectionsCallable : ICallable, IPyRenderableValue, INamedRuntimeCallable
+    internal sealed class CollectionsCallable : ICallable, IPyRenderableValue, INamedRuntimeCallable, IPyDynamicAttributes
     {
         private readonly Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> _implementation;
 
@@ -94,9 +94,32 @@ internal sealed partial class LythonRuntime
         {
             Name = name;
             _implementation = implementation;
+            _shortName = PyString.FromString(name.Substring(name.LastIndexOf((char)46) + 1));
         }
 
         public string Name { get; }
+
+        // Short type names are fixed per factory object, so reads alias
+        // stably like CPython instead of rebuilding per read.
+        private readonly PyString _shortName;
+
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (name == "__name__" || name == "__qualname__")
+            {
+                value = _shortName;
+                return true;
+            }
+
+            if (name == "__module__")
+            {
+                value = LythonRuntime.ExceptionTypeValue.SharedModuleLabel("collections");
+                return true;
+            }
+
+            value = PyNone.Instance;
+            return false;
+        }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {

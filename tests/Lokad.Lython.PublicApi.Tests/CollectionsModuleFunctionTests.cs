@@ -1394,4 +1394,45 @@ deque().pop()
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task CollectionFactoriesExposeTypeNamesLikeCpython()
+    {
+        // Collection factories report short __name__/__qualname__ plus
+        // the collections __module__, like CPython type objects.
+        var script = new LythonEngine().Compile("""
+            from collections import defaultdict, Counter, deque, ChainMap
+            results = []
+            results.append(str(defaultdict.__name__))
+            results.append(str(Counter.__name__))
+            results.append(str(deque.__name__))
+            results.append(str(ChainMap.__name__))
+            results.append(str(defaultdict.__module__))
+            results.append(str(Counter.__module__))
+            results.append(str(defaultdict.__qualname__))
+            results.append(str(ChainMap.__qualname__))
+            results.append(str(defaultdict.__name__ is defaultdict.__name__))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "defaultdict",
+            "Counter",
+            "deque",
+            "ChainMap",
+            "collections",
+            "collections",
+            "defaultdict",
+            "ChainMap",
+            "True",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
