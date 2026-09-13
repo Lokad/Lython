@@ -134,7 +134,8 @@ internal static partial class StaticStructuralDiagnostics
             BinaryOperatorSyntax.Power => StaticAbstractFacts.IsNumericLike(left) && StaticAbstractFacts.IsNumericLike(right),
             BinaryOperatorSyntax.BitwiseOr => StaticAbstractFacts.IsIntegerLike(left) && StaticAbstractFacts.IsIntegerLike(right) || StaticAbstractFacts.IsSetLike(left) && StaticAbstractFacts.IsSetLike(right) ||
                 left.Kind == AbstractValueKind.Dict && right.Kind == AbstractValueKind.Dict ||
-                left.Kind == AbstractValueKind.CollectionsCounter && right.Kind == AbstractValueKind.CollectionsCounter,
+                left.Kind == AbstractValueKind.CollectionsCounter && right.Kind == AbstractValueKind.CollectionsCounter ||
+                IsDictMergeOperand(left) && IsDictMergeOperand(right),
             BinaryOperatorSyntax.BitwiseAnd => StaticAbstractFacts.IsIntegerLike(left) && StaticAbstractFacts.IsIntegerLike(right) || StaticAbstractFacts.IsSetLike(left) && StaticAbstractFacts.IsSetLike(right) ||
                 left.Kind == AbstractValueKind.CollectionsCounter && right.Kind == AbstractValueKind.CollectionsCounter,
             BinaryOperatorSyntax.BitwiseXor => StaticAbstractFacts.IsIntegerLike(left) && StaticAbstractFacts.IsIntegerLike(right) || StaticAbstractFacts.IsSetLike(left) && StaticAbstractFacts.IsSetLike(right),
@@ -143,6 +144,9 @@ internal static partial class StaticStructuralDiagnostics
             _ => true
         };
     }
+
+    private static bool IsDictMergeOperand(AbstractValue value)
+        => value.Kind is AbstractValueKind.Dict or AbstractValueKind.CollectionsDefaultDict or AbstractValueKind.CollectionsCounter;
 
     private static bool CanApplyStringModulo(AbstractValue left, AbstractValue right)
     {

@@ -1111,4 +1111,110 @@ deque().pop()
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task MappingUnionOperatorsAdvanceLikeCpython()
+    {
+        // Mapping | builds a fresh merged mapping (defaultdict keeps the
+        // left factory, Counter mixes merge plain) and |= merges in place
+        // with Counter max-plus-purge semantics, like CPython.
+        var script = new LythonEngine().Compile("""
+            from collections import defaultdict, Counter, ChainMap
+            results = []
+            a = defaultdict(list, {"x": [1]})
+            b = {"y": 2}
+            results.append(str(a | b))
+            results.append(str(b | a))
+            results.append(str((a | b).default_factory.__name__))
+            results.append(str((b | a).default_factory.__name__))
+            l = defaultdict(list, {"a": [1]})
+            r = defaultdict(int, {"b": 2})
+            results.append(str(l | r))
+            results.append(str((l | r).default_factory.__name__))
+            results.append(str(r | l))
+            results.append(str(Counter("aab") | {"a": 1, "z": 9}))
+            results.append(str({"a": 1, "z": 9} | Counter("aab")))
+            results.append(str(defaultdict(list, {"a": [9]}) | Counter({"a": 1, "b": 2})))
+            results.append(str(Counter({"a": 1}) | defaultdict(list, {"a": [9]})))
+            def union_arg(x, y):
+                return x | y
+            try:
+                union_arg(defaultdict(list), [1, 2])
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            c = Counter("aab")
+            alias = c
+            c |= Counter("abb")
+            results.append(str(c is alias))
+            results.append(str(c))
+            c2 = Counter({"a": -1, "b": 2})
+            c2 |= Counter()
+            results.append(str(c2))
+            dd = defaultdict(list, {"a": [1]})
+            dalias = dd
+            dd |= {"b": 2}
+            results.append(str(dd is dalias))
+            results.append(str(dd))
+            d = {"x": 0}
+            dalias2 = d
+            d |= Counter({"a": 1})
+            results.append(str(d is dalias2))
+            results.append(str(d))
+            results.append(type(d).__name__)
+            cm = ChainMap({"a": 1})
+            cmalias = cm
+            cm |= {"b": 2}
+            results.append(str(cm is cmalias))
+            results.append(str(list(cm.items())))
+            cm |= [("c", 3)]
+            results.append(str(list(cm.items())))
+            def iunion_arg(x, y):
+                x |= y
+                return x
+            try:
+                iunion_arg(Counter(), [(1, 2)])
+            except AttributeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "defaultdict(<class 'list'>, {'x': [1], 'y': 2})",
+            "defaultdict(<class 'list'>, {'y': 2, 'x': [1]})",
+            "list",
+            "list",
+            "defaultdict(<class 'list'>, {'a': [1], 'b': 2})",
+            "list",
+            "defaultdict(<class 'int'>, {'b': 2, 'a': [1]})",
+            "{'a': 1, 'b': 1, 'z': 9}",
+            "{'a': 2, 'z': 9, 'b': 1}",
+            "defaultdict(<class 'list'>, {'a': 1, 'b': 2})",
+            "defaultdict(<class 'list'>, {'a': [9]})",
+            "TypeError",
+            "unsupported operand type(s) for |: 'collections.defaultdict' and 'list'",
+            "True",
+            "Counter({'a': 2, 'b': 2})",
+            "Counter({'b': 2})",
+            "True",
+            "defaultdict(<class 'list'>, {'a': [1], 'b': 2})",
+            "True",
+            "{'x': 0, 'a': 1}",
+            "dict",
+            "True",
+            "[('a', 1), ('b', 2)]",
+            "[('a', 1), ('b', 2), ('c', 3)]",
+            "AttributeError",
+            "'list' object has no attribute 'items'",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

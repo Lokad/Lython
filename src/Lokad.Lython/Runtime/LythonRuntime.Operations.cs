@@ -69,6 +69,67 @@ internal sealed partial class LythonRuntime
         return value;
     }
 
+    private static IEnumerable<KeyValuePair<object, object>>? MergeUnionPairs(object value) => value switch
+    {
+        PyDict dict => dict,
+        PyDefaultDict defaultdict => defaultdict.Items,
+        PyCounter counter => counter.Items,
+        _ => null,
+    };
+
+    private static bool IsInPlaceMergeOperand(object value)
+        => value is PyDict or PyDefaultDict or PyCounter or PyChainMap;
+
+    private static IEnumerable<KeyValuePair<object, object>> InPlaceMergePairs(object mapping, LythonSourceSpan span) => mapping switch
+    {
+        PyDict dict => dict,
+        PyDefaultDict defaultdict => defaultdict.Items,
+        PyCounter counter => counter.Items,
+        PyChainMap chainMap => MergeChainMapMergePairs(chainMap, span),
+        _ => throw new System.Diagnostics.UnreachableException(),
+    };
+
+    private static IEnumerable<KeyValuePair<object, object>> MergeChainMapMergePairs(PyChainMap chainMap, LythonSourceSpan span)
+    {
+        foreach (var key in chainMap.BuildMergedKeys())
+        {
+            yield return new KeyValuePair<object, object>(key, chainMap.GetSubscript(key, span));
+        }
+    }
+
+    private static void MergeCounterUnionInPlace(PyCounter counter, object source, LythonSourceSpan span)
+    {
+        foreach (var pair in InPlaceMergePairs(source, span))
+        {
+            var current = counter.TryGetValue(pair.Key, out var found) ? found : BigInteger.Zero;
+            var count = CompareCounterCounts(pair.Value, current, span, ">") >= 0 ? pair.Value : current;
+            if (CompareCounterCounts(count, BigInteger.Zero, span, ">") > 0)
+            {
+                counter.SetItem(pair.Key, count);
+            }
+            else
+            {
+                counter.Remove(pair.Key);
+            }
+        }
+
+        // Purge pre-existing non-positive counts like CPython, surfacing
+        // comparison failures for non-numeric occupants.
+        var stale = new List<object>();
+        foreach (var pair in counter.Items)
+        {
+            if (CompareCounterCounts(pair.Value, BigInteger.Zero, span, ">") <= 0)
+            {
+                stale.Add(pair.Key);
+            }
+        }
+
+        foreach (var key in stale)
+        {
+            counter.Remove(key);
+        }
+    }
+
     private static object EvaluateBitwiseOr(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         if (left is bool leftBoolean && right is bool rightBoolean)
@@ -79,6 +140,46 @@ internal sealed partial class LythonRuntime
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
             return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) >= 0 ? lhs : rhs, keepPositiveOnly: true, span);
+        }
+
+        if (left is PyDefaultDict || right is PyDefaultDict)
+        {
+            var leftPairs = MergeUnionPairs(left);
+            var rightPairs = MergeUnionPairs(right);
+            if (leftPairs is null || rightPairs is null)
+            {
+                throw RuntimeErrors.UnsupportedOperands(operation ?? "|", left, right, span);
+            }
+
+            var factory = left is PyDefaultDict leftDefault ? leftDefault.DefaultFactory : ((PyDefaultDict)right).DefaultFactory;
+            var merged = new PyDict(context.MemoryGovernor, span);
+            foreach (var pair in leftPairs)
+            {
+                merged.SetItem(pair.Key, pair.Value);
+            }
+
+            foreach (var pair in rightPairs)
+            {
+                merged.SetItem(pair.Key, pair.Value);
+            }
+
+            return new PyDefaultDict(factory, merged);
+        }
+
+        if ((left is PyCounter && right is PyDict) || (left is PyDict && right is PyCounter))
+        {
+            var plain = new PyDict(context.MemoryGovernor, span);
+            foreach (var pair in MergeUnionPairs(left).RequireNotNull())
+            {
+                plain.SetItem(pair.Key, pair.Value);
+            }
+
+            foreach (var pair in MergeUnionPairs(right).RequireNotNull())
+            {
+                plain.SetItem(pair.Key, pair.Value);
+            }
+
+            return plain;
         }
 
         if (left is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView || right is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView)

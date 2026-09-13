@@ -766,14 +766,50 @@ internal sealed partial class LythonRuntime
         }
 
         if (op == AugmentedAssignmentOperatorSyntax.BitwiseOr &&
-            currentValue is PyDict currentDict && right is PyDict rightDict)
+            currentValue is PyDict currentDict && IsInPlaceMergeOperand(right))
         {
-            foreach (var pair in rightDict)
+            foreach (var pair in InPlaceMergePairs(right, span))
             {
                 currentDict.SetItem(pair.Key, pair.Value);
             }
 
             return currentDict;
+        }
+
+        if (op == AugmentedAssignmentOperatorSyntax.BitwiseOr &&
+            currentValue is PyDefaultDict currentDefault && IsInPlaceMergeOperand(right))
+        {
+            foreach (var pair in InPlaceMergePairs(right, span))
+            {
+                currentDefault.SetItem(pair.Key, pair.Value);
+            }
+
+            return currentDefault;
+        }
+
+        if (op == AugmentedAssignmentOperatorSyntax.BitwiseOr &&
+            currentValue is PyCounter currentCounter)
+        {
+            if (!IsInPlaceMergeOperand(right))
+            {
+                throw PyMemberAccess.CreateMissingMemberError(right, "items", span, context);
+            }
+
+            MergeCounterUnionInPlace(currentCounter, right, span);
+            return currentCounter;
+        }
+
+        if (op == AugmentedAssignmentOperatorSyntax.BitwiseOr &&
+            currentValue is PyChainMap currentChain)
+        {
+            var staged = new PyDict(context.MemoryGovernor, span);
+            UpdateDictionaryFromSource(staged, right, context, span);
+            foreach (var pair in staged)
+            {
+                currentChain.SetSubscript(pair.Key, pair.Value, span);
+            }
+
+            return currentChain;
         }
 
         return op switch
