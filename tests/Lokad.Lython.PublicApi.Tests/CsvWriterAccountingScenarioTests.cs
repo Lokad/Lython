@@ -132,4 +132,40 @@ public sealed class CsvWriterAccountingScenarioTests
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
     }
 
+
+    [Fact]
+    public async Task WriterowsPreservesRowsWrittenBeforeConversionError()
+    {
+        // MG02: writerows is not transactional: rows streamed before a
+        // mid-operation conversion failure stay streamed (file-backed) and
+        // retained (in-memory) instead of rolling back.
+        var script = new LythonEngine().Compile("""
+            import csv
+            f = open("/out.csv", "w")
+            w = csv.writer(f)
+            m = csv.writer()
+            try:
+                w.writerows([[1], [[2]], [3]])
+            except TypeError:
+                pass
+            try:
+                m.writerows([[1], [[2]], [3]])
+            except TypeError:
+                pass
+            f.close()
+            return m.getvalue()
+            """);
+        Assert.True(script.IsValid);
+        var syncHost = new MockLythonHost();
+        var sync = script.Run(syncHost);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("1\n", syncHost.ReadText("/out.csv"));
+        Assert.Equal("1", Assert.IsType<string>(sync.ReturnValue));
+
+        var asyncHost = new MockLythonHost();
+        var asyncResult = await script.RunAsync(asyncHost);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("1\n", asyncHost.ReadText("/out.csv"));
+        Assert.Equal("1", Assert.IsType<string>(asyncResult.ReturnValue));
+    }
 }
