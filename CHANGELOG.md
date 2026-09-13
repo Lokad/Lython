@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Fixed nested `def` functions failing to capture transitively free variables once the definers returned (`NameError`); closures now bind through intermediate scopes with nearest-rebinding semantics.
+- Per-call `*args`/`**kwargs` materializations now release when dropped instead of accumulating across calls, while retained results stay charged.
+
 ## 0.9.0 - 2026-09-13
 
 This release delivers the contained ZIP subset, standard-library hardening and bounded CSV streaming developed since 0.8.0, with memory-governor containment extended across readers, writers and conversions.
