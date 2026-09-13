@@ -91,8 +91,10 @@ internal sealed partial class ExecutableScript
             var normalizedBlocks = NormalizeBlocks(ordered, indexMap);
             var normalizedRegions = NormalizeRegions(ordered, indexMap);
             var requiresLocalVariableMirroring =
+                _expressionFallbacks.Count != 0 ||
                 _statementFallbacks.Count != 0 ||
-                _functions.Any(function => function.CodeObject is null);
+                _functions.Any(function => function.CodeObject is null) ||
+                _functions.Any(function => function.CodeObject?.RequiresLocalVariableMirroring == true);
             var capturedLocalSlots = CollectCapturedLocalSlots();
 
             return new ExecutableCodeObject(

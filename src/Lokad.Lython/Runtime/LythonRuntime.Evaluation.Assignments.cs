@@ -233,6 +233,7 @@ internal sealed partial class LythonRuntime
             BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)));
         ChargeFunctionValue(context, lambda.Span);
         ChargeClosureRetention(context, context.Variables.Count, context.MemoryGovernor, lambda.Span);
+        RetainLocalsForLambda(context);
         return function;
     }
 

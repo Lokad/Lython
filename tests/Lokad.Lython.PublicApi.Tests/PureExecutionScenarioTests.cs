@@ -712,6 +712,112 @@ __lython_file.close()
     }
 
     [Fact]
+    public async Task EscapedLambdasCaptureEnclosingScope()
+    {
+        // Lambdas resolve free names through parent scopes like CPython,
+        // including after the defining frame returns (late binding,
+        // rebinding, nonlocal sharing, deep nesting and splat forwarding),
+        // in both modes.
+        var script = new LythonEngine().Compile("""
+            results = []
+            def deco(arg):
+                def wrap(fn):
+                    def inner(*a, **k):
+                        return (arg, fn(*a, **k))
+                    return inner
+                return wrap
+            def raw(v):
+                return v + 1
+            results.append(str(deco(9)(raw)(1)))
+            def late():
+                x = 1
+                f = lambda: x
+                x = 2
+                return f
+            results.append(str(late()()))
+            def shared():
+                x = 1
+                f = lambda: x
+                def bump():
+                    nonlocal x
+                    x = 99
+                bump()
+                return f
+            results.append(str(shared()()))
+            def deep():
+                x = 1
+                def m():
+                    return lambda: x
+                return m()
+            results.append(str(deep()()))
+            def shadow():
+                x = 1
+                def m(x=99):
+                    return lambda: x
+                return m()()
+            results.append(str(shadow()))
+            def multi():
+                x = 1
+                return (lambda: x, lambda: x + 1)
+            a, b = multi()
+            results.append(str((a(), b())))
+            def defaulted():
+                x = 5
+                f = lambda a=x: a
+                x = 6
+                return f()
+            results.append(str(defaulted()))
+            def rebinding():
+                x = 1
+                f = lambda: x
+                x += 10
+                return f
+            results.append(str(rebinding()()))
+            def splatwrap(fn):
+                def inner(*a):
+                    return fn(*a)
+                return inner
+            results.append(str(splatwrap(raw)(1)))
+            def active(fn):
+                return (lambda x: fn(x))(1)
+            results.append(str(active(raw)))
+            def looped():
+                fs = []
+                for i in [1, 2]:
+                    fs.append(lambda: i)
+                return [f() for f in fs]
+            results.append(str(looped()))
+            def keyed(fn):
+                return sorted([3, 1], key=lambda v: fn(v))
+            results.append(str(keyed(raw)))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "(9, 2)",
+            "2",
+            "99",
+            "1",
+            "99",
+            "(1, 2)",
+            "5",
+            "11",
+            "2",
+            "2",
+            "[2, 2]",
+            "[1, 3]",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public void KeywordOnlyParameters_WorkForFunctionsAndLambdas()
     {
         var host = new MockLythonHost();

@@ -376,6 +376,37 @@ internal sealed partial class LythonRuntime
         return cells;
     }
 
+    // Lambdas resolve free names by walking parent Variables, but executable
+    // frames keep locals in slots that vanish on return. Flagging the chain
+    // mirrors slot stores into Variables (catch-up below seeds current values,
+    // preferring shared cells), so escaped lambdas keep reading finals.
+    internal static void RetainLocalsForLambda(ExecutionContext definingContext)
+    {
+        for (var current = definingContext; current is not null; current = current.ParentContext)
+        {
+            current.MirrorLocalStores = true;
+            var frame = current.CurrentExecutableFrame;
+            if (frame is null)
+            {
+                continue;
+            }
+
+            foreach (var pair in frame.EnumerateLocals())
+            {
+                if (frame.TryGetCell(pair.Key, out var cell) &&
+                    cell is not null &&
+                    !ReferenceEquals(cell.Value, UninitializedLocal))
+                {
+                    current.Variables[pair.Key] = cell.Value;
+                }
+                else
+                {
+                    current.Variables[pair.Key] = pair.Value;
+                }
+            }
+        }
+    }
+
     private static void SyncExecutableLocalsFromContext(
         ExecutableCodeObject codeObject,
         object[] locals,
@@ -442,6 +473,10 @@ internal sealed partial class LythonRuntime
             if (codeObject.ClosureNameToSlot.TryGetValue(name, out var closureSlot))
             {
                 StoreExecutableClosure(codeObject, context, closureSlot, value, span);
+                if (context.TryGetNonlocalTarget(name, out var nonlocalTarget) && nonlocalTarget.MirrorLocalStores)
+                {
+                    nonlocalTarget.Variables[name] = value;
+                }
                 return;
             }
 
@@ -450,7 +485,7 @@ internal sealed partial class LythonRuntime
         }
 
         SyncExecutableLocalFromValue(codeObject, locals, localCells, name, value);
-        if (codeObject.RequiresLocalVariableMirroring || !codeObject.LocalNameToSlot.ContainsKey(name))
+        if (codeObject.RequiresLocalVariableMirroring || context.MirrorLocalStores || !codeObject.LocalNameToSlot.ContainsKey(name))
         {
             context.Variables[name] = value;
         }

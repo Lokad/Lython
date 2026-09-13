@@ -156,6 +156,12 @@ internal sealed partial class LythonRuntime
 
         internal ExecutableFrameState? CurrentExecutableFrame { get; private set; }
 
+        // Set once a lambda is born below this frame: executable locals live in
+        // slots that vanish on return, so flagged frames also mirror slot stores
+        // into Variables (catch-up at creation seeds current values), letting
+        // escaped lambdas keep reading finals through the parent chain.
+        internal bool MirrorLocalStores { get; set; }
+
         public PyType? ImplicitSuperAnchorType { get; private set; }
 
         public object? ImplicitSuperReceiver { get; private set; }

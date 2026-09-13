@@ -149,7 +149,7 @@ internal sealed partial class LythonRuntime
                         localCell.Value = local;
                     }
 
-                    if (codeObject.RequiresLocalVariableMirroring)
+                    if (codeObject.RequiresLocalVariableMirroring || context.MirrorLocalStores)
                     {
                         context.Variables[codeObject.LocalNames[instruction.LocalSlot]] = local;
                     }
