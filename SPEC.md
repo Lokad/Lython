@@ -179,6 +179,7 @@ The host application controls what a script can do.
 The runtime must expose a narrow host interface for controlled operations over a host-managed path space, such as:
 
 - reading a UTF-8 text resource
+- reading a byte range of a UTF-8 text or binary resource
 - writing a UTF-8 text resource
 - appending to a UTF-8 text resource
 - listing entries under a path

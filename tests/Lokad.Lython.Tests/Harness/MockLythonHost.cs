@@ -86,6 +86,33 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
         return ValueTask.FromResult<ReadOnlyMemory<byte>>(Utf8.GetBytes(text));
     }
 
+    public int RangedReadCount { get; private set; }
+
+    public int MaxRangeBytesServed { get; private set; }
+
+    public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8RangeAsync(string path, long offset, int count, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        CheckRangeBounds(offset, count);
+        path = NormalizePath(path);
+
+        byte[] bytes;
+        if (_rawTextFiles.TryGetValue(path, out var rawText))
+        {
+            bytes = rawText;
+        }
+        else if (!_files.TryGetValue(path, out var fileText))
+        {
+            throw new InvalidOperationException($"File does not exist: {path}");
+        }
+        else
+        {
+            bytes = Utf8.GetBytes(fileText);
+        }
+
+        return ValueTask.FromResult(SliceRangeWindow(bytes, offset, count));
+    }
+
     public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -129,6 +156,47 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
         }
 
         return ValueTask.FromResult<ReadOnlyMemory<byte>>(payload.ToArray());
+    }
+
+    public ValueTask<ReadOnlyMemory<byte>> ReadBytesRangeAsync(string path, long offset, int count, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        CheckRangeBounds(offset, count);
+        path = NormalizePath(path);
+
+        if (!_binaryFiles.TryGetValue(path, out var payload))
+        {
+            throw new InvalidOperationException($"Binary file does not exist: {path}");
+        }
+
+        return ValueTask.FromResult(SliceRangeWindow(payload, offset, count));
+    }
+
+    private ReadOnlyMemory<byte> SliceRangeWindow(byte[] bytes, long offset, int count)
+    {
+        if (offset >= bytes.Length || count == 0)
+        {
+            RangedReadCount++;
+            return ReadOnlyMemory<byte>.Empty;
+        }
+
+        var take = (int)Math.Min(count, (long)bytes.Length - offset);
+        RangedReadCount++;
+        MaxRangeBytesServed = Math.Max(MaxRangeBytesServed, take);
+        return bytes.AsMemory((int)offset, take).ToArray();
+    }
+
+    private static void CheckRangeBounds(long offset, int count)
+    {
+        if (offset < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(offset), offset, "Range offset cannot be negative.");
+        }
+
+        if (count < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count), count, "Range count cannot be negative.");
+        }
     }
 
     public ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)

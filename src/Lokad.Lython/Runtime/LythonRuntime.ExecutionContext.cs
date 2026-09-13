@@ -200,6 +200,12 @@ internal sealed partial class LythonRuntime
         public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, LythonSourceSpan? span)
             => AwaitHostAsync(() => Host.ReadTextUtf8Async(ContainedHostPath(path, span), Limits.CancellationToken), "read_text", span);
 
+        public ReadOnlyMemory<byte> ReadTextUtf8Range(string path, long offset, int count, LythonSourceSpan? span)
+            => AwaitHost(Host, () => Host.ReadTextUtf8RangeAsync(ContainedHostPath(path, span), offset, count, Limits.CancellationToken), "read_text", span);
+
+        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8RangeAsync(string path, long offset, int count, LythonSourceSpan? span)
+            => AwaitHostAsync(() => Host.ReadTextUtf8RangeAsync(ContainedHostPath(path, span), offset, count, Limits.CancellationToken), "read_text", span);
+
         public void WriteTextUtf8(string path, ReadOnlyMemory<byte> utf8, LythonSourceSpan? span)
             => AwaitHost(Host, () => Host.WriteTextUtf8Async(ContainedHostPath(path, span), utf8, Limits.CancellationToken), "write_text", span);
 
@@ -217,6 +223,12 @@ internal sealed partial class LythonRuntime
 
         public ValueTask<ReadOnlyMemory<byte>> ReadHostBytesAsync(string path, LythonSourceSpan? span)
             => AwaitHostAsync(() => Host.ReadBytesAsync(ContainedHostPath(path, span), Limits.CancellationToken), "read_bytes", span);
+
+        public ReadOnlyMemory<byte> ReadHostBytesRange(string path, long offset, int count, LythonSourceSpan? span)
+            => AwaitHost(Host, () => Host.ReadBytesRangeAsync(ContainedHostPath(path, span), offset, count, Limits.CancellationToken), "read_bytes", span);
+
+        public ValueTask<ReadOnlyMemory<byte>> ReadHostBytesRangeAsync(string path, long offset, int count, LythonSourceSpan? span)
+            => AwaitHostAsync(() => Host.ReadBytesRangeAsync(ContainedHostPath(path, span), offset, count, Limits.CancellationToken), "read_bytes", span);
 
         public void WriteHostBytes(string path, ReadOnlyMemory<byte> payload, LythonSourceSpan? span)
             => AwaitHost(Host, () => Host.WriteBytesAsync(ContainedHostPath(path, span), payload, Limits.CancellationToken), "write_bytes", span);

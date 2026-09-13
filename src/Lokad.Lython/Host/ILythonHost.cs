@@ -24,6 +24,38 @@ public interface ILythonHost
     /// <summary>Reads a complete UTF-8 text file from the contained path.</summary>
     ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken);
 
+    /// <summary>Reads at most <paramref name="count"/> bytes of a UTF-8 text file starting at <paramref name="offset"/>.
+    /// <remarks>
+    /// Offsets and lengths are byte-based, so a window may split a UTF-8 sequence;
+    /// decoding split windows rests with the caller. An offset at or past
+    /// the end yields an empty payload. Negative offsets or counts fail explicitly.
+    /// The default implementation composes <see cref="ReadTextUtf8Async"/> and is
+    /// therefore correct but unbounded; hosts with native ranged I/O should override
+    /// it so large files can be acquired in a bounded window.
+    /// </remarks>
+    async ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8RangeAsync(string path, long offset, int count, CancellationToken cancellationToken)
+    {
+        if (offset < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(offset), offset, "Range offset cannot be negative.");
+        }
+
+        if (count < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count), count, "Range count cannot be negative.");
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        var whole = await ReadTextUtf8Async(path, cancellationToken).ConfigureAwait(false);
+        if (offset >= whole.Length || count == 0)
+        {
+            return ReadOnlyMemory<byte>.Empty;
+        }
+
+        var take = (int)Math.Min(count, (long)whole.Length - offset);
+        return whole.Slice((int)offset, take);
+    }
+
     /// <summary>Replaces a contained text file with the supplied well-formed UTF-8 bytes.</summary>
     ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken);
 
@@ -61,6 +93,37 @@ public interface ILythonHost
         prefix.CopyTo(combined);
         bytes.CopyTo(combined.AsMemory(prefix.Length));
         await WriteBytesAsync(path, combined, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Reads at most <paramref name="count"/> bytes of a binary file starting at <paramref name="offset"/>.
+    /// <remarks>
+    /// An offset at or past the end yields an empty payload. Negative offsets or
+    /// counts fail explicitly. The default implementation composes
+    /// <see cref="ReadBytesAsync"/> and is therefore correct but unbounded; hosts
+    /// with native ranged I/O should override it so large files can be acquired in
+    /// a bounded window.
+    /// </remarks>
+    async ValueTask<ReadOnlyMemory<byte>> ReadBytesRangeAsync(string path, long offset, int count, CancellationToken cancellationToken)
+    {
+        if (offset < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(offset), offset, "Range offset cannot be negative.");
+        }
+
+        if (count < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count), count, "Range count cannot be negative.");
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        var whole = await ReadBytesAsync(path, cancellationToken).ConfigureAwait(false);
+        if (offset >= whole.Length || count == 0)
+        {
+            return ReadOnlyMemory<byte>.Empty;
+        }
+
+        var take = (int)Math.Min(count, (long)whole.Length - offset);
+        return whole.Slice((int)offset, take);
     }
 
     /// <summary>Determines whether a file-system entry exists at the contained path.</summary>
