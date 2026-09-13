@@ -267,7 +267,7 @@ internal sealed partial class LythonRuntime
         object stderr = invocation.Request.StandardError == LythonSubprocessStreamMode.Pipe
             ? DecodeSubprocessOutput(result.StandardErrorUtf8, invocation.Request.TextEncoding, invocation.Request.TextErrorMode, context, span)
             : PyNone.Instance;
-        var args = new PyList(invocation.Request.Args.Select<string, object>(PyString.FromString), context.MemoryGovernor, span);
+        var args = new PyList(invocation.Request.Args.Select<string, object>(text => PyString.FromString(text, context.MemoryGovernor, span)), context.MemoryGovernor, span);
         context.ObserveCollectionCount(args.Count, span);
 
         var completed = new PyCompletedProcess(args, new BigInteger(result.ReturnCode), stdout, stderr);

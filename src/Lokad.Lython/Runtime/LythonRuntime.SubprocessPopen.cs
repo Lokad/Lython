@@ -99,8 +99,10 @@ internal sealed partial class LythonRuntime
             context,
             "subprocess.Popen",
             SubprocessInvocationPolicy.Popen);
+        // MG21: handles retain their args lists, so each argument string owns
+        // governor charges (128B plus UTF-8 length) like any retained value.
         var args = new PyList(
-            invocation.Request.Args.Select<string, object>(PyString.FromString),
+            invocation.Request.Args.Select<string, object>(text => PyString.FromString(text, context.MemoryGovernor, span)),
             context.MemoryGovernor,
             span);
         context.ObserveCollectionCount(args.Count, span);
