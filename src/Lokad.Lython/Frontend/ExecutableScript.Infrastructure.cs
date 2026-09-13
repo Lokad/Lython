@@ -388,7 +388,11 @@ internal sealed partial class ExecutableScript
             {
                 codeObject = new Builder(
                     functionDefinition.Parameters,
-                    _functionParameters is null ? null : _locals.Concat(_closures))
+                    // Forward our own candidates downward: a nested def only sees the names its
+                    // parent captured or owns at build time, so without our candidates a
+                    // transitively free name falls back to a global load and dies once the
+                    // definers return. Module functions keep null (globals resolve correctly).
+                    _functionParameters is null ? null : _locals.Concat(_closures).Concat(_parentClosureCandidates))
                     .CompileCodeObject(functionDefinition.Syntax.Name, functionDefinition.Body);
             }
             catch (ExecutableLoweringFallbackException)

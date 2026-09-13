@@ -124,10 +124,15 @@ internal sealed partial class ExecutableScript
 
             int[] CollectCapturedLocalSlots()
             {
-                if (_functions.Count == 0 || _localIndexes.Count == 0)
+                if (_functions.Count == 0)
                 {
                     return [];
                 }
+                // No local-index short-circuit here: an intermediate def can own no
+                // locals of its own (nested def names do not bind local slots) while
+                // still needing to forward transitively free names into its closures;
+                // skipping the pass-through below orphans grandchild captures.
+
 
                 var captured = new HashSet<int>();
                 foreach (var function in _functions)
