@@ -402,6 +402,7 @@ internal sealed partial class LythonRuntime
             }
             _fieldScratch = context.MemoryGovernor.ReserveTemporary(0, span);
             _pool = new ChargeReclamationPool(context.MemoryGovernor);
+            context.State.RegisterCsvSource(this, _pool, _fieldScratch);
             _parser = new CsvRecordParser(options, context, span, _fieldScratch, _pool);
         }
 
@@ -460,6 +461,7 @@ internal sealed partial class LythonRuntime
 
         private void Pull()
         {
+            _context.State.NoteCsvPull();
             object current;
             if (_indexed is not null)
             {

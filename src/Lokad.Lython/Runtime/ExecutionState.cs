@@ -6,6 +6,8 @@ namespace Lokad.Lython.Runtime;
 internal sealed class ExecutionState
 {
     private Dictionary<object, RuntimeMemberCacheEntry>? _runtimeMemberCaches;
+    private readonly List<CsvReaderRegistration> _csvSources = new();
+    private long _csvPulls;
     private readonly ConditionalWeakTable<object, StrongBox<long>> _objectIds = new();
     private long _nextObjectId;
 
@@ -148,6 +150,46 @@ internal sealed class ExecutionState
         var box = _objectIds.GetValue(key, _ => new StrongBox<long>(Interlocked.Increment(ref _nextObjectId)));
         return new BigInteger(box.Value);
     }
+
+    // Tracks every CSV record source for abandonment reclamation: entries
+    // hold the pool and scratch strongly but the source weakly, so a dropped
+    // source stops contributing charges once reclaimed while live sources
+    // (and everything they keep) are never touched.
+    internal void RegisterCsvSource(
+        LythonRuntime.CsvRecordSource source,
+        ChargeReclamationPool pool,
+        MemoryGovernor.TemporaryMemoryReservation scratch)
+    {
+        _csvSources.Add(new CsvReaderRegistration(new WeakReference<LythonRuntime.CsvRecordSource>(source), pool, scratch));
+    }
+
+    internal void NoteCsvPull()
+    {
+        if ((++_csvPulls & 255) == 0)
+        {
+            ReclaimAbandonedCsvSources();
+        }
+    }
+
+    private void ReclaimAbandonedCsvSources()
+    {
+        for (var i = _csvSources.Count - 1; i >= 0; i--)
+        {
+            var entry = _csvSources[i];
+            if (!entry.Source.TryGetTarget(out _))
+            {
+                entry.Pool.Sweep(full: true);
+                entry.Scratch.Dispose();
+                _csvSources[i] = _csvSources[_csvSources.Count - 1];
+                _csvSources.RemoveAt(_csvSources.Count - 1);
+            }
+        }
+    }
+
+    private readonly record struct CsvReaderRegistration(
+        WeakReference<LythonRuntime.CsvRecordSource> Source,
+        ChargeReclamationPool Pool,
+        MemoryGovernor.TemporaryMemoryReservation Scratch);
 
     public bool TryReadRuntimeMemberCache(
         object cacheSite,
