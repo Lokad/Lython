@@ -118,17 +118,26 @@ archive compression or staging paths.
 
 Six-column DictReader (`CsvReaderBenchmarks.cs`, 20,001-line seeded host file,
 960,018 bytes, default execution budget) from a full BenchmarkDotNet run (.NET 10,
-Windows 10.0.26200.9445 x64, 2026-09-10, 02059e8):
+Windows 10.0.26200 x64, 2026-09-13, 4cb64e5):
 
 | Benchmark | Mean | Allocated/op |
 | --- | --- | --- |
-| DictReader retain 20K six-column dicts | 61,857.1 us | 40251.81 KB |
-| DictReader break after first of 20K rows | 331.2 us | 37.96 KB |
+| DictReader retain 20K six-column dicts | 150,890.1 us | 70733.44 KB |
+| DictReader break after first of 20K rows | 127.4 us | 109.6 KB |
 
-Notes: no outliers removed. Retaining every dictionary costs about 190x time
-and 1000x allocation versus stopping after the first row, all under the same
-default 1 GiB execution budget in an isolated process. Re-record on release
-runs before changing CSV record, dictionary, or file-line hot paths.
+Notes: 1 outlier removed on retain, 4 on break-first; both distributions read
+bimodal this run. Retaining every dictionary still costs about 1100x time and 650x allocation
+versus stopping after the first row, all under the same default
+1 GiB execution budget in an isolated process. Versus the 2026-09-10 figures,
+retain costs about 2.4x time and 1.76x managed allocation because chunked file
+reads stream through the benchmark host fallback ranges (each
+16 KiB window re-reads the whole file host-side; native ranged hosts skip that
+traffic), plus per-line reclamation tracking; governor-accounted peaks are
+unchanged or lower (see the milestone bound pins). Break-first is about 2.6x
+faster (only the first window decodes) at about 2.9x managed allocation
+(window plus carry infrastructure replacing one shared whole-text array).
+Re-record on release runs before changing CSV record, dictionary, or file-line
+hot paths.
 
 Host traffic (deterministic single-run counts from a counting host; host
 call counts and byte totals do not depend on build configuration; asserted
