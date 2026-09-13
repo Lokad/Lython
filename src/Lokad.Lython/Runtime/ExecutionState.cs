@@ -8,6 +8,7 @@ internal sealed class ExecutionState
     private Dictionary<object, RuntimeMemberCacheEntry>? _runtimeMemberCaches;
     private readonly List<CsvReaderRegistration> _csvSources = new();
     private long _csvPulls;
+    private long _boundCalls;
     private readonly ConditionalWeakTable<object, StrongBox<long>> _objectIds = new();
     private long _nextObjectId;
 
@@ -45,6 +46,7 @@ internal sealed class ExecutionState
         Limits = LythonRuntime.ExecutionLimits.FromOptions(options);
         BudgetGuards = new ExecutionBudgetGuards(this);
         MemoryGovernor = new MemoryGovernor(Limits.MaxExecutionMemoryBytes);
+        CallTemporaries = new ChargeReclamationPool(MemoryGovernor);
         RandomState = new PyRandomState();
         DecimalContext = PyDecimalContext.Default();
         DisableLocalModuleImports = options?.DisableLocalModuleImports ?? false;
@@ -107,6 +109,12 @@ internal sealed class ExecutionState
 
     public MemoryGovernor MemoryGovernor { get; }
 
+    // Per-call variadic materializations (overflow lists and tuples, keyword
+    // dicts and key strings) register here instead of leaking durable commits
+    // when dropped; sweeps release whatever the collector reclaimed while
+    // retained aliases stay charged.
+    internal ChargeReclamationPool CallTemporaries { get; }
+
     public PyRandomState RandomState { get; }
 
     public PyDecimalContext DecimalContext { get; set; }
@@ -168,6 +176,14 @@ internal sealed class ExecutionState
         if ((++_csvPulls & 255) == 0)
         {
             ReclaimAbandonedCsvSources();
+        }
+    }
+
+    internal void NoteBoundCall()
+    {
+        if ((++_boundCalls & 255) == 0)
+        {
+            CallTemporaries.Sweep();
         }
     }
 

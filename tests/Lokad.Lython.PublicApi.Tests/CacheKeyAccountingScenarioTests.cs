@@ -6,12 +6,14 @@ namespace Lokad.Lython.PublicApi.Tests;
 /// <summary>
 /// MG14: cache keys own their keyword-name and type-token strings, and dropped
 /// lookup keys release nothing net, instead of leaking per call. Twenty
-/// thousand distinct kwargs calls must exceed a 12MB budget while twenty
+/// thousand distinct kwargs calls must exceed a 6MB budget while twenty
 /// thousand cache hits fit in 64KB, in both modes.
 /// </summary>
 public sealed class CacheKeyAccountingScenarioTests
 {
-    private const long MissBudgetBytes = 12582912;
+    // True retained cost for 20000 distinct misses measures ~8.4MB both modes;
+    // the old 12MB budget tripped on leak-inflated per-call dicts (fixed separately).
+    private const long MissBudgetBytes = 6291456;
     private const long HitBudgetBytes = 65536;
 
     [Fact]

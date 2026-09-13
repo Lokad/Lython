@@ -60,6 +60,10 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
 
     internal static long EstimateApproximateBytes(int count) => 32L + (16L * count);
 
+    // Current committed backing charges, for pooled owners that release them
+    // if this tuple is dropped. Tuples never grow, so the snapshot stays exact.
+    internal long CommittedStorageBytes => EstimateApproximateBytes(_items.Length);
+
     internal static PyTuple FromOwnedArray(object[] items) => new(items, takeOwnership: true);
 
     internal static PyTuple FromOwnedArray(object[] items, MemoryGovernor governor, LythonSourceSpan? allocationSpan)

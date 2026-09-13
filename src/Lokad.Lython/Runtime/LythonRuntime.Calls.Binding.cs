@@ -15,9 +15,11 @@ internal sealed partial class LythonRuntime
         FunctionBindingPlan plan,
         ExecutionContext context)
     {
+        context.State.NoteBoundCall();
+        var pool = context.State.CallTemporaries;
         var bound = new Dictionary<string, object>(StringComparer.Ordinal);
         // The overflow list is scratch: most calls never spill positionals,
-        // so materialize it only on the first spill instead of charging every
+        // so materialize it only on the first spill, tracked in the call pool
         // invocation for a list that is dropped before return.
         PyList? extraPositional = null;
         var extraKeywords = new Dictionary<string, object>(StringComparer.Ordinal);
@@ -34,7 +36,12 @@ internal sealed partial class LythonRuntime
                         throw CallErrors.TooManyPositional(plan.CallableKind, plan.CallableName, span);
                     }
 
-                    extraPositional ??= new PyList([], context.MemoryGovernor, span);
+                    if (extraPositional is null)
+                    {
+                        extraPositional = new PyList([], context.MemoryGovernor, span);
+                        pool.TrackMutable(extraPositional, extraPositional.CommittedStorageBytes);
+                    }
+
                     extraPositional.Add(argument.Value);
                     continue;
                 }
@@ -101,19 +108,31 @@ internal sealed partial class LythonRuntime
         if (plan.VariadicList is not null)
         {
             var overflow = extraPositional;
-            bound[plan.VariadicList.Name] = overflow is null
-                ? CreateTuple(0, _ => PyNone.Instance, context, span)
-                : CreateTuple(overflow.Count, i => overflow[i], context, span);
+            if (overflow is null || overflow.Count == 0)
+            {
+                bound[plan.VariadicList.Name] = CreateTuple(0, _ => PyNone.Instance, context, span);
+            }
+            else
+            {
+                ChargeReclamationPool.NotifyStorageReplaced(overflow, overflow.CommittedStorageBytes);
+                var overflowTuple = CreateTuple(overflow.Count, i => overflow[i], context, span);
+                pool.TrackMutable(overflowTuple, overflowTuple.CommittedStorageBytes);
+                bound[plan.VariadicList.Name] = overflowTuple;
+            }
         }
 
         if (plan.VariadicDictionary is not null)
         {
             var keywordDict = new PyDict(context.MemoryGovernor, span);
+            pool.TrackMutable(keywordDict, keywordDict.CommittedStorageBytes);
             foreach (var pair in extraKeywords)
             {
-                keywordDict.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
+                var keyword = PyString.FromString(pair.Key, context.MemoryGovernor, span);
+                pool.TrackString(keyword);
+                keywordDict.SetItem(keyword, pair.Value);
             }
 
+            ChargeReclamationPool.NotifyStorageReplaced(keywordDict, keywordDict.CommittedStorageBytes);
             bound[plan.VariadicDictionary.Name] = keywordDict;
         }
 
