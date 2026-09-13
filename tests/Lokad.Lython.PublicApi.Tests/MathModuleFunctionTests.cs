@@ -164,6 +164,7 @@ return str(math.expm1(1e-16) != 0.0) + "|" + str(math.log1p(1e-16) != 0.0) + "|"
     [InlineData("math.nextafter(1, 2, -1)", "compile", "steps")]
     [InlineData("math.nextafter(1, 2, steps = -1)", "ValueError", "non-negative")]
     [InlineData("math.floor(math.nan)", "ValueError", "NaN")]
+    [InlineData("math.floor('a')", "compile", "expects a real number")]
     [InlineData("math.floor(math.inf)", "OverflowError", "infinity")]
     [InlineData("math.ceil(math.nan)", "ValueError", "NaN")]
     [InlineData("math.trunc(-math.inf)", "OverflowError", "infinity")]
@@ -226,6 +227,77 @@ math.sumprod([1])
         Assert.False(invalid.Success);
         Assert.Null(invalid.Failure);
         Assert.True(invalid.Diagnostics.Count(d => d.Code is "LA3151" or "LA3158") >= 7);
+    }
+
+    [Fact]
+    public async Task MathFloorLikeAcceptsDecimalsLikeCpython()
+    {
+        // math.floor/ceil/trunc accept Decimals exactly like CPython,
+        // delegating to the Decimal __floor__/__ceil__/__trunc__ cores;
+        // other math functions still reject Decimals statically.
+        var script = new LythonEngine().Compile("""
+import math
+from decimal import Decimal
+def call_floor(x):
+    return math.floor(x)
+def call_ceil(x):
+    return math.ceil(x)
+def call_trunc(x):
+    return math.trunc(x)
+results = []
+results.append(str(math.floor(Decimal("1.5"))))
+results.append(str(math.floor(Decimal("-1.5"))))
+results.append(str(math.ceil(Decimal("1.5"))))
+results.append(str(math.ceil(Decimal("-1.5"))))
+results.append(str(math.trunc(Decimal("1.9"))))
+results.append(str(math.trunc(Decimal("-1.9"))))
+results.append(str(math.floor(Decimal("2.0"))))
+results.append(str(math.floor(Decimal("1E+5"))))
+results.append(str(math.ceil(Decimal("0.1"))))
+results.append(str(math.floor(Decimal("-0.5"))))
+results.append(str(call_floor(Decimal("1.5"))))
+results.append(str(call_ceil(Decimal("-1.5"))))
+results.append(str(call_trunc(Decimal("1.9"))))
+results.append(str(type(math.floor(Decimal("1.5"))).__name__))
+results.append(str(math.floor(Decimal("1.5")) == Decimal("1.5").__floor__()))
+results.append(str(math.ceil(Decimal("1.5")) == Decimal("1.5").__ceil__()))
+results.append(str(math.trunc(Decimal("1.5")) == Decimal("1.5").__trunc__()))
+results.append(str(math.floor(3.7)))
+results.append(str(math.ceil(2)))
+results.append(str(math.trunc(-2.9)))
+return results
+""");
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "1",
+            "-2",
+            "2",
+            "-1",
+            "1",
+            "-1",
+            "2",
+            "100000",
+            "1",
+            "-1",
+            "1",
+            "-1",
+            "1",
+            "int",
+            "True",
+            "True",
+            "True",
+            "3",
+            "2",
+            "-2",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
     }
 
     private static string EvaluateToString(string expression)

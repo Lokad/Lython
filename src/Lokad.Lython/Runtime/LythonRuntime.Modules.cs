@@ -559,6 +559,17 @@ internal sealed partial class LythonRuntime
                 return callable.Invoke([], span, context);
             }
 
+            if (value is PyDecimal decimalValue)
+            {
+                var decimalResult = specialMethod switch
+                {
+                    "__floor__" => decimal.Floor(decimalValue.Value),
+                    "__ceil__" => decimal.Ceiling(decimalValue.Value),
+                    _ => decimal.Truncate(decimalValue.Value),
+                };
+                return OwnHeapInteger(new BigInteger(decimalResult), context.MemoryGovernor, span);
+            }
+
             if (!PyNumberOps.TryAsNumber(value, out var number))
             {
                 throw new LythonRuntimeException("TypeError", $"{owner} expects a real number.", span);

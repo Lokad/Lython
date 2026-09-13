@@ -12,6 +12,11 @@ internal static class StaticMathContractFamily
         AbstractState bindings)
     {
         var emitted = false;
+        if (IsFloorLikeCall(targetName))
+        {
+            return AnalyzeMathFloorLikeArgument(arguments, 0, "x", $"{targetName}(x) expects a real number.", diagnostics, bindings);
+        }
+
         if (IsSingleRealCall(targetName))
         {
             return AnalyzeMathRealArgument(arguments, 0, "x", $"{targetName}(x) expects a real number.", diagnostics, bindings);
@@ -217,10 +222,7 @@ internal static class StaticMathContractFamily
            string.Equals(targetName, LythonKnownCallableSignatures.MathSinh.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.MathCosh.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.MathTanh.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathFloor.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathCeil.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.MathFabs.Name, StringComparison.Ordinal) ||
-           string.Equals(targetName, LythonKnownCallableSignatures.MathTrunc.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.MathDegrees.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.MathRadians.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.MathIsFinite.Name, StringComparison.Ordinal) ||
@@ -245,6 +247,20 @@ internal static class StaticMathContractFamily
            string.Equals(targetName, LythonKnownCallableSignatures.MathCopySign.Name, StringComparison.Ordinal) ||
            string.Equals(targetName, LythonKnownCallableSignatures.MathRemainder.Name, StringComparison.Ordinal);
 
+    private static bool AnalyzeMathFloorLikeArgument(
+        ConcreteCallArguments arguments,
+        int position,
+        string keyword,
+        string message,
+        List<LythonDiagnostic> diagnostics,
+        AbstractState bindings)
+        => AnalyzeArgument(arguments, position, keyword, message, diagnostics, bindings, IsMathFloorLike);
+
+    private static bool IsFloorLikeCall(string targetName)
+        => string.Equals(targetName, LythonKnownCallableSignatures.MathFloor.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.MathCeil.Name, StringComparison.Ordinal) ||
+           string.Equals(targetName, LythonKnownCallableSignatures.MathTrunc.Name, StringComparison.Ordinal);
+
     private static bool IsMathRealLike(AbstractValue value)
         => value.Kind is AbstractValueKind.Integer or
             AbstractValueKind.IntegerType or
@@ -252,5 +268,8 @@ internal static class StaticMathContractFamily
             AbstractValueKind.BooleanType or
             AbstractValueKind.Float or
             AbstractValueKind.FloatType;
+
+    private static bool IsMathFloorLike(AbstractValue value)
+        => IsMathRealLike(value) || value.Kind == AbstractValueKind.Decimal;
 
 }
