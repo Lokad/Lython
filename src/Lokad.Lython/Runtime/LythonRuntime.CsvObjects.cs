@@ -434,8 +434,11 @@ internal sealed partial class LythonRuntime
             {
                 // In-memory writers retain history for getvalue(); charge the list
                 // slot, the row array and the converted values the history keeps.
-                // Reserve before inserting so a failed reservation retains
-                // nothing uncharged.
+                // The history list doubles its backing array as it grows, so the
+                // replacement array is transiently live beside the old one: hold
+                // that overlap first, then reserve the row charge, so a failed
+                // reservation retains nothing uncharged and leaks no reserve.
+                using var growth = context.MemoryGovernor.ReserveTemporary(PredictHistoryGrowthBytes(writer.Rows), span);
                 var historyCharge = 64L + (16L * row.Length) + convertedBytes;
                 context.MemoryGovernor.Reserve(historyCharge, span);
                 writer.Rows.Add(row);
@@ -452,6 +455,20 @@ internal sealed partial class LythonRuntime
             }
 
             return new BigInteger(rendered.Length);
+        }
+
+        private static long PredictHistoryGrowthBytes(List<CsvCell[]> rows)
+        {
+            if (rows.Count != rows.Capacity)
+            {
+                return 0;
+            }
+
+            // Mirror List<T> doubling (0 -> 4, then x2) with long arithmetic;
+            // only the reference slots need cover since the cells themselves
+            // ride the per-row history charge.
+            var newCapacity = rows.Capacity == 0 ? 4L : Math.Min((long)rows.Capacity * 2L, int.MaxValue);
+            return 8L * newCapacity;
         }
 
         private static long EstimateRowBytes(CsvCell[] row)

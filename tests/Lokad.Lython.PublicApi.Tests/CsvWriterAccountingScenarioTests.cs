@@ -134,6 +134,44 @@ public sealed class CsvWriterAccountingScenarioTests
 
 
     [Fact]
+    public async Task WriterowStaysUsableAfterConversionError()
+    {
+        // MG02: a conversion failure happens during row conversion, before
+        // any history or output effect, so both writers stay usable and the
+        // failed row leaves nothing behind.
+        var script = new LythonEngine().Compile("""
+            import csv
+            f = open("/out.csv", "w")
+            w = csv.writer(f)
+            m = csv.writer()
+            try:
+                w.writerow([[1]])
+            except TypeError:
+                pass
+            try:
+                m.writerow([[1]])
+            except TypeError:
+                pass
+            w.writerow(["a"])
+            m.writerow(["a"])
+            f.close()
+            return m.getvalue()
+            """);
+        Assert.True(script.IsValid);
+        var syncHost = new MockLythonHost();
+        var sync = script.Run(syncHost);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("a\n", syncHost.ReadText("/out.csv"));
+        Assert.Equal("a", Assert.IsType<string>(sync.ReturnValue));
+
+        var asyncHost = new MockLythonHost();
+        var asyncResult = await script.RunAsync(asyncHost);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("a\n", asyncHost.ReadText("/out.csv"));
+        Assert.Equal("a", Assert.IsType<string>(asyncResult.ReturnValue));
+    }
+
+    [Fact]
     public async Task WriterowsPreservesRowsWrittenBeforeConversionError()
     {
         // MG02: writerows is not transactional: rows streamed before a
