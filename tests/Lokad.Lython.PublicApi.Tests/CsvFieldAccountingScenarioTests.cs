@@ -155,4 +155,50 @@ public sealed class CsvFieldAccountingScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task CancelledScanFailsDeterministically()
+    {
+        // MG01/MG02: cancellation surfaces mid-scan as an explicit failure,
+        // never as budget-shaped or CLR leakage; a pre-cancelled token fails
+        // before any read. Pulls check the budget (and its token) per row.
+        var content = new StringBuilder();
+        for (var i = 0; i < 200000; i++)
+        {
+            content.Append("a,b,c,d\n");
+        }
+
+        var script = new LythonEngine().Compile("""
+            import csv
+            with open("/data.csv") as f:
+                n = 0
+                for row in csv.reader(f):
+                    n = n + 1
+            return n
+            """);
+        Assert.True(script.IsValid);
+        using var cts = new CancellationTokenSource();
+        var host = new MockLythonHost();
+        host.SeedFile("/data.csv", content.ToString());
+        var runTask = Task.Run(() => script.Run(host, new LythonRunOptions { CancellationToken = cts.Token }));
+        await Task.Delay(25);
+        cts.Cancel();
+        var result = await runTask;
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
+        Assert.Contains("execution canceled", result.Failure?.Message, StringComparison.Ordinal);
+
+        using var preCancelled = new CancellationTokenSource();
+        preCancelled.Cancel();
+        var preHost = new MockLythonHost();
+        preHost.SeedFile("/data.csv", content.ToString());
+        var asyncResult = await script.RunAsync(
+            preHost,
+            new LythonRunOptions { CancellationToken = preCancelled.Token });
+        Assert.False(asyncResult.Success);
+        Assert.NotNull(asyncResult.Failure);
+        Assert.Equal("RuntimeError", asyncResult.Failure?.ExceptionType);
+        Assert.Contains("execution canceled", asyncResult.Failure?.Message, StringComparison.Ordinal);
+    }
 }
