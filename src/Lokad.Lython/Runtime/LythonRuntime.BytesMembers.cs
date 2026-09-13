@@ -178,6 +178,33 @@ internal sealed partial class LythonRuntime
 
                     return ReadSubscriptValue(bytes, arguments[0], span, context);
                 }, "bytes.__getitem__", ["index"]),
+                "__add__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "bytes.__add__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateAdd(bytes, arguments[0], context, span);
+                }, "bytes.__add__", ["value"]),
+                "__mul__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "bytes.__mul__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateMultiply(bytes, arguments[0], context, span);
+                }, "bytes.__mul__", ["value"]),
+                "__rmul__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "bytes.__rmul__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateMultiply(arguments[0], bytes, context, span);
+                }, "bytes.__rmul__", ["value"]),
                 _ => MissingMemberValue.Instance
             };
 

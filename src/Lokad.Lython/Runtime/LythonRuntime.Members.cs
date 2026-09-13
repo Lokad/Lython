@@ -181,6 +181,33 @@ internal sealed partial class LythonRuntime
                     DeleteSubscriptValue(list, arguments[0], span, context);
                     return PyNone.Instance;
                 }, "list.__delitem__", ["index"]),
+                "__add__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "list.__add__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateAdd(list, arguments[0], context, span);
+                }, "list.__add__", ["value"]),
+                "__mul__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "list.__mul__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateMultiply(list, arguments[0], context, span);
+                }, "list.__mul__", ["value"]),
+                "__rmul__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "list.__rmul__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateMultiply(arguments[0], list, context, span);
+                }, "list.__rmul__", ["value"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -374,6 +401,33 @@ internal sealed partial class LythonRuntime
 
                     return ReadSubscriptValue(source, arguments[0], span, context);
                 }, "tuple.__getitem__", ["index"]),
+                "__add__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "tuple.__add__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateAdd(source, arguments[0], context, span);
+                }, "tuple.__add__", ["value"]),
+                "__mul__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "tuple.__mul__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateMultiply(source, arguments[0], context, span);
+                }, "tuple.__mul__", ["value"]),
+                "__rmul__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "tuple.__rmul__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateMultiply(arguments[0], source, context, span);
+                }, "tuple.__rmul__", ["value"]),
                 _ => MissingMemberValue.Instance,
             };
 

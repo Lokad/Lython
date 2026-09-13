@@ -39,6 +39,9 @@ internal static partial class StaticContracts
             AddStringCallableContract(contracts, "__len__", 0, 0, "str.__len__() expects no arguments.");
             AddStringCallableContract(contracts, "__contains__", 1, 1, "str.__contains__(item) expects one argument.", "item");
             AddStringCallableContract(contracts, "__getitem__", 1, 1, "str.__getitem__(index) expects one argument.", "index");
+            AddStringCallableContract(contracts, "__add__", 1, 1, "str.__add__(value) expects one argument.", "value");
+            AddStringCallableContract(contracts, "__mul__", 1, 1, "str.__mul__(value) expects one argument.", "value");
+            AddStringCallableContract(contracts, "__rmul__", 1, 1, "str.__rmul__(value) expects one argument.", "value");
             AddStringCallableContract(contracts, "capitalize", 0, 0, "str.capitalize() expects no arguments.");
             AddStringCallableContract(contracts, "islower", 0, 0, "str.islower() expects no arguments.");
             AddStringCallableContract(contracts, "upper", 0, 0, "str.upper() expects no arguments.");
@@ -176,6 +179,12 @@ internal static partial class StaticContracts
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "__contains__", 1, 1, "LA3179", "bytes.__contains__(item) expects one argument.", parameterNames: ["item"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "__getitem__", 1, 1, "LA3179", "bytes.__getitem__(index) expects one argument.", parameterNames: ["index"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "__getitem__", 1, 1, "LA3179", "bytes.__getitem__(index) expects one argument.", parameterNames: ["index"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "__add__", 1, 1, "LA3179", "bytes.__add__(value) expects one argument.", parameterNames: ["value"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "__add__", 1, 1, "LA3179", "bytes.__add__(value) expects one argument.", parameterNames: ["value"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "__mul__", 1, 1, "LA3179", "bytes.__mul__(value) expects one argument.", parameterNames: ["value"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "__mul__", 1, 1, "LA3179", "bytes.__mul__(value) expects one argument.", parameterNames: ["value"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "__rmul__", 1, 1, "LA3179", "bytes.__rmul__(value) expects one argument.", parameterNames: ["value"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "__rmul__", 1, 1, "LA3179", "bytes.__rmul__(value) expects one argument.", parameterNames: ["value"]));
         }
 
         static void AddStringCallableContract(
@@ -213,6 +222,9 @@ internal static partial class StaticContracts
             AddNonMutatingListCallableContract(contracts, "__len__", 0, 0, "LA3124", "list.__len__() expects no arguments.");
             AddNonMutatingListCallableContract(contracts, "__contains__", 1, 1, "LA3124", "list.__contains__(item) expects one argument.", "item");
             AddNonMutatingListCallableContract(contracts, "__getitem__", 1, 1, "LA3124", "list.__getitem__(index) expects one argument.", "index");
+            AddNonMutatingListCallableContract(contracts, "__add__", 1, 1, "LA3124", "list.__add__(value) expects one argument.", "value");
+            AddNonMutatingListCallableContract(contracts, "__mul__", 1, 1, "LA3124", "list.__mul__(value) expects one argument.", "value");
+            AddNonMutatingListCallableContract(contracts, "__rmul__", 1, 1, "LA3124", "list.__rmul__(value) expects one argument.", "value");
             AddListCallableContract(contracts, "__setitem__", 2, 2, "LA3124", "list.__setitem__(index, value) expects two arguments.", StaticMutationKind.MutatesReceiver, "index", "value");
             AddListCallableContract(contracts, "__delitem__", 1, 1, "LA3124", "list.__delitem__(index) expects one argument.", StaticMutationKind.MutatesReceiver, "index");
             AddListCallableContract(contracts, "clear", 0, 0, "LA3125", "list.clear() expects no arguments.", StaticMutationKind.MutatesReceiver);

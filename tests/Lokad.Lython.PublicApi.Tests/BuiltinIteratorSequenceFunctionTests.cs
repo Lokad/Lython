@@ -1404,4 +1404,107 @@ return "|".join(results)
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task SequenceConcatRepeatDundersAdvanceLikeCpython()
+    {
+        // Sequence types expose __add__/__mul__/__rmul__ with exactly the
+        // operator values (no __radd__, like CPython).
+        var script = new LythonEngine().Compile("""
+            def two_args(x, a, b):
+                return x(a, b)
+            results = []
+            results.append(str([1, 2].__add__([3])))
+            results.append(str("ab".__add__("cd")))
+            results.append(str((7,).__add__((8,))))
+            results.append(str(b"ab".__add__(b"cd")))
+            results.append(str([1].__mul__(3)))
+            results.append(str([1].__mul__(0)))
+            results.append(str("ab".__mul__(2)))
+            results.append(str("ab".__mul__(-1)))
+            results.append(str((1,).__mul__(2)))
+            results.append(str(b"ab".__mul__(2)))
+            results.append(str([1].__rmul__(2)))
+            results.append(str("ab".__rmul__(2)))
+            try:
+                [1].__add__("x")
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                "ab".__mul__("x")
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                (1,).__rmul__("x")
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            for f in [[1].__add__, (1,).__add__, "ab".__add__, b"ab".__add__, [1].__mul__, (1,).__mul__, "ab".__mul__, b"ab".__mul__, [1].__rmul__, (1,).__rmul__, "ab".__rmul__, b"ab".__rmul__]:
+                try:
+                    two_args(f, 1, 2)
+                except TypeError as e:
+                    results.append(type(e).__name__)
+                    results.append(str(e))
+            results.append(str(hasattr([1], "__rmul__")))
+            results.append(str(hasattr((1,), "__radd__")))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "[1, 2, 3]",
+            "abcd",
+            "(7, 8)",
+            "b'abcd'",
+            "[1, 1, 1]",
+            "[]",
+            "abab",
+            "",
+            "(1, 1)",
+            "b'abab'",
+            "[1, 1]",
+            "abab",
+            "TypeError",
+            "can only concatenate list (not \"str\") to list",
+            "TypeError",
+            "can't multiply sequence by non-int of type 'str'",
+            "TypeError",
+            "can't multiply sequence by non-int of type 'tuple'",
+            "TypeError",
+            "Method 'list.__add__' received too many positional arguments.",
+            "TypeError",
+            "Method 'tuple.__add__' received too many positional arguments.",
+            "TypeError",
+            "Method 'str.__add__' received too many positional arguments.",
+            "TypeError",
+            "Method 'bytes.__add__' received too many positional arguments.",
+            "TypeError",
+            "Method 'list.__mul__' received too many positional arguments.",
+            "TypeError",
+            "Method 'tuple.__mul__' received too many positional arguments.",
+            "TypeError",
+            "Method 'str.__mul__' received too many positional arguments.",
+            "TypeError",
+            "Method 'bytes.__mul__' received too many positional arguments.",
+            "TypeError",
+            "Method 'list.__rmul__' received too many positional arguments.",
+            "TypeError",
+            "Method 'tuple.__rmul__' received too many positional arguments.",
+            "TypeError",
+            "Method 'str.__rmul__' received too many positional arguments.",
+            "TypeError",
+            "Method 'bytes.__rmul__' received too many positional arguments.",
+            "True",
+            "False",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

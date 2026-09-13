@@ -74,6 +74,48 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
+            if (name == "__add__")
+            {
+                value = BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "str.__add__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateAdd(text, arguments[0], context, span);
+                }, "str.__add__", ["value"]);
+                return true;
+            }
+
+            if (name == "__mul__")
+            {
+                value = BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "str.__mul__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateMultiply(text, arguments[0], context, span);
+                }, "str.__mul__", ["value"]);
+                return true;
+            }
+
+            if (name == "__rmul__")
+            {
+                value = BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "str.__rmul__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateMultiply(arguments[0], text, context, span);
+                }, "str.__rmul__", ["value"]);
+                return true;
+            }
+
             if (name == "maketrans")
             {
                 value = BuiltinTypeMethod.StrMaketrans;

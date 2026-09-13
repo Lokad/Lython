@@ -55,6 +55,9 @@ internal static partial class StaticContracts
         "__len__",
         "__contains__",
         "__getitem__",
+        "__add__",
+        "__mul__",
+        "__rmul__",
     };
 
     private static readonly HashSet<string> BytesMembers = new(StringComparer.Ordinal)
@@ -105,6 +108,9 @@ internal static partial class StaticContracts
         "__len__",
         "__contains__",
         "__getitem__",
+        "__add__",
+        "__mul__",
+        "__rmul__",
     };
 
     private static readonly HashSet<string> PathMembers = new(StringComparer.Ordinal)
@@ -197,6 +203,9 @@ internal static partial class StaticContracts
         "__len__",
         "__contains__",
         "__getitem__",
+        "__add__",
+        "__mul__",
+        "__rmul__",
     };
 
     private static readonly HashSet<string> FloatMembers = new(StringComparer.Ordinal)
@@ -244,6 +253,9 @@ internal static partial class StaticContracts
         "__getitem__",
         "__setitem__",
         "__delitem__",
+        "__add__",
+        "__mul__",
+        "__rmul__",
     };
 
     private static readonly HashSet<string> DictMembers = new(StringComparer.Ordinal)
