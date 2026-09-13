@@ -1,3 +1,4 @@
+using System.Numerics;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
@@ -404,5 +405,44 @@ public sealed class CsvWriterAccountingScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("1\n", asyncHost.ReadText("/out.csv"));
         Assert.Equal("1", Assert.IsType<string>(asyncResult.ReturnValue));
+    }
+
+    [Fact]
+    public async Task RepeatedGetvalueResultsAccumulate()
+    {
+        // MG02: an escaping getvalue() result commits durable ownership, so
+        // retaining repeated results accumulates charges and trips instead of
+        // growing uncharged behind a released scratch reservation.
+        var script = new LythonEngine().Compile("""
+            import csv
+            w = csv.writer()
+            i = 0
+            while i < 10:
+                w.writerow([i, "y" * 50])
+                i = i + 1
+            kept = []
+            i = 0
+            try:
+                while i < 20:
+                    kept.append(w.getvalue())
+                    i = i + 1
+            except MemoryError:
+                pass
+            return len(kept)
+            """);
+        Assert.True(script.IsValid);
+        // Ten narrow rows leave headroom under 12KB; every retained document
+        // adds its charge, so the twentieth can never fit.
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 12288 };
+
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        var syncCount = Assert.IsType<BigInteger>(sync.ReturnValue);
+        Assert.True(syncCount >= 1 && syncCount < 20, $"expected an early trip, kept {syncCount}");
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        var asyncCount = Assert.IsType<BigInteger>(asyncResult.ReturnValue);
+        Assert.True(asyncCount >= 1 && asyncCount < 20, $"expected an early trip, kept {asyncCount}");
     }
 }

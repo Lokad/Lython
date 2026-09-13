@@ -384,14 +384,13 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "csv.getvalue() expects no arguments.", span);
                     }
 
-                    var estimate = 0L;
-                    foreach (var retained in writer.Rows)
-                    {
-                        estimate += EstimateRowBytes(retained);
-                    }
-
-                    using var scratch = context.MemoryGovernor.ReserveTemporary(estimate, span);
-                    return RenderCsvDocument(writer.Rows, writer.Options, trailingTerminator: false, span);
+                    // The rendered document escapes as a retained value, so it
+                    // commits durable ownership through a governed builder:
+                    // repeated retained results accumulate their charges, and
+                    // releasing the builder capacity never uncharges them.
+                    var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+                    RenderCsvDocumentInto(builder, writer.Rows, writer.Options, trailingTerminator: false, span);
+                    return builder.ToPyStringAndRelease();
                 }),
                 _ => MissingMemberValue.Instance,
             };
@@ -507,6 +506,15 @@ internal sealed partial class LythonRuntime
         public static PyString RenderCsvDocument(IReadOnlyList<CsvCell[]> rows, CsvOptions options, bool trailingTerminator, LythonSourceSpan span)
         {
             var builder = new GovernedByteBuilder();
+            RenderCsvDocumentInto(builder, rows, options, trailingTerminator, span);
+            return builder.ToPyStringAndRelease();
+        }
+
+        // Builder-taking core so escaping renders (getvalue) can commit durable
+        // ownership through a governed builder while transient single-row
+        // renders keep the ungoverned path above.
+        public static void RenderCsvDocumentInto(GovernedByteBuilder builder, IReadOnlyList<CsvCell[]> rows, CsvOptions options, bool trailingTerminator, LythonSourceSpan span)
+        {
             for (var i = 0; i < rows.Count; i++)
             {
                 if (i != 0)
@@ -521,8 +529,6 @@ internal sealed partial class LythonRuntime
             {
                 builder.Append(options.LineTerminator);
             }
-
-            return builder.ToPyStringAndRelease();
         }
 
         private static PyString RenderCsvRow(CsvCell[] row, CsvOptions options, LythonSourceSpan span)
