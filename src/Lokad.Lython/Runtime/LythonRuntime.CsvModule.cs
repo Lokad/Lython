@@ -166,7 +166,7 @@ internal sealed partial class LythonRuntime
             var doublequote = GetBooleanOption(arguments, layout.DoubleQuote, defaultValue: true, "doublequote", span);
             var escapechar = GetCharacterOption(arguments, layout.EscapeCharacter, null, "escapechar", allowNone: true, span);
             var skipinitialspace = GetBooleanOption(arguments, layout.SkipInitialSpace, defaultValue: false, "skipinitialspace", span);
-            var lineterminator = GetStringOption(arguments, layout.LineTerminator, PyString.FromString("\n"), "lineterminator", allowNone: false, span);
+            var lineterminator = GetStringOption(arguments, layout.LineTerminator, PyString.FromString("\n"), "lineterminator", span);
             var strict = GetBooleanOption(arguments, layout.Strict, defaultValue: false, "strict", span);
 
             if (quoting == CsvQuotingMode.None && escapechar is null)
@@ -193,15 +193,13 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "csv dialect registry is unsupported; pass explicit CSV options instead.", span);
         }
 
-        private static PyString GetStringOption(object[] arguments, int index, PyString defaultValue, string name, bool allowNone, LythonSourceSpan span)
+        private static PyString GetStringOption(object[] arguments, int index, PyString defaultValue, string name, LythonSourceSpan span)
         {
+            // Omitted options arrive as PyNone through the binder (which trims
+            // only the unassigned suffix), so None always means the default
+            // here, matching the character options below.
             if (arguments.Length <= index || arguments[index] is PyNone)
             {
-                if (!allowNone && arguments.Length > index && arguments[index] is PyNone)
-                {
-                    throw new LythonRuntimeException("TypeError", $"csv {name} must be a string.", span);
-                }
-
                 return defaultValue;
             }
 
@@ -375,7 +373,9 @@ internal sealed partial class LythonRuntime
     internal sealed class CsvRecordSource
     {
         private readonly CsvRecordParser _parser;
-        private readonly IEnumerator<object> _cursor;
+        private readonly IEnumerator<object>? _cursor;
+        private readonly PyList? _indexed;
+        private int _position;
         private readonly ExecutionContext _context;
         private readonly LythonSourceSpan _span;
         private readonly MemoryGovernor.TemporaryMemoryReservation _fieldScratch;
@@ -389,9 +389,17 @@ internal sealed partial class LythonRuntime
         {
             _context = context;
             _span = span;
-            // Validates that the source is iterable now; element strings are
-            // checked as each line is pulled.
-            _cursor = ToSequence(source, span, context).GetEnumerator();
+            // Lists read live by index below, so validation is the type test;
+            // every other source validates by enumerating now. Element strings
+            // are checked as each line is pulled either way.
+            if (source is PyList list)
+            {
+                _indexed = list;
+            }
+            else
+            {
+                _cursor = ToSequence(source, span, context).GetEnumerator();
+            }
             _fieldScratch = context.MemoryGovernor.ReserveTemporary(0, span);
             _pool = new ChargeReclamationPool(context.MemoryGovernor);
             _parser = new CsvRecordParser(options, context, span, _fieldScratch, _pool);
@@ -452,27 +460,64 @@ internal sealed partial class LythonRuntime
 
         private void Pull()
         {
-            if (_cursor.MoveNext())
+            object current;
+            if (_indexed is not null)
             {
-                _context.CheckExecutionBudget(_span);
-                if (!PyStringOps.TryAsString(_cursor.Current, out var line))
+                // Lists read live by index, so appends, replacements, removals
+                // and clears all behave like CPython instead of detaching on
+                // wholesale storage replacement.
+                if (_position >= _indexed.Count)
                 {
-                    throw new LythonRuntimeException("TypeError", "csv.reader(csvfile) expects an iterable of strings.", _span);
+                    FinishExhausted();
+                    return;
                 }
 
-                PhysicalLineCount++;
-                _parser.Feed(line.AsString());
-                if ((++_pulls & 255) == 0)
+                current = _indexed[_position];
+                _position++;
+            }
+            else
+            {
+                bool moved;
+                try
                 {
-                    _pool.Sweep();
+                    moved = _cursor!.MoveNext();
+                }
+                catch (InvalidOperationException)
+                {
+                    // Version-checked iterators (large-list storage, views)
+                    // surface concurrent modification as a CLR failure; fail
+                    // explicitly instead of leaking it.
+                    throw new LythonRuntimeException("RuntimeError", "csv source mutated during iteration.", _span);
                 }
 
-                return;
+                if (!moved)
+                {
+                    FinishExhausted();
+                    return;
+                }
+
+                current = _cursor.Current;
             }
 
+            _context.CheckExecutionBudget(_span);
+            if (!PyStringOps.TryAsString(current, out var line))
+            {
+                throw new LythonRuntimeException("TypeError", "csv.reader(csvfile) expects an iterable of strings.", _span);
+            }
+
+            PhysicalLineCount++;
+            _parser.Feed(line.AsString());
+            if ((++_pulls & 255) == 0)
+            {
+                _pool.Sweep();
+            }
+        }
+
+        private void FinishExhausted()
+        {
             _parser.Finish();
             _completed = true;
-            _cursor.Dispose();
+            _cursor?.Dispose();
             _fieldScratch.Dispose();
             _pool.Sweep(full: true);
         }
