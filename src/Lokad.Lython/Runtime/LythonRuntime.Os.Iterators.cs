@@ -42,7 +42,7 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
-        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -78,7 +78,12 @@ internal sealed partial class LythonRuntime
                 _ => MissingMemberValue.Instance,
             };
 
-            return !ReferenceEquals(value, MissingMemberValue.Instance);
+            if (ReferenceEquals(value, MissingMemberValue.Instance))
+            {
+                return base.TryGetMember(name, out value);
+            }
+
+            return true;
         }
         public override PyString RenderPython(PyRenderingContext context)
         {

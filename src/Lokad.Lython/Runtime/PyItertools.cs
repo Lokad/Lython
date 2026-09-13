@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace Lokad.Lython.Runtime;
 
-internal abstract class PyIteratorBase : IPyAsyncIteratorValue, IPyRenderableValue, IPyTruthyValue
+internal abstract class PyIteratorBase : IPyAsyncIteratorValue, IPyRenderableValue, IPyTruthyValue, IPyDynamicAttributes
 {
     // Iterator objects retain callbacks, cursors and spans per live iterator;
     // charge one constructed-value unit when a governor is present.
@@ -40,6 +40,9 @@ internal abstract class PyIteratorBase : IPyAsyncIteratorValue, IPyRenderableVal
     public abstract PyString RenderPython(PyRenderingContext context);
 
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+
+    public virtual bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        => LythonRuntime.IteratorMembers.TryGetMember(this, name, out value);
 }
 
 internal sealed class PyChainIterator : PyIteratorBase

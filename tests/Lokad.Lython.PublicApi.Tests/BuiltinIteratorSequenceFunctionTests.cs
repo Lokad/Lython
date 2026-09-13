@@ -483,4 +483,100 @@ return "|".join(results)
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal("[0]|[]|[0, 1, 2, 3, 4]|[1, 2]|float-rejected", result.ReturnValue);
     }
+
+    [Fact]
+    public async Task IteratorDundersAdvanceLikeCpython()
+    {
+        // Engine iterators expose __iter__ (identity) and __next__ (advance
+        // or empty StopIteration) like CPython, uniformly across iterator
+        // kinds, in both modes.
+        var script = new LythonEngine().Compile("""
+            results = []
+            it = iter([1, 2])
+            results.append(str(it.__iter__() is it))
+            results.append(str(it.__next__()))
+            results.append(str(it.__next__()))
+            try:
+                it.__next__()
+            except StopIteration as e:
+                results.append(type(e).__name__)
+                results.append(str(e.args))
+            results.append(str(iter((3,)).__next__()))
+            def dictk():
+                return iter({"a": 1}.keys()).__next__()
+            results.append(str(dictk()))
+            def dictv():
+                return iter({"a": 1}.values()).__next__()
+            results.append(str(dictv()))
+            def dicti():
+                return iter({"a": 1}.items()).__next__()
+            results.append(str(dicti()))
+            results.append(str(iter('ab').__next__()))
+            results.append(str(iter(range(2)).__next__()))
+            results.append(str(iter({1}).__next__()))
+            results.append(str(enumerate('ab').__next__()))
+            results.append(str(zip([1], [2]).__next__()))
+            results.append(str(map(str, [1]).__next__()))
+            results.append(str(filter(None, [1]).__next__()))
+            results.append(str(reversed([1, 2]).__next__()))
+            results.append(str((x for x in [1]).__next__()))
+            f = iter([1, 2]).__next__
+            results.append(str((f(), f())))
+            def next_arg():
+                return iter([1]).__next__(1)
+            try:
+                next_arg()
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            def iter_arg():
+                return iter([1]).__iter__(1)
+            try:
+                iter_arg()
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            results.append(str(hasattr(iter([1]), '__next__')))
+            results.append(str(hasattr(iter([1]), '__iter__')))
+            results.append(str(callable(iter([1]).__next__)))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "True",
+            "1",
+            "2",
+            "StopIteration",
+            "()",
+            "3",
+            "a",
+            "1",
+            "('a', 1)",
+            "a",
+            "0",
+            "1",
+            "(0, 'a')",
+            "(1, 2)",
+            "1",
+            "1",
+            "2",
+            "1",
+            "(1, 2)",
+            "TypeError",
+            "iterator.__next__() expects no arguments.",
+            "TypeError",
+            "iterator.__iter__() expects no arguments.",
+            "True",
+            "True",
+            "True",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

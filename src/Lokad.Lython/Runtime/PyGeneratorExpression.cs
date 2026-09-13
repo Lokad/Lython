@@ -2,7 +2,7 @@ using Lokad.Lython.Frontend;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorValue
+internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorValue, IPyDynamicAttributes
 {
     private readonly IReadOnlyList<LoweredComprehensionClause> _clauses;
     private readonly LoweredExpression _itemExpression;
@@ -36,6 +36,8 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
     }
 
     public bool IsTruthy() => true;
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
+        => LythonRuntime.IteratorMembers.TryGetMember(this, name, out value);
 
     public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
 

@@ -1146,6 +1146,29 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    internal static class IteratorMembers
+    {
+        public static bool TryGetMember(IPyIteratorValue iterator, string name, [MaybeNullWhen(false)] out object value)
+        {
+            value = name switch
+            {
+                "__iter__" => BoundCallable.CreateNoArguments(iterator, "iterator.__iter__", static (receiver, _, _) => receiver),
+                "__next__" => BoundCallable.CreateNoArguments(iterator, "iterator.__next__", static (receiver, span, context) =>
+                {
+                    if (receiver.TryMoveNext(out var item))
+                    {
+                        return LythonRuntime.RuntimeValue(item);
+                    }
+
+                    throw new LythonRuntimeException("StopIteration", "", span);
+                }),
+                _ => MissingMemberValue.Instance,
+            };
+
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
+        }
+    }
+
     internal static class CounterMembers
     {
         public static bool TryGetMember(PyCounter counter, string name, [MaybeNullWhen(false)] out object value)
