@@ -264,24 +264,27 @@ internal sealed partial class LythonRuntime
 
             if (matchedClause is not null)
             {
-                var exceptContext = new ExecutionContext(context);
+                // Handler suites share the enclosing scope like CPython: only
+                // the `as` variable is suite-local (deleted below). A child
+                // context would hide every handler assignment from the code
+                // after the statement, which the executable engine never does.
                 var pyException = CreatePythonExceptionInstance(ex);
                 if (matchedClause.Syntax.ExceptionVariableName is not null)
                 {
-                    StoreName(matchedClause.Syntax.ExceptionVariableName, pyException, exceptContext, statement.Span);
+                    StoreName(matchedClause.Syntax.ExceptionVariableName, pyException, context, statement.Span);
                 }
 
                 var previousException = context.Services.SetCurrentException(pyException);
                 var handlerVariableName = matchedClause.Syntax.ExceptionVariableName;
                 try
                 {
-                    pendingControl = await executeStatements(matchedClause.Body, exceptContext).ConfigureAwait(false);
+                    pendingControl = await executeStatements(matchedClause.Body, context).ConfigureAwait(false);
                 }
                 finally
                 {
                     if (handlerVariableName is not null)
                     {
-                        _ = DeleteName(handlerVariableName, exceptContext, statement.Span);
+                        _ = DeleteName(handlerVariableName, context, statement.Span);
                     }
 
                     context.Services.SetCurrentException(previousException);

@@ -60,14 +60,10 @@ public sealed class CsvReaderInputHandlingTests
     }
 
     [Fact]
-    public void ClearedSourceStopsIteration()
+    public async Task ClearedSourceStopsIteration()
     {
         // Clearing the source mid-iteration exhausts the reader like CPython
-        // instead of yielding detached storage. Sync-only by design: the same
-        // script misbehaves on the sync leg of an async test method (returns
-        // instead of raising), while probes, one-shot runs and sync methods
-        // agree with CPython; that runner interaction is recorded in PLAN and
-        // the async lowered-tree path is covered by every other async leg.
+        // instead of yielding detached storage.
         var script = new LythonEngine().Compile("""
             import csv
             src4 = ["m", "n"]
@@ -91,6 +87,10 @@ public sealed class CsvReaderInputHandlingTests
         var sync = script.Run(new MockLythonHost(), new LythonRunOptions());
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), new LythonRunOptions());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
     }
 
     [Fact]
