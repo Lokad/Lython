@@ -754,4 +754,77 @@ return results
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+    [Fact]
+    public async Task ExceptionHashDundersAdvanceLikeCpython()
+    {
+        // Exceptions hash by identity through the shared core, so direct
+        // calls agree with hash() and set/dict behavior, exactly like
+        // CPython; mutation never moves a live key.
+        var script = new LythonEngine().Compile("""
+def call1(f, a):
+    return f(a)
+results = []
+e = ValueError("x")
+results.append(str(e.__hash__() == hash(e)))
+results.append(str(hasattr(e, "__hash__")))
+results.append(str(len({e, e})))
+d = {}
+d[e] = 1
+results.append(str(d[e]))
+results.append(str(e == e))
+e1 = ValueError("x")
+e2 = ValueError("x")
+results.append(str(len({e1, e2})))
+results.append(str(e1 == e2))
+eu = ValueError([1])
+results.append(str(eu.__hash__() == hash(eu)))
+results.append(str(len({eu})))
+em = ValueError("x")
+h1 = hash(em)
+em.args = ("y",)
+results.append(str(hash(em) == h1))
+results.append(str(em == em))
+try:
+    raise KeyError("k")
+except KeyError as e:
+    results.append(str(e.__hash__() == hash(e)))
+    results.append(str(hasattr(e, "__hash__")))
+try:
+    em.__hash__(1)
+except TypeError as ex:
+    results.append(type(ex).__name__)
+    results.append(str(ex))
+results.append(str(hasattr(em, "__rhash__")))
+results.append(str(hasattr(em, "__len__")))
+return results
+""");
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "True",
+            "True",
+            "1",
+            "1",
+            "True",
+            "2",
+            "False",
+            "True",
+            "1",
+            "True",
+            "True",
+            "True",
+            "True",
+            "TypeError",
+            "BaseException.__hash__() expects no arguments.",
+            "False",
+            "False",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

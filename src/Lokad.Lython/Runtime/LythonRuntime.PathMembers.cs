@@ -79,6 +79,15 @@ internal sealed partial class LythonRuntime
                 "code" when string.Equals(exception.TypeName, "SystemExit", StringComparison.Ordinal) => exception.Value,
                 "value" when string.Equals(exception.TypeName, "StopIteration", StringComparison.Ordinal)
                     => CreateExceptionArgs(exception) is { Count: > 0 } stopped ? stopped[0] : PyNone.Instance,
+                "__hash__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "BaseException.__hash__() expects no arguments.", span);
+                    }
+
+                    return ComputeBuiltinHash(exception, span);
+                }, "BaseException.__hash__"),
                 _ => MissingMemberValue.Instance,
             };
 

@@ -1,10 +1,12 @@
+using System.Runtime.CompilerServices;
+
 namespace Lokad.Lython.Runtime;
 
 internal sealed record PyException(
     PythonExceptionIdentity Identity,
     string Message,
     object Value,
-    PyTuple? ExplicitArgs)
+    PyTuple? ExplicitArgs) : IPyHashableValue
 {
     public PyException(PythonExceptionIdentity identity, string message, object value)
         : this(identity, message, value, null)
@@ -17,6 +19,10 @@ internal sealed record PyException(
     }
 
     public string TypeName => Identity.TypeName;
+
+    // Exceptions hash by identity like CPython, independent of
+    // their record shape, so mutation never moves a live key.
+    public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
 
     // Explicit raise causes ride alongside the value; handlers rewrap
     // through the thrown CLR exception, which carries the same slot.
