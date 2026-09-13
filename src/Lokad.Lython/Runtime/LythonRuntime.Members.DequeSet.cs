@@ -190,6 +190,16 @@ internal sealed partial class LythonRuntime
 
                     return ReadSubscriptValue(deque, arguments[0], span, context);
                 }, "deque.__getitem__", ["index"]),
+                "__setitem__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 2)
+                    {
+                        throw new LythonRuntimeException("TypeError", "deque.__setitem__(index, value) expects two arguments.", span);
+                    }
+
+                    SetSubscriptValue(deque, arguments[0], arguments[1], span, context);
+                    return PyNone.Instance;
+                }, "deque.__setitem__", ["index", "value"]),
                 _ => MissingMemberValue.Instance,
             };
 

@@ -161,6 +161,16 @@ internal sealed partial class LythonRuntime
 
                     return ReadSubscriptValue(list, arguments[0], span, context);
                 }, "list.__getitem__", ["index"]),
+                "__setitem__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 2)
+                    {
+                        throw new LythonRuntimeException("TypeError", "list.__setitem__(index, value) expects two arguments.", span);
+                    }
+
+                    SetSubscriptValue(list, arguments[0], arguments[1], span, context);
+                    return PyNone.Instance;
+                }, "list.__setitem__", ["index", "value"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1000,6 +1010,16 @@ internal sealed partial class LythonRuntime
 
                     return ReadSubscriptValue(dict, arguments[0], span, context);
                 }, "dict.__getitem__", ["index"]),
+                "__setitem__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 2)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict.__setitem__(index, value) expects two arguments.", span);
+                    }
+
+                    SetSubscriptValue(dict, arguments[0], arguments[1], span, context);
+                    return PyNone.Instance;
+                }, "dict.__setitem__", ["index", "value"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1316,6 +1336,16 @@ internal sealed partial class LythonRuntime
 
                     return ReadSubscriptValue(dict, arguments[0], span, context);
                 }, "defaultdict.__getitem__", ["index"]),
+                "__setitem__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 2)
+                    {
+                        throw new LythonRuntimeException("TypeError", "defaultdict.__setitem__(index, value) expects two arguments.", span);
+                    }
+
+                    SetSubscriptValue(dict, arguments[0], arguments[1], span, context);
+                    return PyNone.Instance;
+                }, "defaultdict.__setitem__", ["index", "value"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1519,6 +1549,16 @@ internal sealed partial class LythonRuntime
 
                     return ReadSubscriptValue(counter, arguments[0], span, context);
                 }, "Counter.__getitem__", ["index"]),
+                "__setitem__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 2)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Counter.__setitem__(index, value) expects two arguments.", span);
+                    }
+
+                    SetSubscriptValue(counter, arguments[0], arguments[1], span, context);
+                    return PyNone.Instance;
+                }, "Counter.__setitem__", ["index", "value"]),
                 _ => MissingMemberValue.Instance,
             };
 

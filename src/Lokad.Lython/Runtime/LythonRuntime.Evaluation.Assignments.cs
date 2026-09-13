@@ -338,7 +338,7 @@ internal sealed partial class LythonRuntime
         SetSubscriptValue(target, index, value, subscript.Span, context);
     }
 
-    private static void SetSubscriptValue(object target, object index, object value, LythonSourceSpan span, ExecutionContext context)
+    internal static void SetSubscriptValue(object target, object index, object value, LythonSourceSpan span, ExecutionContext context)
     {
         // Slice objects assign through the shared slice path on lists like
         // CPython; every other receiver keeps its existing behaviour.

@@ -1202,4 +1202,104 @@ return "|".join(results)
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task ContainerSetItemDundersAdvanceLikeCpython()
+    {
+        // Mutable containers expose __setitem__ with exactly the []=
+        // effect, like CPython (immutables have none, like CPython).
+        var script = new LythonEngine().Compile("""
+            from collections import defaultdict, Counter, deque, ChainMap
+            def setitem_arg(x, i):
+                return x.__setitem__(i)
+            results = []
+            l = [1, 2]
+            results.append(str(l.__setitem__(0, 9)))
+            results.append(str(l))
+            d = {"a": 1}
+            results.append(str(d.__setitem__("b", 2)))
+            results.append(str(len(d)))
+            results.append(str(d["b"]))
+            dd = defaultdict(list)
+            results.append(str(dd.__setitem__("k", [1])))
+            results.append(str(dd["k"]))
+            c = Counter("aab")
+            results.append(str(c.__setitem__("a", 5)))
+            results.append(str(c["a"]))
+            q = deque([1, 2])
+            results.append(str(q.__setitem__(0, 9)))
+            results.append(str(list(q)))
+            cm = ChainMap({"a": 1})
+            results.append(str(cm.__setitem__("b", 2)))
+            results.append(str(cm["b"]))
+            s = [1, 2, 3]
+            results.append(str(s.__setitem__(slice(0, 2), [7, 8])))
+            results.append(str(s))
+            try:
+                (1,).__setitem__(0, 1)
+            except AttributeError as e:
+                results.append(type(e).__name__)
+            try:
+                [1].__setitem__(5, 9)
+            except IndexError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            for (v, i) in [([1], 0), ({"a": 1}, "a"), (defaultdict(list), "a"), (Counter(), "a"), (deque([1]), 0), (ChainMap({"a": 1}), "a")]:
+                try:
+                    setitem_arg(v, i)
+                except TypeError as e:
+                    results.append(type(e).__name__)
+                    results.append(str(e))
+            results.append(str(hasattr([1], "__setitem__")))
+            results.append(str(hasattr((1,), "__setitem__")))
+            results.append(str(hasattr("ab", "__setitem__")))
+            results.append(str(hasattr({1}, "__setitem__")))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "None",
+            "[9, 2]",
+            "None",
+            "2",
+            "2",
+            "None",
+            "[1]",
+            "None",
+            "5",
+            "None",
+            "[9, 2]",
+            "None",
+            "2",
+            "None",
+            "[7, 8, 3]",
+            "AttributeError",
+            "IndexError",
+            "list assignment index out of range",
+            "TypeError",
+            "Method 'list.__setitem__' is missing argument 'value'.",
+            "TypeError",
+            "Method 'dict.__setitem__' is missing argument 'value'.",
+            "TypeError",
+            "Method 'defaultdict.__setitem__' is missing argument 'value'.",
+            "TypeError",
+            "Method 'Counter.__setitem__' is missing argument 'value'.",
+            "TypeError",
+            "Method 'deque.__setitem__' is missing argument 'value'.",
+            "TypeError",
+            "Method 'ChainMap.__setitem__' is missing argument 'value'.",
+            "True",
+            "False",
+            "False",
+            "False",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

@@ -213,6 +213,7 @@ internal static partial class StaticContracts
             AddNonMutatingListCallableContract(contracts, "__len__", 0, 0, "LA3124", "list.__len__() expects no arguments.");
             AddNonMutatingListCallableContract(contracts, "__contains__", 1, 1, "LA3124", "list.__contains__(item) expects one argument.", "item");
             AddNonMutatingListCallableContract(contracts, "__getitem__", 1, 1, "LA3124", "list.__getitem__(index) expects one argument.", "index");
+            AddListCallableContract(contracts, "__setitem__", 2, 2, "LA3124", "list.__setitem__(index, value) expects two arguments.", StaticMutationKind.MutatesReceiver, "index", "value");
             AddListCallableContract(contracts, "clear", 0, 0, "LA3125", "list.clear() expects no arguments.", StaticMutationKind.MutatesReceiver);
         }
 
