@@ -112,4 +112,51 @@ public sealed class CsvIncrementalParsingScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task BreakThenResumeSameReader()
+    {
+        // Breaking out early must not consume or poison the shared cursor: a
+        // later pass over the same reader continues where the break left off,
+        // over list and file sources alike.
+        var script = new LythonEngine().Compile("""
+            import csv
+            r = csv.reader(["a", "b", "c", "d"])
+            first = []
+            for row in r:
+                first.append(row[0])
+                if len(first) == 2:
+                    break
+            second = [row[0] for row in r]
+            f = open("/data.csv")
+            fr = csv.reader(f)
+            ffirst = []
+            for row in fr:
+                ffirst.append(row[0])
+                if len(ffirst) == 2:
+                    break
+            fsecond = [row[0] for row in fr]
+            return [first, second, ffirst, fsecond]
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            new List<object?> { "a", "b" },
+            new List<object?> { "c", "d" },
+            new List<object?> { "a", "b" },
+            new List<object?> { "c", "d" },
+        };
+
+        var host = new MockLythonHost();
+        host.SeedFile("/data.csv", "a\nb\nc\nd\n");
+        var sync = script.Run(host);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var host2 = new MockLythonHost();
+        host2.SeedFile("/data.csv", "a\nb\nc\nd\n");
+        var asyncResult = await script.RunAsync(host2);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

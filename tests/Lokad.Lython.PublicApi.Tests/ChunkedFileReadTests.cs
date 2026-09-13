@@ -384,11 +384,21 @@ public sealed class ChunkedFileReadTests
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 8388608 };
 
+        // The 10x pair under one budget: ~10k leading rows complete with room
+        // to spare and the full 100k complete under the same budget with a
+        // documented peak.
+        var smallHost = new MockLythonHost();
+        smallHost.SeedFile("/big.csv", content.ToString()[..560000]);
+        var small = script.Run(smallHost, options);
+        Assert.True(small.Success, small.Failure?.Message);
+        Assert.True(small.PeakExecutionMemoryBytes <= 8388608);
+
         var host = new MockLythonHost();
         host.SeedFile("/big.csv", content.ToString());
         var sync = script.Run(host, options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(new BigInteger(100000), sync.ReturnValue);
+        Assert.True(sync.PeakExecutionMemoryBytes <= 8388608);
         Assert.True(host.MaxRangeBytesServed <= 16 * 1024, "no single ranged call exceeds the engine window");
 
         var host2 = new MockLythonHost();
@@ -396,6 +406,7 @@ public sealed class ChunkedFileReadTests
         var asyncResult = await script.RunAsync(host2, options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(new BigInteger(100000), asyncResult.ReturnValue);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= 8388608);
         Assert.True(host2.MaxRangeBytesServed <= 16 * 1024, "no single ranged call exceeds the engine window");
     }
 

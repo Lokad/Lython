@@ -194,6 +194,7 @@ public sealed class CsvDelayedHostTests
         var asyncResult = await script.RunAsync(host, options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(new BigInteger(100001), asyncResult.ReturnValue);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= 8388608);
         Assert.True(host.CompletedAsynchronously > 0);
     }
 }
