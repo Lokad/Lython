@@ -38,6 +38,34 @@ public sealed class CsvWriterHistoryAccountingTests
     }
 
     [Fact]
+    public void RenderTripRetainsChargedHistory()
+    {
+        // A row whose single-row render transient trips the budget still
+        // retains its (charged) history entry like any prior write; nothing
+        // extra is committed and no reserve leaks.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 300000 });
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var options = new LythonRuntime.CsvOptions(
+            PyStringOps.CommaLiteral,
+            null,
+            LythonRuntime.CsvQuotingMode.Minimal,
+            true,
+            null,
+            false,
+            PyString.FromString("\n"),
+            false);
+        var writer = new LythonRuntime.CsvWriterObject(options, null, context.MemoryGovernor, span);
+        var big = PyString.FromString(new string('x', 200000));
+        var row = new LythonRuntime.CsvCell[] { new(big, LythonRuntime.CsvCellKind.Text) };
+        var failure = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.CsvWriterMembers.WriteRow(writer, row, span, context, 0));
+        Assert.Equal("MemoryError", failure.ExceptionType);
+        Assert.Single(writer.Rows);
+        Assert.Equal(208L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0L, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    [Fact]
     public void HistoryGrowthTransientTripsBeforeUnchargedOverlap()
     {
         // Thirty-two one-cell rows fill the history list to capacity 32 (128

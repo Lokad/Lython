@@ -199,6 +199,122 @@ public sealed class CsvWriterAccountingScenarioTests
     }
 
     [Fact]
+    public async Task CaughtOversizedRowKeepsWriterReusable()
+    {
+        // MG02: a row whose render transient trips the budget leaves nothing
+        // behind on a file-backed writer (which retains no history), and the
+        // writer stays usable afterwards since the failure committed nothing
+        // extra. (On in-memory writers the tripped row stays retained like
+        // any prior write; the white-box pin covers those counters.)
+        var script = new LythonEngine().Compile("""
+            import csv
+            handle = open("/out.csv", "w")
+            w = csv.writer(handle)
+            big = "x" * 200000
+            try:
+                w.writerow([big])
+            except MemoryError:
+                pass
+            w.writerow(["a"])
+            w.writerow(["b"])
+            handle.close()
+            return 1
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 300000 };
+        var syncHost = new MockLythonHost();
+        var sync = script.Run(syncHost, options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("a\nb\n", syncHost.ReadText("/out.csv"));
+
+        var asyncHost = new MockLythonHost();
+        var asyncResult = await script.RunAsync(asyncHost, options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("a\nb\n", asyncHost.ReadText("/out.csv"));
+    }
+
+    [Fact]
+    public async Task FailedHostWriteLeavesNoPartialRow()
+    {
+        // MG02: a failing host write surfaces explicitly without partial row
+        // bytes, and a later run on the same host (one-shot failure consumed)
+        // writes normally.
+        var script = new LythonEngine().Compile("""
+            import csv
+            handle = open("/out.csv", "w")
+            writer = csv.writer(handle)
+            writer.writerow(["a", "b"])
+            handle.close()
+            return 1
+            """);
+        Assert.True(script.IsValid);
+        var syncHost = new MockLythonHost();
+        syncHost.SeedFile("/out.csv", "");
+        syncHost.FailNextWriteText("/out.csv", "disk is full");
+        var sync = script.Run(syncHost);
+        Assert.False(sync.Success);
+        Assert.NotNull(sync.Failure);
+        Assert.Equal("", syncHost.ReadText("/out.csv"));
+        var syncRetry = script.Run(syncHost);
+        Assert.True(syncRetry.Success, syncRetry.Failure?.Message);
+        Assert.Equal("a,b\n", syncHost.ReadText("/out.csv"));
+
+        var asyncHost = new MockLythonHost();
+        asyncHost.SeedFile("/out.csv", "");
+        asyncHost.FailNextWriteText("/out.csv", "disk is full");
+        var asyncResult = await script.RunAsync(asyncHost);
+        Assert.False(asyncResult.Success);
+        Assert.NotNull(asyncResult.Failure);
+        Assert.Equal("", asyncHost.ReadText("/out.csv"));
+        var asyncRetry = await script.RunAsync(asyncHost);
+        Assert.True(asyncRetry.Success, asyncRetry.Failure?.Message);
+        Assert.Equal("a,b\n", asyncHost.ReadText("/out.csv"));
+    }
+
+    [Fact]
+    public async Task CancelledWriterowsFailsDeterministically()
+    {
+        // MG02: cancellation surfaces mid-stream as an explicit failure with
+        // a partial file prefix, never as budget-shaped or CLR leakage; a
+        // pre-cancelled token fails before any write.
+        var script = new LythonEngine().Compile("""
+            import csv
+            handle = open("/out.csv", "w")
+            writer = csv.writer(handle)
+            i = 0
+            while i < 200000:
+                writer.writerow([i])
+                i = i + 1
+            handle.close()
+            return i
+            """);
+        Assert.True(script.IsValid);
+        using var cts = new CancellationTokenSource();
+        var host = new MockLythonHost();
+        var runTask = Task.Run(() => script.Run(host, new LythonRunOptions { CancellationToken = cts.Token }));
+        await Task.Delay(25);
+        cts.Cancel();
+        var result = await runTask;
+        Assert.False(result.Success);
+        Assert.NotNull(result.Failure);
+        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
+        Assert.Contains("execution canceled", result.Failure?.Message, StringComparison.Ordinal);
+        // Buffered output publishes only on flush/close, so a run cancelled
+        // mid-stream leaves no file behind (nothing partial to roll back).
+        Assert.Throws<InvalidOperationException>(() => host.ReadText("/out.csv"));
+
+        using var preCancelled = new CancellationTokenSource();
+        preCancelled.Cancel();
+        var asyncResult = await script.RunAsync(
+            new MockLythonHost(),
+            new LythonRunOptions { CancellationToken = preCancelled.Token });
+        Assert.False(asyncResult.Success);
+        Assert.NotNull(asyncResult.Failure);
+        Assert.Equal("RuntimeError", asyncResult.Failure?.ExceptionType);
+        Assert.Contains("execution canceled", asyncResult.Failure?.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task WriterowsPreservesRowsWrittenBeforeConversionError()
     {
         // MG02: writerows is not transactional: rows streamed before a
