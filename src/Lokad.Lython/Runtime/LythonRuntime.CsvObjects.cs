@@ -51,7 +51,45 @@ internal sealed partial class LythonRuntime
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
-    internal sealed class CsvReaderObject : IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IEnumerable<object>
+    // Asynchronous twin: each async enumeration gets its own cursor over the
+    // shared source, so simultaneous passes interleave exactly like the
+    // synchronous cursors above.
+    private sealed class CsvReaderAsyncCursor(CsvRecordSource records, Func<PyList, object> convert) : IAsyncEnumerator<object>
+    {
+        private object? _current;
+
+        public async ValueTask<bool> MoveNextAsync()
+        {
+            var row = await records.TryMoveNextAsync().ConfigureAwait(false);
+            if (row is null)
+            {
+                _current = null;
+                return false;
+            }
+
+            _current = convert(row);
+            return true;
+        }
+
+        public object Current => _current!;
+
+        public ValueTask DisposeAsync()
+        {
+            _current = null;
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class CsvReaderAsyncEnumerable(CsvRecordSource records, Func<PyList, object> convert) : IAsyncEnumerable<object>
+    {
+        public IAsyncEnumerator<object> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+        {
+            _ = cancellationToken;
+            return new CsvReaderAsyncCursor(records, convert);
+        }
+    }
+
+    internal sealed class CsvReaderObject : IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IEnumerable<object>, IPyAsyncIterableValue
     {
         public CsvReaderObject(CsvRecordSource records, MemoryGovernor governor, LythonSourceSpan span)
         {
@@ -74,6 +112,8 @@ internal sealed partial class LythonRuntime
 
         public IEnumerable<object> Iterate() => new CsvReaderEnumerable(Records, static row => row);
 
+        public IAsyncEnumerable<object> IterateAsync() => new CsvReaderAsyncEnumerable(Records, static row => row);
+
         public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<csv.reader object>");
 
         public PyString RenderInterpolated(PyRenderingContext context) => PyString.FromString("<csv.reader object>");
@@ -83,7 +123,7 @@ internal sealed partial class LythonRuntime
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
-    internal sealed class CsvDictReaderObject : IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IEnumerable<object>
+    internal sealed class CsvDictReaderObject : IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IEnumerable<object>, IPyAsyncIterableValue
     {
         public CsvDictReaderObject(
             CsvRecordSource rowLists,
@@ -118,6 +158,8 @@ internal sealed partial class LythonRuntime
         public bool IsTruthy() => true;
 
         public IEnumerable<object> Iterate() => new CsvReaderEnumerable(Rows, ConvertRow);
+
+        public IAsyncEnumerable<object> IterateAsync() => new CsvReaderAsyncEnumerable(Rows, ConvertRow);
 
         public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<csv.DictReader object>");
 

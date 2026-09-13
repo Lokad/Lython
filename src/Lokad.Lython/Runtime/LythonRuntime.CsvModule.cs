@@ -46,7 +46,7 @@ internal sealed partial class LythonRuntime
             {
                 "reader" => BuiltinCallable.Create(LythonKnownCallableSignatures.CsvReader, Reader),
                 "writer" => BuiltinCallable.Create(LythonKnownCallableSignatures.CsvWriter, Writer),
-                "DictReader" => BuiltinCallable.Create(LythonKnownCallableSignatures.CsvDictReader, DictReader),
+                "DictReader" => BuiltinCallable.Create(LythonKnownCallableSignatures.CsvDictReader, DictReader, DictReaderAsync),
                 "DictWriter" => BuiltinCallable.Create(LythonKnownCallableSignatures.CsvDictWriter, DictWriter),
                 "Error" => new ExceptionTypeValue(ModuleException("csv", "Error")),
                 "QUOTE_MINIMAL" => new BigInteger((int)CsvQuotingMode.Minimal),
@@ -93,6 +93,51 @@ internal sealed partial class LythonRuntime
             else
             {
                 var header = records.PullHeader();
+                fieldNames = header is null
+                    ? null
+                    : ToFieldNameList(header, span, context);
+            }
+
+            // Rows parse on demand and dictionaries convert on demand, so early
+            // termination never pays for unconsumed rows or dictionaries.
+            return new CsvDictReaderObject(
+                records,
+                fieldNames,
+                RestKey(arguments, 2),
+                RestValue(arguments, 3),
+                context.MemoryGovernor,
+                span);
+        }
+
+        // Asynchronous twin: header inference and first-row validation pull
+        // through the async host boundary; everything else stays shared.
+        // Plain reader construction pulls nothing, so it needs no twin.
+        private async ValueTask<object> DictReaderAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            if (arguments.Length < 1)
+            {
+                throw new LythonRuntimeException("TypeError", "csv.DictReader(f[, fieldnames][, restkey][, restval][, ...]) expects at least one argument.", span);
+            }
+
+            var options = GetOptions(arguments, CsvOptionArgumentLayout.Dictionary, span);
+            var records = new CsvRecordSource(arguments[0], options, span, context);
+            PyString[]? fieldNames;
+            if (arguments.Length > 1 && arguments[1] is not PyNone)
+            {
+                fieldNames = ToCsvFieldNames(arguments[1], "csv.DictReader(..., fieldnames=...) expects an iterable of strings.", span, context);
+                // Validate (and surface malformed input) exactly like the
+                // historical eager first pull, then replay the record so
+                // iteration still yields every row.
+                var first = await records.TryMoveNextAsync().ConfigureAwait(false);
+                if (first is not null)
+                {
+                    records.PushBack(first);
+                }
+            }
+            else
+            {
+                var header = await records.PullHeaderAsync().ConfigureAwait(false);
                 fieldNames = header is null
                     ? null
                     : ToFieldNameList(header, span, context);
@@ -374,6 +419,8 @@ internal sealed partial class LythonRuntime
     {
         private readonly CsvRecordParser _parser;
         private readonly IEnumerator<object>? _cursor;
+        private readonly object _origin;
+        private IAsyncEnumerator<object>? _asyncCursor;
         private readonly PyList? _indexed;
         private int _position;
         private readonly ExecutionContext _context;
@@ -389,9 +436,13 @@ internal sealed partial class LythonRuntime
         {
             _context = context;
             _span = span;
+            _origin = source;
             // Lists read live by index below, so validation is the type test;
             // every other source validates by enumerating now. Element strings
-            // are checked as each line is pulled either way.
+            // are checked as each line is pulled either way. The asynchronous
+            // cursor materializes lazily on first async use so synchronous runs
+            // never pay for it; sharing one origin across modes interleaves
+            // positions exactly like two readers over one file in CPython.
             if (source is PyList list)
             {
                 _indexed = list;
@@ -457,6 +508,41 @@ internal sealed partial class LythonRuntime
 
                 Pull();
             }
+        }
+
+        // Asynchronous twin: lines arrive through the async host boundary so
+        // genuinely-delayed hosts suspend per pull. Parsing, charging and
+        // reclamation stay shared and synchronous; only acquisition awaits. A
+        // null row marks exhaustion; parsed rows are never null.
+        public async ValueTask<PyList?> TryMoveNextAsync()
+        {
+            if (_pushedBack is not null)
+            {
+                var replay = _pushedBack;
+                _pushedBack = null;
+                return replay;
+            }
+
+            while (true)
+            {
+                if (_parser.TryTakeReady(out var row))
+                {
+                    return row;
+                }
+
+                if (_completed)
+                {
+                    return null;
+                }
+
+                await PullAsync().ConfigureAwait(false);
+            }
+        }
+
+        public async ValueTask<PyList?> PullHeaderAsync()
+        {
+            _headerRow = await TryMoveNextAsync().ConfigureAwait(false);
+            return _headerRow;
         }
 
         private void Pull()
@@ -528,6 +614,83 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        private async ValueTask PullAsync()
+        {
+            _context.State.NoteCsvPull();
+            if (_indexed is not null)
+            {
+                // Indexed lists never touch the host, so the async pull shares
+                // the live-index read exactly, including advancing past the
+                // element before feeding it: the failed line is consumed
+                // either way so catching a mid-stream error and continuing
+                // resumes at the following element.
+                if (_position >= _indexed.Count)
+                {
+                    await FinishExhaustedAsync().ConfigureAwait(false);
+                    return;
+                }
+
+                var current = _indexed[_position];
+                _position++;
+                FeedPulledLine(current);
+                return;
+            }
+
+            _asyncCursor ??= ToSequenceAsync(_origin, _span, _context).GetAsyncEnumerator();
+            bool moved;
+            try
+            {
+                moved = await _asyncCursor.MoveNextAsync().ConfigureAwait(false);
+            }
+            catch (InvalidOperationException)
+            {
+                // Version-checked iterators (large-list storage, views)
+                // surface concurrent modification as a CLR failure; fail
+                // explicitly instead of leaking it.
+                throw new LythonRuntimeException("RuntimeError", "csv source mutated during iteration.", _span);
+            }
+
+            if (!moved)
+            {
+                await FinishExhaustedAsync().ConfigureAwait(false);
+                return;
+            }
+
+            FeedPulledLine(_asyncCursor.Current);
+        }
+
+        private void FeedPulledLine(object current)
+        {
+            // Parsing, charging and reclamation are synchronous; only line
+            // acquisition awaits, so the shared parser sees an identical call
+            // sequence either way.
+            _context.CheckExecutionBudget(_span);
+            if (!PyStringOps.TryAsString(current, out var line))
+            {
+                throw new LythonRuntimeException("TypeError", "csv.reader(csvfile) expects an iterable of strings.", _span);
+            }
+
+            PhysicalLineCount++;
+            try
+            {
+                _parser.Feed(line.AsString());
+            }
+            catch
+            {
+                // The failed line is consumed either way; drop its partial
+                // record so the next pull starts clean instead of poisoning
+                // every later row. (A non-string element throws before any
+                // feed, leaving legitimately pending multiline state alone.)
+                _parser.ResetRecord();
+                throw;
+            }
+
+            if ((++_pulls & 255) == 0)
+            {
+                _pool.Sweep();
+            }
+        }
+
         private void FinishExhausted()
         {
             _completed = true;
@@ -543,6 +706,32 @@ internal sealed partial class LythonRuntime
             finally
             {
                 _cursor?.Dispose();
+                _fieldScratch.Dispose();
+                _pool.Sweep(full: true);
+            }
+        }
+
+        private async ValueTask FinishExhaustedAsync()
+        {
+            _completed = true;
+            try
+            {
+                _parser.Finish();
+            }
+            catch
+            {
+                _parser.ResetRecord();
+                throw;
+            }
+            finally
+            {
+                _cursor?.Dispose();
+                if (_asyncCursor is not null)
+                {
+                    await _asyncCursor.DisposeAsync().ConfigureAwait(false);
+                    _asyncCursor = null;
+                }
+
                 _fieldScratch.Dispose();
                 _pool.Sweep(full: true);
             }
