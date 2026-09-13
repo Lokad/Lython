@@ -143,6 +143,15 @@ internal sealed partial class LythonRuntime
                 }),
                 "__iter__" => BoundCallable.CreateNoArguments(list, "list.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 "__len__" => BoundCallable.CreateNoArguments(list, "list.__len__", static (receiver, span, context) => Len([receiver], span, context)),
+                "__contains__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "list.__contains__(item) expects one argument.", span);
+                    }
+
+                    return PyContainment.Contains(list, arguments[0], span);
+                }, "list.__contains__", ["item"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -318,6 +327,15 @@ internal sealed partial class LythonRuntime
                 }, "tuple.count", ["value"]),
                 "__iter__" => BoundCallable.CreateNoArguments(source, "tuple.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 "__len__" => BoundCallable.CreateNoArguments(source, "tuple.__len__", static (receiver, span, context) => Len([receiver], span, context)),
+                "__contains__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "tuple.__contains__(item) expects one argument.", span);
+                    }
+
+                    return PyContainment.Contains(source, arguments[0], span);
+                }, "tuple.__contains__", ["item"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -814,6 +832,15 @@ internal sealed partial class LythonRuntime
                 }, "range.count", ["value"]),
                 "__iter__" => BoundCallable.CreateNoArguments(range, "range.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 "__len__" => BoundCallable.CreateNoArguments(range, "range.__len__", static (receiver, span, context) => Len([receiver], span, context)),
+                "__contains__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "range.__contains__(item) expects one argument.", span);
+                    }
+
+                    return PyContainment.Contains(range, arguments[0], span);
+                }, "range.__contains__", ["item"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -928,6 +955,15 @@ internal sealed partial class LythonRuntime
                 }, "dict.setdefault", ["key", "default"], 1),
                 "__iter__" => BoundCallable.CreateNoArguments(dict, "dict.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 "__len__" => BoundCallable.CreateNoArguments(dict, "dict.__len__", static (receiver, span, context) => Len([receiver], span, context)),
+                "__contains__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict.__contains__(item) expects one argument.", span);
+                    }
+
+                    return PyContainment.Contains(dict, arguments[0], span);
+                }, "dict.__contains__", ["item"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -955,6 +991,15 @@ internal sealed partial class LythonRuntime
                 }, OnePositional("dict_keys.isdisjoint", "other")),
                 "__iter__" => BoundCallable.CreateNoArguments(view, "dict_keys.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 "__len__" => BoundCallable.CreateNoArguments(view, "dict_keys.__len__", static (receiver, span, context) => Len([receiver], span, context)),
+                "__contains__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_keys.__contains__(item) expects one argument.", span);
+                    }
+
+                    return PyContainment.Contains(view, arguments[0], span);
+                }, "dict_keys.__contains__", ["item"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -993,6 +1038,15 @@ internal sealed partial class LythonRuntime
                 }, OnePositional("dict_items.isdisjoint", "other")),
                 "__iter__" => BoundCallable.CreateNoArguments(view, "dict_items.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 "__len__" => BoundCallable.CreateNoArguments(view, "dict_items.__len__", static (receiver, span, context) => Len([receiver], span, context)),
+                "__contains__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict_items.__contains__(item) expects one argument.", span);
+                    }
+
+                    return PyContainment.Contains(view, arguments[0], span);
+                }, "dict_items.__contains__", ["item"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1017,6 +1071,15 @@ internal sealed partial class LythonRuntime
                 }, OnePositional("ChainMap.keys.isdisjoint", "other")),
                 "__iter__" => BoundCallable.CreateNoArguments(view, "ChainMap.keys.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 "__len__" => BoundCallable.CreateNoArguments(view, "ChainMap.keys.__len__", static (receiver, span, context) => Len([receiver], span, context)),
+                "__contains__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.keys.__contains__(item) expects one argument.", span);
+                    }
+
+                    return PyContainment.Contains(view, arguments[0], span);
+                }, "ChainMap.keys.__contains__", ["item"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1043,6 +1106,15 @@ internal sealed partial class LythonRuntime
                 }, OnePositional("ChainMap.items.isdisjoint", "other")),
                 "__iter__" => BoundCallable.CreateNoArguments(view, "ChainMap.items.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 "__len__" => BoundCallable.CreateNoArguments(view, "ChainMap.items.__len__", static (receiver, span, context) => Len([receiver], span, context)),
+                "__contains__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.items.__contains__(item) expects one argument.", span);
+                    }
+
+                    return PyContainment.Contains(view, arguments[0], span);
+                }, "ChainMap.items.__contains__", ["item"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1055,6 +1127,15 @@ internal sealed partial class LythonRuntime
             {
                 "__iter__" => BoundCallable.CreateNoArguments(view, "ChainMap.values.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 "__len__" => BoundCallable.CreateNoArguments(view, "ChainMap.values.__len__", static (receiver, span, context) => Len([receiver], span, context)),
+                "__contains__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "ChainMap.values.__contains__(item) expects one argument.", span);
+                    }
+
+                    return PyContainment.Contains(view, arguments[0], span);
+                }, "ChainMap.values.__contains__", ["item"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1181,6 +1262,15 @@ internal sealed partial class LythonRuntime
                 }),
                 "__iter__" => BoundCallable.CreateNoArguments(dict, "defaultdict.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 "__len__" => BoundCallable.CreateNoArguments(dict, "defaultdict.__len__", static (receiver, span, context) => Len([receiver], span, context)),
+                "__contains__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "defaultdict.__contains__(item) expects one argument.", span);
+                    }
+
+                    return PyContainment.Contains(dict, arguments[0], span);
+                }, "defaultdict.__contains__", ["item"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1366,6 +1456,15 @@ internal sealed partial class LythonRuntime
                 }, "Counter.pop", ["key", "default"], 1),
                 "__iter__" => BoundCallable.CreateNoArguments(counter, "Counter.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 "__len__" => BoundCallable.CreateNoArguments(counter, "Counter.__len__", static (receiver, span, context) => Len([receiver], span, context)),
+                "__contains__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Counter.__contains__(item) expects one argument.", span);
+                    }
+
+                    return PyContainment.Contains(counter, arguments[0], span);
+                }, "Counter.__contains__", ["item"]),
                 _ => MissingMemberValue.Instance,
             };
 

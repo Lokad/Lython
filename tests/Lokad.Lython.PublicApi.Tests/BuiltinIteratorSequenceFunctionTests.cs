@@ -937,4 +937,148 @@ return "|".join(results)
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task ContainerContainsDundersAdvanceLikeCpython()
+    {
+        // Sized containers expose __contains__ with exactly the in-operator
+        // value, like CPython (dict_values has none, like CPython).
+        var script = new LythonEngine().Compile("""
+            from collections import defaultdict, Counter, deque, ChainMap
+            def contains_arg(x):
+                return x.__contains__()
+            results = []
+            results.append(str([1, 2].__contains__(2)))
+            results.append(str([1, 2].__contains__(9)))
+            results.append(str("abc".__contains__("b")))
+            results.append(str("abc".__contains__("z")))
+            results.append(str((1,).__contains__(1)))
+            results.append(str({"a": 1}.__contains__("a")))
+            results.append(str({"a": 1}.__contains__("z")))
+            results.append(str({1}.__contains__(1)))
+            results.append(str(b"ab".__contains__(98)))
+            results.append(str(b"ab".__contains__(b"a")))
+            results.append(str(range(5).__contains__(3)))
+            results.append(str(range(5).__contains__(9)))
+            dd = defaultdict(list, {"a": [1]})
+            results.append(str(dd.__contains__("a")))
+            results.append(str(dd.__contains__("z")))
+            results.append(str(Counter("aab").__contains__("b")))
+            results.append(str(Counter("aab").__contains__("z")))
+            results.append(str(deque([1, 2]).__contains__(2)))
+            results.append(str(deque([1, 2]).__contains__(9)))
+            cm = ChainMap({"a": 1}, {"b": 2})
+            results.append(str(cm.__contains__("b")))
+            results.append(str(cm.__contains__("z")))
+            d = {"a": 1, "b": 2}
+            results.append(str(d.keys().__contains__("a")))
+            results.append(str(d.keys().__contains__("z")))
+            results.append(str(2 in d.values()))
+            results.append(str(d.items().__contains__(("b", 2))))
+            scm = ChainMap({"a": 1})
+            results.append(str(scm.keys().__contains__("a")))
+            results.append(str(scm.values().__contains__(1)))
+            results.append(str(scm.items().__contains__(("a", 1))))
+            try:
+                d.values().__contains__(1)
+            except AttributeError as e:
+                results.append(type(e).__name__)
+            try:
+                {1}.__contains__([])
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                {"a": 1}.__contains__([])
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            for v in [[1], (1,), {"a": 1}, {1}, "ab", b"ab", range(2), defaultdict(list), Counter(), deque([1]), ChainMap({"a": 1}), {"a": 1}.keys(), {"a": 1}.items(), ChainMap({"a": 1}).keys(), ChainMap({"a": 1}).values(), ChainMap({"a": 1}).items()]:
+                try:
+                    contains_arg(v)
+                except TypeError as e:
+                    results.append(type(e).__name__)
+                    results.append(str(e))
+            results.append(str(hasattr([1], "__contains__")))
+            results.append(str(callable("ab".__contains__)))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "True",
+            "False",
+            "True",
+            "False",
+            "True",
+            "True",
+            "False",
+            "True",
+            "True",
+            "True",
+            "True",
+            "False",
+            "True",
+            "False",
+            "True",
+            "False",
+            "True",
+            "False",
+            "True",
+            "False",
+            "True",
+            "False",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "AttributeError",
+            "TypeError",
+            "unhashable type: 'list'",
+            "TypeError",
+            "unhashable type: 'list'",
+            "TypeError",
+            "Method 'list.__contains__' is missing argument 'item'.",
+            "TypeError",
+            "Method 'tuple.__contains__' is missing argument 'item'.",
+            "TypeError",
+            "Method 'dict.__contains__' is missing argument 'item'.",
+            "TypeError",
+            "Method 'set.__contains__' is missing argument 'item'.",
+            "TypeError",
+            "Method 'str.__contains__' is missing argument 'item'.",
+            "TypeError",
+            "Method 'bytes.__contains__' is missing argument 'item'.",
+            "TypeError",
+            "Method 'range.__contains__' is missing argument 'item'.",
+            "TypeError",
+            "Method 'defaultdict.__contains__' is missing argument 'item'.",
+            "TypeError",
+            "Method 'Counter.__contains__' is missing argument 'item'.",
+            "TypeError",
+            "Method 'deque.__contains__' is missing argument 'item'.",
+            "TypeError",
+            "Method 'ChainMap.__contains__' is missing argument 'item'.",
+            "TypeError",
+            "Method 'dict_keys.__contains__' is missing argument 'item'.",
+            "TypeError",
+            "Method 'dict_items.__contains__' is missing argument 'item'.",
+            "TypeError",
+            "Method 'ChainMap.keys.__contains__' is missing argument 'item'.",
+            "TypeError",
+            "Method 'ChainMap.values.__contains__' is missing argument 'item'.",
+            "TypeError",
+            "Method 'ChainMap.items.__contains__' is missing argument 'item'.",
+            "True",
+            "True",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

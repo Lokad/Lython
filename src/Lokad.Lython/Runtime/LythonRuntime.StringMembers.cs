@@ -46,6 +46,20 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
+            if (name == "__contains__")
+            {
+                value = BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "str.__contains__(item) expects one argument.", span);
+                    }
+
+                    return PyContainment.Contains(text, arguments[0], span);
+                }, "str.__contains__", ["item"]);
+                return true;
+            }
+
             if (name == "maketrans")
             {
                 value = BuiltinTypeMethod.StrMaketrans;

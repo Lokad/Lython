@@ -160,6 +160,15 @@ internal sealed partial class LythonRuntime
                 }, LythonCallableSignature.Create("bytes.splitlines", ["keepends"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 0)),
                 "__iter__" => BoundCallable.CreateNoArguments(bytes, "bytes.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 "__len__" => BoundCallable.CreateNoArguments(bytes, "bytes.__len__", static (receiver, span, context) => Len([receiver], span, context)),
+                "__contains__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "bytes.__contains__(item) expects one argument.", span);
+                    }
+
+                    return PyContainment.Contains(bytes, arguments[0], span);
+                }, "bytes.__contains__", ["item"]),
                 _ => MissingMemberValue.Instance
             };
 

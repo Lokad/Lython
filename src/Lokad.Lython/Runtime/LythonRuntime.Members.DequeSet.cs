@@ -172,6 +172,15 @@ internal sealed partial class LythonRuntime
                 }, "deque.rotate", ["n"], 0),
                 "__iter__" => BoundCallable.CreateNoArguments(deque, "deque.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 "__len__" => BoundCallable.CreateNoArguments(deque, "deque.__len__", static (receiver, span, context) => Len([receiver], span, context)),
+                "__contains__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "deque.__contains__(item) expects one argument.", span);
+                    }
+
+                    return PyContainment.Contains(deque, arguments[0], span);
+                }, "deque.__contains__", ["item"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -375,6 +384,15 @@ internal sealed partial class LythonRuntime
                 }, OnePositional("set.symmetric_difference_update", "other")),
                 "__iter__" => BoundCallable.CreateNoArguments(set, "set.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 "__len__" => BoundCallable.CreateNoArguments(set, "set.__len__", static (receiver, span, context) => Len([receiver], span, context)),
+                "__contains__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "set.__contains__(item) expects one argument.", span);
+                    }
+
+                    return PyContainment.Contains(set, arguments[0], span);
+                }, "set.__contains__", ["item"]),
                 _ => MissingMemberValue.Instance,
             };
 
