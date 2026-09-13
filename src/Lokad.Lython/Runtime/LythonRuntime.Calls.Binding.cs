@@ -163,6 +163,23 @@ internal sealed partial class LythonRuntime
         context?.MemoryGovernor.Commit(FunctionValueBytes);
     }
 
+    // MG11: default-argument maps survive with the function value. The 128B
+    // constructed-value unit covers the wrapper, binding plan and an empty map,
+    // so each defaulted parameter owns one 64B table slot beside it.
+    private const long DefaultArgumentSlotBytes = 64;
+
+    internal static void ChargeDefaultArguments(int defaultCount, MemoryGovernor? governor, LythonSourceSpan? span)
+    {
+        if (defaultCount <= 0 || governor is null)
+        {
+            return;
+        }
+
+        var bytes = checked(DefaultArgumentSlotBytes * (long)defaultCount);
+        governor.Reserve(bytes, span);
+        governor.Commit(bytes);
+    }
+
     // A function value retains its defining context chain for as long as the
     // function is retained: intermediate invocation contexts plus the variable
     // tables mirroring their locals stay alive through the closure, so each

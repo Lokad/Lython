@@ -391,6 +391,7 @@ internal sealed partial class LythonRuntime
             defaults,
             ScopeDirectiveFactsCollector.ForFunction(functionDefinition.Syntax));
         ChargeFunctionValue(context, functionDefinition.Span);
+        ChargeDefaultArguments(functionDefinition.Parameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, functionDefinition.Span);
         PyFunctionBase.CaptureFunctionDocstring(function, functionDefinition.Body, context, functionDefinition.Span);
         ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, functionDefinition.Span);
         return function;

@@ -465,6 +465,7 @@ internal sealed partial class LythonRuntime
             context,
             BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)));
         ChargeFunctionValue(context, lambda.Span);
+        ChargeDefaultArguments(loweredParameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, lambda.Span);
         ChargeClosureRetention(context, context.MemoryGovernor, lambda.Span);
         RetainLocalsForLambda(context);
         return function;
