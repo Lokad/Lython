@@ -210,6 +210,33 @@ internal sealed partial class LythonRuntime
                     DeleteSubscriptValue(deque, arguments[0], span, context);
                     return PyNone.Instance;
                 }, "deque.__delitem__", ["index"]),
+                "__add__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "deque.__add__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateAdd(deque, arguments[0], context, span);
+                }, "deque.__add__", ["value"]),
+                "__mul__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "deque.__mul__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateMultiply(deque, arguments[0], context, span);
+                }, "deque.__mul__", ["value"]),
+                "__rmul__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "deque.__rmul__(value) expects one argument.", span);
+                    }
+
+                    return EvaluateMultiply(arguments[0], deque, context, span);
+                }, "deque.__rmul__", ["value"]),
                 _ => MissingMemberValue.Instance,
             };
 

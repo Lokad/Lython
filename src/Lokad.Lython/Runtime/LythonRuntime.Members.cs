@@ -1094,6 +1094,68 @@ internal sealed partial class LythonRuntime
                     DeleteSubscriptValue(dict, arguments[0], span, context);
                     return PyNone.Instance;
                 }, "dict.__delitem__", ["index"]),
+                "__or__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict.__or__(value) expects one argument.", span);
+                    }
+
+                    if (MergeUnionPairs(arguments[0]) is not { } right)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    var merged = new PyDict(context.MemoryGovernor, span);
+                    foreach (var pair in dict)
+                    {
+                        merged.SetItem(pair.Key, pair.Value);
+                    }
+
+                    foreach (var pair in right)
+                    {
+                        merged.SetItem(pair.Key, pair.Value);
+                    }
+
+                    return merged;
+                }, "dict.__or__", ["value"]),
+                "__ror__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict.__ror__(value) expects one argument.", span);
+                    }
+
+                    if (MergeUnionPairs(arguments[0]) is not { } left)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    var merged = new PyDict(context.MemoryGovernor, span);
+                    foreach (var pair in left)
+                    {
+                        merged.SetItem(pair.Key, pair.Value);
+                    }
+
+                    foreach (var pair in dict)
+                    {
+                        merged.SetItem(pair.Key, pair.Value);
+                    }
+
+                    return merged;
+                }, "dict.__ror__", ["value"]),
+                "__ior__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict.__ior__(value) expects one argument.", span);
+                    }
+
+                    dict.AttachMemoryGovernor(context.MemoryGovernor, span);
+                    UpdateDictionaryFromSource(dict, arguments[0], context, span);
+                    context.ObserveCollectionCount(dict.Count, span);
+                    return dict;
+                }, "dict.__ior__", ["value"]),
                 _ => MissingMemberValue.Instance,
             };
 

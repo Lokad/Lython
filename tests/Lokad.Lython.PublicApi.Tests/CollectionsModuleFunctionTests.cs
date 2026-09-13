@@ -1473,4 +1473,95 @@ deque().pop()
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task DictDequeOperatorDundersAdvanceLikeCpython()
+    {
+        // dict __or__/__ror__/__ior__ merge plainly (NotImplemented
+        // outside mappings) and deque __add__/__mul__/__rmul__ repeat
+        // through the shared cores, like CPython.
+        var script = new LythonEngine().Compile("""
+            from collections import defaultdict, Counter, deque
+            def call2(f, a, b):
+                return f(a, b)
+            results = []
+            results.append(str({"a": 1}.__or__(defaultdict(list, {"b": [2]}))))
+            results.append(str({"a": 1}.__or__(Counter({"b": 2}))))
+            results.append(str({"a": 0}.__ror__(defaultdict(list, {"a": [9]}))))
+            results.append(str({"a": 1}.__or__({}.keys())))
+            results.append(str({"a": 1}.__ror__({}.keys())))
+            d = {"a": 1}
+            results.append(str(d.__ior__([(1, 2)])))
+            results.append(str(d))
+            results.append(str(d.__ior__({}) is d))
+            results.append(str(deque([1]).__add__(deque([2]))))
+            results.append(str(deque([1], maxlen=2).__add__(deque([2, 3]))))
+            results.append(str(deque([1]).__mul__(2)))
+            results.append(str(deque([1]).__rmul__(2)))
+            results.append(str(deque([1]).__mul__(0)))
+            try:
+                deque([1]).__add__([2])
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                deque([1]).__mul__("x")
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            for (f, a, b) in [({"a": 1}.__or__, {}, {}), ({"a": 1}.__ror__, {}, {}), ({"a": 1}.__ior__, {}, {}), (deque([1]).__add__, deque([2]), deque([3])), (deque([1]).__mul__, 1, 2), (deque([1]).__rmul__, 1, 2)]:
+                try:
+                    call2(f, a, b)
+                except TypeError as e:
+                    results.append(type(e).__name__)
+                    results.append(str(e))
+            results.append(str(hasattr({}, "__or__")))
+            results.append(str(hasattr({}, "__and__")))
+            results.append(str(hasattr(deque([1]), "__add__")))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "{'a': 1, 'b': [2]}",
+            "{'a': 1, 'b': 2}",
+            "{'a': 0}",
+            "NotImplemented",
+            "NotImplemented",
+            "{'a': 1, 1: 2}",
+            "{'a': 1, 1: 2}",
+            "True",
+            "deque([1, 2])",
+            "deque([2, 3], maxlen=2)",
+            "deque([1, 1])",
+            "deque([1, 1])",
+            "deque([])",
+            "TypeError",
+            "can only concatenate deque (not \"list\") to deque",
+            "TypeError",
+            "can't multiply sequence by non-int of type 'str'",
+            "TypeError",
+            "Method 'dict.__or__' received too many positional arguments.",
+            "TypeError",
+            "Method 'dict.__ror__' received too many positional arguments.",
+            "TypeError",
+            "Method 'dict.__ior__' received too many positional arguments.",
+            "TypeError",
+            "Method 'deque.__add__' received too many positional arguments.",
+            "TypeError",
+            "Method 'deque.__mul__' received too many positional arguments.",
+            "TypeError",
+            "Method 'deque.__rmul__' received too many positional arguments.",
+            "True",
+            "False",
+            "True",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
