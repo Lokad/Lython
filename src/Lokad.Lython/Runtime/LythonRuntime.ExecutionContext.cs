@@ -162,6 +162,11 @@ internal sealed partial class LythonRuntime
         // escaped lambdas keep reading finals through the parent chain.
         internal bool MirrorLocalStores { get; set; }
 
+        // Lexically enclosing except handlers entered but not yet exited, innermost
+        // last; lets abrupt unwinding clear handler variables whose suite the
+        // propagation abandons, mirroring CPython deleting them on suite exit.
+        internal Stack<(string Name, int SuiteStart, int SuiteEnd)>? ActiveHandlerVariables { get; set; }
+
         public PyType? ImplicitSuperAnchorType { get; private set; }
 
         public object? ImplicitSuperReceiver { get; private set; }

@@ -29,9 +29,10 @@ internal sealed partial class LythonRuntime
         // Abandoning the frame drops its saved handler chain and restores the
         // active exception from frame entry, like CPython deleting handler
         // names and restoring the previous exception on frame exit.
-        private void AbandonFrame()
+        private void AbandonFrame(LythonSourceSpan span)
         {
             _savedActiveExceptions.Clear();
+            AbandonActiveHandlerVars(context, span);
             context.Services.SetCurrentException(_entryActiveException);
         }
 
@@ -369,6 +370,10 @@ internal sealed partial class LythonRuntime
                     if (instruction.ExceptionNameIndex >= 0)
                     {
                         _ = DeleteName(codeObject.Names[instruction.ExceptionNameIndex], context, instruction.Span);
+                        if (context.ActiveHandlerVariables is { Count: > 0 } activeHandlers)
+                        {
+                            activeHandlers.Pop();
+                        }
                     }
                     context.Services.SetCurrentException(
                         _savedActiveExceptions.Count > 0 ? _savedActiveExceptions.Pop().SavedException : null);
@@ -485,7 +490,7 @@ internal sealed partial class LythonRuntime
                     {
                         if (!TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingReturn(signal), instruction.Span, ref _pendingAbrupt, ref _currentBlockIndex, out _))
                         {
-                            AbandonFrame();
+                            AbandonFrame(instruction.Span);
                             throw;
                         }
 
@@ -495,7 +500,7 @@ internal sealed partial class LythonRuntime
                     {
                         if (!TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingControl(signal), instruction.Span, ref _pendingAbrupt, ref _currentBlockIndex, out _))
                         {
-                            AbandonFrame();
+                            AbandonFrame(instruction.Span);
                             throw;
                         }
 
@@ -506,7 +511,7 @@ internal sealed partial class LythonRuntime
                         var previousActive = context.Services.CurrentException;
                         if (!TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingException(ex), instruction.Span, ref _pendingAbrupt, ref _currentBlockIndex, out var matchedRegion))
                         {
-                            AbandonFrame();
+                            AbandonFrame(instruction.Span);
                             throw;
                         }
 

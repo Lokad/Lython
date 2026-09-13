@@ -4605,6 +4605,122 @@ __lython_file.close()
     }
 
     [Fact]
+    public async Task ExceptVariableIsDeletedOnSuiteExit()
+    {
+        // The except variable is deleted when its suite exits like CPython,
+        // on normal completion and on abrupt exits alike, while staying
+        // visible inside nested handling and before abrupt exits complete,
+        // in both modes.
+        var script = new LythonEngine().Compile("""
+            results = []
+            def leak_normal():
+                try:
+                    raise ValueError(1)
+                except ValueError as e:
+                    pass
+                return lambda: e
+            try:
+                leak_normal()()
+            except NameError as e:
+                results.append(type(e).__name__)
+            def leak_ret():
+                try:
+                    raise ValueError(1)
+                except ValueError as e:
+                    return lambda: e
+            try:
+                leak_ret()()
+            except NameError as e:
+                results.append(type(e).__name__)
+            def leak_raise():
+                try:
+                    try:
+                        raise ValueError(1)
+                    except ValueError as e:
+                        raise KeyError('k')
+                except KeyError as e2:
+                    return lambda: e
+            try:
+                leak_raise()()
+            except NameError as e:
+                results.append(type(e).__name__)
+            def leak_break():
+                for i in [1]:
+                    try:
+                        raise ValueError(1)
+                    except ValueError as e:
+                        break
+                return lambda: e
+            try:
+                leak_break()()
+            except NameError as e:
+                results.append(type(e).__name__)
+            def nested_sees():
+                try:
+                    try:
+                        raise ValueError(1)
+                    except ValueError as e:
+                        try:
+                            raise KeyError('k')
+                        except KeyError:
+                            return ('nested', str(e))
+                except KeyError:
+                    return 'outer-caught'
+            results.append(str(nested_sees()))
+            def fin_sees():
+                try:
+                    try:
+                        raise ValueError(1)
+                    except ValueError as e:
+                        raise KeyError(2)
+                finally:
+                    get = lambda: e
+                    try:
+                        return ('fin', type(get()).__name__)
+                    except NameError:
+                        return ('fin', 'NameError')
+            results.append(str(fin_sees()))
+            def ok_inside():
+                try:
+                    raise ValueError(1)
+                except ValueError as e:
+                    return type(e).__name__
+            results.append(ok_inside())
+            def ret_fin():
+                out = []
+                try:
+                    try:
+                        raise ValueError(1)
+                    except ValueError as e:
+                        out.append(type(e).__name__)
+                        return out
+                finally:
+                    out.append('fin-ran')
+            results.append(str(ret_fin()))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "NameError",
+            "NameError",
+            "NameError",
+            "NameError",
+            "('nested', '1')",
+            "('fin', 'NameError')",
+            "ValueError",
+            "['ValueError', 'fin-ran']",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public void LambdaAndSortedKeyReverse_WorkLikePythonSubset()
     {
         var host = new MockLythonHost();

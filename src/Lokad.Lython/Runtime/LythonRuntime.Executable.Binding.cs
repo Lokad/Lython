@@ -126,9 +126,11 @@ internal sealed partial class LythonRuntime
                 pendingAbrupt = null;
                 matchedRegion = region;
                 var pyException = CreatePythonExceptionInstance(exception);
+                UnwindAbandonedHandlerVars(context, span, exceptBlock);
                 if (region.ExceptionVariableName is not null)
                 {
                     StoreName(region.ExceptionVariableName, pyException, context, span);
+                    PushActiveHandlerVar(context, region);
                 }
 
                 context.Services.SetCurrentException(pyException);
@@ -142,14 +144,48 @@ internal sealed partial class LythonRuntime
                 pendingAbrupt = abrupt;
                 nextBlockIndex = finallyBlock;
                 matchedRegion = region;
+                UnwindAbandonedHandlerVars(context, span, finallyBlock);
                 return true;
             }
-
             // A non-matching inner handler does not intercept the exception. Continue with
             // the next enclosing protected range, just as CPython unwinds nested try suites.
         }
 
         return false;
+    }
+
+    // Handler variables die with their suite like CPython deleting them on
+    // exit: pushes track entries with their suite range, and unwinding pops
+    // every entry whose suite the propagation target leaves.
+    private static void PushActiveHandlerVar(ExecutionContext context, ExecutableExceptionRegion region)
+    {
+        context.ActiveHandlerVariables ??= new Stack<(string Name, int SuiteStart, int SuiteEnd)>();
+        context.ActiveHandlerVariables.Push((
+            region.ExceptionVariableName!,
+            region.SuiteStartBlockIndex ?? 0,
+            region.SuiteEndBlockIndex ?? int.MaxValue));
+    }
+
+    private static void UnwindAbandonedHandlerVars(ExecutionContext context, LythonSourceSpan span, int targetBlockIndex)
+    {
+        while (context.ActiveHandlerVariables is { Count: > 0 } stack)
+        {
+            var top = stack.Peek();
+            if (top.SuiteStart <= targetBlockIndex && targetBlockIndex <= top.SuiteEnd)
+            {
+                break;
+            }
+
+            _ = DeleteName(stack.Pop().Name, context, span);
+        }
+    }
+
+    internal static void AbandonActiveHandlerVars(ExecutionContext context, LythonSourceSpan span)
+    {
+        while (context.ActiveHandlerVariables is { Count: > 0 } stack)
+        {
+            _ = DeleteName(stack.Pop().Name, context, span);
+        }
     }
 
     private static void RestoreExecutableStackForHandler(

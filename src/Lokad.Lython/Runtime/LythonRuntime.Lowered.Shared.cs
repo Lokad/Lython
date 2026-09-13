@@ -272,12 +272,18 @@ internal sealed partial class LythonRuntime
                 }
 
                 var previousException = context.Services.SetCurrentException(pyException);
+                var handlerVariableName = matchedClause.Syntax.ExceptionVariableName;
                 try
                 {
                     pendingControl = await executeStatements(matchedClause.Body, exceptContext).ConfigureAwait(false);
                 }
                 finally
                 {
+                    if (handlerVariableName is not null)
+                    {
+                        _ = DeleteName(handlerVariableName, exceptContext, statement.Span);
+                    }
+
                     context.Services.SetCurrentException(previousException);
                 }
             }
