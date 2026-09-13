@@ -406,4 +406,83 @@ except Exception:
         Assert.Equal(exceptionType, result.Failure?.ExceptionType);
         Assert.Contains(messageFragment, result.Failure?.Message, StringComparison.Ordinal);
     }
+    [Fact]
+    public async Task NoneComparisonDundersAdvanceLikeCpython()
+    {
+        // None slots take None only and decline everything else with
+        // NotImplemented on every dunder, ordering included, exactly like
+        // CPython; unrelated members keep the house AttributeError.
+        var script = new LythonEngine().Compile("""
+def call2(f, a, b):
+    return f(a, b)
+results = []
+results.append(str(None.__eq__(None)))
+results.append(str(None.__ne__(None)))
+results.append(str(None.__eq__(False)))
+results.append(str(None.__ne__(0)))
+results.append(str(None.__lt__(None)))
+results.append(str(None.__le__(1)))
+results.append(str(None.__gt__(None)))
+results.append(str(None.__ge__("x")))
+try:
+    None.foo
+except AttributeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+results.append(str(None == None))
+results.append(str(None != None))
+results.append(str(None == 1))
+results.append(str(None != 1))
+for (f, a, b) in [(None.__eq__, 1, 2), (None.__ne__, 1, 2), (None.__lt__, 1, 2), (None.__le__, 1, 2), (None.__gt__, 1, 2), (None.__ge__, 1, 2)]:
+    try:
+        call2(f, a, b)
+    except TypeError as e:
+        results.append(type(e).__name__)
+        results.append(str(e))
+results.append(str(hasattr(None, "__eq__")))
+results.append(str(hasattr(None, "__lt__")))
+results.append(str(hasattr(None, "__rlt__")))
+return results
+""");
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "True",
+            "False",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "AttributeError",
+            "'NoneType' object has no attribute 'foo'",
+            "True",
+            "False",
+            "False",
+            "True",
+            "TypeError",
+            "Method 'None.__eq__' received too many positional arguments.",
+            "TypeError",
+            "Method 'None.__ne__' received too many positional arguments.",
+            "TypeError",
+            "Method 'None.__lt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'None.__le__' received too many positional arguments.",
+            "TypeError",
+            "Method 'None.__gt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'None.__ge__' received too many positional arguments.",
+            "True",
+            "True",
+            "False",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

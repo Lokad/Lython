@@ -2,6 +2,16 @@ namespace Lokad.Lython.Frontend;
 
 internal static partial class StaticContracts
 {
+    private static readonly HashSet<string> NoneMembers = new(StringComparer.Ordinal)
+    {
+        "__eq__",
+        "__ne__",
+        "__lt__",
+        "__le__",
+        "__gt__",
+        "__ge__",
+    };
+
     private static readonly HashSet<string> StringMembers = new(StringComparer.Ordinal)
     {
         "encode",
@@ -742,7 +752,7 @@ internal static partial class StaticContracts
             AbstractValueKind.BooleanType => IntMembers.Contains(memberName),
             AbstractValueKind.Float or
             AbstractValueKind.FloatType => FloatMembers.Contains(memberName),
-            AbstractValueKind.None => false,
+            AbstractValueKind.None => NoneMembers.Contains(memberName),
             AbstractValueKind.Ellipsis => false,
             AbstractValueKind.Path => PathMembers.Contains(memberName),
             AbstractValueKind.TextFileHandle => TextFileHandleMembers.Contains(memberName),

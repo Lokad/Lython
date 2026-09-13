@@ -70,6 +70,7 @@ internal static class PyMemberAccess
             [typeof(LythonRuntime.DifflibSequenceMatcherObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((LythonRuntime.DifflibSequenceMatcherObject)target).TryGetMember(memberName, out value),
             [typeof(LythonRuntime.PkgutilModuleInfoObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((LythonRuntime.PkgutilModuleInfoObject)target).TryGetMember(memberName, out value),
             [typeof(LythonRuntime.PkgutilLoaderObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => ((LythonRuntime.PkgutilLoaderObject)target).TryGetMember(memberName, out value),
+            [typeof(PyNone)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.NoneMembers.TryGetMember((PyNone)target, memberName, out value),
         };
 
     public static bool TryResolve(object target, string memberName, [MaybeNullWhen(false)] out object value)

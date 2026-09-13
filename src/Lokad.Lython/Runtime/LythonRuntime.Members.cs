@@ -639,6 +639,83 @@ internal sealed partial class LythonRuntime
     }
 
 
+    internal static class NoneMembers
+    {
+        public static bool TryGetMember(PyNone none, string name, [MaybeNullWhen(false)] out object value)
+        {
+            value = name switch
+            {
+                "__eq__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "None.__eq__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyNone)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return true;
+                }, "None.__eq__", ["value"]),
+                "__ne__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "None.__ne__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyNone)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return false;
+                }, "None.__ne__", ["value"]),
+                "__lt__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "None.__lt__(value) expects one argument.", span);
+                    }
+
+                    return PyNotImplemented.Instance;
+                }, "None.__lt__", ["value"]),
+                "__le__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "None.__le__(value) expects one argument.", span);
+                    }
+
+                    return PyNotImplemented.Instance;
+                }, "None.__le__", ["value"]),
+                "__gt__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "None.__gt__(value) expects one argument.", span);
+                    }
+
+                    return PyNotImplemented.Instance;
+                }, "None.__gt__", ["value"]),
+                "__ge__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "None.__ge__(value) expects one argument.", span);
+                    }
+
+                    return PyNotImplemented.Instance;
+                }, "None.__ge__", ["value"]),
+                _ => MissingMemberValue.Instance,
+            };
+
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
+        }
+    }
+
     internal static class IntMembers
     {
         public static bool TryGetMember(object receiver, string name, [MaybeNullWhen(false)] out object value)
