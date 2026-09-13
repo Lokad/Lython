@@ -487,6 +487,8 @@ internal sealed partial class LythonRuntime
         private readonly string? _quoteCharacter;
         private readonly string? _escapeCharacter;
         private readonly List<object> _row = new();
+        private MemoryGovernor.TemporaryMemoryReservation? _rowScratch;
+        private long _chargedRowCapacity;
         private readonly StringBuilder _field = new();
         private readonly MemoryGovernor.TemporaryMemoryReservation _fieldScratch;
         private readonly ChargeReclamationPool _pool;
@@ -677,6 +679,27 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
+        private void AddRowCell(object cell)
+        {
+            // The row scratch doubles geometrically like the drains beside
+            // it; cover each capacity step (including the old/new overlap)
+            // before the cell lands, and release the reservation with the
+            // finished record below.
+            _rowScratch ??= _context.MemoryGovernor.ReserveTemporary(0, _span);
+            if (_row.Count == _row.Capacity)
+            {
+                var predicted = _row.Capacity == 0 ? 4L : (long)_row.Capacity * 2L;
+                _rowScratch.Grow(checked(16L * (predicted - _chargedRowCapacity)), _span);
+            }
+
+            _row.Add(cell);
+            if (_row.Capacity > _chargedRowCapacity)
+            {
+                _rowScratch.Grow(checked(16L * (_row.Capacity - _chargedRowCapacity)), _span);
+                _chargedRowCapacity = _row.Capacity;
+            }
+        }
+
         private void NoteFieldCapacity()
         {
             // StringBuilder doubles geometrically; cover the live peak
@@ -698,7 +721,7 @@ internal sealed partial class LythonRuntime
             // by the governed row containers.
             var payload = PyString.FromString(_field.ToString(), _context.MemoryGovernor, _span);
             _pool.TrackString(payload);
-            _row.Add(payload);
+            AddRowCell(payload);
             _field.Clear();
             _fieldStarted = false;
             _afterQuote = false;
@@ -729,14 +752,30 @@ internal sealed partial class LythonRuntime
             if (!_recordStarted && !_fieldStarted && _field.Length == 0 && _row.Count == 0)
             {
                 EnqueueRecord(TrackRow(new PyList([], _context.MemoryGovernor, _span)));
+                ReleaseRowScratch();
                 return;
             }
 
             FinishField();
             EnqueueRecord(TrackRow(new PyList(_row, _context.MemoryGovernor, _span)));
             _row.Clear();
+            ReleaseRowScratch();
             _recordStarted = false;
             _afterQuote = false;
+        }
+
+        private void ReleaseRowScratch()
+        {
+            _rowScratch?.Dispose();
+            _rowScratch = null;
+            _chargedRowCapacity = 0;
+            if (_row.Capacity > 1024)
+            {
+                // A single wide record must not pin megabytes of scratch
+                // backing for the rest of the source; regrowth rides the
+                // reservation above.
+                _row.TrimExcess();
+            }
         }
 
         private PyList TrackRow(PyList record)

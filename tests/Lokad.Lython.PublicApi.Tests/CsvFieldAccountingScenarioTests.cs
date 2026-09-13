@@ -14,11 +14,13 @@ public sealed class CsvFieldAccountingScenarioTests
     [Fact]
     public async Task FullScanReleasesDroppedFieldCharges()
     {
-        // 12k four-column rows commit ~6MB of field payload cumulatively; the
-        // scan fits 6MB only because dropped fields are reclaimed while the
-        // retained row backing stays charged.
+        // The incident shape at incident scale: 100k four-column rows commit
+        // ~51MB of field payload cumulatively, so the scan fits 32MB only
+        // because dropped fields (and row backing) are reclaimed while the
+        // scalar aggregation retains nothing. Incident-scale margins dwarf
+        // GC-paced slack, which smaller budgets could not separate robustly.
         var content = new StringBuilder();
-        for (var i = 0; i < 12000; i++)
+        for (var i = 0; i < 100000; i++)
         {
             content.Append("a,b,c,d\n");
         }
@@ -36,16 +38,16 @@ public sealed class CsvFieldAccountingScenarioTests
             return n
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 6291456 };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 33554432 };
         var sync = script.Run(host, options);
         Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(new BigInteger(12000), sync.ReturnValue);
+        Assert.Equal(new BigInteger(100000), sync.ReturnValue);
 
         var host2 = new MockLythonHost();
         host2.SeedFile("/data.csv", content.ToString());
         var asyncResult = await script.RunAsync(host2, options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(new BigInteger(12000), asyncResult.ReturnValue);
+        Assert.Equal(new BigInteger(100000), asyncResult.ReturnValue);
     }
 
     [Fact]
@@ -75,7 +77,7 @@ public sealed class CsvFieldAccountingScenarioTests
             """);
         Assert.True(script.IsValid);
         var expected = new List<object?> { new BigInteger(120), "b", "b", new BigInteger(12000) };
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 6291456 };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 8388608 };
         var sync = script.Run(host, options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
@@ -85,6 +87,50 @@ public sealed class CsvFieldAccountingScenarioTests
         var asyncResult = await script.RunAsync(host2, options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task WideRowScratchTripsBeforeUnchargedGrowth()
+    {
+        // 200001 empty fields commit nothing per field but need ~1.6MB of row
+        // scratch while accumulating; the geometric reservation trips 4MB
+        // before the growth runs uncharged, while the 3.2MB retained backing
+        // alone would fit.
+        var script = new LythonEngine().Compile("""
+            import csv
+            line = "," * 200000
+            r = csv.reader([line])
+            return len(list(r)[0])
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 4194304 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+    }
+
+    [Fact]
+    public async Task FundedWideRowStillParses()
+    {
+        var script = new LythonEngine().Compile("""
+            import csv
+            line = "," * 200000
+            r = csv.reader([line])
+            return len(list(r)[0])
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 12582912 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(new BigInteger(200001), sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(new BigInteger(200001), asyncResult.ReturnValue);
     }
 
     [Fact]
