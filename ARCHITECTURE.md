@@ -160,6 +160,16 @@ Default methods for unavailable optional host operations throw
 type, rather than matching exception messages, to produce the corresponding
 Python-shaped unavailable-capability failure.
 
+Ranged reads (`ReadTextUtf8RangeAsync`, `ReadBytesRangeAsync`) bound
+acquisition: offsets and lengths are byte-based, negative arguments fail
+explicitly, and offsets at or past the end yield empty payloads. The default
+implementations compose whole-file reads and are therefore correct but
+unbounded; hosts with native ranged I/O should override them. Engine file
+opens stream fixed windows through these ranges, with cumulative host-read
+caps and per-pull cancellation and host-call accounting, so a native override
+is what makes large-file scans bounded end to end; without it every window
+re-reads the whole file host-side.
+
 Before a host operation, runtime code registers the call with the execution
 budget. Synchronous entry points reject operations that require unavailable
 synchronous behavior before preceding side effects can occur. Sync and async
