@@ -217,6 +217,12 @@ internal static partial class StaticContracts
         "imag",
         "is_integer",
         "real",
+        "__eq__",
+        "__ne__",
+        "__lt__",
+        "__le__",
+        "__gt__",
+        "__ge__",
     };
 
     private static readonly HashSet<string> IntMembers = new(StringComparer.Ordinal)
@@ -232,6 +238,12 @@ internal static partial class StaticContracts
         "numerator",
         "real",
         "to_bytes",
+        "__eq__",
+        "__ne__",
+        "__lt__",
+        "__le__",
+        "__gt__",
+        "__ge__",
     };
 
     private static readonly HashSet<string> ListMembers = new(StringComparer.Ordinal)

@@ -435,6 +435,42 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    // Tri-state numerics shared by the int/float/bool comparison dunders.
+    // int slots take the integer tower only and decline floats to the
+    // reflected slot like CPython; float slots take the whole tower.
+    // Anything else declines with NotImplemented on every dunder, ordering
+    // included — the operator machinery raises once both sides decline.
+    private static bool TryAsIntegerOperand(object value, out BigInteger integer)
+    {
+        switch (value)
+        {
+            case BigInteger big:
+                integer = big;
+                return true;
+            case int small:
+                integer = new BigInteger(small);
+                return true;
+            case bool flag:
+                integer = flag ? BigInteger.One : BigInteger.Zero;
+                return true;
+            default:
+                integer = default;
+                return false;
+        }
+    }
+
+    private static bool TryAsFloatOperand(object value, out PyNumber number)
+    {
+        if (value is int small)
+        {
+            number = PyNumber.FromInteger(new BigInteger(small));
+            return true;
+        }
+
+        return PyNumberOps.TryAsNumber(value, out number);
+    }
+
+
     internal static class IntMembers
     {
         public static bool TryGetMember(object receiver, string name, [MaybeNullWhen(false)] out object value)
@@ -520,6 +556,90 @@ internal sealed partial class LythonRuntime
                 "from_bytes" => receiver is bool
                     ? new BuiltinTypeMethod("bool", "from_bytes", bindsOwner: true, BoolFromBytes)
                     : new BuiltinTypeMethod("int", "from_bytes", bindsOwner: true, IntFromBytes),
+                "__eq__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "int.__eq__(value) expects one argument.", span);
+                    }
+
+                    if (!TryAsIntegerOperand(arguments[0], out var other))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return integer.Value == other;
+                }, "int.__eq__", ["value"]),
+                "__ne__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "int.__ne__(value) expects one argument.", span);
+                    }
+
+                    if (!TryAsIntegerOperand(arguments[0], out var other))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return integer.Value != other;
+                }, "int.__ne__", ["value"]),
+                "__lt__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "int.__lt__(value) expects one argument.", span);
+                    }
+
+                    if (!TryAsIntegerOperand(arguments[0], out var other))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return integer.Value.CompareTo(other) < 0;
+                }, "int.__lt__", ["value"]),
+                "__le__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "int.__le__(value) expects one argument.", span);
+                    }
+
+                    if (!TryAsIntegerOperand(arguments[0], out var other))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return integer.Value.CompareTo(other) <= 0;
+                }, "int.__le__", ["value"]),
+                "__gt__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "int.__gt__(value) expects one argument.", span);
+                    }
+
+                    if (!TryAsIntegerOperand(arguments[0], out var other))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return integer.Value.CompareTo(other) > 0;
+                }, "int.__gt__", ["value"]),
+                "__ge__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "int.__ge__(value) expects one argument.", span);
+                    }
+
+                    if (!TryAsIntegerOperand(arguments[0], out var other))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return integer.Value.CompareTo(other) >= 0;
+                }, "int.__ge__", ["value"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -572,6 +692,90 @@ internal sealed partial class LythonRuntime
                     return PyString.FromString(FloatToHex(number));
                 }, "float.hex"),
                 "fromhex" => new BuiltinTypeMethod("float", "fromhex", bindsOwner: true, FloatFromHex),
+                "__eq__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "float.__eq__(value) expects one argument.", span);
+                    }
+
+                    if (!TryAsFloatOperand(arguments[0], out var other))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return PyNumberOps.AreEqual(PyNumber.FromFloat(number), other);
+                }, "float.__eq__", ["value"]),
+                "__ne__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "float.__ne__(value) expects one argument.", span);
+                    }
+
+                    if (!TryAsFloatOperand(arguments[0], out var other))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return !PyNumberOps.AreEqual(PyNumber.FromFloat(number), other);
+                }, "float.__ne__", ["value"]),
+                "__lt__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "float.__lt__(value) expects one argument.", span);
+                    }
+
+                    if (!TryAsFloatOperand(arguments[0], out var other))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return PyNumberOps.TryCompare(PyNumber.FromFloat(number), other, out var comparison) && comparison < 0;
+                }, "float.__lt__", ["value"]),
+                "__le__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "float.__le__(value) expects one argument.", span);
+                    }
+
+                    if (!TryAsFloatOperand(arguments[0], out var other))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return PyNumberOps.TryCompare(PyNumber.FromFloat(number), other, out var comparison) && comparison <= 0;
+                }, "float.__le__", ["value"]),
+                "__gt__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "float.__gt__(value) expects one argument.", span);
+                    }
+
+                    if (!TryAsFloatOperand(arguments[0], out var other))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return PyNumberOps.TryCompare(PyNumber.FromFloat(number), other, out var comparison) && comparison > 0;
+                }, "float.__gt__", ["value"]),
+                "__ge__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "float.__ge__(value) expects one argument.", span);
+                    }
+
+                    if (!TryAsFloatOperand(arguments[0], out var other))
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return PyNumberOps.TryCompare(PyNumber.FromFloat(number), other, out var comparison) && comparison >= 0;
+                }, "float.__ge__", ["value"]),
                 _ => MissingMemberValue.Instance,
             };
 

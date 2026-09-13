@@ -322,4 +322,187 @@ return "|".join([
         Assert.Equal(exceptionType, result.Failure?.ExceptionType);
         Assert.Contains(messageFragment, result.Failure?.Message, StringComparison.Ordinal);
     }
+    [Fact]
+    public async Task NumericComparisonDundersAdvanceLikeCpython()
+    {
+        // int slots take the integer tower only (floats decline to the
+        // reflected slot) while float slots take the whole tower; anything
+        // else declines with NotImplemented on every dunder, ordering
+        // included, exactly like CPython.
+        var script = new LythonEngine().Compile("""
+from decimal import Decimal
+def call2(f, a, b):
+    return f(a, b)
+results = []
+results.append(str((1).__eq__(1)))
+results.append(str((1).__ne__(2)))
+results.append(str((1).__lt__(2)))
+results.append(str((1).__le__(1)))
+results.append(str((1).__gt__(0)))
+results.append(str((1).__ge__(2)))
+results.append(str((1).__eq__(True)))
+results.append(str((2).__eq__(2.0)))
+results.append(str((1).__eq__(1.0)))
+results.append(str((1).__ne__(1.5)))
+results.append(str((1).__lt__(1.5)))
+results.append(str((2).__gt__(1.5)))
+results.append(str((2).__le__(2.0)))
+results.append(str((1).__eq__("a")))
+results.append(str((1).__ne__("a")))
+results.append(str((1).__lt__("a")))
+results.append(str((1).__ge__("a")))
+results.append(str((1).__eq__(None)))
+results.append(str((1).__eq__([1])))
+results.append(str((1).__eq__({1: 2})))
+results.append(str((10 ** 30).__eq__(10 ** 30)))
+results.append(str((10 ** 30).__lt__(10 ** 30 + 1)))
+results.append(str((2 ** 100).__eq__(2 ** 100)))
+results.append(str((10 ** 30).__eq__(1e30)))
+results.append(str((10 ** 30).__lt__(1e30)))
+results.append(str(True.__eq__(1)))
+results.append(str(True.__ne__(0)))
+results.append(str(True.__lt__(2)))
+results.append(str(False.__ge__(0)))
+results.append(str(True.__eq__(1.0)))
+results.append(str(True.__lt__(1.5)))
+results.append(str(True.__eq__("a")))
+results.append(str((1.5).__eq__(1.5)))
+results.append(str((1.5).__ne__(2.0)))
+results.append(str((1.5).__lt__(2)))
+results.append(str((1.5).__le__(1.5)))
+results.append(str((1.5).__gt__(1)))
+results.append(str((1.5).__ge__(1.5)))
+results.append(str((1.0).__eq__(1)))
+results.append(str((1.5).__ne__(1)))
+results.append(str((1.5).__lt__(2)))
+results.append(str((2.0).__ge__(2)))
+results.append(str((1.0).__eq__("a")))
+results.append(str((1.5).__lt__("a")))
+results.append(str((1.0).__eq__(None)))
+results.append(str((1.0).__eq__([1])))
+n = float("nan")
+results.append(str(n.__eq__(n)))
+results.append(str(n.__ne__(n)))
+results.append(str(n.__lt__(1)))
+results.append(str(n.__le__(n)))
+results.append(str(n.__gt__(1)))
+results.append(str(n.__ge__(n)))
+results.append(str(float("inf").__gt__(10 ** 30)))
+results.append(str(float("-inf").__lt__(1)))
+results.append(str(float("inf").__eq__(float("inf"))))
+results.append(str((1).__eq__(Decimal("1"))))
+results.append(str((1.0).__eq__(Decimal("1"))))
+results.append(str((1).__lt__(Decimal("1.5"))))
+for (f, a, b) in [((1).__eq__, 1, 2), ((1).__ne__, 1, 2), ((1).__lt__, 1, 2), ((1).__le__, 1, 2), ((1).__gt__, 1, 2), ((1).__ge__, 1, 2), ((1.0).__eq__, 1, 2), ((1.0).__ne__, 1, 2), ((1.0).__lt__, 1, 2), ((1.0).__le__, 1, 2), ((1.0).__gt__, 1, 2), ((1.0).__ge__, 1, 2)]:
+    try:
+        call2(f, a, b)
+    except TypeError as e:
+        results.append(type(e).__name__)
+        results.append(str(e))
+results.append(str(hasattr(1, "__eq__")))
+results.append(str(hasattr(1.0, "__lt__")))
+results.append(str(hasattr(True, "__ge__")))
+results.append(str(hasattr(1, "__rlt__")))
+results.append(str(hasattr(1.0, "__req__")))
+return results
+""");
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "False",
+            "True",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "True",
+            "True",
+            "True",
+            "NotImplemented",
+            "NotImplemented",
+            "True",
+            "True",
+            "True",
+            "True",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "False",
+            "True",
+            "False",
+            "False",
+            "False",
+            "False",
+            "True",
+            "True",
+            "True",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "TypeError",
+            "Method 'int.__eq__' received too many positional arguments.",
+            "TypeError",
+            "Method 'int.__ne__' received too many positional arguments.",
+            "TypeError",
+            "Method 'int.__lt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'int.__le__' received too many positional arguments.",
+            "TypeError",
+            "Method 'int.__gt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'int.__ge__' received too many positional arguments.",
+            "TypeError",
+            "Method 'float.__eq__' received too many positional arguments.",
+            "TypeError",
+            "Method 'float.__ne__' received too many positional arguments.",
+            "TypeError",
+            "Method 'float.__lt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'float.__le__' received too many positional arguments.",
+            "TypeError",
+            "Method 'float.__gt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'float.__ge__' received too many positional arguments.",
+            "True",
+            "True",
+            "True",
+            "False",
+            "False",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
