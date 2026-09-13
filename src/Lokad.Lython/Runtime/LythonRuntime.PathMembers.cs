@@ -77,6 +77,8 @@ internal sealed partial class LythonRuntime
                 "__context__" => (object?)exception.Context ?? PyNone.Instance,
                 "__suppress_context__" => exception.SuppressContext,
                 "code" when string.Equals(exception.TypeName, "SystemExit", StringComparison.Ordinal) => exception.Value,
+                "value" when string.Equals(exception.TypeName, "StopIteration", StringComparison.Ordinal)
+                    => CreateExceptionArgs(exception) is { Count: > 0 } stopped ? stopped[0] : PyNone.Instance,
                 _ => MissingMemberValue.Instance,
             };
 

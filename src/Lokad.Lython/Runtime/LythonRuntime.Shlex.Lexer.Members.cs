@@ -42,7 +42,7 @@ internal sealed partial class LythonRuntime
                         var token = receiver.GetToken(span);
                         if (AreEqual(token, receiver._eof))
                         {
-                            throw new LythonRuntimeException("StopIteration", "iterator is exhausted", span);
+                            throw new LythonRuntimeException("StopIteration", "", span);
                         }
 
                         return token;

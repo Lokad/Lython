@@ -266,6 +266,138 @@ __lython_file.close()
     }
 
     [Fact]
+    public async Task BareNextSurfacesExactStopIterationShapes()
+    {
+        // Bare next() over exhausted engine iterators raises an empty
+        // StopIteration like CPython (never the house text), user-defined
+        // __next__ failures propagate untouched, and StopIteration.value
+        // reads args[0] or None with independent write storage, in both modes.
+        var script = new LythonEngine().Compile("""
+            import shlex
+            results = []
+            def shapes(thunk):
+                try:
+                    thunk()
+                except StopIteration as e:
+                    results.append(str(e))
+                    results.append(repr(e.args))
+                    results.append(repr(e))
+            shapes(lambda: next(iter([])))
+            def dict_exhaust():
+                it = iter({'a': 1})
+                next(it)
+                return next(it)
+            shapes(dict_exhaust)
+            def str_exhaust():
+                it = iter('ab')
+                next(it)
+                next(it)
+                return next(it)
+            shapes(str_exhaust)
+            def range_exhaust():
+                it = iter(range(1))
+                next(it)
+                return next(it)
+            shapes(range_exhaust)
+            def map_exhaust():
+                it = map(str, [1])
+                next(it)
+                return next(it)
+            shapes(map_exhaust)
+            class MyIter:
+                def __init__(self):
+                    self.n = 0
+                def __iter__(self):
+                    return self
+                def __next__(self):
+                    if self.n > 0:
+                        raise StopIteration('custom')
+                    self.n += 1
+                    return 1
+            def user_custom():
+                it = MyIter()
+                next(it)
+                return next(it)
+            shapes(user_custom)
+            def user_default():
+                it = MyIter()
+                next(it)
+                return next(it, 'dflt')
+            results.append(str(user_default()))
+            def shlex_exhaust():
+                lx = shlex.shlex('a b')
+                lx.read_token()
+                lx.read_token()
+                return next(lx)
+            shapes(shlex_exhaust)
+            def bare_value():
+                try:
+                    next(iter([]))
+                except StopIteration as e:
+                    return e.value
+            results.append(str(bare_value()))
+            def custom_value():
+                try:
+                    raise StopIteration(5)
+                except StopIteration as e:
+                    return e.value
+            results.append(str(custom_value()))
+            def write_value():
+                try:
+                    raise StopIteration(5)
+                except StopIteration as e:
+                    e.value = 7
+                    return (e.value, e.args)
+            results.append(str(write_value()))
+            def write_bare():
+                try:
+                    next(iter([]))
+                except StopIteration as e:
+                    e.value = 9
+                    return (e.value, e.args)
+            results.append(str(write_bare()))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "",
+            "()",
+            "StopIteration()",
+            "",
+            "()",
+            "StopIteration()",
+            "",
+            "()",
+            "StopIteration()",
+            "",
+            "()",
+            "StopIteration()",
+            "",
+            "()",
+            "StopIteration()",
+            "custom",
+            "('custom',)",
+            "StopIteration('custom')",
+            "dflt",
+            "",
+            "()",
+            "StopIteration()",
+            "None",
+            "5",
+            "(7, (5,))",
+            "(9, ())",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task RunAsync_MaterializersAndLazyBuiltinIterators_AwaitAsyncSourcesAndCallbacks()
     {
         var host = new DelayedLythonHost("/repo");

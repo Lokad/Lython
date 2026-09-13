@@ -510,9 +510,18 @@ internal sealed partial class LythonRuntime
                 throw RuntimeErrors.NotAnIterator(instance, span);
             }
 
-            if (PyUserIterator.TryAdvanceInstance(instance, context, span, out var item))
+            try
             {
-                return RuntimeValue(item);
+                return RuntimeValue(PyUserIterator.InvokeNext(instance, context, span));
+            }
+            catch (LythonRuntimeException ex) when (ex.ExceptionType == "StopIteration")
+            {
+                if (arguments.Length == 2)
+                {
+                    return arguments[1];
+                }
+
+                throw;
             }
         }
         else if (arguments[0] is IPyIteratorValue iterator)
@@ -532,7 +541,7 @@ internal sealed partial class LythonRuntime
             return arguments[1];
         }
 
-        throw new LythonRuntimeException("StopIteration", "iterator is exhausted", span);
+        throw new LythonRuntimeException("StopIteration", "", span);
     }
 
     private static async ValueTask<object> NextAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -550,7 +559,19 @@ internal sealed partial class LythonRuntime
                 throw RuntimeErrors.NotAnIterator(instance, span);
             }
 
-            advanced = await PyUserIterator.TryAdvanceInstanceAsync(instance, context, span).ConfigureAwait(false);
+            try
+            {
+                return RuntimeValue(await PyUserIterator.InvokeNextAsync(instance, context, span).ConfigureAwait(false));
+            }
+            catch (LythonRuntimeException ex) when (ex.ExceptionType == "StopIteration")
+            {
+                if (arguments.Length == 2)
+                {
+                    return arguments[1];
+                }
+
+                throw;
+            }
         }
         else
         {
@@ -575,7 +596,7 @@ internal sealed partial class LythonRuntime
             return arguments[1];
         }
 
-        throw new LythonRuntimeException("StopIteration", "iterator is exhausted", span);
+        throw new LythonRuntimeException("StopIteration", "", span);
     }
 
 }

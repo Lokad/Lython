@@ -95,14 +95,9 @@ internal sealed class PyUserIterator : IPyIteratorValue
 
     internal static bool TryAdvanceInstance(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
-        if (!instance.TryGetAttribute("__next__", context, span, out var member) || member is not LythonRuntime.ICallable callable)
-        {
-            throw new LythonRuntimeException("TypeError", "iter() returned non-iterator", span);
-        }
-
         try
         {
-            value = callable.Invoke([], span, context);
+            value = InvokeNext(instance, context, span);
             return true;
         }
         catch (LythonRuntimeException ex) when (ex.ExceptionType == "StopIteration")
@@ -112,16 +107,34 @@ internal sealed class PyUserIterator : IPyIteratorValue
         }
     }
 
-    internal static async ValueTask<PyIterationResult> TryAdvanceInstanceAsync(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    // next() surfaces whatever __next__ raises (including a custom
+    // StopIteration) like CPython instead of replacing it with the
+    // end-of-iteration signal consumed by consuming loops.
+    internal static object InvokeNext(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (!instance.TryGetAttribute("__next__", context, span, out var member) || member is not LythonRuntime.ICallable callable)
         {
             throw new LythonRuntimeException("TypeError", "iter() returned non-iterator", span);
         }
 
+        return callable.Invoke([], span, context);
+    }
+
+    internal static async ValueTask<object> InvokeNextAsync(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        if (!instance.TryGetAttribute("__next__", context, span, out var member) || member is not LythonRuntime.ICallable callable)
+        {
+            throw new LythonRuntimeException("TypeError", "iter() returned non-iterator", span);
+        }
+
+        return await callable.InvokeAsync([], span, context).ConfigureAwait(false);
+    }
+
+    internal static async ValueTask<PyIterationResult> TryAdvanceInstanceAsync(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
         try
         {
-            var value = await callable.InvokeAsync([], span, context).ConfigureAwait(false);
+            var value = await InvokeNextAsync(instance, context, span).ConfigureAwait(false);
             return PyIterationResult.Yield(value);
         }
         catch (LythonRuntimeException ex) when (ex.ExceptionType == "StopIteration")
