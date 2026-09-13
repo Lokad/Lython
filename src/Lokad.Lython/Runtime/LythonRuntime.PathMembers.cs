@@ -463,6 +463,15 @@ internal sealed partial class LythonRuntime
 
                     return decimalValue.IsTruthy();
                 }, "Decimal.__bool__"),
+                "__hash__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Decimal.__hash__() expects no arguments.", span);
+                    }
+
+                    return ComputeBuiltinHash(decimalValue, span);
+                }, "Decimal.__hash__"),
                 _ => MissingMemberValue.Instance,
             };
 

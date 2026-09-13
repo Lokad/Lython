@@ -173,6 +173,19 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
+            if (name == "__hash__")
+            {
+                value = BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "str.__hash__() expects no arguments.", span);
+                    }
+
+                    return ComputeBuiltinHash(text, span);
+                }, "str.__hash__");
+                return true;
+            }
 
             if (name == "__getitem__")
             {

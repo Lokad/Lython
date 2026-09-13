@@ -292,6 +292,7 @@ internal sealed partial class LythonRuntime
 
                     return PyComparison.Compare(list, other, span, ">=") >= 0;
                 }, "list.__ge__", ["value"]),
+                "__hash__" => PyNone.Instance,
                 _ => MissingMemberValue.Instance,
             };
 
@@ -596,6 +597,15 @@ internal sealed partial class LythonRuntime
 
                     return PyComparison.Compare(source, arguments[0], span, ">=") >= 0;
                 }, "tuple.__ge__", ["value"]),
+                "__hash__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "tuple.__hash__() expects no arguments.", span);
+                    }
+
+                    return ComputeBuiltinHash(source, span);
+                }, "tuple.__hash__"),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -718,6 +728,15 @@ internal sealed partial class LythonRuntime
 
                     return false;
                 }, "None.__bool__"),
+                "__hash__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "None.__hash__() expects no arguments.", span);
+                    }
+
+                    return ComputeBuiltinHash(none, span);
+                }, "None.__hash__"),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -903,6 +922,15 @@ internal sealed partial class LythonRuntime
 
                     return integer.Value != BigInteger.Zero;
                 }, "int.__bool__"),
+                "__hash__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "int.__hash__() expects no arguments.", span);
+                    }
+
+                    return ComputeBuiltinHash(integer.Value, span);
+                }, "int.__hash__"),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1048,6 +1076,15 @@ internal sealed partial class LythonRuntime
 
                     return number != 0.0;
                 }, "float.__bool__"),
+                "__hash__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "float.__hash__() expects no arguments.", span);
+                    }
+
+                    return ComputeBuiltinHash(number, span);
+                }, "float.__hash__"),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1491,6 +1528,15 @@ internal sealed partial class LythonRuntime
 
                     return range.IsTruthy();
                 }, "range.__bool__"),
+                "__hash__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "range.__hash__() expects no arguments.", span);
+                    }
+
+                    return ComputeBuiltinHash(range, span);
+                }, "range.__hash__"),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1769,6 +1815,7 @@ internal sealed partial class LythonRuntime
 
                     return PyNotImplemented.Instance;
                 }, "dict.__ge__", ["value"]),
+                "__hash__" => PyNone.Instance,
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1982,6 +2029,7 @@ internal sealed partial class LythonRuntime
 
                     return SetMembers.AsSetOperand(view, span, context).IsSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
                 }, "dict_keys.__ge__", ["value"]),
+                "__hash__" => PyNone.Instance,
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1994,6 +2042,7 @@ internal sealed partial class LythonRuntime
             {
                 "__iter__" => BoundCallable.CreateNoArguments(view, "dict_values.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 "__len__" => BoundCallable.CreateNoArguments(view, "dict_values.__len__", static (receiver, span, context) => Len([receiver], span, context)),
+                "__hash__" => PyNone.Instance,
                 _ => MissingMemberValue.Instance,
             };
 
@@ -2185,6 +2234,7 @@ internal sealed partial class LythonRuntime
 
                     return SetMembers.AsSetOperand(view, span, context).IsSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
                 }, "dict_items.__ge__", ["value"]),
+                "__hash__" => PyNone.Instance,
                 _ => MissingMemberValue.Instance,
             };
 
@@ -2422,6 +2472,7 @@ internal sealed partial class LythonRuntime
 
                     return SetMembers.AsSetOperand(view, span, context).IsSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
                 }, "ChainMap.keys.__ge__", ["value"]),
+                "__hash__" => PyNone.Instance,
                 _ => MissingMemberValue.Instance,
             };
 
@@ -2661,6 +2712,7 @@ internal sealed partial class LythonRuntime
 
                     return SetMembers.AsSetOperand(view, span, context).IsSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
                 }, "ChainMap.items.__ge__", ["value"]),
+                "__hash__" => PyNone.Instance,
                 _ => MissingMemberValue.Instance,
             };
 
@@ -2682,6 +2734,7 @@ internal sealed partial class LythonRuntime
 
                     return PyContainment.Contains(view, arguments[0], span);
                 }, "ChainMap.values.__contains__", ["item"]),
+                "__hash__" => PyNone.Instance,
                 _ => MissingMemberValue.Instance,
             };
 
@@ -2974,6 +3027,7 @@ internal sealed partial class LythonRuntime
 
                     return PyNotImplemented.Instance;
                 }, "defaultdict.__ge__", ["value"]),
+                "__hash__" => PyNone.Instance,
                 _ => MissingMemberValue.Instance,
             };
 
@@ -3421,6 +3475,7 @@ internal sealed partial class LythonRuntime
 
                     return MultisetLessEqual(other, counter, context, span);
                 }, "Counter.__ge__", ["value"]),
+                "__hash__" => PyNone.Instance,
                 _ => MissingMemberValue.Instance,
             };
 

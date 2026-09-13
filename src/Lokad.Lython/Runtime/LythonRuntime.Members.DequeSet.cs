@@ -237,6 +237,7 @@ internal sealed partial class LythonRuntime
 
                     return EvaluateMultiply(arguments[0], deque, context, span);
                 }, "deque.__rmul__", ["value"]),
+                "__hash__" => PyNone.Instance,
                 _ => MissingMemberValue.Instance,
             };
 
@@ -705,6 +706,7 @@ internal sealed partial class LythonRuntime
 
                     return set.IsSupersetOf(other);
                 }, "set.__ge__", ["value"]),
+                "__hash__" => PyNone.Instance,
                 _ => MissingMemberValue.Instance,
             };
 

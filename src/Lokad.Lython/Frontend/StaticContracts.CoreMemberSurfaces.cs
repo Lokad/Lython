@@ -11,6 +11,7 @@ internal static partial class StaticContracts
         "__gt__",
         "__ge__",
         "__bool__",
+        "__hash__",
     };
 
     private static readonly HashSet<string> StringMembers = new(StringComparer.Ordinal)
@@ -75,6 +76,7 @@ internal static partial class StaticContracts
         "__le__",
         "__gt__",
         "__ge__",
+        "__hash__",
     };
 
     private static readonly HashSet<string> BytesMembers = new(StringComparer.Ordinal)
@@ -134,6 +136,7 @@ internal static partial class StaticContracts
         "__le__",
         "__gt__",
         "__ge__",
+        "__hash__",
     };
 
     private static readonly HashSet<string> PathMembers = new(StringComparer.Ordinal)
@@ -235,6 +238,7 @@ internal static partial class StaticContracts
         "__le__",
         "__gt__",
         "__ge__",
+        "__hash__",
     };
 
     private static readonly HashSet<string> FloatMembers = new(StringComparer.Ordinal)
@@ -253,6 +257,7 @@ internal static partial class StaticContracts
         "__gt__",
         "__ge__",
         "__bool__",
+        "__hash__",
     };
 
     private static readonly HashSet<string> IntMembers = new(StringComparer.Ordinal)
@@ -275,6 +280,7 @@ internal static partial class StaticContracts
         "__gt__",
         "__ge__",
         "__bool__",
+        "__hash__",
     };
 
     private static readonly HashSet<string> ListMembers = new(StringComparer.Ordinal)
@@ -305,6 +311,7 @@ internal static partial class StaticContracts
         "__le__",
         "__gt__",
         "__ge__",
+        "__hash__",
     };
 
     private static readonly HashSet<string> DictMembers = new(StringComparer.Ordinal)
@@ -335,6 +342,7 @@ internal static partial class StaticContracts
         "__le__",
         "__gt__",
         "__ge__",
+        "__hash__",
     };
 
     private static readonly HashSet<string> SetMembers = new(StringComparer.Ordinal)
@@ -377,6 +385,7 @@ internal static partial class StaticContracts
         "__le__",
         "__gt__",
         "__ge__",
+        "__hash__",
     };
 
     private static readonly HashSet<string> PopenMembers = new(StringComparer.Ordinal)
@@ -427,6 +436,7 @@ internal static partial class StaticContracts
         "__le__",
         "__gt__",
         "__ge__",
+        "__hash__",
     };
 
     private static readonly HashSet<string> CollectionsCounterMembers = new(StringComparer.Ordinal)
@@ -462,6 +472,7 @@ internal static partial class StaticContracts
         "__le__",
         "__gt__",
         "__ge__",
+        "__hash__",
     };
 
     private static readonly HashSet<string> CollectionsDequeMembers = new(StringComparer.Ordinal)
@@ -491,6 +502,7 @@ internal static partial class StaticContracts
         "__add__",
         "__mul__",
         "__rmul__",
+        "__hash__",
     };
 
     private static readonly HashSet<string> CollectionsChainMapMembers = new(StringComparer.Ordinal)
@@ -511,6 +523,7 @@ internal static partial class StaticContracts
         "__setitem__",
         "__delitem__",
         "update",
+        "__hash__",
     };
 
     private static readonly HashSet<string> DecimalMembers = new(StringComparer.Ordinal)
@@ -564,6 +577,7 @@ internal static partial class StaticContracts
         "__gt__",
         "__ge__",
         "__bool__",
+        "__hash__",
     };
 
     private static readonly HashSet<string> DecimalContextMembers = new(StringComparer.Ordinal)

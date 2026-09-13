@@ -3,7 +3,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscriptableValue, IPyRenderableValue, IPyTruthyValue
+internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscriptableValue, IPyRenderableValue, IPyTruthyValue, IPyHashableValue
 {
     public PyRange(BigInteger start, BigInteger stop, BigInteger step)
     {
@@ -20,6 +20,24 @@ internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscrip
         : Stop >= Start ? 0 : (Start - Stop - 1) / -Step + 1;
 
     public bool IsTruthy() => Length != 0;
+
+    // Equal ranges share length, start and (past singletons) step, so
+    // hash exactly those components and nothing else.
+    public int GetPyHashCode()
+    {
+        var hash = new HashCode();
+        hash.Add(Length);
+        if (!Length.IsZero)
+        {
+            hash.Add(Start);
+            if (Length != BigInteger.One)
+            {
+                hash.Add(Step);
+            }
+        }
+
+        return hash.ToHashCode();
+    }
 
     public IEnumerable<object> Iterate()
     {

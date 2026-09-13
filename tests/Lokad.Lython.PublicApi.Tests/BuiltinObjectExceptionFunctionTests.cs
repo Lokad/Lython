@@ -576,4 +576,182 @@ return results
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+    [Fact]
+    public async Task HashDundersAdvanceLikeCpython()
+    {
+        // hashable __hash__ members funnel through the same core as the hash builtin (self-consistency only, since house hashes stay CLR-shaped), with range hashing made equality-consistent.
+        var script = new LythonEngine().Compile("""
+from decimal import Decimal
+def call1(f, a):
+    return f(a)
+results = []
+results.append(str((5).__hash__() == hash(5)))
+results.append(str((-3).__hash__() == hash(-3)))
+results.append(str((2 ** 100).__hash__() == hash(2 ** 100)))
+results.append(str(True.__hash__() == hash(True)))
+results.append(str((1.5).__hash__() == hash(1.5)))
+results.append(str(None.__hash__() == hash(None)))
+results.append(str("ab".__hash__() == hash("ab")))
+results.append(str(b"ab".__hash__() == hash(b"ab")))
+results.append(str((1, 2).__hash__() == hash((1, 2))))
+results.append(str(().__hash__() == hash(())))
+results.append(str((1, (2, 3)).__hash__() == hash((1, (2, 3)))))
+results.append(str(Decimal("1.5").__hash__() == hash(Decimal("1.5"))))
+results.append(str(Decimal("0").__hash__() == hash(Decimal("0"))))
+results.append(str(range(3).__hash__() == hash(range(3))))
+results.append(str(range(0, 1).__hash__() == hash(range(0, 1, 2))))
+results.append(str(range(5, 5).__hash__() == hash(range(0, 0))))
+results.append(str(len({range(3), range(3)})))
+results.append(str({range(0, 1): "x"}[range(0, 1, 2)]))
+try:
+    (1, [2]).__hash__()
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    hash((1, [2]))
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+for f in [(5).__hash__, (1.5).__hash__, "ab".__hash__, b"ab".__hash__, (1, 2).__hash__, None.__hash__, range(3).__hash__, Decimal("1").__hash__]:
+    try:
+        call1(f, 1)
+    except TypeError as e:
+        results.append(type(e).__name__)
+        results.append(str(e))
+results.append(str(hasattr(5, "__hash__")))
+results.append(str(hasattr("ab", "__hash__")))
+results.append(str(hasattr((1,), "__hash__")))
+results.append(str(hasattr(None, "__hash__")))
+results.append(str(hasattr(range(3), "__hash__")))
+results.append(str(hasattr(b"ab", "__hash__")))
+results.append(str(hasattr(5, "__rhash__")))
+return results
+""");
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "1",
+            "x",
+            "TypeError",
+            "unhashable type: 'tuple'",
+            "TypeError",
+            "unhashable type: 'tuple'",
+            "TypeError",
+            "int.__hash__() expects no arguments.",
+            "TypeError",
+            "float.__hash__() expects no arguments.",
+            "TypeError",
+            "str.__hash__() expects no arguments.",
+            "TypeError",
+            "bytes.__hash__() expects no arguments.",
+            "TypeError",
+            "tuple.__hash__() expects no arguments.",
+            "TypeError",
+            "None.__hash__() expects no arguments.",
+            "TypeError",
+            "range.__hash__() expects no arguments.",
+            "TypeError",
+            "Decimal.__hash__() expects no arguments.",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "False",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+    }
+
+    [Fact]
+    public async Task UnhashableHashIsNoneLikeCpython()
+    {
+        // unhashable containers and views serve __hash__ as None like CPython, so hasattr holds and calls fail with the house not-callable error.
+        var script = new LythonEngine().Compile("""
+from collections import defaultdict, Counter, deque, ChainMap
+results = []
+results.append(str([].__hash__))
+results.append(str({}.__hash__))
+results.append(str(set().__hash__))
+results.append(str(hasattr([1], "__hash__")))
+results.append(str(hasattr({}, "__hash__")))
+results.append(str(hasattr({1}, "__hash__")))
+results.append(str(hasattr(defaultdict(list), "__hash__")))
+results.append(str(hasattr(Counter(), "__hash__")))
+results.append(str(hasattr(deque(), "__hash__")))
+results.append(str(hasattr(ChainMap({}), "__hash__")))
+d = {}
+cm = ChainMap({})
+results.append(str(hasattr(d.keys(), "__hash__")))
+results.append(str(hasattr(d.values(), "__hash__")))
+results.append(str(hasattr(d.items(), "__hash__")))
+results.append(str(hasattr(cm.keys(), "__hash__")))
+results.append(str(hasattr(cm.values(), "__hash__")))
+results.append(str(hasattr(cm.items(), "__hash__")))
+try:
+    [].__hash__()
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    {}.__hash__()
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+return results
+""");
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "None",
+            "None",
+            "None",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "TypeError",
+            "Object is not callable.",
+            "TypeError",
+            "Object is not callable.",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

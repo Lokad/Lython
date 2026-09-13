@@ -757,6 +757,15 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
+        // Unhashable mappings serve __hash__ as None like CPython; the
+        // switch below uses PyNone as its missing sentinel, so this
+        // precedes it.
+        if (name == "__hash__")
+        {
+            value = PyNone.Instance;
+            return true;
+        }
+
         value = name switch
         {
             "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("collections"),

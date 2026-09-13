@@ -595,6 +595,21 @@ internal sealed partial class LythonRuntime
             : arguments[0] is ICallable;
     }
 
+    // Single source of truth for hash values: builtin hash() and every
+    // __hash__ member funnel through it, so direct calls can never drift
+    // from the values dicts and sets actually use.
+    internal static object ComputeBuiltinHash(object value, LythonSourceSpan span)
+    {
+        try
+        {
+            return new BigInteger(PyValueComparer.Instance.GetHashCode(value));
+        }
+        catch (InvalidOperationException)
+        {
+            throw RuntimeErrors.UnhashableType(value, span);
+        }
+    }
+
     private static object Hash(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length != 1)
@@ -615,14 +630,7 @@ internal sealed partial class LythonRuntime
             return integerHash;
         }
 
-        try
-        {
-            return new BigInteger(PyValueComparer.Instance.GetHashCode(arguments[0]));
-        }
-        catch (InvalidOperationException)
-        {
-            throw RuntimeErrors.UnhashableType(arguments[0], span);
-        }
+        return ComputeBuiltinHash(arguments[0], span);
     }
 
     private static object Id(object[] arguments, LythonSourceSpan span, ExecutionContext context)
