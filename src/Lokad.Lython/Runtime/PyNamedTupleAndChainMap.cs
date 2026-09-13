@@ -688,6 +688,8 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
     internal MemoryGovernor? OwnerMemoryGovernor => _maps[0].OwnerMemoryGovernor;
 
+    internal IReadOnlyList<PyDict> Maps => _maps;
+
     // Generic for-loop/list()/any() iteration builds the same merged list as
     // the key views beside no governed copy of its own; hold the merge
     // estimate over the eager build (released before streaming, so slow

@@ -1217,4 +1217,70 @@ deque().pop()
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task ChainMapUnionOperatorsAdvanceLikeCpython()
+    {
+        // Unions involving a ChainMap build a fresh ChainMap (copied
+        // first map plus shared tails, or one merged map), like CPython,
+        // except multi-map key order follows the house first-map-first
+        // merge rather than CPython last-map-first.
+        var script = new LythonEngine().Compile("""
+            from collections import ChainMap, Counter, defaultdict
+            results = []
+            m = {"c": 3}
+            cm = ChainMap({"a": 1}, {"b": 2})
+            r = m | cm
+            results.append(str(list(r.items())))
+            results.append(str(len(r.maps)))
+            r2 = cm | {"c": 3}
+            results.append(str(list(r2.items())))
+            results.append(str(len(r2.maps)))
+            cm.maps[1]["b"] = 99
+            results.append(str(r2["b"]))
+            c1 = ChainMap({"a": 1}, {"b": 2})
+            c2 = ChainMap({"c": 3})
+            results.append(str(list((c1 | c2).items())))
+            results.append(str(Counter({"x": 1}) | ChainMap({"a": 2})))
+            results.append(str(defaultdict(list, {"x": [1]}) | ChainMap({"a": 2})))
+            results.append(str(({"a": 0, "c": 3} | ChainMap({"a": 1, "b": 2}))["a"]))
+            def union_arg(x, y):
+                return x | y
+            try:
+                union_arg(ChainMap({"a": 1}), [(1, 2)])
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                union_arg([(1, 2)], ChainMap({"a": 1}))
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "[('c', 3), ('a', 1), ('b', 2)]",
+            "1",
+            "[('a', 1), ('c', 3), ('b', 2)]",
+            "2",
+            "99",
+            "[('a', 1), ('c', 3), ('b', 2)]",
+            "ChainMap({'x': 1, 'a': 2})",
+            "ChainMap({'x': [1], 'a': 2})",
+            "1",
+            "TypeError",
+            "unsupported operand type(s) for |: 'ChainMap' and 'list'",
+            "TypeError",
+            "unsupported operand type(s) for |: 'list' and 'ChainMap'",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

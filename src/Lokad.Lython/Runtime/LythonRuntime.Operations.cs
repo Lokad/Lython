@@ -142,6 +142,44 @@ internal sealed partial class LythonRuntime
             return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) >= 0 ? lhs : rhs, keepPositiveOnly: true, span);
         }
 
+        if (left is PyChainMap leftChainMap && right is PyDict or PyDefaultDict or PyCounter or PyChainMap)
+        {
+            var first = new PyDict(context.MemoryGovernor, span);
+            foreach (var pair in leftChainMap.Maps[0])
+            {
+                first.SetItem(pair.Key, pair.Value);
+            }
+
+            foreach (var pair in InPlaceMergePairs(right, span))
+            {
+                first.SetItem(pair.Key, pair.Value);
+            }
+
+            var maps = new List<PyDict> { first };
+            for (var i = 1; i < leftChainMap.Maps.Count; i++)
+            {
+                maps.Add(leftChainMap.Maps[i]);
+            }
+
+            return new PyChainMap(maps);
+        }
+
+        if (right is PyChainMap && left is PyDict or PyDefaultDict or PyCounter)
+        {
+            var merged = new PyDict(context.MemoryGovernor, span);
+            foreach (var pair in InPlaceMergePairs(left, span))
+            {
+                merged.SetItem(pair.Key, pair.Value);
+            }
+
+            foreach (var pair in InPlaceMergePairs(right, span))
+            {
+                merged.SetItem(pair.Key, pair.Value);
+            }
+
+            return new PyChainMap([merged]);
+        }
+
         if (left is PyDefaultDict || right is PyDefaultDict)
         {
             var leftPairs = MergeUnionPairs(left);
