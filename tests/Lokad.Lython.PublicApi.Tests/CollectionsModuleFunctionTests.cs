@@ -1331,4 +1331,67 @@ deque().pop()
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task CollectionTypesWorkInIsinstanceAndIssubclass()
+    {
+        // defaultdict, Counter, deque and ChainMap are first-class types
+        // for isinstance (with dict-subclass relations), like CPython.
+        var script = new LythonEngine().Compile("""
+            from collections import defaultdict, Counter, deque, ChainMap
+            results = []
+            results.append(str(isinstance(defaultdict(list), defaultdict)))
+            results.append(str(isinstance(Counter(), Counter)))
+            results.append(str(isinstance(deque(), deque)))
+            results.append(str(isinstance(ChainMap(), ChainMap)))
+            results.append(str(isinstance(defaultdict(list), dict)))
+            results.append(str(isinstance(Counter(), dict)))
+            results.append(str(isinstance(deque(), dict)))
+            results.append(str(isinstance({}, defaultdict)))
+            results.append(str(isinstance({}, (list, defaultdict))))
+            results.append(str(issubclass(defaultdict, dict)))
+            results.append(str(issubclass(Counter, dict)))
+            results.append(str(issubclass(dict, defaultdict)))
+            results.append(str(issubclass(defaultdict, defaultdict)))
+            try:
+                issubclass([], dict)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                isinstance({}, 42)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "False",
+            "False",
+            "False",
+            "True",
+            "True",
+            "False",
+            "True",
+            "TypeError",
+            "issubclass() arg 1 must be a class",
+            "TypeError",
+            "isinstance() arg 2 must be a type, a tuple of types, or a union",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

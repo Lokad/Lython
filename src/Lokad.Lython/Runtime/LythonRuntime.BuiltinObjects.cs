@@ -357,6 +357,7 @@ internal sealed partial class LythonRuntime
 
         return subjectName == baseName ||
                subjectName == "bool" && baseName == "int" ||
+               subjectName is "collections.defaultdict" or "collections.Counter" && baseName == "dict" ||
                baseName == "object";
     }
 
@@ -574,7 +575,11 @@ internal sealed partial class LythonRuntime
             "datetime.tzinfo" or
             "statistics.NormalDist" or
             "random.Random" or
-            "zipfile.ZipInfo";
+            "zipfile.ZipInfo" or
+            "collections.defaultdict" or
+            "collections.Counter" or
+            "collections.deque" or
+            "collections.ChainMap";
     }
 
     internal static bool DoesObjectMatchBuiltinType(string typeName, object value)
@@ -586,7 +591,11 @@ internal sealed partial class LythonRuntime
             "float" => value is double,
             "list" => value is PyList,
             "tuple" => value is PyTuple or PyNamedTupleObject or PyTypingNamedTupleObject or TimeStructTimeValue,
-            "dict" => value is PyDict,
+            "dict" => value is PyDict or PyDefaultDict or PyCounter,
+            "collections.defaultdict" => value is PyDefaultDict,
+            "collections.Counter" => value is PyCounter,
+            "collections.deque" => value is PyDeque,
+            "collections.ChainMap" => value is PyChainMap,
             "set" => value is PySet,
             "str" => value is PyString,
             "bytes" => value is PyBytes,
