@@ -422,6 +422,178 @@ internal sealed partial class LythonRuntime
 
                     return PyContainment.Contains(set, arguments[0], span);
                 }, "set.__contains__", ["item"]),
+                "__or__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "set.__or__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PySet right)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return EvaluateBitwiseOr(set, right, context, span);
+                }, "set.__or__", ["value"]),
+                "__and__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "set.__and__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PySet right)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return EvaluateBitwiseAnd(set, right, context, span);
+                }, "set.__and__", ["value"]),
+                "__sub__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "set.__sub__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PySet right)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return EvaluateSubtract(set, right, context, span);
+                }, "set.__sub__", ["value"]),
+                "__xor__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "set.__xor__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PySet right)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return EvaluateBitwiseXor(set, right, context, span);
+                }, "set.__xor__", ["value"]),
+                "__ror__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "set.__ror__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PySet left)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return EvaluateBitwiseOr(left, set, context, span);
+                }, "set.__ror__", ["value"]),
+                "__rand__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "set.__rand__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PySet left)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return EvaluateBitwiseAnd(left, set, context, span);
+                }, "set.__rand__", ["value"]),
+                "__rsub__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "set.__rsub__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PySet left)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return EvaluateSubtract(left, set, context, span);
+                }, "set.__rsub__", ["value"]),
+                "__rxor__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "set.__rxor__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PySet left)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return EvaluateBitwiseXor(left, set, context, span);
+                }, "set.__rxor__", ["value"]),
+                "__ior__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "set.__ior__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PySet right)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    set.UnionWith(right);
+                    return set;
+                }, "set.__ior__", ["value"]),
+                "__iand__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "set.__iand__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PySet right)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    set.IntersectWith(right);
+                    return set;
+                }, "set.__iand__", ["value"]),
+                "__isub__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "set.__isub__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PySet right)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    set.ExceptWith(right);
+                    return set;
+                }, "set.__isub__", ["value"]),
+                "__ixor__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "set.__ixor__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PySet right)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    set.SymmetricExceptWith(right);
+                    return set;
+                }, "set.__ixor__", ["value"]),
                 _ => MissingMemberValue.Instance,
             };
 

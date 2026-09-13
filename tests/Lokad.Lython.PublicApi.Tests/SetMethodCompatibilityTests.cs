@@ -242,5 +242,134 @@ return "|".join(vals)
         Assert.NotNull(result.Failure);
         Assert.Equal("KeyError", result.Failure?.ExceptionType);
     }
-}
 
+    private const string OperatorDundersSource =
+        """
+def two_args(f, a, b):
+    return f(a, b)
+vals = []
+vals.append(str(sorted({1, 2}.__or__({2, 3}))))
+vals.append(str(sorted({1, 2}.__and__({2, 3}))))
+vals.append(str(sorted({1, 2}.__sub__({2, 3}))))
+vals.append(str(sorted({1, 2}.__xor__({2, 3}))))
+vals.append(str(sorted({1}.__ror__({1, 2}))))
+vals.append(str(sorted({1}.__rand__({1, 2}))))
+vals.append(str(sorted({1}.__rsub__({1, 2}))))
+vals.append(str(sorted({1}.__rxor__({1, 2}))))
+s = {1, 2}
+r = s.__ior__({2, 3})
+vals.append(str(sorted(r)))
+vals.append(str(sorted(s)))
+vals.append(str(r is s))
+t = {1, 2}
+r = t.__iand__({2, 3})
+vals.append(str(sorted(r)))
+vals.append(str(sorted(t)))
+vals.append(str(r is t))
+u = {1, 2}
+r = u.__isub__({2})
+vals.append(str(sorted(r)))
+vals.append(str(sorted(u)))
+vals.append(str(r is u))
+v = {1, 2}
+r = v.__ixor__({2, 3})
+vals.append(str(sorted(r)))
+vals.append(str(sorted(v)))
+vals.append(str(r is v))
+vals.append(str({1}.__or__(1)))
+vals.append(str({1}.__and__([1])))
+vals.append(str({1}.__sub__({}.keys())))
+vals.append(str({1}.__xor__(None)))
+for f in [{1}.__or__, {1}.__ror__, {1}.__and__, {1}.__rand__, {1}.__sub__, {1}.__rsub__, {1}.__xor__, {1}.__rxor__, {1}.__ior__, {1}.__iand__, {1}.__isub__, {1}.__ixor__]:
+    try:
+        two_args(f, 1, 2)
+    except TypeError as e:
+        vals.append(type(e).__name__)
+        vals.append(str(e))
+vals.append(str(hasattr({1}, "__xor__")))
+vals.append(str(callable({1}.__and__)))
+return "|".join(vals)
+""";
+
+    [Fact]
+    public void SetOperatorDundersAdvanceLikeCpython()
+    {
+        var result = new LythonEngine().Run(OperatorDundersSource, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal(
+            "[1, 2, 3]|[2]|[1]|[1, 3]|[1, 2]|[1]|[2]|[2]|" +
+            "[1, 2, 3]|[1, 2, 3]|True|" +
+            "[2]|[2]|True|" +
+            "[1]|[1]|True|" +
+            "[1, 3]|[1, 3]|True|" +
+            "NotImplemented|NotImplemented|NotImplemented|NotImplemented|" +
+            "TypeError|" +
+            "Method 'set.__or__' received too many positional arguments.|" +
+            "TypeError|" +
+            "Method 'set.__ror__' received too many positional arguments.|" +
+            "TypeError|" +
+            "Method 'set.__and__' received too many positional arguments.|" +
+            "TypeError|" +
+            "Method 'set.__rand__' received too many positional arguments.|" +
+            "TypeError|" +
+            "Method 'set.__sub__' received too many positional arguments.|" +
+            "TypeError|" +
+            "Method 'set.__rsub__' received too many positional arguments.|" +
+            "TypeError|" +
+            "Method 'set.__xor__' received too many positional arguments.|" +
+            "TypeError|" +
+            "Method 'set.__rxor__' received too many positional arguments.|" +
+            "TypeError|" +
+            "Method 'set.__ior__' received too many positional arguments.|" +
+            "TypeError|" +
+            "Method 'set.__iand__' received too many positional arguments.|" +
+            "TypeError|" +
+            "Method 'set.__isub__' received too many positional arguments.|" +
+            "TypeError|" +
+            "Method 'set.__ixor__' received too many positional arguments.|" +
+            "True|True",
+            result.ReturnValue);
+    }
+
+    [Fact]
+    public async Task RunAsync_SetOperatorDundersUseTheSameSurface()
+    {
+        var result = await new LythonEngine().RunAsync(OperatorDundersSource, new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
+        Assert.Equal(
+            "[1, 2, 3]|[2]|[1]|[1, 3]|[1, 2]|[1]|[2]|[2]|" +
+            "[1, 2, 3]|[1, 2, 3]|True|" +
+            "[2]|[2]|True|" +
+            "[1]|[1]|True|" +
+            "[1, 3]|[1, 3]|True|" +
+            "NotImplemented|NotImplemented|NotImplemented|NotImplemented|" +
+            "TypeError|" +
+            "Method 'set.__or__' received too many positional arguments.|" +
+            "TypeError|" +
+            "Method 'set.__ror__' received too many positional arguments.|" +
+            "TypeError|" +
+            "Method 'set.__and__' received too many positional arguments.|" +
+            "TypeError|" +
+            "Method 'set.__rand__' received too many positional arguments.|" +
+            "TypeError|" +
+            "Method 'set.__sub__' received too many positional arguments.|" +
+            "TypeError|" +
+            "Method 'set.__rsub__' received too many positional arguments.|" +
+            "TypeError|" +
+            "Method 'set.__xor__' received too many positional arguments.|" +
+            "TypeError|" +
+            "Method 'set.__rxor__' received too many positional arguments.|" +
+            "TypeError|" +
+            "Method 'set.__ior__' received too many positional arguments.|" +
+            "TypeError|" +
+            "Method 'set.__iand__' received too many positional arguments.|" +
+            "TypeError|" +
+            "Method 'set.__isub__' received too many positional arguments.|" +
+            "TypeError|" +
+            "Method 'set.__ixor__' received too many positional arguments.|" +
+            "True|True",
+            result.ReturnValue);
+    }
+}

@@ -301,6 +301,18 @@ internal static partial class StaticContracts
         "__iter__",
         "__len__",
         "__contains__",
+        "__or__",
+        "__ror__",
+        "__and__",
+        "__rand__",
+        "__sub__",
+        "__rsub__",
+        "__xor__",
+        "__rxor__",
+        "__ior__",
+        "__iand__",
+        "__isub__",
+        "__ixor__",
     };
 
     private static readonly HashSet<string> PopenMembers = new(StringComparer.Ordinal)
