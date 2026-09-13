@@ -818,6 +818,64 @@ __lython_file.close()
     }
 
     [Fact]
+    public void UnboundClosureCellsReportFreeVariable()
+    {
+        // Reads of compiled closure cells with no value report the
+        // CPython free-variable text instead of the generic name text.
+        // Sync only: async runs the lowered tier, which has no cell
+        // slots and keeps the generic text there.
+        var script = new LythonEngine().Compile("""
+            def read_deleted():
+                x = 1
+                def inner():
+                    return x
+                del x
+                return inner()
+            def read_scrubbed_handler():
+                err = "pre"
+                def inner():
+                    return err
+                try:
+                    raise ValueError("boom")
+                except ValueError as err:
+                    pass
+                return inner()
+            def read_live():
+                x = 1
+                def inner():
+                    return x
+                x = 2
+                return inner()
+            results = []
+            try:
+                read_deleted()
+            except NameError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                read_scrubbed_handler()
+            except NameError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            results.append(str(read_live()))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "NameError",
+            "cannot access free variable 'x' where it is not associated with a value in enclosing scope",
+            "NameError",
+            "cannot access free variable 'err' where it is not associated with a value in enclosing scope",
+            "2",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+    }
+
+    [Fact]
     public void KeywordOnlyParameters_WorkForFunctionsAndLambdas()
     {
         var host = new MockLythonHost();

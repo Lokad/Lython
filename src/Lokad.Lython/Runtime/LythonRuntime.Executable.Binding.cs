@@ -23,12 +23,12 @@ internal sealed partial class LythonRuntime
         var frame = context.CurrentExecutableFrame;
         if (frame is null || !frame.TryGetClosureCell(slot, out var cell))
         {
-            throw RuntimeErrors.NameNotDefined(codeObject.ClosureNames[slot], span);
+            throw RuntimeErrors.FreeVariableNotAssociated(codeObject.ClosureNames[slot], span);
         }
 
         if (ReferenceEquals(cell.Value, UninitializedLocal))
         {
-            throw RuntimeErrors.NameNotDefined(codeObject.ClosureNames[slot], span);
+            throw RuntimeErrors.FreeVariableNotAssociated(codeObject.ClosureNames[slot], span);
         }
 
         return cell.Value;

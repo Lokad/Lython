@@ -146,6 +146,9 @@ internal static class RuntimeErrors
     public static LythonRuntimeException NameNotDefined(string name, LythonSourceSpan? span)
         => new("NameError", $"name '{name}' is not defined", span);
 
+    public static LythonRuntimeException FreeVariableNotAssociated(string name, LythonSourceSpan? span)
+        => new("NameError", $"cannot access free variable '{name}' where it is not associated with a value in enclosing scope", span);
+
     public static LythonRuntimeException RaiseExpectsException(LythonSourceSpan? span)
         => Type("exceptions must derive from BaseException", span);
 
