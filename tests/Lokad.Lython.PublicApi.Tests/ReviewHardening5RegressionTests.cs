@@ -46,32 +46,46 @@ return matcher.ratio()
     }
 
     [Fact]
-    public async Task MatchingHonorsMidRunCancellation()
+    public void MatchingHonorsMidRunCancellation()
     {
-        // 12000-char identical inputs cost ~0.8s in Release locally, keeping the run alive far past the 50ms cancel point on any host: the 4000-char shape it replaced measured ~140ms here and completed before the cancel point on a faster CI host (ubuntu), flipping this pin to Success. Cancellation is observed at CheckExecutionBudget sites inside the matcher loops (FindLongestMatch, ChainB), so the work-vs-delay margin is what makes this deterministic; there is no per-64 cadence.
+        // Fully deterministic rendezvous: wall-clock pins flipped per host
+        // (a 50ms delay raced a 140ms shape on ubuntu, then an 840ms shape
+        // on windows), and output polling starved under full-suite load, so
+        // no timing constant is safe. The hook below cancels synchronously
+        // on the run thread inside the third stdout write while 27 matching
+        // rounds remain; the engine observes it at CheckExecutionBudget
+        // sites inside the matcher loops. Null hook by default elsewhere.
         using var cts = new CancellationTokenSource();
-        var runTask = Task.Run(() => new LythonEngine().Run(
+        var host = new MockLythonHost();
+        var writes = 0;
+        host.OnStandardOutputWrite = () =>
+        {
+            if (++writes == 3)
+            {
+                cts.Cancel();
+            }
+        };
+        var result = new LythonEngine().Run(
             """
 import difflib
-matcher = difflib.SequenceMatcher(None, "x" * 12000, "x" * 12000, autojunk=False)
-return matcher.ratio()
+matcher = difflib.SequenceMatcher(None, "x" * 4000, "x" * 4000, autojunk=False)
+i = 0
+while i < 30:
+    matcher.ratio()
+    print("round-" + str(i))
+    i = i + 1
+return i
 """,
-            new MockLythonHost(),
+            host,
             new LythonRunOptions
             {
                 CancellationToken = cts.Token
-            }));
-
-        await Task.Delay(50);
-        cts.Cancel();
-
-        var result = await runTask;
+            });
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
         Assert.Contains("execution canceled", result.Failure?.Message, StringComparison.Ordinal);
     }
-
     [Fact]
     public void UniqueSequenceGrowthRespectsCollectionLimit()
     {

@@ -556,6 +556,17 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
 
     public string CapturedStandardOutput() => _stdout.Text;
 
+    /// <summary>
+    /// Optional hook invoked synchronously on the run thread after each captured stdout write.
+    /// Lets a test rendezvous with script progress (for example, cancelling mid-run)
+    /// without wall-clock races. Null by default (no behavior change).
+    /// </summary>
+    public Action? OnStandardOutputWrite
+    {
+        get => _stdout.OnWrite;
+        set => _stdout.OnWrite = value;
+    }
+
     public string CapturedStandardError() => _stderr.Text;
 
     public void EnableSubprocess() => _subprocess.Enabled = true;
@@ -717,6 +728,8 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
     {
         private readonly StringBuilder _builder = new();
 
+        public Action? OnWrite { get; set; }
+
         public string Text => _builder.ToString();
 
         public bool CompletesSynchronously => true;
@@ -725,6 +738,7 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
         {
             cancellationToken.ThrowIfCancellationRequested();
             _builder.Append(Utf8.GetString(utf8.Span));
+            OnWrite?.Invoke();
             return ValueTask.CompletedTask;
         }
 
