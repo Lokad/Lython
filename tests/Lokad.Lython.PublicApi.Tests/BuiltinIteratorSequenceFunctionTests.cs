@@ -873,4 +873,68 @@ return "|".join(results)
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task ViewLenDundersAdvanceLikeCpython()
+    {
+        // Dict and ChainMap views expose __len__ with exactly the len()
+        // value, like CPython.
+        var script = new LythonEngine().Compile("""
+            from collections import ChainMap
+            def len_arg(x):
+                return x.__len__(1)
+            results = []
+            d = {"a": 1, "b": 2}
+            results.append(str(d.keys().__len__()))
+            results.append(str(d.values().__len__()))
+            results.append(str(d.items().__len__()))
+            results.append(str(len(d.keys()) == d.keys().__len__()))
+            cm = ChainMap({"a": 1})
+            results.append(str(cm.keys().__len__()))
+            results.append(str(cm.values().__len__()))
+            results.append(str(cm.items().__len__()))
+            vals = [d.keys(), d.values(), d.items(), cm.keys(), cm.values(), cm.items()]
+            for v in vals:
+                try:
+                    len_arg(v)
+                except TypeError as e:
+                    results.append(type(e).__name__)
+                    results.append(str(e))
+            results.append(str(hasattr({}.keys(), "__len__")))
+            results.append(str(callable({}.values().__len__)))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "2",
+            "2",
+            "2",
+            "True",
+            "1",
+            "1",
+            "1",
+            "TypeError",
+            "dict_keys.__len__() expects no arguments.",
+            "TypeError",
+            "dict_values.__len__() expects no arguments.",
+            "TypeError",
+            "dict_items.__len__() expects no arguments.",
+            "TypeError",
+            "ChainMap.keys.__len__() expects no arguments.",
+            "TypeError",
+            "ChainMap.values.__len__() expects no arguments.",
+            "TypeError",
+            "ChainMap.items.__len__() expects no arguments.",
+            "True",
+            "True",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
