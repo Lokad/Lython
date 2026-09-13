@@ -290,6 +290,7 @@ internal sealed partial class LythonRuntime
                 var pyException = CreatePythonExceptionInstance(ex);
                 if (matchedClause.Syntax.ExceptionVariableName is not null)
                 {
+                    ChargeBoundException(context.MemoryGovernor, statement.Span);
                     StoreName(matchedClause.Syntax.ExceptionVariableName, pyException, context, statement.Span);
                 }
 

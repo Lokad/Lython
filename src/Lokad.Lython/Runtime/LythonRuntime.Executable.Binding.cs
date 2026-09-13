@@ -129,6 +129,7 @@ internal sealed partial class LythonRuntime
                 UnwindAbandonedHandlerVars(context, span, exceptBlock);
                 if (region.ExceptionVariableName is not null)
                 {
+                    ChargeBoundException(context.MemoryGovernor, span);
                     StoreName(region.ExceptionVariableName, pyException, context, span);
                     PushActiveHandlerVar(context, region);
                 }

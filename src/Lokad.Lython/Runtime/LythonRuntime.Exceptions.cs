@@ -19,6 +19,22 @@ internal sealed partial class LythonRuntime
         return new ExceptionTypeValue(exception.Identity);
     }
 
+    // MG03: an `except ... as` binding retains the exception value through guest
+    // code, so the record shell is owned at bind time. Raising and unbound
+    // catching stay free: only retention pays, never hot control flow.
+    private const long BoundExceptionBytes = 64;
+
+    internal static void ChargeBoundException(MemoryGovernor? governor, LythonSourceSpan? span)
+    {
+        if (governor is null)
+        {
+            return;
+        }
+
+        governor.Reserve(BoundExceptionBytes, span);
+        governor.Commit(BoundExceptionBytes);
+    }
+
     internal static PyException CreatePythonExceptionInstance(LythonRuntimeException exception)
         => new PyException(exception.Identity, exception.Message, exception.Payload ?? PyNone.Instance) with
         {
