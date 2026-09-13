@@ -12,6 +12,45 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    // Reader iteration survives a failed pull: unlike a C# generator, which
+    // faults permanently once an exception escapes it, the cursor below stays
+    // usable so catching a mid-stream error and continuing works like CPython.
+    // Every cursor shares its source position; only the wrapper is per-use.
+    private sealed class CsvReaderCursor(CsvRecordSource records, Func<PyList, object> convert) : IEnumerator<object>
+    {
+        private object? _current;
+
+        public bool MoveNext()
+        {
+            if (!records.TryMoveNext(out var row))
+            {
+                _current = null;
+                return false;
+            }
+
+            _current = convert(row);
+            return true;
+        }
+
+        public object Current => _current!;
+
+        object System.Collections.IEnumerator.Current => Current;
+
+        public void Dispose()
+        {
+            _current = null;
+        }
+
+        public void Reset() => throw new NotSupportedException();
+    }
+
+    private sealed class CsvReaderEnumerable(CsvRecordSource records, Func<PyList, object> convert) : IEnumerable<object>
+    {
+        public IEnumerator<object> GetEnumerator() => new CsvReaderCursor(records, convert);
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
     internal sealed class CsvReaderObject : IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IEnumerable<object>
     {
         public CsvReaderObject(CsvRecordSource records, MemoryGovernor governor, LythonSourceSpan span)
@@ -33,13 +72,7 @@ internal sealed partial class LythonRuntime
         // pull input.
         public bool IsTruthy() => true;
 
-        public IEnumerable<object> Iterate()
-        {
-            while (Records.TryMoveNext(out var row))
-            {
-                yield return row;
-            }
-        }
+        public IEnumerable<object> Iterate() => new CsvReaderEnumerable(Records, static row => row);
 
         public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<csv.reader object>");
 
@@ -84,13 +117,7 @@ internal sealed partial class LythonRuntime
         // pull input.
         public bool IsTruthy() => true;
 
-        public IEnumerable<object> Iterate()
-        {
-            while (Rows.TryMoveNext(out var row))
-            {
-                yield return ConvertRow(row);
-            }
-        }
+        public IEnumerable<object> Iterate() => new CsvReaderEnumerable(Rows, ConvertRow);
 
         public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<csv.DictReader object>");
 

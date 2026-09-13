@@ -508,7 +508,20 @@ internal sealed partial class LythonRuntime
             }
 
             PhysicalLineCount++;
-            _parser.Feed(line.AsString());
+            try
+            {
+                _parser.Feed(line.AsString());
+            }
+            catch
+            {
+                // The failed line is consumed either way; drop its partial
+                // record so the next pull starts clean instead of poisoning
+                // every later row. (A non-string element throws before any
+                // feed, leaving legitimately pending multiline state alone.)
+                _parser.ResetRecord();
+                throw;
+            }
+
             if ((++_pulls & 255) == 0)
             {
                 _pool.Sweep();
@@ -517,11 +530,22 @@ internal sealed partial class LythonRuntime
 
         private void FinishExhausted()
         {
-            _parser.Finish();
             _completed = true;
-            _cursor?.Dispose();
-            _fieldScratch.Dispose();
-            _pool.Sweep(full: true);
+            try
+            {
+                _parser.Finish();
+            }
+            catch
+            {
+                _parser.ResetRecord();
+                throw;
+            }
+            finally
+            {
+                _cursor?.Dispose();
+                _fieldScratch.Dispose();
+                _pool.Sweep(full: true);
+            }
         }
     }
 
@@ -809,6 +833,18 @@ internal sealed partial class LythonRuntime
             ReleaseRowScratch();
             _recordStarted = false;
             _afterQuote = false;
+        }
+
+        // Drops the in-progress record after a failed feed so the next pull
+        // starts clean. Completed queue entries are untouched.
+        public void ResetRecord()
+        {
+            _row.Clear();
+            _field.Clear();
+            _inQuotes = false;
+            _fieldStarted = false;
+            _afterQuote = false;
+            _recordStarted = false;
         }
 
         private void ReleaseRowScratch()

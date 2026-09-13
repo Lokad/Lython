@@ -94,6 +94,80 @@ public sealed class CsvReaderInputHandlingTests
     }
 
     [Fact]
+    public async Task CaughtMidstreamErrorResumesCleanly()
+    {
+        // A malformed record fails explicitly without poisoning later rows:
+        // the partial record drops and the next pull starts clean.
+        var script = new LythonEngine().Compile("""
+            import csv
+            r = csv.reader(["a", "\"b\"x", "c"])
+            it = iter(r)
+            results = [next(it)]
+            try:
+                results.append(next(it))
+            except csv.Error as e:
+                results.append(type(e).__name__)
+            results.append(next(it))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            new List<object?> { "a" },
+            "Error",
+            new List<object?> { "c" },
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task CaughtBadElementSkipsCleanly()
+    {
+        // A non-string element fails with TypeError and the following element
+        // still parses; the iterator is not left exhausted.
+        var script = new LythonEngine().Compile("""
+            import csv
+            def readem(source):
+                return list(csv.reader(source))
+            rows = ["a", "b"]
+            rows.append(1)
+            rows.append("c")
+            r = csv.reader(rows)
+            it = iter(r)
+            results = [next(it), next(it)]
+            try:
+                results.append(next(it))
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            results.append(next(it))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            new List<object?> { "a" },
+            new List<object?> { "b" },
+            "TypeError",
+            "csv.reader(csvfile) expects an iterable of strings.",
+            new List<object?> { "c" },
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task MutatedViewSourceFailsExplicitly()
     {
         var script = new LythonEngine().Compile("""
