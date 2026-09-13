@@ -494,19 +494,22 @@ internal sealed partial class LythonRuntime
             using var conversion = context.MemoryGovernor.ReserveTemporary(0, span);
             foreach (var cell in ToSequence(row, span, context))
             {
-                cells.Add(cell switch
-                {
-                    PyNone => new CsvCell(PyString.Empty, CsvCellKind.Text),
-                    PyString text => new CsvCell(text, CsvCellKind.Text),
-                    BigInteger integer => ConvertedCell(FormatIntegerCell(integer, conversion, span), CsvCellKind.Numeric, ref convertedBytes),
-                    bool boolean => ConvertedCell(FormatFixedCell(boolean ? "True" : "False", conversion, span), CsvCellKind.Text, ref convertedBytes),
-                    double floating => ConvertedCell(FormatFixedCell(Numbers.PyNumberOps.RenderFloat(floating), conversion, span), CsvCellKind.Numeric, ref convertedBytes),
-                    _ => throw new LythonRuntimeException("TypeError", "CSV rows must contain scalar values.", span)
-                });
+                cells.Add(ConvertCsvCell(cell, conversion, span, ref convertedBytes));
             }
 
             return [.. cells];
         }
+
+        internal static CsvCell ConvertCsvCell(object cell, MemoryGovernor.TemporaryMemoryReservation conversion, LythonSourceSpan span, ref long convertedBytes)
+            => cell switch
+            {
+                PyNone => new CsvCell(PyString.Empty, CsvCellKind.Text),
+                PyString text => new CsvCell(text, CsvCellKind.Text),
+                BigInteger integer => ConvertedCell(FormatIntegerCell(integer, conversion, span), CsvCellKind.Numeric, ref convertedBytes),
+                bool boolean => ConvertedCell(FormatFixedCell(boolean ? "True" : "False", conversion, span), CsvCellKind.Text, ref convertedBytes),
+                double floating => ConvertedCell(FormatFixedCell(Numbers.PyNumberOps.RenderFloat(floating), conversion, span), CsvCellKind.Numeric, ref convertedBytes),
+                _ => throw new LythonRuntimeException("TypeError", "CSV rows must contain scalar values.", span)
+            };
 
         private static PyString FormatIntegerCell(BigInteger integer, MemoryGovernor.TemporaryMemoryReservation scratch, LythonSourceSpan span)
         {
@@ -687,7 +690,7 @@ internal sealed partial class LythonRuntime
                         row.SetItem(fieldName, fieldName);
                     }
 
-                    return CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, row, span, context, out var convertedBytes), span, context, convertedBytes);
+                    return CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, BuildKnownFields(writer), row, span, context, out var convertedBytes), span, context, convertedBytes);
                 }),
                 "writerow" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -696,7 +699,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "csv.DictWriter.writerow(rowdict) expects one argument.", span);
                     }
 
-                    return CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, arguments[0], span, context, out var convertedBytes), span, context, convertedBytes);
+                    return CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, BuildKnownFields(writer), arguments[0], span, context, out var convertedBytes), span, context, convertedBytes);
                 }, "csv.DictWriter.writerow", ["rowdict"]),
                 "writerows" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -706,9 +709,10 @@ internal sealed partial class LythonRuntime
                     }
 
                     var written = 0;
+                    var known = BuildKnownFields(writer);
                     foreach (var row in ToSequence(arguments[0], span, context))
                     {
-                        CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, row, span, context, out var convertedBytes), span, context, convertedBytes);
+                        CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, known, row, span, context, out var convertedBytes), span, context, convertedBytes);
                         if ((++written & 63) == 0)
                         {
                             context.CheckExecutionBudget(span);
@@ -723,14 +727,16 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        private static CsvCell[] ToDictCsvRow(CsvDictWriterObject writer, object row, LythonSourceSpan span, ExecutionContext context, out long convertedBytes)
+        private static HashSet<object> BuildKnownFields(CsvDictWriterObject writer)
+            => new(writer.FieldNames, PyValueComparer.Instance);
+
+        private static CsvCell[] ToDictCsvRow(CsvDictWriterObject writer, HashSet<object> known, object row, LythonSourceSpan span, ExecutionContext context, out long convertedBytes)
         {
             if (row is not PyDict dict)
             {
                 throw new LythonRuntimeException("TypeError", "csv.DictWriter rows must be dictionaries.", span);
             }
 
-            var known = new HashSet<object>(writer.FieldNames, PyValueComparer.Instance);
             foreach (var key in dict.Keys)
             {
                 if (!known.Contains(key))
@@ -744,13 +750,22 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            var cells = new List<object>(writer.FieldNames.Length);
-            foreach (var fieldName in writer.FieldNames)
+            // The field count is fixed, so fill an exact array instead of
+            // draining through a second list; converted cells ride the same
+            // pre-format reservation as plain rows.
+            convertedBytes = 0;
+            var array = new CsvCell[writer.FieldNames.Length];
+            using var conversion = context.MemoryGovernor.ReserveTemporary(0, span);
+            for (var i = 0; i < writer.FieldNames.Length; i++)
             {
-                cells.Add(dict.TryGetValue(fieldName, out var value) ? value : writer.RestValue);
+                array[i] = CsvWriterMembers.ConvertCsvCell(
+                    dict.TryGetValue(writer.FieldNames[i], out var value) ? value : writer.RestValue,
+                    conversion,
+                    span,
+                    ref convertedBytes);
             }
 
-            return CsvWriterMembers.ToCsvRow(new PyList(cells), span, context, out convertedBytes);
+            return array;
         }
     }
 

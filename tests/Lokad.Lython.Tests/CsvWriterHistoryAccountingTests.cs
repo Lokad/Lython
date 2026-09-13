@@ -119,6 +119,65 @@ public sealed class CsvWriterHistoryAccountingTests
         Assert.Equal(0L, context.MemoryGovernor.CurrentReservedBytes);
     }
 
+    [Fact]
+    public void WideDictWriterowsSharesKnownSetAcrossRows()
+    {
+        // MG02: DictWriter.writerows builds the extras known-set once per call
+        // instead of once per row, and fills an exact row array instead of
+        // draining through a second list; per-thread allocation for 20 wide
+        // rows drops accordingly (sync-only per the GC-measurement discipline).
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 30000000 });
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var fieldNames = new PyString[2000];
+        for (var i = 0; i < fieldNames.Length; i++)
+        {
+            fieldNames[i] = PyString.FromString("f" + i);
+        }
+
+        var sharedValue = PyString.FromString("v");
+        var rows = new PyList();
+        for (var r = 0; r < 20; r++)
+        {
+            var dict = new PyDict();
+            foreach (var name in fieldNames)
+            {
+                dict.SetItem(name, sharedValue);
+            }
+
+            rows.Add(dict);
+        }
+
+        // One unmeasured warmup invoke settles JIT so the measured call
+        // sees only the writerows steady state.
+        var warmup = CreateWriter(context, span);
+        var warmupWriter = new LythonRuntime.CsvDictWriterObject(
+            warmup,
+            fieldNames,
+            PyNone.Instance,
+            LythonRuntime.CsvExtrasAction.Ignore);
+        Assert.True(LythonRuntime.CsvDictWriterMembers.TryGetMember(warmupWriter, "writerows", out var warmupMember));
+        var warmupCallable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(warmupMember);
+        warmupCallable.Invoke(new[] { CallArgumentValue.Positional(rows) }, span, context);
+        var writer = CreateWriter(context, span);
+        var dictWriter = new LythonRuntime.CsvDictWriterObject(
+            writer,
+            fieldNames,
+            PyNone.Instance,
+            LythonRuntime.CsvExtrasAction.Ignore);
+        Assert.True(LythonRuntime.CsvDictWriterMembers.TryGetMember(dictWriter, "writerows", out var member));
+        var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(member);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        callable.Invoke(new[] { CallArgumentValue.Positional(rows) }, span, context);
+        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+        Assert.Equal(20, writer.Rows.Count);
+        Assert.Equal("v", writer.Rows[0][0].Text.AsString());
+        Assert.True(allocated < 4500000, $"allocated {allocated}");
+    }
+
     private static LythonRuntime.CsvWriterObject CreateWriter(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         var options = new LythonRuntime.CsvOptions(
