@@ -22,6 +22,10 @@ semantics, and unsupported behavior should fail explicitly.
 - `README.md`: project overview.
 - `SPEC.md`: Lython language and runtime specification.
 
+## CI
+
+Anonymous GitHub API calls are capped at 60/hour: space CI status checks minutes apart, never poll in a tight loop.
+
 ## Packaging
 
 Treat NuGet artifacts as release outputs only when produced by an explicit
