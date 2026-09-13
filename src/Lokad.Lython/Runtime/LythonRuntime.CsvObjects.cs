@@ -109,10 +109,12 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "csv.DictReader has no field names.", _span);
             }
 
-            return CreateDictReaderRow(row, FieldNames, _restKey, _restValue, _governor, _span);
+            var dict = CreateDictReaderRow(row, FieldNames, _restKey, _restValue, _governor, _span, Rows.Pool);
+            Rows.Pool.TrackMutable(dict, dict.CommittedStorageBytes);
+            return dict;
         }
 
-        private static PyDict CreateDictReaderRow(PyList row, PyString[] fieldNames, object restKey, object restValue, MemoryGovernor governor, LythonSourceSpan span)
+        private static PyDict CreateDictReaderRow(PyList row, PyString[] fieldNames, object restKey, object restValue, MemoryGovernor governor, LythonSourceSpan span, ChargeReclamationPool pool)
         {
             var dict = new PyDict(governor, span);
             var count = Math.Min(row.Count, fieldNames.Length);
@@ -134,7 +136,9 @@ internal sealed partial class LythonRuntime
                     extras[i - fieldNames.Length] = row[i];
                 }
 
-                dict.SetItem(LythonRuntime.ValidateDictionaryKey(restKey, span, governor), new PyList(extras, governor, span));
+                var extrasList = new PyList(extras, governor, span);
+                pool.TrackMutable(extrasList, extrasList.CommittedStorageBytes);
+                dict.SetItem(LythonRuntime.ValidateDictionaryKey(restKey, span, governor), extrasList);
             }
 
             return dict;

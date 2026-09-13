@@ -38,6 +38,10 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
 
     public int Count => _items.Count;
 
+    // Current committed backing charges, for pooled owners that release them
+    // if this list is dropped without wholesale storage replacement.
+    internal long CommittedStorageBytes => _items.CommittedBytes;
+
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
 
     public LythonSourceSpan? AllocationSpan => _allocationSpan;
@@ -283,6 +287,7 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
             }
 
             _items = PyListStorage.Create(System.Array.Empty<object>(), _memoryGovernor, _allocationSpan);
+            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
             return;
         }
 
@@ -343,6 +348,7 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
             }
 
             _items = replacement;
+            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
             return;
         }
 

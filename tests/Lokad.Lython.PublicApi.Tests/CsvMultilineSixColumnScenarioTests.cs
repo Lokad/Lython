@@ -11,10 +11,11 @@ namespace Lokad.Lython.PublicApi.Tests;
 /// </summary>
 public sealed class CsvMultilineSixColumnScenarioTests
 {
-    // 400 records x (602-char quoted field + 5 tiny fields) retain ~765508B;
-    // the builder transient peaks at 2 x 1024B of capacity and never sums.
+    // 400 records x (602-char quoted field + 5 tiny fields) retain ~765508B
+    // plus 400 x 8 pooled entries at 64B (~204800B); the builder transient
+    // peaks at 2 x 1024B of capacity and never sums.
     private const long MultilineSixColumnBudgetBytes = 450000;
-    private const long MultilineSixColumnPeakBoundBytes = 900000;
+    private const long MultilineSixColumnPeakBoundBytes = 1100000;
 
     private const string MultilineSixColumnScript = """
         import csv

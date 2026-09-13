@@ -1,3 +1,4 @@
+using System.Numerics;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
@@ -37,6 +38,36 @@ public sealed class CsvSixColumnIncidentScenarioTests
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
         Assert.True(asyncResult.PeakExecutionMemoryBytes <= SixColumnBudgetBytes);
+    }
+
+    [Fact]
+    public async Task FlatDictScanReleasesDroppedBacking()
+    {
+        // 30k six-column dicts commit ~11.5MB of row plus dictionary backing
+        // cumulatively (the first row is the header, so 29999 data rows); the
+        // scan fits 14MB only because dropped backing is reclaimed while the
+        // scalar aggregation retains nothing. The budget covers GC-paced
+        // slack: reclamation observes death only after collection, so a few
+        // thousand uncollected rows may stay committed between sweeps.
+        var script = new LythonEngine().Compile("""
+            import csv
+            rows = ["a,b,c,d,e,f"] * 30000
+            r = csv.DictReader(rows)
+            n = 0
+            for row in r:
+                n = n + len(row)
+            return n
+            """);
+        Assert.True(script.IsValid);
+        var expected = new BigInteger(179994);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 14680064 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
     }
 
     [Fact]

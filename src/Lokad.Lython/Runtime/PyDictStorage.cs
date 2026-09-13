@@ -29,6 +29,8 @@ internal interface IPyDictStorage : IEnumerable<KeyValuePair<object, object>>
 
     IPyDictStorage Clone();
 
+    long CommittedBytes { get; }
+
     long ReleaseCommittedBytes();
 }
 
@@ -230,6 +232,8 @@ internal sealed class SmallPyDictStorage : IPyDictStorage
         return clone;
     }
 
+    public long CommittedBytes => _committedBytes;
+
     public long ReleaseCommittedBytes()
     {
         var released = _committedBytes;
@@ -335,6 +339,8 @@ internal sealed class MapPyDictStorage : IPyDictStorage
     public void Clear() => _items.Clear();
 
     public IPyDictStorage Clone() => new MapPyDictStorage(_items, _items.Count);
+
+    public long CommittedBytes => _committedBytes;
 
     public long ReleaseCommittedBytes()
     {

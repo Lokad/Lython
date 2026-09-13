@@ -399,6 +399,8 @@ internal sealed partial class LythonRuntime
 
         public int PhysicalLineCount { get; private set; }
 
+        internal ChargeReclamationPool Pool => _pool;
+
         // Pulls the first record for header inference; the header stays
         // retained (its field aliases remain charged through live entries)
         // while data rows stream past.
@@ -472,7 +474,7 @@ internal sealed partial class LythonRuntime
             _completed = true;
             _cursor.Dispose();
             _fieldScratch.Dispose();
-            _pool.Sweep();
+            _pool.Sweep(full: true);
         }
     }
 
@@ -726,15 +728,25 @@ internal sealed partial class LythonRuntime
         {
             if (!_recordStarted && !_fieldStarted && _field.Length == 0 && _row.Count == 0)
             {
-                EnqueueRecord(new PyList([], _context.MemoryGovernor, _span));
+                EnqueueRecord(TrackRow(new PyList([], _context.MemoryGovernor, _span)));
                 return;
             }
 
             FinishField();
-            EnqueueRecord(new PyList(_row, _context.MemoryGovernor, _span));
+            EnqueueRecord(TrackRow(new PyList(_row, _context.MemoryGovernor, _span)));
             _row.Clear();
             _recordStarted = false;
             _afterQuote = false;
+        }
+
+        private PyList TrackRow(PyList record)
+        {
+            // Row backing reclaims with the row: the pool releases the
+            // snapshotted backing charges once the row is dropped, while
+            // wholesale replacement (Clear, slice-assignment) notifies the
+            // pool through the value itself.
+            _pool.TrackMutable(record, record.CommittedStorageBytes);
+            return record;
         }
 
         private bool MatchesQuoteAt(string text, int index)

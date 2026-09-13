@@ -32,6 +32,8 @@ internal interface IPyListStorage : IReadOnlyList<object>
 
     IPyListStorage Clone();
 
+    long CommittedBytes { get; }
+
     long ReleaseCommittedBytes();
 }
 
@@ -255,6 +257,8 @@ internal sealed class SmallPyListStorage : IPyListStorage
 
     public IPyListStorage Clone() => new SmallPyListStorage(ToArray());
 
+    public long CommittedBytes => _committedBytes;
+
     public long ReleaseCommittedBytes()
     {
         var released = _committedBytes;
@@ -344,6 +348,8 @@ internal sealed class ArrayPyListStorage : IPyListStorage
     public object[] ToArray() => [.. _items];
 
     public IPyListStorage Clone() => new ArrayPyListStorage([.. _items]);
+
+    public long CommittedBytes => _committedBytes;
 
     public long ReleaseCommittedBytes()
     {

@@ -43,6 +43,10 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     public int Count => _items.Count;
 
+    // Current committed backing charges, for pooled owners that release them
+    // if this dictionary is dropped without wholesale storage replacement.
+    internal long CommittedStorageBytes => _items.CommittedBytes;
+
     public int Length => Count;
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
@@ -167,6 +171,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             return;
         }
 
+
         _version++;
         if (_memoryGovernor is not null)
         {
@@ -177,6 +182,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             }
 
             _items = PyDictStorage.Create(0, _memoryGovernor, _allocationSpan);
+            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
             return;
         }
 
