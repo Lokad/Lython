@@ -432,9 +432,11 @@ internal sealed partial class LythonRuntime
             {
                 // In-memory writers retain history for getvalue(); charge the list
                 // slot, the row array and the converted values the history keeps.
-                writer.Rows.Add(row);
+                // Reserve before inserting so a failed reservation retains
+                // nothing uncharged.
                 var historyCharge = 64L + (16L * row.Length) + convertedBytes;
                 context.MemoryGovernor.Reserve(historyCharge, span);
+                writer.Rows.Add(row);
                 context.MemoryGovernor.Commit(historyCharge);
             }
             // else: file-backed writers stream output and retain nothing. Either
