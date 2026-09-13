@@ -42,6 +42,9 @@ internal sealed partial class LythonRuntime
     // one 64B slot, both for the handle lifetime.
     private const long PopenWrapperBytes = 128;
     private const long PopenStreamBytes = 64;
+    // Env-table slice (MG21): each call copies the env table into the request.
+    private const long PopenEnvBaseBytes = 64;
+    private const long PopenEnvSlotBytes = 32;
 
     private static object Popen(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
@@ -112,7 +115,11 @@ internal sealed partial class LythonRuntime
         // Commit the 128B constructed-value unit plus 64B per created stream
         // after successful construction (a throwing constructor leaks nothing);
         // dropped handles retain like gzip append prefixes (handle lifetime).
-        var wrapperBytes = checked(PopenWrapperBytes + (PopenStreamBytes * handle.OwnedStreamCount));
+        // The retained request carries the copied env table beside the handle,
+        // so its structure is owned here too (keys and values stay aliased
+        // to the guest dict); the run path stays free since its request never escapes.
+        var wrapperBytes = checked(PopenWrapperBytes + (PopenStreamBytes * handle.OwnedStreamCount)
+            + PopenEnvBaseBytes + (PopenEnvSlotBytes * (invocation.Request.Environment?.Count ?? 0)));
         context.MemoryGovernor.Reserve(wrapperBytes, span);
         context.MemoryGovernor.Commit(wrapperBytes);
         return handle;
