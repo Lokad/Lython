@@ -767,6 +767,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
             "items" => new BoundChainMapItems(this),
             "new_child" => new BoundChainMapNewChild(this),
             "copy" => new BoundChainMapCopy(this),
+            "__len__" => new BoundChainMapLen(this),
             _ => PyNone.Instance
         };
 
@@ -1052,6 +1053,24 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
             var maps = new List<PyDict> { new(_owner._maps[0], context.MemoryGovernor, span) };
             maps.AddRange(_owner._maps.Skip(1));
             return new PyChainMap(maps);
+        }
+    }
+
+    private sealed class BoundChainMapLen : LythonRuntime.ICallable
+    {
+        private readonly PyChainMap _owner;
+
+        public BoundChainMapLen(PyChainMap owner) => _owner = owner;
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            if (arguments.Length != 0)
+            {
+                throw new LythonRuntimeException("TypeError", "ChainMap.__len__() expects no arguments.", span);
+            }
+
+            return LythonRuntime.LenChainMap(_owner, span, context);
         }
     }
 

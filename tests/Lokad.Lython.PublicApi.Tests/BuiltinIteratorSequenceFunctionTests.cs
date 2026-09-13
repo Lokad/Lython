@@ -789,4 +789,88 @@ return "|".join(results)
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task ContainerLenDundersAdvanceLikeCpython()
+    {
+        // Sized builtins expose __len__ with exactly the len() value,
+        // like CPython.
+        var script = new LythonEngine().Compile("""
+            from collections import defaultdict, Counter, deque, ChainMap
+            def len_arg(x):
+                return x.__len__(1)
+            results = []
+            results.append(str([1, 2].__len__()))
+            results.append(str((1,).__len__()))
+            results.append(str({"a": 1}.__len__()))
+            results.append(str({1}.__len__()))
+            results.append(str("ab".__len__()))
+            results.append(str(b"ab".__len__()))
+            results.append(str(range(5).__len__()))
+            results.append(str(defaultdict(list, {"a": 1}).__len__()))
+            results.append(str(Counter("aab").__len__()))
+            results.append(str(deque([1, 2]).__len__()))
+            results.append(str(ChainMap({"a": 1}, {"b": 2}).__len__()))
+            results.append(str([1, 2].__len__() + 1))
+            results.append(str(len("ab") == "ab".__len__()))
+            vals = [[1], (1,), {"a": 1}, {1}, "ab", b"ab", range(2), defaultdict(list), Counter(), deque([1]), ChainMap({"a": 1})]
+            for v in vals:
+                try:
+                    len_arg(v)
+                except TypeError as e:
+                    results.append(type(e).__name__)
+                    results.append(str(e))
+            results.append(str(hasattr([1], "__len__")))
+            results.append(str(callable("ab".__len__)))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "2",
+            "1",
+            "1",
+            "1",
+            "2",
+            "2",
+            "5",
+            "1",
+            "2",
+            "2",
+            "2",
+            "3",
+            "True",
+            "TypeError",
+            "list.__len__() expects no arguments.",
+            "TypeError",
+            "tuple.__len__() expects no arguments.",
+            "TypeError",
+            "dict.__len__() expects no arguments.",
+            "TypeError",
+            "set.__len__() expects no arguments.",
+            "TypeError",
+            "str.__len__() expects no arguments.",
+            "TypeError",
+            "bytes.__len__() expects no arguments.",
+            "TypeError",
+            "range.__len__() expects no arguments.",
+            "TypeError",
+            "defaultdict.__len__() expects no arguments.",
+            "TypeError",
+            "Counter.__len__() expects no arguments.",
+            "TypeError",
+            "deque.__len__() expects no arguments.",
+            "TypeError",
+            "ChainMap.__len__() expects no arguments.",
+            "True",
+            "True",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

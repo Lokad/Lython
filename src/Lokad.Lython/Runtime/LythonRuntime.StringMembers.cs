@@ -40,6 +40,12 @@ internal sealed partial class LythonRuntime
                 return true;
             }
 
+            if (name == "__len__")
+            {
+                value = BoundCallable.CreateNoArguments(text, "str.__len__", static (receiver, span, context) => Len([receiver], span, context));
+                return true;
+            }
+
             if (name == "maketrans")
             {
                 value = BuiltinTypeMethod.StrMaketrans;

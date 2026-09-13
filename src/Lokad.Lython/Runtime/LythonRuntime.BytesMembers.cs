@@ -159,6 +159,7 @@ internal sealed partial class LythonRuntime
                     return SplitBytesLines(bytes, keepEnds, context, span);
                 }, LythonCallableSignature.Create("bytes.splitlines", ["keepends"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 0)),
                 "__iter__" => BoundCallable.CreateNoArguments(bytes, "bytes.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
+                "__len__" => BoundCallable.CreateNoArguments(bytes, "bytes.__len__", static (receiver, span, context) => Len([receiver], span, context)),
                 _ => MissingMemberValue.Instance
             };
 

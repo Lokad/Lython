@@ -52,6 +52,7 @@ internal static partial class StaticContracts
         "format_map",
         "maketrans",
         "__iter__",
+        "__len__",
     };
 
     private static readonly HashSet<string> BytesMembers = new(StringComparer.Ordinal)
@@ -99,6 +100,7 @@ internal static partial class StaticContracts
         "upper",
         "zfill",
         "__iter__",
+        "__len__",
     };
 
     private static readonly HashSet<string> PathMembers = new(StringComparer.Ordinal)
@@ -188,6 +190,7 @@ internal static partial class StaticContracts
         "index",
         "count",
         "__iter__",
+        "__len__",
     };
 
     private static readonly HashSet<string> FloatMembers = new(StringComparer.Ordinal)
@@ -230,6 +233,7 @@ internal static partial class StaticContracts
         "copy",
         "clear",
         "__iter__",
+        "__len__",
     };
 
     private static readonly HashSet<string> DictMembers = new(StringComparer.Ordinal)
@@ -246,6 +250,7 @@ internal static partial class StaticContracts
         "setdefault",
         "fromkeys",
         "__iter__",
+        "__len__",
     };
 
     private static readonly HashSet<string> SetMembers = new(StringComparer.Ordinal)
@@ -268,6 +273,7 @@ internal static partial class StaticContracts
         "union",
         "update",
         "__iter__",
+        "__len__",
     };
 
     private static readonly HashSet<string> PopenMembers = new(StringComparer.Ordinal)
@@ -304,6 +310,7 @@ internal static partial class StaticContracts
         "pop",
         "popitem",
         "__iter__",
+        "__len__",
     };
 
     private static readonly HashSet<string> CollectionsCounterMembers = new(StringComparer.Ordinal)
@@ -322,6 +329,7 @@ internal static partial class StaticContracts
         "items",
         "pop",
         "__iter__",
+        "__len__",
     };
 
     private static readonly HashSet<string> CollectionsDequeMembers = new(StringComparer.Ordinal)
@@ -343,6 +351,7 @@ internal static partial class StaticContracts
         "reverse",
         "rotate",
         "__iter__",
+        "__len__",
     };
 
     private static readonly HashSet<string> CollectionsChainMapMembers = new(StringComparer.Ordinal)
@@ -357,6 +366,7 @@ internal static partial class StaticContracts
         "new_child",
         "copy",
         "pop",
+        "__len__",
     };
 
     private static readonly HashSet<string> DecimalMembers = new(StringComparer.Ordinal)

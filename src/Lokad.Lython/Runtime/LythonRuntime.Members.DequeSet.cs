@@ -171,6 +171,7 @@ internal sealed partial class LythonRuntime
                     return PyNone.Instance;
                 }, "deque.rotate", ["n"], 0),
                 "__iter__" => BoundCallable.CreateNoArguments(deque, "deque.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
+                "__len__" => BoundCallable.CreateNoArguments(deque, "deque.__len__", static (receiver, span, context) => Len([receiver], span, context)),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -373,6 +374,7 @@ internal sealed partial class LythonRuntime
                     return PyNone.Instance;
                 }, OnePositional("set.symmetric_difference_update", "other")),
                 "__iter__" => BoundCallable.CreateNoArguments(set, "set.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
+                "__len__" => BoundCallable.CreateNoArguments(set, "set.__len__", static (receiver, span, context) => Len([receiver], span, context)),
                 _ => MissingMemberValue.Instance,
             };
 

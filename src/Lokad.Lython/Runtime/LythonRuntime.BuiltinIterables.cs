@@ -30,7 +30,7 @@ internal sealed partial class LythonRuntime
 
     // len() builds only the throwaway dedup set; reuse the merge estimate
     // conservatively since duplicates collapse in the set but pay in visits.
-    private static BigInteger LenChainMap(PyChainMap chainMap, LythonSourceSpan span, ExecutionContext context)
+    internal static BigInteger LenChainMap(PyChainMap chainMap, LythonSourceSpan span, ExecutionContext context)
     {
         using var scratch = context.MemoryGovernor.ReserveTemporary(chainMap.EstimateMergeScratchBytes(), span);
         return new BigInteger(chainMap.Count);
