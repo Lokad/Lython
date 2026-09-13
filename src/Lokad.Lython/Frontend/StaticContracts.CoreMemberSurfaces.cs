@@ -445,6 +445,10 @@ internal static partial class StaticContracts
         "__iand__",
         "__eq__",
         "__ne__",
+        "__lt__",
+        "__le__",
+        "__gt__",
+        "__ge__",
     };
 
     private static readonly HashSet<string> CollectionsDequeMembers = new(StringComparer.Ordinal)
@@ -540,6 +544,12 @@ internal static partial class StaticContracts
         "is_qnan",
         "is_snan",
         "is_canonical",
+        "__eq__",
+        "__ne__",
+        "__lt__",
+        "__le__",
+        "__gt__",
+        "__ge__",
     };
 
     private static readonly HashSet<string> DecimalContextMembers = new(StringComparer.Ordinal)

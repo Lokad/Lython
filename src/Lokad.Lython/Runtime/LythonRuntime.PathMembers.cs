@@ -370,6 +370,90 @@ internal sealed partial class LythonRuntime
                 "max" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.MinMax(decimalValue, arguments, "max", span), decimalValue, context, span), LythonCallableSignature.Create("Decimal.max", ["other", "context"], requiredCount: 1)),
                 "min_mag" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.MinMax(decimalValue, arguments, "min_mag", span), decimalValue, context, span), LythonCallableSignature.Create("Decimal.min_mag", ["other", "context"], requiredCount: 1)),
                 "max_mag" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.MinMax(decimalValue, arguments, "max_mag", span), decimalValue, context, span), LythonCallableSignature.Create("Decimal.max_mag", ["other", "context"], requiredCount: 1)),
+                "__eq__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Decimal.__eq__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyDecimal && arguments[0] is not BigInteger && arguments[0] is not int && arguments[0] is not bool && arguments[0] is not double)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return PyDecimalOps.AreEqual(decimalValue, arguments[0]);
+                }, "Decimal.__eq__", ["value"]),
+                "__ne__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Decimal.__ne__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyDecimal && arguments[0] is not BigInteger && arguments[0] is not int && arguments[0] is not bool && arguments[0] is not double)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return !PyDecimalOps.AreEqual(decimalValue, arguments[0]);
+                }, "Decimal.__ne__", ["value"]),
+                "__lt__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Decimal.__lt__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyDecimal && arguments[0] is not BigInteger && arguments[0] is not int && arguments[0] is not bool && arguments[0] is not double)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return PyDecimalOps.Compare(decimalValue, arguments[0], span, "<") < 0;
+                }, "Decimal.__lt__", ["value"]),
+                "__le__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Decimal.__le__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyDecimal && arguments[0] is not BigInteger && arguments[0] is not int && arguments[0] is not bool && arguments[0] is not double)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return PyDecimalOps.Compare(decimalValue, arguments[0], span, "<=") <= 0;
+                }, "Decimal.__le__", ["value"]),
+                "__gt__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Decimal.__gt__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyDecimal && arguments[0] is not BigInteger && arguments[0] is not int && arguments[0] is not bool && arguments[0] is not double)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return PyDecimalOps.Compare(decimalValue, arguments[0], span, ">") > 0;
+                }, "Decimal.__gt__", ["value"]),
+                "__ge__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Decimal.__ge__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyDecimal && arguments[0] is not BigInteger && arguments[0] is not int && arguments[0] is not bool && arguments[0] is not double)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return PyDecimalOps.Compare(decimalValue, arguments[0], span, ">=") >= 0;
+                }, "Decimal.__ge__", ["value"]),
                 _ => MissingMemberValue.Instance,
             };
 

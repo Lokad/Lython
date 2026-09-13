@@ -121,6 +121,27 @@ internal sealed partial class LythonRuntime
 
     // Purge pre-existing non-positive counts like CPython, surfacing
     // comparison failures for non-numeric occupants.
+    // Multiset ordering shared by the Counter comparison dunders: every
+    // key on either side compares with missing counts as zero through the
+    // full <= operator, exactly like CPython (element failures propagate).
+    internal static bool MultisetLessEqual(PyCounter left, PyCounter right, ExecutionContext context, LythonSourceSpan span)
+    {
+        var keys = new HashSet<object>(left.Keys, PyValueComparer.Instance);
+        keys.UnionWith(right.Keys);
+
+        foreach (var key in keys)
+        {
+            var leftCount = left.TryGetValue(key, out var foundLeft) ? foundLeft : BigInteger.Zero;
+            var rightCount = right.TryGetValue(key, out var foundRight) ? foundRight : BigInteger.Zero;
+            if (!(bool)EvaluateBinaryOperator(BinaryOperatorSyntax.LessEqual, leftCount, rightCount, context, span))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private static void PurgeCounterNonPositive(PyCounter counter, LythonSourceSpan span)
     {
         var stale = new List<object>();

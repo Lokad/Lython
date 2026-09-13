@@ -1526,4 +1526,86 @@ x.as_tuple()
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+    [Fact]
+    public async Task DecimalComparisonDundersAdvanceLikeCpython()
+    {
+        // Decimal slots compute exactly across Decimal/int/float/bool through the shared exact core (including float-nan InvalidOperation signaling) and decline everything else with NotImplemented, exactly like CPython.
+        var script = new LythonEngine().Compile("""
+from decimal import Decimal
+def call2(f, a, b):
+    return f(a, b)
+results = []
+results.append(str(Decimal("1.1").__eq__(1.1)))
+results.append(str(Decimal("1.0").__eq__(1.0)))
+results.append(str(Decimal("1.0").__eq__(1)))
+results.append(str(Decimal("1").__eq__("1")))
+results.append(str(Decimal("1.5").__lt__(2)))
+results.append(str(Decimal("1.5").__lt__(2.0)))
+results.append(str(Decimal("1.5").__lt__("2")))
+results.append(str(Decimal("1").__eq__(True)))
+results.append(str(Decimal("2").__gt__(1)))
+results.append(str(Decimal("1").__ne__([1])))
+results.append(str(Decimal("1").__ge__(None)))
+results.append(str(Decimal("1.0").__eq__(Decimal("1"))))
+results.append(str(Decimal("1").__eq__(float("nan"))))
+try:
+    Decimal("1").__lt__(float("nan"))
+except Exception as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+for (f, a, b) in [(Decimal("1").__eq__, 1, 2), (Decimal("1").__ne__, 1, 2), (Decimal("1").__lt__, 1, 2), (Decimal("1").__le__, 1, 2), (Decimal("1").__gt__, 1, 2), (Decimal("1").__ge__, 1, 2)]:
+    try:
+        call2(f, a, b)
+    except TypeError as e:
+        results.append(type(e).__name__)
+        results.append(str(e))
+results.append(str(hasattr(Decimal("1"), "__eq__")))
+results.append(str(hasattr(Decimal("1"), "__lt__")))
+results.append(str(hasattr(Decimal("1"), "__rlt__")))
+results.append(str(hasattr(Decimal("1"), "__req__")))
+return results
+""");
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "False",
+            "True",
+            "True",
+            "NotImplemented",
+            "True",
+            "True",
+            "NotImplemented",
+            "True",
+            "True",
+            "NotImplemented",
+            "NotImplemented",
+            "True",
+            "False",
+            "InvalidOperation",
+            "[<class 'decimal.InvalidOperation'>]",
+            "TypeError",
+            "Method 'Decimal.__eq__' received too many positional arguments.",
+            "TypeError",
+            "Method 'Decimal.__ne__' received too many positional arguments.",
+            "TypeError",
+            "Method 'Decimal.__lt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'Decimal.__le__' received too many positional arguments.",
+            "TypeError",
+            "Method 'Decimal.__gt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'Decimal.__ge__' received too many positional arguments.",
+            "True",
+            "True",
+            "False",
+            "False",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

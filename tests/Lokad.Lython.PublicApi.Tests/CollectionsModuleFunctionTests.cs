@@ -1928,4 +1928,89 @@ return results
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+    [Fact]
+    public async Task CounterMultisetOrderingDundersAdvanceLikeCpython()
+    {
+        // Counter ordering compares every key on either side with missing counts as zero through the full <= operator, declining non-Counters with NotImplemented, exactly like CPython.
+        var script = new LythonEngine().Compile("""
+from collections import Counter
+def call2(f, a, b):
+    return f(a, b)
+results = []
+results.append(str(Counter("aab").__le__(Counter("abb"))))
+results.append(str(Counter("aab").__lt__(Counter("abb"))))
+results.append(str(Counter("aab").__ge__(Counter("a"))))
+results.append(str(Counter("aab").__gt__(Counter("aab"))))
+results.append(str(Counter("aab").__lt__(Counter("aab"))))
+results.append(str(Counter().__le__(Counter())))
+results.append(str(Counter({"a": 0}).__le__(Counter())))
+results.append(str(Counter({"a": 0}).__lt__(Counter())))
+results.append(str(Counter({"a": -1}).__le__(Counter())))
+results.append(str(Counter({"a": 5}).__le__(Counter({"b": 3}))))
+results.append(str(Counter({"a": 5}).__ge__(Counter({"a": 5, "b": 0}))))
+results.append(str(Counter("aab").__le__({"a": 2})))
+results.append(str(Counter("aab").__lt__([1, 2])))
+results.append(str(Counter("aab").__ge__("ab")))
+results.append(str(Counter("aab").__gt__(None)))
+results.append(str(Counter().__lt__(Counter())))
+results.append(str(Counter().__le__(Counter())))
+results.append(str(Counter({"a": -1}).__lt__(Counter())))
+results.append(str(Counter({"a": -1}).__le__(Counter())))
+results.append(str(Counter("ab").__gt__(Counter("a"))))
+results.append(str(Counter("ab").__ge__(Counter("ab"))))
+for (f, a, b) in [(Counter("aab").__lt__, Counter(), Counter()), (Counter("aab").__le__, Counter(), Counter()), (Counter("aab").__gt__, Counter(), Counter()), (Counter("aab").__ge__, Counter(), Counter())]:
+    try:
+        call2(f, a, b)
+    except TypeError as e:
+        results.append(type(e).__name__)
+        results.append(str(e))
+results.append(str(hasattr(Counter("aab"), "__lt__")))
+results.append(str(hasattr(Counter("aab"), "__rlt__")))
+results.append(str(callable(Counter("aab").__le__)))
+return results
+""");
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "False",
+            "False",
+            "True",
+            "False",
+            "False",
+            "True",
+            "True",
+            "False",
+            "True",
+            "False",
+            "True",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "False",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "TypeError",
+            "Method 'Counter.__lt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'Counter.__le__' received too many positional arguments.",
+            "TypeError",
+            "Method 'Counter.__gt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'Counter.__ge__' received too many positional arguments.",
+            "True",
+            "False",
+            "True",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

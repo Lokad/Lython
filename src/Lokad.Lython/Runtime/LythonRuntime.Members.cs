@@ -2823,6 +2823,62 @@ internal sealed partial class LythonRuntime
 
                     return !PyEquality.CountersEqual(counter, other);
                 }, "Counter.__ne__", ["value"]),
+                "__lt__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Counter.__lt__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyCounter other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return MultisetLessEqual(counter, other, context, span) && !PyEquality.CountersEqual(counter, other);
+                }, "Counter.__lt__", ["value"]),
+                "__le__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Counter.__le__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyCounter other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return MultisetLessEqual(counter, other, context, span);
+                }, "Counter.__le__", ["value"]),
+                "__gt__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Counter.__gt__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyCounter other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return MultisetLessEqual(other, counter, context, span) && !PyEquality.CountersEqual(counter, other);
+                }, "Counter.__gt__", ["value"]),
+                "__ge__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Counter.__ge__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyCounter other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return MultisetLessEqual(other, counter, context, span);
+                }, "Counter.__ge__", ["value"]),
                 _ => MissingMemberValue.Instance,
             };
 
