@@ -1665,6 +1665,13 @@ host, and dependency internals. Approximations must lean toward over-counting,
 so runs fail earlier rather than later, but the runtime must not promise a
 process-RSS ceiling from inside the same managed process.
 
+Measured 2026-09-14 (accounted peaks, trivial runs): an expression-only run
+accounts zero bytes; one top-level `def` accounts about 0.8KB (function shell
+plus module frame); importing `sys` accounts about 19KB (registry slot plus
+exported entries). Hosts should treat low-kilobyte accounted floors as the
+fixed infrastructure allowance and keep an explicit margin above them rather
+than budgeting to zero.
+
 #### 14.6.2 Compilation and Import Envelope
 
 The execution and projection governors begin at execution. Compilation
