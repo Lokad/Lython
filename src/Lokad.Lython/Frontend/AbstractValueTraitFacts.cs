@@ -123,7 +123,11 @@ internal static class AbstractValueTraitFacts
             AbstractValueKind.Function => CallableAtomicValue,
 
             AbstractValueKind.CsvReader or
-            AbstractValueKind.CsvDictReader or
+            AbstractValueKind.CsvDictReader =>
+                AbstractValueTraits.DefinitelyNonCallable |
+                AbstractValueTraits.DefinitelyNonSized |
+                AbstractValueTraits.DefinitelyNonSubscriptable,
+
             AbstractValueKind.DecimalTuple => AbstractValueTraits.DefinitelyNonCallable,
 
             AbstractValueKind.CollectionsDefaultDict or

@@ -5,9 +5,10 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 /// <summary>
-/// MG01: records parse one at a time and accumulate in a row cache, so a
-/// consumer that stops early never pays for the tail. Construction accepts
-/// the source without pulling, and line_num tracks consumed input.
+/// MG01: records parse one at a time and stream past without retention, so
+/// a consumer that stops early never pays for the tail and a full scan only
+/// carries the current record. Construction accepts the source without
+/// pulling, and line_num tracks consumed input.
 /// </summary>
 public sealed class CsvIncrementalParsingScenarioTests
 {
@@ -91,8 +92,8 @@ public sealed class CsvIncrementalParsingScenarioTests
     [Fact]
     public async Task LineNumProgressesWithPulls()
     {
-        // Indexing normalizes through Length and completes the parse, like
-        // len(); iteration is the incremental path.
+        // Readers stream single-pass; iteration is the incremental path and
+        // line_num tracks pulled input.
         var script = new LythonEngine().Compile("""
             import csv
             r = csv.reader(["a,b", "1,2", "3,4"])

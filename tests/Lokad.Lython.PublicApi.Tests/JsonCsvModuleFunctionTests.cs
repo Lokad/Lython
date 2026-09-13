@@ -41,7 +41,7 @@ writer.writerows([["alpha", "x,y"], ["beta", "plain"]])
 rows = csv.reader(writer.getvalue().splitlines(), delimiter=";")
 vals = []
 vals.append(writer.getvalue())
-vals.append(str(rows))
+vals.append(str(list(rows)))
 __lython_file = open("/out.txt", "w")
 __lython_file.write("|".join(vals))
 __lython_file.close()

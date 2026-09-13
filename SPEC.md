@@ -1196,9 +1196,9 @@ The imported module must expose:
 - `csv.QUOTE_NONE`
 - `csv.QUOTE_NONNUMERIC`
 
-The object returned by `csv.reader(...)` must be iterable and subscript-compatible with the historical Lython helper. It must yield rows as ordered lists of strings and expose `line_num`.
+The object returned by `csv.reader(...)` must be iterable single-pass: it yields each row once as an ordered list of strings, shares one cursor across iterators (a second pass sees nothing new), and exposes `line_num`. Indexing, slicing and `len(...)` are not supported; call `list(reader)` to materialize rows first. Truth testing always succeeds and rendering never pulls input.
 
-The object returned by `csv.DictReader(...)` must be iterable and must yield dictionaries keyed by field name. It must expose `fieldnames` and `line_num`. If `fieldnames` is omitted, the first row supplies the field names. `restkey` and `restval` must handle extra and missing fields.
+The object returned by `csv.DictReader(...)` must be iterable single-pass and must yield dictionaries keyed by field name, sharing one cursor across iterators. Indexing, slicing and `len(...)` are not supported; call `list(reader)` to materialize rows first. Truth testing always succeeds and rendering never pulls input. It must expose `fieldnames` and `line_num`. If `fieldnames` is omitted, the first row supplies the field names. `restkey` and `restval` must handle extra and missing fields.
 
 The object returned by `csv.writer()` without a file object accumulates output in memory. It must support:
 

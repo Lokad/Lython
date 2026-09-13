@@ -111,7 +111,7 @@ writer.writerow([["nested"]])
         var result = new LythonEngine().Run(
             """
 import csv
-rows = csv.reader(["\"a,b\",\"c\"\"d\"", "plain,tail"])
+rows = list(csv.reader(["\"a,b\",\"c\"\"d\"", "plain,tail"]))
 __lython_file = open("/out.txt", "w")
 __lython_file.write(rows[0][0] + "|" + rows[0][1] + "|" + rows[1][0] + "|" + rows[1][1])
 __lython_file.close()
@@ -175,7 +175,7 @@ __lython_file.close()
         var result = new LythonEngine().Run(
             """
 import csv
-rows = csv.reader([",,\"\",tail"])
+rows = list(csv.reader([",,\"\",tail"]))
 __lython_file = open("/out.txt", "w")
 __lython_file.write(str(rows[0]))
 __lython_file.close()

@@ -12,7 +12,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    internal sealed class CsvReaderObject : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue
+    internal sealed class CsvReaderObject : IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IEnumerable<object>
     {
         public CsvReaderObject(CsvRecordSource records, MemoryGovernor governor, LythonSourceSpan span)
         {
@@ -28,83 +28,33 @@ internal sealed partial class LythonRuntime
 
         public int LineNum => Records.PhysicalLineCount;
 
-        public int Count
-        {
-            get
-            {
-                Records.EnsureAll();
-                return Records.ParsedRows.Count;
-            }
-        }
-
-        public int Length => Count;
-
-        public object this[int index] => GetItem(index);
-
-        public object GetItem(int index)
-        {
-            if (index >= 0)
-            {
-                Records.EnsureUpTo(index);
-            }
-
-            return Records.ParsedRows.GetItem(index);
-        }
-
-        public object CreateSlice(IEnumerable<object> items) => new PyList(items, _governor, _span);
-
-        public object GetIndex(int index) => GetItem(index);
-
-        public object GetSlice(IEnumerable<int> indices)
-        {
-            Records.EnsureAll();
-            return Records.ParsedRows.GetSlice(indices);
-        }
-
-        public bool IsTruthy()
-        {
-            Records.EnsureUpTo(0);
-            return Records.ParsedRows.IsTruthy();
-        }
+        // Readers stream single-pass: materialize with list(reader) for
+        // indexing, slicing or a length. Truth testing and rendering never
+        // pull input.
+        public bool IsTruthy() => true;
 
         public IEnumerable<object> Iterate()
         {
-            var index = 0;
-            while (true)
+            while (Records.TryMoveNext(out var row))
             {
-                if (Records.EnsureUpTo(index) <= index)
-                {
-                    yield break;
-                }
-
-                yield return Records.ParsedRows[index];
-                index++;
+                yield return row;
             }
         }
 
-        public PyString RenderPython(PyRenderingContext context)
-        {
-            Records.EnsureAll();
-            return Records.ParsedRows.RenderPython(context);
-        }
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<csv.reader object>");
 
-        public PyString RenderInterpolated(PyRenderingContext context)
-        {
-            Records.EnsureAll();
-            return Records.ParsedRows.RenderInterpolated(context);
-        }
+        public PyString RenderInterpolated(PyRenderingContext context) => PyString.FromString("<csv.reader object>");
 
         public IEnumerator<object> GetEnumerator() => Iterate().GetEnumerator();
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
-    internal sealed class CsvDictReaderObject : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue
+    internal sealed class CsvDictReaderObject : IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IEnumerable<object>
     {
         public CsvDictReaderObject(
             CsvRecordSource rowLists,
             PyString[]? fieldNames,
-            int firstDataRow,
             object restKey,
             object restValue,
             MemoryGovernor governor,
@@ -112,7 +62,6 @@ internal sealed partial class LythonRuntime
         {
             Rows = rowLists;
             FieldNames = fieldNames;
-            _firstDataRow = firstDataRow;
             _restKey = restKey;
             _restValue = restValue;
             _governor = governor;
@@ -121,7 +70,6 @@ internal sealed partial class LythonRuntime
 
         private readonly MemoryGovernor _governor;
         private readonly LythonSourceSpan _span;
-        private readonly int _firstDataRow;
         private readonly object _restKey;
         private readonly object _restValue;
 
@@ -131,56 +79,22 @@ internal sealed partial class LythonRuntime
 
         public int LineNum => Rows.PhysicalLineCount;
 
-        public int Count
-        {
-            get
-            {
-                Rows.EnsureAll();
-                return Math.Max(Rows.ParsedRows.Count - _firstDataRow, 0);
-            }
-        }
-
-        public int Length => Count;
-
-        public object this[int index] => ConvertRow(index);
-
-        public object GetItem(int index) => ConvertRow(index);
-
-        public object CreateSlice(IEnumerable<object> items) => new PyList(items, _governor, _span);
-
-        public object GetIndex(int index) => ConvertRow(index);
-
-        public object GetSlice(IEnumerable<int> indices)
-        {
-            var converted = new PyList([], _governor, _span);
-            foreach (var index in indices)
-            {
-                converted.Add(ConvertRow(index));
-            }
-
-            return converted;
-        }
-
-        public bool IsTruthy() => Count != 0;
+        // Readers stream single-pass: materialize with list(reader) for
+        // indexing, slicing or a length. Truth testing and rendering never
+        // pull input.
+        public bool IsTruthy() => true;
 
         public IEnumerable<object> Iterate()
         {
-            var index = 0;
-            while (true)
+            while (Rows.TryMoveNext(out var row))
             {
-                if (Rows.EnsureUpTo(index + _firstDataRow) <= index + _firstDataRow)
-                {
-                    yield break;
-                }
-
-                yield return ConvertRow(index);
-                index++;
+                yield return ConvertRow(row);
             }
         }
 
-        public PyString RenderPython(PyRenderingContext context) => MaterializeConverted().RenderPython(context);
+        public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<csv.DictReader object>");
 
-        public PyString RenderInterpolated(PyRenderingContext context) => MaterializeConverted().RenderInterpolated(context);
+        public PyString RenderInterpolated(PyRenderingContext context) => PyString.FromString("<csv.DictReader object>");
 
         public IEnumerator<object> GetEnumerator() => Iterate().GetEnumerator();
 
@@ -188,19 +102,14 @@ internal sealed partial class LythonRuntime
 
         public PyList BuildFieldNamesList() => new(FieldNames ?? [], _governor, _span);
 
-        private PyDict ConvertRow(int index)
+        private PyDict ConvertRow(PyList row)
         {
             if (FieldNames is null)
             {
-                throw new InvalidOperationException("CsvDictReaderObject has no field names.");
+                throw new LythonRuntimeException("TypeError", "csv.DictReader has no field names.", _span);
             }
 
-            if (index >= 0)
-            {
-                Rows.EnsureUpTo(index + _firstDataRow);
-            }
-
-            return CreateDictReaderRow((PyList)Rows.ParsedRows[index + _firstDataRow], FieldNames, _restKey, _restValue, _governor, _span);
+            return CreateDictReaderRow(row, FieldNames, _restKey, _restValue, _governor, _span);
         }
 
         private static PyDict CreateDictReaderRow(PyList row, PyString[] fieldNames, object restKey, object restValue, MemoryGovernor governor, LythonSourceSpan span)
@@ -229,17 +138,6 @@ internal sealed partial class LythonRuntime
             }
 
             return dict;
-        }
-
-        private PyList MaterializeConverted()
-        {
-            var converted = new PyList([], _governor, _span);
-            for (var index = 0; index < Count; index++)
-            {
-                converted.Add(ConvertRow(index));
-            }
-
-            return converted;
         }
     }
 

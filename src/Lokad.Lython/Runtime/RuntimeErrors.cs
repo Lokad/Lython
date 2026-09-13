@@ -99,6 +99,8 @@ internal static class RuntimeErrors
         ChainMapKeysView => "KeysView",
         ChainMapValuesView => "ValuesView",
         ChainMapItemsView => "ItemsView",
+        LythonRuntime.CsvReaderObject => "csv.reader",
+        LythonRuntime.CsvDictReaderObject => "csv.DictReader",
         PyDecimal => "decimal.Decimal",
         PyDate => "datetime.date",
         PyTime => "datetime.time",

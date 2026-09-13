@@ -43,9 +43,10 @@ public sealed class CsvDictReaderLazinessScenarioTests
             """
             import csv
             r = csv.DictReader(["a,b", "1,2", "3"], restval="0")
-            first = r[0]
-            second = r[1]
-            return [first["a"], first["b"], second["a"], second["b"], r.fieldnames, len(r), r.line_num, len(list(csv.DictReader([]))), len(r[0:2])]
+            rows = list(r)
+            first = rows[0]
+            second = rows[1]
+            return [first["a"], first["b"], second["a"], second["b"], r.fieldnames, len(rows), r.line_num, len(list(csv.DictReader([]))), len(rows[0:2])]
             """);
         Assert.True(script.IsValid);
         var expected = new List<object?>

@@ -78,20 +78,31 @@ internal sealed partial class LythonRuntime
 
             var options = GetOptions(arguments, CsvOptionArgumentLayout.Dictionary, span);
             var records = new CsvRecordSource(arguments[0], options, span, context);
-            records.EnsureUpTo(0);
-            var fieldNames = arguments.Length > 1 && arguments[1] is not PyNone
-                ? ToCsvFieldNames(arguments[1], "csv.DictReader(..., fieldnames=...) expects an iterable of strings.", span, context)
-                : records.ParsedRows.Count == 0
+            PyString[]? fieldNames;
+            if (arguments.Length > 1 && arguments[1] is not PyNone)
+            {
+                fieldNames = ToCsvFieldNames(arguments[1], "csv.DictReader(..., fieldnames=...) expects an iterable of strings.", span, context);
+                // Validate (and surface malformed input) exactly like the
+                // historical eager first pull, then replay the record so
+                // iteration still yields every row.
+                if (records.TryMoveNext(out var first))
+                {
+                    records.PushBack(first);
+                }
+            }
+            else
+            {
+                var header = records.PullHeader();
+                fieldNames = header is null
                     ? null
-                    : ToFieldNameList((PyList)records.ParsedRows[0], span, context);
+                    : ToFieldNameList(header, span, context);
+            }
 
             // Rows parse on demand and dictionaries convert on demand, so early
             // termination never pays for unconsumed rows or dictionaries.
-            var firstDataRow = arguments.Length > 1 && arguments[1] is not PyNone ? 0 : 1;
             return new CsvDictReaderObject(
                 records,
                 fieldNames,
-                firstDataRow,
                 RestKey(arguments, 2),
                 RestValue(arguments, 3),
                 context.MemoryGovernor,
@@ -353,11 +364,14 @@ internal sealed partial class LythonRuntime
 
     }
 
-    // Records parse one physical line at a time and accumulate in the
-    // parser row cache, so consumers that stop early never pay for the tail.
-    // The field-builder transient lives as long as the source; it is released
-    // once the source is exhausted, or held (safe direction) when the consumer
-    // abandons the tail.
+    // Records parse one physical line at a time and stream through a shared
+    // cursor: parsed rows are yielded once and never retained (except the
+    // DictReader header row), so a full scan only carries the current record.
+    // Field payloads commit at parse time and register with the reclamation
+    // pool; sweeps release charges for fields the guest dropped while keeping
+    // every retained alias charged. The field-builder transient lives as long
+    // as the source; it is released once the source is exhausted, or held
+    // (safe direction) when the consumer abandons the tail.
     internal sealed class CsvRecordSource
     {
         private readonly CsvRecordParser _parser;
@@ -365,6 +379,10 @@ internal sealed partial class LythonRuntime
         private readonly ExecutionContext _context;
         private readonly LythonSourceSpan _span;
         private readonly MemoryGovernor.TemporaryMemoryReservation _fieldScratch;
+        private readonly ChargeReclamationPool _pool;
+        private PyList? _pushedBack;
+        private PyList? _headerRow;
+        private long _pulls;
         private bool _completed;
 
         public CsvRecordSource(object source, CsvOptions options, LythonSourceSpan span, ExecutionContext context)
@@ -375,33 +393,59 @@ internal sealed partial class LythonRuntime
             // checked as each line is pulled.
             _cursor = ToSequence(source, span, context).GetEnumerator();
             _fieldScratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            _parser = new CsvRecordParser(options, context, span, _fieldScratch);
+            _pool = new ChargeReclamationPool(context.MemoryGovernor);
+            _parser = new CsvRecordParser(options, context, span, _fieldScratch, _pool);
         }
-
-        public PyList ParsedRows => _parser.Rows;
 
         public int PhysicalLineCount { get; private set; }
 
-        // Parses until at least index+1 records are cached; returns the cached
-        // count, which stays below index+1 only at end of input.
-        public int EnsureUpTo(int index)
+        // Pulls the first record for header inference; the header stays
+        // retained (its field aliases remain charged through live entries)
+        // while data rows stream past.
+        public PyList? PullHeader()
         {
-            while (!_completed && _parser.Rows.Count <= index)
+            if (!TryMoveNext(out var row))
             {
-                Pull();
+                return null;
             }
 
-            return _parser.Rows.Count;
+            _headerRow = row;
+            return row;
         }
 
-        public int EnsureAll()
+        // Replays one pulled record (the validated first data row when explicit
+        // field names were supplied) so iteration still yields every row.
+        public void PushBack(PyList row)
         {
-            while (!_completed)
+            _pushedBack = row;
+        }
+
+        // Advances the shared cursor; every iterator over this source observes
+        // the same position, matching CPython (a second pass sees nothing new).
+        public bool TryMoveNext(out PyList row)
+        {
+            if (_pushedBack is not null)
             {
-                Pull();
+                row = _pushedBack;
+                _pushedBack = null;
+                return true;
             }
 
-            return _parser.Rows.Count;
+            while (true)
+            {
+                if (_parser.TryTakeReady(out row))
+                {
+                    return true;
+                }
+
+                if (_completed)
+                {
+                    row = null;
+                    return false;
+                }
+
+                Pull();
+            }
         }
 
         private void Pull()
@@ -416,6 +460,11 @@ internal sealed partial class LythonRuntime
 
                 PhysicalLineCount++;
                 _parser.Feed(line.AsString());
+                if ((++_pulls & 255) == 0)
+                {
+                    _pool.Sweep();
+                }
+
                 return;
             }
 
@@ -423,6 +472,7 @@ internal sealed partial class LythonRuntime
             _completed = true;
             _cursor.Dispose();
             _fieldScratch.Dispose();
+            _pool.Sweep();
         }
     }
 
@@ -437,25 +487,49 @@ internal sealed partial class LythonRuntime
         private readonly List<object> _row = new();
         private readonly StringBuilder _field = new();
         private readonly MemoryGovernor.TemporaryMemoryReservation _fieldScratch;
+        private readonly ChargeReclamationPool _pool;
+        private readonly List<PyList> _ready = new();
+        private int _readyHead;
         private long _chargedFieldCapacity;
+        private long _chargedReadyCapacity;
         private bool _inQuotes;
         private bool _fieldStarted;
         private bool _afterQuote;
         private bool _recordStarted;
 
-        public CsvRecordParser(CsvOptions options, ExecutionContext context, LythonSourceSpan span, MemoryGovernor.TemporaryMemoryReservation fieldScratch)
+        public CsvRecordParser(CsvOptions options, ExecutionContext context, LythonSourceSpan span, MemoryGovernor.TemporaryMemoryReservation fieldScratch, ChargeReclamationPool pool)
         {
             _options = options;
             _context = context;
             _span = span;
             _fieldScratch = fieldScratch;
+            _pool = pool;
             _delimiter = options.Delimiter.AsString();
             _quoteCharacter = options.QuoteChar?.AsString();
             _escapeCharacter = options.EscapeChar?.AsString();
-            Rows = new PyList([], context.MemoryGovernor, span);
         }
 
-        public PyList Rows { get; }
+        // Takes the next completed record, if any. Records completed by one
+        // Feed call queue here until the source drains them.
+        public bool TryTakeReady(out PyList row)
+        {
+            if (_readyHead >= _ready.Count)
+            {
+                row = null;
+                return false;
+            }
+
+            row = _ready[_readyHead];
+            _ready[_readyHead] = null!;
+            _readyHead++;
+            if (_readyHead > 1024 && _readyHead >= _ready.Count / 2)
+            {
+                _ready.RemoveRange(0, _readyHead);
+                _readyHead = 0;
+            }
+
+            return true;
+        }
 
         public void Feed(string text)
         {
@@ -557,7 +631,7 @@ internal sealed partial class LythonRuntime
 
             if (text.Length == 0)
             {
-                Rows.Add(new PyList([], _context.MemoryGovernor, _span));
+                EnqueueRecord(new PyList([], _context.MemoryGovernor, _span));
                 return;
             }
 
@@ -617,25 +691,47 @@ internal sealed partial class LythonRuntime
         private void FinishField()
         {
             NoteFieldCapacity();
-            // Decoded fields are retained in every row, so own their
-            // payload here; row and table backing is charged separately
+            // Decoded fields commit their payload here and register with the
+            // reclamation pool; row and table backing is charged separately
             // by the governed row containers.
-            _row.Add(PyString.FromString(_field.ToString(), _context.MemoryGovernor, _span));
+            var payload = PyString.FromString(_field.ToString(), _context.MemoryGovernor, _span);
+            _pool.TrackString(payload);
+            _row.Add(payload);
             _field.Clear();
             _fieldStarted = false;
             _afterQuote = false;
+        }
+
+        private void EnqueueRecord(PyList record)
+        {
+            // Ready slots ride the field scratch beside the builder: one Feed
+            // call can complete many records, and the transient releases with
+            // the source once exhausted.
+            if (_ready.Count == _ready.Capacity)
+            {
+                var predicted = _ready.Capacity == 0 ? 4L : (long)_ready.Capacity * 2L;
+                _fieldScratch.Grow(checked(16L * (predicted - _chargedReadyCapacity)), _span);
+                _chargedReadyCapacity = _ready.Capacity == 0 ? 4L : (long)_ready.Capacity * 2L;
+            }
+
+            _ready.Add(record);
+            if (_ready.Capacity > _chargedReadyCapacity)
+            {
+                _fieldScratch.Grow(checked(16L * (_ready.Capacity - _chargedReadyCapacity)), _span);
+                _chargedReadyCapacity = _ready.Capacity;
+            }
         }
 
         private void FinishRecord()
         {
             if (!_recordStarted && !_fieldStarted && _field.Length == 0 && _row.Count == 0)
             {
-                Rows.Add(new PyList([], _context.MemoryGovernor, _span));
+                EnqueueRecord(new PyList([], _context.MemoryGovernor, _span));
                 return;
             }
 
             FinishField();
-            Rows.Add(new PyList(_row, _context.MemoryGovernor, _span));
+            EnqueueRecord(new PyList(_row, _context.MemoryGovernor, _span));
             _row.Clear();
             _recordStarted = false;
             _afterQuote = false;

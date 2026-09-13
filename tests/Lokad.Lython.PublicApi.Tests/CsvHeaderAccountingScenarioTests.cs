@@ -66,9 +66,9 @@ public sealed class CsvHeaderAccountingScenarioTests
     {
         var script = new LythonEngine().Compile("""
             import csv
-            r1 = csv.DictReader(["a,b", "1,2"], ["x", "y"])
-            r2 = csv.DictReader(["a,b", "1,2"])
-            return [r1[0]["x"], r1[0]["y"], r2[0]["a"], r2[0]["b"]]
+            rows1 = list(csv.DictReader(["a,b", "1,2"], ["x", "y"]))
+            rows2 = list(csv.DictReader(["a,b", "1,2"]))
+            return [rows1[0]["x"], rows1[0]["y"], rows2[0]["a"], rows2[0]["b"]]
             """);
         Assert.True(script.IsValid);
         // Explicit names keep the first row as data, matching CPython.
