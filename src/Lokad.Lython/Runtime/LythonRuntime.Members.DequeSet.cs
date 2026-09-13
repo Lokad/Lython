@@ -170,6 +170,7 @@ internal sealed partial class LythonRuntime
                     deque.Rotate(offset);
                     return PyNone.Instance;
                 }, "deque.rotate", ["n"], 0),
+                "__iter__" => BoundCallable.CreateNoArguments(deque, "deque.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 _ => MissingMemberValue.Instance,
             };
 

@@ -303,6 +303,7 @@ internal static partial class StaticContracts
         "update",
         "pop",
         "popitem",
+        "__iter__",
     };
 
     private static readonly HashSet<string> CollectionsCounterMembers = new(StringComparer.Ordinal)
@@ -320,6 +321,7 @@ internal static partial class StaticContracts
         "values",
         "items",
         "pop",
+        "__iter__",
     };
 
     private static readonly HashSet<string> CollectionsDequeMembers = new(StringComparer.Ordinal)
@@ -340,6 +342,7 @@ internal static partial class StaticContracts
         "remove",
         "reverse",
         "rotate",
+        "__iter__",
     };
 
     private static readonly HashSet<string> CollectionsChainMapMembers = new(StringComparer.Ordinal)

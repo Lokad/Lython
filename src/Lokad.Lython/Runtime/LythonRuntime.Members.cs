@@ -949,6 +949,18 @@ internal sealed partial class LythonRuntime
 
                     return true;
                 }, OnePositional("dict_keys.isdisjoint", "other")),
+                "__iter__" => BoundCallable.CreateNoArguments(view, "dict_keys.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
+                _ => MissingMemberValue.Instance,
+            };
+
+            return !ReferenceEquals(value, MissingMemberValue.Instance);
+        }
+
+        public static bool TryGetValuesMember(DictValuesView view, string name, [MaybeNullWhen(false)] out object value)
+        {
+            value = name switch
+            {
+                "__iter__" => BoundCallable.CreateNoArguments(view, "dict_values.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -973,6 +985,7 @@ internal sealed partial class LythonRuntime
 
                     return true;
                 }, OnePositional("dict_items.isdisjoint", "other")),
+                "__iter__" => BoundCallable.CreateNoArguments(view, "dict_items.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1143,6 +1156,7 @@ internal sealed partial class LythonRuntime
                     receiver.Clear();
                     return PyNone.Instance;
                 }),
+                "__iter__" => BoundCallable.CreateNoArguments(dict, "defaultdict.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1326,6 +1340,7 @@ internal sealed partial class LythonRuntime
                     counter.Remove(key);
                     return found;
                 }, "Counter.pop", ["key", "default"], 1),
+                "__iter__" => BoundCallable.CreateNoArguments(counter, "Counter.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 _ => MissingMemberValue.Instance,
             };
 

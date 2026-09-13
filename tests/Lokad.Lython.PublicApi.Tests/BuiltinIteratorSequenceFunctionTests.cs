@@ -656,4 +656,77 @@ return "|".join(results)
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task CollectionViewDundersAdvanceLikeCpython()
+    {
+        // Dict views and collection types expose __iter__ with the same
+        // values as iter(), like CPython.
+        var script = new LythonEngine().Compile("""
+            from collections import defaultdict, Counter, deque
+            def iter_arg(x):
+                return x.__iter__(1)
+            results = []
+            d = {"a": 1, "b": 2}
+            results.append(str(list(d.keys().__iter__())))
+            results.append(str(list(d.values().__iter__())))
+            results.append(str(list(d.items().__iter__())))
+            results.append(str(list(defaultdict(list, {"a": [1]}).__iter__())))
+            results.append(str(list(Counter("aab").__iter__())))
+            results.append(str(list(deque([1, 2]).__iter__())))
+            q = deque([1])
+            results.append(str(q.__iter__() is q))
+            it = q.__iter__()
+            results.append(str(it.__next__()))
+            try:
+                it.__next__()
+            except StopIteration as e:
+                results.append(type(e).__name__)
+                results.append(str(e.args))
+            for v in [defaultdict(list), Counter(), deque(), {"a": 1}.keys(), {"a": 1}.values(), {"a": 1}.items()]:
+                try:
+                    iter_arg(v)
+                except TypeError as e:
+                    results.append(type(e).__name__)
+                    results.append(str(e))
+            results.append(str(hasattr({}.keys(), "__iter__")))
+            results.append(str(callable({}.values().__iter__)))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "['a', 'b']",
+            "[1, 2]",
+            "[('a', 1), ('b', 2)]",
+            "['a']",
+            "['a', 'b']",
+            "[1, 2]",
+            "False",
+            "1",
+            "StopIteration",
+            "()",
+            "TypeError",
+            "defaultdict.__iter__() expects no arguments.",
+            "TypeError",
+            "Counter.__iter__() expects no arguments.",
+            "TypeError",
+            "deque.__iter__() expects no arguments.",
+            "TypeError",
+            "dict_keys.__iter__() expects no arguments.",
+            "TypeError",
+            "dict_values.__iter__() expects no arguments.",
+            "TypeError",
+            "dict_items.__iter__() expects no arguments.",
+            "True",
+            "True",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
