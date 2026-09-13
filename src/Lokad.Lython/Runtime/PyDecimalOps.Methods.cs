@@ -299,6 +299,43 @@ internal static partial class PyDecimalOps
         return (PyDecimal)PyDecimalOps.Add(PyDecimalOps.Multiply(value, arguments[0], span, "*"), arguments[1], span, "+");
     }
 
+    public static PyDecimal LogB(PyDecimal value, object[] arguments, LythonSourceSpan span)
+    {
+        if (arguments.Length > 1)
+        {
+            throw new LythonRuntimeException("TypeError", "Decimal.logb([context]) expects zero or one argument.", span);
+        }
+
+        if (value.Value == 0m)
+        {
+            throw DivisionByZero("decimal division by zero", span);
+        }
+
+        return new PyDecimal((decimal)Adjusted(value));
+    }
+
+    public static PyDecimal CompareSignal(PyDecimal value, object[] arguments, LythonSourceSpan span)
+    {
+        if (arguments.Length is < 1 or > 2 || !TryAsDecimal(arguments[0], out var other))
+        {
+            throw new LythonRuntimeException("TypeError", "Decimal.compare_signal(other[, context]) expects one Decimal-compatible argument.", span);
+        }
+
+        return new PyDecimal(value.Value.CompareTo(other));
+    }
+
+    public static PyTuple AsIntegerRatio(PyDecimal value, object[] arguments, MemoryGovernor governor, LythonSourceSpan span)
+    {
+        if (arguments.Length != 0)
+        {
+            throw new LythonRuntimeException("TypeError", "Decimal.as_integer_ratio() expects no arguments.", span);
+        }
+
+        var (numerator, denominator) = ExactDecimalParts(value.Value);
+        var divisor = BigInteger.GreatestCommonDivisor(BigInteger.Abs(numerator), denominator);
+        return new PyTuple([numerator / divisor, denominator / divisor], governor, span);
+    }
+
     public static PyDecimal MinMax(PyDecimal value, object[] arguments, string name, LythonSourceSpan span)
     {
         if (arguments.Length is < 1 or > 2 || !TryAsDecimal(arguments[0], out var other))

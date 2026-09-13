@@ -330,6 +330,39 @@ internal sealed partial class LythonRuntime
                 "rotate" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.Rotate(decimalValue, arguments, span), decimalValue, context, span), "Decimal.rotate", ["other"]),
                 "same_quantum" => BoundCallable.Create((arguments, span, _) => PyDecimalOps.SameQuantum(decimalValue, arguments, span), "Decimal.same_quantum", ["other"]),
                 "fma" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.FusedMultiplyAdd(decimalValue, arguments, span), decimalValue, context, span), LythonCallableSignature.Create("Decimal.fma", ["other", "third", "context"], requiredCount: 2)),
+                "logb" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.LogB(decimalValue, arguments, span), decimalValue, context, span), LythonCallableSignature.Create("Decimal.logb", ["context"], requiredCount: 0)),
+                "compare_signal" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.CompareSignal(decimalValue, arguments, span), decimalValue, context, span), LythonCallableSignature.Create("Decimal.compare_signal", ["other", "context"], requiredCount: 1)),
+                "radix" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Decimal.radix() expects no arguments.", span);
+                    }
+
+                    return OwnFreshDecimal(new PyDecimal(10m), decimalValue, context, span);
+                }, "Decimal.radix", []),
+                "canonical" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Decimal.canonical() expects no arguments.", span);
+                    }
+
+                    return OwnFreshDecimal(new PyDecimal(decimalValue.Value, decimalValue.Exponent), decimalValue, context, span);
+                }, "Decimal.canonical", []),
+                "conjugate" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Decimal.conjugate() expects no arguments.", span);
+                    }
+
+                    return OwnFreshDecimal(new PyDecimal(decimalValue.Value, decimalValue.Exponent), decimalValue, context, span);
+                }, "Decimal.conjugate", []),
+                "as_integer_ratio" => BoundCallable.Create((arguments, span, context) => PyDecimalOps.AsIntegerRatio(decimalValue, arguments, context.MemoryGovernor, span), "Decimal.as_integer_ratio", []),
+                "is_qnan" => BoundCallable.Create((arguments, span, _) => ExpectDecimalNoArguments("is_qnan", arguments, span, false), "Decimal.is_qnan", []),
+                "is_snan" => BoundCallable.Create((arguments, span, _) => ExpectDecimalNoArguments("is_snan", arguments, span, false), "Decimal.is_snan", []),
+                "is_canonical" => BoundCallable.Create((arguments, span, _) => ExpectDecimalNoArguments("is_canonical", arguments, span, true), "Decimal.is_canonical", []),
                 "remainder_near" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.RemainderNear(decimalValue, arguments, span), decimalValue, context, span), LythonCallableSignature.Create("Decimal.remainder_near", ["other", "context"], requiredCount: 1)),
                 "min" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.MinMax(decimalValue, arguments, "min", span), decimalValue, context, span), LythonCallableSignature.Create("Decimal.min", ["other", "context"], requiredCount: 1)),
                 "max" => BoundCallable.Create((arguments, span, context) => OwnFreshDecimal(PyDecimalOps.MinMax(decimalValue, arguments, "max", span), decimalValue, context, span), LythonCallableSignature.Create("Decimal.max", ["other", "context"], requiredCount: 1)),

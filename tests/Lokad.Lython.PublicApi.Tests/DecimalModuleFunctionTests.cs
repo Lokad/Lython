@@ -260,6 +260,15 @@ d.is_finite()
 d.scaleb(2)
 d.fma(Decimal("2"), Decimal("3"))
 d.fma(Decimal("2"), Decimal("3")).as_tuple()
+d.fma(Decimal("2"), Decimal("3")).as_tuple()
+d.logb().as_tuple()
+d.compare_signal(Decimal("1"))
+d.radix()
+d.canonical()
+d.conjugate()
+d.as_integer_ratio()
+d.is_qnan()
+d.is_canonical()
 Decimal(DecimalTuple(0, (1, 2), -1))
 """);
 
@@ -272,6 +281,9 @@ from decimal import Decimal, Context
 Decimal(1, 2, 3)
 Decimal("1").as_tuple(1)
 Decimal("1").fma(Decimal("1"))
+Decimal("1").fma(Decimal("1"))
+Decimal("1").logb(1, 2)
+Decimal("1").radix(1)
 Decimal("1").bogus()
 Context().copy(1)
 """);
@@ -282,6 +294,8 @@ Context().copy(1)
         Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3113" && d.Message.Contains("bogus", StringComparison.Ordinal));
         Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3156" && d.Message.Contains("Context.copy", StringComparison.Ordinal));
         Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3156" && d.Message.Contains("Decimal.fma", StringComparison.Ordinal));
+        Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3156" && d.Message.Contains("Decimal.logb", StringComparison.Ordinal));
+        Assert.Contains(invalid.Diagnostics, d => d.Code == "LA3156" && d.Message.Contains("Decimal.radix", StringComparison.Ordinal));
     }
 
     [Theory]
@@ -1254,6 +1268,104 @@ x.as_tuple()
             "Method 'Decimal.fma' is missing argument 'third'.",
             "TypeError",
             "Method 'Decimal.fma' received too many positional arguments.",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task DecimalExactMissingMethodsMatchCpython()
+    {
+        // The exact missing Decimal methods (logb, compare_signal, radix,
+        // canonical, conjugate, as_integer_ratio and the always-settled
+        // predicates) match CPython like the runtime, with house validation
+        // for arity and operand kinds, in both modes.
+        var script = new LythonEngine().Compile("""
+            import decimal
+            from decimal import Decimal
+            results = []
+            results.append(str(Decimal('120').logb()))
+            results.append(repr(Decimal('120').logb()))
+            results.append(type(Decimal('120').logb()).__name__)
+            results.append(str(Decimal('0.007').logb()))
+            results.append(str(Decimal('-5').logb()))
+            try:
+                Decimal('0').logb()
+            except decimal.DivisionByZero as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            results.append(str(Decimal('1').compare_signal(Decimal('2'))))
+            results.append(str(Decimal('1.0').compare_signal(1)))
+            results.append(str(Decimal('1').radix()))
+            results.append(repr(Decimal('1').radix()))
+            results.append(str(Decimal('1.50').canonical()))
+            results.append(str(Decimal('-2.5').conjugate()))
+            results.append(str(Decimal('0.5').as_integer_ratio()))
+            results.append(str(Decimal('-2.5').as_integer_ratio()))
+            results.append(str(Decimal('0.00').as_integer_ratio()))
+            results.append(str(Decimal('2.50').as_integer_ratio()))
+            results.append(str(Decimal('1').is_qnan()))
+            results.append(str(Decimal('1').is_snan()))
+            results.append(str(Decimal('1').is_canonical()))
+            results.append(str(Decimal('120').logb().as_tuple()))
+            def cs_s(s):
+                return Decimal('1').compare_signal(s)
+            try:
+                cs_s('x')
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            def canon_1(d, x):
+                return d.canonical(x)
+            try:
+                canon_1(Decimal('1'), 1)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            def air_1(d, x):
+                return d.as_integer_ratio(x)
+            try:
+                air_1(Decimal('1'), 1)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "2",
+            "Decimal('2')",
+            "Decimal",
+            "-3",
+            "0",
+            "DivisionByZero",
+            "decimal division by zero",
+            "-1",
+            "0",
+            "10",
+            "Decimal('10')",
+            "1.50",
+            "-2.5",
+            "(1, 2)",
+            "(-5, 2)",
+            "(0, 1)",
+            "(5, 2)",
+            "False",
+            "False",
+            "True",
+            "DecimalTuple(sign=0, digits=(2,), exponent=0)",
+            "TypeError",
+            "Decimal.compare_signal(other[, context]) expects one Decimal-compatible argument.",
+            "TypeError",
+            "Method 'Decimal.canonical' received too many positional arguments.",
+            "TypeError",
+            "Method 'Decimal.as_integer_ratio' received too many positional arguments.",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);

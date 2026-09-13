@@ -383,6 +383,15 @@ internal static partial class StaticContracts
         "min_mag",
         "max_mag",
         "fma",
+        "logb",
+        "compare_signal",
+        "radix",
+        "canonical",
+        "conjugate",
+        "as_integer_ratio",
+        "is_qnan",
+        "is_snan",
+        "is_canonical",
     };
 
     private static readonly HashSet<string> DecimalContextMembers = new(StringComparer.Ordinal)
