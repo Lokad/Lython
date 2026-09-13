@@ -63,6 +63,62 @@ public sealed class CsvWriterAccountingScenarioTests
     }
 
     [Fact]
+    public async Task FileBackedWriterowsTripSmallBudget()
+    {
+        // MG21: file-backed output buffers through governed byte builders, so
+        // a large buffered document trips a small budget instead of growing
+        // uncharged behind the streaming writes.
+        var script = new LythonEngine().Compile("""
+            import csv
+            handle = open("/out.csv", "w")
+            writer = csv.writer(handle)
+            pad = "y" * 50
+            i = 0
+            while i < 2000:
+                writer.writerow([i, pad])
+                i = i + 1
+            handle.close()
+            return 1
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 131072 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+    }
+
+    [Fact]
+    public async Task FundedFileBackedWriterowsStreamsFully()
+    {
+        var script = new LythonEngine().Compile("""
+            import csv
+            handle = open("/out.csv", "w")
+            writer = csv.writer(handle)
+            pad = "y" * 50
+            i = 0
+            while i < 2000:
+                writer.writerow([i, pad])
+                i = i + 1
+            handle.close()
+            return 1
+            """);
+        Assert.True(script.IsValid);
+        var syncHost = new MockLythonHost();
+        var sync = script.Run(syncHost);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(2001, syncHost.ReadText("/out.csv").Split('\n').Length);
+
+        var asyncHost = new MockLythonHost();
+        var asyncResult = await script.RunAsync(asyncHost);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(2001, asyncHost.ReadText("/out.csv").Split('\n').Length);
+    }
+
+    [Fact]
     public async Task QuotedFieldsRenderExactly()
     {
         var script = new LythonEngine().Compile(
