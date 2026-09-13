@@ -172,6 +172,33 @@ public sealed class CsvWriterAccountingScenarioTests
     }
 
     [Fact]
+    public async Task WriterStaysUsableAfterOversizedConversionFailure()
+    {
+        // MG02: an oversized integer trips the conversion reservation before
+        // formatting, so the failed row retains nothing and the writer stays
+        // usable for later rows.
+        var script = new LythonEngine().Compile("""
+            import csv
+            w = csv.writer()
+            try:
+                w.writerow([int("9" * 20000)])
+            except MemoryError:
+                pass
+            w.writerow(["a"])
+            return w.getvalue()
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 60000 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("a", Assert.IsType<string>(sync.ReturnValue));
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("a", Assert.IsType<string>(asyncResult.ReturnValue));
+    }
+
+    [Fact]
     public async Task WriterowsPreservesRowsWrittenBeforeConversionError()
     {
         // MG02: writerows is not transactional: rows streamed before a

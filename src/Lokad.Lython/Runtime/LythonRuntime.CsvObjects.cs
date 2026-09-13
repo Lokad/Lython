@@ -487,20 +487,41 @@ internal sealed partial class LythonRuntime
         {
             convertedBytes = 0;
             var cells = new List<CsvCell>();
+            // Converted cells materialize CLR strings before the governed copy,
+            // so hold a predicted bound transiently: an oversized value trips
+            // the budget instead of growing uncharged. Retention stays covered
+            // by the convertedBytes history charge on the in-memory path.
+            using var conversion = context.MemoryGovernor.ReserveTemporary(0, span);
             foreach (var cell in ToSequence(row, span, context))
             {
                 cells.Add(cell switch
                 {
                     PyNone => new CsvCell(PyString.Empty, CsvCellKind.Text),
                     PyString text => new CsvCell(text, CsvCellKind.Text),
-                    BigInteger integer => ConvertedCell(PyString.FromString(integer.ToString()), CsvCellKind.Numeric, ref convertedBytes),
-                    bool boolean => ConvertedCell(PyString.FromString(boolean ? "True" : "False"), CsvCellKind.Text, ref convertedBytes),
-                    double floating => ConvertedCell(PyString.FromString(Numbers.PyNumberOps.RenderFloat(floating)), CsvCellKind.Numeric, ref convertedBytes),
+                    BigInteger integer => ConvertedCell(FormatIntegerCell(integer, conversion, span), CsvCellKind.Numeric, ref convertedBytes),
+                    bool boolean => ConvertedCell(FormatFixedCell(boolean ? "True" : "False", conversion, span), CsvCellKind.Text, ref convertedBytes),
+                    double floating => ConvertedCell(FormatFixedCell(Numbers.PyNumberOps.RenderFloat(floating), conversion, span), CsvCellKind.Numeric, ref convertedBytes),
                     _ => throw new LythonRuntimeException("TypeError", "CSV rows must contain scalar values.", span)
                 });
             }
 
             return [.. cells];
+        }
+
+        private static PyString FormatIntegerCell(BigInteger integer, MemoryGovernor.TemporaryMemoryReservation scratch, LythonSourceSpan span)
+        {
+            // Decimal digits stay below bytes x log10(256); bound with long
+            // arithmetic before formatting so huge magnitudes trip first.
+            scratch.Grow(128L + ((long)integer.GetByteCount() * 241L / 100L) + 2L, span);
+            return PyString.FromString(integer.ToString());
+        }
+
+        private static PyString FormatFixedCell(string text, MemoryGovernor.TemporaryMemoryReservation scratch, LythonSourceSpan span)
+        {
+            // Bools and doubles render to a few dozen characters at most; hold
+            // a fixed bound ahead of the CLR string.
+            scratch.Grow(128L + 32L, span);
+            return PyString.FromString(text);
         }
 
         private static CsvCell ConvertedCell(PyString text, CsvCellKind kind, ref long convertedBytes)

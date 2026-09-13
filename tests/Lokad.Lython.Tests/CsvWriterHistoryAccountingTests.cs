@@ -1,3 +1,4 @@
+using System.Numerics;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
@@ -78,6 +79,43 @@ public sealed class CsvWriterHistoryAccountingTests
 
         Assert.Equal(33, writer.Rows.Count);
         Assert.Equal(2768L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0L, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    [Fact]
+    public void OversizedIntegerConversionTripsBeforeFormatting()
+    {
+        // 10^2000 formats to 2001 digits (2129 estimated bytes) but the
+        // pre-format bound holds 2132, so a 2130 budget trips before the CLR
+        // string is built; without the reservation nothing trips.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 2130 });
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var row = new PyList(new object[] { BigInteger.Pow(10, 2000) });
+        var failure = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.CsvWriterMembers.ToCsvRow(row, span, context, out _));
+        Assert.Equal("MemoryError", failure.ExceptionType);
+        Assert.Equal(0L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0L, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    [Fact]
+    public void OrdinaryConversionsStayExact()
+    {
+        // Small ints, floats, bools, strings and None convert with exact
+        // retention estimates while the build transient releases.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 100000 });
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var row = new PyList(new object[] { PyNone.Instance, PyString.FromString("ab"), new BigInteger(42), true, 1.5 });
+        var cells = LythonRuntime.CsvWriterMembers.ToCsvRow(row, span, context, out var converted);
+        Assert.Equal(5, cells.Length);
+        Assert.Same(PyString.Empty, cells[0].Text);
+        Assert.Equal("ab", cells[1].Text.AsString());
+        Assert.Equal("42", cells[2].Text.AsString());
+        Assert.Equal("True", cells[3].Text.AsString());
+        Assert.Equal("1.5", cells[4].Text.AsString());
+        Assert.Equal((128L + 2L) + (128L + 4L) + (128L + 3L), converted);
+        Assert.Equal(0L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0L, context.MemoryGovernor.CurrentReservedBytes);
     }
 
