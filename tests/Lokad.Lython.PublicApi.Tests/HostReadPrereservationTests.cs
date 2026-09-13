@@ -85,24 +85,43 @@ public sealed class HostReadPrereservationTests
     }
 
     [Fact]
-    public async Task OversizedTextReadTripsBeforeHostRead()
+    public async Task OversizedTextReadTripsWhileStreaming()
     {
-        var script = new LythonEngine().Compile("return len(open(\"/data.txt\").read())\n");
+        // MG21: streaming opens no longer prereserve the stat size against the
+        // execution budget, so an oversized file trips mid-stream on retained
+        // line charges after several windows: no whole-file transfer ever
+        // issues, and acquisition stops well short of covering the file.
+        // (read() would defer every charge to one final commit; line
+        // iteration charges per line, which is what trips incrementally.)
+        var script = new LythonEngine().Compile(
+            """
+            total = 0
+            with open("/data.txt") as f:
+                for line in f:
+                    total = total + len(line)
+            return total
+            """);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
         var host = new CountingHost();
-        host.SeedFile("/data.txt", new string('y', 100000));
+        host.SeedFile("/data.txt", string.Concat(Enumerable.Repeat(new string('y', 999) + "\n", 100)));
         var sync = script.Run(host, options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
         Assert.Equal(0, host.TextReads);
+        Assert.True(host.TextRangeReads > 1);
+        Assert.True(host.TextRangeBytes >= 16384);
+        Assert.True(host.TextRangeBytes < 100000);
 
         var host2 = new CountingHost();
-        host2.SeedFile("/data.txt", new string('y', 100000));
+        host2.SeedFile("/data.txt", string.Concat(Enumerable.Repeat(new string('y', 999) + "\n", 100)));
         var asyncResult = await script.RunAsync(host2, options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
         Assert.Equal(0, host2.TextReads);
+        Assert.True(host2.TextRangeReads > 1);
+        Assert.True(host2.TextRangeBytes >= 16384);
+        Assert.True(host2.TextRangeBytes < 100000);
     }
 
     [Fact]

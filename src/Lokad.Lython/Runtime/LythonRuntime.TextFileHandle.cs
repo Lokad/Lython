@@ -187,7 +187,12 @@ internal sealed partial class LythonRuntime
                         : RuntimeErrors.Runtime($"host text read exceeded maximum bytes ({maxHostReadBytes})", null);
                 }
 
-                EnsureExecutionMemoryForKnownLength(stat, encoding == TextEncodingMode.Latin1 ? 32L : 128L, context, null);
+                // No execution-budget prereserve against the stat size: windows
+                // stream, so a file larger than the budget stays processable as
+                // long as retained content fits. Per-commit charges, the window
+                // and carry infrastructure, and the cumulative host-read cap on
+                // every pull govern instead. Whole-read APIs keep their own
+                // prereserve; the host-read cap above still fails fast here.
             }
 
             // Small honest files stream through small windows so bounded
