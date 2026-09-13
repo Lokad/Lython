@@ -59,6 +59,120 @@ internal sealed partial class LythonRuntime
                 }, "str.__contains__", ["item"]);
                 return true;
             }
+            if (name == "__eq__")
+            {
+                value = BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "str.__eq__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyString other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return text.Equals(other);
+                }, "str.__eq__", ["value"]);
+                return true;
+            }
+
+            if (name == "__ne__")
+            {
+                value = BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "str.__ne__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyString other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return !text.Equals(other);
+                }, "str.__ne__", ["value"]);
+                return true;
+            }
+
+            if (name == "__lt__")
+            {
+                value = BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "str.__lt__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyString other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return PyString.CompareOrdinal(text, other) < 0;
+                }, "str.__lt__", ["value"]);
+                return true;
+            }
+
+            if (name == "__le__")
+            {
+                value = BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "str.__le__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyString other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return PyString.CompareOrdinal(text, other) <= 0;
+                }, "str.__le__", ["value"]);
+                return true;
+            }
+
+            if (name == "__gt__")
+            {
+                value = BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "str.__gt__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyString other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return PyString.CompareOrdinal(text, other) > 0;
+                }, "str.__gt__", ["value"]);
+                return true;
+            }
+
+            if (name == "__ge__")
+            {
+                value = BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "str.__ge__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyString other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return PyString.CompareOrdinal(text, other) >= 0;
+                }, "str.__ge__", ["value"]);
+                return true;
+            }
+
 
             if (name == "__getitem__")
             {

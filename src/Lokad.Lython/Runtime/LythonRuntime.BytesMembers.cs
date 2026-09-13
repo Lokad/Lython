@@ -205,6 +205,90 @@ internal sealed partial class LythonRuntime
 
                     return EvaluateMultiply(arguments[0], bytes, context, span);
                 }, "bytes.__rmul__", ["value"]),
+                "__eq__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "bytes.__eq__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyBytes other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return bytes.Equals(other);
+                }, "bytes.__eq__", ["value"]),
+                "__ne__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "bytes.__ne__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyBytes other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return !bytes.Equals(other);
+                }, "bytes.__ne__", ["value"]),
+                "__lt__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "bytes.__lt__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyBytes other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return bytes.Memory.Span.SequenceCompareTo(other.Memory.Span) < 0;
+                }, "bytes.__lt__", ["value"]),
+                "__le__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "bytes.__le__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyBytes other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return bytes.Memory.Span.SequenceCompareTo(other.Memory.Span) <= 0;
+                }, "bytes.__le__", ["value"]),
+                "__gt__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "bytes.__gt__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyBytes other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return bytes.Memory.Span.SequenceCompareTo(other.Memory.Span) > 0;
+                }, "bytes.__gt__", ["value"]),
+                "__ge__" => BoundCallable.Create((arguments, span, _) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "bytes.__ge__(value) expects one argument.", span);
+                    }
+
+                    if (arguments[0] is not PyBytes other)
+                    {
+                        return PyNotImplemented.Instance;
+                    }
+
+                    return bytes.Memory.Span.SequenceCompareTo(other.Memory.Span) >= 0;
+                }, "bytes.__ge__", ["value"]),
                 _ => MissingMemberValue.Instance
             };
 

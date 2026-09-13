@@ -175,4 +175,94 @@ return str({{expression}})
         Assert.True(result.Success, result.Failure?.Message);
         return Assert.IsType<string>(result.ReturnValue);
     }
+    [Fact]
+    public async Task StringComparisonDundersAdvanceLikeCpython()
+    {
+        // str slots take strings only and decline everything else with NotImplemented on every dunder, ordering included, exactly like CPython.
+        var script = new LythonEngine().Compile("""
+def call2(f, a, b):
+    return f(a, b)
+results = []
+results.append(str("a".__eq__("a")))
+results.append(str("a".__ne__("b")))
+results.append(str("a".__lt__("b")))
+results.append(str("a".__le__("a")))
+results.append(str("b".__gt__("a")))
+results.append(str("b".__ge__("b")))
+results.append(str("a".__eq__(1)))
+results.append(str("a".__ne__(1)))
+results.append(str("a".__lt__(1)))
+results.append(str("a".__ge__(1)))
+results.append(str("a".__eq__(None)))
+results.append(str("a".__eq__(["a"])))
+results.append(str("a".__eq__(("a",))))
+results.append(str("a".__eq__({"a": 1})))
+results.append(str("".__eq__("")))
+results.append(str("".__lt__("a")))
+results.append(str("abc".__gt__("abb")))
+results.append(str("abc".__le__("abd")))
+results.append(str("\u00e4".__gt__("z")))
+results.append(str("\u00e9".__lt__("z")))
+results.append(str("z".__gt__("\u00e9")))
+for (f, a, b) in [("a".__eq__, 1, 2), ("a".__ne__, 1, 2), ("a".__lt__, 1, 2), ("a".__le__, 1, 2), ("a".__gt__, 1, 2), ("a".__ge__, 1, 2)]:
+    try:
+        call2(f, a, b)
+    except TypeError as e:
+        results.append(type(e).__name__)
+        results.append(str(e))
+results.append(str(hasattr("a", "__eq__")))
+results.append(str(hasattr("a", "__lt__")))
+results.append(str(hasattr("a", "__rlt__")))
+results.append(str(hasattr("a", "__req__")))
+return results
+""");
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "NotImplemented",
+            "True",
+            "True",
+            "True",
+            "True",
+            "True",
+            "False",
+            "False",
+            "TypeError",
+            "Method 'str.__eq__' received too many positional arguments.",
+            "TypeError",
+            "Method 'str.__ne__' received too many positional arguments.",
+            "TypeError",
+            "Method 'str.__lt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'str.__le__' received too many positional arguments.",
+            "TypeError",
+            "Method 'str.__gt__' received too many positional arguments.",
+            "TypeError",
+            "Method 'str.__ge__' received too many positional arguments.",
+            "True",
+            "True",
+            "False",
+            "False",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

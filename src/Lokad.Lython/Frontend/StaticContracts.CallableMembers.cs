@@ -42,6 +42,12 @@ internal static partial class StaticContracts
             AddStringCallableContract(contracts, "__add__", 1, 1, "str.__add__(value) expects one argument.", "value");
             AddStringCallableContract(contracts, "__mul__", 1, 1, "str.__mul__(value) expects one argument.", "value");
             AddStringCallableContract(contracts, "__rmul__", 1, 1, "str.__rmul__(value) expects one argument.", "value");
+            AddStringCallableContract(contracts, "__eq__", 1, 1, "str.__eq__(value) expects one argument.", "value");
+            AddStringCallableContract(contracts, "__ne__", 1, 1, "str.__ne__(value) expects one argument.", "value");
+            AddStringCallableContract(contracts, "__lt__", 1, 1, "str.__lt__(value) expects one argument.", "value");
+            AddStringCallableContract(contracts, "__le__", 1, 1, "str.__le__(value) expects one argument.", "value");
+            AddStringCallableContract(contracts, "__gt__", 1, 1, "str.__gt__(value) expects one argument.", "value");
+            AddStringCallableContract(contracts, "__ge__", 1, 1, "str.__ge__(value) expects one argument.", "value");
             AddStringCallableContract(contracts, "capitalize", 0, 0, "str.capitalize() expects no arguments.");
             AddStringCallableContract(contracts, "islower", 0, 0, "str.islower() expects no arguments.");
             AddStringCallableContract(contracts, "upper", 0, 0, "str.upper() expects no arguments.");
@@ -185,6 +191,18 @@ internal static partial class StaticContracts
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "__mul__", 1, 1, "LA3179", "bytes.__mul__(value) expects one argument.", parameterNames: ["value"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "__rmul__", 1, 1, "LA3179", "bytes.__rmul__(value) expects one argument.", parameterNames: ["value"]));
             contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "__rmul__", 1, 1, "LA3179", "bytes.__rmul__(value) expects one argument.", parameterNames: ["value"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "__eq__", 1, 1, "LA3179", "bytes.__eq__(value) expects one argument.", parameterNames: ["value"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "__eq__", 1, 1, "LA3179", "bytes.__eq__(value) expects one argument.", parameterNames: ["value"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "__ne__", 1, 1, "LA3179", "bytes.__ne__(value) expects one argument.", parameterNames: ["value"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "__ne__", 1, 1, "LA3179", "bytes.__ne__(value) expects one argument.", parameterNames: ["value"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "__lt__", 1, 1, "LA3179", "bytes.__lt__(value) expects one argument.", parameterNames: ["value"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "__lt__", 1, 1, "LA3179", "bytes.__lt__(value) expects one argument.", parameterNames: ["value"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "__le__", 1, 1, "LA3179", "bytes.__le__(value) expects one argument.", parameterNames: ["value"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "__le__", 1, 1, "LA3179", "bytes.__le__(value) expects one argument.", parameterNames: ["value"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "__gt__", 1, 1, "LA3179", "bytes.__gt__(value) expects one argument.", parameterNames: ["value"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "__gt__", 1, 1, "LA3179", "bytes.__gt__(value) expects one argument.", parameterNames: ["value"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.Bytes, "__ge__", 1, 1, "LA3179", "bytes.__ge__(value) expects one argument.", parameterNames: ["value"]));
+            contracts.Add(new StaticCallableContract(AbstractValueKind.BytesType, "__ge__", 1, 1, "LA3179", "bytes.__ge__(value) expects one argument.", parameterNames: ["value"]));
         }
 
         static void AddStringCallableContract(
