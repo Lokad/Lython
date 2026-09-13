@@ -579,4 +579,81 @@ return "|".join(results)
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task ContainerDundersAdvanceLikeCpython()
+    {
+        // Builtin containers expose __iter__ returning a fresh iterator
+        // with the same values as iter(), like CPython.
+        var script = new LythonEngine().Compile("""
+            def iter_arg(x):
+                return x.__iter__(1)
+            results = []
+            results.append(str(list([1, 2].__iter__())))
+            results.append(str(list((7,).__iter__())))
+            results.append(str(list({"a": 1, "b": 2}.__iter__())))
+            results.append(str(list({9}.__iter__())))
+            results.append(str(list("ab".__iter__())))
+            results.append(str(list(b"ab".__iter__())))
+            results.append(str(list(range(3).__iter__())))
+            results.append(str([1, 2].__iter__() is [1, 2]))
+            a = [1, 2]
+            results.append(str(a.__iter__() is a.__iter__()))
+            it = [1].__iter__()
+            results.append(str(it.__next__()))
+            try:
+                it.__next__()
+            except StopIteration as e:
+                results.append(type(e).__name__)
+                results.append(str(e.args))
+            for v in [[1], (1,), {"a": 1}, {1}, "ab", b"ab", range(2)]:
+                try:
+                    iter_arg(v)
+                except TypeError as e:
+                    results.append(type(e).__name__)
+                    results.append(str(e))
+            results.append(str(hasattr([1], "__iter__")))
+            results.append(str(callable([1].__iter__)))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "[1, 2]",
+            "[7]",
+            "['a', 'b']",
+            "[9]",
+            "['a', 'b']",
+            "[97, 98]",
+            "[0, 1, 2]",
+            "False",
+            "False",
+            "1",
+            "StopIteration",
+            "()",
+            "TypeError",
+            "list.__iter__() expects no arguments.",
+            "TypeError",
+            "tuple.__iter__() expects no arguments.",
+            "TypeError",
+            "dict.__iter__() expects no arguments.",
+            "TypeError",
+            "set.__iter__() expects no arguments.",
+            "TypeError",
+            "str.__iter__() expects no arguments.",
+            "TypeError",
+            "bytes.__iter__() expects no arguments.",
+            "TypeError",
+            "range.__iter__() expects no arguments.",
+            "True",
+            "True",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

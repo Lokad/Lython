@@ -51,6 +51,7 @@ internal static partial class StaticContracts
         "format",
         "format_map",
         "maketrans",
+        "__iter__",
     };
 
     private static readonly HashSet<string> BytesMembers = new(StringComparer.Ordinal)
@@ -97,6 +98,7 @@ internal static partial class StaticContracts
         "translate",
         "upper",
         "zfill",
+        "__iter__",
     };
 
     private static readonly HashSet<string> PathMembers = new(StringComparer.Ordinal)
@@ -185,6 +187,7 @@ internal static partial class StaticContracts
     {
         "index",
         "count",
+        "__iter__",
     };
 
     private static readonly HashSet<string> FloatMembers = new(StringComparer.Ordinal)
@@ -226,6 +229,7 @@ internal static partial class StaticContracts
         "sort",
         "copy",
         "clear",
+        "__iter__",
     };
 
     private static readonly HashSet<string> DictMembers = new(StringComparer.Ordinal)
@@ -241,6 +245,7 @@ internal static partial class StaticContracts
         "clear",
         "setdefault",
         "fromkeys",
+        "__iter__",
     };
 
     private static readonly HashSet<string> SetMembers = new(StringComparer.Ordinal)
@@ -262,6 +267,7 @@ internal static partial class StaticContracts
         "symmetric_difference_update",
         "union",
         "update",
+        "__iter__",
     };
 
     private static readonly HashSet<string> PopenMembers = new(StringComparer.Ordinal)

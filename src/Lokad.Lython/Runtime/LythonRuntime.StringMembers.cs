@@ -34,6 +34,12 @@ internal sealed partial class LythonRuntime
         {
             // maketrans is a staticmethod shape (no receiver), so it rides
             // the shared singleton instead of a text-bound provider.
+            if (name == "__iter__")
+            {
+                value = BoundCallable.CreateNoArguments(text, "str.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context));
+                return true;
+            }
+
             if (name == "maketrans")
             {
                 value = BuiltinTypeMethod.StrMaketrans;

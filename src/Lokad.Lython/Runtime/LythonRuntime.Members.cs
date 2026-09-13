@@ -141,6 +141,7 @@ internal sealed partial class LythonRuntime
                     receiver.Clear();
                     return PyNone.Instance;
                 }),
+                "__iter__" => BoundCallable.CreateNoArguments(list, "list.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -265,15 +266,15 @@ internal sealed partial class LythonRuntime
     internal static class TupleMembers
     {
         public static bool TryGetMember(PyTuple tuple, string name, [MaybeNullWhen(false)] out object value)
-            => TryGetMember(name, tuple.Count, index => tuple[index], out value);
+            => TryGetMember(tuple, name, tuple.Count, index => tuple[index], out value);
 
         public static bool TryGetMember(PyNamedTupleObject namedTuple, string name, [MaybeNullWhen(false)] out object value)
-            => TryGetMember(name, namedTuple.Count, namedTuple.GetItem, out value);
+            => TryGetMember(namedTuple, name, namedTuple.Count, namedTuple.GetItem, out value);
 
         public static bool TryGetMember(PyTypingNamedTupleObject namedTuple, string name, [MaybeNullWhen(false)] out object value)
-            => TryGetMember(name, namedTuple.Count, namedTuple.GetItem, out value);
+            => TryGetMember(namedTuple, name, namedTuple.Count, namedTuple.GetItem, out value);
 
-        private static bool TryGetMember(string name, int count, Func<int, object> getItem, [MaybeNullWhen(false)] out object value)
+        private static bool TryGetMember(object source, string name, int count, Func<int, object> getItem, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
@@ -314,6 +315,7 @@ internal sealed partial class LythonRuntime
 
                     return new BigInteger(itemCount);
                 }, "tuple.count", ["value"]),
+                "__iter__" => BoundCallable.CreateNoArguments(source, "tuple.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -808,6 +810,7 @@ internal sealed partial class LythonRuntime
 
                     return RangeContains(range, arguments[0]) ? BigInteger.One : BigInteger.Zero;
                 }, "range.count", ["value"]),
+                "__iter__" => BoundCallable.CreateNoArguments(range, "range.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -920,6 +923,7 @@ internal sealed partial class LythonRuntime
                     dict.SetItem(key, defaultValue);
                     return defaultValue;
                 }, "dict.setdefault", ["key", "default"], 1),
+                "__iter__" => BoundCallable.CreateNoArguments(dict, "dict.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 _ => MissingMemberValue.Instance,
             };
 

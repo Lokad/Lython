@@ -371,6 +371,7 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(set.Count, span);
                     return PyNone.Instance;
                 }, OnePositional("set.symmetric_difference_update", "other")),
+                "__iter__" => BoundCallable.CreateNoArguments(set, "set.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
                 _ => MissingMemberValue.Instance,
             };
 
