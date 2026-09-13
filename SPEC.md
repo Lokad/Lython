@@ -1689,11 +1689,16 @@ sources should stay well below the input maximums and reuse compiled scripts
 
 Per-import retained state during execution is governed: each registered
 module commits its registry slot, exported entries commit per entry at
-construction, and the aggregate registered-module total honors
-`MaxCollectionSize`. Local-module sources compile under the same input limits
-above. A full retained-executable audit remains open work; until it lands,
-hosts should treat the per-source retained multiples above, times the module
-count, as the import envelope.
+construction, member values stay owned by their own construction, and scopes
+retained through imported functions are owned by the closure-retention walk
+(builtin aliases stay owned by the run). The aggregate registered-module total
+honors `MaxCollectionSize`, and local-module sources compile under the same
+input limits above. Local imports always execute lowered statements directly,
+so no per-import executable image is retained: unreferenced module scopes and
+ lowered statements become collectible once the import completes. What remains
+outside either governor is the transient compile load per source unit (bounded
+by the input limits above, not by a separate compilation budget, which stays
+an explicit host policy decision).
 
 ---
 
