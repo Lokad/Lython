@@ -246,6 +246,7 @@ internal static partial class StaticContracts
             AddNonMutatingListCallableContract(contracts, "__add__", 1, 1, "LA3124", "list.__add__(value) expects one argument.", "value");
             AddNonMutatingListCallableContract(contracts, "__mul__", 1, 1, "LA3124", "list.__mul__(value) expects one argument.", "value");
             AddNonMutatingListCallableContract(contracts, "__rmul__", 1, 1, "LA3124", "list.__rmul__(value) expects one argument.", "value");
+            AddNonMutatingListCallableContract(contracts, "__reversed__", 0, 0, "LA3124", "list.__reversed__() expects no arguments.");
             AddNonMutatingListCallableContract(contracts, "__eq__", 1, 1, "LA3124", "list.__eq__(value) expects one argument.", "value");
             AddNonMutatingListCallableContract(contracts, "__ne__", 1, 1, "LA3124", "list.__ne__(value) expects one argument.", "value");
             AddNonMutatingListCallableContract(contracts, "__lt__", 1, 1, "LA3124", "list.__lt__(value) expects one argument.", "value");

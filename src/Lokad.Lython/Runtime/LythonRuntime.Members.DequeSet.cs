@@ -238,6 +238,16 @@ internal sealed partial class LythonRuntime
                     return EvaluateMultiply(arguments[0], deque, context, span);
                 }, "deque.__rmul__", ["value"]),
                 "__hash__" => PyNone.Instance,
+                "__reversed__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "deque.__reversed__() expects no arguments.", span);
+                    }
+
+                    PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
+                    return new PyReversedIterator(deque.Length, deque.GetIndex);
+                }, "deque.__reversed__"),
                 _ => MissingMemberValue.Instance,
             };
 

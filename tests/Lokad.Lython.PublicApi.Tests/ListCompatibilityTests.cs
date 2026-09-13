@@ -602,4 +602,71 @@ return results
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+    [Fact]
+    public async Task SequenceReversedDundersAdvanceLikeCpython()
+    {
+        // list, deque and range __reversed__ members build the same iterators as the reversed builtin, exactly like CPython.
+        var script = new LythonEngine().Compile("""
+def call1(f, a):
+    return f(a)
+results = []
+l = [1, 2, 3]
+results.append(str(list(l.__reversed__())))
+results.append(str(list([].__reversed__())))
+results.append(str(next([1, 2].__reversed__())))
+from collections import deque
+dq = deque([1, 2, 3])
+results.append(str(list(dq.__reversed__())))
+results.append(str(list(deque().__reversed__())))
+results.append(str(list(range(5).__reversed__())))
+results.append(str(list(range(0).__reversed__())))
+results.append(str(list(range(0, 10, 3).__reversed__())))
+results.append(str(list([1, 2].__reversed__()) == list(reversed([1, 2]))))
+results.append(str(list(range(4).__reversed__()) == list(reversed(range(4)))))
+for f in [[1].__reversed__, deque([1]).__reversed__, range(3).__reversed__]:
+    try:
+        call1(f, 1)
+    except TypeError as e:
+        results.append(type(e).__name__)
+        results.append(str(e))
+results.append(str(hasattr([1], "__reversed__")))
+results.append(str(hasattr(range(3), "__reversed__")))
+results.append(str(hasattr((1,), "__reversed__")))
+results.append(str(hasattr("ab", "__reversed__")))
+results.append(str(hasattr(deque([1]), "__reversed__")))
+return results
+""");
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "[3, 2, 1]",
+            "[]",
+            "2",
+            "[3, 2, 1]",
+            "[]",
+            "[4, 3, 2, 1, 0]",
+            "[]",
+            "[9, 6, 3, 0]",
+            "True",
+            "True",
+            "TypeError",
+            "list.__reversed__() expects no arguments.",
+            "TypeError",
+            "deque.__reversed__() expects no arguments.",
+            "TypeError",
+            "range.__reversed__() expects no arguments.",
+            "True",
+            "True",
+            "False",
+            "False",
+            "True",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

@@ -2013,4 +2013,59 @@ return results
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+    [Fact]
+    public async Task MappingReversedDundersAdvanceLikeCpython()
+    {
+        // dict, defaultdict and Counter __reversed__ members build the same key iterators as the reversed builtin, exactly like CPython.
+        var script = new LythonEngine().Compile("""
+def call1(f, a):
+    return f(a)
+results = []
+d = {"a": 1, "b": 2}
+results.append(str(list(d.__reversed__())))
+results.append(str(list({}.__reversed__())))
+from collections import defaultdict, Counter
+dd = defaultdict(list, {"a": 1})
+results.append(str(list(dd.__reversed__())))
+results.append(str(list(Counter("aab").__reversed__())))
+results.append(str(list(d.__reversed__()) == list(reversed(d))))
+results.append(str(list(dd.__reversed__()) == list(reversed(dd))))
+for f in [d.__reversed__, dd.__reversed__, Counter("aab").__reversed__]:
+    try:
+        call1(f, 1)
+    except TypeError as e:
+        results.append(type(e).__name__)
+        results.append(str(e))
+results.append(str(hasattr({}, "__reversed__")))
+results.append(str(hasattr({1}, "__reversed__")))
+results.append(str(hasattr(defaultdict(list), "__reversed__")))
+return results
+""");
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "['b', 'a']",
+            "[]",
+            "['a']",
+            "['b', 'a']",
+            "True",
+            "True",
+            "TypeError",
+            "dict.__reversed__() expects no arguments.",
+            "TypeError",
+            "defaultdict.__reversed__() expects no arguments.",
+            "TypeError",
+            "Counter.__reversed__() expects no arguments.",
+            "True",
+            "False",
+            "True",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

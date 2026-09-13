@@ -293,6 +293,16 @@ internal sealed partial class LythonRuntime
                     return PyComparison.Compare(list, other, span, ">=") >= 0;
                 }, "list.__ge__", ["value"]),
                 "__hash__" => PyNone.Instance,
+                "__reversed__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "list.__reversed__() expects no arguments.", span);
+                    }
+
+                    PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
+                    return new PyReversedIterator(list.Length, list.GetIndex);
+                }, "list.__reversed__"),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1537,6 +1547,16 @@ internal sealed partial class LythonRuntime
 
                     return ComputeBuiltinHash(range, span);
                 }, "range.__hash__"),
+                "__reversed__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "range.__reversed__() expects no arguments.", span);
+                    }
+
+                    PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
+                    return new PyEnumerableIterator(range.GetSlice(PyNone.Instance, PyNone.Instance, BigInteger.MinusOne, span), span, context, "range_iterator");
+                }, "range.__reversed__"),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1816,6 +1836,16 @@ internal sealed partial class LythonRuntime
                     return PyNotImplemented.Instance;
                 }, "dict.__ge__", ["value"]),
                 "__hash__" => PyNone.Instance,
+                "__reversed__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict.__reversed__() expects no arguments.", span);
+                    }
+
+                    PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
+                    return dict.CreateReversedKeysIterator(context.MemoryGovernor, span);
+                }, "dict.__reversed__"),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -3028,6 +3058,16 @@ internal sealed partial class LythonRuntime
                     return PyNotImplemented.Instance;
                 }, "defaultdict.__ge__", ["value"]),
                 "__hash__" => PyNone.Instance,
+                "__reversed__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "defaultdict.__reversed__() expects no arguments.", span);
+                    }
+
+                    PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
+                    return dict.InnerDict.CreateReversedKeysIterator(context.MemoryGovernor, span);
+                }, "defaultdict.__reversed__"),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -3476,6 +3516,16 @@ internal sealed partial class LythonRuntime
                     return MultisetLessEqual(other, counter, context, span);
                 }, "Counter.__ge__", ["value"]),
                 "__hash__" => PyNone.Instance,
+                "__reversed__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Counter.__reversed__() expects no arguments.", span);
+                    }
+
+                    PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
+                    return counter.InnerDict.CreateReversedKeysIterator(context.MemoryGovernor, span);
+                }, "Counter.__reversed__"),
                 _ => MissingMemberValue.Instance,
             };
 

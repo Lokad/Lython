@@ -31,6 +31,7 @@ internal static partial class StaticContracts
         new(AbstractValueKind.Dict, "__le__", 1, 1, "LA3132", "dict.__le__(value) expects one argument.", parameterNames: ["value"]),
         new(AbstractValueKind.Dict, "__gt__", 1, 1, "LA3132", "dict.__gt__(value) expects one argument.", parameterNames: ["value"]),
         new(AbstractValueKind.Dict, "__ge__", 1, 1, "LA3132", "dict.__ge__(value) expects one argument.", parameterNames: ["value"]),
+        new(AbstractValueKind.Dict, "__reversed__", 0, 0, "LA3132", "dict.__reversed__() expects no arguments."),
         new(AbstractValueKind.Dict, "clear", 0, 0, "LA3133", "dict.clear() expects no arguments.", StaticMutationKind.MutatesReceiver),
         new(AbstractValueKind.Dict, "setdefault", 1, 2, "LA3134", "dict.setdefault(key[, default]) expects one key and an optional default.", StaticMutationKind.MutatesReceiver, ["key", "default"]),
         new(AbstractValueKind.Tuple, "index", 1, 3, "LA3169", "tuple.index(value[, start[, stop]]) expects one to three arguments.", parameterNames: ["value", "start", "stop"]),

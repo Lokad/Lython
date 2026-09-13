@@ -312,6 +312,7 @@ internal static partial class StaticContracts
         "__gt__",
         "__ge__",
         "__hash__",
+        "__reversed__",
     };
 
     private static readonly HashSet<string> DictMembers = new(StringComparer.Ordinal)
@@ -343,6 +344,7 @@ internal static partial class StaticContracts
         "__gt__",
         "__ge__",
         "__hash__",
+        "__reversed__",
     };
 
     private static readonly HashSet<string> SetMembers = new(StringComparer.Ordinal)
@@ -437,6 +439,7 @@ internal static partial class StaticContracts
         "__gt__",
         "__ge__",
         "__hash__",
+        "__reversed__",
     };
 
     private static readonly HashSet<string> CollectionsCounterMembers = new(StringComparer.Ordinal)
@@ -473,6 +476,7 @@ internal static partial class StaticContracts
         "__gt__",
         "__ge__",
         "__hash__",
+        "__reversed__",
     };
 
     private static readonly HashSet<string> CollectionsDequeMembers = new(StringComparer.Ordinal)
@@ -503,6 +507,7 @@ internal static partial class StaticContracts
         "__mul__",
         "__rmul__",
         "__hash__",
+        "__reversed__",
     };
 
     private static readonly HashSet<string> CollectionsChainMapMembers = new(StringComparer.Ordinal)
