@@ -226,6 +226,8 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "deque.__mul__(value) expects one argument.", span);
                     }
 
+                    RequireRepeatCount(arguments[0], context, span);
+
                     return EvaluateMultiply(deque, arguments[0], context, span);
                 }, "deque.__mul__", ["value"]),
                 "__rmul__" => BoundCallable.Create((arguments, span, context) =>
@@ -234,6 +236,8 @@ internal sealed partial class LythonRuntime
                     {
                         throw new LythonRuntimeException("TypeError", "deque.__rmul__(value) expects one argument.", span);
                     }
+
+                    RequireRepeatCount(arguments[0], context, span);
 
                     return EvaluateMultiply(arguments[0], deque, context, span);
                 }, "deque.__rmul__", ["value"]),

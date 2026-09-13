@@ -224,6 +224,8 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "str.__mul__(value) expects one argument.", span);
                     }
 
+                    RequireRepeatCount(arguments[0], context, span);
+
                     return EvaluateMultiply(text, arguments[0], context, span);
                 }, "str.__mul__", ["value"]);
                 return true;
@@ -237,6 +239,8 @@ internal sealed partial class LythonRuntime
                     {
                         throw new LythonRuntimeException("TypeError", "str.__rmul__(value) expects one argument.", span);
                     }
+
+                    RequireRepeatCount(arguments[0], context, span);
 
                     return EvaluateMultiply(arguments[0], text, context, span);
                 }, "str.__rmul__", ["value"]);

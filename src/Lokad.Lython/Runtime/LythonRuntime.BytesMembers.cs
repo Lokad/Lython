@@ -194,6 +194,8 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "bytes.__mul__(value) expects one argument.", span);
                     }
 
+                    RequireRepeatCount(arguments[0], context, span);
+
                     return EvaluateMultiply(bytes, arguments[0], context, span);
                 }, "bytes.__mul__", ["value"]),
                 "__rmul__" => BoundCallable.Create((arguments, span, context) =>
@@ -202,6 +204,8 @@ internal sealed partial class LythonRuntime
                     {
                         throw new LythonRuntimeException("TypeError", "bytes.__rmul__(value) expects one argument.", span);
                     }
+
+                    RequireRepeatCount(arguments[0], context, span);
 
                     return EvaluateMultiply(arguments[0], bytes, context, span);
                 }, "bytes.__rmul__", ["value"]),

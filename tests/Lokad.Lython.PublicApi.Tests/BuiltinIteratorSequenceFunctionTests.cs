@@ -1469,9 +1469,9 @@ return "|".join(results)
             "TypeError",
             "can only concatenate list (not \"str\") to list",
             "TypeError",
-            "can't multiply sequence by non-int of type 'str'",
+            "'str' object cannot be interpreted as an integer",
             "TypeError",
-            "can't multiply sequence by non-int of type 'tuple'",
+            "'str' object cannot be interpreted as an integer",
             "TypeError",
             "Method 'list.__add__' received too many positional arguments.",
             "TypeError",
@@ -1498,6 +1498,141 @@ return "|".join(results)
             "Method 'bytes.__rmul__' received too many positional arguments.",
             "True",
             "False",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+    [Fact]
+    public async Task SequenceRepeatMistypeTextsAdvanceLikeCpython()
+    {
+        // Direct __mul__/__rmul__ calls convert the count through __index__
+        // like CPython (naming the argument), while operators keep the
+        // sequence-shaped text; working repeats agree on both paths.
+        var script = new LythonEngine().Compile("""
+class Idx:
+    def __index__(self):
+        return 2
+class NoIdx:
+    pass
+results = []
+try:
+    [1].__mul__("a")
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    (1,).__mul__("a")
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    "ab".__mul__("a")
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    b"ab".__mul__("a")
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    "ab".__rmul__("a")
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    [1].__rmul__(2.0)
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    [1].__mul__(None)
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    [1].__mul__([2])
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+from collections import deque
+try:
+    deque([1]).__mul__("a")
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    deque([1]).__rmul__((1,))
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+results.append(str([1].__mul__(Idx())))
+results.append(str("ab".__rmul__(Idx())))
+try:
+    [1].__mul__(NoIdx())
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+results.append(str([1, 2].__mul__(2)))
+results.append(str([1].__mul__(True)))
+results.append(str("ab".__mul__(0)))
+results.append(str(b"ab".__mul__(1)))
+results.append(str((1,).__rmul__(3)))
+results.append(str(list(deque([1]).__mul__(2))))
+try:
+    [1] * "a"
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+try:
+    "ab" * None
+except TypeError as e:
+    results.append(type(e).__name__)
+    results.append(str(e))
+return results
+""");
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "TypeError",
+            "'str' object cannot be interpreted as an integer",
+            "TypeError",
+            "'str' object cannot be interpreted as an integer",
+            "TypeError",
+            "'str' object cannot be interpreted as an integer",
+            "TypeError",
+            "'str' object cannot be interpreted as an integer",
+            "TypeError",
+            "'str' object cannot be interpreted as an integer",
+            "TypeError",
+            "'float' object cannot be interpreted as an integer",
+            "TypeError",
+            "'NoneType' object cannot be interpreted as an integer",
+            "TypeError",
+            "'list' object cannot be interpreted as an integer",
+            "TypeError",
+            "'str' object cannot be interpreted as an integer",
+            "TypeError",
+            "'tuple' object cannot be interpreted as an integer",
+            "[1, 1]",
+            "abab",
+            "TypeError",
+            "'NoIdx' object cannot be interpreted as an integer",
+            "[1, 2, 1, 2]",
+            "[1]",
+            "",
+            "b'ab'",
+            "(1, 1, 1)",
+            "[1, 1]",
+            "TypeError",
+            "can't multiply sequence by non-int of type 'str'",
+            "TypeError",
+            "can't multiply sequence by non-int of type 'NoneType'",
         };
         var sync = script.Run(new MockLythonHost());
         Assert.True(sync.Success, sync.Failure?.Message);

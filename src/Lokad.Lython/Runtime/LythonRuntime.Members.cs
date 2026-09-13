@@ -6,6 +6,27 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    // Direct __mul__/__rmul__ calls convert the count through __index__
+    // like CPython, so plain non-integers fail naming the argument while
+    // the operators keep the sequence-shaped text; instances coerce (or
+    // raise) inside the shared core, so they pass through untouched.
+    private static void RequireRepeatCount(object count, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (count is BigInteger || count is bool)
+        {
+            return;
+        }
+
+        if (count is PyInstance instance &&
+            instance.TryGetAttribute("__index__", context, span, out var member) &&
+            member is ICallable)
+        {
+            return;
+        }
+
+        throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(count, context) + "' object cannot be interpreted as an integer", span);
+    }
+
     internal static class ListMembers
     {
         public static bool TryGetMember(PyList list, string name, [MaybeNullWhen(false)] out object value)
@@ -197,6 +218,8 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "list.__mul__(value) expects one argument.", span);
                     }
 
+                    RequireRepeatCount(arguments[0], context, span);
+
                     return EvaluateMultiply(list, arguments[0], context, span);
                 }, "list.__mul__", ["value"]),
                 "__rmul__" => BoundCallable.Create((arguments, span, context) =>
@@ -205,6 +228,8 @@ internal sealed partial class LythonRuntime
                     {
                         throw new LythonRuntimeException("TypeError", "list.__rmul__(value) expects one argument.", span);
                     }
+
+                    RequireRepeatCount(arguments[0], context, span);
 
                     return EvaluateMultiply(arguments[0], list, context, span);
                 }, "list.__rmul__", ["value"]),
@@ -512,6 +537,8 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "tuple.__mul__(value) expects one argument.", span);
                     }
 
+                    RequireRepeatCount(arguments[0], context, span);
+
                     return EvaluateMultiply(source, arguments[0], context, span);
                 }, "tuple.__mul__", ["value"]),
                 "__rmul__" => BoundCallable.Create((arguments, span, context) =>
@@ -520,6 +547,8 @@ internal sealed partial class LythonRuntime
                     {
                         throw new LythonRuntimeException("TypeError", "tuple.__rmul__(value) expects one argument.", span);
                     }
+
+                    RequireRepeatCount(arguments[0], context, span);
 
                     return EvaluateMultiply(arguments[0], source, context, span);
                 }, "tuple.__rmul__", ["value"]),

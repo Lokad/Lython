@@ -1539,7 +1539,7 @@ deque().pop()
             "TypeError",
             "can only concatenate deque (not \"list\") to deque",
             "TypeError",
-            "can't multiply sequence by non-int of type 'str'",
+            "'str' object cannot be interpreted as an integer",
             "TypeError",
             "Method 'dict.__or__' received too many positional arguments.",
             "TypeError",
