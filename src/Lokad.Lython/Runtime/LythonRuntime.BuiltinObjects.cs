@@ -408,6 +408,26 @@ internal sealed partial class LythonRuntime
             return;
         }
 
+        if (source is PyCounter counter)
+        {
+            foreach (var pair in counter.Items)
+            {
+                target.SetItem(pair.Key, pair.Value);
+            }
+
+            return;
+        }
+
+        if (source is PyChainMap chainMap)
+        {
+            foreach (var key in chainMap.BuildMergedKeys())
+            {
+                target.SetItem(key, chainMap.GetSubscript(key, span));
+            }
+
+            return;
+        }
+
         var elementIndex = 0;
         foreach (var pair in ToSequence(source, span, context))
         {

@@ -278,7 +278,9 @@ internal static class StaticCollectionContractFamily
                 return;
             }
 
-            if (value.Kind != AbstractValueKind.Unknown && value.Kind != AbstractValueKind.Dict)
+            if (value.Kind != AbstractValueKind.Unknown && value.Kind != AbstractValueKind.Dict &&
+                value.Kind != AbstractValueKind.CollectionsDefaultDict && value.Kind != AbstractValueKind.CollectionsCounter &&
+                value.Kind != AbstractValueKind.CollectionsChainMap)
             {
                 AddDiagnostic(diagnostics, "LA3104", "dict.update(mapping) expects one dictionary argument.", mappingExpression.Span);
                 return;

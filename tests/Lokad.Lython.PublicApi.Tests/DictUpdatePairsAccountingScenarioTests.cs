@@ -66,4 +66,50 @@ public sealed class DictUpdatePairsAccountingScenarioTests
             }
         }
     }
+
+    [Fact]
+    public async Task UpdateAcceptsCounterAndChainMapMappings()
+    {
+        // dict() and dict.update accept Counter and ChainMap mappings
+        // like CPython (multi-map key order follows the merge order).
+        var script = new LythonEngine().Compile("""
+            from collections import ChainMap, Counter, defaultdict
+            results = []
+            d = {}
+            d.update(ChainMap({"a": 1}))
+            results.append(str(d))
+            d.update(Counter("aab"))
+            results.append(str(sorted(d.items())))
+            results.append(str(dict(Counter("aab"))))
+            results.append(str(dict(defaultdict(list, {"x": [1]}))))
+            results.append(str({**ChainMap({"a": 1})}))
+            cm = ChainMap({"a": 1}, {"a": 2})
+            results.append(str(dict(cm)["a"]))
+            results.append(str(sorted(dict(cm).items())))
+            scm = ChainMap({"a": 1}, {"b": 2})
+            results.append(str(sorted(dict(scm).items())))
+            results.append(str(sorted({**scm}.items())))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "{'a': 1}",
+            "[('a', 2), ('b', 1)]",
+            "{'a': 2, 'b': 1}",
+            "{'x': [1]}",
+            "{'a': 1}",
+            "1",
+            "[('a', 1)]",
+            "[('a', 1), ('b', 2)]",
+            "[('a', 1), ('b', 2)]",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
