@@ -1302,4 +1302,106 @@ return "|".join(results)
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task ContainerDelItemDundersAdvanceLikeCpython()
+    {
+        // Mutable containers expose __delitem__ with exactly the del []
+        // effect, like CPython (immutables have none, like CPython).
+        var script = new LythonEngine().Compile("""
+            from collections import defaultdict, Counter, deque, ChainMap
+            def delitem_arg(x, i, j):
+                return x.__delitem__(i, j)
+            results = []
+            l = [1, 2]
+            results.append(str(l.__delitem__(0)))
+            results.append(str(l))
+            d = {"a": 1, "b": 2}
+            results.append(str(d.__delitem__("a")))
+            results.append(str(d == {"b": 2}))
+            dd = defaultdict(list, {"a": [1]})
+            results.append(str(dd.__delitem__("a")))
+            results.append(str(len(dd)))
+            c = Counter("aab")
+            results.append(str(c.__delitem__("z")))
+            results.append(str(len(c)))
+            results.append(str(c.__delitem__("a")))
+            results.append(str(len(c)))
+            q = deque([1, 2])
+            results.append(str(q.__delitem__(0)))
+            results.append(str(list(q)))
+            cm = ChainMap({"a": 1}, {"b": 2})
+            results.append(str(cm.__delitem__("a")))
+            results.append(str(len(cm)))
+            s = [1, 2, 3]
+            results.append(str(s.__delitem__(slice(0, 2))))
+            results.append(str(s))
+            try:
+                (1,).__delitem__(0)
+            except AttributeError as e:
+                results.append(type(e).__name__)
+            try:
+                {"a": 1}.__delitem__("z")
+            except KeyError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            for (v, i, j) in [([1], 0, 1), ({"a": 1}, "a", 1), (defaultdict(list), "a", 1), (Counter(), "a", 1), (deque([1]), 0, 1), (ChainMap({"a": 1}), "a", 1)]:
+                try:
+                    delitem_arg(v, i, j)
+                except TypeError as e:
+                    results.append(type(e).__name__)
+                    results.append(str(e))
+            results.append(str(hasattr([1], "__delitem__")))
+            results.append(str(hasattr((1,), "__delitem__")))
+            results.append(str(hasattr("ab", "__delitem__")))
+            results.append(str(hasattr({1}, "__delitem__")))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "None",
+            "[2]",
+            "None",
+            "True",
+            "None",
+            "0",
+            "None",
+            "2",
+            "None",
+            "1",
+            "None",
+            "[2]",
+            "None",
+            "1",
+            "None",
+            "[3]",
+            "AttributeError",
+            "KeyError",
+            "'z'",
+            "TypeError",
+            "Method 'list.__delitem__' received too many positional arguments.",
+            "TypeError",
+            "Method 'dict.__delitem__' received too many positional arguments.",
+            "TypeError",
+            "Method 'defaultdict.__delitem__' received too many positional arguments.",
+            "TypeError",
+            "Method 'Counter.__delitem__' received too many positional arguments.",
+            "TypeError",
+            "Method 'deque.__delitem__' received too many positional arguments.",
+            "TypeError",
+            "Method 'ChainMap.__delitem__' received too many positional arguments.",
+            "True",
+            "False",
+            "False",
+            "False",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

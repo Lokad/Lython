@@ -108,61 +108,12 @@ internal sealed partial class LythonRuntime
                 return;
 
             case SubscriptExpressionSyntax subscript:
-                var target = EvaluateExpression(subscript.Target, context);
-                var index = EvaluateExpression(subscript.Index, context);
-                // Slice objects delete through the shared slice path on lists like
-                // CPython; every other receiver keeps its existing behaviour.
-                if (index is PySlice sliceIndex && target is PyList)
-                {
-                    ExecuteSliceDeletion(target, sliceIndex.StartBound, sliceIndex.StopBound, sliceIndex.StepBound, span, context);
-                    return;
-                }
-
-                switch (target)
-                {
-                    case IDeletablePySubscriptableValue subscriptable:
-                        subscriptable.DeleteSubscript(index, span);
-                        return;
-
-                    case IMutablePySequenceValue sequence:
-                        sequence.RemoveAt(PyIndexing.NormalizeIndex(index, sequence.Count, span, PyIndexing.TargetKind(sequence), PyIndexing.IndexOperation.Delete));
-                        return;
-
-                    case PyDict dict:
-                        if (!dict.Remove(ValidateDictionaryKey(index, span)))
-                        {
-                            throw RuntimeErrors.MissingKey(index, span);
-                        }
-
-                        return;
-
-                    case PyDefaultDict defaultDict:
-                        if (!defaultDict.Remove(ValidateDictionaryKey(index, span)))
-                        {
-                            throw RuntimeErrors.MissingKey(index, span);
-                        }
-
-                        return;
-
-                    case PyCounter counter:
-                        _ = counter.Remove(ValidateDictionaryKey(index, span));
-                        return;
-
-                    case PyInstance instance:
-                        InvokeItemMutation(instance, "__delitem__", [CallArgumentValue.Positional(index)], context, span);
-                        return;
-
-                    case PyTuple:
-                        throw new LythonRuntimeException("TypeError", "'tuple' object doesn't support item deletion", span);
-
-                    case PyString:
-                        throw new LythonRuntimeException("TypeError", "'str' object doesn't support item deletion", span);
-                    case PyBytes:
-                        throw new LythonRuntimeException("TypeError", "'bytes' object doesn't support item deletion", span);
-
-                    default:
-                        throw DeletionNotSupported(target, context, span);
-                }
+                DeleteSubscriptValue(
+                    EvaluateExpression(subscript.Target, context),
+                    EvaluateExpression(subscript.Index, context),
+                    span,
+                    context);
+                return;
 
             case SliceExpressionSyntax slice:
                 ExecuteSliceDeletion(
@@ -184,6 +135,63 @@ internal sealed partial class LythonRuntime
 
             default:
                 throw new LythonRuntimeException("RuntimeError", "Unsupported delete target.", span);
+        }
+    }
+
+    internal static void DeleteSubscriptValue(object target, object index, LythonSourceSpan span, ExecutionContext context)
+    {
+        // Slice objects delete through the shared slice path on lists like
+        // CPython; every other receiver keeps its existing behaviour.
+        if (index is PySlice sliceIndex && target is PyList)
+        {
+            ExecuteSliceDeletion(target, sliceIndex.StartBound, sliceIndex.StopBound, sliceIndex.StepBound, span, context);
+            return;
+        }
+
+        switch (target)
+        {
+            case IDeletablePySubscriptableValue subscriptable:
+                subscriptable.DeleteSubscript(index, span);
+                return;
+
+            case IMutablePySequenceValue sequence:
+                sequence.RemoveAt(PyIndexing.NormalizeIndex(index, sequence.Count, span, PyIndexing.TargetKind(sequence), PyIndexing.IndexOperation.Delete));
+                return;
+
+            case PyDict dict:
+                if (!dict.Remove(ValidateDictionaryKey(index, span)))
+                {
+                    throw RuntimeErrors.MissingKey(index, span);
+                }
+
+                return;
+
+            case PyDefaultDict defaultDict:
+                if (!defaultDict.Remove(ValidateDictionaryKey(index, span)))
+                {
+                    throw RuntimeErrors.MissingKey(index, span);
+                }
+
+                return;
+
+            case PyCounter counter:
+                _ = counter.Remove(ValidateDictionaryKey(index, span));
+                return;
+
+            case PyInstance instance:
+                InvokeItemMutation(instance, "__delitem__", [CallArgumentValue.Positional(index)], context, span);
+                return;
+
+            case PyTuple:
+                throw new LythonRuntimeException("TypeError", "'tuple' object doesn't support item deletion", span);
+
+            case PyString:
+                throw new LythonRuntimeException("TypeError", "'str' object doesn't support item deletion", span);
+            case PyBytes:
+                throw new LythonRuntimeException("TypeError", "'bytes' object doesn't support item deletion", span);
+
+            default:
+                throw DeletionNotSupported(target, context, span);
         }
     }
 

@@ -771,6 +771,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
             "__contains__" => new BoundChainMapContains(this),
             "__getitem__" => new BoundChainMapGetItem(this),
             "__setitem__" => new BoundChainMapSetItem(this),
+            "__delitem__" => new BoundChainMapDeleteItem(this),
             _ => PyNone.Instance
         };
 
@@ -1075,6 +1076,26 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
             context.CheckExecutionBudget(span);
             var bound = CallBinder.BindNamedArguments(arguments, span, GetItemCallSignature, PythonCallableKind.Method);
             return LythonRuntime.ReadSubscriptValue(_owner, bound[0], span, context);
+        }
+    }
+
+    private sealed class BoundChainMapDeleteItem : LythonRuntime.ICallable
+    {
+        private static readonly LythonCallableSignature DeleteItemCallSignature = LythonCallableSignature.Create(
+            "ChainMap.__delitem__",
+            ["index"],
+            requiredCount: 1);
+
+        private readonly PyChainMap _owner;
+
+        public BoundChainMapDeleteItem(PyChainMap owner) => _owner = owner;
+
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            var bound = CallBinder.BindNamedArguments(arguments, span, DeleteItemCallSignature, PythonCallableKind.Method);
+            LythonRuntime.DeleteSubscriptValue(_owner, bound[0], span, context);
+            return PyNone.Instance;
         }
     }
 

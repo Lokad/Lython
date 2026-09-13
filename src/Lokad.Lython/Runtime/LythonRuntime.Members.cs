@@ -171,6 +171,16 @@ internal sealed partial class LythonRuntime
                     SetSubscriptValue(list, arguments[0], arguments[1], span, context);
                     return PyNone.Instance;
                 }, "list.__setitem__", ["index", "value"]),
+                "__delitem__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "list.__delitem__(index) expects one argument.", span);
+                    }
+
+                    DeleteSubscriptValue(list, arguments[0], span, context);
+                    return PyNone.Instance;
+                }, "list.__delitem__", ["index"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1020,6 +1030,16 @@ internal sealed partial class LythonRuntime
                     SetSubscriptValue(dict, arguments[0], arguments[1], span, context);
                     return PyNone.Instance;
                 }, "dict.__setitem__", ["index", "value"]),
+                "__delitem__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "dict.__delitem__(index) expects one argument.", span);
+                    }
+
+                    DeleteSubscriptValue(dict, arguments[0], span, context);
+                    return PyNone.Instance;
+                }, "dict.__delitem__", ["index"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1346,6 +1366,16 @@ internal sealed partial class LythonRuntime
                     SetSubscriptValue(dict, arguments[0], arguments[1], span, context);
                     return PyNone.Instance;
                 }, "defaultdict.__setitem__", ["index", "value"]),
+                "__delitem__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "defaultdict.__delitem__(index) expects one argument.", span);
+                    }
+
+                    DeleteSubscriptValue(dict, arguments[0], span, context);
+                    return PyNone.Instance;
+                }, "defaultdict.__delitem__", ["index"]),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1559,6 +1589,16 @@ internal sealed partial class LythonRuntime
                     SetSubscriptValue(counter, arguments[0], arguments[1], span, context);
                     return PyNone.Instance;
                 }, "Counter.__setitem__", ["index", "value"]),
+                "__delitem__" => BoundCallable.Create((arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "Counter.__delitem__(index) expects one argument.", span);
+                    }
+
+                    DeleteSubscriptValue(counter, arguments[0], span, context);
+                    return PyNone.Instance;
+                }, "Counter.__delitem__", ["index"]),
                 _ => MissingMemberValue.Instance,
             };
 
