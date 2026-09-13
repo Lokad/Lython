@@ -109,6 +109,20 @@ internal sealed partial class LythonRuntime
                     "file.flush",
                     static (receiver, _, _) => receiver.Flush(),
                     static async (receiver, _, _) => await receiver.FlushAsync().ConfigureAwait(false)),
+                "__iter__" => BoundCallable.CreateNoArguments(handle, "file.__iter__", static (receiver, _, _) =>
+                {
+                    receiver.EnsureOpen();
+                    return receiver;
+                }),
+                "__next__" => BoundCallable.CreateNoArguments(handle, "file.__next__", static (receiver, span, _) =>
+                {
+                    if (receiver.TryMoveNext(out var item))
+                    {
+                        return LythonRuntime.RuntimeValue(item);
+                    }
+
+                    throw new LythonRuntimeException("StopIteration", "", span);
+                }),
                 _ => MissingMemberValue.Instance
             };
 

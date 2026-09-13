@@ -128,6 +128,7 @@ internal static partial class StaticContracts
         new(AbstractValueKind.TextFileHandle, "readline", StaticReturnShape.String),
         new(AbstractValueKind.TextFileHandle, "readlines", StaticReturnShape.ListOfString),
         new(AbstractValueKind.TextFileHandle, "flush", StaticReturnShape.None),
+        new(AbstractValueKind.TextFileHandle, "__next__", StaticReturnShape.String),
         new(AbstractValueKind.CollectionsDefaultDict, "get", StaticReturnShape.Unknown),
         new(AbstractValueKind.CollectionsDefaultDict, "keys", StaticReturnShape.Unknown),
         new(AbstractValueKind.CollectionsDefaultDict, "values", StaticReturnShape.Unknown),

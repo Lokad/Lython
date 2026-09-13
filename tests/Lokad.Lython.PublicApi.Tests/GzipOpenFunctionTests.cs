@@ -293,6 +293,55 @@ gzip.open("a", "rb", 9, None, None, None, "extra")
         Assert.Equal(2, invalid.Diagnostics.Count(d => d.Code == "LA3151"));
     }
 
+    [Fact]
+    public async Task HandlesExposeIterAndNextDundersLikeCpython()
+    {
+        // Gzip handles expose __iter__ (identity, closed-checked) and
+        // __next__ (line advance or empty StopIteration) like CPython.
+        var script = new LythonEngine().Compile("""
+            import gzip
+            def closed_next(f):
+                return f.__next__()
+            with gzip.open("/repo/lines.gz", "wt") as writer:
+                writer.write("a\nb\n")
+            results = []
+            with gzip.open("/repo/lines.gz", "rt") as reader:
+                results.append(str(reader.__iter__() is reader))
+                results.append(reader.__next__().rstrip())
+                results.append(reader.__next__().rstrip())
+                try:
+                    reader.__next__()
+                except StopIteration as e:
+                    results.append(type(e).__name__)
+                    results.append(str(e.args))
+            with gzip.open("/repo/lines.gz", "rb") as breader:
+                results.append(breader.__next__().decode().rstrip())
+            closed = gzip.open("/repo/lines.gz", "rt")
+            closed.close()
+            try:
+                closed_next(closed)
+            except ValueError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            arity = gzip.open("/repo/lines.gz", "rt")
+            try:
+                arity.__next__(1)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            arity.close()
+            return "|".join(results)
+            """);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
+        const string expected = "True|a|b|StopIteration|()|a|ValueError|I/O operation on closed file|TypeError|gzip file.__next__() expects no arguments.";
+        var sync = script.Run(new MockLythonHost("/repo"));
+        Assert.True(sync.Success, Describe(sync));
+        Assert.Equal(expected, sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost("/repo"));
+        Assert.True(asyncResult.Success, Describe(asyncResult));
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
     private static readonly byte[] PythonHelloGzip =
     [
         0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff,

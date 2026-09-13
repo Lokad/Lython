@@ -258,6 +258,48 @@ return 1
         Assert.Equal(Array.Empty<byte>(), Assert.IsType<byte[]>(values[5]));
         Assert.Equal(new byte[] { 97, 98, 99, 10 }, Assert.IsType<byte[]>(values[6]));
     }
+
+    [Fact]
+    public async Task ZipMemberReaderExposesIterAndNextDunders()
+    {
+        // Read handles expose __iter__ (identity) and __next__ (line advance
+        // or empty StopIteration); closed handles raise like CPython files.
+        const string scriptText = """
+            import zipfile
+            def closed_next(f):
+                return f.__next__()
+            with zipfile.ZipFile("/m.zip", "w") as archive:
+                archive.writestr("lines.txt", bytes([97, 10, 98, 10]))
+            results = []
+            with zipfile.ZipFile("/m.zip") as archive:
+                with archive.open("lines.txt") as f:
+                    results.append(str(f.__iter__() is f))
+                    results.append(str(f.__next__() == bytes([97, 10])))
+                    results.append(str(f.__next__() == bytes([98, 10])))
+                    try:
+                        f.__next__()
+                    except StopIteration as e:
+                        results.append(type(e).__name__)
+                        results.append(str(e.args))
+                g = archive.open("lines.txt")
+                g.close()
+                try:
+                    closed_next(g)
+                except ValueError as e:
+                    results.append(type(e).__name__)
+                    results.append(str(e))
+            return results
+            """;
+        var script = new LythonEngine().Compile(scriptText);
+        Assert.True(script.IsValid);
+        var expected = new List<object?> { "True", "True", "True", "StopIteration", "()", "ValueError", "I/O operation on closed member." };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
     private static byte[] BuildDeflatedArchive(byte[] name, byte[] payload, int uncompressedSize, uint crc)
     {
         using var stream = new MemoryStream();

@@ -376,7 +376,7 @@ internal sealed partial class LythonRuntime
                 => _state as TextFileWriteState
                     ?? throw new LythonRuntimeException("ValueError", "file is not open for writing", null);
 
-            private void EnsureOpen()
+            internal void EnsureOpen()
             {
                 if (IsClosed)
                 {

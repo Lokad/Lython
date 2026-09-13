@@ -74,6 +74,20 @@ internal sealed partial class LythonRuntime
                     ExitWithOutcome(arguments[0] is PyNone, span);
                     return false;
                 }, "zip member.__exit__", ["exc_type", "exc_value", "traceback"], 3),
+                "__iter__" => BoundCallable.CreateNoArguments(this, "zip member.__iter__", static (receiver, span, _) =>
+                {
+                    receiver.EnsureOpen(span);
+                    return receiver;
+                }),
+                "__next__" => BoundCallable.CreateNoArguments(this, "zip member.__next__", static (receiver, span, _) =>
+                {
+                    if (receiver.TryMoveNext(out var item))
+                    {
+                        return LythonRuntime.RuntimeValue(item);
+                    }
+
+                    throw new LythonRuntimeException("StopIteration", "", span);
+                }),
                 _ => MissingMemberValue.Instance,
             };
 

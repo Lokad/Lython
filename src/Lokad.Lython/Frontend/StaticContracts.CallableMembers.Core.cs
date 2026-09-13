@@ -62,6 +62,8 @@ internal static partial class StaticContracts
         new(AbstractValueKind.TextFileHandle, "write", 1, 1, "LA3111", "file.write(text) expects one string argument.", parameterNames: ["text"]),
         new(AbstractValueKind.TextFileHandle, "writelines", 1, 1, "LA3112", "file.writelines(lines) expects one iterable of strings argument.", parameterNames: ["lines"]),
         new(AbstractValueKind.TextFileHandle, "flush", 0, 0, "LA3108", "file.flush() expects no arguments."),
+        new(AbstractValueKind.TextFileHandle, "__iter__", 0, 0, "LA3108", "file.__iter__() expects no arguments."),
+        new(AbstractValueKind.TextFileHandle, "__next__", 0, 0, "LA3108", "file.__next__() expects no arguments."),
         new(AbstractValueKind.CollectionsDefaultDict, "get", 1, 2, "LA3114", "defaultdict.get(key[, default]) expects one or two arguments.", parameterNames: ["key", "default"]),
         new(AbstractValueKind.CollectionsDefaultDict, "keys", 0, 0, "LA3114", "defaultdict.keys() expects no arguments."),
         new(AbstractValueKind.CollectionsDefaultDict, "values", 0, 0, "LA3114", "defaultdict.values() expects no arguments."),

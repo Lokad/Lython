@@ -165,6 +165,8 @@ internal static partial class StaticContracts
         "errors",
         "__enter__",
         "__exit__",
+        "__iter__",
+        "__next__",
         "close",
         "readable",
         "writable",

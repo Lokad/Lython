@@ -3843,6 +3843,96 @@ except ValueError as err:
     }
 
     [Fact]
+    public async Task FileHandles_ExposeIterAndNextDundersLikeCpython()
+    {
+        // Text handles expose __iter__ (identity, closed-checked) and
+        // __next__ (line advance or empty StopIteration) like CPython.
+        var script = new LythonEngine().Compile("""
+            def closed_next(f):
+                return f.__next__()
+            def closed_iter(f):
+                return f.__iter__()
+            def next_arg(f):
+                return f.__next__(1)
+            def iter_arg(f):
+                return f.__iter__(1)
+            writer = open("/data.txt", "w")
+            writer.write("a\nb\n")
+            writer.close()
+            results = []
+            reader = open("/data.txt")
+            results.append(str(reader.__iter__() is reader))
+            results.append(reader.__next__().rstrip())
+            results.append(reader.__next__().rstrip())
+            try:
+                reader.__next__()
+            except StopIteration as e:
+                results.append(type(e).__name__)
+                results.append(str(e.args))
+            reader.close()
+            try:
+                closed_next(reader)
+            except ValueError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                closed_iter(reader)
+            except ValueError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            probe = open("/data.txt")
+            try:
+                next_arg(probe)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            try:
+                iter_arg(probe)
+            except TypeError as e:
+                results.append(type(e).__name__)
+                results.append(str(e))
+            probe.close()
+            results.append(str(hasattr(open("/data.txt"), "__next__")))
+            results.append(str(hasattr(open("/data.txt"), "__iter__")))
+            results.append(str(callable(open("/data.txt").__next__)))
+            wprobe = open("/w.txt", "w")
+            results.append(str(wprobe.__iter__() is wprobe))
+            wprobe.close()
+            results.append(str(len([line for line in open("/data.txt")])))
+            return results
+            """);
+        Assert.True(script.IsValid);
+        var expected = new List<object?>
+        {
+            "True",
+            "a",
+            "b",
+            "StopIteration",
+            "()",
+            "ValueError",
+            "I/O operation on closed file",
+            "ValueError",
+            "I/O operation on closed file",
+            "TypeError",
+            "file.__next__() expects no arguments.",
+            "TypeError",
+            "file.__iter__() expects no arguments.",
+            "True",
+            "True",
+            "True",
+            "True",
+            "2",
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public void FormattedStrings_SupportInterpolationAndEscapedBraces()
     {
         var host = new MockLythonHost();

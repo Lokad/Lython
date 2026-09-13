@@ -83,6 +83,20 @@ internal sealed partial class LythonRuntime
                 "readlines" => BoundCallable.Create((arguments, span, context) => ReadLines(ParseOptionalSize(arguments, "gzip file.readlines([hint])", span, context), span), "gzip file.readlines", ["hint"], 0),
                 "write" => BoundCallable.Create((arguments, span, _) => Write(arguments, span), "gzip file.write", ["data"]),
                 "writelines" => BoundCallable.Create((arguments, span, context) => WriteLines(arguments, span, context), "gzip file.writelines", ["lines"]),
+                "__iter__" => BoundCallable.CreateNoArguments(this, "gzip file.__iter__", static (receiver, span, _) =>
+                {
+                    receiver.EnsureOpen(span);
+                    return receiver;
+                }),
+                "__next__" => BoundCallable.CreateNoArguments(this, "gzip file.__next__", static (receiver, span, _) =>
+                {
+                    if (receiver.TryMoveNext(out var item))
+                    {
+                        return LythonRuntime.RuntimeValue(item);
+                    }
+
+                    throw new LythonRuntimeException("StopIteration", "", span);
+                }),
                 _ => MissingMemberValue.Instance,
             };
 
