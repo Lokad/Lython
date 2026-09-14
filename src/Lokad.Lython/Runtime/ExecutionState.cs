@@ -11,6 +11,10 @@ internal sealed class ExecutionState
     private long _boundCalls;
     private readonly ConditionalWeakTable<object, StrongBox<long>> _objectIds = new();
     private long _nextObjectId;
+    // MG22: distinct retained lowered bodies pay once per run (first-wins over
+    // shared definition sites re-executed by loops or repeated calls). Keys are
+    // weak so a dropped function never stays pinned by its paid mark.
+    private readonly ConditionalWeakTable<object, StrongBox<bool>> _chargedCodeBodies = new();
 
     public static readonly HashSet<string> BuiltinNames =
     [
@@ -146,6 +150,20 @@ internal sealed class ExecutionState
     public HostTextOutputHandle Stdout { get; }
 
     public HostTextOutputHandle Stderr { get; }
+
+    // Reports whether this run already owns one retained lowered body list, so
+    // aliases and re-executed definition sites share the first reservation
+    // instead of double-charging. The mark lands only after a committed
+    // reservation, so a denied reservation (or a funded retry after a caught
+    // failure) still pays for the body it retains.
+    public bool IsCodeBodyCharged(object body)
+        => _chargedCodeBodies.TryGetValue(body, out _);
+
+    // Records one retained lowered body list as owned. Callers check
+    // IsCodeBodyCharged first and mark only after committing, so concurrent
+    // first marks may double-count once; that over-count is conservative.
+    public void MarkCodeBodyCharged(object body)
+        => _ = _chargedCodeBodies.GetValue(body, _ => new StrongBox<bool>(true));
 
     // id() exposes stable per-run object identity: the same live object
     // keeps its number while distinct live objects get distinct numbers.

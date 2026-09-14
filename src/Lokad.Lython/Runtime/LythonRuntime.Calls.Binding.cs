@@ -247,6 +247,156 @@ internal sealed partial class LythonRuntime
         return owned;
     }
 
+    // MG22: a constructed PyFunction retains its lowered body graph (lowered
+    // statements plus their syntax and constant nodes) for as long as the
+    // function is retained, even when the body never executes. Module slots,
+    // scope tables, and source text do not cover that graph, so each distinct body
+    // retained through an import owns a deep statement count at a conservative
+    // per-node rate once per run (first-wins over aliases and re-executed sites).
+    // PyExecutableFunction shares host-owned precompiled code objects and
+    // stays outside this charge, like reused compiled scripts. The count walks
+    // every nested statement list, including deferred nested def/class bodies,
+    // so an uncalled outer function cannot hide an inner one; a nested body
+    // that later executes pays again beside its outer walk (conservative).
+    // Single-expression retention (lambdas, one deeply nested expression) is
+    // bounded by the source and nesting input limits, not by this count.
+    private const long RetainedCodeStatementBytes = 64;
+
+    internal static void ChargeRetainedCode(
+        IReadOnlyList<LoweredStatement> body,
+        ExecutionContext? context,
+        MemoryGovernor? governor,
+        LythonSourceSpan? span)
+    {
+        if (body.Count == 0 || governor is null)
+        {
+            return;
+        }
+
+        if (context is not null && !IsImportRetainedCode(context))
+        {
+            return;
+        }
+
+        var state = context?.Services.State;
+        if (state is not null && state.IsCodeBodyCharged(body))
+        {
+            return;
+        }
+
+        var bytes = checked(CountRetainedStatements(body) * RetainedCodeStatementBytes);
+        // Reserve before marking: a denied reservation leaves the body unmarked
+        // so a caught failure followed by a funded retry still pays for it.
+        governor.Reserve(bytes, span);
+        governor.Commit(bytes);
+        state?.MarkCodeBodyCharged(body);
+    }
+
+    // Only code retained through imports is owned per run. Definitions rooted
+    // at the host-provided entry script (__main__) alias the reusable compiled
+    // script (lowered bodies) or shared precompiled images (executable
+    // functions), so per-run body ownership would charge host-owned state and
+    // reshuffle host-calibrated budgets; a missing __name__ stays conservative
+    // and pays. Import roots keep per-import lowered graphs that die with the
+    // run, so every definition chained to one owns its distinct body.
+    internal static bool IsImportRetainedCode(ExecutionContext? context)
+    {
+        var current = context;
+        while (current?.ParentContext is not null)
+        {
+            current = current.ParentContext;
+        }
+
+        if (current?.Frame.Variables.TryGetValue("__name__", out var name) == true &&
+            name is PyString module &&
+            string.Equals(module.AsString(), "__main__", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    internal static long CountRetainedStatements(IReadOnlyList<LoweredStatement> body)
+    {
+        var count = 0L;
+        var pending = new Stack<IReadOnlyList<LoweredStatement>>();
+        pending.Push(body);
+        while (pending.Count > 0)
+        {
+            var list = pending.Pop();
+            for (var i = 0; i < list.Count; i++)
+            {
+                count++;
+                switch (list[i])
+                {
+                    case LoweredFunctionDefinitionStatement functionDefinition:
+                        pending.Push(functionDefinition.Body);
+                        break;
+                    case LoweredClassDefinitionStatement classDefinition:
+                        pending.Push(classDefinition.Body);
+                        break;
+                    case LoweredIfStatement ifStatement:
+                        if (ifStatement.ElseStatements is not null)
+                        {
+                            pending.Push(ifStatement.ElseStatements);
+                        }
+
+                        pending.Push(ifStatement.ThenStatements);
+                        break;
+                    case LoweredForStatement forStatement:
+                        if (forStatement.ElseStatements is not null)
+                        {
+                            pending.Push(forStatement.ElseStatements);
+                        }
+
+                        pending.Push(forStatement.Body);
+                        break;
+                    case LoweredWhileStatement whileStatement:
+                        if (whileStatement.ElseStatements is not null)
+                        {
+                            pending.Push(whileStatement.ElseStatements);
+                        }
+
+                        pending.Push(whileStatement.Body);
+                        break;
+                    case LoweredMatchStatement matchStatement:
+                        foreach (var matchCase in matchStatement.Cases)
+                        {
+                            pending.Push(matchCase.Body);
+                        }
+
+                        break;
+                    case LoweredWithStatement withStatement:
+                        pending.Push(withStatement.Body);
+                        break;
+                    case LoweredTryStatement tryStatement:
+                        if (tryStatement.FinallyBody is not null)
+                        {
+                            pending.Push(tryStatement.FinallyBody);
+                        }
+
+                        if (tryStatement.ElseBody is not null)
+                        {
+                            pending.Push(tryStatement.ElseBody);
+                        }
+
+                        foreach (var exceptClause in tryStatement.ExceptClauses)
+                        {
+                            pending.Push(exceptClause.Body);
+                        }
+
+                        pending.Push(tryStatement.TryBody);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        return count;
+    }
+
     internal static Dictionary<string, object> BuildDefaultArgumentMap(
         IReadOnlyList<LoweredFunctionParameter> parameters,
         Func<LoweredExpression, object> evaluate)

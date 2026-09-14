@@ -397,6 +397,7 @@ internal sealed partial class LythonRuntime
         ChargeDefaultArguments(functionDefinition.Parameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, functionDefinition.Span);
         PyFunctionBase.CaptureFunctionDocstring(function, functionDefinition.Body, context, functionDefinition.Span);
         ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, functionDefinition.Span);
+        ChargeRetainedCode(functionDefinition.Body, context, context.MemoryGovernor, functionDefinition.Span);
         return function;
     }
 

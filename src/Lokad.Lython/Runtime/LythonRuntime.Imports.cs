@@ -352,6 +352,9 @@ internal sealed partial class LythonRuntime
     // entry additionally owns its retained dictionary slot; keys and values stay
     // aliased. Frontend compilation transients stay outside the execution
     // governor by envelope policy; re-imports hit the registry and pay nothing.
+    // Each distinct function body retained through a definition additionally
+    // owns its deep statement count once per run (see ChargeRetainedCode);
+    // aliases and re-imports share the first reservation.
     private const long ImportedModuleBytes = 512;
 
     private static void ChargeImportedModule(ExecutionContext context, LythonSourceSpan? span)

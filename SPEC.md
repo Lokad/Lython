@@ -1697,14 +1697,19 @@ sources should stay well below the input maximums and reuse compiled scripts
 Per-import retained state during execution is governed: each registered
 module commits its registry slot, exported entries commit per entry at
 construction, member values stay owned by their own construction, and scopes
-retained through imported functions are owned by the closure-retention walk
-(builtin aliases stay owned by the run). The aggregate registered-module total
+(builtin aliases stay owned by the run). Each distinct function body retained
+through an imported definition additionally owns its deep lowered-statement
+count at a conservative per-statement rate, once per run: re-imports hit the
+registry and aliases share the first reservation, while nested deferred bodies
+count inside their outer walk. The aggregate registered-module total
 honors `MaxCollectionSize`, and local-module sources compile under the same
 input limits above. Local imports always execute lowered statements directly,
 so no per-import executable image is retained: unreferenced module scopes and
- lowered statements become collectible once the import completes. What remains
-outside either governor is the transient compile load per source unit (bounded
-by the input limits above, not by a separate compilation budget, which stays
+so no per-import executable image is retained: only truly unreferenced scopes and
+statements become collectible once the import completes, while bodies kept alive
+through defined functions stay owned as stated above. What remains outside
+either governor is the transient compile load per source unit (bounded by the
+input limits above, not by a separate compilation budget, which stays
 an explicit host policy decision).
 
 ---
