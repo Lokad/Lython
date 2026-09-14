@@ -160,3 +160,36 @@ of a 100 KiB payload push 15,297 bytes (61x the single-write 251 bytes)
 through the host, confirming the R16 recompression cost in host traffic
 as well as time. Pure-compute benchmarks (async materialization,
 SequenceMatcher, hot paths) make no host calls.
+
+Governor paths (`GovernorBenchmarks.cs`: bounded scalar/file scans and slice/set
+temporary loops at a 3 MiB execution budget) from a ShortRun BenchmarkDotNet run
+(.NET 10, Windows 11 10.0.26200 x64, 2026-09-14, 743bbd5):
+
+| Benchmark | Mean | Allocated/op |
+| --- | --- | --- |
+| Bounded scalar CSV scan, 20K rows | 86.96 ms | 42.54 MB |
+| Bounded scalar CSV scan, 20K rows (async) | 76.32 ms | 48.76 MB |
+| Bounded file line scan, 20K rows (delayed async) | 18.57 ms | 16.32 MB |
+| Bounded scalar CSV scan, 200K rows | 764.17 ms | 422.66 MB |
+| Dropped string slices, 10K x 1K chars | 11.29 ms | 12.24 MB |
+| Dropped empty sets, 100K | 75.54 ms | 36.27 MB |
+
+Notes: ShortRun (3 iterations, wide intervals: shape, not thresholds). The 200K
+scan costs about 8.8x time and 9.9x allocation versus 20K (linear in rows);
+Gen-2 counts ride exhaustion relief (9K/90K collections at 20K/200K). File line
+scans skip CSV parsing. Scripts precompile once per class lifetime, so figures
+exclude cold compilation; accounted peaks ride the deterministic
+`BoundedScanPeakStaysFlatAcrossSizes` pin. Re-record on release runs before
+changing CSV record, slice, set, or exhaustion-relief paths.
+
+Repeated-constant-pool compilation (`RuntimeHotPathBenchmarks.cs`) from the same
+ShortRun shape:
+
+| Benchmark | Mean | Allocated/op |
+| --- | --- | --- |
+| CompileRepeatedConstantPool | 24.620 ms | 25.24 MB |
+| Reject an invalid repeated-constant pool | 8.537 ms | 10.53 MB |
+
+Notes: the invalid pool (5,000 assignments plus an unbalanced tail) fails about
+3x faster than the valid pool compiles. Re-record on release runs before
+changing frontend pooling or validation paths.
