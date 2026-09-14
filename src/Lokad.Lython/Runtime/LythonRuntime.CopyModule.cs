@@ -146,11 +146,18 @@ internal sealed partial class LythonRuntime
     private sealed class CopyMemo : IDisposable
     {
         private readonly Dictionary<object, object> _references = new(ReferenceEqualityComparer.Instance);
-        private readonly PyDict _external;
+        // Severed on dispose so an unstashed view releases promptly at the
+        // post-dispose sweep; a hook-stashed view stays alive through the
+        // guest alias and keeps its charges.
+        private PyDict _external;
         private readonly MemoryGovernor.TemporaryMemoryReservation? _scratch;
         private readonly LythonSourceSpan? _span;
         private readonly bool _trustExternalView;
-
+        private readonly MemoryGovernor _governor;
+        private readonly ChargeReclamationPool _pool;
+        private long _ownedEntryBytes;
+        private bool _viewExposed;
+        private bool _disposed;
         // External-view hits are keyed by lossy 32-bit identity hashes, so a
         // hit must prove it belongs to the requested original. Verified
         // originals live in a table anchored by the user dict (shared across
@@ -175,6 +182,8 @@ internal sealed partial class LythonRuntime
             _scratch = context.MemoryGovernor.ReserveTemporary(0, span);
             _span = span;
             _trustExternalView = false;
+            _governor = context.MemoryGovernor;
+            _pool = context.Services.State.CallTemporaries;
         }
 
         private CopyMemo(PyDict external, ExecutionContext context, LythonSourceSpan span)
@@ -183,21 +192,58 @@ internal sealed partial class LythonRuntime
             _scratch = context.MemoryGovernor.ReserveTemporary(0, span);
             _span = span;
             _trustExternalView = true;
+            _governor = context.MemoryGovernor;
+            _pool = context.Services.State.CallTemporaries;
         }
 
-        public void Dispose() => _scratch?.Dispose();
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
 
-        // Escape acceptance (MG03/MG20): a hook may retain this internal view
-        // past the copy, keeping every entry alive after the transient scratch
-        // releases (verified: 200 stashed memos hold 201 entries with only the
-        // ordinary construction peak showing). Those retained entries stay uncharged
-        // (~100B each in view slots plus identity keys; copied values stay owned by
-        // their own construction). Governing the view instead would either leak
-        // backing charges for ordinary transient memos or require clearing retained
-        // views, diverging from CPython where a stashed memo keeps working. Only
-        // deliberately adversarial guest code stashes the implicit memo, so this
-        // stays documented acceptance, not a drive-by charge.
-        public PyDict ExternalView => _external;
+            _disposed = true;
+            _scratch?.Dispose();
+            if (_trustExternalView || _ownedEntryBytes == 0)
+            {
+                return;
+            }
+
+            if (!_viewExposed)
+            {
+                // No hook ever received this view, so nothing could have
+                // retained it: refund deterministically instead of waiting
+                // for a collection that a quiet loop may never trigger.
+                _governor.Release(_ownedEntryBytes);
+                _ownedEntryBytes = 0;
+                _external = null!;
+                return;
+            }
+
+            // A hook received the view, so it may have escaped: register for
+            // pool lifetime ownership and sweep. A stashed view keeps working
+            // like CPython and keeps every charge; a dropped one releases on
+            // collection.
+            _pool.Track(_external, _ownedEntryBytes);
+            _external = null!;
+            _pool.Sweep();
+        }
+
+        // MG03/MG20: a hook may retain this internal view past the copy. Each
+        // remembered entry owns durable view storage beside the transient
+        // scratch: the reclamation pool releases it once the view is
+        // unreachable, while a stashed view keeps working like CPython and
+        // keeps every charge. User-supplied dicts instead own their entries
+        // through their own governed storage.
+        public PyDict ExternalView
+        {
+            get
+            {
+                _viewExposed = true;
+                return _external;
+            }
+        }
 
         public static CopyMemo FromExternal(object value, ExecutionContext context, LythonSourceSpan span)
         {
@@ -238,6 +284,17 @@ internal sealed partial class LythonRuntime
 
         public void Remember(object original, object copied)
         {
+            if (!_trustExternalView)
+            {
+                // Reserve before the view retains anything: a denied entry
+                // fails the copy instead of growing uncharged storage.
+                // Pool registration waits for dispose, which knows whether
+                // a hook ever received the view.
+                _governor.Reserve(MemoEntryBytes, _span);
+                _governor.Commit(MemoEntryBytes);
+                _ownedEntryBytes += MemoEntryBytes;
+            }
+
             _scratch?.Grow(MemoEntryBytes, _span);
             _references[original] = copied;
             _external.SetItem(IdentityKey(original), copied);

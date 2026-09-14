@@ -5,8 +5,9 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-/// MG20: internal copy memos cover each entry with transient scratch that
-/// releases on disposal; user-supplied memo dicts keep their own ownership.
+/// MG20: internal copy memos cover each entry with transient scratch and
+/// durable view storage; an unexposed view refunds deterministically on
+/// disposal, while user-supplied memo dicts keep their own ownership.
 /// </summary>
 public sealed class CopyMemoAccountingTests
 {
@@ -26,7 +27,7 @@ public sealed class CopyMemoAccountingTests
     }
 
     [Fact]
-    public void InternalMemoScratchAccumulatesAndReleases()
+    public void InternalMemoEntriesOwnDurableStorageUntilDispose()
     {
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
@@ -36,7 +37,7 @@ public sealed class CopyMemoAccountingTests
         Remember(memo, new object[] { 2 }, new object[] { 2 });
         Remember(memo, new object[] { 3 }, new object[] { 3 });
         Assert.Equal(3L * 128L, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(3L * 128L, context.MemoryGovernor.CurrentCommittedBytes);
         ((IDisposable)memo).Dispose();
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
