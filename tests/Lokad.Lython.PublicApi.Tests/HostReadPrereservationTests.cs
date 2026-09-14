@@ -85,14 +85,13 @@ public sealed class HostReadPrereservationTests
     }
 
     [Fact]
-    public async Task OversizedTextReadTripsWhileStreaming()
+    public async Task DroppedLinesCompleteWhileStreaming()
     {
-        // MG21: streaming opens no longer prereserve the stat size against the
-        // execution budget, so an oversized file trips mid-stream on retained
-        // line charges after several windows: no whole-file transfer ever
-        // issues, and acquisition stops well short of covering the file.
-        // (read() would defer every charge to one final commit; line
-        // iteration charges per line, which is what trips incrementally.)
+        // MG21: streaming opens check the execution budget before the host
+        // allocates and transfers each window (no whole-file prereserve), and
+        // dropped line charges release through pool relief, so a bounded
+        // streaming scan completes: every ranged call stays small and the
+        // windows cover the file exactly once.
         var script = new LythonEngine().Compile(
             """
             total = 0
@@ -103,8 +102,46 @@ public sealed class HostReadPrereservationTests
             """);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var expected = new BigInteger(100000);
         var host = new CountingHost();
-        host.SeedFile("/data.txt", string.Concat(Enumerable.Repeat(new string('y', 999) + "\n", 100)));
+        host.SeedFile("/data.txt", string.Concat(Enumerable.Repeat(new string((char)121, 999) + "\n", 100)));
+        var sync = script.Run(host, options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+        Assert.Equal(0, host.TextReads);
+        Assert.True(host.TextRangeReads > 1);
+        Assert.True(host.TextRangeBytes == 100000);
+        Assert.True(host.MaxTextRangeBytes <= 16 * 1024, "no single ranged call exceeds the engine window");
+
+        var host2 = new CountingHost();
+        host2.SeedFile("/data.txt", string.Concat(Enumerable.Repeat(new string((char)121, 999) + "\n", 100)));
+        var asyncResult = await script.RunAsync(host2, options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+        Assert.Equal(0, host2.TextReads);
+        Assert.True(host2.TextRangeReads > 1);
+        Assert.True(host2.TextRangeBytes == 100000);
+        Assert.True(host2.MaxTextRangeBytes <= 16 * 1024, "no single ranged call exceeds the engine window");
+    }
+
+    [Fact]
+    public async Task RetainedLinesTripWhileStreaming()
+    {
+        // MG21: retained line charges still trip mid-stream after several
+        // windows: no whole-file transfer ever issues, and acquisition stops
+        // well short of covering the file. Relief must not mask retention.
+        var script = new LythonEngine().Compile(
+            """
+            lines = []
+            with open("/data.txt") as f:
+                for line in f:
+                    lines.append(line)
+            return len(lines)
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var host = new CountingHost();
+        host.SeedFile("/data.txt", string.Concat(Enumerable.Repeat(new string((char)121, 999) + "\n", 100)));
         var sync = script.Run(host, options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
@@ -114,7 +151,7 @@ public sealed class HostReadPrereservationTests
         Assert.True(host.TextRangeBytes < 100000);
 
         var host2 = new CountingHost();
-        host2.SeedFile("/data.txt", string.Concat(Enumerable.Repeat(new string('y', 999) + "\n", 100)));
+        host2.SeedFile("/data.txt", string.Concat(Enumerable.Repeat(new string((char)121, 999) + "\n", 100)));
         var asyncResult = await script.RunAsync(host2, options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
@@ -139,7 +176,7 @@ public sealed class HostReadPrereservationTests
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
         Assert.Equal(0, host.TextReads);
-        Assert.Equal(100000, host.TextRangeBytes);
+        Assert.True(host.TextRangeBytes == 100000);
         Assert.True(host.TextRangeReads > 1);
         Assert.True(host.MaxTextRangeBytes <= 16 * 1024, "no single ranged call exceeds the engine window");
 
@@ -149,7 +186,7 @@ public sealed class HostReadPrereservationTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
         Assert.Equal(0, host2.TextReads);
-        Assert.Equal(100000, host2.TextRangeBytes);
+        Assert.True(host2.TextRangeBytes == 100000);
         Assert.True(host2.TextRangeReads > 1);
         Assert.True(host2.MaxTextRangeBytes <= 16 * 1024, "no single ranged call exceeds the engine window");
     }

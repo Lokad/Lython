@@ -34,9 +34,12 @@ internal sealed class MemoryGovernor
     // Pools whose tracked charges may release once unreachable. On a denied
     // reservation the governor may force a collection, sweep them fully, and
     // retries once, so garbage pressure fails only when retention is real.
-    private readonly List<ChargeReclamationPool> _reclamationPools = new();
+    // Live pools enumerated from the owning run (call temporaries plus
+    // registered CSV/file sources) for exhaustion relief. The provider
+    // skips abandoned registrations without retaining them, so no second
+    // registry can grow here.
+    internal Func<IEnumerable<ChargeReclamationPool>>? LivePoolProvider { get; set; }
 
-    internal void RegisterReclamationPool(ChargeReclamationPool pool) => _reclamationPools.Add(pool);
     // Committed level after the last relief: relief repeats only while
     // retention keeps growing, so pinned workloads fail fast instead of
     // paying a collection per caught trip.
@@ -76,13 +79,13 @@ internal sealed class MemoryGovernor
     // Sweeps never reserve, so this cannot recurse.
     private void ReclaimForExhaustion()
     {
-        if (_reclamationPools.Count == 0)
+        if (LivePoolProvider is not { } provider)
         {
             return;
         }
 
         GC.Collect();
-        foreach (var pool in _reclamationPools)
+        foreach (var pool in provider())
         {
             pool.Sweep(full: true);
         }

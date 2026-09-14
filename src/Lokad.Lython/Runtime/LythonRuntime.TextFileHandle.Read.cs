@@ -65,6 +65,7 @@ internal sealed partial class LythonRuntime
                 _newline = newline;
                 _windowBytes = windowBytes;
                 _pool = new ChargeReclamationPool(context.MemoryGovernor);
+                context.State.RegisterPool(this, _pool);
             }
 
             public BigInteger Position => new(_position);

@@ -6,7 +6,7 @@ namespace Lokad.Lython.Runtime;
 internal sealed class ExecutionState
 {
     private Dictionary<object, RuntimeMemberCacheEntry>? _runtimeMemberCaches;
-    private readonly List<CsvReaderRegistration> _csvSources = new();
+    private readonly List<PoolRegistration> _poolRegistrations = new();
     private long _csvPulls;
     private long _boundCalls;
     private readonly ConditionalWeakTable<object, StrongBox<long>> _objectIds = new();
@@ -51,7 +51,7 @@ internal sealed class ExecutionState
         BudgetGuards = new ExecutionBudgetGuards(this);
         MemoryGovernor = new MemoryGovernor(Limits.MaxExecutionMemoryBytes);
         CallTemporaries = new ChargeReclamationPool(MemoryGovernor);
-        MemoryGovernor.RegisterReclamationPool(CallTemporaries);
+        MemoryGovernor.LivePoolProvider = LiveReclamationPools;
         RandomState = new PyRandomState();
         DecimalContext = PyDecimalContext.Default();
         DisableLocalModuleImports = options?.DisableLocalModuleImports ?? false;
@@ -178,23 +178,60 @@ internal sealed class ExecutionState
         return new BigInteger(box.Value);
     }
 
-    // Tracks every CSV record source for abandonment reclamation: entries
-    // hold the pool and scratch strongly but the source weakly, so a dropped
-    // source stops contributing charges once reclaimed while live sources
-    // (and everything they keep) are never touched.
+    // Tracks every pool-owning source (CSV readers, text readers) for
+    // abandonment reclamation: entries hold the pool and scratch strongly
+    // but the owner weakly, so a dropped source stops contributing charges
+    // once reclaimed while live sources (and everything they keep) are never
+    // touched. The governor also enumerates this registry for exhaustion
+    // relief, so registered pools participate without a second registry.
     internal void RegisterCsvSource(
         LythonRuntime.CsvRecordSource source,
         ChargeReclamationPool pool,
         MemoryGovernor.TemporaryMemoryReservation scratch)
     {
-        _csvSources.Add(new CsvReaderRegistration(new WeakReference<LythonRuntime.CsvRecordSource>(source), pool, scratch));
+        RegisterPool(source, pool, scratch);
+    }
+
+    internal void RegisterPool(
+        object owner,
+        ChargeReclamationPool pool,
+        MemoryGovernor.TemporaryMemoryReservation? scratch = null)
+    {
+        _poolRegistrations.Add(new PoolRegistration(new WeakReference<object>(owner), pool, scratch));
+    }
+
+    // Yields every live reclamation pool, reclaiming abandoned registrations
+    // on the way: dropped owners stop contributing charges while live pools
+    // are returned for sweeping. Fully enumerating also serves the pull
+    // cadence, so there is a single reconciliation path.
+    internal IEnumerable<ChargeReclamationPool> LiveReclamationPools()
+    {
+        for (var i = _poolRegistrations.Count - 1; i >= 0; i--)
+        {
+            var entry = _poolRegistrations[i];
+            if (!entry.Owner.TryGetTarget(out _))
+            {
+                entry.Pool.Sweep(full: true);
+                entry.Scratch?.Dispose();
+                _poolRegistrations[i] = _poolRegistrations[_poolRegistrations.Count - 1];
+                _poolRegistrations.RemoveAt(_poolRegistrations.Count - 1);
+            }
+            else
+            {
+                yield return entry.Pool;
+            }
+        }
+
+        yield return CallTemporaries;
     }
 
     internal void NoteCsvPull()
     {
         if ((++_csvPulls & 255) == 0)
         {
-            ReclaimAbandonedCsvSources();
+            foreach (var _ in LiveReclamationPools())
+            {
+            }
         }
     }
 
@@ -206,25 +243,10 @@ internal sealed class ExecutionState
         }
     }
 
-    private void ReclaimAbandonedCsvSources()
-    {
-        for (var i = _csvSources.Count - 1; i >= 0; i--)
-        {
-            var entry = _csvSources[i];
-            if (!entry.Source.TryGetTarget(out _))
-            {
-                entry.Pool.Sweep(full: true);
-                entry.Scratch.Dispose();
-                _csvSources[i] = _csvSources[_csvSources.Count - 1];
-                _csvSources.RemoveAt(_csvSources.Count - 1);
-            }
-        }
-    }
-
-    private readonly record struct CsvReaderRegistration(
-        WeakReference<LythonRuntime.CsvRecordSource> Source,
+    private readonly record struct PoolRegistration(
+        WeakReference<object> Owner,
         ChargeReclamationPool Pool,
-        MemoryGovernor.TemporaryMemoryReservation Scratch);
+        MemoryGovernor.TemporaryMemoryReservation? Scratch);
 
     public bool TryReadRuntimeMemberCache(
         object cacheSite,
