@@ -151,13 +151,28 @@ internal sealed class ExecutionState
     // Numbers are opaque like CPython, but only shared boxes (such as
     // repeated literals) share numbers; separately computed integers box
     // fresh, so id(a) == id(b) may be False for equal ints.
+    // MG11: each distinct live identity owns one registry entry (table node,
+    // weak handle and identity box): reserve before publishing so a denied
+    // insertion strands nothing, share the entry across repeated lookups,
+    // and track the box in the reclamation pool so dropped identities
+    // release. Concurrent first registrations may both commit; the
+    // over-count is conservative and the IDs stay distinct.
+    private const long IdentityEntryBytes = 64;
+
     public BigInteger GetObjectId(object? value)
     {
         var key = value ?? PyNone.Instance;
+        if (_objectIds.TryGetValue(key, out var existing))
+        {
+            return new BigInteger(existing.Value);
+        }
+
+        MemoryGovernor.Reserve(IdentityEntryBytes, null);
+        MemoryGovernor.Commit(IdentityEntryBytes);
         var box = _objectIds.GetValue(key, _ => new StrongBox<long>(Interlocked.Increment(ref _nextObjectId)));
+        CallTemporaries.Track(box, IdentityEntryBytes);
         return new BigInteger(box.Value);
     }
-
 
     // Tracks every pool-owning source (CSV readers, text readers) for
     // abandonment reclamation: entries hold the pool and scratch strongly
