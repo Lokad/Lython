@@ -149,21 +149,23 @@ internal sealed partial class LythonRuntime
         // Severed on dispose so an unstashed view releases promptly at the
         // post-dispose sweep; a hook-stashed view stays alive through the
         // guest alias and keeps its charges.
-        private PyDict _external;
+        private PyDict? _external;
         private readonly MemoryGovernor.TemporaryMemoryReservation? _scratch;
         private readonly LythonSourceSpan? _span;
         private readonly bool _trustExternalView;
         private readonly MemoryGovernor _governor;
+        private readonly ExecutionState _state;
         private readonly ChargeReclamationPool _pool;
         private long _ownedEntryBytes;
         private bool _viewExposed;
         private bool _disposed;
-        // External-view hits are keyed by lossy 32-bit identity hashes, so a
-        // hit must prove it belongs to the requested original. Verified
-        // originals live in a table anchored by the user dict (shared across
-        // resumptions and nested copies, dying with the dict); internal memos
-        // rely on the exact per-call map instead and never consult the view.
-        private static readonly ConditionalWeakTable<PyDict, Dictionary<BigInteger, object>> VerifiedOriginals = new();
+        // Memo-entry ownership rides a dedicated record that dies with the
+        // view (ephemeron) instead of the view's own pool entry: later view
+        // mutations re-snapshot backing storage through the value and must
+        // not clobber these charges. The record's pool entry releases them
+        // once the view is unreachable, while a stashed view keeps working
+        // like CPython and keeps every charge.
+        private static readonly ConditionalWeakTable<PyDict, MemoViewOwnership> ViewOwnership = new();
 
         // One memo entry retains a CLR map slot, a view-dict entry and an
         // identity key. Both internal and user-supplied memos cover the CLR
@@ -172,9 +174,11 @@ internal sealed partial class LythonRuntime
         // entries.
         private const long MemoEntryBytes = 128;
 
-        // One verify-table slot per distinct entry, owned durably by the user
-        // dict like its own entries (table creation rides on the first entry).
-        private const long VerifyEntryBytes = 64;
+        // Identity token anchoring memo-entry ownership to a view's lifetime.
+        // Carries no data: the charge lives in this record's pool entry.
+        private sealed class MemoViewOwnership
+        {
+        }
 
         public CopyMemo(ExecutionContext context, LythonSourceSpan span)
         {
@@ -183,6 +187,7 @@ internal sealed partial class LythonRuntime
             _span = span;
             _trustExternalView = false;
             _governor = context.MemoryGovernor;
+            _state = context.State;
             _pool = context.Services.State.CallTemporaries;
         }
 
@@ -193,6 +198,7 @@ internal sealed partial class LythonRuntime
             _span = span;
             _trustExternalView = true;
             _governor = context.MemoryGovernor;
+            _state = context.State;
             _pool = context.Services.State.CallTemporaries;
         }
 
@@ -203,6 +209,7 @@ internal sealed partial class LythonRuntime
                 return;
             }
 
+            var view = _external ?? throw new ObjectDisposedException(nameof(CopyMemo));
             _disposed = true;
             _scratch?.Dispose();
             if (_trustExternalView || _ownedEntryBytes == 0)
@@ -217,22 +224,27 @@ internal sealed partial class LythonRuntime
                 // for a collection that a quiet loop may never trigger.
                 _governor.Release(_ownedEntryBytes);
                 _ownedEntryBytes = 0;
-                _external = null!;
+                _external = null;
                 return;
             }
 
-            // A hook received the view, so it may have escaped: register for
-            // pool lifetime ownership and sweep. A stashed view keeps working
-            // like CPython and keeps every charge; a dropped one releases on
-            // collection.
-            _pool.Track(_external, _ownedEntryBytes);
-            _external = null!;
+            // A hook received the view, so it may have escaped: anchor the
+            // memo-entry ownership to the view's lifetime through a dedicated
+            // record and sweep. A stashed view keeps working like CPython and
+            // keeps every charge; a dropped one releases on collection. The
+            // view itself stays untracked for storage: later clears
+            // re-snapshot backing through the value without touching these
+            // charges.
+            var ownership = new MemoViewOwnership();
+            _pool.Track(ownership, _ownedEntryBytes);
+            ViewOwnership.Add(view, ownership);
+            _external = null;
             _pool.Sweep();
         }
 
         // MG03/MG20: a hook may retain this internal view past the copy. Each
         // remembered entry owns durable view storage beside the transient
-        // scratch: the reclamation pool releases it once the view is
+        // scratch: the ownership record releases it once the view is
         // unreachable, while a stashed view keeps working like CPython and
         // keeps every charge. User-supplied dicts instead own their entries
         // through their own governed storage.
@@ -241,6 +253,19 @@ internal sealed partial class LythonRuntime
             get
             {
                 _viewExposed = true;
+                return LiveView;
+            }
+        }
+
+        private PyDict LiveView
+        {
+            get
+            {
+                if (_disposed || _external is null)
+                {
+                    throw new ObjectDisposedException(nameof(CopyMemo));
+                }
+
                 return _external;
             }
         }
@@ -268,11 +293,11 @@ internal sealed partial class LythonRuntime
                 return false;
             }
 
-            var key = IdentityKey(original);
-            if (_external.TryGetValue(key, out copied)
-                && VerifiedOriginals.TryGetValue(_external, out var originals)
-                && originals.TryGetValue(key, out var recorded)
-                && ReferenceEquals(recorded, original))
+            // External views are keyed by the shared stable identity scheme,
+            // so user-supplied entries (including pre-seeded ones) resolve
+            // exactly like CPython: distinct live objects never collide, and
+            // the exact per-call map above keeps shielding the copy itself.
+            if (LiveView.TryGetValue(_state.GetObjectId(original), out copied))
             {
                 _references[original] = copied;
                 return true;
@@ -284,6 +309,10 @@ internal sealed partial class LythonRuntime
 
         public void Remember(object original, object copied)
         {
+            // Mint the stable identity before retaining anything: a denial
+            // strands nothing, and the key doubles as the guest-visible memo
+            // entry like the id-keyed memo in CPython.
+            var key = _state.GetObjectId(original);
             if (!_trustExternalView)
             {
                 // Reserve before the view retains anything: a denied entry
@@ -297,38 +326,8 @@ internal sealed partial class LythonRuntime
 
             _scratch?.Grow(MemoEntryBytes, _span);
             _references[original] = copied;
-            _external.SetItem(IdentityKey(original), copied);
-            if (_trustExternalView)
-            {
-                RecordVerifiedOriginal(original);
-            }
+            LiveView.SetItem(key, copied);
         }
-
-        private void RecordVerifiedOriginal(object original)
-        {
-            var key = IdentityKey(original);
-            var table = VerifiedOriginals.GetValue(
-                _external,
-                static view =>
-                {
-                    view.OwnerMemoryGovernor?.Reserve(VerifyEntryBytes, null);
-                    view.OwnerMemoryGovernor?.Commit(VerifyEntryBytes);
-                    return new Dictionary<BigInteger, object>();
-                });
-            if (table.TryAdd(key, original))
-            {
-                var owner = _external.OwnerMemoryGovernor;
-                owner?.Reserve(VerifyEntryBytes, _span);
-                owner?.Commit(VerifyEntryBytes);
-            }
-            else
-            {
-                table[key] = original;
-            }
-        }
-
-        private static BigInteger IdentityKey(object value)
-            => new(System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(value));
     }
 
     internal enum CopyDepth

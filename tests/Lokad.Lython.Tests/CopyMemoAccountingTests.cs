@@ -29,6 +29,26 @@ public sealed class CopyMemoAccountingTests
     [Fact]
     public void InternalMemoEntriesOwnDurableStorageUntilDispose()
     {
+        // Transient scratch rides reserved; durable memo entries commit; each
+        // fresh original also mints one governed id-registry entry (64 B value
+        // plus 64 B pool entry) shared with id(). The live memo pins its
+        // originals, so their id boxes release only after the memo drops.
+        var (context, reserved, committed, afterDispose) = RememberThreeAndDispose();
+        Assert.Equal(3L * 128L, reserved);
+        Assert.Equal(3L * 128L + 3L * 128L, committed);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.Equal(3L * 128L, afterDispose);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        context.Services.State.CallTemporaries.Sweep();
+        Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static (LythonRuntime.ExecutionContext Context, long Reserved, long Committed, long AfterDispose) RememberThreeAndDispose()
+    {
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
@@ -36,11 +56,10 @@ public sealed class CopyMemoAccountingTests
         Remember(memo, new object[] { 1 }, new object[] { 1 });
         Remember(memo, new object[] { 2 }, new object[] { 2 });
         Remember(memo, new object[] { 3 }, new object[] { 3 });
-        Assert.Equal(3L * 128L, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(3L * 128L, context.MemoryGovernor.CurrentCommittedBytes);
+        var reserved = context.MemoryGovernor.CurrentReservedBytes;
+        var committed = context.MemoryGovernor.CurrentCommittedBytes;
         ((IDisposable)memo).Dispose();
-        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
+        return (context, reserved, committed, context.MemoryGovernor.CurrentCommittedBytes);
     }
 
     [Fact]
