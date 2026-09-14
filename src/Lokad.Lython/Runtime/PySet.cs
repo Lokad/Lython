@@ -12,6 +12,14 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     // growth so the retry re-charges instead of riding enlarged storage for free.
     private int _capacity;
 
+    // MG04: the wrapper plus its empty table object outlive every capacity
+    // decision, so each distinct governed set owns one shell charge for its
+    // lifetime (at the constructed-function shell rate, covering the measured
+    // ~120 omitted bytes per empty set). Backing capacity stays separate:
+    // Clear releases it while the shell persists, and regrowth re-charges it.
+    private const long SetShellBytes = 128;
+    private bool _shellCharged;
+
     public PySet()
     {
         _items = new HashSet<object>(PyValueComparer.Instance);
@@ -24,6 +32,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     {
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
+        ChargeShell();
     }
 
     public PySet(IEnumerable<object> items)
@@ -108,6 +117,21 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     // under a zero budget.
     private static long EstimateFilterBytes(int count) => count == 0 ? 0L : 24L + (8L * count);
 
+    // Owns the shell once: construction and first-attach are the only paths
+    // that introduce a governed set, so the flag makes each distinct object
+    // pay exactly once while aliases and re-attaches ride free.
+    private void ChargeShell()
+    {
+        if (_shellCharged || _memoryGovernor is null)
+        {
+            return;
+        }
+
+        _memoryGovernor.Reserve(SetShellBytes, _allocationSpan);
+        _memoryGovernor.Commit(SetShellBytes);
+        _shellCharged = true;
+    }
+
     public PySet(PySet other)
     {
         _items = new HashSet<object>(other._items, PyValueComparer.Instance);
@@ -117,6 +141,8 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         {
             EnsureCapacity(other.Count);
         }
+
+        ChargeShell();
     }
 
     public PySet(PySet other, MemoryGovernor governor) : this(other, governor, null) { }
@@ -159,7 +185,14 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
     public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
-        _memoryGovernor ??= governor;
+        if (_memoryGovernor is null)
+        {
+            _memoryGovernor = governor;
+            _allocationSpan ??= allocationSpan;
+            ChargeShell();
+            return;
+        }
+
         _allocationSpan ??= allocationSpan;
     }
 
@@ -183,6 +216,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
     public void Clear()
     {
+        // The shell stays owned for the object lifetime; only backing capacity is released.
         if (_memoryGovernor is not null)
         {
             if (_committedBytes > 0)

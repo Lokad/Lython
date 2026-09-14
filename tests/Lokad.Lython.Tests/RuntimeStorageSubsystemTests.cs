@@ -92,7 +92,7 @@ public sealed class RuntimeStorageSubsystemTests
     public void PySet_GovernedGrowthFailsBeforeHashStorageCanRunAway()
     {
         var set = new PySet();
-        set.AttachMemoryGovernor(new MemoryGovernor(48), null);
+        set.AttachMemoryGovernor(new MemoryGovernor(200), null);
 
         var ex = Assert.Throws<LythonRuntimeException>(() =>
         {
@@ -340,8 +340,8 @@ public sealed class RuntimeStorageSubsystemTests
         set.Clear();
 
         // The cleared list and dict retain their small backing arrays under
-        // charge; only the grown storage charges are gone.
-        Assert.Equal(2 * (64 + (16 * 8)), governor.CurrentCommittedBytes);
+        // charge; and the cleared set retains its shell; only the grown storage charges are gone.
+        Assert.Equal(2 * (64 + (16 * 8)) + 128, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
 

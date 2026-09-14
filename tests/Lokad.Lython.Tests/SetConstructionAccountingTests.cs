@@ -50,21 +50,35 @@ public sealed class SetConstructionAccountingTests
     }
 
     [Fact]
-    public void EmptyCopyChargesNothing()
+    public void EmptyCopiesOwnShells()
     {
-        var governor = new MemoryGovernor(0);
+        // Empty payloads and snapshot scratch stay free, but each distinct
+        // object owns its shell: three empty copies commit three shells.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
 
-        var fromSet = new PySet(new PySet(), governor, span);
-        var fromArray = new PySet(Array.Empty<object>(), governor, span);
-        var fromList = new PySet(new List<object>(), governor, span);
+        var fromSet = new PySet(new PySet(), context.MemoryGovernor, span);
+        var fromArray = new PySet(Array.Empty<object>(), context.MemoryGovernor, span);
+        var fromList = new PySet(new List<object>(), context.MemoryGovernor, span);
 
         Assert.Equal(0, fromSet.Count);
         Assert.Equal(0, fromArray.Count);
         Assert.Equal(0, fromList.Count);
-        Assert.Equal(0, governor.CurrentCommittedBytes);
-        Assert.Equal(0, governor.CurrentReservedBytes);
+        Assert.Equal(3 * 128, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
+
+    [Fact]
+    public void EmptyCopyDeniedWithoutShellBudget()
+    {
+        var governor = new MemoryGovernor(0);
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+
+        var failure = Assert.Throws<LythonRuntimeException>(() => new PySet(governor, span));
+        Assert.Equal("MemoryError", failure.ExceptionType);
+    }
+
     [Fact]
     public void IntersectFilterScratchStaysBounded()
     {
@@ -130,11 +144,11 @@ public sealed class SetConstructionAccountingTests
     }
 
     [Fact]
-    public void EmptyFilterChargesNothing()
+    public void EmptyFiltersOwnShellsOnly()
     {
-        // An empty bound allocates nothing, so filtering empty sets stays free
-        // even under a zero budget.
-        var governor = new MemoryGovernor(0);
+        // Attaching owns each distinct shell, but empty filter bounds still
+        // allocate and reserve nothing, so the operations add no payload.
+        var governor = new MemoryGovernor(1024);
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var empty = new PySet();
         empty.AttachMemoryGovernor(governor);
@@ -146,7 +160,56 @@ public sealed class SetConstructionAccountingTests
         empty.SymmetricExceptWith(other);
 
         Assert.Equal(0, empty.Count);
-        Assert.Equal(0, governor.CurrentCommittedBytes);
+        Assert.Equal(2 * 128, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
+    }
+    [Fact]
+    public void ClearKeepsShellButReleasesCapacity()
+    {
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var set = new PySet(Enumerable.Range(0, 100).Select(static value => (object)new BigInteger(value)), context.MemoryGovernor, span);
+        var grown = context.MemoryGovernor.CurrentCommittedBytes;
+        Assert.True(grown > 128, "Capacity growth committed nothing beyond the shell.");
+
+        set.Clear();
+        Assert.Equal(0, set.Count);
+        Assert.Equal(128, context.MemoryGovernor.CurrentCommittedBytes);
+
+        set.Add(new BigInteger(1));
+        Assert.Equal(1, set.Count);
+        Assert.True(context.MemoryGovernor.CurrentCommittedBytes > 128, "Regrowth after clear paid no capacity.");
+    }
+
+    [Fact]
+    public void AttachOwnsShellOnce()
+    {
+        var first = new MemoryGovernor(1024);
+        var second = new MemoryGovernor(1024);
+        var set = new PySet();
+
+        set.AttachMemoryGovernor(first);
+        Assert.Equal(128, first.CurrentCommittedBytes);
+
+        set.AttachMemoryGovernor(second);
+        Assert.Equal(128, first.CurrentCommittedBytes);
+        Assert.Equal(0, second.CurrentCommittedBytes);
+    }
+
+    [Fact]
+    public void CopyCtorOwnsShell()
+    {
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var source = new PySet(context.MemoryGovernor, span);
+        var before = context.MemoryGovernor.CurrentCommittedBytes;
+
+        var copy = new PySet(source);
+
+        Assert.Equal(0, copy.Count);
+        Assert.Equal(before + 128, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }
