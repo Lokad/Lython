@@ -1665,12 +1665,28 @@ host, and dependency internals. Approximations must lean toward over-counting,
 so runs fail earlier rather than later, but the runtime must not promise a
 process-RSS ceiling from inside the same managed process.
 
-Measured 2026-09-14 (accounted peaks, trivial runs): an expression-only run
+Measured 2026-09-14 (accounted peaks, Release, local): an expression-only run
 accounts zero bytes; one top-level `def` accounts about 0.8KB (function shell
 plus module frame); importing `sys` accounts about 19KB (registry slot plus
-exported entries). Hosts should treat low-kilobyte accounted floors as the
-fixed infrastructure allowance and keep an explicit margin above them rather
-than budgeting to zero.
+exported entries). These floors sit inside the execution budget: they tell a
+host what fixed cost to leave room for, not what lives outside it. Genuinely
+outside either governor are host file reads (bounded separately by
+`MaxHostReadBytes`), subprocess payloads, dependency working state, and
+ordinary CLR, host, and dependency internals — none of which the accounted
+floors measure, so keep an explicit margin above them rather than budgeting
+to zero.
+
+The four lenses measure different things and do not substitute for one
+another: accounted peaks are the governors' high-water marks, reported on
+every result; sampled live heap (for example deltas taken at a host callback
+while guest roots are still live) shows managed retention after collection;
+process peaks are whole-process OS counters that include the runtime, the
+host, and all dependencies; and cumulative allocation (for example
+thread-allocated bytes around one operation) totals everything allocated,
+not maximum simultaneous storage. A 20,000-empty-set run, for instance,
+accounts about 3.15MB (128B shell per set plus list slots) while sampling
+about 2.7MB live after collection — the peak covers the sample, with the
+exact gap varying by collection timing.
 
 #### 14.6.2 Compilation and Import Envelope
 
@@ -1686,17 +1702,18 @@ not count toward nesting. Sources reach the frontend only through host files,
 host options, and allowlisted local imports, never from guest execution, so
 compilation load is host-driven by construction.
 
-Measured 2026-09-10 (thread-allocated bytes around `Compile`, isolated
-processes): cost scales linearly at roughly 5KB per simple statement
-(about 500-2300x transient and 35-300x retained per source byte; 1MB of
-`pass` statements allocates about 538MB transiently and retains about 37MB).
-There is no separate compilation budget: hosts compiling large or numerous
-sources should stay well below the input maximums and reuse compiled scripts
-(`compile once, run many times`).
+Measured 2026-09-14 (cumulative thread-allocated bytes around `Compile`,
+isolated processes): compiling 20,000 `pass` statements (about 120KB of
+source) allocates about 41MB in total — roughly 2KB per simple statement.
+That total is cumulative allocation, not maximum simultaneous transient
+storage, and cannot be read as a peak. There is no separate compilation
+budget: hosts compiling large or numerous sources should stay well below the
+input maximums and reuse compiled scripts (`compile once, run many times`).
 
 Per-import retained state during execution is governed: each registered
 module commits its registry slot, exported entries commit per entry at
 construction, member values stay owned by their own construction, and scopes
+retained through imported functions are owned by the closure-retention walk
 (builtin aliases stay owned by the run). Each distinct function body retained
 through an imported definition additionally owns its deep lowered-statement
 count at a conservative per-statement rate, once per run: re-imports hit the
@@ -1704,7 +1721,6 @@ registry and aliases share the first reservation, while nested deferred bodies
 count inside their outer walk. The aggregate registered-module total
 honors `MaxCollectionSize`, and local-module sources compile under the same
 input limits above. Local imports always execute lowered statements directly,
-so no per-import executable image is retained: unreferenced module scopes and
 so no per-import executable image is retained: only truly unreferenced scopes and
 statements become collectible once the import completes, while bodies kept alive
 through defined functions stay owned as stated above. What remains outside
