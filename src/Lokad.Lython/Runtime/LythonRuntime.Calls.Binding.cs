@@ -247,154 +247,457 @@ internal sealed partial class LythonRuntime
         return owned;
     }
 
-    // MG22: a constructed PyFunction retains its lowered body graph (lowered
-    // statements plus their syntax and constant nodes) for as long as the
-    // function is retained, even when the body never executes. Module slots,
-    // scope tables, and source text do not cover that graph, so each distinct body
-    // retained through an import owns a deep statement count at a conservative
-    // per-node rate once per run (first-wins over aliases and re-executed sites).
-    // PyExecutableFunction shares host-owned precompiled code objects and
-    // stays outside this charge, like reused compiled scripts. The count walks
-    // every nested statement list, including deferred nested def/class bodies,
-    // so an uncalled outer function cannot hide an inner one; a nested body
-    // that later executes pays again beside its outer walk (conservative).
-    // Single-expression retention (lambdas, one deeply nested expression) is
-    // bounded by the source and nesting input limits, not by this count.
-    private const long RetainedCodeStatementBytes = 64;
+    // MG22: imported definitions retain their lowered body graphs (lowered
+    // nodes plus syntax and constant nodes) for as long as the defined value
+    // is retained, even when bodies never execute. Module slots, scope tables
+    // and source text do not cover that graph, so each module owns its
+    // deferred code once at import preparation: deep syntax-node counts over
+    // every retained function, class-nested and lambda body. Re-imports hit
+    // the registry and pay nothing, nested bodies pay once inside their outer
+    // walk instead of again at execution, and host-owned entry scripts never
+    // flow through import preparation, so no name check exists to spoof.
+    // Top-level executed statements are transient and stay owned through
+    // their values; conditional definitions over-count conservatively.
+    private const long RetainedSyntaxNodeBytes = 64;
 
-    internal static void ChargeRetainedCode(
-        IReadOnlyList<LoweredStatement> body,
-        ExecutionContext? context,
+    internal static void ChargeDeferredModuleCode(
+        IReadOnlyList<StatementSyntax> statements,
         MemoryGovernor? governor,
         LythonSourceSpan? span)
     {
-        if (body.Count == 0 || governor is null)
+        if (statements.Count == 0 || governor is null)
         {
             return;
         }
 
-        if (context is not null && !IsImportRetainedCode(context))
-        {
-            return;
-        }
-
-        var state = context?.Services.State;
-        if (state is not null && state.IsCodeBodyCharged(body))
-        {
-            return;
-        }
-
-        var bytes = checked(CountRetainedStatements(body) * RetainedCodeStatementBytes);
-        // Reserve before marking: a denied reservation leaves the body unmarked
-        // so a caught failure followed by a funded retry still pays for it.
+        var bytes = checked(CountDeferredModuleCode(statements) * RetainedSyntaxNodeBytes);
         governor.Reserve(bytes, span);
         governor.Commit(bytes);
-        state?.MarkCodeBodyCharged(body);
     }
 
-    // Only code retained through imports is owned per run. Definitions rooted
-    // at the host-provided entry script (__main__) alias the reusable compiled
-    // script (lowered bodies) or shared precompiled images (executable
-    // functions), so per-run body ownership would charge host-owned state and
-    // reshuffle host-calibrated budgets; a missing __name__ stays conservative
-    // and pays. Import roots keep per-import lowered graphs that die with the
-    // run, so every definition chained to one owns its distinct body.
-    internal static bool IsImportRetainedCode(ExecutionContext? context)
-    {
-        var current = context;
-        while (current?.ParentContext is not null)
-        {
-            current = current.ParentContext;
-        }
-
-        if (current?.Frame.Variables.TryGetValue("__name__", out var name) == true &&
-            name is PyString module &&
-            string.Equals(module.AsString(), "__main__", StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    internal static long CountRetainedStatements(IReadOnlyList<LoweredStatement> body)
+    // Counts deferred bodies in one module pass: definitions count their full
+    // subtree once (nested definitions included); compounds, classes and plain
+    // statements contribute only lambdas found in evaluated positions, since
+    // their own statements execute transiently.
+    internal static long CountDeferredModuleCode(IReadOnlyList<StatementSyntax> statements)
     {
         var count = 0L;
-        var pending = new Stack<IReadOnlyList<LoweredStatement>>();
-        pending.Push(body);
+        var search = new Stack<StatementSyntax>();
+        for (var i = statements.Count - 1; i >= 0; i--)
+        {
+            search.Push(statements[i]);
+        }
+
+        while (search.Count > 0)
+        {
+            var statement = search.Pop();
+            if (statement is FunctionDefinitionStatementSyntax)
+            {
+                count += CountSyntaxSubtree(statement);
+                continue;
+            }
+
+            foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
+            {
+                for (var i = body.Count - 1; i >= 0; i--)
+                {
+                    search.Push(body[i]);
+                }
+            }
+
+            foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
+            {
+                count += CountLambdaBodies(expression);
+            }
+
+            count += CountExtraStatementLambdas(statement);
+        }
+
+        return count;
+    }
+
+    // Counts lambda bodies in evaluated positions: each lambda owns its full
+    // subtree once (parameters included); anything else is transient there.
+    private static long CountLambdaBodies(ExpressionSyntax root)
+    {
+        var count = 0L;
+        var pending = new Stack<ExpressionSyntax>();
+        pending.Push(root);
         while (pending.Count > 0)
         {
-            var list = pending.Pop();
-            for (var i = 0; i < list.Count; i++)
+            var expression = pending.Pop();
+            if (expression is LambdaExpressionSyntax)
             {
-                count++;
-                switch (list[i])
-                {
-                    case LoweredFunctionDefinitionStatement functionDefinition:
-                        pending.Push(functionDefinition.Body);
-                        break;
-                    case LoweredClassDefinitionStatement classDefinition:
-                        pending.Push(classDefinition.Body);
-                        break;
-                    case LoweredIfStatement ifStatement:
-                        if (ifStatement.ElseStatements is not null)
-                        {
-                            pending.Push(ifStatement.ElseStatements);
-                        }
+                count += CountSyntaxSubtree(expression);
+                continue;
+            }
 
-                        pending.Push(ifStatement.ThenStatements);
-                        break;
-                    case LoweredForStatement forStatement:
-                        if (forStatement.ElseStatements is not null)
-                        {
-                            pending.Push(forStatement.ElseStatements);
-                        }
-
-                        pending.Push(forStatement.Body);
-                        break;
-                    case LoweredWhileStatement whileStatement:
-                        if (whileStatement.ElseStatements is not null)
-                        {
-                            pending.Push(whileStatement.ElseStatements);
-                        }
-
-                        pending.Push(whileStatement.Body);
-                        break;
-                    case LoweredMatchStatement matchStatement:
-                        foreach (var matchCase in matchStatement.Cases)
-                        {
-                            pending.Push(matchCase.Body);
-                        }
-
-                        break;
-                    case LoweredWithStatement withStatement:
-                        pending.Push(withStatement.Body);
-                        break;
-                    case LoweredTryStatement tryStatement:
-                        if (tryStatement.FinallyBody is not null)
-                        {
-                            pending.Push(tryStatement.FinallyBody);
-                        }
-
-                        if (tryStatement.ElseBody is not null)
-                        {
-                            pending.Push(tryStatement.ElseBody);
-                        }
-
-                        foreach (var exceptClause in tryStatement.ExceptClauses)
-                        {
-                            pending.Push(exceptClause.Body);
-                        }
-
-                        pending.Push(tryStatement.TryBody);
-                        break;
-                    default:
-                        break;
-                }
+            foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression))
+            {
+                pending.Push(child);
             }
         }
 
         return count;
+    }
+
+    // Lambda search inside the retained references the shared traversals
+    // skip: unpacking receivers, chained targets and match patterns. Each is
+    // a small closed set; unknown shapes fail loud below.
+    // Lambda search inside references the shared traversals skip: unpacking
+    // receivers, chained targets and match patterns (whose own nodes count in
+    // full walks). Each is a small closed set; unknown shapes fail loud.
+    private static long CountExtraStatementLambdas(StatementSyntax statement)
+    {
+        var count = 0L;
+        foreach (var expression in EnumerateExtraStatementExpressions(statement))
+        {
+            count += CountLambdaBodies(expression);
+        }
+
+        if (statement is MatchStatementSyntax matchStatement)
+        {
+            foreach (var matchCase in matchStatement.Cases)
+            {
+                count += CountLambdaBodiesInPattern(matchCase.Pattern);
+            }
+        }
+
+        return count;
+    }
+
+    // Retained expression references beyond the shared direct-expression
+    // traversal: unpacking receivers and chained targets. Annotated,
+    // augmented, subscript, slice and member targets ride the traversal.
+    private static IEnumerable<ExpressionSyntax> EnumerateExtraStatementExpressions(StatementSyntax statement)
+    {
+        switch (statement)
+        {
+            case UnpackingAssignmentStatementSyntax unpacking:
+                foreach (var target in unpacking.Targets)
+                {
+                    foreach (var expression in EnumerateUnpackingTargetExpressions(target))
+                    {
+                        yield return expression;
+                    }
+                }
+
+                break;
+            case ChainedAssignmentStatementSyntax chained:
+                foreach (var target in chained.Targets)
+                {
+                    foreach (var expression in EnumerateAssignmentTargetExpressions(target))
+                    {
+                        yield return expression;
+                    }
+                }
+
+                break;
+            default:
+                break;
+        }
+    }
+
+    private static IEnumerable<ExpressionSyntax> EnumerateAssignmentTargetExpressions(AssignmentTargetSyntax target)
+    {
+        var pending = new Stack<AssignmentTargetSyntax>();
+        pending.Push(target);
+        while (pending.Count > 0)
+        {
+            switch (pending.Pop())
+            {
+                case NameAssignmentTargetSyntax:
+                    break;
+                case SubscriptAssignmentTargetSyntax subscript:
+                    yield return subscript.Target;
+                    yield return subscript.Index;
+                    break;
+                case SliceAssignmentTargetSyntax slice:
+                    yield return slice.Target;
+                    if (slice.Start is not null)
+                    {
+                        yield return slice.Start;
+                    }
+
+                    if (slice.End is not null)
+                    {
+                        yield return slice.End;
+                    }
+
+                    if (slice.Step is not null)
+                    {
+                        yield return slice.Step;
+                    }
+
+                    break;
+                case MemberAssignmentTargetSyntax member:
+                    yield return member.Target;
+                    break;
+                case UnpackingAssignmentTargetGroupSyntax group:
+                    foreach (var nested in group.Targets)
+                    {
+                        foreach (var expression in EnumerateUnpackingTargetExpressions(nested))
+                        {
+                            yield return expression;
+                        }
+                    }
+
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unknown assignment target: {target.GetType().Name}");
+            }
+        }
+    }
+
+    private static IEnumerable<ExpressionSyntax> EnumerateUnpackingTargetExpressions(UnpackingTargetSyntax target)
+    {
+        switch (target)
+        {
+            case UnpackingNameTargetSyntax:
+                break;
+            case UnpackingSubscriptTargetSyntax subscript:
+                yield return subscript.Target;
+                yield return subscript.Index;
+                break;
+            case UnpackingSliceTargetSyntax slice:
+                yield return slice.Target;
+                if (slice.Start is not null)
+                {
+                    yield return slice.Start;
+                }
+
+                if (slice.End is not null)
+                {
+                    yield return slice.End;
+                }
+
+                if (slice.Step is not null)
+                {
+                    yield return slice.Step;
+                }
+
+                break;
+            case UnpackingMemberTargetSyntax member:
+                yield return member.Target;
+                break;
+            case UnpackingNestedTargetSyntax nested:
+                foreach (var item in nested.Items)
+                {
+                    foreach (var expression in EnumerateUnpackingTargetExpressions(item))
+                    {
+                        yield return expression;
+                    }
+                }
+
+                break;
+            default:
+                throw new InvalidOperationException($"Unknown unpacking target: {target.GetType().Name}");
+        }
+    }
+
+    // Lambda search inside match patterns, whose nodes count only in full
+    // walks. Embedded expressions route through the same lambda scan.
+    private static long CountLambdaBodiesInPattern(PatternSyntax root)
+    {
+        var count = 0L;
+        var pending = new Stack<PatternSyntax>();
+        pending.Push(root);
+        while (pending.Count > 0)
+        {
+            var pattern = pending.Pop();
+            foreach (var expression in EnumeratePatternExpressions(pattern))
+            {
+                count += CountLambdaBodies(expression);
+            }
+
+            foreach (var nested in EnumeratePatternSubpatterns(pattern))
+            {
+                pending.Push(nested);
+            }
+        }
+
+        return count;
+    }
+
+    private static IEnumerable<ExpressionSyntax> EnumeratePatternExpressions(PatternSyntax pattern)
+    {
+        switch (pattern)
+        {
+            case MatchValuePatternSyntax value:
+                yield return value.Expression;
+                break;
+            case MatchMappingPatternSyntax mapping:
+                foreach (var item in mapping.Items)
+                {
+                    yield return item.Key;
+                }
+
+                break;
+            case MatchClassPatternSyntax @class:
+                yield return @class.ClassExpression;
+                break;
+            default:
+                break;
+        }
+    }
+
+    private static IEnumerable<PatternSyntax> EnumeratePatternSubpatterns(PatternSyntax pattern)
+    {
+        switch (pattern)
+        {
+            case MatchSequencePatternSyntax sequence:
+                foreach (var item in sequence.Items)
+                {
+                    yield return item;
+                }
+
+                break;
+            case MatchMappingPatternSyntax mapping:
+                foreach (var item in mapping.Items)
+                {
+                    yield return item.Pattern;
+                }
+
+                break;
+            case MatchClassPatternSyntax @class:
+                foreach (var positional in @class.PositionalPatterns)
+                {
+                    yield return positional;
+                }
+
+                foreach (var keyword in @class.KeywordPatterns)
+                {
+                    yield return keyword.Pattern;
+                }
+
+                break;
+            case MatchAsPatternSyntax @as:
+                yield return @as.Pattern;
+                break;
+            case MatchOrPatternSyntax or:
+                foreach (var alternative in or.Patterns)
+                {
+                    yield return alternative;
+                }
+
+                break;
+            case MatchValuePatternSyntax:
+            case MatchSingletonPatternSyntax:
+            case MatchCapturePatternSyntax:
+            case MatchWildcardPatternSyntax:
+            case MatchStarPatternSyntax:
+                break;
+            default:
+                throw new InvalidOperationException($"Unknown match pattern: {pattern.GetType().Name}");
+        }
+    }
+
+    // Full retained-node count over one deferred subtree: every statement,
+    // expression, pattern and target reference the lowered graph keeps alive
+    // through the defined value. Single pass, iterative for deep nesting.
+    // Full retained-node count over one deferred subtree: every statement,
+    // expression, pattern and target reference the lowered graph keeps alive
+    // through the defined value. Single pass, iterative for deep nesting;
+    // unknown shapes fail loud instead of silently undercounting.
+    internal static long CountSyntaxSubtree(StatementSyntax root)
+        => CountSyntaxNodes(root);
+
+    internal static long CountSyntaxSubtree(ExpressionSyntax root)
+        => CountSyntaxNodes(root);
+
+    private static long CountSyntaxNodes(object root)
+    {
+        var count = 0L;
+        var pending = new Stack<object>();
+        pending.Push(root);
+        while (pending.Count > 0)
+        {
+            switch (pending.Pop())
+            {
+                case StatementSyntax statement:
+                    count++;
+                    PushStatementChildren(statement, pending);
+                    break;
+                case ExpressionSyntax expression:
+                    count++;
+                    PushExpressionChildren(expression, pending);
+                    break;
+                case PatternSyntax pattern:
+                    count++;
+                    PushPatternChildren(pattern, pending);
+                    break;
+                default:
+                    throw new InvalidOperationException("Unknown retained syntax node.");
+            }
+        }
+
+        return count;
+    }
+
+    private static void PushStatementChildren(StatementSyntax statement, Stack<object> pending)
+    {
+        foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
+        {
+            pending.Push(expression);
+        }
+
+        foreach (var expression in EnumerateExtraStatementExpressions(statement))
+        {
+            pending.Push(expression);
+        }
+
+        if (statement is MatchStatementSyntax matchStatement)
+        {
+            foreach (var matchCase in matchStatement.Cases)
+            {
+                pending.Push(matchCase.Pattern);
+            }
+        }
+
+        foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
+        {
+            foreach (var nested in body)
+            {
+                pending.Push(nested);
+            }
+        }
+    }
+
+    private static void PushExpressionChildren(ExpressionSyntax expression, Stack<object> pending)
+    {
+        if (expression is LambdaExpressionSyntax lambda)
+        {
+            foreach (var parameter in lambda.Parameters)
+            {
+                if (parameter.Annotation is not null)
+                {
+                    pending.Push(parameter.Annotation);
+                }
+
+                if (parameter.DefaultValue is not null)
+                {
+                    pending.Push(parameter.DefaultValue);
+                }
+            }
+        }
+
+        foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression))
+        {
+            pending.Push(child);
+        }
+    }
+
+    private static void PushPatternChildren(PatternSyntax pattern, Stack<object> pending)
+    {
+        foreach (var expression in EnumeratePatternExpressions(pattern))
+        {
+            pending.Push(expression);
+        }
+
+        foreach (var nested in EnumeratePatternSubpatterns(pattern))
+        {
+            pending.Push(nested);
+        }
     }
 
     internal static Dictionary<string, object> BuildDefaultArgumentMap(

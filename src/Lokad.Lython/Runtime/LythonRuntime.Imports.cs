@@ -400,6 +400,10 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.CannotImportModule(moduleName, message, diagnostic?.Span ?? span);
         }
 
+        // Own deferred code once per module load, before anything it retains
+        // can grow: re-imports hit the registry, and the entry script never
+        // flows through here, so host-owned code stays outside the charge.
+        ChargeDeferredModuleCode(frontend.Script.Statements, context.MemoryGovernor, span);
         return new PreparedImportedModule(
             LoweredScript.Lower(frontend.Script).Statements,
             ExecutionContext.CreateModule(context, path, moduleName));

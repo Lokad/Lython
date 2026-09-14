@@ -332,12 +332,6 @@ internal sealed partial class LythonRuntime
                 context.FunctionClosureContext,
                 context.MemoryGovernor,
                 functionBinding.Function.Span);
-            // Only the lowered fallback retains its body per function; shared
-            // precompiled code objects stay owned by the host script.
-            if (function is PyFunction)
-            {
-                ChargeRetainedCode(functionBinding.Function.Body, context, context.MemoryGovernor, functionBinding.Function.Span);
-            }
             var decorated = ApplyDecorators(function, functionBinding.Function.Decorators, functionBinding.Function.Span, context);
             AssignExecutableBoundName(codeObject, locals, localCells, functionBinding.Function.Syntax.Name, decorated, context, functionBinding.Function.Span);
         }

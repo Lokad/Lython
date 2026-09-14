@@ -3,10 +3,11 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// MG22: a constructed imported function retains its lowered body graph even
-// when the body never executes, so each distinct retained body owns its deep
-// statement count once per run (first-wins over aliases, re-imports, and
-// re-executed sites). Host-owned precompiled code stays outside the charge.
+// MG22: imported definitions retain their code graphs even when bodies never
+// execute, so each module owns its deferred code once at import preparation
+// (full retained-node counts over function, nested and lambda bodies).
+// Re-imports and aliases share that ownership; host-owned entry scripts stay
+// outside the charge by construction, not by name.
 public sealed class ImportedCodeRetentionScenarioTests
 {
     private const long OneMib = 1048576;
@@ -87,7 +88,7 @@ public sealed class ImportedCodeRetentionScenarioTests
     public async Task SharedImportsPayOnce()
     {
         var host = new MockLythonHost();
-        host.SeedFile("/m0.py", BigFunction("f0", 8000));
+        host.SeedFile("/m0.py", BigFunction("f0", 4000));
         var allowed = new HashSet<string>(StringComparer.Ordinal) { "m0" };
         var script = new LythonEngine().Compile(
             "import m0\nimport m0\nfrom m0 import f0\nimport m0 as mm\nreturn f0() + mm.f0()\n");
@@ -98,7 +99,7 @@ public sealed class ImportedCodeRetentionScenarioTests
         Assert.Equal(expected, sync.ReturnValue);
 
         var host2 = new MockLythonHost();
-        host2.SeedFile("/m0.py", BigFunction("f0", 8000));
+        host2.SeedFile("/m0.py", BigFunction("f0", 4000));
         var allowed2 = new HashSet<string>(StringComparer.Ordinal) { "m0" };
         var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = OneMib, AllowedLocalModules = allowed2 });
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
@@ -170,8 +171,9 @@ public sealed class ImportedCodeRetentionScenarioTests
         var allowed2 = new HashSet<string>(StringComparer.Ordinal) { "n0", "n1" };
         AssertMemoryError(await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = OneMib, AllowedLocalModules = allowed2 }));
     }
-    // Loop-re-executed definition sites share one retained body list, so the
-    // per-run first-wins mark owns it once beside the per-construction shells.
+
+    // A loop-re-executed definition site is counted once in its module walk,
+    // so only the per-construction shells accumulate while the shared body pays once.
     [Fact]
     public async Task LoopRedefinitionsShareCodeCharge()
     {
@@ -218,6 +220,124 @@ public sealed class ImportedCodeRetentionScenarioTests
         host2.SeedFile("/small.py", "value = 1\n");
         var allowed2 = new HashSet<string>(StringComparer.Ordinal) { "big", "small" };
         var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = OneMib, AllowedLocalModules = allowed2 });
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task WideUncalledBodiesStayCharged()
+    {
+        // One wide return expression retains tens of thousands of constant
+        // nodes without executing: statement counts alone miss it.
+        var body = "def f():\n    return [" + string.Join((char)44, Enumerable.Repeat("1", 20000)) + "]\n";
+        var host = new MockLythonHost();
+        var allowed = new HashSet<string>(StringComparer.Ordinal);
+        var imports = "";
+        for (var i = 0; i < 3; i++)
+        {
+            host.SeedFile("/m" + i + ".py", body);
+            allowed.Add("m" + i);
+            imports += "import m" + i + "\n";
+        }
+
+        var script = new LythonEngine().Compile(imports + "print(3)\nreturn 0\n");
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = OneMib, AllowedLocalModules = allowed };
+        AssertMemoryError(script.Run(host, options));
+
+        var host2 = new MockLythonHost();
+        var allowed2 = new HashSet<string>(StringComparer.Ordinal);
+        for (var i = 0; i < 3; i++)
+        {
+            host2.SeedFile("/m" + i + ".py", body);
+            allowed2.Add("m" + i);
+        }
+
+        AssertMemoryError(await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = OneMib, AllowedLocalModules = allowed2 }));
+    }
+
+    [Fact]
+    public async Task ImportedLambdasStayCharged()
+    {
+        var body = "f = lambda: [" + string.Join((char)44, Enumerable.Repeat("1", 20000)) + "]\n";
+        var host = new MockLythonHost();
+        var allowed = new HashSet<string>(StringComparer.Ordinal);
+        var imports = "";
+        for (var i = 0; i < 3; i++)
+        {
+            host.SeedFile("/m" + i + ".py", body);
+            allowed.Add("m" + i);
+            imports += "import m" + i + "\n";
+        }
+
+        var script = new LythonEngine().Compile(imports + "print(3)\nreturn 0\n");
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = OneMib, AllowedLocalModules = allowed };
+        AssertMemoryError(script.Run(host, options));
+
+        var host2 = new MockLythonHost();
+        var allowed2 = new HashSet<string>(StringComparer.Ordinal);
+        for (var i = 0; i < 3; i++)
+        {
+            host2.SeedFile("/m" + i + ".py", body);
+            allowed2.Add("m" + i);
+        }
+
+        AssertMemoryError(await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = OneMib, AllowedLocalModules = allowed2 }));
+    }
+
+    [Fact]
+    public async Task SpoofedModuleNameStillCharged()
+    {
+        // Import provenance never consults the guest-mutable __name__:
+        // pretending to be the entry script changes nothing.
+        var host = SeededHost(3, 20000, out var allowed, out var imports);
+        foreach (var name in allowed)
+        {
+            host.SeedFile("/" + name + ".py", "__name__ = '__main__'\n" + BigFunction("f" + name.Substring(1), 20000));
+        }
+
+        var script = new LythonEngine().Compile(imports + "print(3)\nreturn 0\n");
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = OneMib, AllowedLocalModules = allowed };
+        AssertMemoryError(script.Run(host, options));
+
+        var host2 = SeededHost(3, 20000, out var allowed2, out _);
+        foreach (var name in allowed2)
+        {
+            host2.SeedFile("/" + name + ".py", "__name__ = '__main__'\n" + BigFunction("f" + name.Substring(1), 20000));
+        }
+
+        AssertMemoryError(await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = OneMib, AllowedLocalModules = allowed2 }));
+    }
+
+    [Fact]
+    public async Task OrdinarySizedBodiesStayCharged()
+    {
+        var host = SeededHost(3, 3000, out var allowed, out var imports);
+        var script = new LythonEngine().Compile(imports + "print(3)\nreturn 0\n");
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = OneMib, AllowedLocalModules = allowed };
+        AssertMemoryError(script.Run(host, options));
+
+        var host2 = SeededHost(3, 3000, out var allowed2, out _);
+        AssertMemoryError(await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = OneMib, AllowedLocalModules = allowed2 }));
+    }
+
+    [Fact]
+    public async Task MainScriptBodiesStayHostOwned()
+    {
+        // The other direction: entry-script definitions alias the reusable
+        // host-owned compilation, so a big uncalled main body fits.
+        var script = new LythonEngine().Compile(BigFunction("f", 20000) + "return f()\n");
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+        var expected = new BigInteger(1);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = OneMib };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }

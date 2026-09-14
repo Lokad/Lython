@@ -1714,11 +1714,14 @@ Per-import retained state during execution is governed: each registered
 module commits its registry slot, exported entries commit per entry at
 construction, member values stay owned by their own construction, and scopes
 retained through imported functions are owned by the closure-retention walk
-(builtin aliases stay owned by the run). Each distinct function body retained
-through an imported definition additionally owns its deep lowered-statement
-count at a conservative per-statement rate, once per run: re-imports hit the
-registry and aliases share the first reservation, while nested deferred bodies
-count inside their outer walk. The aggregate registered-module total
+(builtin aliases stay owned by the run). Each module owns its deferred code
+once at import preparation: function bodies own their full retained syntax-
+node count (statements, expressions, lambdas, patterns and target references)
+at a fixed per-node rate, while executed top-level statements stay owned
+through their values. Nested definitions count inside their outer walk, never
+again at execution; re-imports hit the registry. Entry scripts never flow
+through import preparation, so guest-visible module names cannot divert the
+charge. The aggregate registered-module total
 honors `MaxCollectionSize`, and local-module sources compile under the same
 input limits above. Local imports always execute lowered statements directly,
 so no per-import executable image is retained: only truly unreferenced scopes and
