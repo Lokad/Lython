@@ -26,6 +26,7 @@ internal sealed partial class LythonRuntime
         stack.RemoveTail(valueCount);
 
         context.ObserveCollectionCount(dict.Count, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(dict, dict.CommittedStorageBytes);
         return dict;
     }
 
@@ -167,7 +168,9 @@ internal sealed partial class LythonRuntime
         }
 
         stack.RemoveTail(count);
-        return new PyList(items, context.MemoryGovernor, span);
+        var list = new PyList(items, context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(list, list.CommittedStorageBytes);
+        return list;
     }
 
     private static PyTuple CreateTupleFromStack(ExecutableValueStack stack, int count, LythonSourceSpan span, ExecutionContext context)
@@ -186,7 +189,9 @@ internal sealed partial class LythonRuntime
         }
 
         stack.RemoveTail(count);
-        return new PyTuple(items, context.MemoryGovernor, span);
+        var tuple = new PyTuple(items, context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(tuple, tuple.CommittedStorageBytes);
+        return tuple;
     }
 
     private static object EvaluateExecutableBinary(ExecutableBinaryOperator op, object left, object right, LythonSourceSpan span, ExecutionContext context)

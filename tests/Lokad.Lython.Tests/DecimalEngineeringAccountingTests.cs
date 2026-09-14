@@ -22,7 +22,9 @@ public sealed class DecimalEngineeringAccountingTests
         var text = (PyString)((LythonRuntime.ICallable)member).Invoke([], span, context);
         Assert.Equal("1.5", text.AsString());
         Assert.Same(context.MemoryGovernor, text.OwnerMemoryGovernor);
-        Assert.Equal(131L, context.MemoryGovernor.CurrentCommittedBytes);
+        // Payload owns exactly 131 B; the callable funnel registers pool lifetime
+        // for the result, adding one 64 B registry entry released on collection.
+        Assert.Equal(131L + 64L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

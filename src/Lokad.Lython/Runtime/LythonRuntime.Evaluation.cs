@@ -83,6 +83,7 @@ internal sealed partial class LythonRuntime
                     AppendListDisplayItem(expanded, value, list.Items[i].IsUnpacking, list.Items[i].Span, list.Span, context);
                 }
 
+                context.Services.State.CallTemporaries.TrackFreshMutable(expanded, expanded.CommittedStorageBytes);
                 return expanded;
             }
 
@@ -93,18 +94,22 @@ internal sealed partial class LythonRuntime
                 items[i] = RuntimeValue(EvaluateExpression(list.Items[i].Expression, context));
             }
 
-            return new PyList(items, context.MemoryGovernor, list.Span);
+            var created = new PyList(items, context.MemoryGovernor, list.Span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(created, created.CommittedStorageBytes);
+            return created;
         }
 
         static PyTuple CreateTupleLiteral(TupleLiteralExpressionSyntax tuple, ExecutionContext context)
         {
             if (!tuple.HasUnpacking)
             {
-                return CreateTuple(
+                var createdTuple = CreateTuple(
                     tuple.Items.Count,
                     i => RuntimeValue(EvaluateExpression(tuple.Items[i].Expression, context)),
                     context,
                     tuple.Span);
+                context.Services.State.CallTemporaries.TrackFreshMutable(createdTuple, createdTuple.CommittedStorageBytes);
+                return createdTuple;
             }
 
             var expanded = new List<object>();
@@ -115,7 +120,9 @@ internal sealed partial class LythonRuntime
             }
 
             context.ObserveCollectionCount(expanded.Count, tuple.Span);
-            return new PyTuple(expanded, context.MemoryGovernor, tuple.Span);
+            var expandedTuple = new PyTuple(expanded, context.MemoryGovernor, tuple.Span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(expandedTuple, expandedTuple.CommittedStorageBytes);
+            return expandedTuple;
         }
     }
 

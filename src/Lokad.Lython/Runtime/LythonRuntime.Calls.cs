@@ -295,27 +295,21 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            if (PreservePresence)
-            {
-                var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind);
-                return InvokeBoundWithPresence(bound, span, context);
-            }
-
-            var positional = CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind);
-            return InvokeBound(positional, span, context);
+            object result = PreservePresence
+                ? InvokeBoundWithPresence(CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind), span, context)
+                : InvokeBound(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind), span, context);
+            context.Services.State.CallTemporaries.TrackCallResult(result);
+            return result;
         }
 
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            if (PreservePresence)
-            {
-                var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind);
-                return await InvokeBoundWithPresenceAsync(bound, span, context).ConfigureAwait(false);
-            }
-
-            var positional = CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind);
-            return await InvokeBoundAsync(positional, span, context).ConfigureAwait(false);
+            object result = PreservePresence
+                ? await InvokeBoundWithPresenceAsync(CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind), span, context).ConfigureAwait(false)
+                : await InvokeBoundAsync(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind), span, context).ConfigureAwait(false);
+            context.Services.State.CallTemporaries.TrackCallResult(result);
+            return result;
         }
 
         /// <summary>Whether calls bind with assignment tracking so omitted arguments stay distinguishable from explicit values.</summary>
@@ -2795,16 +2789,30 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecutionBudget(span);
             RejectArguments(arguments, span);
-            return _implementation(_receiver, span, context);
+            var result = _implementation(_receiver, span, context);
+            context.Services.State.CallTemporaries.TrackCallResult(result);
+            return result;
         }
 
         public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
             RejectArguments(arguments, span);
-            return _asyncImplementation is null
-                ? ValueTask.FromResult(_implementation(_receiver, span, context))
-                : _asyncImplementation(_receiver, span, context);
+            if (_asyncImplementation is null)
+            {
+                var immediate = _implementation(_receiver, span, context);
+                context.Services.State.CallTemporaries.TrackCallResult(immediate);
+                return ValueTask.FromResult(immediate);
+            }
+
+            return InvokeAsyncCore();
+
+            async ValueTask<object> InvokeAsyncCore()
+            {
+                var result = await _asyncImplementation!(_receiver, span, context).ConfigureAwait(false);
+                context.Services.State.CallTemporaries.TrackCallResult(result);
+                return result;
+            }
         }
 
         private void RejectArguments(CallArgumentValue[] arguments, LythonSourceSpan span)
@@ -2993,7 +3001,9 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            return Dict(arguments, span, context);
+            var result = (PyDict)Dict(arguments, span, context);
+            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
+            return result;
         }
 
         public PyString RenderPython(PyRenderingContext context) => PyString.FromString($"<class '{Name}'>");

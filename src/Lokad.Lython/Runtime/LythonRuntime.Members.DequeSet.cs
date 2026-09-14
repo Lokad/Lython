@@ -745,6 +745,7 @@ internal sealed partial class LythonRuntime
                 context.ObserveCollectionCount(result.Count, span);
             }
 
+            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
             return result;
         }
 

@@ -985,7 +985,9 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
             context.MemoryGovernor.Reserve(64L, span);
             context.MemoryGovernor.Commit(64L);
-            return new ChainMapKeysView(_owner);
+            var keys = new ChainMapKeysView(_owner);
+            context.Services.State.CallTemporaries.Track(keys, 64L);
+            return keys;
         }
     }
 
@@ -1005,7 +1007,9 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
             context.MemoryGovernor.Reserve(64L, span);
             context.MemoryGovernor.Commit(64L);
-            return new ChainMapValuesView(_owner);
+            var values = new ChainMapValuesView(_owner);
+            context.Services.State.CallTemporaries.Track(values, 64L);
+            return values;
         }
     }
 
@@ -1025,7 +1029,9 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
             context.MemoryGovernor.Reserve(64L, span);
             context.MemoryGovernor.Commit(64L);
-            return new ChainMapItemsView(_owner);
+            var items = new ChainMapItemsView(_owner);
+            context.Services.State.CallTemporaries.Track(items, 64L);
+            return items;
         }
     }
 

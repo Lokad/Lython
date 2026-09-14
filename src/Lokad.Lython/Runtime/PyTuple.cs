@@ -62,7 +62,9 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
 
     // Current committed backing charges, for pooled owners that release them
     // if this tuple is dropped. Tuples never grow, so the snapshot stays exact.
-    internal long CommittedStorageBytes => EstimateApproximateBytes(_items.Length);
+    // Unowned tuples carry nothing: snapshots must mirror committed charges so a
+    // later sweep can never release what was never committed.
+    internal long CommittedStorageBytes => OwnerMemoryGovernor is null ? 0 : EstimateApproximateBytes(_items.Length);
 
     internal static PyTuple FromOwnedArray(object[] items) => new(items, takeOwnership: true);
 

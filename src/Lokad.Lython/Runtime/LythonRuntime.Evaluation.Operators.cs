@@ -62,6 +62,7 @@ internal sealed partial class LythonRuntime
                 ? new PyList(leftList)
                 : new PyList(leftList, governor, allocationSpan);
             result.AddRange(rightList);
+            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
             return result;
         }
 
@@ -71,9 +72,11 @@ internal sealed partial class LythonRuntime
             var (rightGovernor, rightSpan) = TupleLikeOwnership(right);
             var governor = leftGovernor ?? rightGovernor;
             var allocationSpan = leftSpan ?? rightSpan;
-            return governor is null
+            var joined = governor is null
                 ? new PyTuple(leftItems.Concat(rightItems))
                 : new PyTuple(leftItems.Concat(rightItems), governor, allocationSpan);
+            context.Services.State.CallTemporaries.TrackFreshMutable(joined, joined.CommittedStorageBytes);
+            return joined;
         }
 
         if (left is PyDeque leftDeque && right is PyDeque rightDeque)
@@ -167,6 +170,7 @@ internal sealed partial class LythonRuntime
                 ? new PySet(leftSet)
                 : new PySet(leftSet, governor, allocationSpan);
             result.ExceptWith(rightSet);
+            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
             return result;
         }
 

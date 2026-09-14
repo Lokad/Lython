@@ -486,6 +486,18 @@ internal sealed partial class LythonRuntime
         where T : IReadOnlyCollection<object>
     {
         context.ObserveCollectionCount(collection.Count, span);
+        // Display literals are freshly built: dropped ones release through the
+        // pool once collected, and a denied registry charge refunds the snapshot.
+        switch (collection)
+        {
+            case PyList list when list.OwnerMemoryGovernor is not null:
+                context.Services.State.CallTemporaries.TrackFreshMutable(list, list.CommittedStorageBytes);
+                break;
+            case PyTuple tuple when tuple.OwnerMemoryGovernor is not null:
+                context.Services.State.CallTemporaries.TrackFreshMutable(tuple, tuple.CommittedStorageBytes);
+                break;
+        }
+
         return collection;
     }
 

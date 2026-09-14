@@ -265,6 +265,7 @@ internal sealed partial class LythonRuntime
                 ? new PySet(leftSet)
                 : new PySet(leftSet, governor, allocationSpan);
             result.UnionWith(rightSet);
+            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
             return result;
         }
 
@@ -276,6 +277,7 @@ internal sealed partial class LythonRuntime
                 merged.SetItem(pair.Key, pair.Value);
             }
 
+            context.Services.State.CallTemporaries.TrackFreshMutable(merged, merged.CommittedStorageBytes);
             return merged;
         }
 
@@ -310,6 +312,7 @@ internal sealed partial class LythonRuntime
                 ? new PySet(leftSet)
                 : new PySet(leftSet, governor, allocationSpan);
             result.SymmetricExceptWith(rightSet);
+            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
             return result;
         }
 
@@ -349,6 +352,7 @@ internal sealed partial class LythonRuntime
                 ? new PySet(leftSet)
                 : new PySet(leftSet, governor, allocationSpan);
             result.IntersectWith(rightSet);
+            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
             return result;
         }
 
@@ -642,7 +646,7 @@ internal sealed partial class LythonRuntime
         // Dropped concatenations release through the reclamation pool once
         // collected; without tracking, every temporary owned its construction
         // charge forever and bounded call-free loops could never complete.
-        context.Services.State.CallTemporaries.TrackString(result);
+        context.Services.State.CallTemporaries.TrackFreshString(result);
         return result;
     }
 
@@ -714,7 +718,7 @@ internal sealed partial class LythonRuntime
         }
 
         var repeated = text.Repeat((int)count, context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackString(repeated);
+        context.Services.State.CallTemporaries.TrackFreshString(repeated);
         return repeated;
     }
 
@@ -755,7 +759,9 @@ internal sealed partial class LythonRuntime
         var repeatCount = ToListRepeatCount(count, span);
         if (repeatCount == 0 || list.Count == 0)
         {
-            return new PyList([], context.MemoryGovernor, span);
+            var emptyList = new PyList([], context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(emptyList, emptyList.CommittedStorageBytes);
+            return emptyList;
         }
 
         var totalLength = (long)list.Count * repeatCount;
@@ -771,6 +777,7 @@ internal sealed partial class LythonRuntime
             context.ObserveCollectionCount(result.Count, span);
         }
 
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -778,7 +785,9 @@ internal sealed partial class LythonRuntime
     {
         if (count <= BigInteger.Zero || tuple.Count == 0)
         {
-            return new PyTuple([], context.MemoryGovernor, span);
+            var emptyTuple = new PyTuple([], context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(emptyTuple, emptyTuple.CommittedStorageBytes);
+            return emptyTuple;
         }
 
         if (count > int.MaxValue)
@@ -804,7 +813,9 @@ internal sealed partial class LythonRuntime
             context.ObserveCollectionCount((i + 1) * tuple.Count, span);
         }
 
-        return new PyTuple(items, context.MemoryGovernor, span);
+        var repeated = new PyTuple(items, context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(repeated, repeated.CommittedStorageBytes);
+        return repeated;
     }
 
     private static PyDeque RepeatDeque(PyDeque source, BigInteger count, ExecutionContext context, LythonSourceSpan span)
@@ -886,6 +897,7 @@ internal sealed partial class LythonRuntime
             context.ObserveCollectionCount(result.Count, dict.Span);
         }
 
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 

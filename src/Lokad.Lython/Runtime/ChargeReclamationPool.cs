@@ -122,6 +122,46 @@ internal sealed class ChargeReclamationPool
         }
     }
 
+    // Registers an arbitrary call result for whatever it currently owns: strings
+    // for their construction charge, mutables for their backing snapshot. Coupons
+    // mirror current committed charges (exact for fresh results, safe residuals
+    // for later growth); wholesale replacement re-snapshots through the value,
+    // and unowned results carry nothing to release. Plain (non-refunding)
+    // registration: some results alias stored values, so a denial must never
+    // refund live charges.
+    public void TrackCallResult(object result)
+    {
+        switch (result)
+        {
+            case PyString text:
+                TrackString(text);
+                break;
+            case PyList list when list.OwnerMemoryGovernor is not null:
+                TrackMutable(list, list.CommittedStorageBytes);
+                break;
+            case PyDict dict when dict.OwnerMemoryGovernor is not null:
+                TrackMutable(dict, dict.CommittedStorageBytes);
+                break;
+            case PySet set when set.OwnerMemoryGovernor is not null:
+                TrackMutable(set, set.CommittedStorageBytes);
+                break;
+            case PyTuple tuple when tuple.OwnerMemoryGovernor is not null:
+                TrackMutable(tuple, tuple.CommittedStorageBytes);
+                break;
+            case LythonRuntime.DictKeysView keysView:
+                Track(keysView, 64L);
+                break;
+            case LythonRuntime.DictValuesView valuesView:
+                Track(valuesView, 64L);
+                break;
+            case LythonRuntime.DictItemsView itemsView:
+                // View wrappers commit a fixed shell charge at construction with
+                // no backing to snapshot; the coupon is exact and immutable.
+                Track(itemsView, 64L);
+                break;
+        }
+    }
+
     // Fresh-string twin of TrackFreshMutable: the construction charge is
     // exact for values built (or adopted) through the governed string paths.
     public void TrackFreshString(PyString value)
