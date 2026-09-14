@@ -193,3 +193,25 @@ ShortRun shape:
 Notes: the invalid pool (5,000 assignments plus an unbalanced tail) fails about
 3x faster than the valid pool compiles. Re-record on release runs before
 changing frontend pooling or validation paths.
+
+Call overhead (`CallOverheadBenchmarks.cs`: 10K calls plus the 100K-step integer
+loop) from a ShortRun BenchmarkDotNet run (.NET 10, Windows 11 10.0.26200 x64,
+2026-09-14, 751c380):
+
+| Benchmark | Mean | Allocated/op |
+| --- | --- | --- |
+| 10K positional identity calls | 38.78 ms | 16.28 MB |
+| 10K positional identity calls (async) | 67.76 ms | 38.41 MB |
+| 10K keyword identity calls | 40.54 ms | 17.27 MB |
+| 10K variadic identity calls | 57.52 ms | 21.71 MB |
+| 100K-step integer loop | 15.69 ms | 16.05 MB |
+
+Notes: ShortRun (wide intervals). First-chance exceptions measured separately with
+an observer (Release): 20,002 per 10K sync calls (throw plus interpreter rethrow),
+40,003 async (two extra transits), 2 per integer loop. Deterministic process
+allocation counters (min-of-3) attribute ~2,034 B per positional call and ~2,139 B
+per keyword call before the binder change above (~1,954 B / ~2,058 B after:
+lazy keyword-overflow dictionary plus exact bound capacity saves ~80 B/call).
+Async calls cost ~2.3x sync with ~2x the exceptions; return delivery dominates
+call time. Re-record on release runs before changing call binding, return
+delivery, or value boxing.
