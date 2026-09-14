@@ -638,7 +638,12 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.Runtime($"maximum string length exceeded ({maxStringLength})", span);
         }
 
-        return left.Concat(right, context.MemoryGovernor, span);
+        var result = left.Concat(right, context.MemoryGovernor, span);
+        // Dropped concatenations release through the reclamation pool once
+        // collected; without tracking, every temporary owned its construction
+        // charge forever and bounded call-free loops could never complete.
+        context.Services.State.CallTemporaries.TrackString(result);
+        return result;
     }
 
     // Bytes concatenation mirrors the list path: results owned by the
@@ -708,7 +713,9 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.Runtime($"maximum string length exceeded ({maxStringLength})", span);
         }
 
-        return text.Repeat((int)count, context.MemoryGovernor, span);
+        var repeated = text.Repeat((int)count, context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackString(repeated);
+        return repeated;
     }
 
     // Bytes repetition mirrors RepeatString without a string-length cap:

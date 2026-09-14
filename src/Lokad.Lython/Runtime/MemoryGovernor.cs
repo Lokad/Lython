@@ -1,3 +1,5 @@
+using System;
+
 namespace Lokad.Lython.Runtime;
 
 internal sealed class MemoryGovernor
@@ -29,6 +31,17 @@ internal sealed class MemoryGovernor
     // Stays zero when nothing was ever denied; a later denial overwrites it.
     public long LastDeniedReservationBytes { get; private set; }
 
+    // Pools whose tracked charges may release once unreachable. On a denied
+    // reservation the governor may force a collection, sweep them fully, and
+    // retries once, so garbage pressure fails only when retention is real.
+    private readonly List<ChargeReclamationPool> _reclamationPools = new();
+
+    internal void RegisterReclamationPool(ChargeReclamationPool pool) => _reclamationPools.Add(pool);
+    // Committed level after the last relief: relief repeats only while
+    // retention keeps growing, so pinned workloads fail fast instead of
+    // paying a collection per caught trip.
+    private long _committedAtLastReclaim;
+
     public void EnsureCanReserve(long bytes, LythonSourceSpan? span)
     {
         if (bytes <= 0)
@@ -40,8 +53,38 @@ internal sealed class MemoryGovernor
         var nextAccounted = AddChecked(nextReserved, CurrentCommittedBytes, span);
         if (MaxAccountedBytes is { } maxAccountedBytes && nextAccounted > maxAccountedBytes)
         {
-            LastDeniedReservationBytes = bytes;
-            throw RuntimeErrors.Memory($"execution memory budget exceeded ({maxAccountedBytes})", span);
+            if (CurrentCommittedBytes > _committedAtLastReclaim)
+            {
+                ReclaimForExhaustion();
+                _committedAtLastReclaim = CurrentCommittedBytes;
+            }
+            nextReserved = AddChecked(CurrentReservedBytes, bytes, span);
+            nextAccounted = AddChecked(nextReserved, CurrentCommittedBytes, span);
+            if (nextAccounted > maxAccountedBytes)
+            {
+                LastDeniedReservationBytes = bytes;
+                throw RuntimeErrors.Memory($"execution memory budget exceeded ({maxAccountedBytes})", span);
+            }
+        }
+    }
+
+    // Last-resort relief for a denied reservation: unreachable values
+    // cannot release their tracked charges until collected, and a quiet
+    // loop may never trigger a collection before the budget trips.
+    // Collecting once and sweeping fully before failing proves the
+    // denial against live retention instead of garbage pressure.
+    // Sweeps never reserve, so this cannot recurse.
+    private void ReclaimForExhaustion()
+    {
+        if (_reclamationPools.Count == 0)
+        {
+            return;
+        }
+
+        GC.Collect();
+        foreach (var pool in _reclamationPools)
+        {
+            pool.Sweep(full: true);
         }
     }
 

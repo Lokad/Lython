@@ -51,6 +51,7 @@ internal sealed class ExecutionState
         BudgetGuards = new ExecutionBudgetGuards(this);
         MemoryGovernor = new MemoryGovernor(Limits.MaxExecutionMemoryBytes);
         CallTemporaries = new ChargeReclamationPool(MemoryGovernor);
+        MemoryGovernor.RegisterReclamationPool(CallTemporaries);
         RandomState = new PyRandomState();
         DecimalContext = PyDecimalContext.Default();
         DisableLocalModuleImports = options?.DisableLocalModuleImports ?? false;

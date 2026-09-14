@@ -78,7 +78,9 @@ internal sealed class ChargeReclamationPool
     }
 
     // Registers a governed string for its exact construction charge; shared
-    // empties and unowned values carry no charge and stay untracked.
+    // empties and unowned values carry no charge and stay untracked. Strings
+    // claim a per-object token instead of the shared equality-keyed index,
+    // so value-equal but distinct results track and release independently.
     public void TrackString(PyString value)
     {
         if (value.OwnerMemoryGovernor is null)
@@ -86,9 +88,29 @@ internal sealed class ChargeReclamationPool
             return;
         }
 
-        Track(value, PyString.EstimateApproximateBytes(value.Utf8Bytes.Length));
+        if (!value.TryClaimReclamationToken())
+        {
+            return;
+        }
+
+        TrackUnindexed(value, PyString.EstimateApproximateBytes(value.Utf8Bytes.Length));
     }
 
+    // Tracks a value whose identity is already deduplicated by the caller
+    // (per-object claim tokens), bypassing the shared equality-keyed index
+    // that cannot distinguish value-equal objects. Pruning still removes the
+    // entry from pool tiers on sweep; no shared state needs cleanup.
+    private void TrackUnindexed(object value, long valueCharge)
+    {
+        if (valueCharge <= 0)
+        {
+            return;
+        }
+
+        var entry = new ReclamationEntry(value, valueCharge);
+        CommitEntryCharge();
+        _young.Add(entry);
+    }
     // Registers a pooled mutable for its current backing charges, snapshotted
     // by the caller right after construction. Empty backing tracks nothing:
     // later growth charges itself through the value.
@@ -182,21 +204,21 @@ internal sealed class ChargeReclamationPool
         return released;
     }
 
-    // End-of-life drain: live entries keep their charges (retained values
-    // stay charged) while everything unreachable releases. The tier empties
-    // either way since no further sweep will run.
+    // Exhaustion drain: releases everything unreachable with a full scan.
+    // Live entries keep their charges and stay tracked (unlike a terminal
+    // drain), so a run that survives the relief keeps exact ownership.
     private static long DrainTier(List<ReclamationEntry> tier)
     {
         var released = 0L;
-        foreach (var entry in tier)
+        for (var i = tier.Count - 1; i >= 0; i--)
         {
-            if (!entry.Target.TryGetTarget(out _))
+            if (!tier[i].Target.TryGetTarget(out _))
             {
-                released += entry.ValueCharge + EntryChargeBytes;
+                released += tier[i].ValueCharge + EntryChargeBytes;
+                RemoveAtSwap(tier, i);
             }
         }
 
-        tier.Clear();
         return released;
     }
 

@@ -2,6 +2,7 @@ using Lokad.Lython.Frontend;
 using System.Runtime.CompilerServices;
 using Lokad.Lython.Runtime.Calls;
 using Lokad.Lython.Runtime.Text;
+using System.Numerics;
 
 namespace Lokad.Lython.Runtime;
 
@@ -25,6 +26,18 @@ internal sealed partial class LythonRuntime
         => (PyBytes)SharedLiteralCache.GetValue(
             bytes,
             static node => new PyBytes(((LoweredBytesLiteralExpression)node).Literal.Value.ToArray()));
+
+    // Heap integer literals evaluate to shared compile-time magnitudes like
+    // interned strings: the parsed value is bounded by program text and
+    // immutable, so rebuilding (and recharging) it per evaluation made every
+    // loop-carried big literal sticky in tree-walked runs. Entries key on the
+    // lowered node; values unbox into fresh boxes per evaluation, so identity
+    // stays non-aliased and only magnitudes are shared.
+    private static BigInteger SharedIntegerMagnitude(LoweredIntegerLiteralExpression integer)
+        => (BigInteger)SharedLiteralCache.GetValue(
+            integer,
+            static node => ParseInteger(((LoweredIntegerLiteralExpression)node).Literal));
+
     private delegate ValueTask<ControlSignal?> LoweredStatementBlockExecutor(
         IReadOnlyList<LoweredStatement> statements,
         ExecutionContext context);
@@ -117,9 +130,7 @@ internal sealed partial class LythonRuntime
             case LoweredBytesLiteralExpression bytes:
                 return SharedBytesLiteral(bytes);
             case LoweredIntegerLiteralExpression integer:
-                // MG08: heap-sized integer literals own their magnitude storage like
-                // arithmetic results; inline-range values stay free.
-                return OwnHeapInteger(ParseInteger(integer.Literal), context.MemoryGovernor, integer.Span);
+                return SharedIntegerMagnitude(integer);
             case LoweredFloatLiteralExpression floating:
                 return ParseFloat(floating.Literal);
             case LoweredBooleanLiteralExpression boolean:

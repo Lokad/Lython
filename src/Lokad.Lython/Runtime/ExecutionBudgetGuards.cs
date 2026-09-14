@@ -16,6 +16,14 @@ internal sealed class ExecutionBudgetGuards
     public void CheckExecutionBudget(LythonSourceSpan? span)
     {
         Limits.ExecutionStepCount++;
+        if ((Limits.ExecutionStepCount & 255) == 0)
+        {
+            // Reclamation cadence for call-free loops: bound calls sweep the
+            // pool every 256 calls, but straight-line iteration may never
+            // call, so steps carry the same cadence and dropped temporaries
+            // release instead of accumulating stale commitments.
+            State.CallTemporaries.Sweep();
+        }
         if (Limits.MaxExecutionSteps is { } maxExecutionSteps &&
             Limits.ExecutionStepCount > maxExecutionSteps)
         {
