@@ -79,9 +79,9 @@ internal sealed class ChargeReclamationPool
     }
 
     // Registers a governed string for its exact construction charge; shared
-    // empties and unowned values carry no charge and stay untracked. Strings
-    // claim a per-object token instead of the shared equality-keyed index,
-    // so value-equal but distinct results track and release independently.
+    // empties and unowned values carry no charge and stay untracked. The
+    // shared table keys by reference identity, so value-equal but distinct
+    // strings track (and release) independently through this same path.
     public void TrackString(PyString value)
     {
         if (value.OwnerMemoryGovernor is null)
@@ -89,29 +89,9 @@ internal sealed class ChargeReclamationPool
             return;
         }
 
-        if (!value.TryClaimReclamationToken())
-        {
-            return;
-        }
-
-        TrackUnindexed(value, PyString.EstimateApproximateBytes(value.Utf8Bytes.Length));
+        Track(value, PyString.EstimateApproximateBytes(value.Utf8Bytes.Length));
     }
 
-    // Tracks a value whose identity is already deduplicated by the caller
-    // (per-object claim tokens), bypassing the shared equality-keyed index
-    // that cannot distinguish value-equal objects. Pruning still removes the
-    // entry from pool tiers on sweep; no shared state needs cleanup.
-    private void TrackUnindexed(object value, long valueCharge)
-    {
-        if (valueCharge <= 0)
-        {
-            return;
-        }
-
-        var entry = new ReclamationEntry(value, valueCharge);
-        CommitEntryCharge();
-        _young.Add(entry);
-    }
     // Registers a pooled mutable for its current backing charges, snapshotted
     // by the caller right after construction. Empty backing tracks nothing:
     // later growth charges itself through the value.
@@ -138,6 +118,11 @@ internal sealed class ChargeReclamationPool
         return released;
     }
 
+    // Reserves the registry charge before publishing: a denial leaves no mark
+    // behind, so a funded retry registers instead of stranding the value
+    // charge without an entry. Publishing itself cannot fail halfway here:
+    // the runtime is single-threaded, so a present mark implies an earlier
+    // registration of this same value.
     private void TrackCore(object value, long valueCharge)
     {
         if (TrackedStorage.TryGetValue(value, out _))
@@ -145,10 +130,11 @@ internal sealed class ChargeReclamationPool
             return;
         }
 
+        _governor.Reserve(EntryChargeBytes, null);
         var entry = new ReclamationEntry(value, valueCharge);
         TrackedStorage.Add(value, entry);
-        CommitEntryCharge();
         _young.Add(entry);
+        _governor.Commit(EntryChargeBytes);
     }
 
     private static long SweepTier(List<ReclamationEntry> tier, List<ReclamationEntry>? promoteTo)
@@ -224,11 +210,5 @@ internal sealed class ChargeReclamationPool
     {
         tier[index] = tier[tier.Count - 1];
         tier.RemoveAt(tier.Count - 1);
-    }
-
-    private void CommitEntryCharge()
-    {
-        _governor.Reserve(EntryChargeBytes, null);
-        _governor.Commit(EntryChargeBytes);
     }
 }

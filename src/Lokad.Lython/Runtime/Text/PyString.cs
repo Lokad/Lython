@@ -19,14 +19,6 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     private PyString[]? _cachedRunes;
     private int _hashCode;
     private bool _hashCodeComputed;
-    // Reference-identity claim for pool tracking: the shared pool index keys
-    // by object equality, so distinct but value-equal strings would collide
-    // and only the first would ever release. The per-object claim lets each
-    // distinct string track (and release) independently.
-    private object? _reclamationToken;
-
-    internal bool TryClaimReclamationToken()
-        => Interlocked.CompareExchange(ref _reclamationToken, this, null) is null;
 
     private PyString(byte[] utf8)
     {
