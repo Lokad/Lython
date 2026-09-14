@@ -56,6 +56,14 @@ internal sealed class MemoryGovernor
         var nextAccounted = AddChecked(nextReserved, CurrentCommittedBytes, span);
         if (MaxAccountedBytes is { } maxAccountedBytes && nextAccounted > maxAccountedBytes)
         {
+            if (bytes > maxAccountedBytes)
+            {
+                // The request alone exceeds the budget: no relief could fit
+                // it, so deny without pausing the process for a collection.
+                LastDeniedReservationBytes = bytes;
+                throw RuntimeErrors.Memory($"execution memory budget exceeded ({maxAccountedBytes})", span);
+            }
+
             if (CurrentCommittedBytes > _committedAtLastReclaim)
             {
                 ReclaimForExhaustion();
@@ -71,11 +79,12 @@ internal sealed class MemoryGovernor
         }
     }
 
-    // Last-resort relief for a denied reservation: unreachable values
-    // cannot release their tracked charges until collected, and a quiet
-    // loop may never trigger a collection before the budget trips.
-    // Collecting once and sweeping fully before failing proves the
-    // denial against live retention instead of garbage pressure.
+    // Last-resort relief for a denied reservation: unreachable tracked values
+    // cannot release their charges until collected, and a quiet loop may never
+    // trigger a collection before the budget trips. Collecting and sweeping
+    // fully before failing attributes the denial to live retention rather
+    // than garbage pressure — but only for charges tracked through registered
+    // pools; untracked retained charges still deny, correctly, without relief.
     // Sweeps never reserve, so this cannot recurse.
     private void ReclaimForExhaustion()
     {
@@ -84,8 +93,25 @@ internal sealed class MemoryGovernor
             return;
         }
 
-        GC.Collect();
+        List<ChargeReclamationPool>? live = null;
         foreach (var pool in provider())
+        {
+            if (pool.Count > 0)
+            {
+                live ??= new List<ChargeReclamationPool>();
+                live.Add(pool);
+            }
+        }
+
+        // No tracked charges anywhere: a collection could not release
+        // anything accounted, so fail fast instead of pausing the process.
+        if (live is null)
+        {
+            return;
+        }
+
+        GC.Collect();
+        foreach (var pool in live)
         {
             pool.Sweep(full: true);
         }

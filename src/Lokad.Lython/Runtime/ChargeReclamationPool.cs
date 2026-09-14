@@ -25,8 +25,9 @@ internal sealed class ChargeReclamationPool
     // Per-entry registry charge: the entry, the weak handle and the table node.
     private const long EntryChargeBytes = 64L;
 
-    // Old-tier entries revisited per sweep; bounds per-sweep work while every
-    // entry is revisited within live/quantum sweeps.
+    // Old-tier entries visited at most once per sweep, up to the quantum;
+    // bounds per-sweep work while every entry is revisited within
+    // live/quantum sweeps.
     private const int OldQuantum = 4096;
 
     // Pooled values with a pending entry. Untracked values cost one lookup
@@ -171,17 +172,16 @@ internal sealed class ChargeReclamationPool
         return released;
     }
 
+    // Visits each old entry at most once per sweep, up to the quantum: the
+    // window advances without wrapping, so a lone live entry costs one probe
+    // instead of a full quantum of revisits. Removal compacts from the end,
+    // which can only pull unvisited entries into the window.
     private long SweepOldQuantum()
     {
         var released = 0L;
-        var scanned = 0;
-        while (scanned < OldQuantum && _old.Count > 0)
+        var end = Math.Min(_oldCursor + OldQuantum, _old.Count);
+        while (_oldCursor < end && _oldCursor < _old.Count)
         {
-            if (_oldCursor >= _old.Count)
-            {
-                _oldCursor = 0;
-            }
-
             var entry = _old[_oldCursor];
             if (!entry.Target.TryGetTarget(out _))
             {
@@ -192,11 +192,9 @@ internal sealed class ChargeReclamationPool
             {
                 _oldCursor++;
             }
-
-            scanned++;
         }
 
-        if (_old.Count == 0)
+        if (_oldCursor >= _old.Count)
         {
             _oldCursor = 0;
         }

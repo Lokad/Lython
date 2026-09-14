@@ -18,10 +18,12 @@ internal sealed class ExecutionBudgetGuards
         Limits.ExecutionStepCount++;
         if ((Limits.ExecutionStepCount & 255) == 0)
         {
-            // Reclamation cadence for call-free loops: bound calls sweep the
-            // pool every 256 calls, but straight-line iteration may never
-            // call, so steps carry the same cadence and dropped temporaries
-            // release instead of accumulating stale commitments.
+            // Reclamation cadence for call-free loops: the bound-call path
+            // sweeps separately, but straight-line iteration may never call,
+            // so steps carry their own cadence and dropped temporaries
+            // release instead of accumulating stale commitments. Both
+            // cadences sweep the same pool; the overlap is intentional
+            // (call boundaries remain the fresher sweep point for variadics).
             State.CallTemporaries.Sweep();
         }
         if (Limits.MaxExecutionSteps is { } maxExecutionSteps &&

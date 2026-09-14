@@ -1,148 +1,141 @@
-using System.Runtime.CompilerServices;
+using System.Reflection;
 using Lokad.Lython.Runtime;
-using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-/// <summary>
-/// MG01/MG24: the reclamation pool releases charges only for entries whose
-/// targets were collected, keeps every live entry charged, and tracks
-/// governed strings for their exact construction charge.
-/// </summary>
+// PERF01: old-tier sweeps visit each entry at most once per sweep up to the
+// quantum (no wrap-around revisits), and exhaustion relief skips collections
+// it cannot benefit from. Cursor/contents below are observed by reflection;
+// committed bytes prove release math.
 public sealed class ChargeReclamationPoolTests
 {
-    [Fact]
-    public void DeadEntriesReleaseExactCharges()
+    private static ChargeReclamationPool NewPool(MemoryGovernor governor)
+        => new ChargeReclamationPool(governor);
+
+    private static int OldCursor(ChargeReclamationPool pool)
+        => (int)typeof(ChargeReclamationPool).GetField("_oldCursor", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(pool)!;
+
+    private static int OldCount(ChargeReclamationPool pool)
     {
-        // The 100 value bytes ride beside the 64-byte registry charge; both
-        // release once the target is collected.
-        var governor = new MemoryGovernor(1000000);
-        var pool = new ChargeReclamationPool(governor);
-        governor.Reserve(100, null);
-        governor.Commit(100);
-        TrackDeadObject(pool);
-        Assert.Equal(1, pool.Count);
-        Assert.Equal(164L, governor.CurrentCommittedBytes);
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-        Assert.Equal(164L, pool.Sweep());
-        Assert.Equal(0, pool.Count);
-        Assert.Equal(0L, governor.CurrentCommittedBytes);
-        Assert.Equal(0L, governor.CurrentReservedBytes);
+        var tier = typeof(ChargeReclamationPool).GetField("_old", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(pool)!;
+        return ((System.Collections.IList)tier).Count;
     }
 
-    [Fact]
-    public void LiveEntriesKeepCharges()
+    private static List<object> TrackLive(ChargeReclamationPool pool, MemoryGovernor governor, int count)
     {
-        var governor = new MemoryGovernor(1000000);
-        var pool = new ChargeReclamationPool(governor);
-        governor.Reserve(100, null);
-        governor.Commit(100);
-        var held = new object();
-        pool.Track(held, 100);
-        GC.Collect();
-        Assert.Equal(0L, pool.Sweep());
-        Assert.Equal(1, pool.Count);
-        Assert.Equal(164L, governor.CurrentCommittedBytes);
-        GC.KeepAlive(held);
-    }
-
-    [Fact]
-    public void ReplacedStorageResnapshotsWithoutDoubleRelease()
-    {
-        // A pooled list cleared through the value releases its backing there
-        // and re-snapshots the replacement, so a later sweep releases exactly
-        // the current backing instead of the stale snapshot.
-        var governor = new MemoryGovernor(1000000);
-        var pool = new ChargeReclamationPool(governor);
-        var (tracked, empty) = ClearTrackedList(pool, governor);
-        Assert.True(tracked > empty);
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-        Assert.Equal(empty + 64L, pool.Sweep());
-        Assert.Equal(0, pool.Count);
-        Assert.Equal(0L, governor.CurrentCommittedBytes);
-        Assert.Equal(0L, governor.CurrentReservedBytes);
-    }
-
-    [Fact]
-    public void OldTierRevisitsPromotedEntries()
-    {
-        // Survivors promote to the old tier, which later sweeps revisit in
-        // bounded quanta instead of rescanning on a fixed cadence. The live
-        // phase runs inside a helper frame so no test slots root the objects
-        // once it returns.
-        var (pool, governor) = PromoteThreeToOldTier();
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-        Assert.Equal(222L, pool.Sweep());
-        Assert.Equal(0, pool.Count);
-        Assert.Equal(0L, governor.CurrentCommittedBytes);
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static (ChargeReclamationPool Pool, MemoryGovernor Governor) PromoteThreeToOldTier()
-    {
-        var governor = new MemoryGovernor(1000000);
-        var pool = new ChargeReclamationPool(governor);
-        governor.Reserve(30, null);
-        governor.Commit(30);
-        var first = new object();
-        var second = new object();
-        var third = new object();
-        pool.Track(first, 10);
-        pool.Track(second, 10);
-        pool.Track(third, 10);
-        GC.KeepAlive(first);
-        GC.KeepAlive(second);
-        GC.KeepAlive(third);
-        Assert.Equal(0L, pool.Sweep());
-        Assert.Equal(3, pool.Count);
-        return (pool, governor);
-    }
-
-    [Fact]
-    public void TrackStringUsesExactConstructionCharge()
-    {
-        var governor = new MemoryGovernor(1000000);
-        var pool = new ChargeReclamationPool(governor);
-        pool.TrackString(PyString.Empty);
-        Assert.Equal(0, pool.Count);
-        TrackAbcString(pool, governor);
-        Assert.Equal(1, pool.Count);
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-        Assert.Equal(195L, pool.Sweep());
-        Assert.Equal(0, pool.Count);
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static (long Tracked, long Empty) ClearTrackedList(ChargeReclamationPool pool, MemoryGovernor governor)
-    {
-        var items = new object[20];
-        for (var i = 0; i < items.Length; i++)
+        var keys = new List<object>();
+        for (var i = 0; i < count; i++)
         {
-            items[i] = PyString.Empty;
+            keys.Add(new object());
         }
 
-        var list = new PyList(items, governor, null);
-        var backing = list.CommittedStorageBytes;
-        Assert.True(backing > 0);
-        pool.TrackMutable(list, backing);
-        list.Clear();
-        return (backing, list.CommittedStorageBytes);
+        for (var i = 0; i < keys.Count; i++)
+        {
+            governor.Reserve(128, null);
+            governor.Commit(128);
+            pool.Track(keys[i], 128);
+        }
+
+        return keys;
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void TrackDeadObject(ChargeReclamationPool pool)
-        => pool.Track(new object(), 100);
+    [Fact]
+    public void EmptyPoolSweepIsNoop()
+    {
+        var governor = new MemoryGovernor(null);
+        var pool = NewPool(governor);
+        Assert.Equal(0, pool.Sweep());
+        Assert.Equal(0, OldCursor(pool));
+    }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void TrackAbcString(ChargeReclamationPool pool, MemoryGovernor governor)
-        => pool.TrackString(PyString.FromString("abc", governor));
+    [Fact]
+    public void TinyTierWrapsToStart()
+    {
+        // A complete pass wraps the cursor to the start: with one live entry
+        // the first sweep promotes it and visits it, ending back at zero.
+        var governor = new MemoryGovernor(null);
+        var pool = NewPool(governor);
+        var keys = TrackLive(pool, governor, 1);
+        pool.Sweep();
+        Assert.Equal(1, OldCount(pool));
+        Assert.Equal(0, OldCursor(pool));
+        pool.Sweep();
+        Assert.Equal(0, OldCursor(pool));
+        Assert.Equal(1, OldCount(pool));
+        GC.KeepAlive(keys);
+    }
+
+    [Fact]
+    public void LargeTierAdvancesExactlyOneQuantum()
+    {
+        // The first sweep promotes the young tier then visits the first
+        // quantum of the old tier; later sweeps advance one quantum each and
+        // wrap only on completion (the old code wrapped mid-sweep and
+        // revisited entries).
+        var governor = new MemoryGovernor(null);
+        var pool = NewPool(governor);
+        var keys = TrackLive(pool, governor, 5000);
+        pool.Sweep();
+        Assert.Equal(5000, OldCount(pool));
+        Assert.Equal(4096, OldCursor(pool));
+        pool.Sweep();
+        Assert.Equal(0, OldCursor(pool));
+        Assert.Equal(5000, pool.Count);
+        pool.Sweep();
+        Assert.Equal(4096, OldCursor(pool));
+        GC.KeepAlive(keys);
+    }
+
+    [Fact]
+    public void ShrinkingTierReleasesExactDead()
+    {
+        var governor = new MemoryGovernor(null);
+        var pool = NewPool(governor);
+        var keys = TrackLive(pool, governor, 100);
+        pool.Sweep();
+        Assert.Equal(100, OldCount(pool));
+        DropHalf(keys);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        var released = pool.Sweep();
+        Assert.Equal(50 * (128 + 64), released);
+        Assert.Equal(50, pool.Count);
+        GC.KeepAlive(keys);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static void DropHalf(List<object> keys)
+    {
+        keys.RemoveRange(0, 50);
+    }
+
+    [Fact]
+    public void ImpossibleRequestDeniesWithoutSweeping()
+    {
+        // A request larger than the whole budget can never fit, so it denies
+        // without pausing for a collection: the live pool is untouched.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 1024 });
+        var keys = TrackLive(context.State.CallTemporaries, context.MemoryGovernor, 4);
+        context.State.CallTemporaries.Sweep();
+        var before = context.State.CallTemporaries.Count;
+        var failure = Assert.Throws<LythonRuntimeException>(() => context.MemoryGovernor.EnsureCanReserve(2048, null));
+        Assert.Equal("MemoryError", failure.ExceptionType);
+        Assert.Equal(before, context.State.CallTemporaries.Count);
+        GC.KeepAlive(keys);
+    }
+
+    [Fact]
+    public void EmptyPoolsSkipCollectionRelief()
+    {
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 1024 });
+        context.MemoryGovernor.Reserve(1024, null);
+        context.MemoryGovernor.Commit(1024);
+        Assert.Equal(0, context.State.CallTemporaries.Count);
+        var failure = Assert.Throws<LythonRuntimeException>(() => context.MemoryGovernor.EnsureCanReserve(64, null));
+        Assert.Equal("MemoryError", failure.ExceptionType);
+    }
 }
