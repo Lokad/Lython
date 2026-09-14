@@ -190,7 +190,9 @@ internal sealed partial class LythonRuntime
     {
         if (arguments.Length == 0)
         {
-            return new PySet(context.MemoryGovernor, span);
+            var empty = new PySet(context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(empty, empty.CommittedStorageBytes);
+            return empty;
         }
 
         if (arguments.Length != 1)
@@ -205,6 +207,7 @@ internal sealed partial class LythonRuntime
             context.ObserveCollectionCount(result.Count, span);
         }
 
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -212,7 +215,9 @@ internal sealed partial class LythonRuntime
     {
         if (arguments.Length == 0)
         {
-            return new PySet(context.MemoryGovernor, span);
+            var empty = new PySet(context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(empty, empty.CommittedStorageBytes);
+            return empty;
         }
 
         if (arguments.Length != 1)
@@ -227,6 +232,7 @@ internal sealed partial class LythonRuntime
             context.ObserveCollectionCount(result.Count, span);
         }
 
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 

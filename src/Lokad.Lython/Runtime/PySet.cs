@@ -156,6 +156,12 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
     public int Length => Count;
 
+    // Current committed shell-plus-backing charges, for pooled owners that
+    // release them if this set is dropped. Incremental growth after the
+    // snapshot only ever leaves a safe residual behind; wholesale
+    // replacement re-snapshots through Clear below.
+    internal long CommittedStorageBytes => _shellCharged ? SetShellBytes + _committedBytes : _committedBytes;
+
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
 
     public LythonSourceSpan? AllocationSpan => _allocationSpan;
@@ -227,6 +233,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             }
 
             _items = new HashSet<object>(PyValueComparer.Instance);
+            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
             return;
         }
 

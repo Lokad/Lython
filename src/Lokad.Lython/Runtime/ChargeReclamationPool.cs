@@ -103,6 +103,46 @@ internal sealed class ChargeReclamationPool
         }
     }
 
+    // Registers a freshly built value, refunding its snapshot charges when the
+    // registry charge itself is denied. Only for values the in-flight denial
+    // orphans (fresh factory/slice results the caller drops on failure):
+    // anything else retaining the value would over-release. The refund keeps
+    // denial headroom identical to a construction-time denial, so caught
+    // failures recover exactly as they did before tracking.
+    public void TrackFreshMutable(object value, long backingCharge)
+    {
+        try
+        {
+            TrackMutable(value, backingCharge);
+        }
+        catch (LythonRuntimeException)
+        {
+            _governor.Release(backingCharge);
+            throw;
+        }
+    }
+
+    // Fresh-string twin of TrackFreshMutable: the construction charge is
+    // exact for values built (or adopted) through the governed string paths.
+    public void TrackFreshString(PyString value)
+    {
+        if (value.OwnerMemoryGovernor is null)
+        {
+            return;
+        }
+
+        var charge = PyString.EstimateApproximateBytes(value.Utf8Bytes.Length);
+        try
+        {
+            Track(value, charge);
+        }
+        catch (LythonRuntimeException)
+        {
+            value.OwnerMemoryGovernor.Release(charge);
+            throw;
+        }
+    }
+
     // Releases charges for entries whose targets have been collected and
     // prunes them; returns the released bytes. A full sweep drains the old
     // tier instead of visiting one quantum.

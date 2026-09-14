@@ -162,10 +162,39 @@ internal static class PyIndexing
         // String slices built from unowned receivers would escape accounting.
         if (context is not null && result is PyString textResult && target is PyString receiver)
         {
-            return LythonRuntime.OwnMethodResult(textResult, receiver, context.MemoryGovernor, span);
+            result = LythonRuntime.OwnMethodResult(textResult, receiver, context.MemoryGovernor, span);
+        }
+
+        if (context is not null)
+        {
+            TrackSliceResult(result, context);
         }
 
         return result;
+    }
+
+    // Dropped slices release through the reclamation pool once collected;
+    // without tracking, every temporary owned its construction charge forever
+    // and bounded call-free loops could never complete. Only freshly built
+    // results are tracked: mapping lookups return early above, and unowned
+    // results carry no charges to release. Fresh variants refund the snapshot
+    // when the registry charge is denied, keeping denial headroom identical
+    // to a construction-time denial so caught failures recover as before.
+    private static void TrackSliceResult(object result, LythonRuntime.ExecutionContext context)
+    {
+        var pool = context.Services.State.CallTemporaries;
+        switch (result)
+        {
+            case PyString text:
+                pool.TrackFreshString(text);
+                break;
+            case PyList list when list.OwnerMemoryGovernor is not null:
+                pool.TrackFreshMutable(list, list.CommittedStorageBytes);
+                break;
+            case PyTuple tuple when tuple.OwnerMemoryGovernor is not null:
+                pool.TrackFreshMutable(tuple, tuple.CommittedStorageBytes);
+                break;
+        }
     }
 
     internal static object? CoerceSliceBound(object? bound, LythonRuntime.ExecutionContext context, LythonSourceSpan span)

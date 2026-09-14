@@ -108,6 +108,7 @@ internal sealed partial class LythonRuntime
             AddSetLiteralItem(items, value, set.Items[i].IsUnpacking, set.Items[i].Span, set.Span, context);
         }
 
+        context.Services.State.CallTemporaries.TrackFreshMutable(items, items.CommittedStorageBytes);
         return items;
     }
 
@@ -154,6 +155,7 @@ internal sealed partial class LythonRuntime
         PropagateComprehensionBindings(scope, context, comprehension.Clauses.Select(clause => clause.Target), comprehension.Span);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
