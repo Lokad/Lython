@@ -104,7 +104,7 @@ parse dominates its row; per-op cost includes opening the archive.
 Integer magnitude sizing (`IntegerSizingBenchmarks.cs`) from the same run shape:
 
 | Benchmark | Mean | Allocated/op |
-| --- | --- | --- | --- |
+| --- | --- | --- |
 | Shift a million-bit integer | 89.74 us | 146.42 KB |
 | Power to a million-bit integer | 35,310.72 us | 146.6 KB |
 | Shift a thousand-bit integer | 10.77 us | 24.41 KB |
@@ -113,8 +113,6 @@ Notes: 1 outlier removed on the power and thousand-bit cases. Shift and power
 at a million bits allocate nearly identically, showing the magnitude guard
 sizes without proportional scratch. Re-record on release runs before changing
 member lookup or integer guard paths.
-at the same expanded size. Re-record on release runs before changing
-archive compression or staging paths.
 
 Six-column DictReader (`CsvReaderBenchmarks.cs`, 20,001-line seeded host file,
 960,018 bytes, default execution budget) from a full BenchmarkDotNet run (.NET 10,

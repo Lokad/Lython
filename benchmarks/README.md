@@ -12,6 +12,7 @@ The goal is not to benchmark every Python feature. It is to keep a small, explic
 - SequenceMatcher similarity workloads and async collection materialization paths
 - gzip flush scaling and OpenPyXL persistence
 - six-column csv.DictReader retain-versus-early-break scaling at the default budget
+- bounded governor-path matrix (scalar/file scans, slice/set temporaries) at realistic budgets
 - integer magnitude-guard paths (shift/power operand sizing)
 
 ## Project
@@ -34,7 +35,19 @@ From the repository root:
 dotnet run --project benchmarks/Lokad.Lython.Benchmarks/Lokad.Lython.Benchmarks.csproj -c Release
 ```
 
-BenchmarkDotNet will generate its usual artifacts under the benchmark project's output folders.
+Smoke-check one class without a full measurement run (validates execution once per benchmark):
+
+```powershell
+dotnet run --project benchmarks/Lokad.Lython.Benchmarks/Lokad.Lython.Benchmarks.csproj -c Release -- --filter *GovernorBenchmarks* --job dry
+```
+
+Record quick comparable figures with a short job instead of the default:
+
+```powershell
+dotnet run --project benchmarks/Lokad.Lython.Benchmarks/Lokad.Lython.Benchmarks.csproj -c Release -- --filter *GovernorBenchmarks* --job short
+```
+
+BenchmarkDotNet writes run logs and reports under `BenchmarkDotNet.Artifacts/` at the repository root (git-ignored); build outputs stay under the benchmark project's `bin/`. Benchmark classes compile their scripts once in the constructor, so measured iterations reuse warmed literals and precompiled scripts: figures exclude cold compilation except the `Compile*` benchmarks, which measure it directly.
 
 ## Scope
 

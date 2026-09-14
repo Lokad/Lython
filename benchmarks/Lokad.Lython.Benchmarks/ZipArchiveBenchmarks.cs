@@ -94,23 +94,10 @@ public class ZipArchiveBenchmarks
         """;
 
     private static LythonCompiledScript Compile(LythonEngine engine, string source)
-    {
-        var script = engine.Compile(source);
-        if (!script.IsValid)
-        {
-            throw new InvalidOperationException(string.Join(Environment.NewLine, script.Diagnostics.Select(diagnostic => diagnostic.Message)));
-        }
-
-        return script;
-    }
+        => BenchmarkScripts.Compile(engine, source);
 
     private static object? Run(LythonCompiledScript script, ZipBenchmarkHost host)
-    {
-        var result = script.Run(host);
-        return result.Success
-            ? result.ReturnValue
-            : throw new InvalidOperationException(result.Failure?.Message ?? "Benchmark script failed.");
-    }
+        => BenchmarkScripts.Run(script, host);
 
     private sealed class ZipBenchmarkHost : ILythonHost, ILythonSynchronousHostCapability
     {

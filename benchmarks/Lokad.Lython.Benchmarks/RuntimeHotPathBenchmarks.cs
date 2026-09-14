@@ -17,6 +17,7 @@ public class RuntimeHotPathBenchmarks
     private readonly LythonCompiledScript _chainMapLookup;
     private readonly LythonCompiledScript _openPyxlAppend;
     private readonly string _repeatedConstantSource;
+    private readonly string _invalidConstantSource;
 
     public RuntimeHotPathBenchmarks()
     {
@@ -47,6 +48,7 @@ public class RuntimeHotPathBenchmarks
             '\n',
             Enumerable.Range(0, 5_000).Select(static index => $"value_{index} = 'shared constant'")) +
             "\nreturn value_4999";
+        _invalidConstantSource = _repeatedConstantSource + "\nvalue_5000 = (1 +\n";
     }
 
     [Benchmark]
@@ -82,22 +84,12 @@ public class RuntimeHotPathBenchmarks
     [Benchmark]
     public bool CompileRepeatedConstantPool() => new LythonEngine().Compile(_repeatedConstantSource).IsValid;
 
-    private static LythonCompiledScript Compile(LythonEngine engine, string source)
-    {
-        var script = engine.Compile(source);
-        if (!script.IsValid)
-        {
-            throw new InvalidOperationException(string.Join(Environment.NewLine, script.Diagnostics.Select(diagnostic => diagnostic.Message)));
-        }
+    [Benchmark(Description = "Reject an invalid repeated-constant pool")]
+    public bool CompileInvalidConstantPool() => !new LythonEngine().Compile(_invalidConstantSource).IsValid;
 
-        return script;
-    }
+    private static LythonCompiledScript Compile(LythonEngine engine, string source)
+        => BenchmarkScripts.Compile(engine, source);
 
     private object? Run(LythonCompiledScript script)
-    {
-        var result = script.Run(_host);
-        return result.Success
-            ? result.ReturnValue
-            : throw new InvalidOperationException(result.Failure?.Message ?? "Benchmark script failed.");
-    }
+        => BenchmarkScripts.Run(script, _host);
 }

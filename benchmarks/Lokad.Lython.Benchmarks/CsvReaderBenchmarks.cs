@@ -54,22 +54,9 @@ public class CsvReaderBenchmarks
     [Benchmark(Description = "DictReader break after first of 20K rows")]
     public async Task<object?> EarlyBreakAsync() => await RunAsync(_earlyBreak).ConfigureAwait(false);
 
-    private async Task<object?> RunAsync(LythonCompiledScript script)
-    {
-        var result = await script.RunAsync(_host).ConfigureAwait(false);
-        return result.Success
-            ? result.ReturnValue
-            : throw new InvalidOperationException(result.Failure?.Message ?? "Benchmark script failed.");
-    }
+    private Task<object?> RunAsync(LythonCompiledScript script)
+        => BenchmarkScripts.RunAsync(script, _host);
 
     private static LythonCompiledScript Compile(LythonEngine engine, string source)
-    {
-        var script = engine.Compile(source);
-        if (!script.IsValid)
-        {
-            throw new InvalidOperationException(string.Join(Environment.NewLine, script.Diagnostics.Select(diagnostic => diagnostic.Message)));
-        }
-
-        return script;
-    }
+        => BenchmarkScripts.Compile(engine, source);
 }

@@ -124,4 +124,32 @@ public sealed class CsvBoundedScanScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(true, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task BoundedScanPeakStaysFlatAcrossSizes()
+    {
+        // Bounded scans retain only the current row: the 10x scan must not peak
+        // an order of magnitude above the 1x scan (a linear strand would show
+        // ~10x). Peaks are accounted math, but relief timing can wobble them,
+        // so the slope bound stays loose.
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
+        var peak20k = await ScanPeak(ScanSource(20000), 20000, options);
+        var peak200k = await ScanPeak(ScanSource(200000), 200000, options);
+        Assert.True(peak200k <= 2 * peak20k, "20k peak=" + peak20k + " 200k peak=" + peak200k);
+        Assert.True(peak200k <= ThreeMib, "200k peak=" + peak200k);
+    }
+
+    private static async Task<long> ScanPeak(string source, int rows, LythonRunOptions options)
+    {
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+        var expected = new BigInteger(rows);
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+        return Math.Max(sync.PeakExecutionMemoryBytes, asyncResult.PeakExecutionMemoryBytes);
+    }
 }

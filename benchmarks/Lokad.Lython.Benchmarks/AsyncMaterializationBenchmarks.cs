@@ -34,21 +34,8 @@ public class AsyncMaterializationBenchmarks
     public async Task<object?> SumGeneratedAsync() => await RunAsync(_sumGenerated).ConfigureAwait(false);
 
     private static LythonCompiledScript Compile(LythonEngine engine, string source)
-    {
-        var script = engine.Compile(source);
-        if (!script.IsValid)
-        {
-            throw new InvalidOperationException(string.Join(Environment.NewLine, script.Diagnostics.Select(diagnostic => diagnostic.Message)));
-        }
+        => BenchmarkScripts.Compile(engine, source);
 
-        return script;
-    }
-
-    private static async Task<object?> RunAsync(LythonCompiledScript script)
-    {
-        var result = await script.RunAsync(new BenchmarkHost()).ConfigureAwait(false);
-        return result.Success
-            ? result.ReturnValue
-            : throw new InvalidOperationException(result.Failure?.Message ?? "Benchmark script failed.");
-    }
+    private static Task<object?> RunAsync(LythonCompiledScript script)
+        => BenchmarkScripts.RunAsync(script, new BenchmarkHost());
 }

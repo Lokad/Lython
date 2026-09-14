@@ -105,10 +105,48 @@ public sealed class ChargeReclamationPoolTests
         GC.KeepAlive(keys);
     }
 
+    [Fact]
+    public void MixedTierReleasesDeadAndKeepsLive()
+    {
+        // Scattered dead entries release exactly once across quantum windows:
+        // removal compacts from the end, which can only pull unvisited entries
+        // into the window, so live entries are never lost or double-visited.
+        var governor = new MemoryGovernor(null);
+        var pool = NewPool(governor);
+        var keys = TrackLive(pool, governor, 5000);
+        pool.Sweep();
+        Assert.Equal(5000, OldCount(pool));
+        Assert.Equal(4096, OldCursor(pool));
+        DropOdd(keys);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        var released = 0L;
+        var sweeps = 0;
+        while (pool.Count > 2500 && sweeps < 10)
+        {
+            released += pool.Sweep();
+            sweeps++;
+        }
+
+        Assert.Equal(2500 * (128 + 64), released);
+        Assert.Equal(2500, pool.Count);
+        GC.KeepAlive(keys);
+    }
+
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     private static void DropHalf(List<object> keys)
     {
         keys.RemoveRange(0, 50);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static void DropOdd(List<object> keys)
+    {
+        for (var i = 1; i < keys.Count; i += 2)
+        {
+            keys[i] = null!;
+        }
     }
 
     [Fact]

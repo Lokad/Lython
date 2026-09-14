@@ -48,23 +48,10 @@ public class CompressionRatioBenchmarks
     public object? WriteIncompressibleEntry() => Run(_random, new RatioBenchmarkHost());
 
     private static LythonCompiledScript Compile(LythonEngine engine, string source)
-    {
-        var script = engine.Compile(source);
-        if (!script.IsValid)
-        {
-            throw new InvalidOperationException(string.Join(Environment.NewLine, script.Diagnostics.Select(diagnostic => diagnostic.Message)));
-        }
-
-        return script;
-    }
+        => BenchmarkScripts.Compile(engine, source);
 
     private static object? Run(LythonCompiledScript script, RatioBenchmarkHost host)
-    {
-        var result = script.Run(host);
-        return result.Success
-            ? result.ReturnValue
-            : throw new InvalidOperationException(result.Failure?.Message ?? "Benchmark script failed.");
-    }
+        => BenchmarkScripts.Run(script, host);
 
     private sealed class RatioBenchmarkHost : ILythonHost, ILythonSynchronousHostCapability
     {
