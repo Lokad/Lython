@@ -17,12 +17,17 @@ internal sealed partial class LythonRuntime
     {
         context.State.NoteBoundCall();
         var pool = context.State.CallTemporaries;
-        var bound = new Dictionary<string, object>(StringComparer.Ordinal);
+        // Exact upper bound of bound entries (each parameter binds once, plus the
+        // variadic names): capacity is only a hint, but the exact size avoids both
+        // upfront waste and growth resizes on the common arities.
+        var bound = new Dictionary<string, object>(plan.PositionalParameters.Count + plan.KeywordOnlyParameters.Count + (plan.VariadicList is null ? 0 : 1) + (plan.VariadicDictionary is null ? 0 : 1), StringComparer.Ordinal);
         // The overflow list is scratch: most calls never spill positionals,
         // so materialize it only on the first spill, tracked in the call pool
         // invocation for a list that is dropped before return.
         PyList? extraPositional = null;
-        var extraKeywords = new Dictionary<string, object>(StringComparer.Ordinal);
+        // Keyword overflow likewise materializes only for **kwargs functions
+        // receiving unknown names; every other call skips the dictionary.
+        Dictionary<string, object>? extraKeywords = null;
         var positionalIndex = 0;
 
         foreach (var argument in arguments)
@@ -59,6 +64,7 @@ internal sealed partial class LythonRuntime
                     throw CallErrors.UnexpectedKeyword(plan.CallableKind, plan.CallableName, keywordName, span);
                 }
 
+                extraKeywords ??= new Dictionary<string, object>(StringComparer.Ordinal);
                 if (!extraKeywords.TryAdd(keywordName, argument.Value))
                 {
                     throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, keywordName, span);
@@ -125,11 +131,14 @@ internal sealed partial class LythonRuntime
         {
             var keywordDict = new PyDict(context.MemoryGovernor, span);
             pool.TrackMutable(keywordDict, keywordDict.CommittedStorageBytes);
-            foreach (var pair in extraKeywords)
+            if (extraKeywords is not null)
             {
-                var keyword = PyString.FromString(pair.Key, context.MemoryGovernor, span);
-                pool.TrackString(keyword);
-                keywordDict.SetItem(keyword, pair.Value);
+                foreach (var pair in extraKeywords)
+                {
+                    var keyword = PyString.FromString(pair.Key, context.MemoryGovernor, span);
+                    pool.TrackString(keyword);
+                    keywordDict.SetItem(keyword, pair.Value);
+                }
             }
 
             ChargeReclamationPool.NotifyStorageReplaced(keywordDict, keywordDict.CommittedStorageBytes);
