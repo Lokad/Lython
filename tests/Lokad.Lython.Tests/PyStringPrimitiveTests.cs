@@ -73,4 +73,47 @@ public sealed class PyStringPrimitiveTests
         Assert.Equal("b", alias.Index(1).AsString());
         Assert.Equal(32 + (4 * 4), context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
     }
+
+    [Fact]
+    public void DecodedReadsChargeNothing()
+    {
+        // Full decodes stay transient: repeated reads return equal values
+        // without committing or retaining anything.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var text = PyString.FromString("héllo wörld", context.MemoryGovernor, span);
+        var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;
+        Assert.Equal("héllo wörld", text.AsString());
+        Assert.Equal("héllo wörld", text.AsString());
+        Assert.Equal(committedBefore, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    [Fact]
+    public void NoRetainedDecodedStringField()
+    {
+        // Decodes stay transient by construction: no instance string field
+        // may retain a UTF-16 copy behind a long-lived value. The rune tables
+        // (arrays) are the only retained caches and stay governed.
+        var retained = typeof(PyString)
+            .GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public)
+            .Where(static field => field.FieldType == typeof(string))
+            .Select(static field => field.Name)
+            .ToArray();
+        Assert.Empty(retained);
+    }
+
+
+    [Fact]
+    public void RuneTableDeniedWithoutBudget()
+    {
+        // The surviving cache still denies: a 4-byte string owns 132B, so a
+        // 48B rune table does not fit a 150B budget.
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var pinned = new MemoryGovernor(150);
+        var probe = PyString.FromString("abé", pinned, span);
+        var failure = Assert.Throws<LythonRuntimeException>(() => probe.Index(1));
+        Assert.Equal("MemoryError", failure.ExceptionType);
+    }
 }

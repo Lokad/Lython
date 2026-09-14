@@ -17,7 +17,6 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     private int _runeLength = -1;
     private int[]? _runeByteOffsets;
     private PyString[]? _cachedRunes;
-    private string? _decodedString;
     private int _hashCode;
     private bool _hashCodeComputed;
     // Reference-identity claim for pool tracking: the shared pool index keys
@@ -343,11 +342,12 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
     public string AsString()
     {
-        // The decoded cache stays uncharged: this accessor serves hot transient
-        // reads (rendering, comparisons, host writes), so charging it here would
-        // accrue permanent phantom bytes for dropped views. Only the large,
+        // Decodes stay transient: callers overwhelmingly read once (parsing,
+        // rendering, host writes) while equality and hashing work on UTF-8
+        // bytes, so retaining a UTF-16 copy per string would pin megabytes
+        // behind long-lived values for no hot-path gain. Only the large,
         // rarely built rune-offset table below is charged.
-        return _decodedString ??= Utf8.GetString(_utf8);
+        return Utf8.GetString(_utf8);
     }
 
     private void CommitCacheCharge(long bytes)
