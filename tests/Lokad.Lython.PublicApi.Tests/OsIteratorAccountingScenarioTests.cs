@@ -91,4 +91,136 @@ public sealed class OsIteratorAccountingScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    // Discarded factory shells must reclaim through the pool instead of
+    // stranding their charges: 100k abandoned creations complete at 3 MiB.
+    [Fact]
+    public async Task DiscardedWalkIteratorsComplete()
+    {
+        var script = new LythonEngine().Compile("""
+            import os
+            i = 0
+            while i < 100000:
+                x = os.walk("/d")
+                i = i + 1
+            return 0
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3 * 1024 * 1024 };
+        var sync = script.Run(SeededDirHost(3), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+
+        var asyncResult = await script.RunAsync(SeededDirHost(3), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+    }
+
+    [Fact]
+    public async Task DiscardedScandirIteratorsComplete()
+    {
+        var script = new LythonEngine().Compile("""
+            import os
+            i = 0
+            while i < 100000:
+                x = os.scandir("/d")
+                i = i + 1
+            return 0
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3 * 1024 * 1024 };
+        var sync = script.Run(SeededDirHost(3), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+
+        var asyncResult = await script.RunAsync(SeededDirHost(3), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+    }
+
+    [Fact]
+    public async Task DiscardedListdirResultsComplete()
+    {
+        var script = new LythonEngine().Compile("""
+            import os
+            i = 0
+            while i < 100000:
+                x = os.listdir("/d")
+                i = i + 1
+            return 0
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3 * 1024 * 1024 };
+        var sync = script.Run(SeededDirHost(3), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+
+        var asyncResult = await script.RunAsync(SeededDirHost(3), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+    }
+
+    [Fact]
+    public async Task ExhaustedScandirReclaims()
+    {
+        var script = new LythonEngine().Compile("""
+            import os
+            i = 0
+            while i < 100000:
+                for e in os.scandir("/d"):
+                    pass
+                i = i + 1
+            return 0
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3 * 1024 * 1024 };
+        var sync = script.Run(SeededDirHost(3), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+
+        var asyncResult = await script.RunAsync(SeededDirHost(3), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+    }
+
+    // Entries escaping into guest code stay charged after their iterator
+    // drops: keeping every entry of a 3000-file directory denies 100 KB.
+    [Fact]
+    public async Task RetainedScandirEntriesStayCharged()
+    {
+        var script = new LythonEngine().Compile("""
+            import os
+            it = os.scandir("/d")
+            kept = [e for e in it]
+            it = None
+            return len(kept)
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ScandirBudgetBytes };
+        var sync = script.Run(SeededDirHost(3000), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+        Assert.True(sync.PeakExecutionMemoryBytes <= ScandirBudgetBytes);
+
+        var asyncResult = await script.RunAsync(SeededDirHost(3000), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= ScandirBudgetBytes);
+    }
+
+    [Fact]
+    public async Task DeniedScandirRecoversWhenFunded()
+    {
+        var script = new LythonEngine().Compile("""
+            import os
+            n = 0
+            for e in os.scandir("/d"):
+                n = n + 1
+            return n
+            """);
+        Assert.True(script.IsValid);
+        var denied = script.Run(SeededDirHost(3), new LythonRunOptions { MaxExecutionMemoryBytes = 100 });
+        Assert.False(denied.Success);
+        Assert.Equal("MemoryError", denied.Failure?.ExceptionType);
+
+        var funded = script.Run(SeededDirHost(3));
+        Assert.True(funded.Success, funded.Failure?.Message);
+        Assert.Equal(new BigInteger(3), funded.ReturnValue);
+
+        var fundedAsync = await script.RunAsync(SeededDirHost(3));
+        Assert.True(fundedAsync.Success, fundedAsync.Failure?.Message);
+        Assert.Equal(new BigInteger(3), fundedAsync.ReturnValue);
+    }
 }

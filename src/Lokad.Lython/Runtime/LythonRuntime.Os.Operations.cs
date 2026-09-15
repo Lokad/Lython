@@ -17,6 +17,19 @@ internal sealed partial class LythonRuntime
             context.MemoryGovernor,
             span);
         context.ObserveCollectionCount(result.Count, span);
+        // Fresh results reclaim through the pool once dropped, with their
+        // freshly built name strings tracked alongside (kwargs-key pattern):
+        // aliases retained past the list stay charged through their own coupons.
+        var pool = context.State.CallTemporaries;
+        pool.TrackFreshMutable(result, result.CommittedStorageBytes);
+        foreach (var item in result)
+        {
+            if (item is PyString text)
+            {
+                pool.TrackFreshString(text);
+            }
+        }
+
         return result;
     }
 
@@ -30,6 +43,19 @@ internal sealed partial class LythonRuntime
             context.MemoryGovernor,
             span);
         context.ObserveCollectionCount(result.Count, span);
+        // Fresh results reclaim through the pool once dropped, with their
+        // freshly built name strings tracked alongside (kwargs-key pattern):
+        // aliases retained past the list stay charged through their own coupons.
+        var pool = context.State.CallTemporaries;
+        pool.TrackFreshMutable(result, result.CommittedStorageBytes);
+        foreach (var item in result)
+        {
+            if (item is PyString text)
+            {
+                pool.TrackFreshString(text);
+            }
+        }
+
         return result;
     }
 
@@ -68,12 +94,15 @@ internal sealed partial class LythonRuntime
             }
             : false;
 
-        return new PyWalkIterator(
+        var walkIterator = new PyWalkIterator(
             PathOps.Normalize(path, context.Host.Cwd),
             topdown,
             onerror,
             context,
             span);
+        // Fresh shells reclaim through the pool once dropped.
+        context.State.CallTemporaries.TrackFreshMutable(walkIterator, PyIteratorBase.IteratorValueBytes);
+        return walkIterator;
     }
 
     private static object OsGetCwd(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -230,15 +259,28 @@ internal sealed partial class LythonRuntime
         var path = GetPathOrDefault(arguments, "os.scandir", span, context.Host.Cwd);
         var normalized = PathOps.Normalize(path, context.Host.Cwd);
         context.RegisterHostCall(span);
-        var entries = context.HostListDir(normalized, span)
-            .Select(name => new PyDirEntryObject(name, JoinChild(normalized, name), context.MemoryGovernor, span))
-            .ToArray();
+        var names = context.HostListDir(normalized, span);
+        var pool = context.State.CallTemporaries;
+        // Own one entry object and array slot per entry (80 B each): entries
+        // track individually so retained entries stay charged after the
+        // iterator drops while discarded ones reclaim.
+        var entries = new PyDirEntryObject[names.Count];
+        for (var i = 0; i < names.Count; i++)
+        {
+            var entry = new PyDirEntryObject(names[i], JoinChild(normalized, names[i]), context.MemoryGovernor, span);
+            context.MemoryGovernor.Reserve(80L, span);
+            context.MemoryGovernor.Commit(80L);
+            pool.TrackFreshMutable(entry, 80L);
+            entries[i] = entry;
+        }
+
         context.ObserveCollectionCount(entries.Length, span);
-        // Own the iterator plus one entry object and array slot per entry.
-        var scandirBytes = checked(160L + 80L * entries.Length);
-        context.MemoryGovernor.Reserve(scandirBytes, span);
-        context.MemoryGovernor.Commit(scandirBytes);
-        return new PyScandirIterator(entries);
+        // Own the iterator shell; entries carry their own coupons above.
+        context.MemoryGovernor.Reserve(160L, span);
+        context.MemoryGovernor.Commit(160L);
+        var iterator = new PyScandirIterator(entries);
+        pool.TrackFreshMutable(iterator, 160L);
+        return iterator;
     }
 
     private static async ValueTask<object> OsScandirAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -247,15 +289,27 @@ internal sealed partial class LythonRuntime
         var normalized = PathOps.Normalize(path, context.Host.Cwd);
         context.RegisterHostCall(span);
         var names = await context.HostListDirAsync(normalized, span).ConfigureAwait(false);
-        var entries = names
-            .Select(name => new PyDirEntryObject(name, JoinChild(normalized, name), context.MemoryGovernor, span))
-            .ToArray();
+        var pool = context.State.CallTemporaries;
+        // Own one entry object and array slot per entry (80 B each): entries
+        // track individually so retained entries stay charged after the
+        // iterator drops while discarded ones reclaim.
+        var entries = new PyDirEntryObject[names.Count];
+        for (var i = 0; i < names.Count; i++)
+        {
+            var entry = new PyDirEntryObject(names[i], JoinChild(normalized, names[i]), context.MemoryGovernor, span);
+            context.MemoryGovernor.Reserve(80L, span);
+            context.MemoryGovernor.Commit(80L);
+            pool.TrackFreshMutable(entry, 80L);
+            entries[i] = entry;
+        }
+
         context.ObserveCollectionCount(entries.Length, span);
-        // Own the iterator plus one entry object and array slot per entry.
-        var scandirBytes = checked(160L + 80L * entries.Length);
-        context.MemoryGovernor.Reserve(scandirBytes, span);
-        context.MemoryGovernor.Commit(scandirBytes);
-        return new PyScandirIterator(entries);
+        // Own the iterator shell; entries carry their own coupons above.
+        context.MemoryGovernor.Reserve(160L, span);
+        context.MemoryGovernor.Commit(160L);
+        var iterator = new PyScandirIterator(entries);
+        pool.TrackFreshMutable(iterator, 160L);
+        return iterator;
     }
 
     private static object OsMkDir(object[] arguments, LythonSourceSpan span, ExecutionContext context)
