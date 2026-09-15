@@ -1,5 +1,6 @@
 using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Calls;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -269,6 +270,11 @@ internal sealed partial class LythonRuntime
     // their values; conditional definitions over-count conservatively.
     private const long RetainedSyntaxNodeBytes = 64;
 
+    // Per-literal shared-cache entry (weak handle plus table storage) retained
+    // beside each literal payload: one entry per lowered literal node, matching the
+    // reclamation entry rate until M03 calibrates table storage precisely.
+    private const long SharedLiteralEntryBytes = 64;
+
     internal static void ChargeDeferredModuleCode(
         IReadOnlyList<StatementSyntax> statements,
         MemoryGovernor? governor,
@@ -279,18 +285,25 @@ internal sealed partial class LythonRuntime
             return;
         }
 
-        var bytes = checked(CountDeferredModuleCode(statements) * RetainedSyntaxNodeBytes);
+        var measured = MeasureDeferredModuleCode(statements);
+        var bytes = RuntimeMemoryEstimates.SaturatingAdd(checked(measured.Nodes * RetainedSyntaxNodeBytes), measured.PayloadBytes);
         governor.Reserve(bytes, span);
         governor.Commit(bytes);
     }
 
-    // Counts deferred bodies in one module pass: definitions count their full
+    // Measures deferred bodies in one module pass: definitions count their full
     // subtree once (nested definitions included); compounds, classes and plain
-    // statements contribute only lambdas found in evaluated positions, since
-    // their own statements execute transiently.
+    // statements contribute only deferred roots found in evaluated positions, since
+    // their own statements execute transiently. Nodes feed the per-node rate;
+    // payloads own retained literal bytes beside them.
     internal static long CountDeferredModuleCode(IReadOnlyList<StatementSyntax> statements)
+        => MeasureDeferredModuleCode(statements).Nodes;
+
+    internal static (long Nodes, long PayloadBytes) MeasureDeferredModuleCode(
+        IReadOnlyList<StatementSyntax> statements)
     {
-        var count = 0L;
+        var nodes = 0L;
+        var payload = 0L;
         var search = new Stack<StatementSyntax>();
         for (var i = statements.Count - 1; i >= 0; i--)
         {
@@ -302,7 +315,9 @@ internal sealed partial class LythonRuntime
             var statement = search.Pop();
             if (statement is FunctionDefinitionStatementSyntax)
             {
-                count += CountSyntaxSubtree(statement);
+                var defined = MeasureRetainedSubtree(statement);
+                nodes += defined.Nodes;
+                payload = RuntimeMemoryEstimates.SaturatingAdd(payload, defined.PayloadBytes);
                 continue;
             }
 
@@ -316,23 +331,29 @@ internal sealed partial class LythonRuntime
 
             foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
             {
-                count += CountDeferredRoots(expression);
+                var measured = MeasureDeferredRoots(expression);
+                nodes += measured.Nodes;
+                payload = RuntimeMemoryEstimates.SaturatingAdd(payload, measured.PayloadBytes);
             }
 
-            count += CountExtraStatementDeferredRoots(statement);
+            var extra = MeasureExtraStatementDeferredRoots(statement);
+            nodes += extra.Nodes;
+            payload = RuntimeMemoryEstimates.SaturatingAdd(payload, extra.PayloadBytes);
         }
 
-        return count;
+        return (nodes, payload);
     }
 
-    // Counts deferred roots in evaluated positions: each outermost lambda or generator
-    // expression owns its full subtree once (parameters and clauses included);
-    // anything else there is transient (eager comprehension scaffolding included).
-    // A live generator retains its clauses and item expression like a function
-    // retains its body, so generators are roots exactly like lambdas.
-    private static long CountDeferredRoots(ExpressionSyntax root)
+    // Measures deferred roots in evaluated positions: each outermost lambda or
+    // generator expression owns its full subtree once (parameters and clauses
+    // included); anything else there is transient (eager comprehension
+    // scaffolding included). A live generator retains its clauses and item
+    // expression like a function retains its body, so generators are roots
+    // exactly like lambdas.
+    private static (long Nodes, long PayloadBytes) MeasureDeferredRoots(ExpressionSyntax root)
     {
-        var count = 0L;
+        var nodes = 0L;
+        var payload = 0L;
         var pending = new Stack<ExpressionSyntax>();
         pending.Push(root);
         while (pending.Count > 0)
@@ -340,7 +361,9 @@ internal sealed partial class LythonRuntime
             var expression = pending.Pop();
             if (expression is LambdaExpressionSyntax or GeneratorExpressionSyntax)
             {
-                count += CountSyntaxSubtree(expression);
+                var measured = MeasureRetainedSubtree(expression);
+                nodes += measured.Nodes;
+                payload = RuntimeMemoryEstimates.SaturatingAdd(payload, measured.PayloadBytes);
                 continue;
             }
 
@@ -350,30 +373,123 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        return count;
+        return (nodes, payload);
+    }
+
+    // Full retained-measure over one deferred subtree: node counts twin
+    // CountSyntaxNodes exactly (same children, same fail-loud shapes) while
+    // literal occurrences add their retained payloads beside the node rate.
+    // Each occurrence is a distinct lowered literal node with its own shared
+    // cache entry, so payloads charge per occurrence, not per distinct value.
+    internal static (long Nodes, long PayloadBytes) MeasureRetainedSubtree(StatementSyntax root)
+        => MeasureRetainedNodes(root);
+
+    internal static (long Nodes, long PayloadBytes) MeasureRetainedSubtree(ExpressionSyntax root)
+        => MeasureRetainedNodes(root);
+
+    private static (long Nodes, long PayloadBytes) MeasureRetainedNodes(object root)
+    {
+        var nodes = 0L;
+        var payload = 0L;
+        var pending = new Stack<object>();
+        pending.Push(root);
+        while (pending.Count > 0)
+        {
+            switch (pending.Pop())
+            {
+                case StatementSyntax statement:
+                    nodes++;
+                    PushStatementChildren(statement, pending);
+                    break;
+                case ExpressionSyntax expression:
+                    nodes++;
+                    payload = RuntimeMemoryEstimates.SaturatingAdd(payload, RetainedLiteralBytes(expression));
+                    PushExpressionChildren(expression, pending);
+                    break;
+                case PatternSyntax pattern:
+                    nodes++;
+                    PushPatternChildren(pattern, pending);
+                    break;
+                default:
+                    throw new InvalidOperationException("Unknown retained syntax node.");
+            }
+        }
+
+        return (nodes, payload);
+    }
+
+    // Retained payload per literal occurrence, mirroring construction charges:
+    // strings and bytes keep their estimated payload, integers keep their
+    // boxed magnitude, each beside one shared-cache entry. Floats parse fresh
+    // per evaluation and singletons retain nothing, so they carry no payload.
+    // Formatted-string text chunks persist inside the retained lowered parts.
+    private static long RetainedLiteralBytes(ExpressionSyntax expression) => expression switch
+    {
+        StringLiteralExpressionSyntax text => RuntimeMemoryEstimates.SaturatingAdd(
+            PyString.EstimateApproximateBytes(Encoding.UTF8.GetByteCount(text.Value)),
+            SharedLiteralEntryBytes),
+        BytesLiteralExpressionSyntax bytes => RuntimeMemoryEstimates.SaturatingAdd(
+            PyBytes.EstimateApproximateBytes(bytes.Value.Length),
+            SharedLiteralEntryBytes),
+        IntegerLiteralExpressionSyntax integer => RuntimeMemoryEstimates.SaturatingAdd(
+            RuntimeMemoryEstimates.EstimateBigIntegerBytes(ParseInteger(integer)),
+            SharedLiteralEntryBytes),
+        FormattedStringExpressionSyntax formatted => RetainedFormatTextBytes(formatted.Parts),
+        _ => 0,
+    };
+
+    private static long RetainedFormatTextBytes(IReadOnlyList<FormattedStringPartSyntax>? parts)
+    {
+        if (parts is null)
+        {
+            return 0;
+        }
+
+        var bytes = 0L;
+        foreach (var part in parts)
+        {
+            switch (part)
+            {
+                case FormattedStringTextPartSyntax text:
+                    bytes = RuntimeMemoryEstimates.SaturatingAdd(bytes, Encoding.UTF8.GetByteCount(text.Text));
+                    break;
+                case FormattedStringExpressionPartSyntax expressionPart:
+                    bytes = RuntimeMemoryEstimates.SaturatingAdd(bytes, RetainedFormatTextBytes(expressionPart.FormatSpecifierParts));
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unknown format part: {part.GetType().Name}");
+            }
+        }
+
+        return bytes;
     }
 
     // Deferred-root search inside the retained references the shared traversals
     // skip: unpacking receivers, chained targets and match patterns (whose own
     // nodes count in full walks). Each is a small closed set; unknown shapes
     // fail loud below.
-    private static long CountExtraStatementDeferredRoots(StatementSyntax statement)
+    private static (long Nodes, long PayloadBytes) MeasureExtraStatementDeferredRoots(StatementSyntax statement)
     {
-        var count = 0L;
+        var nodes = 0L;
+        var payload = 0L;
         foreach (var expression in EnumerateExtraStatementExpressions(statement))
         {
-            count += CountDeferredRoots(expression);
+            var measured = MeasureDeferredRoots(expression);
+            nodes += measured.Nodes;
+            payload = RuntimeMemoryEstimates.SaturatingAdd(payload, measured.PayloadBytes);
         }
 
         if (statement is MatchStatementSyntax matchStatement)
         {
             foreach (var matchCase in matchStatement.Cases)
             {
-                count += CountDeferredRootsInPattern(matchCase.Pattern);
+                var measured = MeasureDeferredRootsInPattern(matchCase.Pattern);
+                nodes += measured.Nodes;
+                payload = RuntimeMemoryEstimates.SaturatingAdd(payload, measured.PayloadBytes);
             }
         }
 
-        return count;
+        return (nodes, payload);
     }
 
     // Retained expression references beyond the shared direct-expression
@@ -507,9 +623,10 @@ internal sealed partial class LythonRuntime
 
     // Deferred-root search inside match patterns, whose nodes count only in full
     // walks. Embedded expressions route through the same root scan.
-    private static long CountDeferredRootsInPattern(PatternSyntax root)
+    private static (long Nodes, long PayloadBytes) MeasureDeferredRootsInPattern(PatternSyntax root)
     {
-        var count = 0L;
+        var nodes = 0L;
+        var payload = 0L;
         var pending = new Stack<PatternSyntax>();
         pending.Push(root);
         while (pending.Count > 0)
@@ -517,7 +634,9 @@ internal sealed partial class LythonRuntime
             var pattern = pending.Pop();
             foreach (var expression in EnumeratePatternExpressions(pattern))
             {
-                count += CountDeferredRoots(expression);
+                var measured = MeasureDeferredRoots(expression);
+                nodes += measured.Nodes;
+                payload = RuntimeMemoryEstimates.SaturatingAdd(payload, measured.PayloadBytes);
             }
 
             foreach (var nested in EnumeratePatternSubpatterns(pattern))
@@ -526,7 +645,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        return count;
+        return (nodes, payload);
     }
 
     private static IEnumerable<ExpressionSyntax> EnumeratePatternExpressions(PatternSyntax pattern)

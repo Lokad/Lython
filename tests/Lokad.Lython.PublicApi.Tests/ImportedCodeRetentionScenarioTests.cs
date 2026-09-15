@@ -49,6 +49,8 @@ public sealed class ImportedCodeRetentionScenarioTests
         var host2 = SeededHost(3, 20000, out var allowed2, out _);
         AssertMemoryError(await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = OneMib, AllowedLocalModules = allowed2 }));
     }
+    // Honest budget: 3 modules x 20k `x = 1` statements retain two nodes plus one
+    // int payload each (2x64 + 97 B), about 13.5 MiB before execution overhead.
 
     [Fact]
     public async Task FundedImportedBodiesSucceedAndRun()
@@ -57,12 +59,12 @@ public sealed class ImportedCodeRetentionScenarioTests
         var script = new LythonEngine().Compile(imports + "return m2.f2()\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(1);
-        var sync = script.Run(host, new LythonRunOptions { MaxExecutionMemoryBytes = 8388608, AllowedLocalModules = allowed });
+        var sync = script.Run(host, new LythonRunOptions { MaxExecutionMemoryBytes = 16777216, AllowedLocalModules = allowed });
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
 
         var host2 = SeededHost(3, 20000, out var allowed2, out _);
-        var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = 8388608, AllowedLocalModules = allowed2 });
+        var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = 16777216, AllowedLocalModules = allowed2 });
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }

@@ -185,6 +185,44 @@ public sealed class RetainedCodeAccountingTests
         var body = TopLevel("xs = [i + 1 for i in y]\n");
         Assert.Equal(0, LythonRuntime.CountDeferredModuleCode(body));
     }
+    [Fact]
+    public void StringLiteralPayloadMeasured()
+    {
+        var body = TopLevel("def f():\n    return 'ab'\n");
+        // def + return + literal; payload mirrors construction (128 + 2) plus one entry.
+        Assert.Equal((3, 194), LythonRuntime.MeasureDeferredModuleCode(body));
+    }
+
+    [Fact]
+    public void IntegerLiteralPayloadMeasured()
+    {
+        var body = TopLevel("def f():\n    return 1\n");
+        // Boxed magnitude (32 + 1) beside one shared-cache entry.
+        Assert.Equal((3, 97), LythonRuntime.MeasureDeferredModuleCode(body));
+    }
+
+    [Fact]
+    public void BytesLiteralPayloadMeasured()
+    {
+        var body = TopLevel("def f():\n    return b'ab'\n");
+        Assert.Equal((3, 98), LythonRuntime.MeasureDeferredModuleCode(body));
+    }
+
+    [Fact]
+    public void FloatLiteralCarriesNoPayload()
+    {
+        // Floats parse fresh per evaluation and retain nothing literal.
+        var body = TopLevel("def f():\n    return 1.5\n");
+        Assert.Equal((3, 0), LythonRuntime.MeasureDeferredModuleCode(body));
+    }
+
+    [Fact]
+    public void FormattedTextChunksMeasured()
+    {
+        var body = TopLevel("def f():\n    return f\"ab{x}\"\n");
+        // def + return + formatted + identifier; only the two text bytes persist.
+        Assert.Equal((4, 2), LythonRuntime.MeasureDeferredModuleCode(body));
+    }
 
     [Fact]
     public void FundedBodiesCommitOnce()
@@ -192,7 +230,8 @@ public sealed class RetainedCodeAccountingTests
         var root = NewRoot(out var governor);
         var body = TopLevel("def f():\n    x = 1\n");
         LythonRuntime.ChargeDeferredModuleCode(body, governor, null);
-        Assert.Equal(3 * 64, governor.CurrentCommittedBytes);
+        // Nodes plus the retained int payload: boxed magnitude (32 + 1) beside one shared-cache entry (64).
+        Assert.Equal(3 * 64 + 33 + 64, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
     }
 
