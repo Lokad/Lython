@@ -11,14 +11,21 @@ semantics, and unsupported behavior should fail explicitly.
 ## Layout
 
 - `src/Lokad.Lython/`: production library.
-- `tests/Lokad.Lython.Tests/`: xUnit test suite.
+- `tests/Lokad.Lython.Tests/`: white-box subsystem suite (production sources
+  compile into the test assembly).
+- `tests/Lokad.Lython.PublicApi.Tests/`: public-boundary suite against the
+  built library.
 - `benchmarks/Lokad.Lython.Benchmarks/`: BenchmarkDotNet benchmarks.
 - `tools/LythonProbe/`: CLI for independent, pure compatibility probes through
   Lython's public API. It accepts `-c`, a `.py` file, plain stdin, or batch JSON;
   `--compare-python` runs the same trusted snippet under isolated local CPython.
   Its deliberately capability-free host does not exercise file, directory,
   stream, subprocess, or local-import APIs. Invoke it concisely as
-  `./tools/LythonProbe/lythonprobe.ps1 ...`; see its `README.md` for examples.
+  `./tools/LythonProbe/lythonprobe.ps1 ...` (auto-builds Debug); see its `README.md`
+  for examples. `dotnet test` does not build the probe (no test project
+  references it), so before running probe-dependent tests build it explicitly
+  for the matching configuration:
+  `dotnet build tools/LythonProbe/LythonProbe.csproj -c <Debug|Release>`.
 - `README.md`: project overview.
 - `SPEC.md`: Lython language and runtime specification.
 
