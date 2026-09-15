@@ -42,7 +42,7 @@ public sealed class CopyMemoAccountingTests
         GC.WaitForPendingFinalizers();
         GC.Collect();
         context.Services.State.CallTemporaries.Sweep(full: true);
-        Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(context.Services.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

@@ -40,9 +40,10 @@ public sealed class DequeReclamationTests
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-        var backing = pool.CommittedBackingBytes;
-        Assert.Equal(128L + 3L * 64L + 128L + backing, pool.Sweep(full: true));
-        Assert.Equal(0, governor.CurrentCommittedBytes);
+        // A partial sweep releases entries but keeps tier capacity: the
+        // remainder reconciles explicitly against backing, which abandonment frees.
+        Assert.Equal(128L + 3L * 64L + 128L, pool.Sweep());
+        Assert.Equal(pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
     }
 
     [Fact]
@@ -57,9 +58,8 @@ public sealed class DequeReclamationTests
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-        var backing = pool.CommittedBackingBytes;
-        Assert.Equal(128L + 2L * 64L + 128L + backing, pool.Sweep(full: true));
-        Assert.Equal(0, governor.CurrentCommittedBytes);
+        Assert.Equal(128L + 2L * 64L + 128L, pool.Sweep());
+        Assert.Equal(pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
     }
 
     [Fact]

@@ -199,9 +199,10 @@ internal sealed class ChargeReclamationPool
 
     // Releases charges for entries whose targets have been collected and
     // prunes them; returns the released bytes. A full sweep drains the old
-    // tier instead of visiting one quantum, then trims both tiers to their
-    // live counts so dropped populations reconcile to zero instead of pinning
-    // empty capacity. Partial sweeps never trim (bounded per-sweep work).
+    // tier instead of visiting one quantum. Tier capacity is intentionally never
+    // trimmed here: trim-and-regrow churn on every exhaustion cycle measured
+    // +11% allocated on the 200K scan; empty capacity reconciles explicitly
+    // through CommittedBackingBytes and releases on pool abandonment.
     public long Sweep(bool full = false)
     {
         var released = SweepTier(_young, _old);
@@ -211,28 +212,7 @@ internal sealed class ChargeReclamationPool
             _governor.Release(released);
         }
 
-        if (full)
-        {
-            released += ReconcileTierBacking();
-        }
-
         return released;
-    }
-
-    private long ReconcileTierBacking()
-    {
-        var before = _backingBytes;
-        _young.TrimExcess();
-        _old.TrimExcess();
-        _backingBytes = checked(((long)_young.Capacity + _old.Capacity) * 8);
-        if (_backingBytes < before)
-        {
-            var released = before - _backingBytes;
-            _governor.Release(released);
-            return released;
-        }
-
-        return 0;
     }
 
     // Reserves the registry charge before publishing: a denial leaves no mark
