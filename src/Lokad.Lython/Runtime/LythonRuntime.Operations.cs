@@ -230,7 +230,11 @@ internal sealed partial class LythonRuntime
                 merged.SetItem(pair.Key, pair.Value);
             }
 
-            return new PyDefaultDict(factory, merged);
+            context.MemoryGovernor.Reserve(64L, span);
+            context.MemoryGovernor.Commit(64L);
+            var unionResult = new PyDefaultDict(factory, merged);
+            context.Services.State.CallTemporaries.TrackFreshMutable(unionResult, unionResult.CommittedStorageBytes);
+            return unionResult;
         }
 
         if ((left is PyCounter && right is PyDict) || (left is PyDict && right is PyCounter))

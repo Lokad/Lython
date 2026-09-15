@@ -434,6 +434,7 @@ internal sealed partial class LythonRuntime
             clone.Add(depth == CopyDepth.Deep ? CopyValue(item, CopyDepth.Deep, context, span, memo, graphDepth + 1) : item);
             context.ObserveCollectionCount(clone.Count, span);
         }
+        context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes);
 
         return clone;
     }
@@ -449,6 +450,7 @@ internal sealed partial class LythonRuntime
             clone.SetItem(ValidateDictionaryKey(key, span), value);
             context.ObserveCollectionCount(clone.Count, span);
         }
+        context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes);
 
         return clone;
     }
@@ -464,6 +466,7 @@ internal sealed partial class LythonRuntime
                 span));
             context.ObserveCollectionCount(clone.Count, span);
         }
+        context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes);
 
         return clone;
     }
@@ -482,6 +485,7 @@ internal sealed partial class LythonRuntime
             clone.SetItem(ValidateDictionaryKey(key, span), value);
             context.ObserveCollectionCount(clone.Count, span);
         }
+        context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes);
 
         return clone;
     }
@@ -497,6 +501,7 @@ internal sealed partial class LythonRuntime
             clone.SetItem(ValidateDictionaryKey(key, span), value);
             context.ObserveCollectionCount(clone.Count, span);
         }
+        context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes);
 
         return clone;
     }

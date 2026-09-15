@@ -294,10 +294,13 @@ internal sealed partial class LythonRuntime
 
         foreach (var pair in keywordItems)
         {
-            result.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), RuntimeValue(pair.Value));
+            var keyword = PyString.FromString(pair.Key, context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshString(keyword);
+            result.SetItem(keyword, RuntimeValue(pair.Value));
             context.ObserveCollectionCount(result.Count, span);
         }
 
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -316,6 +319,7 @@ internal sealed partial class LythonRuntime
             PopulateDefaultDict(result, arguments[1], span, context);
         }
 
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -363,6 +367,7 @@ internal sealed partial class LythonRuntime
         }
 
         PopulateCounterKeywords(result, keywordItems, span, context, subtract: false);
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -378,6 +383,7 @@ internal sealed partial class LythonRuntime
         {
             PopulateCounter(result, arguments[0], span, context, subtract: false);
         }
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
 
         return result;
     }
@@ -753,7 +759,9 @@ internal sealed partial class LythonRuntime
         foreach (var pair in keywordItems)
         {
             var delta = ExpectCounterCount(pair.Value, span);
-            counter.Increment(PyString.FromString(pair.Key, context.MemoryGovernor, span), subtract ? NegateCounterCount(delta, span, counter.OwnerMemoryGovernor) : delta, span);
+            var keyword = PyString.FromString(pair.Key, context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshString(keyword);
+            counter.Increment(keyword, subtract ? NegateCounterCount(delta, span, counter.OwnerMemoryGovernor) : delta, span);
             context.ObserveCollectionCount(counter.Count, span);
         }
     }

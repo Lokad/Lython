@@ -3070,7 +3070,9 @@ internal sealed partial class LythonRuntime
 
                     context.MemoryGovernor.Reserve(64L, span);
                     context.MemoryGovernor.Commit(64L);
-                    return new PyDefaultDict(receiver.DefaultFactory, copy);
+                    var copyResult = new PyDefaultDict(receiver.DefaultFactory, copy);
+                    context.Services.State.CallTemporaries.TrackFreshMutable(copyResult, copyResult.CommittedStorageBytes);
+                    return copyResult;
                 }),
                 "clear" => BoundCallable.CreateNoArguments(dict, "defaultdict.clear", static (receiver, _, _) =>
                 {
@@ -3141,7 +3143,11 @@ internal sealed partial class LythonRuntime
                         merged.SetItem(pair.Key, pair.Value);
                     }
 
-                    return new PyDefaultDict(factory, merged);
+                    context.MemoryGovernor.Reserve(64L, span);
+                    context.MemoryGovernor.Commit(64L);
+                    var unionResult = new PyDefaultDict(factory, merged);
+                    context.Services.State.CallTemporaries.TrackFreshMutable(unionResult, unionResult.CommittedStorageBytes);
+                    return unionResult;
                 }, "defaultdict.__or__", ["value"]),
                 "__ror__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -3167,7 +3173,11 @@ internal sealed partial class LythonRuntime
                         merged.SetItem(pair.Key, pair.Value);
                     }
 
-                    return new PyDefaultDict(factory, merged);
+                    context.MemoryGovernor.Reserve(64L, span);
+                    context.MemoryGovernor.Commit(64L);
+                    var unionResult = new PyDefaultDict(factory, merged);
+                    context.Services.State.CallTemporaries.TrackFreshMutable(unionResult, unionResult.CommittedStorageBytes);
+                    return unionResult;
                 }, "defaultdict.__ror__", ["value"]),
                 "__ior__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -3288,6 +3298,15 @@ internal sealed partial class LythonRuntime
 
     internal static class CounterMembers
     {
+        // Fresh copies reclaim through the pool once dropped; the later funnel
+        // no-ops on the already-tracked value through reference-identity dedup.
+        private static PyCounter TrackCounterCopy(PyCounter receiver, ExecutionContext context, LythonSourceSpan span)
+        {
+            var copy = new PyCounter(receiver, context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(copy, copy.CommittedStorageBytes);
+            return copy;
+        }
+
         public static bool TryGetMember(PyCounter counter, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -3384,7 +3403,7 @@ internal sealed partial class LythonRuntime
                 "copy" => BoundCallable.CreateNoArguments(
                     counter,
                     "Counter.copy",
-                    static (receiver, span, context) => new PyCounter(receiver, context.MemoryGovernor, span)),
+                    static (receiver, span, context) => TrackCounterCopy(receiver, context, span)),
                 "clear" => BoundCallable.CreateNoArguments(counter, "Counter.clear", static (receiver, _, _) =>
                 {
                     receiver.Clear();

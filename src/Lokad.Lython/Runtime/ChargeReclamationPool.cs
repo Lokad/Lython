@@ -161,6 +161,13 @@ internal sealed class ChargeReclamationPool
                 // their own sites, and this dedups to a no-op for those values.
                 TrackMutable(deque, deque.CommittedStorageBytes, span);
                 break;
+            case PyCounter counter when counter.OwnerMemoryGovernor is not null:
+                // Plain registration only, like deques: factories track with refund.
+                TrackMutable(counter, counter.CommittedStorageBytes, span);
+                break;
+            case PyDefaultDict defaultdict when defaultdict.OwnerMemoryGovernor is not null:
+                TrackMutable(defaultdict, defaultdict.CommittedStorageBytes, span);
+                break;
             case LythonRuntime.DictKeysView keysView:
                 Track(keysView, 64L, span);
                 break;

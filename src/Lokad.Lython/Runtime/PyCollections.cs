@@ -68,18 +68,49 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
             _ => throw new LythonRuntimeException("TypeError", "defaultdict default_factory must be callable or None.", span)
         };
 
+        var innerBefore = _items.CommittedStorageBytes;
         _items.SetItem(key, created);
         context.ObserveCollectionCount(Count, span);
+        NoteGrowth(innerBefore);
         return created;
     }
 
-    public void SetItem(object key, object value) => _items.SetItem(key, value);
+    // Current committed shell-plus-inner charges, for pooled owners that release
+    // them if this wrapper is dropped. Inner growth refreshes the snapshot through
+    // NoteGrowth below; the inner dict's own notifications key on the inner value
+    // and stay misses while only wrappers are tracked.
+    internal long CommittedStorageBytes => OwnerMemoryGovernor is null ? 0 : 64L + _items.CommittedStorageBytes;
+
+    // Refreshes the wrapper coupon after inner growth; change-detected so steady
+    // use costs two field reads. Denied growth throws before mutating.
+    private void NoteGrowth(long innerBefore)
+    {
+        if (_items.CommittedStorageBytes != innerBefore)
+        {
+            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
+        }
+    }
+
+    public void SetItem(object key, object value)
+    {
+        var innerBefore = _items.CommittedStorageBytes;
+        _items.SetItem(key, value);
+        NoteGrowth(innerBefore);
+    }
 
     public void AttachMemoryGovernor(MemoryGovernor governor)
         => AttachMemoryGovernor(governor, null);
 
     public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
-        => _items.AttachMemoryGovernor(governor, allocationSpan);
+    {
+        if (OwnerMemoryGovernor is null)
+        {
+            governor.Reserve(64L, allocationSpan);
+            governor.Commit(64L);
+        }
+
+        _items.AttachMemoryGovernor(governor, allocationSpan);
+    }
 
     public bool Remove(object key) => _items.Remove(key);
 
@@ -87,9 +118,19 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
         => _items.TryRemoveLast(out key, out value);
 
     public object UpdateFrom(CallArgumentValue[] arguments, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-        => LythonRuntime.UpdateDictionary(_items, arguments, span, context);
+    {
+        var innerBefore = _items.CommittedStorageBytes;
+        var result = LythonRuntime.UpdateDictionary(_items, arguments, span, context);
+        NoteGrowth(innerBefore);
+        return result;
+    }
 
-    public void Clear() => _items.Clear();
+    public void Clear()
+    {
+        var innerBefore = _items.CommittedStorageBytes;
+        _items.Clear();
+        NoteGrowth(innerBefore);
+    }
 
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
@@ -198,27 +239,64 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
 
     public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value) => _items.TryGetValue(key, out value);
 
-    public void SetItem(object key, object value) => _items.SetItem(key, value);
+    // Current committed shell-plus-inner charges, for pooled owners that release
+    // them if this wrapper is dropped. Inner growth refreshes the snapshot through
+    // NoteGrowth below; the inner dict's own notifications key on the inner value
+    // and stay misses while only wrappers are tracked.
+    internal long CommittedStorageBytes => OwnerMemoryGovernor is null ? 0 : 64L + _items.CommittedStorageBytes;
+
+    // Refreshes the wrapper coupon after inner growth; change-detected so steady
+    // use costs two field reads. Denied growth throws before mutating.
+    private void NoteGrowth(long innerBefore)
+    {
+        if (_items.CommittedStorageBytes != innerBefore)
+        {
+            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
+        }
+    }
+
+    public void SetItem(object key, object value)
+    {
+        var innerBefore = _items.CommittedStorageBytes;
+        _items.SetItem(key, value);
+        NoteGrowth(innerBefore);
+    }
 
     public void AttachMemoryGovernor(MemoryGovernor governor)
         => AttachMemoryGovernor(governor, null);
 
     public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
-        => _items.AttachMemoryGovernor(governor, allocationSpan);
+    {
+        if (OwnerMemoryGovernor is null)
+        {
+            governor.Reserve(64L, allocationSpan);
+            governor.Commit(64L);
+        }
+
+        _items.AttachMemoryGovernor(governor, allocationSpan);
+    }
 
     public bool Remove(object key) => _items.Remove(key);
 
-    public void Clear() => _items.Clear();
+    public void Clear()
+    {
+        var innerBefore = _items.CommittedStorageBytes;
+        _items.Clear();
+        NoteGrowth(innerBefore);
+    }
 
     public void Increment(object key, object delta, LythonSourceSpan span)
     {
+        var innerBefore = _items.CommittedStorageBytes;
         if (_items.TryGetValue(key, out var value))
         {
             _items.SetItem(key, LythonRuntime.AddCounterCounts(value, delta, span, OwnerMemoryGovernor));
+            NoteGrowth(innerBefore);
             return;
         }
 
         _items.SetItem(key, delta);
+        NoteGrowth(innerBefore);
     }
 
     public bool IsTruthy() => Count != 0;
