@@ -406,6 +406,7 @@ internal sealed class PyPairwiseIterator : PyIteratorBase
     private readonly LythonSourceSpan _span;
     private object _previous = PyNone.Instance;
     private bool _hasPrevious;
+    private readonly ChargeReclamationPool? _reclamationPool;
 
     public PyPairwiseIterator(object source, MemoryGovernor memoryGovernor, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
@@ -413,6 +414,7 @@ internal sealed class PyPairwiseIterator : PyIteratorBase
         _source = PyIteration.Cursor.Create(source, span, context);
         _memoryGovernor = memoryGovernor;
         _span = span;
+        _reclamationPool = context.Services.State.CallTemporaries;
     }
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
@@ -436,8 +438,11 @@ internal sealed class PyPairwiseIterator : PyIteratorBase
         }
 
         var current = LythonRuntime.RuntimeValue(next);
-        value = PyTuple.FromOwnedArray([_previous, current], _memoryGovernor, _span);
+        var produced = PyTuple.FromOwnedArray([_previous, current], _memoryGovernor, _span);
         _previous = current;
+        // Advance the anchor with the item so a denied track skips (never duplicates).
+        _reclamationPool?.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
+        value = produced;
         return true;
     }
 
@@ -462,9 +467,11 @@ internal sealed class PyPairwiseIterator : PyIteratorBase
         }
 
         var current = LythonRuntime.RuntimeValue(next);
-        var value = PyTuple.FromOwnedArray([_previous, current], _memoryGovernor, _span);
+        var produced = PyTuple.FromOwnedArray([_previous, current], _memoryGovernor, _span);
         _previous = current;
-        return PyIterationResult.Yield(value);
+        // Advance the anchor with the item so a denied track skips (never duplicates).
+        _reclamationPool?.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
+        return PyIterationResult.Yield(produced);
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.pairwise object>");

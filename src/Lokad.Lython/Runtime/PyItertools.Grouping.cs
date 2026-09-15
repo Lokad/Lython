@@ -43,8 +43,13 @@ internal sealed class PyGroupByIterator : PyIteratorBase
         }
 
         _activeGroupId++;
-        _activeGroup = new PyGroupIterator(this, _activeGroupId, key, item);
-        value = PyTuple.FromOwnedArray([key, _activeGroup], _memoryGovernor, _span);
+        var group = new PyGroupIterator(this, _activeGroupId, key, item);
+        _activeGroup = group;
+        // Each group owns the 128 B shell charge committed in its constructor.
+        _context.Services.State.CallTemporaries.TrackFreshMutable(group, 128L, _span);
+        var produced = PyTuple.FromOwnedArray([key, _activeGroup], _memoryGovernor, _span);
+        _context.Services.State.CallTemporaries.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
+        value = produced;
         return true;
     }
 
@@ -65,9 +70,13 @@ internal sealed class PyGroupByIterator : PyIteratorBase
         var item = next.Value.Item;
         var key = next.Value.Key;
         _activeGroupId++;
-        _activeGroup = new PyGroupIterator(this, _activeGroupId, key, item);
-        var value = PyTuple.FromOwnedArray([key, _activeGroup], _memoryGovernor, _span);
-        return PyIterationResult.Yield(value);
+        var group = new PyGroupIterator(this, _activeGroupId, key, item);
+        _activeGroup = group;
+        // Each group owns the 128 B shell charge committed in its constructor.
+        _context.Services.State.CallTemporaries.TrackFreshMutable(group, 128L, _span);
+        var produced = PyTuple.FromOwnedArray([key, _activeGroup], _memoryGovernor, _span);
+        _context.Services.State.CallTemporaries.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
+        return PyIterationResult.Yield(produced);
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.groupby object>");

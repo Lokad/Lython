@@ -10,6 +10,7 @@ internal sealed class PyBatchedIterator : PyIteratorBase
     private readonly bool _strict;
     private readonly MemoryGovernor _memoryGovernor;
     private readonly LythonSourceSpan _span;
+    private readonly ChargeReclamationPool? _reclamationPool;
 
     public PyBatchedIterator(object source, int size, bool strict, MemoryGovernor memoryGovernor, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
@@ -19,6 +20,7 @@ internal sealed class PyBatchedIterator : PyIteratorBase
         _strict = strict;
         _memoryGovernor = memoryGovernor;
         _span = span;
+        _reclamationPool = context.Services.State.CallTemporaries;
     }
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
@@ -46,7 +48,9 @@ internal sealed class PyBatchedIterator : PyIteratorBase
             Array.Resize(ref items, count);
         }
 
-        value = PyTuple.FromOwnedArray(items, _memoryGovernor, _span);
+        var produced = PyTuple.FromOwnedArray(items, _memoryGovernor, _span);
+        _reclamationPool?.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
+        value = produced;
         return true;
     }
 
@@ -80,7 +84,9 @@ internal sealed class PyBatchedIterator : PyIteratorBase
             Array.Resize(ref items, count);
         }
 
-        return PyIterationResult.Yield(PyTuple.FromOwnedArray(items, _memoryGovernor, _span));
+        var produced = PyTuple.FromOwnedArray(items, _memoryGovernor, _span);
+        _reclamationPool?.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
+        return PyIterationResult.Yield(produced);
     }
 
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<itertools.batched object>");

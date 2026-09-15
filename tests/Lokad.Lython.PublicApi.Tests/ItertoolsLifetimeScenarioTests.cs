@@ -102,4 +102,53 @@ public sealed class ItertoolsLifetimeScenarioTests
     public async Task StarmapDiscardCompletes()
         => await AssertCompletes(
             "import itertools\ndef f(a, b):\n    return a\nfor i in range(50000):\n    x = itertools.starmap(f, [(1, 2)])\nreturn 0\n", "0");
+
+    // Pool-owning factories: product/combinations/permutations shells ride with their
+    // materialized pools and index tables under one coupon mirroring all committed
+    // charges. Consumed per-item tuples track at their production site like zip items.
+    [Fact]
+    public async Task ProductDiscardCompletes()
+        => await AssertCompletes(
+            "import itertools\nfor i in range(50000):\n    x = itertools.product([1], [2])\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task CombinationsDiscardCompletes()
+        => await AssertCompletes(
+            "import itertools\nfor i in range(50000):\n    x = itertools.combinations([1, 2], 1)\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task PermutationsDiscardCompletes()
+        => await AssertCompletes(
+            "import itertools\nfor i in range(50000):\n    x = itertools.permutations([1, 2])\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task BatchedConsumedDiscardCompletes()
+        => await AssertCompletes(
+            "import itertools\nfor i in range(50000):\n    x = list(itertools.batched([1], 1))\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task PairwiseConsumedDiscardCompletes()
+        => await AssertCompletes(
+            "import itertools\nfor i in range(50000):\n    x = list(itertools.pairwise([1, 2]))\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task GroupbyConsumedDiscardCompletes()
+        => await AssertCompletes(
+            "import itertools\nfor i in range(50000):\n    x = list(itertools.groupby([1]))\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task CombinationsConsumedDiscardCompletes()
+        => await AssertCompletes(
+            "import itertools\nfor i in range(50000):\n    x = list(itertools.combinations([1, 2], 2))\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task ZipLongestConsumedDiscardCompletes()
+        => await AssertCompletes(
+            "import itertools\nfor i in range(50000):\n    x = list(itertools.zip_longest([1], [2]))\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task ProductConsumedDiscardCompletes()
+        => await AssertCompletes(
+            "import itertools\nfor i in range(50000):\n    x = list(itertools.product([1], [2]))\nreturn 0\n", "0");
+
 }

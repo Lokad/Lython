@@ -388,8 +388,8 @@ internal sealed partial class LythonRuntime
         }
 
         // The repeated table shares pool references but is itself retained.
-        context.MemoryGovernor.Reserve(64L + (16L * repeatedLength), span);
-        context.MemoryGovernor.Commit(64L + (16L * repeatedLength));
+        context.MemoryGovernor.Reserve(PyCombinatoricOwnership.PoolArrayBytes(repeatedLength), span);
+        context.MemoryGovernor.Commit(PyCombinatoricOwnership.PoolArrayBytes(repeatedLength));
         var repeated = new IReadOnlyList<object>[(int)repeatedLength];
         var repeatedIndex = 0;
         for (long i = 0; i < repeat && repeatedIndex < repeated.Length; i++)
@@ -400,8 +400,17 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        var productResult = new PyProductIterator(repeated, context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(productResult, PyIteratorBase.IteratorValueBytes);
+        var productResult = new PyProductIterator(repeated, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
+        // Shell, index table, repeated table and materialized pools share the iterator
+        // lifetime; one coupon mirrors all committed charges (pools are distinct here).
+        var productPoolsBytes = 0L;
+        foreach (var productPool in pools)
+        {
+            productPoolsBytes = checked(productPoolsBytes + PyCombinatoricOwnership.PoolArrayBytes(productPool.Length));
+        }
+
+        var productOwnedBytes = checked(128L + PyCombinatoricOwnership.IndexArrayBytes(repeated.Length) + PyCombinatoricOwnership.PoolArrayBytes(repeated.Length) + productPoolsBytes);
+        context.Services.State.CallTemporaries.TrackFreshMutable(productResult, productOwnedBytes);
         return productResult;
     }
 
@@ -445,8 +454,8 @@ internal sealed partial class LythonRuntime
         }
 
         // The repeated table shares pool references but is itself retained.
-        context.MemoryGovernor.Reserve(64L + (16L * repeatedLength), span);
-        context.MemoryGovernor.Commit(64L + (16L * repeatedLength));
+        context.MemoryGovernor.Reserve(PyCombinatoricOwnership.PoolArrayBytes(repeatedLength), span);
+        context.MemoryGovernor.Commit(PyCombinatoricOwnership.PoolArrayBytes(repeatedLength));
         var repeated = new IReadOnlyList<object>[(int)repeatedLength];
         var repeatedIndex = 0;
         for (long i = 0; i < repeat && repeatedIndex < repeated.Length; i++)
@@ -457,8 +466,17 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        var productResult = new PyProductIterator(repeated, context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(productResult, PyIteratorBase.IteratorValueBytes);
+        var productResult = new PyProductIterator(repeated, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
+        // Shell, index table, repeated table and materialized pools share the iterator
+        // lifetime; one coupon mirrors all committed charges (pools are distinct here).
+        var productPoolsBytes = 0L;
+        foreach (var productPool in pools)
+        {
+            productPoolsBytes = checked(productPoolsBytes + PyCombinatoricOwnership.PoolArrayBytes(productPool.Length));
+        }
+
+        var productOwnedBytes = checked(128L + PyCombinatoricOwnership.IndexArrayBytes(repeated.Length) + PyCombinatoricOwnership.PoolArrayBytes(repeated.Length) + productPoolsBytes);
+        context.Services.State.CallTemporaries.TrackFreshMutable(productResult, productOwnedBytes);
         return productResult;
     }
 
@@ -494,8 +512,11 @@ internal sealed partial class LythonRuntime
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinations, span);
         var pool = MaterializeSequence(bound.Values[0], span, context);
         var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        var combinationsResult = new PyCombinationsIterator(pool, r, context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(combinationsResult, PyIteratorBase.IteratorValueBytes);
+        var combinationsResult = new PyCombinationsIterator(pool, r, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
+        // Shell, index table and materialized pool share the iterator lifetime; one
+        // coupon mirrors all committed charges.
+        var combinationsOwnedBytes = checked(128L + PyCombinatoricOwnership.IndexArrayBytes(r) + PyCombinatoricOwnership.PoolArrayBytes(pool.Length));
+        context.Services.State.CallTemporaries.TrackFreshMutable(combinationsResult, combinationsOwnedBytes);
         return combinationsResult;
     }
 
@@ -504,8 +525,11 @@ internal sealed partial class LythonRuntime
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinations, span);
         var pool = await MaterializeItSequenceAsync(bound.Values[0], span, context).ConfigureAwait(false);
         var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        var combinationsResult = new PyCombinationsIterator(pool, r, context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(combinationsResult, PyIteratorBase.IteratorValueBytes);
+        var combinationsResult = new PyCombinationsIterator(pool, r, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
+        // Shell, index table and materialized pool share the iterator lifetime; one
+        // coupon mirrors all committed charges.
+        var combinationsOwnedBytes = checked(128L + PyCombinatoricOwnership.IndexArrayBytes(r) + PyCombinatoricOwnership.PoolArrayBytes(pool.Length));
+        context.Services.State.CallTemporaries.TrackFreshMutable(combinationsResult, combinationsOwnedBytes);
         return combinationsResult;
     }
 
@@ -514,8 +538,11 @@ internal sealed partial class LythonRuntime
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinationsWithReplacement, span);
         var pool = MaterializeSequence(bound.Values[0], span, context);
         var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        var withReplacementResult = new PyCombinationsWithReplacementIterator(pool, r, context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(withReplacementResult, PyIteratorBase.IteratorValueBytes);
+        var withReplacementResult = new PyCombinationsWithReplacementIterator(pool, r, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
+        // Shell, index table and materialized pool share the iterator lifetime; one
+        // coupon mirrors all committed charges.
+        var withReplacementOwnedBytes = checked(128L + PyCombinatoricOwnership.IndexArrayBytes(r) + PyCombinatoricOwnership.PoolArrayBytes(pool.Length));
+        context.Services.State.CallTemporaries.TrackFreshMutable(withReplacementResult, withReplacementOwnedBytes);
         return withReplacementResult;
     }
 
@@ -524,8 +551,11 @@ internal sealed partial class LythonRuntime
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinationsWithReplacement, span);
         var pool = await MaterializeItSequenceAsync(bound.Values[0], span, context).ConfigureAwait(false);
         var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        var withReplacementResult = new PyCombinationsWithReplacementIterator(pool, r, context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(withReplacementResult, PyIteratorBase.IteratorValueBytes);
+        var withReplacementResult = new PyCombinationsWithReplacementIterator(pool, r, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
+        // Shell, index table and materialized pool share the iterator lifetime; one
+        // coupon mirrors all committed charges.
+        var withReplacementOwnedBytes = checked(128L + PyCombinatoricOwnership.IndexArrayBytes(r) + PyCombinatoricOwnership.PoolArrayBytes(pool.Length));
+        context.Services.State.CallTemporaries.TrackFreshMutable(withReplacementResult, withReplacementOwnedBytes);
         return withReplacementResult;
     }
 
@@ -536,8 +566,11 @@ internal sealed partial class LythonRuntime
         var r = !bound.Assigned[1] || bound.Values[1] is PyNone
             ? pool.Length
             : ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        var permutationsResult = new PyPermutationsIterator(pool, r, context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(permutationsResult, PyIteratorBase.IteratorValueBytes);
+        var permutationsResult = new PyPermutationsIterator(pool, r, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
+        // Shell, index table and materialized pool share the iterator lifetime; one
+        // coupon mirrors all committed charges.
+        var permutationsOwnedBytes = checked(128L + PyCombinatoricOwnership.IndexArrayBytes(pool.Length) + PyCombinatoricOwnership.IndexArrayBytes(r) + PyCombinatoricOwnership.PoolArrayBytes(pool.Length));
+        context.Services.State.CallTemporaries.TrackFreshMutable(permutationsResult, permutationsOwnedBytes);
         return permutationsResult;
     }
 
@@ -548,8 +581,11 @@ internal sealed partial class LythonRuntime
         var r = !bound.Assigned[1] || bound.Values[1] is PyNone
             ? pool.Length
             : ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        var permutationsResult = new PyPermutationsIterator(pool, r, context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(permutationsResult, PyIteratorBase.IteratorValueBytes);
+        var permutationsResult = new PyPermutationsIterator(pool, r, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
+        // Shell, index table and materialized pool share the iterator lifetime; one
+        // coupon mirrors all committed charges.
+        var permutationsOwnedBytes = checked(128L + PyCombinatoricOwnership.IndexArrayBytes(pool.Length) + PyCombinatoricOwnership.IndexArrayBytes(r) + PyCombinatoricOwnership.PoolArrayBytes(pool.Length));
+        context.Services.State.CallTemporaries.TrackFreshMutable(permutationsResult, permutationsOwnedBytes);
         return permutationsResult;
     }
 
@@ -753,8 +789,8 @@ internal sealed partial class LythonRuntime
 
         // The iterator owns the pool for its lifetime; charge the array once here.
         // Shared pools are referenced, never recharged, downstream.
-        context.MemoryGovernor.Reserve(64L + (16L * pool.Length), span);
-        context.MemoryGovernor.Commit(64L + (16L * pool.Length));
+        context.MemoryGovernor.Reserve(PyCombinatoricOwnership.PoolArrayBytes(pool.Length), span);
+        context.MemoryGovernor.Commit(PyCombinatoricOwnership.PoolArrayBytes(pool.Length));
         return pool;
     }
 
@@ -767,8 +803,8 @@ internal sealed partial class LythonRuntime
         }
 
         object[] pool = [.. list];
-        context.MemoryGovernor.Reserve(64L + (16L * pool.Length), span);
-        context.MemoryGovernor.Commit(64L + (16L * pool.Length));
+        context.MemoryGovernor.Reserve(PyCombinatoricOwnership.PoolArrayBytes(pool.Length), span);
+        context.MemoryGovernor.Commit(PyCombinatoricOwnership.PoolArrayBytes(pool.Length));
         return pool;
     }
 
