@@ -1129,6 +1129,17 @@ internal sealed partial class LythonRuntime
 
         public override int GetHashCode() => ExceptionIdentity.GetHashCode();
 
+        // M05: only the CLR text survives message rendering, so the transient
+        // is pool-owned here and dropped renders reclaim on sweep. Already-owned
+        // renders (notably PyString args rendering to themselves) dedup to a
+        // no-op through the shared table instead of double-owning guest charges.
+        private static string TakeMessageText(PyString rendered, ExecutionContext context, LythonSourceSpan span)
+        {
+            var text = rendered.AsString();
+            context.Services.State.CallTemporaries.TrackFreshString(rendered, span);
+            return text;
+        }
+
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
@@ -1159,12 +1170,19 @@ internal sealed partial class LythonRuntime
                 // Like CPython, a single KeyError argument renders through
                 // repr instead of str; every other single argument uses str.
                 1 when ExceptionIdentity.IsBuiltin && string.Equals(TypeName, "KeyError", StringComparison.Ordinal) =>
-                    PyRendering.ToReprPyString(values[0], new PyRenderingContext(context)).AsString(),
-                1 => PyRendering.ToInterpolatedString(values[0], new PyRenderingContext(context)),
-                _ => PyRendering.ToReprPyString(args, new PyRenderingContext(context)).AsString(),
+                    TakeMessageText(PyRendering.ToReprPyString(values[0], new PyRenderingContext(context)), context, span),
+                1 => TakeMessageText(PyRendering.ToInterpolatedPyString(values[0], new PyRenderingContext(context)), context, span),
+                _ => TakeMessageText(PyRendering.ToReprPyString(args, new PyRenderingContext(context)), context, span),
             };
             var payload = values.Length == 0 ? PyNone.Instance : values.Length == 1 ? values[0] : args;
-            return new PyException(ExceptionIdentity, message, payload, args);
+            var constructed = new PyException(ExceptionIdentity, message, payload, args);
+            // M05: the args tuple commits at construction but no call funnel owns
+            // a bare exception record, so dropped constructions (including every
+            // caught raise) stranded 32+16n B. Handler rewraps share this same
+            // tuple through ExplicitArgs, so the pool keys the tuple itself and
+            // dropped constructions reclaim once collected.
+            context.Services.State.CallTemporaries.TrackFreshMutable(args, args.CommittedStorageBytes, span);
+            return constructed;
         }
     }
 

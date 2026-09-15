@@ -20,8 +20,10 @@ internal sealed partial class LythonRuntime
     }
 
     // MG03: an `except ... as` binding retains the exception value through guest
-    // code, so the record shell is owned at bind time. Raising and unbound
-    // catching stay free: only retention pays, never hot control flow.
+    // code, so the record shell is owned at bind time. Construction commits the
+    // retained args tuple and rendered message through the pool instead: dropped
+    // constructions reclaim on sweep while retained ones stay charged, and unbound
+    // catching adds nothing beyond those construction transients.
     private const long BoundExceptionBytes = 64;
 
     internal static void ChargeBoundException(MemoryGovernor? governor, LythonSourceSpan? span)
