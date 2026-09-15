@@ -7,7 +7,7 @@ namespace Lokad.Lython.PublicApi.Tests;
 /// MG05: a failed dict resize must not leave enlarged uncharged capacity
 /// behind for later insertions to ride for free. The stale committed-capacity
 /// field forces every post-failure insertion through the budget check again,
-/// mirroring FailedSetGrowthLeavesNothingUsable.
+/// mirroring FailedSetGrowthLeavesNothingUsable. The tail returns a scalar so the assertions need no execution headroom past the denial point.
 /// </summary>
 public sealed class DictFailedGrowthScenarioTests
 {
@@ -30,16 +30,18 @@ public sealed class DictFailedGrowthScenarioTests
             d = {}
             first = fill(d, 0, 20000)
             second = fill(d, 100000, 500)
-            return [first < 20000, second]
+            if first < 20000:
+                return second
+            return -1
             """);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 131072 };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(new List<object?> { true, new BigInteger(0) }, Assert.IsType<List<object?>>(sync.ReturnValue));
+        Assert.Equal(new BigInteger(0), Assert.IsType<BigInteger>(sync.ReturnValue));
 
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(new List<object?> { true, new BigInteger(0) }, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
+        Assert.Equal(new BigInteger(0), Assert.IsType<BigInteger>(asyncResult.ReturnValue));
     }
 }
