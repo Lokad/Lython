@@ -326,7 +326,9 @@ internal sealed partial class LythonRuntime
                     }
 
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    return new PyReversedIterator(list.Length, list.GetIndex);
+                    var listReversedResult = new PyReversedIterator(list.Length, list.GetIndex);
+                    context.Services.State.CallTemporaries.TrackFreshMutable(listReversedResult, PyIteratorBase.IteratorValueBytes);
+                    return listReversedResult;
                 }, "list.__reversed__"),
                 _ => MissingMemberValue.Instance,
             };
@@ -1712,8 +1714,10 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "range.__reversed__() expects no arguments.", span);
                     }
 
-                    PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    return new PyEnumerableIterator(range.GetSlice(PyNone.Instance, PyNone.Instance, BigInteger.MinusOne, span), span, context, "range_iterator");
+                    // The shell charge lives in the PyEnumerableIterator ctor; track only here.
+                    var memberRangeReversedResult = new PyEnumerableIterator(range.GetSlice(PyNone.Instance, PyNone.Instance, BigInteger.MinusOne, span), span, context, "range_iterator");
+                    context.Services.State.CallTemporaries.TrackFreshMutable(memberRangeReversedResult, PyIteratorBase.IteratorValueBytes);
+                    return memberRangeReversedResult;
                 }, "range.__reversed__"),
                 _ => MissingMemberValue.Instance,
             };
@@ -2002,7 +2006,9 @@ internal sealed partial class LythonRuntime
                     }
 
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    return dict.CreateReversedKeysIterator(context.MemoryGovernor, span);
+                    var memberDictReversedResult = dict.CreateReversedKeysIterator(context.MemoryGovernor, span);
+                    context.Services.State.CallTemporaries.TrackFreshMutable(memberDictReversedResult, PyIteratorBase.IteratorValueBytes);
+                    return memberDictReversedResult;
                 }, "dict.__reversed__"),
                 _ => MissingMemberValue.Instance,
             };
@@ -2226,7 +2232,9 @@ internal sealed partial class LythonRuntime
                     }
 
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    return view.Source.CreateReversedKeysIterator(context.MemoryGovernor, span);
+                    var memberKeysReversedResult = view.Source.CreateReversedKeysIterator(context.MemoryGovernor, span);
+                    context.Services.State.CallTemporaries.TrackFreshMutable(memberKeysReversedResult, PyIteratorBase.IteratorValueBytes);
+                    return memberKeysReversedResult;
                 }, "dict_keys.__reversed__"),
                 _ => MissingMemberValue.Instance,
             };
@@ -2249,7 +2257,9 @@ internal sealed partial class LythonRuntime
                     }
 
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    return view.Source.CreateReversedValuesIterator(context.MemoryGovernor, span);
+                    var memberValuesReversedResult = view.Source.CreateReversedValuesIterator(context.MemoryGovernor, span);
+                    context.Services.State.CallTemporaries.TrackFreshMutable(memberValuesReversedResult, PyIteratorBase.IteratorValueBytes);
+                    return memberValuesReversedResult;
                 }, "dict_values.__reversed__"),
                 _ => MissingMemberValue.Instance,
             };
@@ -2451,7 +2461,9 @@ internal sealed partial class LythonRuntime
                     }
 
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    return view.Source.CreateReversedItemsIterator(context.MemoryGovernor, span);
+                    var memberItemsReversedResult = view.Source.CreateReversedItemsIterator(context.MemoryGovernor, span);
+                    context.Services.State.CallTemporaries.TrackFreshMutable(memberItemsReversedResult, PyIteratorBase.IteratorValueBytes);
+                    return memberItemsReversedResult;
                 }, "dict_items.__reversed__"),
                 _ => MissingMemberValue.Instance,
             };
@@ -3264,7 +3276,9 @@ internal sealed partial class LythonRuntime
                     }
 
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    return dict.InnerDict.CreateReversedKeysIterator(context.MemoryGovernor, span);
+                    var memberDefaultDictReversedResult = dict.InnerDict.CreateReversedKeysIterator(context.MemoryGovernor, span);
+                    context.Services.State.CallTemporaries.TrackFreshMutable(memberDefaultDictReversedResult, PyIteratorBase.IteratorValueBytes);
+                    return memberDefaultDictReversedResult;
                 }, "defaultdict.__reversed__"),
                 _ => MissingMemberValue.Instance,
             };
@@ -3731,7 +3745,9 @@ internal sealed partial class LythonRuntime
                     }
 
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    return counter.InnerDict.CreateReversedKeysIterator(context.MemoryGovernor, span);
+                    var memberCounterReversedResult = counter.InnerDict.CreateReversedKeysIterator(context.MemoryGovernor, span);
+                    context.Services.State.CallTemporaries.TrackFreshMutable(memberCounterReversedResult, PyIteratorBase.IteratorValueBytes);
+                    return memberCounterReversedResult;
                 }, "Counter.__reversed__"),
                 _ => MissingMemberValue.Instance,
             };

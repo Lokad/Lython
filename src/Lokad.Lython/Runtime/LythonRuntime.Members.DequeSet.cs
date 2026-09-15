@@ -259,7 +259,9 @@ internal sealed partial class LythonRuntime
                     }
 
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-                    return new PyReversedIterator(deque.Length, deque.GetIndex);
+                    var dequeReversedResult = new PyReversedIterator(deque.Length, deque.GetIndex);
+                    context.Services.State.CallTemporaries.TrackFreshMutable(dequeReversedResult, PyIteratorBase.IteratorValueBytes);
+                    return dequeReversedResult;
                 }, "deque.__reversed__"),
                 _ => MissingMemberValue.Instance,
             };

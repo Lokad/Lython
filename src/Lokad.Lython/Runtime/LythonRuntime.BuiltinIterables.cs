@@ -349,7 +349,9 @@ internal sealed partial class LythonRuntime
                 return new PyUserIterator(instance, context, span).Iterator;
             }
 
-            return new PyEnumerableIterator(arguments[0], span, context);
+            var iterEnumerableResult = new PyEnumerableIterator(arguments[0], span, context);
+            context.Services.State.CallTemporaries.TrackFreshMutable(iterEnumerableResult, PyIteratorBase.IteratorValueBytes);
+            return iterEnumerableResult;
         }
 
         if (arguments.Length == 2)
@@ -359,7 +361,9 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "iter(v, w): v must be callable", span);
             }
 
-            return new PyCallableSentinelIterator(callable, arguments[1], context, span);
+            var iterSentinelResult = new PyCallableSentinelIterator(callable, arguments[1], context, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(iterSentinelResult, PyIteratorBase.IteratorValueBytes);
+            return iterSentinelResult;
         }
 
         throw new LythonRuntimeException("TypeError", "iter(object[, sentinel]) expects one or two arguments.", span);
@@ -401,19 +405,25 @@ internal sealed partial class LythonRuntime
         if (target is IPyIndexableValue indexable)
         {
             PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-            return new PyReversedIterator(indexable.Length, indexable.GetIndex);
+            var indexableReversedResult = new PyReversedIterator(indexable.Length, indexable.GetIndex);
+            context.Services.State.CallTemporaries.TrackFreshMutable(indexableReversedResult, PyIteratorBase.IteratorValueBytes);
+            return indexableReversedResult;
         }
 
         if (target is PyRange range)
         {
-            PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-            return new PyEnumerableIterator(range.GetSlice(PyNone.Instance, PyNone.Instance, BigInteger.MinusOne, span), span, context, "range_iterator");
+            // The shell charge lives in the PyEnumerableIterator ctor; track only here.
+            var rangeReversedResult = new PyEnumerableIterator(range.GetSlice(PyNone.Instance, PyNone.Instance, BigInteger.MinusOne, span), span, context, "range_iterator");
+            context.Services.State.CallTemporaries.TrackFreshMutable(rangeReversedResult, PyIteratorBase.IteratorValueBytes);
+            return rangeReversedResult;
         }
 
         if (PyStringOps.TryAsString(target, out var text))
         {
             PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-            return new PyReversedIterator(text.Length, text.Index);
+            var stringReversedResult = new PyReversedIterator(text.Length, text.Index);
+            context.Services.State.CallTemporaries.TrackFreshMutable(stringReversedResult, PyIteratorBase.IteratorValueBytes);
+            return stringReversedResult;
         }
 
         // Dict-backed mappings reverse over governed key snapshots with
@@ -421,19 +431,25 @@ internal sealed partial class LythonRuntime
         if (target is PyDict dict)
         {
             PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-            return dict.CreateReversedKeysIterator(context.MemoryGovernor, span);
+            var dictReversedResult = dict.CreateReversedKeysIterator(context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(dictReversedResult, PyIteratorBase.IteratorValueBytes);
+            return dictReversedResult;
         }
 
         if (target is PyDefaultDict defaultDict)
         {
             PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-            return defaultDict.InnerDict.CreateReversedKeysIterator(context.MemoryGovernor, span);
+            var defaultDictReversedResult = defaultDict.InnerDict.CreateReversedKeysIterator(context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(defaultDictReversedResult, PyIteratorBase.IteratorValueBytes);
+            return defaultDictReversedResult;
         }
 
         if (target is PyCounter counter)
         {
             PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-            return counter.InnerDict.CreateReversedKeysIterator(context.MemoryGovernor, span);
+            var counterReversedResult = counter.InnerDict.CreateReversedKeysIterator(context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(counterReversedResult, PyIteratorBase.IteratorValueBytes);
+            return counterReversedResult;
         }
 
         throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.OperandTypeName(target) + "' object is not reversible", span);

@@ -113,4 +113,83 @@ public sealed class RangeLifetimeScenarioTests
     public async Task EnumerateShellDeniesCleanly()
         => await AssertDenies("x = enumerate([1])\nreturn 0\n", 256);
 
+    // Reversed/iter shells: builtin branches, iter() shapes and member dunders all own
+    // one pooled shell charge per live instance. Each failed pre-fix with a stranded
+    // 128B shell per iteration; set/member __iter__ sites stay a residual (explicit
+    // dunder calls only, never loop iteration).
+    [Fact]
+    public async Task ReversedListDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(50000):\n    x = reversed([1, 2])\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task ReversedRangeDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(50000):\n    x = reversed(range(3))\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task ReversedStrDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(50000):\n    x = reversed(\"ab\")\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task ReversedDictDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(50000):\n    x = reversed({1: 2})\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task IterListDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(50000):\n    x = iter([1, 2])\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task IterRangeDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(50000):\n    x = iter(range(3))\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task IterStrDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(50000):\n    x = iter(\"ab\")\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task ListDunderReversedCompletes()
+        => await AssertCompletes(
+            "for i in range(50000):\n    x = [1, 2].__reversed__()\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task DequeDunderReversedCompletes()
+        => await AssertCompletes(
+            "import collections\nd = collections.deque([1, 2])\nfor i in range(50000):\n    x = d.__reversed__()\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task DictDunderReversedCompletes()
+        => await AssertCompletes(
+            "d = {1: 2}\nfor i in range(50000):\n    x = d.__reversed__()\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task DictKeysDunderReversedCompletes()
+        => await AssertCompletes(
+            "d = {1: 2}\nfor i in range(50000):\n    x = d.keys().__reversed__()\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task DictValuesDunderReversedCompletes()
+        => await AssertCompletes(
+            "d = {1: 2}\nfor i in range(50000):\n    x = d.values().__reversed__()\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task DictItemsDunderReversedCompletes()
+        => await AssertCompletes(
+            "d = {1: 2}\nfor i in range(50000):\n    x = d.items().__reversed__()\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task DefaultDictDunderReversedCompletes()
+        => await AssertCompletes(
+            "import collections\nd = collections.defaultdict(list)\nd[\"k\"] = 1\nfor i in range(50000):\n    x = d.__reversed__()\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task CounterDunderReversedCompletes()
+        => await AssertCompletes(
+            "import collections\nc = collections.Counter(\"ab\")\nfor i in range(50000):\n    x = c.__reversed__()\nreturn 0\n", "0");
+
 }
