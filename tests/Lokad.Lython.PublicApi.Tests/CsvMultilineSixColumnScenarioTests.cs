@@ -12,10 +12,11 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class CsvMultilineSixColumnScenarioTests
 {
     // 400 records x (602-char quoted field + 5 tiny fields) retain ~765508B
-    // plus 400 x 8 pooled entries at 64B (~204800B); the builder transient
-    // peaks at 2 x 1024B of capacity and never sums.
+    // plus 400 x 8 pooled entries at 128B (~409600B); the builder transient
+    // peaks at 2 x 1024B of capacity and never sums. Measured peak ~1.22MB
+    // (Release, local); the bound keeps the historical ~10% headroom.
     private const long MultilineSixColumnBudgetBytes = 450000;
-    private const long MultilineSixColumnPeakBoundBytes = 1100000;
+    private const long MultilineSixColumnPeakBoundBytes = 1350000;
 
     private const string MultilineSixColumnScript = """
         import csv
@@ -56,12 +57,12 @@ public sealed class CsvMultilineSixColumnScenarioTests
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(new BigInteger(400), sync.ReturnValue);
-        Assert.True(sync.PeakExecutionMemoryBytes <= MultilineSixColumnPeakBoundBytes);
+        Assert.True(sync.PeakExecutionMemoryBytes <= MultilineSixColumnPeakBoundBytes, "peak=" + sync.PeakExecutionMemoryBytes);
 
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(new BigInteger(400), asyncResult.ReturnValue);
-        Assert.True(asyncResult.PeakExecutionMemoryBytes <= MultilineSixColumnPeakBoundBytes);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= MultilineSixColumnPeakBoundBytes, "peak=" + asyncResult.PeakExecutionMemoryBytes);
     }
 
     [Fact]

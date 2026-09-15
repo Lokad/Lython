@@ -19,9 +19,9 @@ public sealed class FactoryStorageAccountingTests
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-        Assert.Equal(snapshot + 64L, pool.Sweep());
+        Assert.Equal(snapshot + 128L, pool.Sweep());
         Assert.Equal(0, pool.Count);
-        Assert.Equal(0L, governor.CurrentCommittedBytes);
+        Assert.Equal(pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
     }
 
     [Fact]
@@ -35,9 +35,9 @@ public sealed class FactoryStorageAccountingTests
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-        Assert.Equal(cleared + 64L, pool.Sweep());
+        Assert.Equal(cleared + 128L, pool.Sweep());
         Assert.Equal(0, pool.Count);
-        Assert.Equal(0L, governor.CurrentCommittedBytes);
+        Assert.Equal(pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
     }
 
     [Fact]
@@ -51,9 +51,9 @@ public sealed class FactoryStorageAccountingTests
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-        Assert.Equal(cleared + 64L, pool.Sweep());
+        Assert.Equal(cleared + 128L, pool.Sweep());
         Assert.Equal(0, pool.Count);
-        Assert.Equal(0L, governor.CurrentCommittedBytes);
+        Assert.Equal(pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]

@@ -20,9 +20,9 @@ public sealed class SetStorageAccountingTests
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-        Assert.Equal(snapshot + 64L, pool.Sweep());
+        Assert.Equal(snapshot + 128L, pool.Sweep());
         Assert.Equal(0, pool.Count);
-        Assert.Equal(0L, governor.CurrentCommittedBytes);
+        Assert.Equal(pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
     }
 
     [Fact]
@@ -36,9 +36,9 @@ public sealed class SetStorageAccountingTests
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-        Assert.Equal(128L + 64L, pool.Sweep());
+        Assert.Equal(128L + 128L, pool.Sweep());
         Assert.Equal(0, pool.Count);
-        Assert.Equal(0L, governor.CurrentCommittedBytes);
+        Assert.Equal(pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
     }
 
     [Fact]

@@ -18,16 +18,6 @@ public sealed class DequeReclamationTests
         pool.TrackFreshMutable(deque, deque.CommittedStorageBytes);
     }
 
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-    private static PyDeque BuildTrackedDeque(ChargeReclamationPool pool, MemoryGovernor governor)
-    {
-        var deque = new PyDeque(null, governor, null);
-        deque.Append(new object());
-        deque.Append(new object());
-        deque.Append(new object());
-        pool.TrackFreshMutable(deque, deque.CommittedStorageBytes);
-        return deque;
-    }
 
     [Fact]
     public void DroppedDequeReleasesShellAndNodes()
@@ -46,20 +36,31 @@ public sealed class DequeReclamationTests
         Assert.Equal(pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
     }
 
+    // The deque never escapes its framing helper: in Debug builds a test-scope
+    // temporary merged across the collection boundary would pin the entry.
     [Fact]
     public void PoppedNodesResnapshotCoupon()
     {
         var governor = new MemoryGovernor(null);
         var pool = new ChargeReclamationPool(governor);
-        var deque = BuildTrackedDeque(pool, governor);
-        deque.Pop();
-        Assert.Equal(128L + 2L * 64L + 128L + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
-        deque = null!;
+        PopTrackedDeque(pool, governor);
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
         Assert.Equal(128L + 2L * 64L + 128L, pool.Sweep());
         Assert.Equal(pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static void PopTrackedDeque(ChargeReclamationPool pool, MemoryGovernor governor)
+    {
+        var deque = new PyDeque(null, governor, null);
+        deque.Append(new object());
+        deque.Append(new object());
+        deque.Append(new object());
+        pool.TrackFreshMutable(deque, deque.CommittedStorageBytes);
+        deque.Pop();
+        Assert.Equal(128L + 2L * 64L + 128L + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
     }
 
     [Fact]
