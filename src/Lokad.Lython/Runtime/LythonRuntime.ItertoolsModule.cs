@@ -79,7 +79,9 @@ internal sealed partial class LythonRuntime
                 iterables[i] = arguments[i].Value;
             }
 
-            return new PyChainIterator(iterables, span, context);
+            var chainResult = new PyChainIterator(iterables, span, context);
+            context.Services.State.CallTemporaries.TrackFreshMutable(chainResult, PyIteratorBase.IteratorValueBytes);
+            return chainResult;
         }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -101,7 +103,9 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "itertools.chain.from_iterable(iterable) expects one iterable argument.", span);
             }
 
-            return new PyChainIterator(positional[0], span, context);
+            var chainFromIterableResult = new PyChainIterator(positional[0], span, context);
+            context.Services.State.CallTemporaries.TrackFreshMutable(chainFromIterableResult, PyIteratorBase.IteratorValueBytes);
+            return chainFromIterableResult;
         }
     }
 
@@ -158,7 +162,9 @@ internal sealed partial class LythonRuntime
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCount, span);
         var start = bound.Assigned[0] ? ExpectNumber(bound.Values[0], "itertools.count(..., start=...) expects a number.", span) : BigInteger.Zero;
         var step = bound.Assigned[1] ? ExpectNumber(bound.Values[1], "itertools.count(..., step=...) expects a number.", span) : BigInteger.One;
-        return new PyCountIterator(start, step, context, span);
+        var countResult = new PyCountIterator(start, step, context, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(countResult, PyIteratorBase.IteratorValueBytes);
+        return countResult;
     }
 
     private static object Repeat(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -172,7 +178,9 @@ internal sealed partial class LythonRuntime
         }
 
         PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
-        return new PyRepeatIterator(bound.Values[0], times);
+        var repeatResult = new PyRepeatIterator(bound.Values[0], times);
+        context.Services.State.CallTemporaries.TrackFreshMutable(repeatResult, PyIteratorBase.IteratorValueBytes);
+        return repeatResult;
     }
 
     // Repeat counts coerce through __index__ like CPython; bad __index__
@@ -215,7 +223,9 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "itertools.cycle(iterable) expects one iterable argument.", span);
         }
 
-        return new PyCycleIterator(positional[0], context.MemoryGovernor, context, span);
+        var cycleResult = new PyCycleIterator(positional[0], context.MemoryGovernor, context, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(cycleResult, PyIteratorBase.IteratorValueBytes);
+        return cycleResult;
     }
 
     private static object Islice(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -242,7 +252,9 @@ internal sealed partial class LythonRuntime
             step = CoerceIsliceStep(positional.Length == 4 ? positional[3] : null, context, span) ?? 1;
         }
 
-        return new PyIsliceIterator(positional[0], start, stop, step, span, context);
+        var isliceResult = new PyIsliceIterator(positional[0], start, stop, step, span, context);
+        context.Services.State.CallTemporaries.TrackFreshMutable(isliceResult, PyIteratorBase.IteratorValueBytes);
+        return isliceResult;
     }
 
     // islice() maps every bound failure (bad __index__, inner hook errors,
@@ -388,7 +400,9 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        return new PyProductIterator(repeated, context.MemoryGovernor, span);
+        var productResult = new PyProductIterator(repeated, context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(productResult, PyIteratorBase.IteratorValueBytes);
+        return productResult;
     }
 
     private static async ValueTask<object> ProductAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -443,7 +457,9 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        return new PyProductIterator(repeated, context.MemoryGovernor, span);
+        var productResult = new PyProductIterator(repeated, context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(productResult, PyIteratorBase.IteratorValueBytes);
+        return productResult;
     }
 
     private static object ZipLongest(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -468,7 +484,9 @@ internal sealed partial class LythonRuntime
             fillValue = argument.Value;
         }
 
-        return new PyZipLongestIterator(iterableCount == iterables.Length ? iterables : iterables[..iterableCount], fillValue, span, context.MemoryGovernor, span, context);
+        var zipLongestResult = new PyZipLongestIterator(iterableCount == iterables.Length ? iterables : iterables[..iterableCount], fillValue, span, context.MemoryGovernor, span, context);
+        context.Services.State.CallTemporaries.TrackFreshMutable(zipLongestResult, PyIteratorBase.IteratorValueBytes);
+        return zipLongestResult;
     }
 
     private static object Combinations(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -476,7 +494,9 @@ internal sealed partial class LythonRuntime
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinations, span);
         var pool = MaterializeSequence(bound.Values[0], span, context);
         var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        return new PyCombinationsIterator(pool, r, context.MemoryGovernor, span);
+        var combinationsResult = new PyCombinationsIterator(pool, r, context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(combinationsResult, PyIteratorBase.IteratorValueBytes);
+        return combinationsResult;
     }
 
     private static async ValueTask<object> CombinationsAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -484,7 +504,9 @@ internal sealed partial class LythonRuntime
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinations, span);
         var pool = await MaterializeItSequenceAsync(bound.Values[0], span, context).ConfigureAwait(false);
         var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        return new PyCombinationsIterator(pool, r, context.MemoryGovernor, span);
+        var combinationsResult = new PyCombinationsIterator(pool, r, context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(combinationsResult, PyIteratorBase.IteratorValueBytes);
+        return combinationsResult;
     }
 
     private static object CombinationsWithReplacement(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -492,7 +514,9 @@ internal sealed partial class LythonRuntime
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinationsWithReplacement, span);
         var pool = MaterializeSequence(bound.Values[0], span, context);
         var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        return new PyCombinationsWithReplacementIterator(pool, r, context.MemoryGovernor, span);
+        var withReplacementResult = new PyCombinationsWithReplacementIterator(pool, r, context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(withReplacementResult, PyIteratorBase.IteratorValueBytes);
+        return withReplacementResult;
     }
 
     private static async ValueTask<object> CombinationsWithReplacementAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -500,7 +524,9 @@ internal sealed partial class LythonRuntime
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCombinationsWithReplacement, span);
         var pool = await MaterializeItSequenceAsync(bound.Values[0], span, context).ConfigureAwait(false);
         var r = ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        return new PyCombinationsWithReplacementIterator(pool, r, context.MemoryGovernor, span);
+        var withReplacementResult = new PyCombinationsWithReplacementIterator(pool, r, context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(withReplacementResult, PyIteratorBase.IteratorValueBytes);
+        return withReplacementResult;
     }
 
     private static object Permutations(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -510,7 +536,9 @@ internal sealed partial class LythonRuntime
         var r = !bound.Assigned[1] || bound.Values[1] is PyNone
             ? pool.Length
             : ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        return new PyPermutationsIterator(pool, r, context.MemoryGovernor, span);
+        var permutationsResult = new PyPermutationsIterator(pool, r, context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(permutationsResult, PyIteratorBase.IteratorValueBytes);
+        return permutationsResult;
     }
 
     private static async ValueTask<object> PermutationsAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -520,7 +548,9 @@ internal sealed partial class LythonRuntime
         var r = !bound.Assigned[1] || bound.Values[1] is PyNone
             ? pool.Length
             : ExpectItNonNegativeInt(bound.Values[1], "r must be non-negative", span);
-        return new PyPermutationsIterator(pool, r, context.MemoryGovernor, span);
+        var permutationsResult = new PyPermutationsIterator(pool, r, context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(permutationsResult, PyIteratorBase.IteratorValueBytes);
+        return permutationsResult;
     }
 
     private static object Accumulate(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -534,13 +564,17 @@ internal sealed partial class LythonRuntime
         }
 
         var hasInitial = bound.Assigned[2] && bound.Values[2] is not PyNone;
-        return new PyAccumulateIterator(bound.Values[0], function, bound.Values[2], hasInitial, context, span);
+        var accumulateResult = new PyAccumulateIterator(bound.Values[0], function, bound.Values[2], hasInitial, context, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(accumulateResult, PyIteratorBase.IteratorValueBytes);
+        return accumulateResult;
     }
 
     private static object Compress(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsCompress, span);
-        return new PyCompressIterator(bound.Values[0], bound.Values[1], span, context);
+        var compressResult = new PyCompressIterator(bound.Values[0], bound.Values[1], span, context);
+        context.Services.State.CallTemporaries.TrackFreshMutable(compressResult, PyIteratorBase.IteratorValueBytes);
+        return compressResult;
     }
 
     private static object FilterFalse(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -554,19 +588,25 @@ internal sealed partial class LythonRuntime
         var predicate = positional[0] is PyNone
             ? null
             : positional[0] as ICallable ?? throw new LythonRuntimeException("TypeError", "itertools.filterfalse(function, iterable) expects a callable or None.", span);
-        return new PyPredicateIterator(predicate, positional[1], PyPredicateIteratorMode.FilterFalse, context, span);
+        var filterFalseResult = new PyPredicateIterator(predicate, positional[1], PyPredicateIteratorMode.FilterFalse, context, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(filterFalseResult, PyIteratorBase.IteratorValueBytes);
+        return filterFalseResult;
     }
 
     private static object DropWhile(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var (predicate, iterable) = BindPredicateIterator(arguments, "itertools.dropwhile", span);
-        return new PyPredicateIterator(predicate, iterable, PyPredicateIteratorMode.DropWhile, context, span);
+        var dropWhileResult = new PyPredicateIterator(predicate, iterable, PyPredicateIteratorMode.DropWhile, context, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(dropWhileResult, PyIteratorBase.IteratorValueBytes);
+        return dropWhileResult;
     }
 
     private static object TakeWhile(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var (predicate, iterable) = BindPredicateIterator(arguments, "itertools.takewhile", span);
-        return new PyPredicateIterator(predicate, iterable, PyPredicateIteratorMode.TakeWhile, context, span);
+        var takeWhileResult = new PyPredicateIterator(predicate, iterable, PyPredicateIteratorMode.TakeWhile, context, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(takeWhileResult, PyIteratorBase.IteratorValueBytes);
+        return takeWhileResult;
     }
 
     private static object Starmap(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -577,7 +617,9 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "itertools.starmap(function, iterable) expects a callable and an iterable.", span);
         }
 
-        return new PyStarmapIterator(function, positional[1], context, span);
+        var starmapResult = new PyStarmapIterator(function, positional[1], context, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(starmapResult, PyIteratorBase.IteratorValueBytes);
+        return starmapResult;
     }
 
     private static object Pairwise(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -588,7 +630,9 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "itertools.pairwise(iterable) expects one iterable argument.", span);
         }
 
-        return new PyPairwiseIterator(positional[0], context.MemoryGovernor, span, context);
+        var pairwiseResult = new PyPairwiseIterator(positional[0], context.MemoryGovernor, span, context);
+        context.Services.State.CallTemporaries.TrackFreshMutable(pairwiseResult, PyIteratorBase.IteratorValueBytes);
+        return pairwiseResult;
     }
 
     private static object GroupBy(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -601,7 +645,9 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "itertools.groupby(..., key=...) expects a callable or None.", span);
         }
 
-        return new PyGroupByIterator(bound.Values[0], keyFunction, context.MemoryGovernor, context, span);
+        var groupByResult = new PyGroupByIterator(bound.Values[0], keyFunction, context.MemoryGovernor, context, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(groupByResult, PyIteratorBase.IteratorValueBytes);
+        return groupByResult;
     }
 
     private static object Tee(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -616,6 +662,7 @@ internal sealed partial class LythonRuntime
             ? ExpectItNonNegativeInt(positional[1], "n must be >= 0", span)
             : 2;
         var shared = new PyTeeSharedState(positional[0], count, context.MemoryGovernor, context, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(shared, shared.ConstructionCharge, span);
         // Each tee output is a separately retained iterator object.
         var iteratorObjectsCharge = checked(128L * count);
         context.MemoryGovernor.Reserve(iteratorObjectsCharge, span);
@@ -624,9 +671,13 @@ internal sealed partial class LythonRuntime
         for (var i = 0; i < count; i++)
         {
             iterators[i] = new PyTeeIterator(shared, i);
+            // Each tee output owns the 128 B shell charge committed above.
+            context.Services.State.CallTemporaries.TrackFreshMutable(iterators[i], 128L, span);
         }
 
-        return PyTuple.FromOwnedArray(iterators, context.MemoryGovernor, span);
+        var teeResult = PyTuple.FromOwnedArray(iterators, context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(teeResult, teeResult.CommittedStorageBytes, span);
+        return teeResult;
     }
 
     private static object Batched(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -634,7 +685,9 @@ internal sealed partial class LythonRuntime
         var bound = BindArguments(arguments, LythonKnownCallableSignatures.ItertoolsBatched, span);
         var size = ExpectItPositiveInt(bound.Values[1], "n must be at least one", span);
         var strict = bound.Assigned[2] && IsTruthy(bound.Values[2]);
-        return new PyBatchedIterator(bound.Values[0], size, strict, context.MemoryGovernor, span, context);
+        var batchedResult = new PyBatchedIterator(bound.Values[0], size, strict, context.MemoryGovernor, span, context);
+        context.Services.State.CallTemporaries.TrackFreshMutable(batchedResult, PyIteratorBase.IteratorValueBytes);
+        return batchedResult;
     }
 
     private static object[] PositionalOnly(CallArgumentValue[] arguments, string owner, LythonSourceSpan span)

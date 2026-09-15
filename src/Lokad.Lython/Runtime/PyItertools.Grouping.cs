@@ -270,6 +270,11 @@ internal sealed class PyTeeSharedState
     private readonly LythonSourceSpan _span;
     private bool _sourceExhausted;
 
+    // Construction-time owned charges for the pool coupon. Later per-item queue
+    // and backing growth commits outside this snapshot (residual); drops release
+    // through the entry while that growth strands conservatively.
+    internal long ConstructionCharge { get; private set; }
+
     public PyTeeSharedState(object source, int count, MemoryGovernor memoryGovernor, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         _source = PyIteration.Cursor.Create(source, span, context);
@@ -281,9 +286,9 @@ internal sealed class PyTeeSharedState
         }
 
         // Queue objects plus the queue table, retained for the shared-state lifetime.
-        var constructionCharge = 64L + (80L * count);
-        memoryGovernor.Reserve(constructionCharge, span);
-        memoryGovernor.Commit(constructionCharge);
+        ConstructionCharge = 64L + (80L * count);
+        memoryGovernor.Reserve(ConstructionCharge, span);
+        memoryGovernor.Commit(ConstructionCharge);
 
         _memoryGovernor = memoryGovernor;
         _context = context;
