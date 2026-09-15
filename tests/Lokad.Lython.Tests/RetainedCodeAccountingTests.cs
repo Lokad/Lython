@@ -6,7 +6,8 @@ namespace Lokad.Lython.Tests;
 
 // MG22: deferred module code owns its retained syntax nodes once per module
 // load: definitions count their full subtree (nested definitions included),
-// while executed top-level statements contribute only lambdas. Counts reuse
+// while executed top-level statements contribute only deferred roots (lambdas
+// and generators); eager comprehension scaffolding stays transient.
 // the shared statement/expression traversals; unknown shapes fail loud.
 public sealed class RetainedCodeAccountingTests
 {
@@ -145,6 +146,45 @@ public sealed class RetainedCodeAccountingTests
         Assert.Equal(5, LythonRuntime.CountDeferredModuleCode(body));
     }
 
+    [Fact]
+    public void GeneratorAtModuleLevelCounted()
+    {
+        var body = TopLevel("g = (x for x in y)\n");
+        // Only the retained generator pays: genexp + item + iterable.
+        Assert.Equal(3, LythonRuntime.CountDeferredModuleCode(body));
+    }
+
+    [Fact]
+    public void NestedLambdaInGeneratorCountsOnce()
+    {
+        var body = TopLevel("g = (lambda: 1 for i in y)\n");
+        // The generator is the outermost root: genexp + lambda + literal +
+        // iterable, with no second count for the nested lambda.
+        Assert.Equal(4, LythonRuntime.CountDeferredModuleCode(body));
+    }
+
+    [Fact]
+    public void GeneratorInLambdaCountsOnce()
+    {
+        var body = TopLevel("f = lambda: (x for x in y)\n");
+        // The lambda is the outermost root: lambda + genexp + item + iterable.
+        Assert.Equal(4, LythonRuntime.CountDeferredModuleCode(body));
+    }
+
+    [Fact]
+    public void EagerComprehensionKeepsOnlyNestedRoots()
+    {
+        var body = TopLevel("xs = [lambda: i for i in y]\n");
+        // Eager scaffolding is transient; only the nested lambda subtree pays.
+        Assert.Equal(2, LythonRuntime.CountDeferredModuleCode(body));
+    }
+
+    [Fact]
+    public void BareComprehensionAtModuleLevelCostsNothing()
+    {
+        var body = TopLevel("xs = [i + 1 for i in y]\n");
+        Assert.Equal(0, LythonRuntime.CountDeferredModuleCode(body));
+    }
 
     [Fact]
     public void FundedBodiesCommitOnce()

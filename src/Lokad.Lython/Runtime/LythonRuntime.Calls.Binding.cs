@@ -261,7 +261,7 @@ internal sealed partial class LythonRuntime
     // is retained, even when bodies never execute. Module slots, scope tables
     // and source text do not cover that graph, so each module owns its
     // deferred code once at import preparation: deep syntax-node counts over
-    // every retained function, class-nested and lambda body. Re-imports hit
+    // every retained function, class-nested, lambda and generator body. Re-imports hit
     // the registry and pay nothing, nested bodies pay once inside their outer
     // walk instead of again at execution, and host-owned entry scripts never
     // flow through import preparation, so no name check exists to spoof.
@@ -316,18 +316,21 @@ internal sealed partial class LythonRuntime
 
             foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
             {
-                count += CountLambdaBodies(expression);
+                count += CountDeferredRoots(expression);
             }
 
-            count += CountExtraStatementLambdas(statement);
+            count += CountExtraStatementDeferredRoots(statement);
         }
 
         return count;
     }
 
-    // Counts lambda bodies in evaluated positions: each lambda owns its full
-    // subtree once (parameters included); anything else is transient there.
-    private static long CountLambdaBodies(ExpressionSyntax root)
+    // Counts deferred roots in evaluated positions: each outermost lambda or generator
+    // expression owns its full subtree once (parameters and clauses included);
+    // anything else there is transient (eager comprehension scaffolding included).
+    // A live generator retains its clauses and item expression like a function
+    // retains its body, so generators are roots exactly like lambdas.
+    private static long CountDeferredRoots(ExpressionSyntax root)
     {
         var count = 0L;
         var pending = new Stack<ExpressionSyntax>();
@@ -335,7 +338,7 @@ internal sealed partial class LythonRuntime
         while (pending.Count > 0)
         {
             var expression = pending.Pop();
-            if (expression is LambdaExpressionSyntax)
+            if (expression is LambdaExpressionSyntax or GeneratorExpressionSyntax)
             {
                 count += CountSyntaxSubtree(expression);
                 continue;
@@ -350,25 +353,23 @@ internal sealed partial class LythonRuntime
         return count;
     }
 
-    // Lambda search inside the retained references the shared traversals
-    // skip: unpacking receivers, chained targets and match patterns. Each is
-    // a small closed set; unknown shapes fail loud below.
-    // Lambda search inside references the shared traversals skip: unpacking
-    // receivers, chained targets and match patterns (whose own nodes count in
-    // full walks). Each is a small closed set; unknown shapes fail loud.
-    private static long CountExtraStatementLambdas(StatementSyntax statement)
+    // Deferred-root search inside the retained references the shared traversals
+    // skip: unpacking receivers, chained targets and match patterns (whose own
+    // nodes count in full walks). Each is a small closed set; unknown shapes
+    // fail loud below.
+    private static long CountExtraStatementDeferredRoots(StatementSyntax statement)
     {
         var count = 0L;
         foreach (var expression in EnumerateExtraStatementExpressions(statement))
         {
-            count += CountLambdaBodies(expression);
+            count += CountDeferredRoots(expression);
         }
 
         if (statement is MatchStatementSyntax matchStatement)
         {
             foreach (var matchCase in matchStatement.Cases)
             {
-                count += CountLambdaBodiesInPattern(matchCase.Pattern);
+                count += CountDeferredRootsInPattern(matchCase.Pattern);
             }
         }
 
@@ -504,9 +505,9 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    // Lambda search inside match patterns, whose nodes count only in full
-    // walks. Embedded expressions route through the same lambda scan.
-    private static long CountLambdaBodiesInPattern(PatternSyntax root)
+    // Deferred-root search inside match patterns, whose nodes count only in full
+    // walks. Embedded expressions route through the same root scan.
+    private static long CountDeferredRootsInPattern(PatternSyntax root)
     {
         var count = 0L;
         var pending = new Stack<PatternSyntax>();
@@ -516,7 +517,7 @@ internal sealed partial class LythonRuntime
             var pattern = pending.Pop();
             foreach (var expression in EnumeratePatternExpressions(pattern))
             {
-                count += CountLambdaBodies(expression);
+                count += CountDeferredRoots(expression);
             }
 
             foreach (var nested in EnumeratePatternSubpatterns(pattern))
