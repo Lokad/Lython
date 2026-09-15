@@ -15,6 +15,8 @@ public class RuntimeHotPathBenchmarks
     private readonly LythonCompiledScript _counterEquality;
     private readonly LythonCompiledScript _dequeEquality;
     private readonly LythonCompiledScript _chainMapLookup;
+    private readonly LythonCompiledScript _tupleKeyBuild;
+    private readonly LythonCompiledScript _nestedTupleKeyLookup;
     private readonly LythonCompiledScript _openPyxlAppend;
     private readonly string _repeatedConstantSource;
     private readonly string _invalidConstantSource;
@@ -41,6 +43,10 @@ public class RuntimeHotPathBenchmarks
         _chainMapLookup = Compile(
             engine,
             "from collections import ChainMap\nmaps = [{str(value): value} for value in range(256)]\ncombined = ChainMap(*maps)\nreturn sum(combined[str(value)] for value in range(256))");
+        _tupleKeyBuild = Compile(engine, "d = {}\nfor i in range(2000):\n    d[(i, i + 1)] = i\nreturn len(d)");
+        _nestedTupleKeyLookup = Compile(
+            engine,
+            "d = {((i,), i): i for i in range(2000)}\ntotal = 0\nfor i in range(2000):\n    total += d[((i,), i)]\nreturn total");
         _openPyxlAppend = Compile(
             engine,
             "from openpyxl import Workbook\nworksheet = Workbook().active\nfor value in range(2000):\n    worksheet.append([value, value + 1, value + 2])\nreturn worksheet.max_row");
@@ -77,6 +83,12 @@ public class RuntimeHotPathBenchmarks
 
     [Benchmark]
     public object? ChainMapLookupAcrossManyMaps() => Run(_chainMapLookup);
+
+    [Benchmark]
+    public object? TupleKeyDictBuild() => Run(_tupleKeyBuild);
+
+    [Benchmark]
+    public object? NestedTupleKeyRepeatedLookup() => Run(_nestedTupleKeyLookup);
 
     [Benchmark]
     public object? OpenPyxlIncrementalAppend() => Run(_openPyxlAppend);

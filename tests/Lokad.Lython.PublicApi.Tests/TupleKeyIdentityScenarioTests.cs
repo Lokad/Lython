@@ -71,4 +71,8 @@ public sealed class TupleKeyIdentityScenarioTests
     [Fact]
     public async Task UnhashableTopLevelKeyRaises()
         => await AssertValue("try:\n    d = {[1]: 2}\n    return 0\nexcept TypeError:\n    return 1\n", new BigInteger(1));
+
+    [Fact]
+    public async Task InstanceElementsHashByIdentity()
+        => await AssertValue("class K:\n    pass\nk = K()\nd = {(k, 1): 5}\nreturn d[(k, 1)]\n", new BigInteger(5));
 }
