@@ -155,8 +155,8 @@ internal sealed class ExecutionState
     // weak handle and identity box): reserve before publishing so a denied
     // insertion strands nothing, share the entry across repeated lookups,
     // and track the box in the reclamation pool so dropped identities
-    // release. Concurrent first registrations may both commit; the
-    // over-count is conservative and the IDs stay distinct.
+    // release. The runtime is single-threaded, so one lookup-then-add sequence
+    // cannot race; governor accounting is per-run and never shared across threads.
     private const long IdentityEntryBytes = 64;
 
     public BigInteger GetObjectId(object? value)
@@ -167,10 +167,14 @@ internal sealed class ExecutionState
             return new BigInteger(existing.Value);
         }
 
-        MemoryGovernor.Reserve(IdentityEntryBytes, null);
-        MemoryGovernor.Commit(IdentityEntryBytes);
-        var box = _objectIds.GetValue(key, _ => new StrongBox<long>(Interlocked.Increment(ref _nextObjectId)));
+        // Hold our commit room while the pool entry registers: Track denies before
+        // anything is published, so a second-boundary denial strands neither the
+        // identity commit nor an untracked box, and the holder releases on the way out.
+        using var hold = MemoryGovernor.ReserveTemporary(IdentityEntryBytes, null);
+        var box = new StrongBox<long>(Interlocked.Increment(ref _nextObjectId));
         CallTemporaries.Track(box, IdentityEntryBytes);
+        MemoryGovernor.Commit(IdentityEntryBytes);
+        _objectIds.Add(key, box);
         return new BigInteger(box.Value);
     }
 

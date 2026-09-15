@@ -134,5 +134,34 @@ public sealed class IdentityRegistryAccountingTests
         Assert.Equal(0, governor.CurrentCommittedBytes);
         root.State.GetObjectId(new object());
         Assert.Equal(128, governor.CurrentCommittedBytes);
+        Assert.Equal(1, root.State.CallTemporaries.Count);
+    }
+
+    [Fact]
+    public void SecondBoundaryDenialStrandsNothing()
+    {
+        // 64 B funds the identity commit but not the pool entry: the whole
+        // registration must fail atomically instead of publishing untracked.
+        var root = NewRoot(64, out var governor);
+        var failure = Assert.Throws<LythonRuntimeException>(() => root.State.GetObjectId(new object()));
+        Assert.Equal("MemoryError", failure.ExceptionType);
+        Assert.Equal(0, governor.CurrentCommittedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+        Assert.Equal(0, root.State.CallTemporaries.Count);
+    }
+
+    [Fact]
+    public void DeniedRegistrationStaysDenied()
+    {
+        // A denied registration publishes nothing, so retrying the same key
+        // denies again instead of returning an untracked ID.
+        var root = NewRoot(64, out var governor);
+        var key = new object();
+        Assert.Throws<LythonRuntimeException>(() => root.State.GetObjectId(key));
+        var retry = Assert.Throws<LythonRuntimeException>(() => root.State.GetObjectId(key));
+        Assert.Equal("MemoryError", retry.ExceptionType);
+        Assert.Equal(0, governor.CurrentCommittedBytes);
+        Assert.Equal(0, root.State.CallTemporaries.Count);
+        GC.KeepAlive(key);
     }
 }
