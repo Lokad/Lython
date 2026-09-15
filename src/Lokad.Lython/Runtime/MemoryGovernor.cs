@@ -74,7 +74,7 @@ internal sealed class MemoryGovernor
                 _inExhaustionRelief = true;
                 try
                 {
-                    ReclaimForExhaustion();
+                    ReclaimForExhaustion(nextAccounted - maxAccountedBytes);
                 }
                 finally
                 {
@@ -101,7 +101,7 @@ internal sealed class MemoryGovernor
     // pools; untracked retained charges still deny, correctly, without relief.
     // Tier promotion inside those sweeps may reserve its old-tier slot; the
     // reentrancy guard above turns that nested denial into a fast failure.
-    private void ReclaimForExhaustion()
+    private void ReclaimForExhaustion(long shortfallBytes)
     {
         if (LivePoolProvider is not { } provider)
         {
@@ -121,6 +121,21 @@ internal sealed class MemoryGovernor
         // No tracked charges anywhere: a collection could not release
         // anything accounted, so fail fast instead of pausing the process.
         if (live is null)
+        {
+            return;
+        }
+
+        // Release already-collected targets first: when bursty drops pile up
+        // faster than collections run, that alone can cover the shortfall and
+        // skip the process-wide pause. The net committed comparison keeps this
+        // exact even if tier backing grows mid-sweep.
+        var committedBefore = CurrentCommittedBytes;
+        foreach (var pool in live)
+        {
+            pool.Sweep(full: true);
+        }
+
+        if (committedBefore - CurrentCommittedBytes >= shortfallBytes)
         {
             return;
         }

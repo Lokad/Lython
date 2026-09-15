@@ -346,4 +346,35 @@ public sealed class ChargeReclamationPoolTests
         }
     }
 
+    [Fact]
+    public void ReliefSweepBeforeCollectCoversShortfall()
+    {
+        // 300 retained entries then all dropped and collected but unswept: the
+        // denied reservation triggers relief, whose pre-collection sweep frees the
+        // dead entries and covers the shortfall, so the reservation succeeds with
+        // only pre-existing backing left committed. Tier backing is not asserted
+        // literally: pool residency at context setup shifts the growth sequence. Committed math proves the sweep freed
+        // exactly the dead charges; collection counts stay unpinned because xunit
+        // runs suites in parallel and process-wide GC observations flake.
+        // The pool must be registered for relief: a standalone pool is invisible
+        // to the provider, so this runs on a real execution state like other
+        // exhaustion tests.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 100000 });
+        var governor = context.MemoryGovernor;
+        var pool = context.State.CallTemporaries;
+        var baseline = governor.CurrentCommittedBytes;
+        var keys = TrackLive(pool, governor, 300);
+        var backing = pool.CommittedBackingBytes;
+        Assert.Equal(baseline + 300L * (128L + 128L) + backing, governor.CurrentCommittedBytes);
+        DropAll(keys);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        governor.Reserve(50000, null);
+        Assert.Equal(50000, governor.CurrentReservedBytes);
+        Assert.Equal(baseline + backing, governor.CurrentCommittedBytes);
+        GC.KeepAlive(keys);
+    }
+
 }
