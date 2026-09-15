@@ -25,7 +25,9 @@ except BaseException as exception:
         "Message": str(exception),
     }
     if isinstance(exception, SystemExit):
-        exit_code = exception.code if isinstance(exception.code, int) else 1
+        code = exception.code
+        # Like real CPython: bare/None exits 0, other non-ints exit 1.
+        exit_code = int(code) if isinstance(code, int) else (0 if code is None else 1)
 
 print(json.dumps({
     "Success": success,
@@ -92,6 +94,11 @@ for (var index = 0; index < snippets.Length; index++)
     }
 
     var matches = python is null || Equivalent(lython, python);
+    // A static Lython rejection is a supported-subset boundary, not an exact
+    // semantic comparison: label it explicitly while preserving both raw results.
+    string? note = matches || python is null || lython.Diagnostics.Length == 0
+        ? null
+        : "subset-rejection: Lython statically rejected this snippet; CPython ran it.";
     if (!lython.Success || !matches)
     {
         exitCode = 1;
@@ -99,11 +106,11 @@ for (var index = 0; index < snippets.Length; index++)
 
     if (parsed.JsonOutput || parsed.BatchJson)
     {
-        Console.WriteLine(JsonSerializer.Serialize(new ProbeReport(index, lython, python, matches)));
+        Console.WriteLine(JsonSerializer.Serialize(new ProbeReport(index, lython, python, matches, note)));
     }
     else
     {
-        PrintHumanReport(lython, python, matches);
+        PrintHumanReport(lython, python, matches, note);
     }
 }
 
@@ -276,13 +283,17 @@ static bool Equivalent(ProbeResult left, ProbeResult right) =>
     left.Failure?.ExceptionType == right.Failure?.ExceptionType &&
     left.Failure?.Message == right.Failure?.Message;
 
-static void PrintHumanReport(ProbeResult lython, ProbeResult? python, bool matches)
+static void PrintHumanReport(ProbeResult lython, ProbeResult? python, bool matches, string? note)
 {
     PrintResult("Lython", lython);
     if (python is not null)
     {
         PrintResult("CPython", python);
         Console.WriteLine(matches ? "Parity: match" : "Parity: DIFFERENT");
+        if (note is not null)
+        {
+            Console.WriteLine(note);
+        }
     }
 }
 
@@ -366,7 +377,7 @@ sealed record ParsedArguments(
         new(false, null, null, false, false, false, "python", error);
 }
 
-sealed record ProbeReport(int Index, ProbeResult Lython, ProbeResult? CPython, bool Matches);
+sealed record ProbeReport(int Index, ProbeResult Lython, ProbeResult? CPython, bool Matches, string? Note);
 
 sealed record ProbeResult(
     bool Success,
