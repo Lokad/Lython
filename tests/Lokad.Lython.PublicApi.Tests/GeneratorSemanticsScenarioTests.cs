@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Text;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
@@ -90,4 +91,22 @@ public sealed class GeneratorSemanticsScenarioTests
         Assert.Contains("canceled", result.Failure?.Message, StringComparison.Ordinal);
     }
 
+
+    [Fact]
+    public async Task DelayedAsyncIterationSuspendsMidConsumption()
+    {
+        // Each item opens and reads a host file, so every advance suspends on
+        // the delayed host; the shared iteration scope (and the walrus below) must
+        // survive those suspensions. File-backed outer iterables in async mode stay
+        // a separate deferred item (async outer acquisition).
+        var host = new DelayedLythonHost();
+        host.SeedFile("/d.txt", "a,b\n");
+        var script = new LythonEngine().Compile(
+            "total = 0\nfor x in (last := open(\"/d.txt\").read() for i in range(5)):\n    total += 1\nreturn total + len(last)\n");
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+        var asyncResult = await script.RunAsync(host, new LythonRunOptions());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(new BigInteger(9), asyncResult.ReturnValue);
+        Assert.True(host.CompletedAsynchronously > 0);
+    }
 }
