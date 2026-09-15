@@ -170,6 +170,7 @@ internal sealed partial class LythonRuntime
         PropagateComprehensionBindings(scope, context, comprehension.Clauses.Select(clause => clause.Target), comprehension.Span);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -217,6 +218,7 @@ internal sealed partial class LythonRuntime
         PropagateComprehensionBindings(scope, context, comprehension.Clauses.Select(clause => clause.Target), comprehension.Span);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
