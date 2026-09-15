@@ -89,7 +89,7 @@ internal sealed partial class LythonRuntime
             case PendingException exception:
                 throw exception.Exception;
             case PendingReturn returned:
-                throw returned.Return;
+                throw new ReturnSignal(returned.Value);
             case PendingControl control:
                 throw control.Control;
             default:

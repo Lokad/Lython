@@ -166,7 +166,9 @@ internal sealed partial class LythonRuntime
 
     private sealed record PendingException(LythonRuntimeException Exception) : PendingAbruptSignal;
 
-    private sealed record PendingReturn(ReturnSignal Return) : PendingAbruptSignal;
+    // A pending return carries the value, not a signal object: ordinary returns
+    // deliver through this record without ever throwing (see DeliverReturn).
+    private sealed record PendingReturn(object Value) : PendingAbruptSignal;
 
     private sealed record PendingControl(ControlSignal Control) : PendingAbruptSignal;
 

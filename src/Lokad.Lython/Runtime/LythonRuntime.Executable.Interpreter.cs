@@ -18,6 +18,8 @@ internal sealed partial class LythonRuntime
         private readonly ExecutableValueStack _stack = new(Math.Max(8, codeObject.LocalNames.Count));
         private int _currentBlockIndex = codeObject.EntryBlockIndex;
         private PendingAbruptSignal? _pendingAbrupt;
+        private object? _frameReturnValue;
+        private bool _hasFrameReturn;
         private readonly Stack<ActiveExceptionSave> _savedActiveExceptions = new();
         private readonly PyException? _entryActiveException = context.Services.CurrentException;
 
@@ -350,6 +352,23 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
+        // Ordinary returns deliver without throwing when a cleanup handles them
+        // in-frame; otherwise the frame exits by throwing once (instead of the
+        // previous throw-catch-rethrow cycle). Propagated signals from nested
+        // calls still arrive through the per-instruction catch above.
+        private bool DeliverReturn(object value, LythonSourceSpan span)
+        {
+            if (TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingReturn(value), span, ref _pendingAbrupt, ref _currentBlockIndex, out _))
+            {
+                return true;
+            }
+
+            AbandonFrame(span);
+            _frameReturnValue = value;
+            _hasFrameReturn = true;
+            return true;
+        }
+
         private bool ExecuteControlFlow(ExecutableInstruction instruction)
         {
             switch (instruction.OpCode)
@@ -397,10 +416,10 @@ internal sealed partial class LythonRuntime
                     return true;
 
                 case ExecutableOpCode.Return:
-                    throw new ReturnSignal(Pop(_stack, instruction.Span));
+                    return DeliverReturn(Pop(_stack, instruction.Span), instruction.Span);
 
                 case ExecutableOpCode.ReturnNone:
-                    throw new ReturnSignal(PyNone.Instance);
+                    return DeliverReturn(PyNone.Instance, instruction.Span);
 
                 default:
                     throw new InvalidOperationException($"Unknown executable opcode: {instruction.OpCode}");
@@ -488,7 +507,7 @@ internal sealed partial class LythonRuntime
                     }
                     catch (ReturnSignal signal)
                     {
-                        if (!TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingReturn(signal), instruction.Span, ref _pendingAbrupt, ref _currentBlockIndex, out _))
+                        if (!TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingReturn(signal.Value), instruction.Span, ref _pendingAbrupt, ref _currentBlockIndex, out _))
                         {
                             AbandonFrame(instruction.Span);
                             throw;
@@ -544,6 +563,11 @@ internal sealed partial class LythonRuntime
                     {
                         break;
                     }
+                }
+
+                if (_hasFrameReturn)
+                {
+                    throw new ReturnSignal(_frameReturnValue.RequireNotNull());
                 }
 
                 if (!jumped)
