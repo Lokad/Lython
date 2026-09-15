@@ -51,7 +51,9 @@ internal sealed partial class LythonRuntime
 
         if (left is PyBytes leftBytes && right is PyBytes rightBytes)
         {
-            return ConcatBytes(leftBytes, rightBytes, span);
+            var joinedBytes = ConcatBytes(leftBytes, rightBytes, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(joinedBytes, joinedBytes.CommittedStorageBytes);
+            return joinedBytes;
         }
 
         if (left is PyList leftList && right is PyList rightList)
@@ -241,12 +243,16 @@ internal sealed partial class LythonRuntime
 
         if (left is PyBytes leftBytes && TryRepeatCount(right, context, span, out var rightByteCount))
         {
-            return RepeatBytes(leftBytes, rightByteCount, span);
+            var repeatedBytes = RepeatBytes(leftBytes, rightByteCount, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(repeatedBytes, repeatedBytes.CommittedStorageBytes);
+            return repeatedBytes;
         }
 
         if (right is PyBytes rightBytes && TryRepeatCount(left, context, span, out var leftByteCount))
         {
-            return RepeatBytes(rightBytes, leftByteCount, span);
+            var repeatedBytes = RepeatBytes(rightBytes, leftByteCount, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(repeatedBytes, repeatedBytes.CommittedStorageBytes);
+            return repeatedBytes;
         }
 
         if (left is PyDeque leftDeque && TryRepeatCount(right, context, span, out var rightDequeRepeatCount))

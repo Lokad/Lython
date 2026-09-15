@@ -40,6 +40,11 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
 
     internal static long EstimateApproximateBytes(int length) => 32L + length;
 
+    // Current committed payload charges, for pooled owners that release them if
+    // this value is dropped. Bytes are immutable, so construction is the only
+    // charge; unowned values (shared constants and empties) carry nothing.
+    internal long CommittedStorageBytes => OwnerMemoryGovernor is null ? 0 : EstimateApproximateBytes(_bytes.Length);
+
     public bool IsTruthy() => _bytes.Length != 0;
 
     public IEnumerable<object> Iterate()

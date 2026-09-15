@@ -227,9 +227,16 @@ internal sealed partial class LythonRuntime
 
     internal static PyBytes CreateBytes(byte[] bytes, ExecutionContext context, LythonSourceSpan? span)
     {
-        return bytes.Length == 0
-            ? new PyBytes(Array.Empty<byte>())
-            : new PyBytes(bytes, context.MemoryGovernor, span);
+        if (bytes.Length == 0)
+        {
+            return new PyBytes(Array.Empty<byte>());
+        }
+
+        // Fresh payloads reclaim through the pool once dropped, like adopted
+        // strings; the funnel has no bytes branch, so this choke point owns it.
+        var result = new PyBytes(bytes, context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
+        return result;
     }
 
     internal static PyString CreateString(string text, ExecutionContext context, LythonSourceSpan? span)
