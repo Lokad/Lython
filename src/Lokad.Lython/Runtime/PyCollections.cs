@@ -732,6 +732,7 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         _memoryGovernor.Reserve(DequeNodeBytes, _allocationSpan);
         _memoryGovernor.Commit(DequeNodeBytes);
         _committedNodeBytes += DequeNodeBytes;
+        ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
     }
 
     private void ReleaseNode()

@@ -182,8 +182,15 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             return false;
         }
 
+        var committedBefore = _committedBytes;
         EnsureCapacity(Count + 1);
-        return _items.Add(item);
+        var added = _items.Add(item);
+        if (added && _committedBytes != committedBefore)
+        {
+            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
+        }
+
+        return added;
     }
 
     public void AttachMemoryGovernor(MemoryGovernor governor)

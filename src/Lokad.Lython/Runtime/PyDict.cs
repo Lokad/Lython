@@ -118,9 +118,14 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             return;
         }
 
+        var committedBefore = _items.CommittedBytes;
         _items = PyDictStorage.EnsureCapacity(_items, Count + 1, _memoryGovernor, _allocationSpan);
         _items.AddNew(storageKey, storageValue);
         _version++;
+        if (_items.CommittedBytes != committedBefore)
+        {
+            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
+        }
     }
 
     public void AttachMemoryGovernor(MemoryGovernor governor)

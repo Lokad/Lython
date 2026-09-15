@@ -56,8 +56,22 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
 
     public void Add(object value)
     {
+        var committedBefore = _items.CommittedBytes;
         _items = PyListStorage.EnsureCapacity(_items, Count + 1, _memoryGovernor, _allocationSpan);
         _items.Add(value);
+        NoteGrowth(committedBefore);
+    }
+
+    // Keeps a tracked coupon current across growth: capacity commits below change
+    // the backing this entry owns, so refresh the snapshot after successful growth.
+    // Denied growth throws before mutating, leaving the old coupon (and retry
+    // headroom) intact. Untracked values cost one lookup and no entry.
+    private void NoteGrowth(long committedBefore)
+    {
+        if (_items.CommittedBytes != committedBefore)
+        {
+            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
+        }
     }
 
     public void AddRange(IEnumerable<object> values)
@@ -82,12 +96,14 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
         {
             // Bounded, known-size inputs reserve exactly once up front, so the
             // bulk append below cannot grow past the ensured capacity uncharged.
+            var committedBefore = _items.CommittedBytes;
             _items = PyListStorage.EnsureCapacity(_items, checked(Count + known.Count), _memoryGovernor, _allocationSpan);
             foreach (var value in known)
             {
                 _items.Add(value);
             }
 
+            NoteGrowth(committedBefore);
             return;
         }
 
@@ -142,8 +158,10 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
     {
         var normalized = index < 0 ? index + Count : index;
         normalized = Math.Clamp(normalized, 0, Count);
+        var committedBefore = _items.CommittedBytes;
         _items = PyListStorage.EnsureCapacity(_items, checked(Count + 1), _memoryGovernor, _allocationSpan);
         _items.InsertAt(normalized, value);
+        NoteGrowth(committedBefore);
     }
 
     public void Reverse()
@@ -180,8 +198,10 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
 
         var total = (int)totalLength;
         var originalCount = Count;
+        var committedBefore = _items.CommittedBytes;
         _items = PyListStorage.EnsureCapacity(_items, total, _memoryGovernor, _allocationSpan);
         _items.RepeatFill(originalCount, total);
+        NoteGrowth(committedBefore);
     }
 
     public void AttachMemoryGovernor(MemoryGovernor governor)
@@ -259,8 +279,10 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
                 staged = sourceStorage.ToArray();
             }
 
+            var committedBefore = _items.CommittedBytes;
             _items = PyListStorage.EnsureCapacity(_items, checked(Count - removeCount + staged.Count), _memoryGovernor, _allocationSpan);
             _items.ReplaceRange(bounds.Start, removeCount, staged);
+            NoteGrowth(committedBefore);
             return;
         }
 
