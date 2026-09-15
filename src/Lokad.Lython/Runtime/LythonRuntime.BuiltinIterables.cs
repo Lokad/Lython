@@ -349,6 +349,7 @@ internal sealed partial class LythonRuntime
                 return new PyUserIterator(instance, context, span).Iterator;
             }
 
+            PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
             var iterEnumerableResult = new PyEnumerableIterator(arguments[0], span, context);
             context.Services.State.CallTemporaries.TrackFreshMutable(iterEnumerableResult, PyIteratorBase.IteratorValueBytes);
             return iterEnumerableResult;
@@ -412,7 +413,7 @@ internal sealed partial class LythonRuntime
 
         if (target is PyRange range)
         {
-            // The shell charge lives in the PyEnumerableIterator ctor; track only here.
+            PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
             var rangeReversedResult = new PyEnumerableIterator(range.GetSlice(PyNone.Instance, PyNone.Instance, BigInteger.MinusOne, span), span, context, "range_iterator");
             context.Services.State.CallTemporaries.TrackFreshMutable(rangeReversedResult, PyIteratorBase.IteratorValueBytes);
             return rangeReversedResult;

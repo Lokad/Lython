@@ -158,7 +158,13 @@ internal sealed partial class LythonRuntime
                     var keepEnds = arguments.Length == 1 && IsTruthy(arguments[0]);
                     return SplitBytesLines(bytes, keepEnds, context, span);
                 }, LythonCallableSignature.Create("bytes.splitlines", ["keepends"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 0)),
-                "__iter__" => BoundCallable.CreateNoArguments(bytes, "bytes.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
+                "__iter__" => BoundCallable.CreateNoArguments(bytes, "bytes.__iter__", static (receiver, span, context) =>
+                {
+                    PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
+                    var bytesIterResult = new PyEnumerableIterator(receiver, span, context);
+                    context.Services.State.CallTemporaries.TrackFreshMutable(bytesIterResult, PyIteratorBase.IteratorValueBytes);
+                    return bytesIterResult;
+                }),
                 "__len__" => BoundCallable.CreateNoArguments(bytes, "bytes.__len__", static (receiver, span, context) => Len([receiver], span, context)),
                 "__contains__" => BoundCallable.Create((arguments, span, _) =>
                 {

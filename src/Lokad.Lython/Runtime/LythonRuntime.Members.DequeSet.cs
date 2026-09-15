@@ -179,7 +179,13 @@ internal sealed partial class LythonRuntime
                     deque.Rotate(offset);
                     return PyNone.Instance;
                 }, "deque.rotate", ["n"], 0),
-                "__iter__" => BoundCallable.CreateNoArguments(deque, "deque.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
+                "__iter__" => BoundCallable.CreateNoArguments(deque, "deque.__iter__", static (receiver, span, context) =>
+                {
+                    PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
+                    var dequeIterResult = new PyEnumerableIterator(receiver, span, context);
+                    context.Services.State.CallTemporaries.TrackFreshMutable(dequeIterResult, PyIteratorBase.IteratorValueBytes);
+                    return dequeIterResult;
+                }),
                 "__len__" => BoundCallable.CreateNoArguments(deque, "deque.__len__", static (receiver, span, context) => Len([receiver], span, context)),
                 "__contains__" => BoundCallable.Create((arguments, span, _) =>
                 {
@@ -464,7 +470,13 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(set.Count, span);
                     return PyNone.Instance;
                 }, OnePositional("set.symmetric_difference_update", "other")),
-                "__iter__" => BoundCallable.CreateNoArguments(set, "set.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context)),
+                "__iter__" => BoundCallable.CreateNoArguments(set, "set.__iter__", static (receiver, span, context) =>
+                {
+                    PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
+                    var setIterResult = new PyEnumerableIterator(receiver, span, context);
+                    context.Services.State.CallTemporaries.TrackFreshMutable(setIterResult, PyIteratorBase.IteratorValueBytes);
+                    return setIterResult;
+                }),
                 "__len__" => BoundCallable.CreateNoArguments(set, "set.__len__", static (receiver, span, context) => Len([receiver], span, context)),
                 "__contains__" => BoundCallable.Create((arguments, span, _) =>
                 {

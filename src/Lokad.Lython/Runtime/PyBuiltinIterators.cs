@@ -13,7 +13,8 @@ internal sealed class PyEnumerableIterator : PyIteratorBase
     {
         _source = PyIteration.Cursor.Create(source, span, context);
         _displayName = displayName;
-        ChargeIteratorValue(context.MemoryGovernor, span);
+        // The 128 B shell charge is owned by each construction site (which also tracks
+        // the shell); charging here as well would double-count every iterator.
     }
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)

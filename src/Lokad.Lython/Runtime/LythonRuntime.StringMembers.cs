@@ -36,7 +36,13 @@ internal sealed partial class LythonRuntime
             // the shared singleton instead of a text-bound provider.
             if (name == "__iter__")
             {
-                value = BoundCallable.CreateNoArguments(text, "str.__iter__", static (receiver, span, context) => new PyEnumerableIterator(receiver, span, context));
+                value = BoundCallable.CreateNoArguments(text, "str.__iter__", static (receiver, span, context) =>
+                {
+                    PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
+                    var strIterResult = new PyEnumerableIterator(receiver, span, context);
+                    context.Services.State.CallTemporaries.TrackFreshMutable(strIterResult, PyIteratorBase.IteratorValueBytes);
+                    return strIterResult;
+                });
                 return true;
             }
 

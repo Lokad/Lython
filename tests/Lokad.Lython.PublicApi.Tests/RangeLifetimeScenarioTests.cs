@@ -192,4 +192,26 @@ public sealed class RangeLifetimeScenarioTests
         => await AssertCompletes(
             "import collections\nc = collections.Counter(\"ab\")\nfor i in range(50000):\n    x = c.__reversed__()\nreturn 0\n", "0");
 
+    // Member __iter__ dunders construct the same pooled shells as iter(); explicit
+    // dunder calls in a loop strand without the call-site ownership below.
+    [Fact]
+    public async Task ListIterDunderCompletes()
+        => await AssertCompletes(
+            "for i in range(50000):\n    x = [1, 2].__iter__()\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task DictKeysIterDunderCompletes()
+        => await AssertCompletes(
+            "d = {1: 2}\nfor i in range(50000):\n    x = d.keys().__iter__()\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task StrIterDunderCompletes()
+        => await AssertCompletes(
+            "for i in range(50000):\n    x = \"ab\".__iter__()\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task SetIterDunderCompletes()
+        => await AssertCompletes(
+            "for i in range(50000):\n    x = {1, 2}.__iter__()\nreturn 0\n", "0");
+
 }
