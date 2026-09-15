@@ -24,7 +24,7 @@ internal static class RuntimeFailureProjection
         }
 
         // Frame records alias engine state; only the new array rides the budget.
-        // Reserves below check fit first, so a failed failure-projection never
+        // Reserve itself is atomic, so a failed failure-projection never
         // pushes the reported peak past the budget; the caller's minimal
         // fallback then keeps the original type with empty details.
         ReserveOrThrow(budget, checked(32L + (16L * frames.Length)));
@@ -70,8 +70,8 @@ internal static class RuntimeFailureProjection
             return message;
         }
 
-        // CurrentBytes never exceeds MaxBytes by more than prior capture
-        // overruns, so this stays a plain comparison without checked arithmetic.
+        // CurrentBytes never exceeds MaxBytes (Reserve is atomic), so this
+        // stays a plain comparison without checked arithmetic.
         if (fullBytes <= maxBytes - budget.CurrentBytes)
         {
             budget.Reserve(fullBytes);
@@ -94,19 +94,8 @@ internal static class RuntimeFailureProjection
         return kept;
     }
 
+    // Reserve is atomic, so this needs no precheck of its own: a denial
+    // throws without moving the counter.
     private static void ReserveOrThrow(ProjectionBudget? budget, long bytes)
-    {
-        if (budget?.MaxBytes is not { } maxBytes)
-        {
-            budget?.Reserve(bytes);
-            return;
-        }
-
-        if (bytes > maxBytes - budget.CurrentBytes)
-        {
-            throw new ProjectionException($"projection memory budget exceeded ({maxBytes})");
-        }
-
-        budget.Reserve(bytes);
-    }
+        => budget?.Reserve(bytes);
 }

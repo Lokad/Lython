@@ -11,6 +11,9 @@ internal sealed class ProjectionBudget
 
     public long CurrentBytes { get; private set; }
 
+    // Check-first like execution accounting: a denial leaves the counter
+    // (and therefore the reported peak) at accepted charges only. The
+    // comparisons are arranged so the addition itself cannot overflow.
     public void Reserve(long bytes)
     {
         if (bytes <= 0)
@@ -18,14 +21,18 @@ internal sealed class ProjectionBudget
             return;
         }
 
-        checked
+        if (MaxBytes is { } maxBytes)
         {
-            CurrentBytes += bytes;
+            if (bytes > maxBytes || CurrentBytes > maxBytes - bytes)
+            {
+                throw new ProjectionException($"projection memory budget exceeded ({maxBytes})");
+            }
+        }
+        else if (CurrentBytes > long.MaxValue - bytes)
+        {
+            throw new ProjectionException("projection memory budget exceeded");
         }
 
-        if (MaxBytes is { } maxBytes && CurrentBytes > maxBytes)
-        {
-            throw new ProjectionException($"projection memory budget exceeded ({maxBytes})");
-        }
+        CurrentBytes += bytes;
     }
 }
