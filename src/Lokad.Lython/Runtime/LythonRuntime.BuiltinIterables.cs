@@ -226,7 +226,10 @@ internal sealed partial class LythonRuntime
 
         context.MemoryGovernor.Reserve(RangeValueBytes, span);
         context.MemoryGovernor.Commit(RangeValueBytes);
-        return new PyRange(start, stop, step);
+        // Fresh shells reclaim through the pool once dropped.
+        var range = new PyRange(start, stop, step);
+        context.Services.State.CallTemporaries.TrackFreshMutable(range, RangeValueBytes);
+        return range;
     }
 
     private static object Enumerate(object[] arguments, LythonSourceSpan span, ExecutionContext context)
