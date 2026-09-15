@@ -1,12 +1,14 @@
+using System.Numerics;
 using BenchmarkDotNet.Attributes;
 
 namespace Lokad.Lython.Benchmarks;
 
-// Call and integer-loop overhead matrix behind the item-10 profiles: plain,
-// keyword and variadic identity calls (sync/async) plus the 100K integer
-// loop. BenchmarkDotNet reports timing, managed allocation and collections;
+// Call and integer-loop overhead matrix: positional, keyword, variadic,
+// closure and method calls (plus the 100K integer loop and one async shape).
+// BenchmarkDotNet reports timing, managed allocation and collections;
 // first-chance exception counts ride one-off observer runs (see the review
-// notes), not committed thresholds.
+// notes), not committed thresholds. Every script result is validated once
+// at construction, outside timed sections.
 [MemoryDiagnoser]
 public class CallOverheadBenchmarks
 {
@@ -27,6 +29,23 @@ public class CallOverheadBenchmarks
         _intLoop100k = BenchmarkScripts.Compile(engine, "x = 0\nfor i in range(100000):\n    x = x + 1\nreturn x\n");
         _closure10k = BenchmarkScripts.Compile(engine, "def outer():\n    x = 1\n    def inner(a):\n        return a + x\n    return inner\nf = outer()\nx = 0\nfor i in range(10000):\n    x = f(i)\nreturn x\n");
         _method10k = BenchmarkScripts.Compile(engine, "class C:\n    def m(self, a):\n        return a + 1\nc = C()\nx = 0\nfor i in range(10000):\n    x = c.m(i)\nreturn x\n");
+        CheckCallOverhead(_identity10k, new BigInteger(9999), "identity10k");
+        CheckCallOverhead(_identity10k, new BigInteger(9999), "identity10k-async", async: true);
+        CheckCallOverhead(_keyword10k, new BigInteger(10001), "keyword10k");
+        CheckCallOverhead(_variadic10k, new BigInteger(1), "variadic10k");
+        CheckCallOverhead(_closure10k, new BigInteger(10000), "closure10k");
+        CheckCallOverhead(_method10k, new BigInteger(10000), "method10k");
+        CheckCallOverhead(_intLoop100k, new BigInteger(100000), "intLoop100k");
+    }
+
+    // Setup-only validation (outside timed sections): each script runs once
+    // here so a wrong result fails the run before any timing starts.
+    private void CheckCallOverhead(LythonCompiledScript script, object expected, string name, bool async = false)
+    {
+        var actual = async
+            ? BenchmarkScripts.RunAsync(script, _host).GetAwaiter().GetResult()
+            : BenchmarkScripts.Run(script, _host);
+        BenchmarkScripts.CheckResult(actual, expected, name);
     }
 
     [Benchmark(Description = "10K positional identity calls")]

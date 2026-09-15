@@ -176,7 +176,8 @@ temporary loops at a 3 MiB execution budget) from a ShortRun BenchmarkDotNet run
 
 Notes: ShortRun (3 iterations, wide intervals: shape, not thresholds). The 200K
 scan costs about 8.8x time and 9.9x allocation versus 20K (linear in rows);
-Gen-2 counts ride exhaustion relief (9K/90K collections at 20K/200K). File line
+Gen-2 counts ride exhaustion relief (about 9/90 collections per scan operation
+at 20K/200K rows, i.e. 9K/90K per 1,000 operations in BDN normalized units). File line
 scans skip CSV parsing. Scripts precompile once per class lifetime, so figures
 exclude cold compilation; accounted peaks ride the deterministic
 `BoundedScanPeakStaysFlatAcrossSizes` pin. Re-record on release runs before
@@ -195,23 +196,28 @@ Notes: the invalid pool (5,000 assignments plus an unbalanced tail) fails about
 changing frontend pooling or validation paths.
 
 Call overhead (`CallOverheadBenchmarks.cs`: 10K calls plus the 100K-step integer
-loop) from a ShortRun BenchmarkDotNet run (.NET 10, Windows 11 10.0.26200 x64,
-2026-09-14, 751c380):
+loop) from a ShortRun BenchmarkDotNet run (.NET 10.0.12, Windows 11 10.0.26200 x64,
+2026-09-15, cae84bb):
 
 | Benchmark | Mean | Allocated/op |
 | --- | --- | --- |
-| 10K positional identity calls | 38.78 ms | 16.28 MB |
-| 10K positional identity calls (async) | 67.76 ms | 38.41 MB |
-| 10K keyword identity calls | 40.54 ms | 17.27 MB |
-| 10K variadic identity calls | 57.52 ms | 21.71 MB |
-| 100K-step integer loop | 15.69 ms | 16.05 MB |
+| 10K positional identity calls | 17.943 ms | 12.47 MB |
+| 10K positional identity calls (async) | 5.225 ms | 9.26 MB |
+| 10K keyword identity calls | 19.899 ms | 13.53 MB |
+| 10K variadic identity calls | 38.981 ms | 19.08 MB |
+| 10K closure calls | 19.584 ms | 13.15 MB |
+| 10K method calls | 6.494 ms | 12.62 MB |
+| 100K-step integer loop | 15.529 ms | 16.05 MB |
 
-Notes: ShortRun (wide intervals). First-chance exceptions measured separately with
-an observer (Release): 20,002 per 10K sync calls (throw plus interpreter rethrow),
-40,003 async (two extra transits), 2 per integer loop. Deterministic process
-allocation counters (min-of-3) attribute ~2,034 B per positional call and ~2,139 B
-per keyword call before the binder change above (~1,954 B / ~2,058 B after:
-lazy keyword-overflow dictionary plus exact bound capacity saves ~80 B/call).
-Async calls cost ~2.3x sync with ~2x the exceptions; return delivery dominates
-call time. Re-record on release runs before changing call binding, return
-delivery, or value boxing.
+Notes: ShortRun (wide intervals: shape, not thresholds). Every script result is
+validated once at construction, outside timed sections, with exact CLR
+representation (identity 9999, keyword 10001, variadic 1, closure/method 10000,
+integer loop 100000, all BigInteger; async identity matches sync). First-chance
+exceptions measured separately with an observer (Release): 10,001 per 10K sync
+calls (one frame-exit throw each; closure 10,002 including its outer() setup
+call), 0 async, 1 per integer loop. Deterministic
+process allocation counters attribute about 1,351 B fixed per positional call
+plus 30-40 B per additional parameter after the plan-layout binder change.
+Scripts precompile once per class lifetime, so figures exclude cold compilation.
+Re-record on release runs before changing call binding, return delivery, or
+value boxing.
