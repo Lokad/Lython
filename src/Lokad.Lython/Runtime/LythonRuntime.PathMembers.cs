@@ -596,13 +596,13 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("pathlib"),
-                "name" => OwnMethodResult(PyString.FromString(PathOps.BaseName(path.Value.AsString())), path.Value, governor, span),
-                "suffix" => OwnMethodResult(PyString.FromString(PathOps.Suffix(path.Value.AsString())), path.Value, governor, span),
-                "stem" => OwnMethodResult(PyString.FromString(PathOps.Stem(path.Value.AsString())), path.Value, governor, span),
-                "parent" => OwnPathResult(PathOps.Parent(path.Value), path.Value, governor, span),
-                "suffixes" => GovernedSuffixes(path.Value, governor, span),
-                "parents" => PathOps.Parents(path.Value, context.MemoryGovernor, span),
-                "parts" => PathOps.Parts(path.Value, context.MemoryGovernor, span),
+                "name" => OwnMethodResult(PyString.FromString(PathOps.BaseName(path.Value.AsString())), path.Value, governor, span, context.Services.State.CallTemporaries),
+                "suffix" => OwnMethodResult(PyString.FromString(PathOps.Suffix(path.Value.AsString())), path.Value, governor, span, context.Services.State.CallTemporaries),
+                "stem" => OwnMethodResult(PyString.FromString(PathOps.Stem(path.Value.AsString())), path.Value, governor, span, context.Services.State.CallTemporaries),
+                "parent" => OwnPathResult(PathOps.Parent(path.Value), path.Value, governor, span, context.Services.State.CallTemporaries),
+                "suffixes" => GovernedSuffixes(path.Value, governor, span, context.Services.State.CallTemporaries),
+                "parents" => PathOps.Parents(path.Value, context.MemoryGovernor, span, context.Services.State.CallTemporaries),
+                "parts" => PathOps.Parts(path.Value, context.MemoryGovernor, span, context.Services.State.CallTemporaries),
                 "__new__" => PathlibModule.PathType.GetNewSlot(),
                 _ => MissingMemberValue.Instance
             };
@@ -610,7 +610,7 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        private static PyList GovernedSuffixes(PyString path, MemoryGovernor governor, LythonSourceSpan span)
+        private static PyList GovernedSuffixes(PyString path, MemoryGovernor governor, LythonSourceSpan span, ChargeReclamationPool? pool)
         {
             var name = PathOps.BaseName(path.AsString());
             var values = new List<object>();
@@ -619,7 +619,7 @@ internal sealed partial class LythonRuntime
             {
                 var next = name.IndexOf('.', dot + 1);
                 var suffix = next < 0 ? name[dot..] : name[dot..next];
-                values.Add(OwnMethodResult(PyString.FromString(suffix), path, governor, span));
+                values.Add(OwnMethodResult(PyString.FromString(suffix), path, governor, span, pool));
                 dot = next;
             }
 

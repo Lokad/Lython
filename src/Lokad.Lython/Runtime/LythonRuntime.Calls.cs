@@ -298,7 +298,7 @@ internal sealed partial class LythonRuntime
             object result = PreservePresence
                 ? InvokeBoundWithPresence(CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind), span, context)
                 : InvokeBound(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind), span, context);
-            context.Services.State.CallTemporaries.TrackCallResult(result);
+            context.Services.State.CallTemporaries.TrackCallResult(result, span);
             return result;
         }
 
@@ -308,7 +308,7 @@ internal sealed partial class LythonRuntime
             object result = PreservePresence
                 ? await InvokeBoundWithPresenceAsync(CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind), span, context).ConfigureAwait(false)
                 : await InvokeBoundAsync(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind), span, context).ConfigureAwait(false);
-            context.Services.State.CallTemporaries.TrackCallResult(result);
+            context.Services.State.CallTemporaries.TrackCallResult(result, span);
             return result;
         }
 
@@ -2790,7 +2790,7 @@ internal sealed partial class LythonRuntime
             context.CheckExecutionBudget(span);
             RejectArguments(arguments, span);
             var result = _implementation(_receiver, span, context);
-            context.Services.State.CallTemporaries.TrackCallResult(result);
+            context.Services.State.CallTemporaries.TrackCallResult(result, span);
             return result;
         }
 
@@ -2801,7 +2801,7 @@ internal sealed partial class LythonRuntime
             if (_asyncImplementation is null)
             {
                 var immediate = _implementation(_receiver, span, context);
-                context.Services.State.CallTemporaries.TrackCallResult(immediate);
+                context.Services.State.CallTemporaries.TrackCallResult(immediate, span);
                 return ValueTask.FromResult(immediate);
             }
 
@@ -2810,7 +2810,7 @@ internal sealed partial class LythonRuntime
             async ValueTask<object> InvokeAsyncCore()
             {
                 var result = await _asyncImplementation!(_receiver, span, context).ConfigureAwait(false);
-                context.Services.State.CallTemporaries.TrackCallResult(result);
+                context.Services.State.CallTemporaries.TrackCallResult(result, span);
                 return result;
             }
         }

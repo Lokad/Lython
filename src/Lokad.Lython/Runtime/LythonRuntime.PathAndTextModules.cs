@@ -48,7 +48,7 @@ internal sealed partial class LythonRuntime
         {
             if (arguments.Count == 0)
             {
-                return OwnPathResult(PyStringOps.DotLiteral, PyStringOps.DotLiteral, context.MemoryGovernor, span);
+                return OwnPathResult(PyStringOps.DotLiteral, PyStringOps.DotLiteral, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
             }
 
             PyString? path = null;
@@ -68,7 +68,7 @@ internal sealed partial class LythonRuntime
             }
 
             var combined = path.RequireNotNull();
-            return OwnPathResult(PathOps.NormalizeLexical(combined), combined, context.MemoryGovernor, span);
+            return OwnPathResult(PathOps.NormalizeLexical(combined), combined, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
         }
 
         internal sealed class PathlibPathType : ICallable, IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyRenderableValue, INamedRuntimeCallable
@@ -198,7 +198,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         context.RegisterHostCall(span);
-                        return OwnPathResult(PyString.FromString(PathOps.Normalize(context.Host.Cwd)), PyString.Empty, context.MemoryGovernor, span);
+                        return OwnPathResult(PyString.FromString(PathOps.Normalize(context.Host.Cwd)), PyString.Empty, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
                     }, $"{Name}.cwd", []),
                     "home" when _isSupported => BoundCallable.Create((arguments, span, _) =>
                     {

@@ -352,12 +352,12 @@ internal sealed partial class LythonRuntime
         {
             if (right is PyPath rightPath)
             {
-                return OwnPathResult(PathOps.Join(leftPath.Value, rightPath.Value), leftPath.Value, context.MemoryGovernor, span);
+                return OwnPathResult(PathOps.Join(leftPath.Value, rightPath.Value), leftPath.Value, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
             }
 
             if (PyStringOps.TryAsString(right, out var rightText))
             {
-                return OwnPathResult(PathOps.Join(leftPath.Value, rightText), leftPath.Value, context.MemoryGovernor, span);
+                return OwnPathResult(PathOps.Join(leftPath.Value, rightText), leftPath.Value, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
             }
         }
 

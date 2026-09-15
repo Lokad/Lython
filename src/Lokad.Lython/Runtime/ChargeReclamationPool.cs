@@ -1,3 +1,4 @@
+using Lokad.Lython;
 using System.Runtime.CompilerServices;
 using Lokad.Lython.Runtime.Text;
 
@@ -70,11 +71,11 @@ internal sealed class ChargeReclamationPool
         }
     }
 
-    public void Track(object value, long charge)
+    public void Track(object value, long charge, LythonSourceSpan? span = null)
     {
         if (charge > 0)
         {
-            TrackCore(value, charge);
+            TrackCore(value, charge, span);
         }
     }
 
@@ -82,24 +83,24 @@ internal sealed class ChargeReclamationPool
     // empties and unowned values carry no charge and stay untracked. The
     // shared table keys by reference identity, so value-equal but distinct
     // strings track (and release) independently through this same path.
-    public void TrackString(PyString value)
+    public void TrackString(PyString value, LythonSourceSpan? span = null)
     {
         if (value.OwnerMemoryGovernor is null)
         {
             return;
         }
 
-        Track(value, PyString.EstimateApproximateBytes(value.Utf8Bytes.Length));
+        Track(value, PyString.EstimateApproximateBytes(value.Utf8Bytes.Length), span);
     }
 
     // Registers a pooled mutable for its current backing charges, snapshotted
     // by the caller right after construction. Empty backing tracks nothing:
     // later growth charges itself through the value.
-    public void TrackMutable(object value, long backingCharge)
+    public void TrackMutable(object value, long backingCharge, LythonSourceSpan? span = null)
     {
         if (backingCharge > 0)
         {
-            TrackCore(value, backingCharge);
+            TrackCore(value, backingCharge, span);
         }
     }
 
@@ -109,11 +110,11 @@ internal sealed class ChargeReclamationPool
     // anything else retaining the value would over-release. The refund keeps
     // denial headroom identical to a construction-time denial, so caught
     // failures recover exactly as they did before tracking.
-    public void TrackFreshMutable(object value, long backingCharge)
+    public void TrackFreshMutable(object value, long backingCharge, LythonSourceSpan? span = null)
     {
         try
         {
-            TrackMutable(value, backingCharge);
+            TrackMutable(value, backingCharge, span);
         }
         catch (LythonRuntimeException)
         {
@@ -129,42 +130,42 @@ internal sealed class ChargeReclamationPool
     // and unowned results carry nothing to release. Plain (non-refunding)
     // registration: some results alias stored values, so a denial must never
     // refund live charges.
-    public void TrackCallResult(object result)
+    public void TrackCallResult(object result, LythonSourceSpan? span = null)
     {
         switch (result)
         {
             case PyString text:
-                TrackString(text);
+                TrackString(text, span);
                 break;
             case PyList list when list.OwnerMemoryGovernor is not null:
-                TrackMutable(list, list.CommittedStorageBytes);
+                TrackMutable(list, list.CommittedStorageBytes, span);
                 break;
             case PyDict dict when dict.OwnerMemoryGovernor is not null:
-                TrackMutable(dict, dict.CommittedStorageBytes);
+                TrackMutable(dict, dict.CommittedStorageBytes, span);
                 break;
             case PySet set when set.OwnerMemoryGovernor is not null:
-                TrackMutable(set, set.CommittedStorageBytes);
+                TrackMutable(set, set.CommittedStorageBytes, span);
                 break;
             case PyTuple tuple when tuple.OwnerMemoryGovernor is not null:
-                TrackMutable(tuple, tuple.CommittedStorageBytes);
+                TrackMutable(tuple, tuple.CommittedStorageBytes, span);
                 break;
             case LythonRuntime.DictKeysView keysView:
-                Track(keysView, 64L);
+                Track(keysView, 64L, span);
                 break;
             case LythonRuntime.DictValuesView valuesView:
-                Track(valuesView, 64L);
+                Track(valuesView, 64L, span);
                 break;
             case LythonRuntime.DictItemsView itemsView:
                 // View wrappers commit a fixed shell charge at construction with
                 // no backing to snapshot; the coupon is exact and immutable.
-                Track(itemsView, 64L);
+                Track(itemsView, 64L, span);
                 break;
         }
     }
 
     // Fresh-string twin of TrackFreshMutable: the construction charge is
     // exact for values built (or adopted) through the governed string paths.
-    public void TrackFreshString(PyString value)
+    public void TrackFreshString(PyString value, LythonSourceSpan? span = null)
     {
         if (value.OwnerMemoryGovernor is null)
         {
@@ -174,7 +175,7 @@ internal sealed class ChargeReclamationPool
         var charge = PyString.EstimateApproximateBytes(value.Utf8Bytes.Length);
         try
         {
-            Track(value, charge);
+            Track(value, charge, span);
         }
         catch (LythonRuntimeException)
         {
@@ -203,14 +204,14 @@ internal sealed class ChargeReclamationPool
     // charge without an entry. Publishing itself cannot fail halfway here:
     // the runtime is single-threaded, so a present mark implies an earlier
     // registration of this same value.
-    private void TrackCore(object value, long valueCharge)
+    private void TrackCore(object value, long valueCharge, LythonSourceSpan? span = null)
     {
         if (TrackedStorage.TryGetValue(value, out _))
         {
             return;
         }
 
-        _governor.Reserve(EntryChargeBytes, null);
+        _governor.Reserve(EntryChargeBytes, span);
         var entry = new ReclamationEntry(value, valueCharge);
         TrackedStorage.Add(value, entry);
         _young.Add(entry);

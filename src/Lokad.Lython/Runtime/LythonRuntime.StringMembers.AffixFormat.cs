@@ -32,7 +32,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         return prefix.Length != 0 && text.StartsWith(prefix)
-                            ? OwnMethodResult(SliceByByteCount(text, prefix.Utf8Bytes.Length, text.Utf8Bytes.Length - prefix.Utf8Bytes.Length), text, context.MemoryGovernor, span)
+                            ? OwnMethodResult(SliceByByteCount(text, prefix.Utf8Bytes.Length, text.Utf8Bytes.Length - prefix.Utf8Bytes.Length), text, context.MemoryGovernor, span, context.Services.State.CallTemporaries)
                             : text;
                     }, "str.removeprefix", ["prefix"]),
                     "removesuffix" => BoundCallable.Create((arguments, span, context) =>
@@ -49,7 +49,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         return suffix.Length != 0 && text.EndsWith(suffix)
-                            ? OwnMethodResult(SliceByByteCount(text, 0, text.Utf8Bytes.Length - suffix.Utf8Bytes.Length), text, context.MemoryGovernor, span)
+                            ? OwnMethodResult(SliceByByteCount(text, 0, text.Utf8Bytes.Length - suffix.Utf8Bytes.Length), text, context.MemoryGovernor, span, context.Services.State.CallTemporaries)
                             : text;
                     }, "str.removesuffix", ["suffix"]),
                     "partition" => CreatePartitionMethod("partition", PyStringOps.Partition),
@@ -96,7 +96,7 @@ internal sealed partial class LythonRuntime
                                 positional,
                                 keywords,
                                 (current, suffix) => ResolveFormatFieldSuffix(current, suffix, span, context),
-                                (value, conversion, spec) => FormatInterpolatedStringPart(value, conversion, spec, context, span)), text, context.MemoryGovernor, span);
+                                (value, conversion, spec) => FormatInterpolatedStringPart(value, conversion, spec, context, span)), text, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
                         }
                         catch (InvalidOperationException ex)
                         {
@@ -128,7 +128,7 @@ internal sealed partial class LythonRuntime
                                 keywords,
                                 (current, suffix) => ResolveFormatFieldSuffix(current, suffix, span, context),
                                 (value, conversion, spec) => FormatInterpolatedStringPart(value, conversion, spec, context, span),
-                                forbidPositionalFields: true), text, context.MemoryGovernor, span);
+                                forbidPositionalFields: true), text, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
                         }
                         catch (InvalidOperationException ex)
                         {
@@ -247,7 +247,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            return OwnMethodResult(PyString.FromString(builder.ToString()), text, context.MemoryGovernor, span);
+            return OwnMethodResult(PyString.FromString(builder.ToString()), text, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
         }
 
         // Misses keep the character like CPython (only LookupError shapes

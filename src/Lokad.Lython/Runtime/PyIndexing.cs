@@ -162,7 +162,7 @@ internal static class PyIndexing
         // String slices built from unowned receivers would escape accounting.
         if (context is not null && result is PyString textResult && target is PyString receiver)
         {
-            result = LythonRuntime.OwnMethodResult(textResult, receiver, context.MemoryGovernor, span);
+            result = LythonRuntime.OwnMethodResult(textResult, receiver, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
         }
 
         if (context is not null)

@@ -61,7 +61,7 @@ internal sealed partial class LythonRuntime
                             current = PathOps.Join(current, part);
                         }
 
-                        return OwnPathResult(current, path.Value, context.MemoryGovernor, span);
+                        return OwnPathResult(current, path.Value, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
                     }),
                     "expanduser" => UnsupportedPathMember("Path.expanduser", "Path.expanduser() is not supported by Lython; the host does not expose an ambient user home directory."),
                     "match" => BoundCallable.Create((arguments, span, _) =>
@@ -95,11 +95,11 @@ internal sealed partial class LythonRuntime
                     "resolve" => BoundCallable.CreateNoArguments(
                         path,
                         "Path.resolve",
-                        static (receiver, span, context) => OwnPathResult(PathOps.Normalize(receiver.Value, PyString.FromString(context.Host.Cwd)), receiver.Value, context.MemoryGovernor, span)),
+                        static (receiver, span, context) => OwnPathResult(PathOps.Normalize(receiver.Value, PyString.FromString(context.Host.Cwd)), receiver.Value, context.MemoryGovernor, span, context.Services.State.CallTemporaries)),
                     "absolute" => BoundCallable.CreateNoArguments(
                         path,
                         "Path.absolute",
-                        static (receiver, span, context) => OwnPathResult(PathOps.MakeAbsoluteLexical(receiver.Value, PyString.FromString(context.Host.Cwd)), receiver.Value, context.MemoryGovernor, span)),
+                        static (receiver, span, context) => OwnPathResult(PathOps.MakeAbsoluteLexical(receiver.Value, PyString.FromString(context.Host.Cwd)), receiver.Value, context.MemoryGovernor, span, context.Services.State.CallTemporaries)),
                     "relative_to" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 1)
@@ -110,7 +110,7 @@ internal sealed partial class LythonRuntime
                         var other = RequirePath(arguments[0], "Path.relative_to(other)", span);
                         try
                         {
-                            return OwnPathResult(PyString.FromString(PathOps.RelativeTo(path.Value.AsString(), other.Value.AsString())), path.Value, context.MemoryGovernor, span);
+                            return OwnPathResult(PyString.FromString(PathOps.RelativeTo(path.Value.AsString(), other.Value.AsString())), path.Value, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
                         }
                         catch (InvalidOperationException ex)
                         {
@@ -126,7 +126,7 @@ internal sealed partial class LythonRuntime
 
                         try
                         {
-                            return OwnPathResult(PyString.FromString(PathOps.WithSuffix(path.Value.AsString(), suffix.AsString())), path.Value, context.MemoryGovernor, span);
+                            return OwnPathResult(PyString.FromString(PathOps.WithSuffix(path.Value.AsString(), suffix.AsString())), path.Value, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
                         }
                         catch (InvalidOperationException ex)
                         {
@@ -142,7 +142,7 @@ internal sealed partial class LythonRuntime
 
                         try
                         {
-                            return OwnPathResult(PyString.FromString(PathOps.WithName(path.Value.AsString(), name.AsString())), path.Value, context.MemoryGovernor, span);
+                            return OwnPathResult(PyString.FromString(PathOps.WithName(path.Value.AsString(), name.AsString())), path.Value, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
                         }
                         catch (InvalidOperationException ex)
                         {
@@ -158,7 +158,7 @@ internal sealed partial class LythonRuntime
 
                         try
                         {
-                            return OwnPathResult(PyString.FromString(PathOps.WithName(path.Value.AsString(), stem.AsString() + PathOps.Suffix(path.Value.AsString()))), path.Value, context.MemoryGovernor, span);
+                            return OwnPathResult(PyString.FromString(PathOps.WithName(path.Value.AsString(), stem.AsString() + PathOps.Suffix(path.Value.AsString()))), path.Value, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
                         }
                         catch (InvalidOperationException ex)
                         {

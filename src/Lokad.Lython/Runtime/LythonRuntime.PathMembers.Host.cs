@@ -337,7 +337,7 @@ internal sealed partial class LythonRuntime
                             context.CheckExecutionBudget(span);
                             if (LythonRuntime.FnMatchModule.MatchSimple(PyString.FromString(name), pattern))
                             {
-                                results.Add(OwnPathResult(PathOps.Join(path.Value, PyString.FromString(name)), path.Value, context.MemoryGovernor, span));
+                                results.Add(OwnPathResult(PathOps.Join(path.Value, PyString.FromString(name)), path.Value, context.MemoryGovernor, span, context.Services.State.CallTemporaries));
                                 context.ObserveCollectionCount(results.Count, span);
                             }
                         }
@@ -356,7 +356,7 @@ internal sealed partial class LythonRuntime
                             context.CheckExecutionBudget(span);
                             if (LythonRuntime.FnMatchModule.MatchSimple(PyString.FromString(name), pattern))
                             {
-                                results.Add(OwnPathResult(PathOps.Join(path.Value, PyString.FromString(name)), path.Value, context.MemoryGovernor, span));
+                                results.Add(OwnPathResult(PathOps.Join(path.Value, PyString.FromString(name)), path.Value, context.MemoryGovernor, span, context.Services.State.CallTemporaries));
                                 context.ObserveCollectionCount(results.Count, span);
                             }
                         }
@@ -372,7 +372,7 @@ internal sealed partial class LythonRuntime
 
                         context.RegisterHostCall(span);
                         var entries = context.HostListDir(path.Value.AsString(), span)
-                            .Select<string, object>(name => OwnPathResult(PathOps.Join(path.Value, PyString.FromString(name)), path.Value, context.MemoryGovernor, span));
+                            .Select<string, object>(name => OwnPathResult(PathOps.Join(path.Value, PyString.FromString(name)), path.Value, context.MemoryGovernor, span, context.Services.State.CallTemporaries));
                         return new PyList(entries, context.MemoryGovernor, span);
                     },
                     async (arguments, span, context) =>
@@ -384,7 +384,7 @@ internal sealed partial class LythonRuntime
 
                         context.RegisterHostCall(span);
                         var names = await context.HostListDirAsync(path.Value.AsString(), span).ConfigureAwait(false);
-                        var entries = names.Select<string, object>(name => OwnPathResult(PathOps.Join(path.Value, PyString.FromString(name)), path.Value, context.MemoryGovernor, span));
+                        var entries = names.Select<string, object>(name => OwnPathResult(PathOps.Join(path.Value, PyString.FromString(name)), path.Value, context.MemoryGovernor, span, context.Services.State.CallTemporaries));
                         return new PyList(entries, context.MemoryGovernor, span);
                     }),
                     "read_text" => BoundCallable.Create((arguments, span, context) =>

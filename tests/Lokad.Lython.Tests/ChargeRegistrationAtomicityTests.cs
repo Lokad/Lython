@@ -50,6 +50,22 @@ public sealed class ChargeRegistrationAtomicityTests
     }
 
     [Fact]
+    public void DeniedFreshStringTrackRefundsConstruction()
+    {
+        // The 131 B construction fits 150 B but leaves no room for the entry:
+        // the in-flight denial orphans the fresh value, so its charge releases
+        // instead of stranding.
+        var governor = new MemoryGovernor(150);
+        var pool = new ChargeReclamationPool(governor);
+        var value = PyString.FromString("abc", governor);
+        var failure = Assert.Throws<LythonRuntimeException>(() => pool.TrackFreshString(value));
+        Assert.Equal("MemoryError", failure.ExceptionType);
+        Assert.Equal(0, pool.Count);
+        Assert.Equal(0, governor.CurrentCommittedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+    }
+
+    [Fact]
     public void EqualButDistinctStringsTrackIndependently()
     {
         // Two value-equal strings are distinct identities: both track, and
@@ -148,5 +164,34 @@ public sealed class ChargeRegistrationAtomicityTests
         pool.TrackMutable(list, backing);
         list.Clear();
         return (backing, list.CommittedStorageBytes);
+    }
+
+    [Fact]
+    public void AdoptedMethodResultRefundsWhenEntryDenied()
+    {
+        // A 131 B fresh method result fits 150 B but leaves no room for the
+        // entry: adoption must fail atomically with the construction charge
+        // refunded, not strand an untracked value.
+        var governor = new MemoryGovernor(150);
+        var pool = new ChargeReclamationPool(governor);
+        var receiver = PyString.FromString("abc");
+        var failure = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.OwnMethodResult(PyString.FromString("abc"), receiver, governor, null, pool));
+        Assert.Equal("MemoryError", failure.ExceptionType);
+        Assert.Equal(0, pool.Count);
+        Assert.Equal(0, governor.CurrentCommittedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+    }
+
+    [Fact]
+    public void RegistrationDenialCarriesCallSpan()
+    {
+        // Entry-denial errors keep the registering call site, not a null span.
+        var governor = new MemoryGovernor(150);
+        var pool = new ChargeReclamationPool(governor);
+        var value = PyString.FromString("abc", governor);
+        var span = new Lokad.Lython.LythonSourceSpan(7, 3, 2, 8);
+        var failure = Assert.Throws<LythonRuntimeException>(() => pool.TrackCallResult(value, span));
+        Assert.Equal("MemoryError", failure.ExceptionType);
+        Assert.Equal(span, failure.Span);
     }
 }

@@ -100,7 +100,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         var tabSize = arguments.Length == 1 ? ParseStringOptionalInt(arguments[0], "tabsize", "str.expandtabs([tabsize])", span, context) : 8;
-                        return OwnMethodResult(PyStringOps.ExpandTabs(text, tabSize), text, context.MemoryGovernor, span);
+                        return OwnMethodResult(PyStringOps.ExpandTabs(text, tabSize), text, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
                     }, "str.expandtabs", ["tabsize"], 0),
                     "strip" => CreateStripMethod(text, name, PyStringOps.Strip),
                     "lstrip" => CreateStripMethod(text, name, PyStringOps.LStrip),
@@ -137,7 +137,7 @@ internal sealed partial class LythonRuntime
                             };
                         }
 
-                        return OwnMethodResult(result, target, context.MemoryGovernor, span);
+                        return OwnMethodResult(result, target, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
                     }, $"str.{methodName}", ["chars"], 0);
             }
         }

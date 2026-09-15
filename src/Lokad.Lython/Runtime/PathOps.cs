@@ -296,12 +296,12 @@ internal static class PathOps
     }
 
     public static PyList Parents(PyString path)
-        => Parents(path, null, null);
+        => Parents(path, null, null, null);
 
     public static PyList Parents(PyString path, MemoryGovernor? governor)
-        => Parents(path, governor, null);
+        => Parents(path, governor, null, null);
 
-    public static PyList Parents(PyString path, MemoryGovernor? governor, LythonSourceSpan? span)
+    public static PyList Parents(PyString path, MemoryGovernor? governor, LythonSourceSpan? span, ChargeReclamationPool? pool)
     {
         var values = governor is null ? new PyList() : new PyList([], governor, span);
         var current = Parent(path);
@@ -312,7 +312,7 @@ internal static class PathOps
 
         while (true)
         {
-            values.Add(governor is null ? new PyPath(current) : LythonRuntime.OwnPathResult(current, path, governor, span));
+            values.Add(governor is null ? new PyPath(current) : LythonRuntime.OwnPathResult(current, path, governor, span, pool));
             if (current.Equals(PyStringOps.SlashLiteral) || current.Equals(PyStringOps.DotLiteral))
             {
                 break;
@@ -325,12 +325,12 @@ internal static class PathOps
     }
 
     public static PyTuple Parts(PyString path)
-        => Parts(path, null, null);
+        => Parts(path, null, null, null);
 
     public static PyTuple Parts(PyString path, MemoryGovernor? governor)
-        => Parts(path, governor, null);
+        => Parts(path, governor, null, null);
 
-    public static PyTuple Parts(PyString path, MemoryGovernor? governor, LythonSourceSpan? span)
+    public static PyTuple Parts(PyString path, MemoryGovernor? governor, LythonSourceSpan? span, ChargeReclamationPool? pool)
     {
         var normalized = NormalizeLexical(path.AsString());
         if (normalized == ".")
@@ -349,7 +349,7 @@ internal static class PathOps
         {
             foreach (var part in normalized.Split('/', StringSplitOptions.RemoveEmptyEntries))
             {
-                values.Add(governor is null ? PyString.FromString(part) : LythonRuntime.OwnMethodResult(PyString.FromString(part), path, governor, span));
+                values.Add(governor is null ? PyString.FromString(part) : LythonRuntime.OwnMethodResult(PyString.FromString(part), path, governor, span, pool));
             }
         }
 

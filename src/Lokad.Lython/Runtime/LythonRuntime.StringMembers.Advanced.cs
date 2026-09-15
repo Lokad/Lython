@@ -50,7 +50,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         var width = ParseStringOptionalInt(arguments[0], "width", "str.zfill(width)", span, context);
-                        return OwnMethodResult(PyStringOps.ZFill(text, width), text, context.MemoryGovernor, span);
+                        return OwnMethodResult(PyStringOps.ZFill(text, width), text, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
                     }, "str.zfill", ["width"]),
                     "find" => CreateSearchMethod("find", PyStringOps.Find, throwWhenMissing: false),
                     "index" => CreateSearchMethod("index", PyStringOps.Find, throwWhenMissing: true),
@@ -75,7 +75,7 @@ internal sealed partial class LythonRuntime
                         var fill = arguments.Length == 2 ? RequireFillChar(arguments[1], span) : null;
                         try
                         {
-                            return OwnMethodResult(operation(text, width, fill), text, context.MemoryGovernor, span);
+                            return OwnMethodResult(operation(text, width, fill), text, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
                         }
                         catch (InvalidOperationException ex)
                         {

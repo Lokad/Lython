@@ -673,7 +673,13 @@ internal sealed partial class LythonRuntime
     // String methods build results from receiver storage, so a result derived
     // from an unowned (shared-constant) receiver would escape accounting. Adopt
     // fresh results here; aliases and the shared empty string stay free.
-    internal static PyString OwnMethodResult(PyString result, PyString receiver, MemoryGovernor? governor, LythonSourceSpan? span)
+    // Adopted results register with refund-on-deny semantics: when the pool entry
+    // cannot be funded, the in-flight denial orphans this fresh value, so its
+    // construction charge releases instead of stranding. Results returned as-is
+    // above stay on the alias-safe plain path (the later funnel no-ops on the
+    // already-tracked adoption through reference-identity dedup). A null pool is only
+    // valid beside a null governor (both stay together on ungoverned paths).
+    internal static PyString OwnMethodResult(PyString result, PyString receiver, MemoryGovernor? governor, LythonSourceSpan? span, ChargeReclamationPool? pool)
     {
         if (governor is null || result.OwnerMemoryGovernor is not null ||
             ReferenceEquals(result, receiver) || ReferenceEquals(result, PyString.Empty))
@@ -681,19 +687,21 @@ internal sealed partial class LythonRuntime
             return result;
         }
 
-        return PyString.FromString(result.AsString(), governor, span);
+        var owned = PyString.FromString(result.AsString(), governor, span);
+        pool?.TrackFreshString(owned, span);
+        return owned;
     }
 
     // Path values wrap a governed string payload; the wrapper itself retains a
     // small object header beside that payload, so own both together.
-    internal static PyPath OwnPathResult(PyString raw, PyString receiver, MemoryGovernor? governor, LythonSourceSpan? span)
+    internal static PyPath OwnPathResult(PyString raw, PyString receiver, MemoryGovernor? governor, LythonSourceSpan? span, ChargeReclamationPool? pool)
     {
         if (governor is null)
         {
             return new PyPath(raw);
         }
 
-        var owned = OwnMethodResult(raw, receiver, governor, span);
+        var owned = OwnMethodResult(raw, receiver, governor, span, pool);
         governor.Reserve(64L, span);
         governor.Commit(64L);
         return new PyPath(owned);
