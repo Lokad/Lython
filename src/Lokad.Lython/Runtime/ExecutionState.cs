@@ -167,13 +167,23 @@ internal sealed class ExecutionState
             return new BigInteger(existing.Value);
         }
 
-        // Hold our commit room while the pool entry registers: Track denies before
-        // anything is published, so a second-boundary denial strands neither the
-        // identity commit nor an untracked box, and the holder releases on the way out.
-        using var hold = MemoryGovernor.ReserveTemporary(IdentityEntryBytes, null);
-        var box = new StrongBox<long>(Interlocked.Increment(ref _nextObjectId));
-        CallTemporaries.Track(box, IdentityEntryBytes);
+        // Commit first, publish last: a denied pool entry rolls the identity commit
+        // back exactly (no reservation holder can outlive the commit it guards
+        // without double-releasing shared reserved bytes), so a second-boundary
+        // denial strands neither the commit nor an untracked box.
+        MemoryGovernor.Reserve(IdentityEntryBytes, null);
         MemoryGovernor.Commit(IdentityEntryBytes);
+        var box = new StrongBox<long>(Interlocked.Increment(ref _nextObjectId));
+        try
+        {
+            CallTemporaries.Track(box, IdentityEntryBytes);
+        }
+        catch (Exception)
+        {
+            MemoryGovernor.Release(IdentityEntryBytes);
+            throw;
+        }
+
         _objectIds.Add(key, box);
         return new BigInteger(box.Value);
     }
