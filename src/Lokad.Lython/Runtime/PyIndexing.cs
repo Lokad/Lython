@@ -194,6 +194,9 @@ internal static class PyIndexing
             case PyTuple tuple when tuple.OwnerMemoryGovernor is not null:
                 pool.TrackFreshMutable(tuple, tuple.CommittedStorageBytes);
                 break;
+            case PyDeque deque when deque.OwnerMemoryGovernor is not null:
+                pool.TrackFreshMutable(deque, deque.CommittedStorageBytes);
+                break;
         }
     }
 

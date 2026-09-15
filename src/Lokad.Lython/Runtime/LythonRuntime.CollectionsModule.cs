@@ -444,6 +444,7 @@ internal sealed partial class LythonRuntime
             ? new PyDeque(ToSequence(iterable, span, context), maxLength, context.MemoryGovernor, span)
             : new PyDeque(maxLength, context.MemoryGovernor, span);
         context.ObserveCollectionCount(result.Count, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -458,6 +459,7 @@ internal sealed partial class LythonRuntime
             ? new PyDeque(null, context.MemoryGovernor, span)
             : new PyDeque(ToSequence(arguments[0], span, context), null, context.MemoryGovernor, span);
         context.ObserveCollectionCount(result.Count, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 

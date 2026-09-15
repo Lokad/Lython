@@ -510,6 +510,7 @@ internal sealed partial class LythonRuntime
             clone.Append(depth == CopyDepth.Deep ? CopyValue(item, CopyDepth.Deep, context, span, memo, graphDepth + 1) : item);
         }
         context.ObserveCollectionCount(clone.Count, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes);
         return clone;
     }
 

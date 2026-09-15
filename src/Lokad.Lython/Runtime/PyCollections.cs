@@ -304,9 +304,12 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
 
     // LinkedList nodes are separate heap objects (prev/next/value plus header);
     // charge each live node so retained deques accumulate like other containers.
-    // Empty deques stay free like empty sets; the list object itself remains
-    // wrapper overhead (MG04).
+    // The wrapper plus its empty list object (~96 B measured) owns one shell charge
+    // per live instance at the constructed-function shell rate, matching sets.
+    // Clear releases nodes while the shell persists, and regrowth re-charges.
     private const long DequeNodeBytes = 64;
+    private const long DequeShellBytes = 128;
+    private bool _shellCharged;
     private MemoryGovernor? _memoryGovernor;
     private LythonSourceSpan? _allocationSpan;
     private long _committedNodeBytes;
@@ -318,11 +321,32 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         MaxLength = maxLength;
     }
 
+    // Owns the shell once: construction and first-attach are the only paths
+    // that introduce a governed deque, so the flag makes each distinct object
+    // pay exactly once while aliases and re-attaches ride free.
+    private void ChargeShell()
+    {
+        if (_shellCharged || _memoryGovernor is null)
+        {
+            return;
+        }
+
+        _memoryGovernor.Reserve(DequeShellBytes, _allocationSpan);
+        _memoryGovernor.Commit(DequeShellBytes);
+        _shellCharged = true;
+    }
+
+    // Current committed shell-plus-node charges, for pooled owners that
+    // release them if this deque is dropped. Growth after the snapshot only
+    // ever leaves a safe residual behind; every release path re-snapshots below.
+    internal long CommittedStorageBytes => (_shellCharged ? DequeShellBytes : 0) + _committedNodeBytes;
+
     public PyDeque(int? maxLength, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
         MaxLength = maxLength;
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
+        ChargeShell();
     }
 
     public PyDeque(IEnumerable<object> items) : this(items, null) { }
@@ -356,8 +380,23 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
 
     public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
-        _memoryGovernor ??= governor;
+        if (_memoryGovernor is not null)
+        {
+            return;
+        }
+
+        _memoryGovernor = governor;
         _allocationSpan ??= allocationSpan;
+        ChargeShell();
+        if (_items.Count > 0)
+        {
+            // Nodes predating the attachment were never charged: own them now
+            // that the deque is governed, or later drops would strand them.
+            var bytes = checked((long)_items.Count * DequeNodeBytes);
+            _memoryGovernor.Reserve(bytes, _allocationSpan);
+            _memoryGovernor.Commit(bytes);
+            _committedNodeBytes += bytes;
+        }
     }
 
     public int Count => _items.Count;
@@ -415,6 +454,7 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         var value = _items.Last.RequireNotNull().Value;
         _items.RemoveLast();
         ReleaseNode();
+        ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
         return value;
     }
 
@@ -428,6 +468,7 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         var value = _items.First.RequireNotNull().Value;
         _items.RemoveFirst();
         ReleaseNode();
+        ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
         return value;
     }
 
@@ -527,6 +568,7 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
             {
                 _items.Remove(current);
                 ReleaseNode();
+                ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
                 return true;
             }
 
@@ -603,6 +645,7 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         }
 
         _items.Clear();
+        ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
     }
 
     public object GetItem(int index) => GetNodeAt(index).Value;
@@ -656,6 +699,7 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         var node = GetNodeAt(index);
         _items.Remove(node);
         ReleaseNode();
+        ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
     }
 
     public bool IsTruthy() => Count != 0;
@@ -692,8 +736,8 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
 
     private void ReleaseNode()
     {
-        // Attached prepopulated nodes were never charged (MG03 gap), so only
-        // release when a matching reservation is actually held.
+        // Only release when a matching reservation is actually held: ungoverned
+        // nodes and attach-time ownership both converge here.
         if (_memoryGovernor is null || _committedNodeBytes < DequeNodeBytes)
         {
             return;

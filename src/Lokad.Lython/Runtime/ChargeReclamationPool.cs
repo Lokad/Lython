@@ -149,6 +149,11 @@ internal sealed class ChargeReclamationPool
             case PyTuple tuple when tuple.OwnerMemoryGovernor is not null:
                 TrackMutable(tuple, tuple.CommittedStorageBytes, span);
                 break;
+            case PyDeque deque when deque.OwnerMemoryGovernor is not null:
+                // Plain registration only: fresh deque factories track with refund at
+                // their own sites, and this dedups to a no-op for those values.
+                TrackMutable(deque, deque.CommittedStorageBytes, span);
+                break;
             case LythonRuntime.DictKeysView keysView:
                 Track(keysView, 64L, span);
                 break;

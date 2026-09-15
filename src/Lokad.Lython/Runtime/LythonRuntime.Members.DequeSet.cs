@@ -8,6 +8,15 @@ internal sealed partial class LythonRuntime
 {
     internal static class DequeMembers
     {
+        // Fresh copies reclaim through the pool once dropped; the later funnel
+        // no-ops on the already-tracked value through reference-identity dedup.
+        private static PyDeque TrackDequeCopy(PyDeque receiver, ExecutionContext context, LythonSourceSpan span)
+        {
+            var copy = new PyDeque(receiver, receiver.MaxLength, context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(copy, copy.CommittedStorageBytes);
+            return copy;
+        }
+
         public static bool TryGetMember(PyDeque deque, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -92,7 +101,7 @@ internal sealed partial class LythonRuntime
                 "copy" => BoundCallable.CreateNoArguments(
                     deque,
                     "deque.copy",
-                    static (receiver, span, context) => new PyDeque(receiver, receiver.MaxLength, context.MemoryGovernor, span)),
+                    static (receiver, span, context) => TrackDequeCopy(receiver, context, span)),
                 "count" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)

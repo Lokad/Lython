@@ -86,9 +86,12 @@ internal sealed partial class LythonRuntime
             var dequeGovernor = leftDeque.OwnerMemoryGovernor ?? rightDeque.OwnerMemoryGovernor;
             var dequeSpan = leftDeque.AllocationSpan ?? rightDeque.AllocationSpan;
             var joined = leftDeque.Iterate().Concat(rightDeque.Iterate());
-            return dequeGovernor is null
-                ? new PyDeque(joined, leftDeque.MaxLength)
-                : new PyDeque(joined, leftDeque.MaxLength, dequeGovernor, dequeSpan);
+            var joinedDeque = dequeGovernor is null ? new PyDeque(joined, leftDeque.MaxLength) : new PyDeque(joined, leftDeque.MaxLength, dequeGovernor, dequeSpan);
+            if (dequeGovernor is not null)
+            {
+                context.Services.State.CallTemporaries.TrackFreshMutable(joinedDeque, joinedDeque.CommittedStorageBytes);
+            }
+            return joinedDeque;
         }
 
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
