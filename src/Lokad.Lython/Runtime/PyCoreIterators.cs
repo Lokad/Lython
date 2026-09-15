@@ -198,9 +198,11 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
         // Each yielded pair is a fresh governed tuple: track it at this factory
         // so dropped items reclaim through the pool; later registrations dedup.
         var produced = new PyTuple([_index, item], _governor, _span);
+        // Consume the index with the item: a denied track below orphans the tuple
+        // after the cursor advanced, so the index must advance too to stay aligned.
+        _index++;
         _pool.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
         value = produced;
-        _index++;
         return true;
     }
 
