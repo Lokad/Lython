@@ -366,8 +366,7 @@ internal sealed partial class LythonRuntime
             {
                 var item = ValidateSetItem(
                     EvaluateExpression(comprehension.ItemExpression, scope),
-                    comprehension.ItemExpression.Span,
-                    scope.MemoryGovernor);
+                    comprehension.ItemExpression.Span);
                 result.Add(item);
             });
 
@@ -385,7 +384,7 @@ internal sealed partial class LythonRuntime
             context,
             scope =>
             {
-                var key = ValidateDictionaryKey(EvaluateExpression(comprehension.KeyExpression, scope), comprehension.KeyExpression.Span, scope.MemoryGovernor);
+                var key = ValidateDictionaryKey(EvaluateExpression(comprehension.KeyExpression, scope), comprehension.KeyExpression.Span);
                 result.SetItem(key, RuntimeValue(EvaluateExpression(comprehension.ValueExpression, scope)));
             });
 

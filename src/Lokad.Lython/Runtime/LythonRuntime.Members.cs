@@ -1757,7 +1757,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "dict.get(key[, default]) expects one key and an optional default.", span);
                     }
 
-                    var key = ValidateDictionaryKey(arguments[0], span, context.MemoryGovernor);
+                    var key = ValidateDictionaryKey(arguments[0], span);
                     return dict.TryGetValue(key, out var found)
                         ? found
                         : arguments.Length == 2 ? arguments[1] : PyNone.Instance;
@@ -1788,7 +1788,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "dict.pop(key[, default]) expects one key and an optional default.", span);
                     }
 
-                    var key = ValidateDictionaryKey(arguments[0], span, context.MemoryGovernor);
+                    var key = ValidateDictionaryKey(arguments[0], span);
                     if (!dict.TryGetValue(key, out var found))
                     {
                         if (arguments.Length == 2)
@@ -1838,7 +1838,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "dict.setdefault(key[, default]) expects one key and an optional default.", span);
                     }
 
-                    var key = ValidateDictionaryKey(arguments[0], span, context.MemoryGovernor);
+                    var key = ValidateDictionaryKey(arguments[0], span);
                     if (dict.TryGetValue(key, out var found))
                     {
                         return found;
@@ -3050,7 +3050,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "defaultdict.get(key[, default]) expects one key and an optional default.", span);
                     }
 
-                    var key = ValidateDictionaryKey(arguments[0], span, context.MemoryGovernor);
+                    var key = ValidateDictionaryKey(arguments[0], span);
                     return dict.TryGetValue(key, out var found)
                         ? found
                         : arguments.Length == 2 ? arguments[1] : PyNone.Instance;
@@ -3081,7 +3081,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "defaultdict.pop(key[, default]) expects one key and an optional default.", span);
                     }
 
-                    var key = ValidateDictionaryKey(arguments[0], span, context.MemoryGovernor);
+                    var key = ValidateDictionaryKey(arguments[0], span);
                     if (!dict.TryGetValue(key, out var found))
                     {
                         if (arguments.Length == 2)
@@ -3121,7 +3121,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "defaultdict.setdefault(key[, default]) expects one key and an optional default.", span);
                     }
 
-                    var key = ValidateDictionaryKey(arguments[0], span, context.MemoryGovernor);
+                    var key = ValidateDictionaryKey(arguments[0], span);
                     if (dict.TryGetValue(key, out var found))
                     {
                         return found;
@@ -3399,7 +3399,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "Counter.get(key[, default]) expects one key and an optional default.", span);
                     }
 
-                    var key = ValidateDictionaryKey(arguments[0], span, context.MemoryGovernor);
+                    var key = ValidateDictionaryKey(arguments[0], span);
                     return counter.TryGetValue(key, out var found)
                         ? found
                         : arguments.Length == 2 ? arguments[1] : BigInteger.Zero;
@@ -3514,7 +3514,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "Counter.pop(key[, default]) expects one key and an optional default.", span);
                     }
 
-                    var key = ValidateDictionaryKey(arguments[0], span, context.MemoryGovernor);
+                    var key = ValidateDictionaryKey(arguments[0], span);
                     if (!counter.TryGetValue(key, out var found))
                     {
                         if (arguments.Length == 2)

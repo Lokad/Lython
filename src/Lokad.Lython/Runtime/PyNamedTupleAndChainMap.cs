@@ -938,7 +938,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         {
             context.CheckExecutionBudget(span);
             var bound = CallBinder.BindNamedArguments(arguments, span, GetCallSignature, PythonCallableKind.Method);
-            var key = LythonRuntime.ValidateDictionaryKey(bound[0], span, context.MemoryGovernor);
+            var key = LythonRuntime.ValidateDictionaryKey(bound[0], span);
             return _owner.GetOrDefault(key, bound.Length == 2 ? bound[1] : PyNone.Instance);
         }
     }
@@ -953,7 +953,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         {
             context.CheckExecutionBudget(span);
             var bound = CallBinder.BindNamedArguments(arguments, span, PopCallSignature, PythonCallableKind.Method);
-            var key = LythonRuntime.ValidateDictionaryKey(bound[0], span, context.MemoryGovernor);
+            var key = LythonRuntime.ValidateDictionaryKey(bound[0], span);
             if (_owner.TryPopFirstMap(key, out var found))
             {
                 return found;

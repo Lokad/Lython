@@ -225,7 +225,7 @@ internal sealed partial class LythonRuntime
         var matchedKeys = new HashSet<object>(new PyValueComparer());
         foreach (var item in pattern.Items)
         {
-            var key = ValidateDictionaryKey(EvaluateExpression(item.Key, context), item.Key.Span, context.MemoryGovernor);
+            var key = ValidateDictionaryKey(EvaluateExpression(item.Key, context), item.Key.Span);
             if (!dict.TryGetValue(key, out var value))
             {
                 return false;

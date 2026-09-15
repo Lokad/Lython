@@ -179,7 +179,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "dict(iterable_of_pairs) expects key-value pairs.", span);
             }
 
-            result.SetItem(ValidateDictionaryKey(key, span, context.MemoryGovernor), value);
+            result.SetItem(ValidateDictionaryKey(key, span), value);
         }
 
         context.ObserveCollectionCount(result.Count, span);
@@ -203,7 +203,7 @@ internal sealed partial class LythonRuntime
         var result = new PySet(context.MemoryGovernor, span);
         foreach (var item in ToSequence(arguments[0], span, context))
         {
-            result.Add(ValidateSetItem(item, span, context.MemoryGovernor));
+            result.Add(ValidateSetItem(item, span));
             context.ObserveCollectionCount(result.Count, span);
         }
 
@@ -228,7 +228,7 @@ internal sealed partial class LythonRuntime
         var result = new PySet(context.MemoryGovernor, span);
         await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
         {
-            result.Add(ValidateSetItem(item, span, context.MemoryGovernor));
+            result.Add(ValidateSetItem(item, span));
             context.ObserveCollectionCount(result.Count, span);
         }
 
@@ -443,7 +443,7 @@ internal sealed partial class LythonRuntime
         foreach (var pair in ToSequence(source, span, context))
         {
             ReadUpdatePair(pair, elementIndex, context, span, out var key, out var elementValue);
-            target.SetItem(ValidateDictionaryKey(key, span, context.MemoryGovernor), elementValue);
+            target.SetItem(ValidateDictionaryKey(key, span), elementValue);
             elementIndex++;
         }
     }

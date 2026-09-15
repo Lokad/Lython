@@ -895,7 +895,7 @@ internal sealed partial class LythonRuntime
                 var mapping = RuntimeValue(EvaluateExpression(unpacking.Mapping, context));
                 foreach (var pair in EnumerateMappingItems(mapping, context, unpacking.Span))
                 {
-                    result.SetItem(ValidateDictionaryKey(pair.Key, unpacking.Span, context.MemoryGovernor), RuntimeValue(pair.Value));
+                    result.SetItem(ValidateDictionaryKey(pair.Key, unpacking.Span), RuntimeValue(pair.Value));
                     context.ObserveCollectionCount(result.Count, dict.Span);
                 }
 
@@ -904,7 +904,7 @@ internal sealed partial class LythonRuntime
 
             var keyValue = (DictionaryKeyValueItemSyntax)item;
             result.SetItem(
-                ValidateDictionaryKey(EvaluateExpression(keyValue.Key, context), keyValue.Key.Span, context.MemoryGovernor),
+                ValidateDictionaryKey(EvaluateExpression(keyValue.Key, context), keyValue.Key.Span),
                 RuntimeValue(EvaluateExpression(keyValue.Value, context)));
             context.ObserveCollectionCount(result.Count, dict.Span);
         }
@@ -953,7 +953,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan setSpan,
         ExecutionContext context)
     {
-        result.Add(ValidateSetItem(value, itemSpan, context.MemoryGovernor));
+        result.Add(ValidateSetItem(value, itemSpan));
         context.ObserveCollectionCount(result.Count, setSpan);
     }
 

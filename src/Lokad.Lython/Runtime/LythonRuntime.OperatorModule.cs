@@ -369,7 +369,7 @@ internal sealed partial class LythonRuntime
     {
         if (target is PyDefaultDict defaultDict)
         {
-            return defaultDict.GetOrCreate(ValidateDictionaryKey(index, span, context.MemoryGovernor), context, span);
+            return defaultDict.GetOrCreate(ValidateDictionaryKey(index, span), context, span);
         }
 
         return PyIndexing.ReadIndex(target, index, span, context);
@@ -401,21 +401,21 @@ internal sealed partial class LythonRuntime
                 sequence.RemoveAt(PyIndexing.NormalizeIndex(index, sequence.Count, span, PyIndexing.TargetKind(sequence), PyIndexing.IndexOperation.Delete));
                 return PyNone.Instance;
             case PyDict dict:
-                if (!dict.Remove(ValidateDictionaryKey(index, span, context.MemoryGovernor)))
+                if (!dict.Remove(ValidateDictionaryKey(index, span)))
                 {
                     throw RuntimeErrors.MissingKey(index, span);
                 }
 
                 return PyNone.Instance;
             case PyDefaultDict defaultDict:
-                if (!defaultDict.Remove(ValidateDictionaryKey(index, span, context.MemoryGovernor)))
+                if (!defaultDict.Remove(ValidateDictionaryKey(index, span)))
                 {
                     throw RuntimeErrors.MissingKey(index, span);
                 }
 
                 return PyNone.Instance;
             case PyCounter counter:
-                _ = counter.Remove(ValidateDictionaryKey(index, span, context.MemoryGovernor));
+                _ = counter.Remove(ValidateDictionaryKey(index, span));
                 return PyNone.Instance;
             case PyTuple:
                 throw new LythonRuntimeException("TypeError", "'tuple' object doesn't support item deletion", span);

@@ -1445,7 +1445,7 @@ internal sealed partial class LythonRuntime
         var result = new PyDict(context.MemoryGovernor, span);
         foreach (var key in ToSequence(arguments[0], span, context))
         {
-            result.SetItem(ValidateDictionaryKey(key, span, context.MemoryGovernor), value);
+            result.SetItem(ValidateDictionaryKey(key, span), value);
         }
 
         context.ObserveCollectionCount(result.Count, span);

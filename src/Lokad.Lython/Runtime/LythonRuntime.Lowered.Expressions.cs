@@ -82,7 +82,7 @@ internal sealed partial class LythonRuntime
                 var mapping = RuntimeValue(EvaluateLoweredExpression(unpacking.Mapping, context));
                 foreach (var pair in EnumerateMappingItems(mapping, context, unpacking.Item.Span))
                 {
-                    result.SetItem(ValidateDictionaryKey(pair.Key, unpacking.Item.Span, context.MemoryGovernor), RuntimeValue(pair.Value));
+                    result.SetItem(ValidateDictionaryKey(pair.Key, unpacking.Item.Span), RuntimeValue(pair.Value));
                     context.ObserveCollectionCount(result.Count, dict.Span);
                 }
 
@@ -90,7 +90,7 @@ internal sealed partial class LythonRuntime
             }
 
             var keyValue = (LoweredDictionaryKeyValueItem)item;
-            var key = ValidateDictionaryKey(EvaluateLoweredExpression(keyValue.Key, context), keyValue.Key.Span, context.MemoryGovernor);
+            var key = ValidateDictionaryKey(EvaluateLoweredExpression(keyValue.Key, context), keyValue.Key.Span);
             var value = RuntimeValue(EvaluateLoweredExpression(keyValue.Value, context));
             result.SetItem(key, value);
             context.ObserveCollectionCount(result.Count, dict.Span);
@@ -150,8 +150,7 @@ internal sealed partial class LythonRuntime
             {
                 var item = ValidateSetItem(
                     EvaluateLoweredExpression(comprehension.ItemExpression, itemScope),
-                    comprehension.ItemExpression.Span,
-                    itemScope.MemoryGovernor);
+                    comprehension.ItemExpression.Span);
                 result.Add(item);
             });
         PropagateComprehensionBindings(scope, context, comprehension.Clauses.Select(clause => clause.Target), comprehension.Span);
@@ -171,7 +170,7 @@ internal sealed partial class LythonRuntime
             scope,
             itemScope =>
             {
-                var key = ValidateDictionaryKey(EvaluateLoweredExpression(comprehension.KeyExpression, itemScope), comprehension.KeyExpression.Span, itemScope.MemoryGovernor);
+                var key = ValidateDictionaryKey(EvaluateLoweredExpression(comprehension.KeyExpression, itemScope), comprehension.KeyExpression.Span);
                 result.SetItem(key, RuntimeValue(EvaluateLoweredExpression(comprehension.ValueExpression, itemScope)));
             });
         PropagateComprehensionBindings(scope, context, comprehension.Clauses.Select(clause => clause.Target), comprehension.Span);

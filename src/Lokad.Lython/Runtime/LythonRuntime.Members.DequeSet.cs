@@ -335,18 +335,18 @@ internal sealed partial class LythonRuntime
                 "add" => BoundCallable.Create((arguments, span, context) =>
                 {
                     set.AttachMemoryGovernor(context.MemoryGovernor, span);
-                    set.Add(ValidateSetItem(arguments[0], span, context.MemoryGovernor));
+                    set.Add(ValidateSetItem(arguments[0], span));
                     context.ObserveCollectionCount(set.Count, span);
                     return PyNone.Instance;
                 }, OnePositional("set.add", "value")),
                 "discard" => BoundCallable.Create((arguments, span, context) =>
                 {
-                    set.Remove(ValidateSetItem(arguments[0], span, context.MemoryGovernor));
+                    set.Remove(ValidateSetItem(arguments[0], span));
                     return PyNone.Instance;
                 }, OnePositional("set.discard", "value")),
                 "remove" => BoundCallable.Create((arguments, span, context) =>
                 {
-                    var candidate = ValidateSetItem(arguments[0], span, context.MemoryGovernor);
+                    var candidate = ValidateSetItem(arguments[0], span);
                     if (!set.Remove(candidate))
                     {
                         throw new LythonRuntimeException("KeyError", "set item was not found.", span, null, arguments[0]);
@@ -414,7 +414,7 @@ internal sealed partial class LythonRuntime
                 {
                     foreach (var item in ToSequence(arguments[0], span, context))
                     {
-                        if (set.Contains(ValidateSetItem(item, span, context.MemoryGovernor)))
+                        if (set.Contains(ValidateSetItem(item, span)))
                         {
                             return false;
                         }
@@ -429,7 +429,7 @@ internal sealed partial class LythonRuntime
                 {
                     foreach (var item in ToSequence(arguments[0], span, context))
                     {
-                        if (!set.Contains(ValidateSetItem(item, span, context.MemoryGovernor)))
+                        if (!set.Contains(ValidateSetItem(item, span)))
                         {
                             return false;
                         }
@@ -764,7 +764,7 @@ internal sealed partial class LythonRuntime
             var result = new PySet(context.MemoryGovernor, span);
             foreach (var item in ToSequence(value, span, context))
             {
-                result.Add(ValidateSetItem(item, span, context.MemoryGovernor));
+                result.Add(ValidateSetItem(item, span));
                 context.ObserveCollectionCount(result.Count, span);
             }
 
@@ -783,7 +783,7 @@ internal sealed partial class LythonRuntime
             var retained = new PySet(context.MemoryGovernor, span);
             foreach (var item in ToSequence(value, span, context))
             {
-                var candidate = ValidateSetItem(item, span, context.MemoryGovernor);
+                var candidate = ValidateSetItem(item, span);
                 if (target.Contains(candidate))
                 {
                     retained.Add(candidate);
@@ -808,7 +808,7 @@ internal sealed partial class LythonRuntime
             var found = new PySet(context.MemoryGovernor, span);
             foreach (var item in ToSequence(value, span, context))
             {
-                var candidate = ValidateSetItem(item, span, context.MemoryGovernor);
+                var candidate = ValidateSetItem(item, span);
                 if (set.Contains(candidate))
                 {
                     found.Add(candidate);
@@ -829,7 +829,7 @@ internal sealed partial class LythonRuntime
             {
                 foreach (var item in ToSequence(iterable, span, context))
                 {
-                    target.Add(ValidateSetItem(item, span, context.MemoryGovernor));
+                    target.Add(ValidateSetItem(item, span));
                     context.ObserveCollectionCount(target.Count, span);
                 }
             }

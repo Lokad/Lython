@@ -15,13 +15,20 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     private static object ValidateSetItem(object value, LythonSourceSpan span)
-        => ValidateSetItem(value, span, null);
+        => ValidateHashableKey(value, span);
 
-    private static object ValidateSetItem(object value, LythonSourceSpan span, MemoryGovernor? governor)
+    internal static object ValidateDictionaryKey(object value, LythonSourceSpan? span)
+        => ValidateHashableKey(value, span);
+
+    // Shared set/dict key validation: hashability is a property of the existing
+    // items, so a validated tuple keeps its identity (and nested identities)
+    // instead of rebuilding copies that break `is` checks downstream. Validation
+    // never transforms items; anything unhashable throws UnhashableType.
+    private static object ValidateHashableKey(object value, LythonSourceSpan? span)
     {
         var normalized = value switch
         {
-            PyTuple tuple => NormalizeValidatedTuple(tuple, item => ValidateSetItem(item, span, governor), governor, span),
+            PyTuple tuple => ValidateTupleKey(tuple, span),
             IPyHashableValue or bool or BigInteger or double => value,
             _ => throw RuntimeErrors.UnhashableType(value, span)
         };
@@ -29,19 +36,14 @@ internal sealed partial class LythonRuntime
         return EnsureHashableValue(normalized, span);
     }
 
-    internal static object ValidateDictionaryKey(object value, LythonSourceSpan? span)
-        => ValidateDictionaryKey(value, span, null);
-
-    internal static object ValidateDictionaryKey(object value, LythonSourceSpan? span, MemoryGovernor? governor)
+    private static PyTuple ValidateTupleKey(PyTuple tuple, LythonSourceSpan? span)
     {
-        var normalized = value switch
+        for (var i = 0; i < tuple.Count; i++)
         {
-            PyTuple tuple => NormalizeValidatedTuple(tuple, item => ValidateDictionaryKey(item, span, governor), governor, span),
-            IPyHashableValue or bool or BigInteger or double => value,
-            _ => throw RuntimeErrors.UnhashableType(value, span)
-        };
+            ValidateHashableKey(tuple[i], span);
+        }
 
-        return EnsureHashableValue(normalized, span);
+        return tuple;
     }
 
     private static object EnsureHashableValue(object value, LythonSourceSpan? span)
@@ -55,17 +57,6 @@ internal sealed partial class LythonRuntime
         {
             throw RuntimeErrors.UnhashableType(value, span);
         }
-    }
-
-    private static PyTuple NormalizeValidatedTuple(PyTuple tuple, Func<object, object> normalize, MemoryGovernor? governor, LythonSourceSpan? span)
-    {
-        var items = new object[tuple.Count];
-        for (var i = 0; i < tuple.Count; i++)
-        {
-            items[i] = normalize(tuple[i]);
-        }
-
-        return governor is null ? new PyTuple(items) : new PyTuple(items, governor, span);
     }
 
     private static long EstimateObjectArrayBytes(int count) => 32L + (16L * count);

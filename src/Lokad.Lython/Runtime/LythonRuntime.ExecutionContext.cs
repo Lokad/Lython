@@ -677,7 +677,7 @@ internal sealed partial class LythonRuntime
                 foreach (var pair in dict)
                 {
                     normalized.SetItem(
-                        ValidateDictionaryKey(NormalizeRuntimeValue(pair.Key, context, activeContainers, normalizedContainers, memoScratch, depth), null, context.MemoryGovernor),
+                        ValidateDictionaryKey(NormalizeRuntimeValue(pair.Key, context, activeContainers, normalizedContainers, memoScratch, depth), null),
                         NormalizeRuntimeValue(pair.Value, context, activeContainers, normalizedContainers, memoScratch, depth));
                 }
 
@@ -697,7 +697,7 @@ internal sealed partial class LythonRuntime
                 foreach (var pair in dict)
                 {
                     normalized.SetItem(
-                        ValidateDictionaryKey(NormalizeRuntimeValue(pair.Key, context, activeContainers, normalizedContainers, memoScratch, depth), null, context.MemoryGovernor),
+                        ValidateDictionaryKey(NormalizeRuntimeValue(pair.Key, context, activeContainers, normalizedContainers, memoScratch, depth), null),
                         NormalizeRuntimeValue(pair.Value, context, activeContainers, normalizedContainers, memoScratch, depth));
                 }
 

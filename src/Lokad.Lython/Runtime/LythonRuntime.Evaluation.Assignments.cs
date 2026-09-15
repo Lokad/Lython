@@ -369,17 +369,17 @@ internal sealed partial class LythonRuntime
                 return;
             case PyDict dict:
                 dict.AttachMemoryGovernor(context.MemoryGovernor, span);
-                dict.SetItem(ValidateDictionaryKey(index, span, context.MemoryGovernor), value);
+                dict.SetItem(ValidateDictionaryKey(index, span), value);
                 context.ObserveCollectionCount(dict.Count, span);
                 return;
             case PyDefaultDict defaultDict:
                 defaultDict.AttachMemoryGovernor(context.MemoryGovernor, span);
-                defaultDict.SetItem(ValidateDictionaryKey(index, span, context.MemoryGovernor), value);
+                defaultDict.SetItem(ValidateDictionaryKey(index, span), value);
                 context.ObserveCollectionCount(defaultDict.Count, span);
                 return;
             case PyCounter counter:
                 counter.AttachMemoryGovernor(context.MemoryGovernor, span);
-                counter.SetItem(ValidateDictionaryKey(index, span, context.MemoryGovernor), value);
+                counter.SetItem(ValidateDictionaryKey(index, span), value);
                 context.ObserveCollectionCount(counter.Count, span);
                 return;
             case PyInstance instance:

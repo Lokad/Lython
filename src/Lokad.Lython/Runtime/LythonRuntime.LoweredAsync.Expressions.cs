@@ -109,7 +109,7 @@ internal sealed partial class LythonRuntime
                 var mapping = RuntimeValue(await EvaluateLoweredExpressionAsync(unpacking.Mapping, context).ConfigureAwait(false));
                 foreach (var pair in EnumerateMappingItems(mapping, context, unpacking.Item.Span))
                 {
-                    result.SetItem(ValidateDictionaryKey(pair.Key, unpacking.Item.Span, context.MemoryGovernor), RuntimeValue(pair.Value));
+                    result.SetItem(ValidateDictionaryKey(pair.Key, unpacking.Item.Span), RuntimeValue(pair.Value));
                     context.ObserveCollectionCount(result.Count, dict.Span);
                 }
 
@@ -117,7 +117,7 @@ internal sealed partial class LythonRuntime
             }
 
             var keyValue = (LoweredDictionaryKeyValueItem)item;
-            var key = ValidateDictionaryKey(await EvaluateLoweredExpressionAsync(keyValue.Key, context).ConfigureAwait(false), keyValue.Key.Span, context.MemoryGovernor);
+            var key = ValidateDictionaryKey(await EvaluateLoweredExpressionAsync(keyValue.Key, context).ConfigureAwait(false), keyValue.Key.Span);
             var value = RuntimeValue(await EvaluateLoweredExpressionAsync(keyValue.Value, context).ConfigureAwait(false));
             result.SetItem(key, value);
             context.ObserveCollectionCount(result.Count, dict.Span);
@@ -186,8 +186,7 @@ internal sealed partial class LythonRuntime
                 {
                     var item = ValidateSetItem(
                         await EvaluateLoweredExpressionAsync(comprehension.ItemExpression, itemScope).ConfigureAwait(false),
-                        comprehension.ItemExpression.Span,
-                        itemScope.MemoryGovernor);
+                        comprehension.ItemExpression.Span);
                     result.Add(item);
                 })
             .ConfigureAwait(false);
@@ -210,8 +209,7 @@ internal sealed partial class LythonRuntime
                 {
                     var key = ValidateDictionaryKey(
                         await EvaluateLoweredExpressionAsync(comprehension.KeyExpression, itemScope).ConfigureAwait(false),
-                        comprehension.KeyExpression.Span,
-                        itemScope.MemoryGovernor);
+                        comprehension.KeyExpression.Span);
                     result.SetItem(key, RuntimeValue(await EvaluateLoweredExpressionAsync(comprehension.ValueExpression, itemScope).ConfigureAwait(false)));
                 })
             .ConfigureAwait(false);

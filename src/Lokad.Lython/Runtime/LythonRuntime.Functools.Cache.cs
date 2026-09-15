@@ -610,13 +610,13 @@ internal sealed partial class LythonRuntime
             {
                 if (argument.IsPositional)
                 {
-                    parts.Add(ValidateDictionaryKey(argument.Value, span, context.MemoryGovernor));
+                    parts.Add(ValidateDictionaryKey(argument.Value, span));
                     continue;
                 }
 
                 parts.Add(CacheKeyMarker.Keyword);
                 parts.Add(PyString.FromString(argument.KeywordName, context.MemoryGovernor, span));
-                parts.Add(ValidateDictionaryKey(argument.Value, span, context.MemoryGovernor));
+                parts.Add(ValidateDictionaryKey(argument.Value, span));
             }
 
             if (keyMode == CacheKeyMode.ValuesAndTypes)

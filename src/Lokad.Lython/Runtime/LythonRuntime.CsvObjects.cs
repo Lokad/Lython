@@ -207,7 +207,7 @@ internal sealed partial class LythonRuntime
 
                 var extrasList = new PyList(extras, governor, span);
                 pool.TrackMutable(extrasList, extrasList.CommittedStorageBytes);
-                dict.SetItem(LythonRuntime.ValidateDictionaryKey(restKey, span, governor), extrasList);
+                dict.SetItem(LythonRuntime.ValidateDictionaryKey(restKey, span), extrasList);
             }
 
             return dict;
