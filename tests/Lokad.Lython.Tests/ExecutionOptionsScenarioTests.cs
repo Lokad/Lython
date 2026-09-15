@@ -1097,7 +1097,9 @@ tail = values[1:]
             new MockLythonHost(),
             new LythonRunOptions
             {
-                MaxExecutionMemoryBytes = 128
+                MaxExecutionMemoryBytes = 384
+                // 384 covers the tracked range shell (64 + 128 entry + 32 tier) with
+                // headroom, while a materialized 31-int list still exceeds it by far.
             });
 
         Assert.True(result.Success, result.Failure?.Message);
