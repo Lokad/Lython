@@ -46,16 +46,23 @@ internal sealed partial class LythonRuntime
         }
 
         using var loadingScope = EnterModuleLoading(moduleName, context, span);
+        var prepared = PrepareImportedModule(moduleName, path, ReadGovernedHostText(path, context, span).AsString(), context, span);
         try
         {
-            var source = ReadGovernedHostText(path, context, span);
-            var prepared = PrepareImportedModule(moduleName, path, source.AsString(), context, span);
             var signal = ExecuteStatements(prepared.Statements, prepared.Context);
             return CompleteImportedModule(moduleName, prepared.Context, signal, context, span);
         }
         catch (ReturnSignal)
         {
+            context.MemoryGovernor.Release(prepared.DeferredBytes);
             throw RuntimeErrors.ImportedModuleReturned(moduleName, span);
+        }
+        catch (Exception)
+        {
+            // The module never reached the registry: release its deferred charge
+            // so a caught failure (and any retry) pays once, not per attempt.
+            context.MemoryGovernor.Release(prepared.DeferredBytes);
+            throw;
         }
     }
 
@@ -83,16 +90,21 @@ internal sealed partial class LythonRuntime
         var path = localImport.Value.Path;
 
         using var loadingScope = EnterModuleLoading(moduleName, context, span);
+        var prepared = PrepareImportedModule(moduleName, path, (await ReadGovernedHostTextAsync(path, context, span).ConfigureAwait(false)).AsString(), context, span);
         try
         {
-            var source = await ReadGovernedHostTextAsync(path, context, span).ConfigureAwait(false);
-            var prepared = PrepareImportedModule(moduleName, path, source.AsString(), context, span);
             var signal = await ExecuteStatementsAsync(prepared.Statements, prepared.Context).ConfigureAwait(false);
             return CompleteImportedModule(moduleName, prepared.Context, signal, context, span);
         }
         catch (ReturnSignal)
         {
+            context.MemoryGovernor.Release(prepared.DeferredBytes);
             throw RuntimeErrors.ImportedModuleReturned(moduleName, span);
+        }
+        catch (Exception)
+        {
+            context.MemoryGovernor.Release(prepared.DeferredBytes);
+            throw;
         }
     }
 
@@ -403,10 +415,14 @@ internal sealed partial class LythonRuntime
         // Own deferred code once per module load, before anything it retains
         // can grow: re-imports hit the registry, and the entry script never
         // flows through here, so host-owned code stays outside the charge.
-        ChargeDeferredModuleCode(frontend.Script.Statements, context.MemoryGovernor, span);
+        // Lower before charging: a lowering failure retains nothing, so no charge
+        // may commit for a module that never exists.
+        var lowered = LoweredScript.Lower(frontend.Script).Statements;
+        var deferredBytes = ChargeDeferredModuleCode(frontend.Script.Statements, context.MemoryGovernor, span);
         return new PreparedImportedModule(
-            LoweredScript.Lower(frontend.Script).Statements,
-            ExecutionContext.CreateModule(context, path, moduleName));
+            lowered,
+            ExecutionContext.CreateModule(context, path, moduleName),
+            deferredBytes);
     }
 
     private static PyModule CompleteImportedModule(
@@ -452,7 +468,8 @@ internal sealed partial class LythonRuntime
 
     private readonly record struct PreparedImportedModule(
         IReadOnlyList<LoweredStatement> Statements,
-        ExecutionContext Context);
+        ExecutionContext Context,
+        long DeferredBytes);
 
     private readonly struct ModuleLoadingScope : IDisposable
     {

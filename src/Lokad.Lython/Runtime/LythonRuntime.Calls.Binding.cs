@@ -275,20 +275,23 @@ internal sealed partial class LythonRuntime
     // reclamation entry rate until M03 calibrates table storage precisely.
     private const long SharedLiteralEntryBytes = 64;
 
-    internal static void ChargeDeferredModuleCode(
+    // Returns the committed bytes so a failed import can release a charge that was
+    // never published to the module registry; retrying then pays once, not per attempt.
+    internal static long ChargeDeferredModuleCode(
         IReadOnlyList<StatementSyntax> statements,
         MemoryGovernor? governor,
         LythonSourceSpan? span)
     {
         if (statements.Count == 0 || governor is null)
         {
-            return;
+            return 0;
         }
 
         var measured = MeasureDeferredModuleCode(statements);
         var bytes = RuntimeMemoryEstimates.SaturatingAdd(checked(measured.Nodes * RetainedSyntaxNodeBytes), measured.PayloadBytes);
         governor.Reserve(bytes, span);
         governor.Commit(bytes);
+        return bytes;
     }
 
     // Measures deferred bodies in one module pass: definitions count their full

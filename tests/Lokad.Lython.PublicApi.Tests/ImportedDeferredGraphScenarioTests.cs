@@ -72,4 +72,49 @@ public sealed class ImportedDeferredGraphScenarioTests
         var host2 = SeededHost(["m0", "m1", "m2"], [body, body, body], out var allowed2, out _);
         AssertMemoryError(await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = 3145728, AllowedLocalModules = allowed2 }), 3145728);
     }
+
+    [Fact]
+    public async Task FailedImportReleasesChargeOnRetry()
+    {
+        // A failing module never reaches the registry: its deferred charge
+        // releases, so a caught failure retried pays the same high-water mark
+        // instead of one charge per attempt (here ~1.6 MB per leak).
+        var body = "def f():\n    return [" + string.Concat(Enumerable.Repeat("1,", 10000)) + "1]\nraise ValueError('boom')\n";
+        var once = "ok = 0\ntry:\n    import m0\nexcept ValueError:\n    ok = 1\nreturn ok\n";
+        var twice = "ok = 0\ntry:\n    import m0\nexcept ValueError:\n    ok = 1\ntry:\n    import m0\nexcept ValueError:\n    ok += 1\nreturn ok\n";
+        var budget = 8388608L;
+        var peakOnceSync = RunImportRetry(once, body, budget, 1);
+        var peakTwiceSync = RunImportRetry(twice, body, budget, 2);
+        Assert.True(peakTwiceSync <= peakOnceSync + 65536, "once=" + peakOnceSync + " twice=" + peakTwiceSync);
+
+        var peakOnceAsync = await RunImportRetryAsync(once, body, budget, 1);
+        var peakTwiceAsync = await RunImportRetryAsync(twice, body, budget, 2);
+        Assert.True(peakTwiceAsync <= peakOnceAsync + 65536, "once=" + peakOnceAsync + " twice=" + peakTwiceAsync);
+    }
+
+    private static long RunImportRetry(string entry, string moduleBody, long budget, int expected)
+    {
+        var host = new MockLythonHost();
+        host.SeedFile("/m0.py", moduleBody);
+        var allowed = new HashSet<string>(StringComparer.Ordinal) { "m0" };
+        var script = new LythonEngine().Compile(entry);
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+        var result = script.Run(host, new LythonRunOptions { MaxExecutionMemoryBytes = budget, AllowedLocalModules = allowed });
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(new BigInteger(expected), result.ReturnValue);
+        return result.PeakExecutionMemoryBytes;
+    }
+
+    private static async Task<long> RunImportRetryAsync(string entry, string moduleBody, long budget, int expected)
+    {
+        var host = new MockLythonHost();
+        host.SeedFile("/m0.py", moduleBody);
+        var allowed = new HashSet<string>(StringComparer.Ordinal) { "m0" };
+        var script = new LythonEngine().Compile(entry);
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+        var result = await script.RunAsync(host, new LythonRunOptions { MaxExecutionMemoryBytes = budget, AllowedLocalModules = allowed });
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(new BigInteger(expected), result.ReturnValue);
+        return result.PeakExecutionMemoryBytes;
+    }
 }
