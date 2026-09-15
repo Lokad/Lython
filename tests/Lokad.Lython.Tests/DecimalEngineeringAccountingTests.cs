@@ -23,8 +23,9 @@ public sealed class DecimalEngineeringAccountingTests
         Assert.Equal("1.5", text.AsString());
         Assert.Same(context.MemoryGovernor, text.OwnerMemoryGovernor);
         // Payload owns exactly 131 B; the callable funnel registers pool lifetime
-        // for the result, adding one 128 B registry entry released on collection.
-        Assert.Equal(131L + 128L, context.MemoryGovernor.CurrentCommittedBytes);
+        // for the result, adding one 128 B registry entry released on collection,
+        // beside tier backing.
+        Assert.Equal(131L + 128L + context.Services.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }
