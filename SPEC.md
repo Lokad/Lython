@@ -1716,9 +1716,16 @@ construction, member values stay owned by their own construction, and scopes
 retained through imported functions are owned by the closure-retention walk
 (builtin aliases stay owned by the run). Each module owns its deferred code
 once at import preparation: function bodies own their full retained syntax-
-node count (statements, expressions, lambdas, patterns and target references)
-at a fixed per-node rate, while executed top-level statements stay owned
-through their values. Nested definitions count inside their outer walk, never
+node count (statements, expressions, lambdas, generators, patterns and target
+references) at a fixed per-node rate, while executed top-level statements stay
+owned through their values. The outermost lambda or generator expression in an
+evaluated position owns its full subtree the same way; eager comprehension
+scaffolding stays transient. Literal occurrences beside the node rate own their
+retained payloads (string and bytes construction estimates, boxed integer
+magnitudes, formatted-string text chunks) plus one shared-cache entry each;
+floats and singletons retain nothing per occurrence. A failed import releases
+its deferred charge because the module never reaches the registry, so caught
+failures and retries pay once rather than once per attempt. Nested definitions count inside their outer walk, never
 again at execution; re-imports hit the registry. Entry scripts never flow
 through import preparation, so guest-visible module names cannot divert the
 charge. The aggregate registered-module total
