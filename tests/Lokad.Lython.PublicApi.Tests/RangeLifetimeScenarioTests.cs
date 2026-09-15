@@ -2,9 +2,12 @@ using System.Numerics;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
-// M05: range shells own one charge per live instance with reclamation.
+
+// M05: range and iterator shells own one charge per live instance with
+// reclamation through the pool once dropped.
 public sealed class RangeLifetimeScenarioTests
-{    private const long ThreeMib = 3145728;
+{
+    private const long ThreeMib = 3145728;
 
     private static LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = ThreeMib };
 
@@ -18,8 +21,30 @@ public sealed class RangeLifetimeScenarioTests
         var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted());
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue?.ToString());
-    }    [Fact]
+    }
+
+    [Fact]
     public async Task RangesDiscardCompletes()
         => await AssertCompletes(
             "for i in range(100000):\n    x = range(2)\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task EnumerateDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(100000):\n    x = enumerate([1])\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task MapDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(50000):\n    a = list(map(str, [1]))\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task FilterDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(50000):\n    b = list(filter(None, [1]))\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task GeneratorsDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(100000):\n    g = (x for x in [1])\nreturn 0\n", "0");
 }

@@ -408,12 +408,14 @@ internal sealed partial class LythonRuntime
             EvaluateLoweredExpression(clauses[0].Iterable, context),
             clauses[0].Iterable.Span,
             context);
-        return new PyGeneratorExpression(
+        var produced = new PyGeneratorExpression(
             clauses,
             LoweredScript.LowerStandaloneExpression(generator.ItemExpression),
             context,
             generator.Span,
             outer);
+        context.Services.State.CallTemporaries.TrackFreshMutable(produced, PyIteratorBase.IteratorValueBytes);
+        return produced;
     }
 
     private static void EvaluateComprehensionClauses(

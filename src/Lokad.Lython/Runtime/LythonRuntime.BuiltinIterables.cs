@@ -253,7 +253,9 @@ internal sealed partial class LythonRuntime
             index = startValue;
         }
 
-        return new PyEnumerateIterator(arguments[0], index, span, context);
+        var enumerateResult = new PyEnumerateIterator(arguments[0], index, span, context);
+        context.Services.State.CallTemporaries.TrackFreshMutable(enumerateResult, PyIteratorBase.IteratorValueBytes);
+        return enumerateResult;
     }
 
     private static object Zip(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -278,7 +280,9 @@ internal sealed partial class LythonRuntime
             strict = IsTruthy(argument.Value);
         }
 
-        return new PyZipIterator([.. iterables], strict, span, context);
+        var zipResult = new PyZipIterator([.. iterables], strict, span, context);
+        context.Services.State.CallTemporaries.TrackFreshMutable(zipResult, PyIteratorBase.IteratorValueBytes);
+        return zipResult;
     }
 
     private static object Zip(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -454,7 +458,9 @@ internal sealed partial class LythonRuntime
             iterables[i - 1] = arguments[i];
         }
 
-        return new PyMapIterator(callable, iterables, context, span);
+        var mapResult = new PyMapIterator(callable, iterables, context, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(mapResult, PyIteratorBase.IteratorValueBytes);
+        return mapResult;
     }
 
     private static object Filter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -471,7 +477,9 @@ internal sealed partial class LythonRuntime
             _ => throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.OperandTypeName(arguments[0]) + "' object is not callable", span)
         };
 
-        return new PyFilterIterator(function, arguments[1], context, span);
+        var filterResult = new PyFilterIterator(function, arguments[1], context, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(filterResult, PyIteratorBase.IteratorValueBytes);
+        return filterResult;
     }
 
     private static object Slice(object[] arguments, LythonSourceSpan span, ExecutionContext context)

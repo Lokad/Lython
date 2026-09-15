@@ -34,6 +34,11 @@ public sealed class FactoryLifetimeScenarioTests
             "for i in range(100000):\n    x = [1, 2]\nreturn 0\n", "0");
 
     [Fact]
+    public async Task SetComprehensionOverRangeCompletes()
+        => await AssertCompletes(
+            "for i in range(100000):\n    x = {j for j in range(2)}\nreturn 0\n", "0");
+
+    [Fact]
     public async Task SetComprehensionOverTupleCompletes()
         => await AssertCompletes(
             "for i in range(100000):\n    x = {j for j in (1,)}\nreturn 0\n", "0");

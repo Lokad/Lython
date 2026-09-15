@@ -153,12 +153,14 @@ internal sealed partial class LythonRuntime
                 // construction site does; user __iter__ still resolves synchronously
                 // here (async-capable resolution belongs to a separate change).
                 var outer = await execution.EvaluateExpressionAsync(generator.Clauses[0].Iterable, context).ConfigureAwait(false);
-                return new PyGeneratorExpression(
+                var producedAsync = new PyGeneratorExpression(
                     generator.Clauses,
                     generator.ItemExpression,
                     context,
                     generator.Span,
                     LythonRuntime.ToSequence(outer, generator.Clauses[0].Iterable.Span, context));
+                context.Services.State.CallTemporaries.TrackFreshMutable(producedAsync, PyIteratorBase.IteratorValueBytes);
+                return producedAsync;
             }
             case LoweredTupleLiteralExpression tuple:
                 return await execution.EvaluateTupleLiteralAsync(tuple, context).ConfigureAwait(false);
