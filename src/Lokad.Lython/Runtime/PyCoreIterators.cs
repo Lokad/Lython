@@ -172,6 +172,7 @@ internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscrip
 internal sealed class PyEnumerateIterator : PyIteratorBase
 {
     private readonly MemoryGovernor _governor;
+    private readonly ChargeReclamationPool _pool;
     private readonly LythonSourceSpan _span;
     private readonly PyIteration.Cursor _cursor;
     private BigInteger _index;
@@ -180,6 +181,7 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
     {
         _cursor = PyIteration.Cursor.Create(iterable, span, context);
         _governor = context.MemoryGovernor;
+        _pool = context.Services.State.CallTemporaries;
         _span = span;
         _index = start;
         ChargeIteratorValue(context.MemoryGovernor, span);
@@ -193,7 +195,11 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
             return false;
         }
 
-        value = new PyTuple([_index, item], _governor, _span);
+        // Each yielded pair is a fresh governed tuple: track it at this factory
+        // so dropped items reclaim through the pool; later registrations dedup.
+        var produced = new PyTuple([_index, item], _governor, _span);
+        _pool.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
+        value = produced;
         _index++;
         return true;
     }
@@ -205,6 +211,7 @@ internal sealed class PyZipIterator : PyIteratorBase
 {
     private readonly PyIteration.Cursor[] _cursors;
     private readonly MemoryGovernor _governor;
+    private readonly ChargeReclamationPool _pool;
     private readonly bool _strict;
     private readonly LythonSourceSpan _span;
     private bool _finished;
@@ -213,6 +220,7 @@ internal sealed class PyZipIterator : PyIteratorBase
     {
         _cursors = iterables.Select(value => PyIteration.Cursor.Create(value, span, context)).ToArray();
         _governor = context.MemoryGovernor;
+        _pool = context.Services.State.CallTemporaries;
         _strict = strict;
         _span = span;
         ChargeIteratorValue(context.MemoryGovernor, span);
@@ -259,7 +267,11 @@ internal sealed class PyZipIterator : PyIteratorBase
             return false;
         }
 
-        value = new PyTuple(items, _governor, _span);
+        // Each yielded item is a fresh governed tuple: track it at this factory
+        // so dropped items reclaim through the pool; later registrations dedup.
+        var produced = new PyTuple(items, _governor, _span);
+        _pool.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
+        value = produced;
         return true;
     }
 

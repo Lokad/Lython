@@ -44,7 +44,22 @@ public sealed class RangeLifetimeScenarioTests
             "for i in range(50000):\n    b = list(filter(None, [1]))\nreturn 0\n", "0");
 
     [Fact]
+    public async Task ZipDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(50000):\n    c = list(zip([1], [2]))\nreturn 0\n", "0");
+
+    [Fact]
     public async Task GeneratorsDiscardCompletes()
         => await AssertCompletes(
             "for i in range(100000):\n    g = (x for x in [1])\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task EnumerateConsumedDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(50000):\n    c = list(enumerate([1]))\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task TupleZipDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(50000):\n    c = tuple(zip([1], [2]))\nreturn 0\n", "0");
 }
