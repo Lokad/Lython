@@ -478,7 +478,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static void PropagateComprehensionBindings(
+    internal static void PropagateComprehensionBindings(
         ExecutionContext scope,
         ExecutionContext outer,
         IEnumerable<LoopTargetSyntax> targets,

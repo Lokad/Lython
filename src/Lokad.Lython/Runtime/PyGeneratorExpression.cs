@@ -14,6 +14,8 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
     /// in its __iter__, are observed at creation, not at first advance.
     /// </summary>
     private readonly IEnumerable<object> _outerSequence;
+    private LythonRuntime.ExecutionContext? _iterationScope;
+    private readonly IReadOnlyList<LoopTargetSyntax> _targets;
     private IEnumerator<object>? _iterator;
     private IAsyncEnumerator<object>? _asyncIterator;
     private bool _asyncCompleted;
@@ -26,6 +28,7 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
         IEnumerable<object> outerSequence)
     {
         _clauses = clauses;
+        _targets = clauses.Select(clause => clause.Target).ToArray();
         _itemExpression = itemExpression;
         _closure = closure;
         _span = span;
@@ -43,7 +46,8 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
 
     public bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
-        _iterator ??= IterateClauses(_clauses, 0, _closure).GetEnumerator();
+        _iterationScope ??= new LythonRuntime.ExecutionContext(_closure);
+        _iterator ??= IterateClauses(_clauses, 0, _iterationScope).GetEnumerator();
         if (_iterator.MoveNext())
         {
             value = _iterator.Current;
@@ -75,7 +79,8 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
             return PyIterationResult.End;
         }
 
-        _asyncIterator ??= IterateClausesAsync(_clauses, 0, _closure).GetAsyncEnumerator();
+        _iterationScope ??= new LythonRuntime.ExecutionContext(_closure);
+        _asyncIterator ??= IterateClausesAsync(_clauses, 0, _iterationScope).GetAsyncEnumerator();
         if (await _asyncIterator.MoveNextAsync().ConfigureAwait(false))
         {
             return PyIterationResult.Yield(_asyncIterator.Current);
@@ -90,7 +95,7 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
     private IEnumerable<object> IterateClauses(
         IReadOnlyList<LoweredComprehensionClause> clauses,
         int index,
-        LythonRuntime.ExecutionContext context)
+        LythonRuntime.ExecutionContext scope)
     {
         var clause = clauses[index];
         // The outermost iterable was already evaluated and acquired at
@@ -98,22 +103,27 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
         var items = index == 0
             ? _outerSequence
             : LythonRuntime.ToSequence(
-                LythonRuntime.EvaluateLoweredExpression(clause.Iterable, context),
+                LythonRuntime.EvaluateLoweredExpression(clause.Iterable, scope),
                 clause.Iterable.Span,
-                context);
+                scope);
         foreach (var item in items)
         {
-            var scope = new LythonRuntime.ExecutionContext(context);
+            // One shared scope per generator run: loop targets rebind the same
+            // cells, so closures observe final values like eager comprehensions.
             LythonRuntime.AssignLoopTarget(clause.Target, item, clause.Iterable.Span, scope);
 
-            if (clause.Condition is not null && !LythonRuntime.IsTruthy(LythonRuntime.EvaluateLoweredExpression(clause.Condition, scope)))
+            if (clause.Condition is not null && !LythonRuntime.IsTruthy(LythonRuntime.EvaluateLoweredExpression(clause.Condition, scope), scope, clause.Condition.Span))
             {
                 continue;
             }
 
             if (index == clauses.Count - 1)
             {
-                yield return LythonRuntime.RuntimeValue(LythonRuntime.EvaluateLoweredExpression(_itemExpression, scope));
+                var produced = LythonRuntime.RuntimeValue(LythonRuntime.EvaluateLoweredExpression(_itemExpression, scope));
+                // Assignment expressions escape to the defining scope on each
+                // advance, so partial consumption already binds (like CPython).
+                LythonRuntime.PropagateComprehensionBindings(scope, _closure, _targets, _span);
+                yield return produced;
             }
             else
             {
@@ -128,27 +138,32 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
     private async IAsyncEnumerable<object> IterateClausesAsync(
         IReadOnlyList<LoweredComprehensionClause> clauses,
         int index,
-        LythonRuntime.ExecutionContext context)
+        LythonRuntime.ExecutionContext scope)
     {
         var clause = clauses[index];
         var items = index == 0
             ? LythonRuntime.ToSequenceAsync(_outerSequence, clause.Iterable.Span)
-            : LythonRuntime.ToSequenceAsync(await LythonRuntime.EvaluateLoweredExpressionAsync(clause.Iterable, context).ConfigureAwait(false), clause.Iterable.Span, context);
+            : LythonRuntime.ToSequenceAsync(await LythonRuntime.EvaluateLoweredExpressionAsync(clause.Iterable, scope).ConfigureAwait(false), clause.Iterable.Span, scope);
         await foreach (var item in items.ConfigureAwait(false))
         {
-            var scope = new LythonRuntime.ExecutionContext(context);
+            // One shared scope per generator run: loop targets rebind the same
+            // cells, so closures observe final values like eager comprehensions.
             LythonRuntime.AssignLoopTarget(clause.Target, item, clause.Iterable.Span, scope);
 
             if (clause.Condition is not null &&
-                !LythonRuntime.IsTruthy(await LythonRuntime.EvaluateLoweredExpressionAsync(clause.Condition, scope).ConfigureAwait(false)))
+                !LythonRuntime.IsTruthy(await LythonRuntime.EvaluateLoweredExpressionAsync(clause.Condition, scope).ConfigureAwait(false), scope, clause.Condition.Span))
             {
                 continue;
             }
 
             if (index == clauses.Count - 1)
             {
-                yield return LythonRuntime.RuntimeValue(
+                var produced = LythonRuntime.RuntimeValue(
                     await LythonRuntime.EvaluateLoweredExpressionAsync(_itemExpression, scope).ConfigureAwait(false));
+                // Assignment expressions escape to the defining scope on each
+                // advance, so partial consumption already binds (like CPython).
+                LythonRuntime.PropagateComprehensionBindings(scope, _closure, _targets, _span);
+                yield return produced;
             }
             else
             {
