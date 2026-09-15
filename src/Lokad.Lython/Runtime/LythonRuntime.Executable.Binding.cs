@@ -324,6 +324,7 @@ internal sealed partial class LythonRuntime
                     functionBinding.CodeObject.ScopeFacts);
             ChargeFunctionValue(context, functionBinding.Function.Span);
             ChargeDefaultArguments(functionBinding.DefaultValues.Count, context.MemoryGovernor, functionBinding.Function.Span);
+            TrackFunctionValue(function, functionBinding.DefaultValues.Count, context, functionBinding.Function.Span);
             if (function is PyFunctionBase defined)
             {
                 PyFunctionBase.CaptureFunctionDocstring(defined, functionBinding.Function.Body, context, functionBinding.Function.Span);

@@ -173,6 +173,21 @@ internal sealed partial class LythonRuntime
         context?.MemoryGovernor.Commit(FunctionValueBytes);
     }
 
+    // Registers a freshly constructed function or lambda for its own value and
+    // default-map charges (closure retention stays context-owned): dropped
+    // definitions reclaim through the pool once collected.
+    internal static void TrackFunctionValue(object function, int defaultCount, ExecutionContext? context, LythonSourceSpan? span)
+    {
+        if (context is null)
+        {
+            return;
+        }
+
+        context.Services.State.CallTemporaries.TrackFreshMutable(
+            function,
+            checked(FunctionValueBytes + DefaultArgumentSlotBytes * (long)defaultCount));
+    }
+
     // MG11: default-argument maps survive with the function value. The 128B
     // constructed-value unit covers the wrapper, binding plan and an empty map,
     // so each defaulted parameter owns one 64B table slot beside it.
