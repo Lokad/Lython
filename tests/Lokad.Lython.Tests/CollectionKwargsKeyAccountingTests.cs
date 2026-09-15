@@ -40,8 +40,9 @@ public sealed class CollectionKwargsKeyAccountingTests
         var key = Assert.IsType<PyString>(pair.Key);
         Assert.Same(context.MemoryGovernor, key.OwnerMemoryGovernor);
         Assert.Equal("k", key.AsString());
-        // Shell (64) plus the governed backing (192) and key (128 + 1).
-        Assert.Equal(385L, context.MemoryGovernor.CurrentCommittedBytes);
+        // Shell (64) plus the governed backing (192) and key (128 + 1),
+        // plus one pool entry per retained value (2 x 128) and first tier growth (32).
+        Assert.Equal(673L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -55,8 +56,9 @@ public sealed class CollectionKwargsKeyAccountingTests
         var key = Assert.IsType<PyString>(dict.Single().Key);
         Assert.Same(context.MemoryGovernor, key.OwnerMemoryGovernor);
         Assert.Equal("k", key.AsString());
-        // Shell (64) plus the governed backing (192) and key (128 + 1).
-        Assert.Equal(385L, context.MemoryGovernor.CurrentCommittedBytes);
+        // Shell (64) plus the governed backing (192) and key (128 + 1),
+        // plus one pool entry per retained value (2 x 128) and first tier growth (32).
+        Assert.Equal(673L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
