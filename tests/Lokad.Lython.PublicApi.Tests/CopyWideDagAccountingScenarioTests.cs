@@ -6,9 +6,9 @@ namespace Lokad.Lython.PublicApi.Tests;
 /// <summary>
 /// MG20: wide graphs copy under the same budget discipline as deep ones.
 /// Twenty thousand distinct one-element lists fail a 4MiB budget (memo
-/// scratch plus copy construction) and round-trip at 20MiB, in both modes.
-/// The round-trip peak (about 17.8MB measured) includes one 64 B registry entry
-/// per retained display list on top of the memo, identity and backing charges.
+/// scratch plus copy construction) and round-trip at 24MiB, in both modes.
+/// The round-trip peak (about 23.5MB measured) includes one 128 B registry entry
+/// per retained display list and clone on top of the memo, identity and backing charges.
 /// </summary>
 public sealed class CopyWideDagAccountingScenarioTests
 {
@@ -46,7 +46,7 @@ public sealed class CopyWideDagAccountingScenarioTests
             return [len(m), m[19999][0], m is v]
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 20971520 };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 25165824 };
         var expected = new List<object?> { new BigInteger(20000), new BigInteger(19999), false };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
