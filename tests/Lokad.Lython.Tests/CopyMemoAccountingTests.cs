@@ -31,17 +31,17 @@ public sealed class CopyMemoAccountingTests
     {
         // Transient scratch rides reserved; durable memo entries commit; each
         // fresh original also mints one governed id-registry entry (64 B value
-        // plus 64 B pool entry) shared with id(). The live memo pins its
+        // plus 128 B pool entry) shared with id(). The live memo pins its
         // originals, so their id boxes release only after the memo drops.
         var (context, reserved, committed, afterDispose) = RememberThreeAndDispose();
         Assert.Equal(3L * 128L, reserved);
-        Assert.Equal(3L * 128L + 3L * 128L, committed);
+        Assert.Equal(3L * 128L + 3L * 192L + context.Services.State.CallTemporaries.CommittedBackingBytes, committed);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(3L * 128L, afterDispose);
+        Assert.Equal(3L * 192L + context.Services.State.CallTemporaries.CommittedBackingBytes, afterDispose);
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-        context.Services.State.CallTemporaries.Sweep();
+        context.Services.State.CallTemporaries.Sweep(full: true);
         Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
@@ -74,3 +74,4 @@ public sealed class CopyMemoAccountingTests
         Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
     }
 }
+

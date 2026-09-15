@@ -65,7 +65,7 @@ public sealed class IdentityRegistryAccountingTests
             root.State.GetObjectId(key);
         }
 
-        Assert.Equal(1000 * 128, governor.CurrentCommittedBytes);
+        Assert.Equal(1000 * 192 + root.State.CallTemporaries.CommittedBackingBytes, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
         GC.KeepAlive(keys);
     }
@@ -81,7 +81,7 @@ public sealed class IdentityRegistryAccountingTests
             Assert.Equal(first, root.State.GetObjectId(key));
         }
 
-        Assert.Equal(128, governor.CurrentCommittedBytes);
+        Assert.Equal(192 + root.State.CallTemporaries.CommittedBackingBytes, governor.CurrentCommittedBytes);
     }
 
     [Fact]
@@ -100,12 +100,12 @@ public sealed class IdentityRegistryAccountingTests
     {
         var root = NewRoot(null, out var governor);
         RegisterMany(root, 1000);
-        Assert.Equal(1000 * 128, governor.CurrentCommittedBytes);
+        Assert.Equal(1000 * 192 + root.State.CallTemporaries.CommittedBackingBytes, governor.CurrentCommittedBytes);
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
         root.State.CallTemporaries.Sweep();
-        Assert.Equal(0, governor.CurrentCommittedBytes);
+        Assert.Equal(root.State.CallTemporaries.CommittedBackingBytes, governor.CurrentCommittedBytes);
     }
 
     [Fact]
@@ -122,8 +122,9 @@ public sealed class IdentityRegistryAccountingTests
     public void RecoveryWorksAfterReclamation()
     {
         var root = NewRoot(1024, out var governor);
-        var keys = BuildRegistered(root, 8);
-        Assert.Equal(1024, governor.CurrentCommittedBytes);
+        var keys = BuildRegistered(root, 5);
+        // Five identities at 192 B each fill 960 B; the sixth denies.
+        Assert.Equal(960 + root.State.CallTemporaries.CommittedBackingBytes, governor.CurrentCommittedBytes);
         Assert.Throws<LythonRuntimeException>(() => root.State.GetObjectId(new object()));
         ForgetKeys(keys);
         keys = null!;
@@ -131,9 +132,9 @@ public sealed class IdentityRegistryAccountingTests
         GC.WaitForPendingFinalizers();
         GC.Collect();
         root.State.CallTemporaries.Sweep();
-        Assert.Equal(0, governor.CurrentCommittedBytes);
+        Assert.Equal(root.State.CallTemporaries.CommittedBackingBytes, governor.CurrentCommittedBytes);
         root.State.GetObjectId(new object());
-        Assert.Equal(128, governor.CurrentCommittedBytes);
+        Assert.Equal(192 + root.State.CallTemporaries.CommittedBackingBytes, governor.CurrentCommittedBytes);
         Assert.Equal(1, root.State.CallTemporaries.Count);
     }
 

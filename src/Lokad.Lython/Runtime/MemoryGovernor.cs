@@ -45,6 +45,11 @@ internal sealed class MemoryGovernor
     // paying a collection per caught trip.
     private long _committedAtLastReclaim;
 
+    // Reentrancy guard: sweeps may themselves reserve (tier promotion funds its
+    // old-tier slot), so a denial inside relief fails fast instead of re-entering
+    // relief forever.
+    private bool _inExhaustionRelief;
+
     public void EnsureCanReserve(long bytes, LythonSourceSpan? span)
     {
         if (bytes <= 0)
@@ -64,9 +69,18 @@ internal sealed class MemoryGovernor
                 throw RuntimeErrors.Memory($"execution memory budget exceeded ({maxAccountedBytes})", span);
             }
 
-            if (CurrentCommittedBytes > _committedAtLastReclaim)
+            if (CurrentCommittedBytes > _committedAtLastReclaim && !_inExhaustionRelief)
             {
-                ReclaimForExhaustion();
+                _inExhaustionRelief = true;
+                try
+                {
+                    ReclaimForExhaustion();
+                }
+                finally
+                {
+                    _inExhaustionRelief = false;
+                }
+
                 _committedAtLastReclaim = CurrentCommittedBytes;
             }
             nextReserved = AddChecked(CurrentReservedBytes, bytes, span);
@@ -85,7 +99,8 @@ internal sealed class MemoryGovernor
     // fully before failing attributes the denial to live retention rather
     // than garbage pressure — but only for charges tracked through registered
     // pools; untracked retained charges still deny, correctly, without relief.
-    // Sweeps never reserve, so this cannot recurse.
+    // Tier promotion inside those sweeps may reserve its old-tier slot; the
+    // reentrancy guard above turns that nested denial into a fast failure.
     private void ReclaimForExhaustion()
     {
         if (LivePoolProvider is not { } provider)

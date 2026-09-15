@@ -100,7 +100,7 @@ public sealed class ChargeReclamationPoolTests
         GC.WaitForPendingFinalizers();
         GC.Collect();
         var released = pool.Sweep();
-        Assert.Equal(50 * (128 + 64), released);
+        Assert.Equal(50 * (128 + 128), released);
         Assert.Equal(50, pool.Count);
         GC.KeepAlive(keys);
     }
@@ -129,7 +129,7 @@ public sealed class ChargeReclamationPoolTests
             sweeps++;
         }
 
-        Assert.Equal(2500 * (128 + 64), released);
+        Assert.Equal(2500 * (128 + 128), released);
         Assert.Equal(2500, pool.Count);
         GC.KeepAlive(keys);
     }
@@ -155,11 +155,11 @@ public sealed class ChargeReclamationPoolTests
         // A request larger than the whole budget can never fit, so it denies
         // without pausing for a collection: the live pool is untouched.
         var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 1024 });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 2048 });
         var keys = TrackLive(context.State.CallTemporaries, context.MemoryGovernor, 4);
         context.State.CallTemporaries.Sweep();
         var before = context.State.CallTemporaries.Count;
-        var failure = Assert.Throws<LythonRuntimeException>(() => context.MemoryGovernor.EnsureCanReserve(2048, null));
+        var failure = Assert.Throws<LythonRuntimeException>(() => context.MemoryGovernor.EnsureCanReserve(4096, null));
         Assert.Equal("MemoryError", failure.ExceptionType);
         Assert.Equal(before, context.State.CallTemporaries.Count);
         GC.KeepAlive(keys);
@@ -175,5 +175,77 @@ public sealed class ChargeReclamationPoolTests
         Assert.Equal(0, context.State.CallTemporaries.Count);
         var failure = Assert.Throws<LythonRuntimeException>(() => context.MemoryGovernor.EnsureCanReserve(64, null));
         Assert.Equal("MemoryError", failure.ExceptionType);
+    }
+
+    [Fact]
+    public void TierGrowthCommitsPerSlot()
+    {
+        // Five insertions grow the young tier 0->4->8 (deltas 4 + 4): 8 slots beside the entries.
+        var governor = new MemoryGovernor(null);
+        var pool = NewPool(governor);
+        var keys = TrackLive(pool, governor, 5);
+        Assert.Equal(8L * 8L, pool.CommittedBackingBytes);
+        Assert.Equal(5L * (128L + 128L) + 8L * 8L, governor.CurrentCommittedBytes);
+        GC.KeepAlive(keys);
+    }
+
+    [Fact]
+    public void RefillReusesRetainedCapacity()
+    {
+        // A partial sweep prunes dead entries but keeps tier capacity: refilling
+        // within it commits no new backing.
+        var governor = new MemoryGovernor(null);
+        var pool = NewPool(governor);
+        var keys = TrackLive(pool, governor, 4);
+        var backing = pool.CommittedBackingBytes;
+        DropAll(keys);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        pool.Sweep();
+        Assert.Equal(backing, pool.CommittedBackingBytes);
+        Assert.Equal(backing, governor.CurrentCommittedBytes);
+        keys = TrackLive(pool, governor, 4);
+        Assert.Equal(backing, pool.CommittedBackingBytes);
+        Assert.Equal(4L * (128L + 128L) + backing, governor.CurrentCommittedBytes);
+        GC.KeepAlive(keys);
+    }
+
+    [Fact]
+    public void AbandonedPoolsReleaseBackingAndRegistration()
+    {
+        // A dropped pool owner takes its pool with it: abandonment sweeps the
+        // tracked values fully and releases tier backing plus the registration.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        AbandonTrackedPool(context.State);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        var live = context.State.LiveReclamationPools().ToList();
+        Assert.Single(live);
+        Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static void AbandonTrackedPool(ExecutionState state)
+    {
+        var pool = new ChargeReclamationPool(state.MemoryGovernor);
+        state.RegisterPool(new object(), pool);
+        var governor = state.MemoryGovernor;
+        for (var i = 0; i < 3; i++)
+        {
+            var key = new object();
+            governor.Reserve(100, null);
+            governor.Commit(100);
+            pool.Track(key, 100);
+        }
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static void DropAll(System.Collections.Generic.List<object> keys)
+    {
+        keys.Clear();
     }
 }

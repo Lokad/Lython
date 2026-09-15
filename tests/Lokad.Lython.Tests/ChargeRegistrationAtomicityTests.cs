@@ -28,16 +28,16 @@ public sealed class ChargeRegistrationAtomicityTests
         governor.Release(950);
         pool.Track(value, 950);
         Assert.Equal(1, pool.Count);
-        Assert.Equal(64L, governor.CurrentCommittedBytes);
+        Assert.Equal(128L + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
         GC.KeepAlive(value);
     }
 
     [Fact]
     public void DeniedStringTrackRetriesAfterFunding()
     {
-        // A 3-byte string commits 131 B, which fits 150 B but leaves no room
+        // A 3-byte string commits 131 B, which fits 200 B but leaves no room
         // for the registry charge. The funded retry registers exactly once.
-        var governor = new MemoryGovernor(150);
+        var governor = new MemoryGovernor(200);
         var pool = new ChargeReclamationPool(governor);
         var value = PyString.FromString("abc", governor);
         Assert.Throws<LythonRuntimeException>(() => pool.TrackString(value));
@@ -45,7 +45,7 @@ public sealed class ChargeRegistrationAtomicityTests
         governor.Release(131);
         pool.TrackString(value);
         Assert.Equal(1, pool.Count);
-        Assert.Equal(64L, governor.CurrentCommittedBytes);
+        Assert.Equal(128L + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
         GC.KeepAlive(value);
     }
 
@@ -77,9 +77,9 @@ public sealed class ChargeRegistrationAtomicityTests
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-        Assert.Equal(131L + 64L, pool.Sweep());
+        Assert.Equal(131L + 128L, pool.Sweep());
         Assert.Equal(1, pool.Count);
-        Assert.Equal(131L + 64L, governor.CurrentCommittedBytes);
+        Assert.Equal(131L + 128L + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
         GC.KeepAlive(kept);
     }
 
@@ -94,7 +94,7 @@ public sealed class ChargeRegistrationAtomicityTests
         pool.Track(value, 100);
         pool.Track(value, 100);
         Assert.Equal(1, pool.Count);
-        Assert.Equal(164L, governor.CurrentCommittedBytes);
+        Assert.Equal(228L + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
         GC.KeepAlive(value);
     }
 
@@ -107,13 +107,13 @@ public sealed class ChargeRegistrationAtomicityTests
         governor.Commit(100);
         TrackDeadObject(pool);
         Assert.Equal(1, pool.Count);
-        Assert.Equal(164L, governor.CurrentCommittedBytes);
+        Assert.Equal(228L + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-        Assert.Equal(164L, pool.Sweep());
+        Assert.Equal(228L, pool.Sweep());
         Assert.Equal(0, pool.Count);
-        Assert.Equal(0L, governor.CurrentCommittedBytes);
+        Assert.Equal(pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
         Assert.Equal(0L, governor.CurrentReservedBytes);
     }
 
@@ -130,9 +130,9 @@ public sealed class ChargeRegistrationAtomicityTests
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-        Assert.Equal(empty + 64L, pool.Sweep());
+        Assert.Equal(empty + 128L, pool.Sweep());
         Assert.Equal(0, pool.Count);
-        Assert.Equal(0L, governor.CurrentCommittedBytes);
+        Assert.Equal(pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
         Assert.Equal(0L, governor.CurrentReservedBytes);
     }
 

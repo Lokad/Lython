@@ -36,11 +36,12 @@ public sealed class DequeReclamationTests
         var pool = new ChargeReclamationPool(governor);
         CreateTrackedDeque(pool, governor);
         // Shell plus three nodes beside the registry entry.
-        Assert.Equal(128L + 3L * 64L + 64L, governor.CurrentCommittedBytes);
+        Assert.Equal(128L + 3L * 64L + 128L + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-        Assert.Equal(128L + 3L * 64L + 64L, pool.Sweep());
+        var backing = pool.CommittedBackingBytes;
+        Assert.Equal(128L + 3L * 64L + 128L + backing, pool.Sweep(full: true));
         Assert.Equal(0, governor.CurrentCommittedBytes);
     }
 
@@ -51,12 +52,13 @@ public sealed class DequeReclamationTests
         var pool = new ChargeReclamationPool(governor);
         var deque = BuildTrackedDeque(pool, governor);
         deque.Pop();
-        Assert.Equal(128L + 2L * 64L + 64L, governor.CurrentCommittedBytes);
+        Assert.Equal(128L + 2L * 64L + 128L + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
         deque = null!;
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-        Assert.Equal(128L + 2L * 64L + 64L, pool.Sweep());
+        var backing = pool.CommittedBackingBytes;
+        Assert.Equal(128L + 2L * 64L + 128L + backing, pool.Sweep(full: true));
         Assert.Equal(0, governor.CurrentCommittedBytes);
     }
 

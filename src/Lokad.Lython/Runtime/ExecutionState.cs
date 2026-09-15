@@ -207,6 +207,11 @@ internal sealed class ExecutionState
         ChargeReclamationPool pool,
         MemoryGovernor.TemporaryMemoryReservation? scratch = null)
     {
+        // Registrations retain a weak handle plus the pool/scratch references for
+        // the pool lifetime: one entry charge at the shared rate, released with
+        // the registration on abandonment below.
+        MemoryGovernor.Reserve(ChargeReclamationPool.EntryChargeBytes, null);
+        MemoryGovernor.Commit(ChargeReclamationPool.EntryChargeBytes);
         _poolRegistrations.Add(new PoolRegistration(new WeakReference<object>(owner), pool, scratch));
     }
 
@@ -222,7 +227,9 @@ internal sealed class ExecutionState
             if (!entry.Owner.TryGetTarget(out _))
             {
                 entry.Pool.Sweep(full: true);
+                entry.Pool.ReleaseTierBacking();
                 entry.Scratch?.Dispose();
+                MemoryGovernor.Release(ChargeReclamationPool.EntryChargeBytes);
                 _poolRegistrations[i] = _poolRegistrations[_poolRegistrations.Count - 1];
                 _poolRegistrations.RemoveAt(_poolRegistrations.Count - 1);
             }
