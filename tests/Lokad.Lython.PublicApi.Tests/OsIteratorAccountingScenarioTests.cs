@@ -252,6 +252,29 @@ public sealed class OsIteratorAccountingScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
     }
 
+    // Abrupt abandonment drops the loop iterator slot at the break edge
+    // (executable for-loops used to root it forever); 100k iterations complete.
+    [Fact]
+    public async Task AbandonedWalkAfterBreakReclaims()
+    {
+        var script = new LythonEngine().Compile("""
+            import os
+            i = 0
+            while i < 100000:
+                for t in os.walk("/d"):
+                    break
+                i = i + 1
+            return 0
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3 * 1024 * 1024, MaxHostCalls = 1000000 };
+        var sync = script.Run(SeededDirHost(3), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+
+        var asyncResult = await script.RunAsync(SeededDirHost(3), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+    }
+
     [Fact]
     public async Task RetainedWalkUnpackingStaysCharged()
     {

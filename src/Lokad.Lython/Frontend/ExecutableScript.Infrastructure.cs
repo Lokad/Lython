@@ -535,8 +535,12 @@ internal sealed partial class ExecutableScript
             public List<ExecutableInstruction> Instructions { get; } = [];
         }
 
+        // A for-loop owns one iterator slot on the value stack above the loop-entry
+        // depth; while-loops own none. A break out of a for-loop must pop that
+        // slot otherwise the abandoned iterator roots charges forever.
         private readonly record struct LoopContext(
             int ContinueBlockIndex,
-            int BreakBlockIndex);
+            int BreakBlockIndex,
+            bool HasIterator);
     }
 }

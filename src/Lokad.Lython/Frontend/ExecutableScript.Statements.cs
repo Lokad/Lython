@@ -180,7 +180,7 @@ internal sealed partial class ExecutableScript
             AddInstruction(headBlock, ExecutableInstruction.AssignLoopTarget(InternLoopTarget(statement.Syntax.Target, statement.Span), statement.Span));
             AddInstruction(headBlock, ExecutableInstruction.Jump(bodyBlock, statement.Span));
 
-            _loops.Push(new LoopContext(headBlock, exitBlock));
+            _loops.Push(new LoopContext(headBlock, exitBlock, HasIterator: true));
             try
             {
                 var bodyExit = CompileStatements(statement.Body, bodyBlock);
@@ -455,7 +455,7 @@ internal sealed partial class ExecutableScript
             AddInstruction(conditionBlock, ExecutableInstruction.JumpIfFalse(statement.ElseStatements is null ? exitBlock : elseBlock, statement.Condition.Span));
             AddInstruction(conditionBlock, ExecutableInstruction.Jump(bodyBlock, statement.Span));
 
-            _loops.Push(new LoopContext(conditionBlock, exitBlock));
+            _loops.Push(new LoopContext(conditionBlock, exitBlock, HasIterator: false));
             try
             {
                 var bodyExit = CompileStatements(statement.Body, bodyBlock);
@@ -491,6 +491,11 @@ internal sealed partial class ExecutableScript
             if (!_loops.TryPeek(out var loop))
             {
                 throw new ExecutableLoweringFallbackException("Executable IR lowering cannot emit break outside a loop.");
+            }
+
+            if (loop.HasIterator)
+            {
+                AddInstruction(currentBlock, ExecutableInstruction.PopTop(statement.Span));
             }
 
             AddInstruction(currentBlock, ExecutableInstruction.Jump(loop.BreakBlockIndex, statement.Span));
