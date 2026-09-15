@@ -11,6 +11,10 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class ImportedCodeRetentionScenarioTests
 {
     private const long OneMib = 1048576;
+    // Loop-redefined function shells own 128B plus a 128B pool entry each (measured
+    // peak 1268927 for 3000 retained definitions sharing one body); the shared body
+    // still pays once, which a per-definition miscount would push far past this.
+    private const long LoopRetainBudget = 1572864;
 
     private static string BigFunction(string name, int statements)
         => "def " + name + "():\n" + string.Concat(Enumerable.Repeat("    x = 1\n", statements)) + "    return x\n";
@@ -188,14 +192,14 @@ public sealed class ImportedCodeRetentionScenarioTests
         var script = new LythonEngine().Compile("import loop\nreturn len(loop.fs)\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new BigInteger(3000);
-        var sync = script.Run(host, new LythonRunOptions { MaxExecutionMemoryBytes = OneMib, AllowedLocalModules = allowed });
+        var sync = script.Run(host, new LythonRunOptions { MaxExecutionMemoryBytes = LoopRetainBudget, AllowedLocalModules = allowed });
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
 
         var host2 = new MockLythonHost();
         host2.SeedFile("/loop.py", loopModule);
         var allowed2 = new HashSet<string>(StringComparer.Ordinal) { "loop" };
-        var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = OneMib, AllowedLocalModules = allowed2 });
+        var asyncResult = await script.RunAsync(host2, new LythonRunOptions { MaxExecutionMemoryBytes = LoopRetainBudget, AllowedLocalModules = allowed2 });
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
