@@ -252,6 +252,14 @@ internal sealed class ExecutionState
         }
     }
 
+    // Bound calls sweep the same pool as execution steps, and deliberately so:
+    // user calls tick both cadences, so either alone keeps peaks flat on the
+    // current tree (removing this sweep leaves the kwargs peak byte-identical).
+    // An earlier tree doubled kwargs peaks without it, before entry calibration
+    // and refund-on-deny changed peak dynamics; keep both cadences since steps
+    // also cover call-free loops while bound calls re-sweep right after calls
+    // drop their temporaries. Consolidation would save ~microseconds per 256
+    // calls while risking call-heavy shapes, so it stays rejected.
     internal void NoteBoundCall()
     {
         if ((++_boundCalls & 255) == 0)
