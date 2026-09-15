@@ -86,6 +86,30 @@ public sealed class TeeCapacityAccountingScenarioTests
         Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
     }
 
+    // The shared coupon mirrors live queue and backing growth, so buffered
+    // tees dropped whole reclaim instead of stranding their backlog charges.
+    [Fact]
+    public async Task BufferedTeeDropsReclaim()
+    {
+        var script = new LythonEngine().Compile("""
+            import itertools
+            i = 0
+            while i < 1000:
+                a, b = itertools.tee(range(100))
+                for x in a:
+                    pass
+                i = i + 1
+            return 0
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3 * 1024 * 1024 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+    }
+
     [Fact]
     public async Task FailedSourceKeepsQueuedBacklog()
     {

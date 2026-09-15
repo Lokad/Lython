@@ -279,10 +279,14 @@ internal sealed class PyTeeSharedState
     private readonly LythonSourceSpan _span;
     private bool _sourceExhausted;
 
-    // Construction-time owned charges for the pool coupon. Later per-item queue
-    // and backing growth commits outside this snapshot (residual); drops release
-    // through the entry while that growth strands conservatively.
+    // Construction-time owned charges for the pool coupon. The coupon mirrors
+    // live queue and backing growth below (M04 lifetime rule), so drops release
+    // the full outstanding backlog while retained queues stay charged.
     internal long ConstructionCharge { get; private set; }
+
+    private long _queuedItemCount;
+
+    private long _backingChargeTotal;
 
     public PyTeeSharedState(object source, int count, MemoryGovernor memoryGovernor, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
@@ -315,7 +319,19 @@ internal sealed class PyTeeSharedState
             var backingCharge = 16L * growth;
             _memoryGovernor.Reserve(backingCharge, _span);
             _memoryGovernor.Commit(backingCharge);
+            _backingChargeTotal = checked(_backingChargeTotal + backingCharge);
+            ResnapshotQueueCoupon();
         }
+    }
+
+    // The shared coupon always mirrors outstanding queue and backing charges:
+    // every mutation commits first (check-first, so denials change nothing)
+    // and resnapshots after, keeping drops exact in both directions.
+    private void ResnapshotQueueCoupon()
+    {
+        ChargeReclamationPool.NotifyStorageReplaced(
+            this,
+            checked(ConstructionCharge + (QueuedItemBytes * _queuedItemCount) + _backingChargeTotal));
     }
 
     public bool TryGetNext(int index, [MaybeNullWhen(false)] out object value)
@@ -326,6 +342,8 @@ internal sealed class PyTeeSharedState
         {
             value = ownQueue.Dequeue();
             _memoryGovernor.Release(QueuedItemBytes);
+            _queuedItemCount--;
+            ResnapshotQueueCoupon();
             return true;
         }
 
@@ -353,6 +371,8 @@ internal sealed class PyTeeSharedState
             _memoryGovernor.Reserve(QueuedItemBytes, _span);
             _memoryGovernor.Commit(QueuedItemBytes);
             _queues[i].Enqueue(value);
+            _queuedItemCount++;
+            ResnapshotQueueCoupon();
             ChargeBackingGrowth(i);
             _context.ObserveCollectionCount(_queues[i].Count, _span);
         }
@@ -368,6 +388,8 @@ internal sealed class PyTeeSharedState
         {
             var queued = ownQueue.Dequeue();
             _memoryGovernor.Release(QueuedItemBytes);
+            _queuedItemCount--;
+            ResnapshotQueueCoupon();
             return PyIterationResult.Yield(queued);
         }
 
@@ -394,6 +416,8 @@ internal sealed class PyTeeSharedState
             _memoryGovernor.Reserve(QueuedItemBytes, _span);
             _memoryGovernor.Commit(QueuedItemBytes);
             _queues[i].Enqueue(value);
+            _queuedItemCount++;
+            ResnapshotQueueCoupon();
             ChargeBackingGrowth(i);
             _context.ObserveCollectionCount(_queues[i].Count, _span);
         }
