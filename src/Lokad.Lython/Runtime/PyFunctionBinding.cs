@@ -8,7 +8,7 @@ internal static class PyFunctionBinding
         LythonRuntime.ExecutionContext closure,
         ScopeDirectiveFacts scopeFacts,
         FunctionBindingPlan bindingPlan,
-        IReadOnlyDictionary<string, object> boundArguments,
+        BoundCallArguments boundArguments,
         bool mirrorBoundArguments,
         PyType? ownerType,
         LythonSourceSpan span)
@@ -17,15 +17,16 @@ internal static class PyFunctionBinding
         frame.FunctionName = bindingPlan.CallableName;
         if (mirrorBoundArguments)
         {
-            foreach (var pair in boundArguments)
+            var layoutNames = bindingPlan.LayoutParameterNames;
+            for (var i = 0; i < layoutNames.Count; i++)
             {
-                frame.Variables[pair.Key] = pair.Value;
+                frame.Variables[layoutNames[i]] = boundArguments.Values[i];
             }
         }
 
         if (ownerType is not null &&
             bindingPlan.Parameters.Count > 0 &&
-            boundArguments.TryGetValue(bindingPlan.Parameters[0].Name, out var receiver) &&
+            TryGetReceiver(boundArguments, bindingPlan, out var receiver) &&
             (receiver is PyInstance instance && instance.Type.IsSubtypeOf(ownerType) ||
              receiver is PyType type && type.IsSubtypeOf(ownerType)))
         {
@@ -34,6 +35,18 @@ internal static class PyFunctionBinding
 
         frame.EnterFunctionCall(span);
         return frame;
+    }
+
+    private static bool TryGetReceiver(BoundCallArguments boundArguments, FunctionBindingPlan bindingPlan, [MaybeNullWhen(false)] out object receiver)
+    {
+        receiver = null;
+        if (!bindingPlan.LayoutParameterIndex.TryGetValue(bindingPlan.Parameters[0].Name, out var index))
+        {
+            return false;
+        }
+
+        receiver = boundArguments.Values[index];
+        return true;
     }
 
     /// <summary>

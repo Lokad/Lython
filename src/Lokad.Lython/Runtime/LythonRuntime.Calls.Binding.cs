@@ -10,7 +10,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    internal static Dictionary<string, object> BindFunctionArguments(
+    internal static BoundCallArguments BindFunctionArguments(
         CallArgumentValue[] arguments,
         LythonSourceSpan span,
         FunctionBindingPlan plan,
@@ -18,10 +18,14 @@ internal sealed partial class LythonRuntime
     {
         context.State.NoteBoundCall();
         var pool = context.State.CallTemporaries;
-        // Exact upper bound of bound entries (each parameter binds once, plus the
-        // variadic names): capacity is only a hint, but the exact size avoids both
-        // upfront waste and growth resizes on the common arities.
-        var bound = new Dictionary<string, object>(plan.PositionalParameters.Count + plan.KeywordOnlyParameters.Count + (plan.VariadicList is null ? 0 : 1) + (plan.VariadicDictionary is null ? 0 : 1), StringComparer.Ordinal);
+        // Values travel in plan layout order (positional, keyword-only, then
+        // variadic names) with presence bits, instead of a per-call name
+        // dictionary. The layout arrays live on the shared plan; only the value
+        // slots are per-call.
+        var values = plan.LayoutParameterNames.Count == 0
+            ? Array.Empty<object>()
+            : new object[plan.LayoutParameterNames.Count];
+        var assigned = new ArgumentPresence(plan.LayoutParameterNames.Count);
         // The overflow list is scratch: most calls never spill positionals,
         // so materialize it only on the first spill, tracked in the call pool
         // invocation for a list that is dropped before return.
@@ -52,13 +56,15 @@ internal sealed partial class LythonRuntime
                     continue;
                 }
 
-                var parameter = plan.PositionalParameters[positionalIndex++];
-                bound[parameter.Name] = argument.Value;
+                values[positionalIndex] = argument.Value;
+                assigned[positionalIndex] = true;
+                positionalIndex++;
                 continue;
             }
 
             var keywordName = argument.KeywordName;
-            if (!plan.NamedParameters.TryGetValue(keywordName, out var named))
+            if (!plan.LayoutParameterIndex.TryGetValue(keywordName, out var keywordIndex) ||
+                keywordIndex >= plan.NamedLayoutCount)
             {
                 if (plan.VariadicDictionary is null)
                 {
@@ -74,58 +80,67 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            if (!bound.TryAdd(named.Name, argument.Value))
+            if (assigned[keywordIndex])
             {
                 throw CallErrors.MultipleValues(plan.CallableKind, plan.CallableName, keywordName, span);
             }
+
+            values[keywordIndex] = argument.Value;
+            assigned[keywordIndex] = true;
         }
 
-        foreach (var parameter in plan.PositionalParameters)
+        for (var i = 0; i < plan.PositionalParameters.Count; i++)
         {
-            if (bound.ContainsKey(parameter.Name))
+            if (assigned[i])
             {
                 continue;
             }
 
-            if (plan.DefaultValues.TryGetValue(parameter.Name, out var defaultValue))
+            var parameterName = plan.PositionalParameters[i].Name;
+            if (plan.DefaultValues.TryGetValue(parameterName, out var defaultValue))
             {
-                bound[parameter.Name] = defaultValue;
+                values[i] = defaultValue;
                 continue;
             }
 
-            throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameter.Name, span);
+            throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameterName, span);
         }
 
-        foreach (var parameter in plan.KeywordOnlyParameters)
+        for (var k = 0; k < plan.KeywordOnlyParameters.Count; k++)
         {
-            if (bound.ContainsKey(parameter.Name))
+            var i = plan.PositionalParameters.Count + k;
+            if (assigned[i])
             {
                 continue;
             }
 
-            if (plan.DefaultValues.TryGetValue(parameter.Name, out var defaultValue))
+            var parameterName = plan.KeywordOnlyParameters[k].Name;
+            if (plan.DefaultValues.TryGetValue(parameterName, out var defaultValue))
             {
-                bound[parameter.Name] = defaultValue;
+                values[i] = defaultValue;
                 continue;
             }
 
-            throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameter.Name, span);
+            throw CallErrors.MissingArgument(plan.CallableKind, plan.CallableName, parameterName, span);
         }
 
         if (plan.VariadicList is not null)
         {
+            var variadicIndex = plan.LayoutParameterIndex[plan.VariadicList.Name];
             var overflow = extraPositional;
             if (overflow is null || overflow.Count == 0)
             {
-                bound[plan.VariadicList.Name] = CreateTuple(0, _ => PyNone.Instance, context, span);
+                values[variadicIndex] = CreateTuple(0, _ => PyNone.Instance, context, span);
             }
             else
             {
                 ChargeReclamationPool.NotifyStorageReplaced(overflow, overflow.CommittedStorageBytes);
                 var overflowTuple = CreateTuple(overflow.Count, i => overflow[i], context, span);
                 pool.TrackMutable(overflowTuple, overflowTuple.CommittedStorageBytes);
-                bound[plan.VariadicList.Name] = overflowTuple;
+                values[variadicIndex] = overflowTuple;
             }
+
+            assigned[variadicIndex] = true;
         }
 
         if (plan.VariadicDictionary is not null)
@@ -143,10 +158,12 @@ internal sealed partial class LythonRuntime
             }
 
             ChargeReclamationPool.NotifyStorageReplaced(keywordDict, keywordDict.CommittedStorageBytes);
-            bound[plan.VariadicDictionary.Name] = keywordDict;
+            var keywordDictIndex = plan.LayoutParameterIndex[plan.VariadicDictionary.Name];
+            values[keywordDictIndex] = keywordDict;
+            assigned[keywordDictIndex] = true;
         }
 
-        return bound;
+        return new BoundCallArguments(values, assigned);
     }
 
     // Constructed function objects retain a wrapper plus binding plan and

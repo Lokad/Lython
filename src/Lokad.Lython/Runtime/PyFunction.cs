@@ -21,7 +21,7 @@ internal sealed class PyFunction : PyFunctionBase
 
     protected override object ExecuteBody(
         LythonRuntime.ExecutionContext frame,
-        IReadOnlyDictionary<string, object> boundArguments,
+        BoundCallArguments boundArguments,
         LythonSourceSpan span)
     {
         _ = boundArguments;
@@ -41,7 +41,7 @@ internal sealed class PyFunction : PyFunctionBase
 
     protected override async ValueTask<object> ExecuteBodyAsync(
         LythonRuntime.ExecutionContext frame,
-        IReadOnlyDictionary<string, object> boundArguments,
+        BoundCallArguments boundArguments,
         LythonSourceSpan span)
     {
         _ = boundArguments;

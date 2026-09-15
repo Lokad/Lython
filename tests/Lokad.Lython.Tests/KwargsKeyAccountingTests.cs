@@ -12,7 +12,7 @@ namespace Lokad.Lython.Tests;
 /// </summary>
 public sealed class KwargsKeyAccountingTests
 {
-    private static Dictionary<string, object> BindKwargs(
+    private static BoundCallArguments BindKwargs(
         LythonRuntime.ExecutionContext context,
         LythonSourceSpan span,
         string name,
@@ -33,7 +33,7 @@ public sealed class KwargsKeyAccountingTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var bound = BindKwargs(context, span, "alpha", new BigInteger(1));
-        var kwargs = (PyDict)bound["kw"];
+        var kwargs = (PyDict)bound.Values[0];
         var key = kwargs.Keys.OfType<PyString>().Single();
         Assert.Same(context.MemoryGovernor, key.OwnerMemoryGovernor);
         // 325B of dict backing plus key payload, plus two 128B pool entry charges

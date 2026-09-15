@@ -5,6 +5,10 @@ internal sealed class PyExecutableFunction : PyFunctionBase
 {
     private readonly ExecutableCodeObject _codeObject;
     private readonly IReadOnlyList<LythonRuntime.ExecutableCell> _closureCells;
+    // Layout-to-slot map shared across invocations: layout index to frame
+    // slot, or -1 when the name is not a frame local (like a name-lookup
+    // miss today). Built once per function value.
+    private readonly int[] _argumentSlotMap;
 
     public PyExecutableFunction(
         string name,
@@ -18,17 +22,23 @@ internal sealed class PyExecutableFunction : PyFunctionBase
     {
         _codeObject = codeObject;
         _closureCells = closureCells;
+        var layout = BindingPlan.LayoutParameterNames;
+        _argumentSlotMap = new int[layout.Count];
+        for (var i = 0; i < layout.Count; i++)
+        {
+            _argumentSlotMap[i] = codeObject.LocalNameToSlot.TryGetValue(layout[i], out var slot) ? slot : -1;
+        }
     }
 
     protected override bool RequiresArgumentMirroring => _codeObject.RequiresLocalVariableMirroring;
 
     protected override object ExecuteBody(
         LythonRuntime.ExecutionContext frame,
-        IReadOnlyDictionary<string, object> boundArguments,
+        BoundCallArguments boundArguments,
         LythonSourceSpan span)
     {
         _ = span;
-        LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _closureCells);
+        LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _argumentSlotMap, _closureCells);
         return PyNone.Instance;
     }
 }

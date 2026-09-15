@@ -34,6 +34,8 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
 
     public string Name { get; }
 
+    protected FunctionBindingPlan BindingPlan => _bindingPlan;
+
     public PyType? OwnerType { get; private set; }
 
     /// <summary>States whether bound arguments must also be materialized in the frame's name dictionary.</summary>
@@ -204,18 +206,18 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     /// <summary>Executes the function body after argument binding and returns its fall-through result.</summary>
     protected abstract object ExecuteBody(
         LythonRuntime.ExecutionContext frame,
-        IReadOnlyDictionary<string, object> boundArguments,
+        BoundCallArguments boundArguments,
         LythonSourceSpan span);
 
     /// <summary>Executes the function body asynchronously with the same return and exception semantics as <see cref="ExecuteBody"/>.</summary>
     protected virtual ValueTask<object> ExecuteBodyAsync(
         LythonRuntime.ExecutionContext frame,
-        IReadOnlyDictionary<string, object> boundArguments,
+        BoundCallArguments boundArguments,
         LythonSourceSpan span)
         => ValueTask.FromResult(ExecuteBody(frame, boundArguments, span));
 
     private LythonRuntime.ExecutionContext EnterInvocationFrame(
-        IReadOnlyDictionary<string, object> boundArguments,
+        BoundCallArguments boundArguments,
         LythonSourceSpan span)
         => PyFunctionBinding.EnterInvocationFrame(
             _closure,

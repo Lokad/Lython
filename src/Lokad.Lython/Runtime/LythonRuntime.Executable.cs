@@ -250,15 +250,16 @@ internal sealed partial class LythonRuntime
     }
 
     internal static void ExecuteExecutableCodeObject(ExecutableCodeObject codeObject, ExecutionContext context)
-        => ExecuteExecutableCodeObject(codeObject, context, null, null);
+        => ExecuteExecutableCodeObject(codeObject, context, default, Array.Empty<int>(), null);
 
-    internal static void ExecuteExecutableCodeObject(ExecutableCodeObject codeObject, ExecutionContext context, IReadOnlyDictionary<string, object>? initialLocals)
-        => ExecuteExecutableCodeObject(codeObject, context, initialLocals, null);
-
+    // Bound arguments arrive in plan layout order with a precomputed
+    // layout-to-slot map (or -1 for names that are not frame locals).
+    // Indexed stores replace the previous per-local name lookups.
     internal static void ExecuteExecutableCodeObject(
         ExecutableCodeObject codeObject,
         ExecutionContext context,
-        IReadOnlyDictionary<string, object>? initialLocals,
+        BoundCallArguments boundArguments,
+        int[] argumentSlotMap,
         IReadOnlyList<ExecutableCell>? closureCells)
     {
         var previousExecutableFrame = context.CurrentExecutableFrame;
@@ -278,19 +279,19 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            if (initialLocals is not null)
+            for (var i = 0; i < argumentSlotMap.Length; i++)
             {
-                for (var i = 0; i < codeObject.LocalNames.Count; i++)
+                var slot = argumentSlotMap[i];
+                if (slot < 0)
                 {
-                    var localName = codeObject.LocalNames[i];
-                    if (initialLocals.TryGetValue(localName, out var value))
-                    {
-                        locals[i] = value;
-                        if (localCells?[i] is ExecutableCell localCell)
-                        {
-                            localCell.Value = value;
-                        }
-                    }
+                    continue;
+                }
+
+                var value = boundArguments.Values[i];
+                locals[slot] = value;
+                if (localCells?[slot] is ExecutableCell localCell)
+                {
+                    localCell.Value = value;
                 }
             }
 
