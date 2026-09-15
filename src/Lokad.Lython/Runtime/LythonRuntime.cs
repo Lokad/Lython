@@ -264,10 +264,15 @@ internal sealed partial class LythonRuntime
             try
             {
                 context = new ExecutionContext(host, options);
-                var signal = ExecuteStatements(script.Statements, context);
-                if (signal is BreakSignal or ContinueSignal)
+                var flow = ExecuteStatements(script.Statements, context);
+                if (flow.Control is BreakSignal or ContinueSignal)
                 {
                     throw RuntimeErrors.TopLevelLoopControl(null);
+                }
+
+                if (flow.Return is not null)
+                {
+                    return CreateReturnedResult(flow.Return, context, options);
                 }
 
                 return CreateSuccessfulResult(context, null, options);
@@ -569,10 +574,15 @@ internal sealed partial class LythonRuntime
             // public async entry runs on) to the pool before doing any work,
             // so deep recursion that never genuinely yields would nest on a
             // small pool thread instead. Genuine host delays still yield.
-            var signal = await ExecuteStatementsAsync(script.Statements, context).ConfigureAwait(false);
-            if (signal is BreakSignal or ContinueSignal)
+            var flow = await ExecuteStatementsAsync(script.Statements, context).ConfigureAwait(false);
+            if (flow.Control is BreakSignal or ContinueSignal)
             {
                 throw RuntimeErrors.TopLevelLoopControl(null);
+            }
+
+            if (flow.Return is not null)
+            {
+                return CreateReturnedResult(flow.Return, context, options);
             }
 
             return CreateSuccessfulResult(context, null, options);

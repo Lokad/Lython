@@ -192,4 +192,9 @@ internal sealed partial class LythonRuntime
 
         public object Value { get; }
     }
+
+    // Abrupt outcome of a lowered statement block, traveling as a value so
+    // ordinary returns never throw through block machinery. Both null means
+    // the block fell through; control and return never coexist.
+    internal readonly record struct LoweredBlockFlow(ControlSignal? Control, ReturnSignal? Return);
 }

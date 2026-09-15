@@ -284,11 +284,20 @@ internal sealed partial class LythonRuntime
 
     private static void ExecuteTryStatement(LoweredTryStatement statement, ExecutionContext context)
     {
-        static ValueTask<ControlSignal?> ExecuteSynchronously(
+        static ValueTask<LoweredBlockFlow> ExecuteSynchronously(
             IReadOnlyList<LoweredStatement> statements,
             ExecutionContext executionContext)
             => new(ExecuteStatements(statements, executionContext));
 
-        ExecuteTryStatementCoreAsync(statement, context, ExecuteSynchronously).GetAwaiter().GetResult();
+        var flow = ExecuteTryStatementCoreAsync(statement, context, ExecuteSynchronously).GetAwaiter().GetResult();
+        if (flow.Control is not null)
+        {
+            throw flow.Control;
+        }
+
+        if (flow.Return is not null)
+        {
+            throw flow.Return;
+        }
     }
 }

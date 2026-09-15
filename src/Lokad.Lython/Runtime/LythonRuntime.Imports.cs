@@ -49,8 +49,14 @@ internal sealed partial class LythonRuntime
         var prepared = PrepareImportedModule(moduleName, path, ReadGovernedHostText(path, context, span).AsString(), context, span);
         try
         {
-            var signal = ExecuteStatements(prepared.Statements, prepared.Context);
-            return CompleteImportedModule(moduleName, prepared.Context, signal, context, span);
+            var flow = ExecuteStatements(prepared.Statements, prepared.Context);
+            if (flow.Return is not null)
+            {
+                context.MemoryGovernor.Release(prepared.DeferredBytes);
+                throw RuntimeErrors.ImportedModuleReturned(moduleName, span);
+            }
+
+            return CompleteImportedModule(moduleName, prepared.Context, flow.Control, context, span);
         }
         catch (ReturnSignal)
         {
@@ -93,8 +99,14 @@ internal sealed partial class LythonRuntime
         var prepared = PrepareImportedModule(moduleName, path, (await ReadGovernedHostTextAsync(path, context, span).ConfigureAwait(false)).AsString(), context, span);
         try
         {
-            var signal = await ExecuteStatementsAsync(prepared.Statements, prepared.Context).ConfigureAwait(false);
-            return CompleteImportedModule(moduleName, prepared.Context, signal, context, span);
+            var flow = await ExecuteStatementsAsync(prepared.Statements, prepared.Context).ConfigureAwait(false);
+            if (flow.Return is not null)
+            {
+                context.MemoryGovernor.Release(prepared.DeferredBytes);
+                throw RuntimeErrors.ImportedModuleReturned(moduleName, span);
+            }
+
+            return CompleteImportedModule(moduleName, prepared.Context, flow.Control, context, span);
         }
         catch (ReturnSignal)
         {

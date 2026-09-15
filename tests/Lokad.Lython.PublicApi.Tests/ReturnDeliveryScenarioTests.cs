@@ -140,6 +140,72 @@ public sealed class ReturnDeliveryScenarioTests
     }
 
     [Fact]
+    public async Task ReturnInsideLoopStopsIteration()
+    {
+        await AssertBothModes(
+            """
+            log = []
+            def f():
+                for i in range(10):
+                    log.append(i)
+                    if i == 2:
+                        return 99
+                return -1
+            r = f()
+            __lython_file = open("/out.txt", "w")
+            __lython_file.write(",".join(str(v) for v in log) + "=" + str(r))
+            __lython_file.close()
+            return r
+            """,
+            (result, host) =>
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(new BigInteger(99), result.ReturnValue);
+                Assert.Equal("0,1,2=99", host.ReadText("/out.txt"));
+            });
+    }
+
+    [Fact]
+    public async Task ReturnInsideIfBranch()
+    {
+        await AssertBothModes(
+            """
+            def f(x):
+                if x > 0:
+                    return 1
+                else:
+                    return -1
+            return f(5) + f(0 - 5)
+            """,
+            (result, _) =>
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(new BigInteger(0), result.ReturnValue);
+            });
+    }
+
+    [Fact]
+    public async Task ReturnFromExceptHandler()
+    {
+        await AssertBothModes(
+            """
+            def f(mode):
+                try:
+                    if mode == 0:
+                        return "try"
+                    raise ValueError("boom")
+                except ValueError:
+                    return "except"
+            return f(0) + "|" + f(1)
+            """,
+            (result, _) =>
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal("try|except", result.ReturnValue);
+            });
+    }
+
+    [Fact]
     public async Task ExceptionInFinallyDuringReturnPropagates()
     {
         await AssertBothModes(

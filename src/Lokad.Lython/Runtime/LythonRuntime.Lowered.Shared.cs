@@ -38,13 +38,13 @@ internal sealed partial class LythonRuntime
             integer,
             static node => ParseInteger(((LoweredIntegerLiteralExpression)node).Literal));
 
-    private delegate ValueTask<ControlSignal?> LoweredStatementBlockExecutor(
+    private delegate ValueTask<LoweredBlockFlow> LoweredStatementBlockExecutor(
         IReadOnlyList<LoweredStatement> statements,
         ExecutionContext context);
 
     private delegate ValueTask<object> LoweredExpressionEvaluator(LoweredExpression expression);
 
-    private static async ValueTask DispatchLoweredStatementAsync(
+    private static async ValueTask<LoweredBlockFlow> DispatchLoweredStatementAsync(
         LoweredStatement statement,
         ExecutionContext context,
         ILoweredStatementExecution execution)
@@ -53,62 +53,62 @@ internal sealed partial class LythonRuntime
         {
             case LoweredImportStatement importStatement:
                 await execution.ExecuteImportAsync(importStatement, context).ConfigureAwait(false);
-                return;
+                return default;
             case LoweredScopeDirectiveStatement:
-                return;
+                return default;
             case LoweredFunctionDefinitionStatement functionDefinition:
                 await execution.ExecuteFunctionDefinitionAsync(functionDefinition, context).ConfigureAwait(false);
-                return;
+                return default;
             case LoweredClassDefinitionStatement classDefinition:
                 await execution.ExecuteClassDefinitionAsync(classDefinition, context).ConfigureAwait(false);
-                return;
+                return default;
             case LoweredAssignmentStatement assignment:
                 await execution.ExecuteAssignmentAsync(assignment, context).ConfigureAwait(false);
-                return;
+                return default;
             case LoweredExpressionStatement expression:
                 _ = await execution.EvaluateExpressionAsync(expression.Expression, context).ConfigureAwait(false);
-                return;
+                return default;
             case LoweredIfStatement ifStatement:
                 await execution.ExecuteIfAsync(ifStatement, context).ConfigureAwait(false);
-                return;
+                return default;
             case LoweredForStatement forStatement:
                 await execution.ExecuteForAsync(forStatement, context).ConfigureAwait(false);
-                return;
+                return default;
             case LoweredWhileStatement whileStatement:
                 await execution.ExecuteWhileAsync(whileStatement, context).ConfigureAwait(false);
-                return;
+                return default;
             case LoweredMatchStatement matchStatement:
                 await execution.ExecuteMatchAsync(matchStatement, context).ConfigureAwait(false);
-                return;
+                return default;
             case LoweredWithStatement withStatement:
                 await execution.ExecuteWithAsync(withStatement, context).ConfigureAwait(false);
-                return;
+                return default;
             case LoweredTryStatement tryStatement:
                 await execution.ExecuteTryAsync(tryStatement, context).ConfigureAwait(false);
-                return;
+                return default;
             case LoweredPassStatement:
-                return;
+                return default;
             case LoweredBreakStatement:
                 throw new BreakSignal();
             case LoweredContinueStatement:
                 throw new ContinueSignal();
             case LoweredAssertStatement assertStatement:
                 await execution.ExecuteAssertAsync(assertStatement, context).ConfigureAwait(false);
-                return;
+                return default;
             case LoweredDeleteStatement deleteStatement:
                 await execution.ExecuteDeleteAsync(deleteStatement, context).ConfigureAwait(false);
-                return;
+                return default;
             case LoweredReturnStatement returnStatement:
                 if (returnStatement.Expression is null)
                 {
-                    throw new ReturnSignal(PyNone.Instance);
+                    return new LoweredBlockFlow(null, new ReturnSignal(PyNone.Instance));
                 }
 
                 var returnValue = await execution.EvaluateExpressionAsync(returnStatement.Expression, context).ConfigureAwait(false);
-                throw new ReturnSignal(RuntimeValue(returnValue));
+                return new LoweredBlockFlow(null, new ReturnSignal(RuntimeValue(returnValue)));
             case LoweredRaiseStatement raiseStatement:
                 await execution.ExecuteRaiseAsync(raiseStatement, context).ConfigureAwait(false);
-                return;
+                return default;
             case LoweredOtherStatement other:
                 throw new InvalidOperationException($"Generic lowered statement fallback reached for supported execution: {other.Syntax.GetType().Name}");
             default:
@@ -263,7 +263,7 @@ internal sealed partial class LythonRuntime
         return builder.Complete();
     }
 
-    private static async ValueTask ExecuteTryStatementCoreAsync(
+    private static async ValueTask<LoweredBlockFlow> ExecuteTryStatementCoreAsync(
         LoweredTryStatement statement,
         ExecutionContext context,
         LoweredStatementBlockExecutor executeStatements)
@@ -274,10 +274,14 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            pendingControl = await executeStatements(statement.TryBody, context).ConfigureAwait(false);
-            if (pendingControl is null && statement.ElseBody is not null)
+            var tryFlow = await executeStatements(statement.TryBody, context).ConfigureAwait(false);
+            pendingControl = tryFlow.Control;
+            pendingReturn = tryFlow.Return;
+            if (pendingControl is null && pendingReturn is null && statement.ElseBody is not null)
             {
-                pendingControl = await executeStatements(statement.ElseBody, context).ConfigureAwait(false);
+                var elseFlow = await executeStatements(statement.ElseBody, context).ConfigureAwait(false);
+                pendingControl = elseFlow.Control;
+                pendingReturn = elseFlow.Return;
             }
         }
         catch (ReturnSignal signal)
@@ -313,7 +317,9 @@ internal sealed partial class LythonRuntime
                 var handlerVariableName = matchedClause.Syntax.ExceptionVariableName;
                 try
                 {
-                    pendingControl = await executeStatements(matchedClause.Body, context).ConfigureAwait(false);
+                    var handlerFlow = await executeStatements(matchedClause.Body, context).ConfigureAwait(false);
+                    pendingControl = handlerFlow.Control;
+                    pendingReturn = handlerFlow.Return;
                 }
                 finally
                 {
@@ -346,12 +352,12 @@ internal sealed partial class LythonRuntime
                 {
                     try
                     {
-                        var finalSignal = await executeStatements(statement.FinallyBody, context).ConfigureAwait(false);
-                        if (finalSignal is not null)
+                        var finalFlow = await executeStatements(statement.FinallyBody, context).ConfigureAwait(false);
+                        if (finalFlow.Control is not null || finalFlow.Return is not null)
                         {
                             // Python's finally suite wins over every pending exit from try/except.
-                            pendingControl = finalSignal;
-                            pendingReturn = null;
+                            pendingControl = finalFlow.Control;
+                            pendingReturn = finalFlow.Return;
                             pendingException = null;
                         }
                     }
@@ -383,15 +389,7 @@ internal sealed partial class LythonRuntime
             throw pendingException;
         }
 
-        if (pendingReturn is not null)
-        {
-            throw pendingReturn;
-        }
-
-        if (pendingControl is not null)
-        {
-            throw pendingControl;
-        }
+        return new LoweredBlockFlow(pendingControl, pendingReturn);
     }
 
     private static PyFunction CreateLoweredFunction(

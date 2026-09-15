@@ -20,10 +20,10 @@ internal static class PyContextManagers
             LythonRuntime.StoreName(variableName, entered, context, span);
         }
 
-        LythonRuntime.ControlSignal? pendingControl;
+        LythonRuntime.LoweredBlockFlow flow;
         try
         {
-            pendingControl = LythonRuntime.ExecuteStatements(body, context);
+            flow = LythonRuntime.ExecuteStatements(body, context);
         }
         catch (LythonRuntime.ReturnSignal)
         {
@@ -48,10 +48,16 @@ internal static class PyContextManagers
             return PyNone.Instance;
         }
 
-        if (pendingControl is not null)
+        if (flow.Control is not null)
         {
             _ = protocol.Exit(PyNone.Instance, PyNone.Instance, PyNone.Instance);
-            throw pendingControl;
+            throw flow.Control;
+        }
+
+        if (flow.Return is not null)
+        {
+            _ = protocol.Exit(PyNone.Instance, PyNone.Instance, PyNone.Instance);
+            throw flow.Return;
         }
 
         _ = protocol.Exit(PyNone.Instance, PyNone.Instance, PyNone.Instance);
@@ -74,10 +80,10 @@ internal static class PyContextManagers
             LythonRuntime.StoreName(variableName, entered, context, span);
         }
 
-        LythonRuntime.ControlSignal? pendingControl;
+        LythonRuntime.LoweredBlockFlow flow;
         try
         {
-            pendingControl = await LythonRuntime.ExecuteStatementsAsync(body, context).ConfigureAwait(false);
+            flow = await LythonRuntime.ExecuteStatementsAsync(body, context).ConfigureAwait(false);
         }
         catch (LythonRuntime.ReturnSignal)
         {
@@ -105,10 +111,16 @@ internal static class PyContextManagers
             return PyNone.Instance;
         }
 
-        if (pendingControl is not null)
+        if (flow.Control is not null)
         {
             _ = await ExitAsync(protocol, PyNone.Instance, PyNone.Instance, PyNone.Instance, span, context).ConfigureAwait(false);
-            throw pendingControl;
+            throw flow.Control;
+        }
+
+        if (flow.Return is not null)
+        {
+            _ = await ExitAsync(protocol, PyNone.Instance, PyNone.Instance, PyNone.Instance, span, context).ConfigureAwait(false);
+            throw flow.Return;
         }
 
         _ = await ExitAsync(protocol, PyNone.Instance, PyNone.Instance, PyNone.Instance, span, context).ConfigureAwait(false);

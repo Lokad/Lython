@@ -25,8 +25,13 @@ internal sealed class PyFunction : PyFunctionBase
         LythonSourceSpan span)
     {
         _ = boundArguments;
-        var signal = LythonRuntime.ExecuteStatements(_body, frame);
-        if (signal is LythonRuntime.BreakSignal or LythonRuntime.ContinueSignal)
+        var flow = LythonRuntime.ExecuteStatements(_body, frame);
+        if (flow.Return is not null)
+        {
+            return flow.Return.Value;
+        }
+
+        if (flow.Control is LythonRuntime.BreakSignal or LythonRuntime.ContinueSignal)
         {
             throw new LythonRuntimeException("RuntimeError", "Loop control cannot escape a function body.", span);
         }
@@ -40,8 +45,13 @@ internal sealed class PyFunction : PyFunctionBase
         LythonSourceSpan span)
     {
         _ = boundArguments;
-        var signal = await LythonRuntime.ExecuteStatementsAsync(_body, frame).ConfigureAwait(false);
-        if (signal is LythonRuntime.BreakSignal or LythonRuntime.ContinueSignal)
+        var flow = await LythonRuntime.ExecuteStatementsAsync(_body, frame).ConfigureAwait(false);
+        if (flow.Return is not null)
+        {
+            return flow.Return.Value;
+        }
+
+        if (flow.Control is LythonRuntime.BreakSignal or LythonRuntime.ContinueSignal)
         {
             throw new LythonRuntimeException("RuntimeError", "Loop control cannot escape a function body.", span);
         }

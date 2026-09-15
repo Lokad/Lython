@@ -6,16 +6,20 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    internal static async ValueTask<ControlSignal?> ExecuteStatementsAsync(IReadOnlyList<LoweredStatement> statements, ExecutionContext context)
+    internal static async ValueTask<LoweredBlockFlow> ExecuteStatementsAsync(IReadOnlyList<LoweredStatement> statements, ExecutionContext context)
     {
         try
         {
             foreach (var statement in statements)
             {
-                await DispatchLoweredStatementAsync(statement, context, AsynchronousLoweredStatementExecution.Instance).ConfigureAwait(false);
+                var flow = await DispatchLoweredStatementAsync(statement, context, AsynchronousLoweredStatementExecution.Instance).ConfigureAwait(false);
+                if (flow.Return is not null)
+                {
+                    return flow;
+                }
             }
 
-            return null;
+            return default;
         }
         catch (LythonRuntimeException ex)
         {
@@ -24,7 +28,7 @@ internal sealed partial class LythonRuntime
         }
         catch (ControlSignal signal)
         {
-            return signal;
+            return new LoweredBlockFlow(signal, null);
         }
     }
 
@@ -72,10 +76,15 @@ internal sealed partial class LythonRuntime
             ValidateClassKeywordArguments(classKeywordArguments, classDefinition.Span);
 
             var classContext = ExecutionContext.CreateClassBody(context);
-            var signal = await ExecuteStatementsAsync(classDefinition.Body, classContext).ConfigureAwait(false);
-            if (signal is not null)
+            var classFlow = await ExecuteStatementsAsync(classDefinition.Body, classContext).ConfigureAwait(false);
+            if (classFlow.Control is not null)
             {
                 throw new LythonRuntimeException("RuntimeError", "Loop control cannot escape a class body.", classDefinition.Span);
+            }
+
+            if (classFlow.Return is not null)
+            {
+                throw classFlow.Return;
             }
 
             var type = CreateLoweredClassType(classDefinition, resolvedBases, classContext, context);
@@ -124,10 +133,15 @@ internal sealed partial class LythonRuntime
 
             if (branch is not null)
             {
-                var signal = await ExecuteStatementsAsync(branch, context).ConfigureAwait(false);
-                if (signal is not null)
+                var branchFlow = await ExecuteStatementsAsync(branch, context).ConfigureAwait(false);
+                if (branchFlow.Control is not null)
                 {
-                    throw signal;
+                    throw branchFlow.Control;
+                }
+
+                if (branchFlow.Return is not null)
+                {
+                    throw branchFlow.Return;
                 }
             }
         }
@@ -148,25 +162,34 @@ internal sealed partial class LythonRuntime
             await foreach (var item in ToSequenceAsync(iterable, statement.Iterable.Span, context).ConfigureAwait(false))
             {
                 AssignLoopTarget(syntax.Target, item, statement.Iterable.Span, context);
-                var signal = await ExecuteStatementsAsync(statement.Body, context).ConfigureAwait(false);
-                if (signal is ContinueSignal)
+                var bodyFlow = await ExecuteStatementsAsync(statement.Body, context).ConfigureAwait(false);
+                if (bodyFlow.Control is ContinueSignal)
                 {
                     continue;
                 }
 
-                if (signal is BreakSignal)
+                if (bodyFlow.Control is BreakSignal)
                 {
                     broke = true;
                     break;
+                }
+                if (bodyFlow.Return is not null)
+                {
+                    throw bodyFlow.Return;
                 }
             }
 
             if (!broke && statement.ElseStatements is not null)
             {
-                var signal = await ExecuteStatementsAsync(statement.ElseStatements, context).ConfigureAwait(false);
-                if (signal is not null)
+                var elseFlow = await ExecuteStatementsAsync(statement.ElseStatements, context).ConfigureAwait(false);
+                if (elseFlow.Control is not null)
                 {
-                    throw signal;
+                    throw elseFlow.Control;
+                }
+
+                if (elseFlow.Return is not null)
+                {
+                    throw elseFlow.Return;
                 }
             }
         }
@@ -188,25 +211,34 @@ internal sealed partial class LythonRuntime
                     statement.Condition.Span)
                 .ConfigureAwait(false))
             {
-                var signal = await ExecuteStatementsAsync(statement.Body, context).ConfigureAwait(false);
-                if (signal is ContinueSignal)
+                var bodyFlow = await ExecuteStatementsAsync(statement.Body, context).ConfigureAwait(false);
+                if (bodyFlow.Control is ContinueSignal)
                 {
                     continue;
                 }
 
-                if (signal is BreakSignal)
+                if (bodyFlow.Control is BreakSignal)
                 {
                     broke = true;
                     break;
+                }
+                if (bodyFlow.Return is not null)
+                {
+                    throw bodyFlow.Return;
                 }
             }
 
             if (!broke && statement.ElseStatements is not null)
             {
-                var signal = await ExecuteStatementsAsync(statement.ElseStatements, context).ConfigureAwait(false);
-                if (signal is not null)
+                var elseFlow = await ExecuteStatementsAsync(statement.ElseStatements, context).ConfigureAwait(false);
+                if (elseFlow.Control is not null)
                 {
-                    throw signal;
+                    throw elseFlow.Control;
+                }
+
+                if (elseFlow.Return is not null)
+                {
+                    throw elseFlow.Return;
                 }
             }
         }
@@ -247,7 +279,16 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(statement.Span);
         try
         {
-            await ExecuteTryStatementCoreAsync(statement, context, ExecuteStatementsAsync).ConfigureAwait(false);
+            var flow = await ExecuteTryStatementCoreAsync(statement, context, ExecuteStatementsAsync).ConfigureAwait(false);
+            if (flow.Control is not null)
+            {
+                throw flow.Control;
+            }
+
+            if (flow.Return is not null)
+            {
+                throw flow.Return;
+            }
         }
         finally
         {
