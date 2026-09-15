@@ -95,7 +95,9 @@ internal sealed class ChargeReclamationPool
             return;
         }
 
-        Track(value, PyString.EstimateApproximateBytes(value.Utf8Bytes.Length), span);
+        // Constructions and earlier cache builds share one coupon: later builds
+        // re-snapshot through NoteCacheBuilt.
+        Track(value, value.CommittedOwnedBytes, span);
     }
 
     // Registers a pooled mutable for its current backing charges, snapshotted
@@ -182,7 +184,7 @@ internal sealed class ChargeReclamationPool
             return;
         }
 
-        var charge = PyString.EstimateApproximateBytes(value.Utf8Bytes.Length);
+        var charge = value.CommittedOwnedBytes;
         try
         {
             Track(value, charge, span);

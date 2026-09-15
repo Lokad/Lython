@@ -17,6 +17,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     private int _runeLength = -1;
     private int[]? _runeByteOffsets;
     private PyString[]? _cachedRunes;
+    private long _committedCacheBytes;
     private int _hashCode;
     private bool _hashCodeComputed;
 
@@ -342,13 +343,28 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return Utf8.GetString(_utf8);
     }
 
+    // Total owned charges for pooled owners: construction plus every retained
+    // cache table, array and per-rune payload below. Cache builds re-snapshot the
+    // pool coupon through this total, so dropped strings release tables and runes
+    // with the construction charge instead of stranding them.
+    internal long CommittedOwnedBytes => EstimateApproximateBytes(_utf8.Length) + _committedCacheBytes;
+
     private void CommitCacheCharge(long bytes)
     {
         if (_memoryGovernor is not null && bytes > 0)
         {
             _memoryGovernor.Reserve(bytes, _allocationSpan);
             _memoryGovernor.Commit(bytes);
+            _committedCacheBytes += bytes;
         }
+    }
+
+    // Refreshes a tracked coupon after a cache build; untracked strings cost one
+    // lookup and no entry. Only successful builds re-snapshot: denied growth
+    // throws before mutating, leaving the old coupon (and retry headroom) intact.
+    private void NoteCacheBuilt()
+    {
+        ChargeReclamationPool.NotifyStorageReplaced(this, CommittedOwnedBytes);
     }
 
     public string AsString(int runeIndex)
@@ -646,6 +662,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
 
         offsets[runeIndex] = _utf8.Length;
         _runeByteOffsets = offsets;
+        NoteCacheBuilt();
         return offsets;
     }
 
@@ -674,28 +691,51 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             return ascii;
         }
 
+        var cacheBefore = _committedCacheBytes;
         CommitCacheCharge(32L + (8L * Length));
         var runes = new PyString[Length];
-        var runeIndex = 0;
-        for (var byteIndex = 0; byteIndex < _utf8.Length;)
+        try
         {
-            var runeLength = GetRuneLengthAtByteIndex(byteIndex);
-            if (runeLength == 1)
+            var runeIndex = 0;
+            for (var byteIndex = 0; byteIndex < _utf8.Length;)
             {
-                runes[runeIndex++] = AsciiCharacters[_utf8[byteIndex]];
-                byteIndex++;
-                continue;
+                var runeLength = GetRuneLengthAtByteIndex(byteIndex);
+                if (runeLength == 1)
+                {
+                    runes[runeIndex++] = AsciiCharacters[_utf8[byteIndex]];
+                    byteIndex++;
+                    continue;
+                }
+
+                var bytes = _memoryGovernor is null
+                    ? new byte[runeLength]
+                    : AllocateGovernedUtf8(runeLength, _memoryGovernor, _allocationSpan);
+                Buffer.BlockCopy(_utf8, byteIndex, bytes, 0, runeLength);
+                runes[runeIndex++] = _memoryGovernor is null ? new PyString(bytes) : new PyString(bytes, _memoryGovernor, _allocationSpan);
+                if (_memoryGovernor is not null)
+                {
+                    _committedCacheBytes += EstimateApproximateBytes(runeLength);
+                }
+
+                byteIndex += runeLength;
+            }
+        }
+        catch (Exception)
+        {
+            // Partial cache construction: release this build's charges so the next
+            // attempt re-charges from the pre-build coupon instead of stranding
+            // half a cache beside it.
+            if (_memoryGovernor is not null)
+            {
+                _memoryGovernor.Release(_committedCacheBytes - cacheBefore);
             }
 
-            var bytes = _memoryGovernor is null
-                ? new byte[runeLength]
-                : AllocateGovernedUtf8(runeLength, _memoryGovernor, _allocationSpan);
-            Buffer.BlockCopy(_utf8, byteIndex, bytes, 0, runeLength);
-            runes[runeIndex++] = _memoryGovernor is null ? new PyString(bytes) : new PyString(bytes, _memoryGovernor, _allocationSpan);
-            byteIndex += runeLength;
+            _committedCacheBytes = cacheBefore;
+            throw;
         }
 
         _cachedRunes = runes;
+        NoteCacheBuilt();
         return runes;
     }
     private static PyString[] CreateAsciiCharacters()
