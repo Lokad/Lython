@@ -200,6 +200,104 @@ public sealed class OsIteratorAccountingScenarioTests
         Assert.True(asyncResult.PeakExecutionMemoryBytes <= ScandirBudgetBytes);
     }
 
+    // Walk yields track individually at production (tuples, lists, and name
+    // strings each carry a coupon), so fully consumed or abandoned walks
+    // reclaim while unpacked outputs retained past their tuple stay charged.
+    // Volume consumption needs a raised host-call budget: each walk makes
+    // several host calls, which the default host-call limit counts separately
+    // from memory.
+    [Fact]
+    public async Task ExhaustedWalkReclaims()
+    {
+        var script = new LythonEngine().Compile("""
+            import os
+            i = 0
+            while i < 100000:
+                for t in os.walk("/d"):
+                    pass
+                i = i + 1
+            return 0
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3 * 1024 * 1024, MaxHostCalls = 1000000 };
+        var sync = script.Run(SeededDirHost(3), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+
+        var asyncResult = await script.RunAsync(SeededDirHost(3), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+    }
+
+    // Partial consumption without abrupt control: pull one tuple per walk
+    // with next() and drop everything. (Abandonment via for/break at volume
+    // is a separate pre-existing reclamation-cadence defect, os-independent:
+    // even list displays strand that way. See the P01 residuals.)
+    [Fact]
+    public async Task AbandonedWalkAfterFirstPullReclaims()
+    {
+        var script = new LythonEngine().Compile("""
+            import os
+            i = 0
+            while i < 100000:
+                it = os.walk("/d")
+                t = next(it)
+                i = i + 1
+            return 0
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3 * 1024 * 1024, MaxHostCalls = 1000000 };
+        var sync = script.Run(SeededDirHost(3), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+
+        var asyncResult = await script.RunAsync(SeededDirHost(3), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+    }
+
+    [Fact]
+    public async Task RetainedWalkUnpackingStaysCharged()
+    {
+        var script = new LythonEngine().Compile("""
+            import os
+            for d, dirs, files in os.walk("/d"):
+                kept = files
+            return len(kept)
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ScandirBudgetBytes };
+        var sync = script.Run(SeededDirHost(3000), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+        Assert.True(sync.PeakExecutionMemoryBytes <= ScandirBudgetBytes);
+
+        var asyncResult = await script.RunAsync(SeededDirHost(3000), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= ScandirBudgetBytes);
+    }
+
+    [Fact]
+    public async Task DeniedWalkYieldRecoversWhenFunded()
+    {
+        var script = new LythonEngine().Compile("""
+            import os
+            n = 0
+            for t in os.walk("/d"):
+                n = n + 1
+            return n
+            """);
+        Assert.True(script.IsValid);
+        var denied = script.Run(SeededDirHost(3), new LythonRunOptions { MaxExecutionMemoryBytes = 100 });
+        Assert.False(denied.Success);
+        Assert.Equal("MemoryError", denied.Failure?.ExceptionType);
+
+        var funded = script.Run(SeededDirHost(3));
+        Assert.True(funded.Success, funded.Failure?.Message);
+        Assert.Equal(new BigInteger(1), funded.ReturnValue);
+
+        var fundedAsync = await script.RunAsync(SeededDirHost(3));
+        Assert.True(fundedAsync.Success, fundedAsync.Failure?.Message);
+        Assert.Equal(new BigInteger(1), fundedAsync.ReturnValue);
+    }
+
     [Fact]
     public async Task DeniedScandirRecoversWhenFunded()
     {

@@ -233,10 +233,12 @@ internal sealed partial class LythonRuntime
         private readonly MemoryGovernor _governor;
         private readonly LythonSourceSpan? _span;
         private readonly Stack<WalkFrame> _frames = [];
+        private readonly ChargeReclamationPool? _reclamationPool;
 
         public PyWalkIterator(string root, bool topdown, ICallable? onerror, ExecutionContext context, LythonSourceSpan? span)
         {
             PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
+            _reclamationPool = context.Services.State.CallTemporaries;
             _topdown = topdown;
             _onerror = onerror;
             _context = context;
@@ -461,10 +463,14 @@ internal sealed partial class LythonRuntime
             var values = new object[items.Count];
             for (var i = 0; i < items.Count; i++)
             {
-                values[i] = PyString.FromString(items[i], _governor, _span);
+                var text = PyString.FromString(items[i], _governor, _span);
+                _reclamationPool?.TrackFreshString(text, _span);
+                values[i] = text;
             }
 
-            return new PyList(values, _governor, _span);
+            var list = new PyList(values, _governor, _span);
+            _reclamationPool?.TrackFreshMutable(list, list.CommittedStorageBytes, _span);
+            return list;
         }
 
         private void HandleWalkError(string message)
@@ -503,14 +509,18 @@ internal sealed partial class LythonRuntime
 
         private object CreateTuple(WalkFrame frame)
         {
-            return new PyTuple(
+            var directory = PyString.FromString(frame.DirectoryPath, _governor, _span);
+            _reclamationPool?.TrackFreshString(directory, _span);
+            var tuple = new PyTuple(
             [
-                PyString.FromString(frame.DirectoryPath, _governor, _span),
+                directory,
                 frame.DirectoryNames.RequireNotNull(),
                 frame.FileNames.RequireNotNull()
             ],
             _governor,
             _span);
+            _reclamationPool?.TrackFreshMutable(tuple, tuple.CommittedStorageBytes, _span);
+            return tuple;
         }
 
         public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<os.walk>");
