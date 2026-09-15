@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Text;
 using Lokad.Lython.Tests.Harness;
 
@@ -66,7 +65,7 @@ public sealed class ChunkedReadDifferentialTests
         // The repo compares against CPython as a matter of course (see the
         // probe tool); a differential pin without it would prove nothing, so
         // a missing interpreter fails loudly instead of skipping silently.
-        var python = ResolveCpython();
+        var (python, version) = ResolveCpython();
 
         var driverPath = Path.Combine(Path.GetTempPath(), "lython-fuzz-" + Guid.NewGuid().ToString("N") + ".py");
         await File.WriteAllTextAsync(driverPath, Driver);
@@ -78,7 +77,7 @@ public sealed class ChunkedReadDifferentialTests
                 await File.WriteAllBytesAsync(blobPath, blobs[b]);
                 try
                 {
-                    var expected = RunCpython(python, driverPath, blobPath);
+                    var expected = RunCpython(python, version, driverPath, blobPath);
                     await CheckBlobAsync(blobs[b], paths[b], expected, sync: true);
                     await CheckBlobAsync(blobs[b], paths[b], expected, sync: false);
                 }
@@ -116,28 +115,17 @@ public sealed class ChunkedReadDifferentialTests
         }
     }
 
-    private static List<string> RunCpython(string python, string driverPath, string blobPath)
+    private static List<string> RunCpython(string python, string version, string driverPath, string blobPath)
     {
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = python,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-        };
-        startInfo.ArgumentList.Add(driverPath);
-        startInfo.ArgumentList.Add(blobPath);
-        using var process = Process.Start(startInfo);
-        Assert.NotNull(process);
-        var output = process.StandardOutput.ReadToEnd();
-        var errors = process.StandardError.ReadToEnd();
-        Assert.True(process.WaitForExit(120000), "CPython differential run timed out: " + errors);
-        Assert.Equal(0, process.ExitCode);
+        // Both streams drain concurrently under one deadline; a wedged child
+        // surfaces as a TimeoutException instead of hanging the suite.
+        var run = SubprocessProbeRunner.Run(python, [driverPath, blobPath]);
+        Assert.True(run.ExitCode == 0, $"CPython {version} exited with {run.ExitCode}: " + run.StandardError);
         // CPython text-mode stdout translates newlines on Windows, so every
         // line may trail a carriage return; payloads never legitimately start
         // or end with whitespace.
         var decoded = new List<string>();
-        foreach (var raw in output.Split('\n'))
+        foreach (var raw in run.StandardOutput.Split('\n'))
         {
             var line = raw.Trim();
             if (line.Length == 0)
@@ -154,7 +142,9 @@ public sealed class ChunkedReadDifferentialTests
         return decoded;
     }
 
-    private static string ResolveCpython()
+    // Reports the actual executable and version: differential failures name
+    // the interpreter they ran against instead of a bare candidate string.
+    private static (string Python, string Version) ResolveCpython()
     {
         var configured = Environment.GetEnvironmentVariable("LYTHON_DIFFTEST_PYTHON");
         var candidates = configured is null
@@ -164,24 +154,10 @@ public sealed class ChunkedReadDifferentialTests
         {
             try
             {
-                var probe = new ProcessStartInfo
+                var run = SubprocessProbeRunner.Run(candidate, ["--version"], timeout: TimeSpan.FromSeconds(15));
+                if (run.ExitCode == 0)
                 {
-                    FileName = candidate,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                };
-                probe.ArgumentList.Add("--version");
-                using var process = Process.Start(probe);
-                if (process is null)
-                {
-                    continue;
-                }
-
-                process.WaitForExit(15000);
-                if (process.ExitCode == 0)
-                {
-                    return candidate;
+                    return (candidate, (run.StandardOutput + run.StandardError).Trim());
                 }
             }
             catch (Exception)

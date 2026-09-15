@@ -23,6 +23,7 @@
     <Compile Include="..\Lokad.Lython.Tests\Harness\DelayedLythonHost.cs" Link="Harness\DelayedLythonHost.cs" />
     <Compile Include="..\Lokad.Lython.Tests\Harness\FixtureLoader.cs" Link="Harness\FixtureLoader.cs" />
     <Compile Include="..\Lokad.Lython.Tests\Harness\FixtureAssertions.cs" Link="Harness\FixtureAssertions.cs" />
+    <Compile Include="..\Lokad.Lython.Tests\Harness\SubprocessProbeRunner.cs" Link="Harness\SubprocessProbeRunner.cs" />
   </ItemGroup>
 
   <ItemGroup>

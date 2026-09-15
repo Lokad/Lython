@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using System.Text;
 using System.Text.Json;
 using Lokad.Lython.Tests.Harness;
 
@@ -191,22 +189,15 @@ print(sorted([], key=1))
             "f = " + Repeat("lambda: ", 2000) + "1\nprint(0)\n",
             "x = " + Repeat("f(", 2000) + "1" + Repeat(")", 2000) + "\nprint(x)\n",
         };
-        var psi = new ProcessStartInfo("dotnet", "\"" + probe + "\" --batch-json")
-        {
-            RedirectStandardInput = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            StandardInputEncoding = new UTF8Encoding(false),
-            StandardOutputEncoding = Encoding.UTF8,
-            UseShellExecute = false,
-        };
-        using var process = Process.Start(psi);
-        Assert.NotNull(process);
-        process.StandardInput.Write(JsonSerializer.Serialize(snippets));
-        process.StandardInput.Close();
-        var output = process.StandardOutput.ReadToEnd();
-        Assert.True(process.WaitForExit(120000), "Probe batch timed out; a pathological input may have crashed it.");
-        var lines = output.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+        // Concurrent drains plus a deadline: a pathological snippet must surface as
+        // a failure or a TimeoutException, never a wedged test host.
+        var run = SubprocessProbeRunner.Run(
+            "dotnet",
+            [probe, "--batch-json"],
+            JsonSerializer.Serialize(snippets));
+        // Batch probes exit 0/1 for result mismatches; anything else is a crash.
+        Assert.True(run.ExitCode is 0 or 1, "probe exited with " + run.ExitCode + ": " + run.StandardError);
+        var lines = run.StandardOutput.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
         Assert.Equal(snippets.Length, lines.Length);
         foreach (var line in lines)
         {
@@ -219,23 +210,6 @@ print(sorted([], key=1))
         }
     }
 
-    private static string FindProbeDll()
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null)
-        {
-            foreach (var configuration in new[] { "Debug", "Release" })
-            {
-                var candidate = Path.Combine(
-                    directory.FullName, "tools", "LythonProbe", "bin", configuration, "net10.0", "LythonProbe.dll");
-                if (File.Exists(candidate))
-                {
-                    return candidate;
-                }
-            }
-            directory = directory.Parent;
-        }
-        throw new InvalidOperationException("LythonProbe.dll was not found; build the solution before running this test.");
-    }
-}
+    private static string FindProbeDll() => SubprocessProbeRunner.FindProbeDll();
 
+}
