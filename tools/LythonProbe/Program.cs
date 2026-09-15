@@ -1,7 +1,12 @@
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Text.Json;
 
 using Lokad.Lython;
+
+// Single deadline for CPython launch-to-drain: audit snippets are small, so a
+// generous fixed budget bounds hung children without tuning per snippet.
+const int PythonProbeTimeoutSeconds = 60;
 
 const string PythonWrapper = """
 import contextlib
@@ -86,7 +91,7 @@ for (var index = 0; index < snippets.Length; index++)
         {
             python = RunPython(parsed.PythonCommand, source);
         }
-        catch (Exception exception) when (exception is IOException or InvalidOperationException or JsonException)
+        catch (Exception exception) when (exception is IOException or InvalidOperationException or JsonException or TimeoutException or Win32Exception)
         {
             Console.Error.WriteLine($"Could not run CPython: {exception.Message}");
             return 2;
@@ -256,14 +261,31 @@ static ProbeResult RunPython(string pythonCommand, string source)
     startInfo.ArgumentList.Add("-c");
     startInfo.ArgumentList.Add(PythonWrapper);
 
-    using var process = Process.Start(startInfo)
-        ?? throw new InvalidOperationException($"Could not start CPython executable '{pythonCommand}'.");
+    using var process = StartPythonProcess(pythonCommand, startInfo);
     process.StandardInput.Write(source);
     process.StandardInput.Close();
 
-    var output = process.StandardOutput.ReadToEnd();
-    var error = process.StandardError.ReadToEnd();
+    // Drain both streams concurrently: sequential drains can deadlock when the
+    // child fills the pipe nobody is reading. One deadline covers completion
+    // and both drains; on expiry the owned child process tree is killed.
+    var stdoutTask = process.StandardOutput.ReadToEndAsync();
+    var stderrTask = process.StandardError.ReadToEndAsync();
+    var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(PythonProbeTimeoutSeconds);
+    if (!process.WaitForExit(RemainingMs(deadline)))
+    {
+        KillProcessTree(process);
+        throw new TimeoutException($"CPython probe did not complete within {PythonProbeTimeoutSeconds} seconds.");
+    }
+
+    if (!Task.WaitAll([stdoutTask, stderrTask], RemainingMs(deadline)))
+    {
+        KillProcessTree(process);
+        throw new TimeoutException($"CPython probe output drain did not complete within {PythonProbeTimeoutSeconds} seconds.");
+    }
+
     process.WaitForExit();
+    var output = stdoutTask.Result;
+    var error = stderrTask.Result;
 
     if (process.ExitCode != 0)
     {
@@ -273,6 +295,39 @@ static ProbeResult RunPython(string pythonCommand, string source)
 
     return JsonSerializer.Deserialize<ProbeResult>(output)
         ?? throw new JsonException("CPython probe wrapper returned no result.");
+}
+
+static Process StartPythonProcess(string pythonCommand, ProcessStartInfo startInfo)
+{
+    try
+    {
+        return Process.Start(startInfo)
+            ?? throw new InvalidOperationException($"Could not start CPython executable '{pythonCommand}'.");
+    }
+    catch (Win32Exception exception)
+    {
+        // Missing executables surface as Win32Exception, outside the IO filter.
+        throw new InvalidOperationException($"Could not start CPython executable '{pythonCommand}': {exception.Message}", exception);
+    }
+}
+
+static int RemainingMs(DateTime deadline)
+    => (int)Math.Max(0, (deadline - DateTime.UtcNow).TotalMilliseconds);
+
+static void KillProcessTree(Process process)
+{
+    try
+    {
+        if (!process.HasExited)
+        {
+            process.Kill(entireProcessTree: true);
+        }
+    }
+    catch (Exception exception) when (exception is InvalidOperationException or Win32Exception)
+    {
+    }
+
+    process.WaitForExit(5000);
 }
 
 static bool Equivalent(ProbeResult left, ProbeResult right) =>
