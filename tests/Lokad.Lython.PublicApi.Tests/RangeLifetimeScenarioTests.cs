@@ -95,4 +95,22 @@ public sealed class RangeLifetimeScenarioTests
         => await AssertDenialPath(
             "it = zip([10, 20, 30], [1, 2, 3])\ncode = 0\nt1 = next(it)\ntry:\n    t2 = next(it)\nexcept MemoryError:\n    code = code + 10\n    t2 = None\ndel t1\ntry:\n    t3 = next(it)\n    code = code + t3[1]\nexcept MemoryError:\n    code = code + 100\nreturn code\n", 1248, 13, 110);
 
+    // Shell exhaustion: 256 covers setup and the one-item source display but not the
+    // pooled shell, so construction must deny cleanly instead of stranding or crashing.
+    private static async Task AssertDenies(string source, long budget)
+    {
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+        var sync = script.Run(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = budget });
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+        var asyncResult = await script.RunAsync(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = budget });
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+    }
+
+    [Fact]
+    public async Task EnumerateShellDeniesCleanly()
+        => await AssertDenies("x = enumerate([1])\nreturn 0\n", 256);
+
 }
