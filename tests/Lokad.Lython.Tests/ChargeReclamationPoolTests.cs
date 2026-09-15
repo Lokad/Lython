@@ -248,4 +248,102 @@ public sealed class ChargeReclamationPoolTests
     {
         keys.Clear();
     }
+    [Fact]
+    public void OldTierDeadRemovalObeysQuantum()
+    {
+        // 9,000 promoted entries then all dropped: the first two sweeps visit
+        // one quantum each, the third wraps after a partial window, and later
+        // sweeps drain exactly to zero.
+        var governor = new MemoryGovernor(null);
+        var pool = NewPool(governor);
+        var keys = TrackLive(pool, governor, 9000);
+        pool.Sweep();
+        Assert.Equal(9000, OldCount(pool));
+        Assert.Equal(4096, OldCursor(pool));
+        pool.Sweep();
+        Assert.Equal(9000, OldCount(pool));
+        Assert.Equal(8192, OldCursor(pool));
+        DropAll(keys);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        var released = pool.Sweep();
+        Assert.Equal(808 * (128 + 128), released);
+        Assert.Equal(8192, OldCount(pool));
+        Assert.Equal(0, OldCursor(pool));
+        // Exactly one quantum dies per sweep from here: the pre-cap code drained
+        // all 8,192 remaining entries in the next sweep.
+        Assert.Equal(4096 * (128 + 128), pool.Sweep());
+        Assert.Equal(4096, pool.Count);
+        Assert.Equal(0, OldCursor(pool));
+        Assert.Equal(4096 * (128 + 128), pool.Sweep());
+        Assert.Equal(0, pool.Count);
+        Assert.Equal(0, OldCursor(pool));
+        Assert.Equal(9000 * (128 + 128), released + 2 * 4096 * (128 + 128));
+        GC.KeepAlive(keys);
+    }
+
+    [Fact]
+    public void MostlyDeadTierCapsProbesPerSweep()
+    {
+        // 5,000 promoted entries with 100 scattered survivors: one ordinary sweep
+        // cannot release all 4,900 dead charges (at most one 4,096-probe window dies
+        // per sweep), but repeated sweeps drain exactly to the survivors.
+        var governor = new MemoryGovernor(null);
+        var pool = NewPool(governor);
+        var keys = TrackLive(pool, governor, 5000);
+        pool.Sweep();
+        Assert.Equal(5000, OldCount(pool));
+        Assert.Equal(4096, OldCursor(pool));
+        DropAllButEveryFiftieth(keys);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        var released = pool.Sweep();
+        Assert.True(released > 0);
+        Assert.True(released < 4900 * (128 + 128));
+        Assert.Equal(0, released % (128 + 128));
+        var total = released;
+        var guard = 0;
+        while (pool.Count > 100 && guard < 10)
+        {
+            total += pool.Sweep();
+            guard++;
+        }
+
+        Assert.Equal(4900 * (128 + 128), total);
+        Assert.Equal(100, pool.Count);
+        GC.KeepAlive(keys);
+    }
+
+    [Fact]
+    public void TinyDeadTierReleasesExactly()
+    {
+        var governor = new MemoryGovernor(null);
+        var pool = NewPool(governor);
+        var keys = TrackLive(pool, governor, 3);
+        pool.Sweep();
+        Assert.Equal(3, OldCount(pool));
+        DropAll(keys);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        Assert.Equal(3 * (128 + 128), pool.Sweep());
+        Assert.Equal(0, pool.Count);
+        Assert.Equal(0, OldCursor(pool));
+        GC.KeepAlive(keys);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static void DropAllButEveryFiftieth(List<object> keys)
+    {
+        for (var i = 0; i < keys.Count; i++)
+        {
+            if (i % 50 != 0)
+            {
+                keys[i] = null!;
+            }
+        }
+    }
+
 }

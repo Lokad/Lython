@@ -317,17 +317,21 @@ internal sealed class ChargeReclamationPool
         return released;
     }
 
-    // Visits each old entry at most once per sweep, up to the quantum: the
-    // window advances without wrapping, so a lone live entry costs one probe
-    // instead of a full quantum of revisits. Removal compacts from the end,
-    // which can only pull unvisited entries into the window.
+    // Visits at most one quantum of old entries per sweep, counting dead removals
+    // against the same budget as survivor advances: the window advances without
+    // wrapping, so a lone live entry costs one probe instead of a full quantum of
+    // revisits. Removal compacts from the end, which can only pull unvisited
+    // entries into the window. Every sweep makes progress while anything remains
+    // (the cursor advances or the tier shrinks), so dead entries still release
+    // exactly, just over more sweeps.
     private long SweepOldQuantum()
     {
         var released = 0L;
-        var end = Math.Min(_oldCursor + OldQuantum, _old.Count);
-        while (_oldCursor < end && _oldCursor < _old.Count)
+        var probed = 0;
+        while (probed < OldQuantum && _oldCursor < _old.Count)
         {
             var entry = _old[_oldCursor];
+            probed++;
             if (!entry.Target.TryGetTarget(out _))
             {
                 released += entry.ValueCharge + EntryChargeBytes;
