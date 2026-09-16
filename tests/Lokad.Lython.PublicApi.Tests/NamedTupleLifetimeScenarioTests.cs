@@ -28,6 +28,33 @@ public sealed class NamedTupleLifetimeScenarioTests
             "from collections import namedtuple\nP = namedtuple('P', ['x', 'y'])\nfor i in range(100000):\n    p = P(1, 2)\nreturn 0\n", "0");
 
     [Fact]
+    public async Task NamedTupleTypeDiscardCompletes()
+        => await AssertCompletes(
+            "from collections import namedtuple\nfor i in range(100000):\n    t = namedtuple('P', ['x', 'y'])\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task NamedTupleTypeBehaves()
+        => await AssertCompletes(
+            "from collections import namedtuple\nT = namedtuple('P', ['x', 'y'])\nreturn str(T._fields) + T.__name__\n", "('x', 'y')P");
+
+    [Fact]
+    public async Task RetainedNamedTupleTypesDenied()
+    {
+        var script = new LythonEngine().Compile(
+            "from collections import namedtuple\nobjs = []\ni = 0\nwhile i < 2000:\n    objs.append(namedtuple('P', ['x', 'y']))\n    i = i + 1\nreturn len(objs)\n");
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = OneMib };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib);
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
+    }
+
+    [Fact]
     public async Task NamedTupleMakeDiscardCompletes()
         => await AssertCompletes(
             "from collections import namedtuple\nP = namedtuple('P', ['x', 'y'])\nfor i in range(100000):\n    p = P._make([1, 2])\nreturn 0\n", "0");

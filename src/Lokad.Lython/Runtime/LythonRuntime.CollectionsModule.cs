@@ -547,7 +547,7 @@ internal sealed partial class LythonRuntime
 
         var created = new PyNamedTupleType(typeName.AsString(), fields, defaults, context.MemoryGovernor, span);
         created.ModuleName = moduleName;
-        return created;
+        return PyNamedTupleType.TrackFreshNamedTupleType(created, span, context);
     }
 
     private static object OrderedDict(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)

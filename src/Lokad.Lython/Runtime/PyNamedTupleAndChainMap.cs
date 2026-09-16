@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -15,6 +16,7 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
     private readonly PyString _nameValue;
     private readonly PyTuple _fieldsTuple;
     private PyDict? _fieldDefaults;
+    private readonly long _committedStorageBytes;
 
     public PyNamedTupleType(string typeName, IEnumerable<string> fieldNames) : this(typeName, fieldNames, null) { }
 
@@ -34,9 +36,38 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
         _fieldsTuple = governor is null
             ? PyTuple.FromOwnedArray(_fieldNames.Select(PyString.FromString).Cast<object>().ToArray())
             : PyTuple.FromOwnedArray(_fieldNames.Select(name => PyString.FromString(name, governor, span)).Cast<object>().ToArray(), governor, span);
+
+        // Snapshot the governed construction shares (the name plus per-field strings
+        // beside the fields-tuple backing) so fresh types adopt exactly; ungoverned
+        // types commit nothing and carry no coupon.
+        long shares = 0;
+        if (governor is not null)
+        {
+            shares = RuntimeMemoryEstimates.SaturatingAdd(shares, PyString.EstimateApproximateBytes(Encoding.UTF8.GetByteCount(typeName)));
+            foreach (var fieldName in _fieldNames)
+            {
+                shares = RuntimeMemoryEstimates.SaturatingAdd(shares, PyString.EstimateApproximateBytes(Encoding.UTF8.GetByteCount(fieldName)));
+            }
+
+            shares = RuntimeMemoryEstimates.SaturatingAdd(shares, PyTuple.EstimateApproximateBytes(_fieldNames.Length));
+        }
+
+        _committedStorageBytes = shares;
     }
 
     public string Name => _typeName;
+
+    // Governed construction shares snapshotted above; ungoverned types carry nothing.
+    internal long CommittedStorageBytes => _committedStorageBytes;
+
+    // Fresh namedtuple types reclaim through the pool once dropped; the constructor
+    // commits the name/fields backing above with no other owner, so adopt the snapshot
+    // with refund on entry denial.
+    internal static PyNamedTupleType TrackFreshNamedTupleType(PyNamedTupleType type, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        context.Services.State.CallTemporaries.TrackFreshMutable(type, type.CommittedStorageBytes, span);
+        return type;
+    }
 
     internal object? ModuleName { get; set; }
 
