@@ -396,15 +396,13 @@ internal sealed partial class LythonRuntime
                 return [];
             }
 
-            // The frequency table, order list and result list are required
-            // scratch with no governed adopter (multimode adopts only the
-            // extracted modes array), so all three commit durably like string
-            // payloads. Distinct keys never exceed the input count, so
-            // pre-sizing bounds every structure exactly with no growth.
-            governor.Reserve(96L + (32L * values.Count), span);
-            governor.Commit(96L + (32L * values.Count));
-            governor.Reserve(48L + (24L * values.Count), span);
-            governor.Commit(48L + (24L * values.Count));
+            // The frequency table, order list and result list are caller-lifetime
+            // scratch with no surviving governed adopter (multimode adopts only the
+            // extracted modes array), so all three ride a temporary reservation
+            // released on return instead of committing durably. Distinct keys never
+            // exceed the input count, so pre-sizing bounds every structure exactly
+            // with no growth.
+            using var scratch = governor.ReserveTemporary(144L + (56L * values.Count), span);
             var counts = new Dictionary<object, int>(values.Count, PyValueComparer.Instance);
             var order = new List<object>(values.Count);
             foreach (var value in values)

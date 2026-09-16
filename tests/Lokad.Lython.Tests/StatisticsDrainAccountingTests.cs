@@ -110,11 +110,11 @@ public sealed class StatisticsDrainAccountingTests
         Assert.Equal(16000, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
     }
     [Fact]
-    public void FrequencyMapCommitsExactBackingOnce()
+    public void FrequencyMapScratchReleasesOnReturn()
     {
-        // The mode frequency table, order list and result list are pre-sized
-        // to the input count (distinct keys never exceed it), so the whole
-        // structure commits exactly once with no growth.
+        // The mode frequency table, order list and result list are
+        // caller-lifetime scratch on a temporary reservation: bounded while
+        // held, released on return, so discarded mode/multimode calls reclaim.
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
@@ -130,9 +130,26 @@ public sealed class StatisticsDrainAccountingTests
 
         Assert.Equal(1000, counts.Count);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(96 + (32 * 1000) + 48 + (24 * 1000), context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
+        Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
     }
+    [Fact]
+    public void FrequencyMapScratchHonorsBudget()
+    {
+        // Oversized scratch under a tiny budget denies instead of
+        // over-allocating: the temporary reservation is still governed.
+        var governor = new MemoryGovernor(1024);
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var moduleType = typeof(LythonRuntime).GetNestedType("StatisticsModule", BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("StatisticsModule not found.");
+        var frequency = moduleType.GetMethod("GetModeCounts", BindingFlags.NonPublic | BindingFlags.Static)
+            ?? throw new InvalidOperationException("GetModeCounts not found.");
+        var data = Enumerable.Range(0, 1000).Select(static i => (object)new BigInteger(i)).ToList();
 
+        var failure = Assert.Throws<TargetInvocationException>(
+            () => frequency.Invoke(null, [data, governor, span]));
+        var denial = Assert.IsType<LythonRuntimeException>(failure.InnerException);
+        Assert.Equal("MemoryError", denial.ExceptionType);
+    }
     [Fact]
     public void EmptyFrequencyMapChargesNothing()
     {
