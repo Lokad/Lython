@@ -164,10 +164,10 @@ internal sealed partial class LythonRuntime
             if (dataAssigned)
             {
                 var initial = HashlibModule.RequireHashBytes(data.RequireNotNull(), Name, span);
-                return new HashlibHashObject(_algorithm, initial.Bytes, context.MemoryGovernor, span);
+                return HashlibHashObject.TrackFreshHashObject(new HashlibHashObject(_algorithm, initial.Bytes, context.MemoryGovernor, span), context);
             }
 
-            return new HashlibHashObject(_algorithm, ReadOnlySpan<byte>.Empty, context.MemoryGovernor, span);
+            return HashlibHashObject.TrackFreshHashObject(new HashlibHashObject(_algorithm, ReadOnlySpan<byte>.Empty, context.MemoryGovernor, span), context);
         }
     }
 
@@ -250,16 +250,24 @@ internal sealed partial class LythonRuntime
             if (dataAssigned)
             {
                 var initial = HashlibModule.RequireHashBytes(data.RequireNotNull(), "hashlib.new", span);
-                return new HashlibHashObject(algorithm, initial.Bytes, context.MemoryGovernor, span);
+                return HashlibHashObject.TrackFreshHashObject(new HashlibHashObject(algorithm, initial.Bytes, context.MemoryGovernor, span), context);
             }
 
-            return new HashlibHashObject(algorithm, ReadOnlySpan<byte>.Empty, context.MemoryGovernor, span);
+            return HashlibHashObject.TrackFreshHashObject(new HashlibHashObject(algorithm, ReadOnlySpan<byte>.Empty, context.MemoryGovernor, span), context);
         }
     }
 
     private sealed class HashlibHashObject : IPyDynamicAttributes, IPyRenderableValue
     {
         private const long ObjectOverhead = 96;
+
+        // Fresh hash shells reclaim through the pool once dropped; the member-call funnel
+        // has no hash-object branch, so this choke point owns it.
+        internal static HashlibHashObject TrackFreshHashObject(HashlibHashObject value, ExecutionContext context)
+        {
+            context.Services.State.CallTemporaries.TrackFreshMutable(value, ObjectOverhead);
+            return value;
+        }
 
         private readonly HashlibAlgorithm _algorithm;
         private readonly MemoryGovernor _governor;
@@ -340,11 +348,10 @@ internal sealed partial class LythonRuntime
         private object Copy(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             _ = arguments;
-            _ = context;
             _governor.Reserve(ObjectOverhead, span);
             var clone = _hash.Clone();
             _governor.Commit(ObjectOverhead);
-            return new HashlibHashObject(_algorithm, clone, _governor);
+            return HashlibHashObject.TrackFreshHashObject(new HashlibHashObject(_algorithm, clone, _governor), context);
         }
 
         private byte[] ComputeHash() => _hash.GetCurrentHash();

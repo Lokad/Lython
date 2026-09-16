@@ -14,9 +14,9 @@ public sealed class HashlibAccountingScenarioTests
     // trip 2MB in both modes, locking the factory rate. Input bytes stream
     // through the hasher instead of accumulating.
     private const long DigestBudgetBytes = 2097152;
-    // 20k retained names own ~130B each on top of factory transients, so they
-    // fit 3.5MB pre-fix and trip post-fix.
-    private const long NameBudgetBytes = 3670016;
+    // 20k retained names own ~130B each plus a 16B list slot (2.9MB), so they
+    // trip 2.5MB now that dropped shells reclaim instead of stranding 96B each.
+    private const long NameBudgetBytes = 2621440;
 
     [Fact]
     public async Task ManyRetainedDigestsStayCharged()
