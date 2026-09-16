@@ -96,4 +96,47 @@ public sealed class WrapperLifetimeScenarioTests
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
         Assert.True(asyncResult.PeakExecutionMemoryBytes <= 1048576);
+    }
+
+    [Fact]
+    public async Task FromKeysAliasedDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(100000):\n    d = dict.fromkeys(['a', 'b'], 0)\n    e = d\n    x = (d, e)\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task FromKeysDeniedRecoversWhenFunded()
+    {
+        var script = new LythonEngine().Compile(
+            "return str(dict.fromkeys(['a', 'b'], 0))\n");
+        Assert.True(script.IsValid);
+        var denied = script.Run(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 100 });
+        Assert.False(denied.Success);
+        Assert.Equal("MemoryError", denied.Failure?.ExceptionType);
+
+        var funded = script.Run(new MockLythonHost());
+        Assert.True(funded.Success, funded.Failure?.Message);
+        Assert.Equal("{'a': 0, 'b': 0}", funded.ReturnValue?.ToString());
+
+        var fundedAsync = await script.RunAsync(new MockLythonHost());
+        Assert.True(fundedAsync.Success, fundedAsync.Failure?.Message);
+        Assert.Equal("{'a': 0, 'b': 0}", fundedAsync.ReturnValue?.ToString());
+    }
+
+    [Fact]
+    public async Task DefaultdictUpdateKwargsDeniedRecoversWhenFunded()
+    {
+        var script = new LythonEngine().Compile(
+            "from collections import defaultdict\nd = defaultdict(int)\nd.update(a=1)\nreturn str(dict(d))\n");
+        Assert.True(script.IsValid);
+        var denied = script.Run(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 100 });
+        Assert.False(denied.Success);
+        Assert.Equal("MemoryError", denied.Failure?.ExceptionType);
+
+        var funded = script.Run(new MockLythonHost());
+        Assert.True(funded.Success, funded.Failure?.Message);
+        Assert.Equal("{'a': 1}", funded.ReturnValue?.ToString());
+
+        var fundedAsync = await script.RunAsync(new MockLythonHost());
+        Assert.True(fundedAsync.Success, fundedAsync.Failure?.Message);
+        Assert.Equal("{'a': 1}", fundedAsync.ReturnValue?.ToString());
     }}
