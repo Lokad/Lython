@@ -6,6 +6,8 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
+// M05: adopted compilation results additionally hold one 128 B pool entry plus
+// one 32 B young-tier growth beside the allowance below.
 /// MG09: each compilation commits the retained-state allowance and releases
 /// its scratch when the pattern is invalid.
 /// </summary>
@@ -28,7 +30,7 @@ public sealed class RegexCompilationAccountingTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
         _ = CreatePattern(PyString.FromString("a(b|c)*d"), context, span);
-        Assert.Equal(65536L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(65696L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -40,7 +42,7 @@ public sealed class RegexCompilationAccountingTests
         var span = new LythonSourceSpan(0, 0, 0, 0);
         // Ten groups: 65536 + 9 x 2048, length inside the free envelope.
         _ = CreatePattern(PyString.FromString(string.Concat(Enumerable.Repeat("(a)", 10))), context, span);
-        Assert.Equal(83968L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(84128L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -52,7 +54,7 @@ public sealed class RegexCompilationAccountingTests
         var span = new LythonSourceSpan(0, 0, 0, 0);
         // 100 chars, no groups: 65536 + 36 x 256.
         _ = CreatePattern(PyString.FromString(new string('a', 100)), context, span);
-        Assert.Equal(74752L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(74912L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

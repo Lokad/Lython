@@ -97,6 +97,11 @@ internal sealed partial class LythonRuntime
                     groupSummary.NamedGroups);
                 context.MemoryGovernor.Reserve(patternBytes, span);
                 context.MemoryGovernor.Commit(patternBytes);
+                // M05: the durable compilation charge commits with no owning funnel
+                // (every module-level re call compiles through here), so dropped
+                // compilations stranded ~64KiB each. Fresh results adopt here and
+                // reclaim on sweep; retained patterns stay charged.
+                context.Services.State.CallTemporaries.TrackFreshMutable(result, patternBytes, span);
                 return result;
             }
             catch (PythonRePatternException ex)
