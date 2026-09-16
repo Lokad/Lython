@@ -87,7 +87,7 @@ internal static partial class StaticContracts
         new(AbstractValueKind.CollectionsDefaultDict, "__ge__", 1, 1, "LA3114", "defaultdict.__ge__(value) expects one argument.", parameterNames: ["value"]),
         new(AbstractValueKind.CollectionsDefaultDict, "__reversed__", 0, 0, "LA3114", "defaultdict.__reversed__() expects no arguments."),
         new(AbstractValueKind.CollectionsDefaultDict, "clear", 0, 0, "LA3114", "defaultdict.clear() expects no arguments.", StaticMutationKind.MutatesReceiver),
-        new(AbstractValueKind.CollectionsDefaultDict, "update", 1, 1, "LA3114", "defaultdict.update(mapping) expects one dictionary argument.", StaticMutationKind.MutatesReceiver, ["mapping"]),
+        new(AbstractValueKind.CollectionsDefaultDict, "update", 0, ArgumentCountLimit.Unbounded, "LA3114", "defaultdict.update([mapping]) expects zero or one mapping argument.", StaticMutationKind.MutatesReceiver, ["mapping"], allowsExtraKeywords: true),
         new(AbstractValueKind.CollectionsDefaultDict, "pop", 1, 2, "LA3114", "defaultdict.pop(key[, default]) expects one key and an optional default.", StaticMutationKind.MutatesReceiver, ["key", "default"]),
         new(AbstractValueKind.CollectionsDefaultDict, "popitem", 0, 0, "LA3114", "defaultdict.popitem() expects no arguments.", StaticMutationKind.MutatesReceiver),
         new(AbstractValueKind.CollectionsCounter, "get", 1, 2, "LA3114", "Counter.get(key[, default]) expects one or two arguments.", parameterNames: ["key", "default"]),
