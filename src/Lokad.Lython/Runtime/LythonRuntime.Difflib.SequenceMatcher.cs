@@ -65,6 +65,28 @@ internal sealed partial class LythonRuntime
             _bjunk = new HashSet<object>(PyValueComparer.Instance);
             _bpopular = new HashSet<object>(PyValueComparer.Instance);
             SetSeq2(bOriginal, span, context);
+            // Fresh matchers reclaim through the pool once dropped; later caches re-snapshot
+            // below while the member-call funnel has no matcher branch.
+            context.Services.State.CallTemporaries.TrackFreshMutable(this, CommittedStorageBytes, span);
+        }
+
+        // Current committed backing charges across chains, views and caches, for pooled
+        // owners that release them if this matcher is dropped. Mutations re-snapshot
+        // through NoteGrowth below; untracked matchers no-op inside the notification.
+        internal long CommittedStorageBytes =>
+            _aCharge + _bCharge + _chainCharge +
+            _b2jViewCharge + _bjunkViewCharge + _bpopularViewCharge +
+            _fullBCountCharge + _matchingBlocksCharge + _opcodesCharge;
+
+        // Refreshes the pool coupon after charge mutations; change-detected over field
+        // reads so steady use costs nothing when charges are unchanged.
+        private void NoteGrowth(long beforeCharges)
+        {
+            var current = CommittedStorageBytes;
+            if (current != beforeCharges)
+            {
+                ChargeReclamationPool.NotifyStorageReplaced(this, current);
+            }
         }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -189,6 +211,7 @@ internal sealed partial class LythonRuntime
 
         public void SetSeq1(object aOriginal, LythonSourceSpan span, ExecutionContext context)
         {
+            var beforeCharges = CommittedStorageBytes;
             var array = DifflibModule.MaterializeGovernedSequence(aOriginal, span, context, out var charge);
             _aOriginal = aOriginal;
             _governor.Release(_aCharge);
@@ -196,10 +219,12 @@ internal sealed partial class LythonRuntime
             _aCharge = charge;
             ReleaseMatchingBlocks();
             ReleaseOpcodes();
+            NoteGrowth(beforeCharges);
         }
 
         public void SetSeq2(object bOriginal, LythonSourceSpan span, ExecutionContext context)
         {
+            var beforeCharges = CommittedStorageBytes;
             var array = DifflibModule.MaterializeGovernedSequence(bOriginal, span, context, out var charge);
             _bOriginal = bOriginal;
             _governor.Release(_bCharge);
@@ -209,6 +234,7 @@ internal sealed partial class LythonRuntime
             ReleaseOpcodes();
             ReleaseFullBCount();
             ChainB(span, context);
+            NoteGrowth(beforeCharges);
         }
 
         private void ReleaseMatchingBlocks()
@@ -289,6 +315,7 @@ internal sealed partial class LythonRuntime
 
         internal List<DiffOpcode> BuildOpcodes(LythonSourceSpan span, ExecutionContext context)
         {
+            var beforeCharges = CommittedStorageBytes;
             if (_opcodes is not null)
             {
                 return _opcodes;
@@ -346,6 +373,7 @@ internal sealed partial class LythonRuntime
             _governor.Release(_opcodesCharge);
             _opcodesCharge = opcodesCharge;
             _opcodes = opcodes;
+            NoteGrowth(beforeCharges);
             return opcodes;
         }
 
@@ -515,6 +543,7 @@ internal sealed partial class LythonRuntime
 
         private Dictionary<object, int> BuildFullBCount(LythonSourceSpan span, ExecutionContext context)
         {
+            var beforeCharges = CommittedStorageBytes;
             using var reservation = _governor.ReserveTemporary(0, span);
             var counts = new Dictionary<object, int>(PyValueComparer.Instance);
             var work = 0;
@@ -538,6 +567,7 @@ internal sealed partial class LythonRuntime
             _governor.Commit(charge);
             _governor.Release(_fullBCountCharge);
             _fullBCountCharge = charge;
+            NoteGrowth(beforeCharges);
             return counts;
         }
 
@@ -561,6 +591,7 @@ internal sealed partial class LythonRuntime
         // view charges carry no allocation site.
         private PyDict GetB2JView()
         {
+            var beforeCharges = CommittedStorageBytes;
             if (_b2jView is not null)
             {
                 return _b2jView;
@@ -578,11 +609,13 @@ internal sealed partial class LythonRuntime
             _governor.Commit(charge);
             _b2jViewCharge = charge;
             _b2jView = dict;
+            NoteGrowth(beforeCharges);
             return dict;
         }
 
         private PySet GetBjunkView()
         {
+            var beforeCharges = CommittedStorageBytes;
             if (_bjunkView is not null)
             {
                 return _bjunkView;
@@ -594,11 +627,13 @@ internal sealed partial class LythonRuntime
             _governor.Commit(charge);
             _bjunkViewCharge = charge;
             _bjunkView = view;
+            NoteGrowth(beforeCharges);
             return view;
         }
 
         private PySet GetBpopularView()
         {
+            var beforeCharges = CommittedStorageBytes;
             if (_bpopularView is not null)
             {
                 return _bpopularView;
@@ -610,11 +645,13 @@ internal sealed partial class LythonRuntime
             _governor.Commit(charge);
             _bpopularViewCharge = charge;
             _bpopularView = view;
+            NoteGrowth(beforeCharges);
             return view;
         }
 
         private List<MatchingBlock> GetMatchingBlocks(LythonSourceSpan span, ExecutionContext context)
         {
+            var beforeCharges = CommittedStorageBytes;
             if (_matchingBlocks is not null)
             {
                 return _matchingBlocks;
@@ -703,6 +740,7 @@ internal sealed partial class LythonRuntime
             _governor.Release(_matchingBlocksCharge);
             _matchingBlocksCharge = blocksCharge;
             _matchingBlocks = collapsed;
+            NoteGrowth(beforeCharges);
             return collapsed;
         }
 
