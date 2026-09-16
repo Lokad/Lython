@@ -105,7 +105,7 @@ internal static partial class PyDataclass
         var compare = true;
         bool? hash = null;
         bool? kwOnly = null;
-        object metadata = new PyDict(context.MemoryGovernor, span);
+        object? metadata = null;
 
         if (arguments.Length >= 1)
         {
@@ -172,7 +172,7 @@ internal static partial class PyDataclass
             Compare = compare,
             Hash = hash,
             KwOnly = kwOnly,
-            Metadata = metadata
+            Metadata = metadata ?? TrackNewMetadataDict(context, span)
         };
     }
 
@@ -546,7 +546,7 @@ internal static partial class PyDataclass
             var compare = true;
             bool? hash = null;
             bool? kwOnly = null;
-            object metadata = new PyDict(context.MemoryGovernor, span);
+            object? metadata = null;
 
             foreach (var argument in arguments)
             {
@@ -643,7 +643,7 @@ internal static partial class PyDataclass
                     seenCompare ? compare : PyNone.Instance,
                     seenHash ? (object?)hash ?? PyNone.Instance : PyNone.Instance,
                     seenKwOnly ? (object?)kwOnly ?? PyNone.Instance : PyNone.Instance,
-                    metadata
+                    metadata ?? TrackNewMetadataDict(context, span)
                 ],
                 span,
                 context);

@@ -194,7 +194,7 @@ internal static partial class PyDataclass
             compare,
             hash,
             kwOnly,
-            facts.Definition?.Metadata ?? new PyDict(context.MemoryGovernor, span),
+            facts.Definition?.Metadata ?? TrackNewMetadataDict(context, span),
             Store: facts.Kind == DataclassFieldKind.Normal);
     }
 
@@ -400,11 +400,20 @@ internal static partial class PyDataclass
            text.StartsWith("InitVar[", StringComparison.Ordinal) ||
            text.StartsWith("dataclasses.InitVar[", StringComparison.Ordinal);
 
+    // Fresh metadata maps ride the pool beside their field: dropped dataclasses
+    // reclaim the shell once collected, and a denied registration refunds it.
+    private static PyDict TrackNewMetadataDict(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var fresh = new PyDict(context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(fresh, fresh.CommittedStorageBytes);
+        return fresh;
+    }
+
     private static object NormalizeFieldMetadata(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         if (ReferenceEquals(value, PyNone.Instance))
         {
-            return new PyDict(context.MemoryGovernor, span);
+            return TrackNewMetadataDict(context, span);
         }
 
         if (value is not PyDict dict)
@@ -418,6 +427,7 @@ internal static partial class PyDataclass
             copy.SetItem(pair.Key, pair.Value);
         }
 
+        context.Services.State.CallTemporaries.TrackFreshMutable(copy, copy.CommittedStorageBytes);
         return copy;
     }
 

@@ -64,4 +64,28 @@ public sealed class ClassLifetimeScenarioTests
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
         Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
     }
+    [Fact]
+    public async Task MakeDataclassFieldsDiscardCompletes()
+        => await AssertCompletes(
+            "from dataclasses import make_dataclass\nfor i in range(20000):\n    y = make_dataclass('C', [('x', int)])\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task DataclassDecoratorDiscardCompletes()
+        => await AssertCompletes(
+            "import dataclasses\nfor i in range(20000):\n    @dataclasses.dataclass\n    class D:\n        x: int = 1\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task DataclassFrozenDiscardCompletes()
+        => await AssertCompletes(
+            "import dataclasses\nfor i in range(20000):\n    @dataclasses.dataclass(frozen=True)\n    class D:\n        x: int = 1\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task FieldFactoryDiscardCompletes()
+        => await AssertCompletes(
+            "from dataclasses import field\nfor i in range(20000):\n    y = field(default=1)\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task DataclassBehaves()
+        => await AssertCompletes(
+            "import dataclasses\n@dataclasses.dataclass\nclass D:\n    x: int = 1\nreturn str(D(2).x) + '|' + str(D().x)\n", "2|1");
 }
