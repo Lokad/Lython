@@ -953,16 +953,18 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         {
             PyDict dict => dict,
             PyDefaultDict defaultDict => ToPyDict(defaultDict, governor, span, context),
+            PyCounter counter => ToPyDict(counter, governor, span, context),
             _ => throw new LythonRuntimeException("TypeError", "ChainMap maps must be dictionaries.", span)
         };
 
     internal static IReadOnlyList<PyDict> NormalizeMaps(IEnumerable<object> values, LythonSourceSpan span, MemoryGovernor governor, LythonRuntime.ExecutionContext context)
         => values.Select(value => ExpectMap(value, span, governor, context)).ToArray();
 
-    private static PyDict ToPyDict(PyDefaultDict defaultDict, MemoryGovernor governor, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    // Fresh copies of defaultdict/counter maps reclaim through the pool once dropped; keys stay aliased.
+    private static PyDict ToPyDict(IEnumerable<KeyValuePair<object, object>> source, MemoryGovernor governor, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         var dict = new PyDict(governor, span);
-        foreach (var pair in defaultDict)
+        foreach (var pair in source)
         {
             dict.SetItem(pair.Key, pair.Value);
         }

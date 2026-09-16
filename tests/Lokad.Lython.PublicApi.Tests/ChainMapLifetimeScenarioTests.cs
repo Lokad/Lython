@@ -53,6 +53,32 @@ public sealed class ChainMapLifetimeScenarioTests
             "from collections import ChainMap, defaultdict\nm = ChainMap({'a': 1})\nfor i in range(50000):\n    x = m.new_child(defaultdict(int, {'b': 2}))\nreturn 0\n", "0");
 
     [Fact]
+    public async Task ChainMapCounterArgDiscardCompletes()
+        => await AssertCompletes(
+            "from collections import ChainMap, Counter\nfor i in range(50000):\n    x = ChainMap(Counter({'a': 1}))\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task ChainMapCounterBehaves()
+        => await AssertCompletes(
+            "from collections import ChainMap, Counter\nm = ChainMap(Counter({'a': 1}))\nm['b'] = 2\nc = m.new_child(Counter({'c': 3}))\nreturn str([m['a'], m['b'], c['c']])\n", "[1, 2, 3]");
+
+    [Fact]
+    public async Task RetainedChainMapCounterDenied()
+    {
+        var script = new LythonEngine().Compile(
+            "from collections import ChainMap, Counter\nobjs = []\ni = 0\nwhile i < 20000:\n    objs.append(ChainMap(Counter({'a': 1})))\n    i = i + 1\nreturn len(objs)\n");
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = OneMib };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib);
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
+    }
+    [Fact]
     public async Task ChainMapFreshBehaves()
         => await AssertCompletes(
             "from collections import ChainMap\nm = ChainMap({'a': 1})\nc = m.copy()\nu = m | {'b': 2}\ne = ChainMap()\nreturn str([c['a'], u['a'], u['b'], len(e.maps)])\n", "[1, 1, 2, 1]");
