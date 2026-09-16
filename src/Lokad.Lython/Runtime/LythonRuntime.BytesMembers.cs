@@ -475,7 +475,12 @@ internal sealed partial class LythonRuntime
             perSep = perSep == int.MinValue ? int.MaxValue : -perSep;
         }
 
-        return CreateString(RenderHex(value.ToArray(), separator, perSep), context, span);
+        // M05: the hex render is a fresh governed string beside no container, and
+        // this raw callable bypasses every funnel, so own it here with refund:
+        // drops reclaim on sweep while retained results stay charged.
+        var hex = CreateString(RenderHex(value.ToArray(), separator, perSep), context, span);
+        context.Services.State.CallTemporaries.TrackFreshString(hex, span);
+        return hex;
     }
 
     private static byte ParseHexSeparator(object sep, LythonSourceSpan span)
