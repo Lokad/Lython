@@ -623,7 +623,9 @@ internal sealed partial class LythonRuntime
                 dot = next;
             }
 
-            return new PyList(values, governor, span);
+            // Items adopt above; the container backing never reaches a funnel, so adopt
+            // it here with refund like the split-result choke does.
+            return OwnSplitListResult(new PyList(values, governor, span), span, pool);
         }
     }
 }

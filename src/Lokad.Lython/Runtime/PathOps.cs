@@ -307,7 +307,7 @@ internal static class PathOps
         var current = Parent(path);
         if (current.Equals(path))
         {
-            return values;
+            return LythonRuntime.OwnSplitListResult(values, span, pool);
         }
 
         while (true)
@@ -321,7 +321,7 @@ internal static class PathOps
             current = Parent(current);
         }
 
-        return values;
+        return LythonRuntime.OwnSplitListResult(values, span, pool);
     }
 
     public static PyTuple Parts(PyString path)
@@ -335,7 +335,7 @@ internal static class PathOps
         var normalized = NormalizeLexical(path.AsString());
         if (normalized == ".")
         {
-            return governor is null ? PyTuple.FromOwnedArray([]) : PyTuple.FromOwnedArray([], governor, span);
+            return LythonRuntime.OwnSplitTupleResult(governor is null ? PyTuple.FromOwnedArray([]) : PyTuple.FromOwnedArray([], governor, span), span, pool);
         }
 
         var values = new List<object>();
@@ -353,6 +353,6 @@ internal static class PathOps
             }
         }
 
-        return governor is null ? new PyTuple(values) : new PyTuple(values, governor, span);
+        return LythonRuntime.OwnSplitTupleResult(governor is null ? new PyTuple(values) : new PyTuple(values, governor, span), span, pool);
     }
 }
