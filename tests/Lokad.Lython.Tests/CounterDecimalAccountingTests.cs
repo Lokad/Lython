@@ -114,6 +114,15 @@ public sealed class CounterDecimalAccountingTests
 
         static long Committed(LythonRuntime.ExecutionContext context) => context.MemoryGovernor.CurrentCommittedBytes;
 
+        // Warm the reclamation tiers past geometric backing growth (0->4, doubling; growth at
+        // registrations 1, 5, 9, 17, 33): pooled Counter results would otherwise land tier growth
+        // inside a measured int run and break int/dec symmetry. Forty warmups reach capacity 64,
+        // comfortably holding the measured registrations below.
+        for (var warmup = 0; warmup < 40; warmup++)
+        {
+            _ = InvokeOperator("EvaluateAdd", context, span,
+                CounterWith(context, span, key, new BigInteger(1)), CounterWith(context, span, key, new BigInteger(2)));
+        }
         var beforeIntAdd = Committed(context);
         _ = InvokeOperator("EvaluateAdd", context, span,
             CounterWith(context, span, key, new BigInteger(1)), CounterWith(context, span, key, new BigInteger(2)));
@@ -167,6 +176,15 @@ public sealed class CounterDecimalAccountingTests
 
         var leftCount = new PyDecimal(1m);
         var rightCount = new PyDecimal(2m);
+        // Warm the reclamation tiers past geometric backing growth (0->4, doubling; growth at
+        // registrations 1, 5, 9, 17, 33): pooled Counter results would otherwise land tier growth
+        // inside a measured int run and break int/dec symmetry. Forty warmups reach capacity 64,
+        // comfortably holding the measured registrations below.
+        for (var warmup = 0; warmup < 40; warmup++)
+        {
+            _ = InvokeOperator("EvaluateBitwiseOr", context, span,
+                CounterWith(context, span, key, new BigInteger(1)), CounterWith(context, span, key, new BigInteger(2)));
+        }
         var beforeIntOr = Committed(context);
         _ = InvokeOperator("EvaluateBitwiseOr", context, span,
             CounterWith(context, span, key, new BigInteger(1)), CounterWith(context, span, key, new BigInteger(2)));

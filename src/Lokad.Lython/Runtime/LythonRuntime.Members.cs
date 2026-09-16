@@ -3584,7 +3584,7 @@ internal sealed partial class LythonRuntime
                     DeleteSubscriptValue(counter, arguments[0], span, context);
                     return PyNone.Instance;
                 }, "Counter.__delitem__", ["index"]),
-                "__or__" => BoundCallable.Create((arguments, span, _) =>
+                "__or__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -3596,9 +3596,9 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return BuildCounterBinaryResult(counter, right, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) >= 0 ? lhs : rhs, keepPositiveOnly: true, span);
+                    return BuildCounterBinaryResult(counter, right, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) >= 0 ? lhs : rhs, keepPositiveOnly: true, span, context);
                 }, "Counter.__or__", ["value"]),
-                "__and__" => BoundCallable.Create((arguments, span, _) =>
+                "__and__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -3610,9 +3610,9 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return BuildCounterBinaryResult(counter, right, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) < 0 ? lhs : rhs, keepPositiveOnly: true, span);
+                    return BuildCounterBinaryResult(counter, right, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) < 0 ? lhs : rhs, keepPositiveOnly: true, span, context);
                 }, "Counter.__and__", ["value"]),
-                "__sub__" => BoundCallable.Create((arguments, span, _) =>
+                "__sub__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -3624,7 +3624,7 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return BuildCounterBinaryResult(counter, right, (lhs, rhs) => SubtractCounterCounts(lhs, rhs, span, counter.OwnerMemoryGovernor ?? right.OwnerMemoryGovernor), keepPositiveOnly: true, span);
+                    return BuildCounterBinaryResult(counter, right, (lhs, rhs) => SubtractCounterCounts(lhs, rhs, span, counter.OwnerMemoryGovernor ?? right.OwnerMemoryGovernor), keepPositiveOnly: true, span, context);
                 }, "Counter.__sub__", ["value"]),
                 "__ror__" => BoundCallable.Create((arguments, span, context) =>
                 {

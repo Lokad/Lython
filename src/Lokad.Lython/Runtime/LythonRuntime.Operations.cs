@@ -168,7 +168,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
-            return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) >= 0 ? lhs : rhs, keepPositiveOnly: true, span);
+            return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) >= 0 ? lhs : rhs, keepPositiveOnly: true, span, context);
         }
 
         if (left is PyChainMap leftChainMap && right is PyDict or PyDefaultDict or PyCounter or PyChainMap)
@@ -250,6 +250,7 @@ internal sealed partial class LythonRuntime
                 plain.SetItem(pair.Key, pair.Value);
             }
 
+            context.Services.State.CallTemporaries.TrackFreshMutable(plain, plain.CommittedStorageBytes);
             return plain;
         }
 
@@ -337,7 +338,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
-            return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) < 0 ? lhs : rhs, keepPositiveOnly: true, span);
+            return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) < 0 ? lhs : rhs, keepPositiveOnly: true, span, context);
         }
 
         if (left is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView || right is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView)
@@ -415,7 +416,7 @@ internal sealed partial class LythonRuntime
     {
         if (operand is PyCounter positiveCounter)
         {
-            return BuildCounterUnaryResult(positiveCounter, count => count, keepPositiveOnly: true, span);
+            return BuildCounterUnaryResult(positiveCounter, count => count, keepPositiveOnly: true, span, context);
         }
 
         if (operand is PyTimedelta)
@@ -449,7 +450,7 @@ internal sealed partial class LythonRuntime
     {
         if (operand is PyCounter negativeCounter)
         {
-            return BuildCounterUnaryResult(negativeCounter, count => NegateCounterCount(count, span, negativeCounter.OwnerMemoryGovernor), keepPositiveOnly: true, span);
+            return BuildCounterUnaryResult(negativeCounter, count => NegateCounterCount(count, span, negativeCounter.OwnerMemoryGovernor), keepPositiveOnly: true, span, context);
         }
 
         if (operand is PyTimedelta)
@@ -484,7 +485,8 @@ internal sealed partial class LythonRuntime
         PyCounter source,
         Func<object, object> transform,
         bool keepPositiveOnly,
-        LythonSourceSpan span)
+        LythonSourceSpan span,
+        ExecutionContext context)
     {
         var result = CreateCounterResult(source, null, span);
         foreach (var pair in source.Items)
@@ -498,6 +500,7 @@ internal sealed partial class LythonRuntime
             result.SetItem(pair.Key, count);
         }
 
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -506,7 +509,8 @@ internal sealed partial class LythonRuntime
         PyCounter right,
         Func<object, object, object> combine,
         bool keepPositiveOnly,
-        LythonSourceSpan span)
+        LythonSourceSpan span,
+        ExecutionContext context)
     {
         var result = CreateCounterResult(left, right, span);
         var seen = new HashSet<object>(PyValueComparer.Instance);
@@ -524,6 +528,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
 
         void AddResult(object key, object leftCount, object rightCount)
