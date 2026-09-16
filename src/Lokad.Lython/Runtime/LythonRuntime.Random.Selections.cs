@@ -19,10 +19,13 @@ internal sealed partial class LythonRuntime
                 state.Seed(ParseSeed(bound[0], span));
             }
 
-            // Own the generator shell beside the tiny counter state.
+            // Own the generator shell beside the tiny counter state, so dropped generators
+            // reclaim on sweep while retained ones stay charged.
             context.MemoryGovernor.Reserve(64L, span);
             context.MemoryGovernor.Commit(64L);
-            return new PyRandom(state);
+            var random = new PyRandom(state);
+            context.Services.State.CallTemporaries.TrackFreshMutable(random, 64L, span);
+            return random;
         }
 
         private static object UnsupportedSystemRandom(object[] arguments, LythonSourceSpan span, ExecutionContext context)
