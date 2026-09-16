@@ -244,7 +244,6 @@ internal sealed partial class LythonRuntime
 
         private static object Differ(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length > 2)
             {
                 throw new LythonRuntimeException("TypeError", "difflib.Differ([linejunk][, charjunk]) expects zero to two arguments.", span);
@@ -252,12 +251,11 @@ internal sealed partial class LythonRuntime
 
             var linejunk = ParseOptionalPredicate(arguments, 0, "difflib.Differ(..., linejunk=...)", span);
             var charjunk = ParseOptionalPredicate(arguments, 1, "difflib.Differ(..., charjunk=...)", span);
-            return new DifflibDifferObject(linejunk, charjunk);
+            return TrackFreshDiffShell(new DifflibDifferObject(linejunk, charjunk), span, context);
         }
 
         private static object HtmlDiff(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length > 4)
             {
                 throw new LythonRuntimeException("TypeError", "difflib.HtmlDiff([tabsize][, wrapcolumn][, linejunk][, charjunk]) expects zero to four arguments.", span);
@@ -269,7 +267,17 @@ internal sealed partial class LythonRuntime
             var charjunk = arguments.Length >= 4
                 ? ParseOptionalPredicate(arguments, 3, "difflib.HtmlDiff(..., charjunk=...)", span)
                 : DefaultCharacterJunkCallable();
-            return new DifflibHtmlDiffObject(tabsize, wrapcolumn, linejunk, charjunk);
+            return TrackFreshDiffShell(new DifflibHtmlDiffObject(tabsize, wrapcolumn, linejunk, charjunk), span, context);
+        }
+
+        // Fresh differ/html shells reclaim through the pool once dropped; neither factory
+        // charged its shell before, so retained shells were invisible to the budget.
+        private static object TrackFreshDiffShell(object shell, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.MemoryGovernor.Reserve(64L, span);
+            context.MemoryGovernor.Commit(64L);
+            context.Services.State.CallTemporaries.TrackFreshMutable(shell, 64L, span);
+            return shell;
         }
 
         private static object SequenceMatcher(object[] arguments, LythonSourceSpan span, ExecutionContext context)
