@@ -377,4 +377,41 @@ public sealed class ChargeReclamationPoolTests
         GC.KeepAlive(keys);
     }
 
+
+    [Fact]
+    public void ReliefSurvivesNestedPromotionDenial()
+    {
+        // Old tier filled exactly to capacity plus a small young backlog, then
+        // everything dropped but deliberately left uncollected: relief's first
+        // sweep promotes the backlog first, which funds old-tier slots the
+        // headroom cannot spare. Without per-pool relief robustness that nested
+        // denial aborts relief before its collection; with it, relief collects,
+        // re-sweeps, and the denied reservation succeeds with every coupon and
+        // entry released. Headroom is pinned dynamically (a held reservation
+        // leaves exactly 15000 B) so context-setup residue cannot shift the
+        // trap: the 32768 B old-growth cannot fit while the 25000 B denial can
+        // after relief. No collection runs before the denial on this thread;
+        // a parallel GC could only make the pre-fix run pass vacuously.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 2000000 });
+        var governor = context.MemoryGovernor;
+        var pool = context.State.CallTemporaries;
+        var baseline = governor.CurrentCommittedBytes;
+        var oldKeys = TrackLive(pool, governor, 4096);
+        pool.Sweep();
+        Assert.Equal(4096, OldCount(pool));
+        var youngKeys = TrackLive(pool, governor, 100);
+        DropAll(oldKeys);
+        DropAll(youngKeys);
+        using var headroom = governor.ReserveTemporary(0, null);
+        var hold = 2000000L - governor.CurrentAccountedBytes - 15000L;
+        Assert.True(hold > 0, "setup overran its budget envelope");
+        headroom.Grow(hold, null);
+        governor.Reserve(25000, null);
+        Assert.Equal(hold + 25000, governor.CurrentReservedBytes);
+        Assert.Equal(0, pool.Count);
+        Assert.Equal(baseline + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
+        GC.KeepAlive(oldKeys);
+        GC.KeepAlive(youngKeys);
+    }
 }

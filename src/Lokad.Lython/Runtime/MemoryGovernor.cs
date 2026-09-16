@@ -132,7 +132,17 @@ internal sealed class MemoryGovernor
         var committedBefore = CurrentCommittedBytes;
         foreach (var pool in live)
         {
-            pool.Sweep(full: true);
+            try
+            {
+                pool.Sweep(full: true);
+            }
+            catch (LythonRuntimeException ex) when (ex.ExceptionType == "MemoryError")
+            {
+                // Sweeping an uncollected backlog promotes it first, which funds
+                // old-tier slots the budget cannot spare: that pool keeps its
+                // backlog, but relief still collects and re-sweeps below instead
+                // of failing with garbage still on the table.
+            }
         }
 
         if (committedBefore - CurrentCommittedBytes >= shortfallBytes)
@@ -143,7 +153,15 @@ internal sealed class MemoryGovernor
         GC.Collect();
         foreach (var pool in live)
         {
-            pool.Sweep(full: true);
+            try
+            {
+                pool.Sweep(full: true);
+            }
+            catch (LythonRuntimeException ex) when (ex.ExceptionType == "MemoryError")
+            {
+                // Same bookkeeping pressure after collecting: keep whatever
+                // this pool already released and let the retry below decide.
+            }
         }
     }
 
