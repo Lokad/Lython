@@ -445,7 +445,9 @@ internal sealed partial class LythonRuntime
                         context.CheckExecutionBudget(span);
                         scalars[i] = CreateUtf8String(result.ScalarValues[i], context, span);
                     }
-                    return new PyList(scalars, context.MemoryGovernor, span);
+                    // Findall items never pass a funnel (see OwnSplitListResult): adopt
+                    // the fresh strings and the fresh list here; drops reclaim on sweep.
+                    return OwnSplitListResult(new PyList(scalars, context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);
 
                 case Utf8PythonFindAllShape.GroupTuple:
                     var tuples = new object[result.TupleValues.Length];
@@ -459,9 +461,9 @@ internal sealed partial class LythonRuntime
                             items[i] = CreateUtf8String(tuple[i], context, span);
                         }
 
-                        tuples[tupleIndex] = new PyTuple(items, context.MemoryGovernor, span);
+                        tuples[tupleIndex] = OwnSplitTupleResult(new PyTuple(items, context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);
                     }
-                    return new PyList(tuples, context.MemoryGovernor, span);
+                    return OwnSplitListResult(new PyList(tuples, context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);
 
                 default:
                     throw new LythonRuntimeException("RuntimeError", "Unsupported regex findall result shape.", span);
@@ -480,7 +482,11 @@ internal sealed partial class LythonRuntime
                 text,
                 arguments.Length >= 2 ? RegexCompiler.ParseExplicitInt(arguments[1], "pos", "pattern.finditer", span, context) : 0,
                 arguments.Length >= 3 ? RegexCompiler.ParseExplicitInt(arguments[2], "endpos", "pattern.finditer", span, context) : text.Length);
-            return RegexMatcher.CreateFindIterMatches(pattern, range, context, span);
+            // Finditer shells charge per live instance like other iterator factories.
+            PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
+            var findIter = RegexMatcher.CreateFindIterMatches(pattern, range, context, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(findIter, PyIteratorBase.IteratorValueBytes);
+            return findIter;
         }
 
         private static object ExecuteSub(RePatternObject pattern, object[] arguments, LythonSourceSpan span, ExecutionContext context, RegexSubstitutionMode mode)

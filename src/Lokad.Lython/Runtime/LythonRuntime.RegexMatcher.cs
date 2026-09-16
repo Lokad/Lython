@@ -143,7 +143,7 @@ internal sealed partial class LythonRuntime
                 namedGroups[entry.Name] = entry.Number;
             }
 
-            return new ReMatchObject(
+            var matchObject = new ReMatchObject(
                 wholeValue,
                 new BigInteger(wholeStart),
                 new BigInteger(wholeEnd),
@@ -154,6 +154,24 @@ internal sealed partial class LythonRuntime
                 match.CaptureSlotCount,
                 captures,
                 namedGroups ?? pattern.NamedGroups);
+
+            // Match values never pass a funnel: adopt the fresh whole value and
+            // capture strings here (subject, pattern, and indices stay with their
+            // own owners); drops reclaim on sweep while retained matches stay charged.
+            if (context is not null)
+            {
+                var pool = context.Services.State.CallTemporaries;
+                pool.TrackFreshString(wholeValue, span);
+                foreach (var capture in captures)
+                {
+                    if (capture is not null)
+                    {
+                        pool.TrackFreshString(capture.Value, span);
+                    }
+                }
+            }
+
+            return matchObject;
         }
 
         internal static PyList ProjectSplitResult(
