@@ -4,8 +4,9 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 // M05: join builders byte-copy each rendered item, so nested item transients
 // are pool-owned at the join and dropped renders reclaim on sweep instead of
-// stranding 128+len B per item. Covers repr joins and multi-arg exception
-// messages (which render through the tuple repr join).
+// stranding 128+len B per item. Covers repr joins, multi-arg exception
+// messages (which render through the tuple repr join), and f-string displays
+// (part transients plus the unowned built result, executable and lowered).
 public sealed class RenderJoinLifetimeScenarioTests
 {
     private const long ThreeMib = 3145728;
@@ -75,6 +76,43 @@ public sealed class RenderJoinLifetimeScenarioTests
     {
         var script = new LythonEngine().Compile(
             "objs = []\ni = 0\nwhile i < 20000:\n    objs.append(repr([1, 2]))\n    i = i + 1\nreturn len(objs)\n");
+        Assert.True(script.IsValid);
+        var options = Budgeted(OneMib);
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib);
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
+    }
+
+    [Fact]
+    public async Task FStringTupleDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(50000):\n    x = f\"{(1, 2)}\"\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task FStringIntDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(50000):\n    x = f\"{1}\"\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task FStringMixedDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(50000):\n    x = f\"abc{i}\"\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task FStringInterpolationBehaves()
+        => await AssertCompletes(
+            "return f\"{(1, 2)}!\"\n", "(1, 2)!");
+
+    [Fact]
+    public async Task RetainedFStringDenied()
+    {
+        var script = new LythonEngine().Compile(
+            "objs = []\ni = 0\nwhile i < 20000:\n    objs.append(f\"v{i}\")\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = Budgeted(OneMib);
         var sync = script.Run(new MockLythonHost(), options);

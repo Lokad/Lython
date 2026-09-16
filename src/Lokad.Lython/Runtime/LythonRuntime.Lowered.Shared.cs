@@ -218,12 +218,15 @@ internal sealed partial class LythonRuntime
         public void AppendText(string text) => _builder.AppendString(text);
 
         public void AppendValue(object value, char? conversion, string? formatSpecifier)
-            => _builder.Append(FormatInterpolatedStringPart(value, conversion, formatSpecifier, _context, _span));
+            => _builder.Append(PyRendering.OwnJoinItem(FormatInterpolatedStringPart(value, conversion, formatSpecifier, _context, _span), _context));
 
         public PyString Complete()
         {
             var value = _builder.ToPyStringAndRelease();
             _context.ObserveString(value, _span);
+            // M05: same ownership as the executable f-string display: dropped
+            // results reclaim on sweep while retained results stay charged.
+            _context.Services.State.CallTemporaries.TrackFreshString(value, _span);
             return value;
         }
     }

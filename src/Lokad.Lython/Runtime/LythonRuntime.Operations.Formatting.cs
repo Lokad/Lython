@@ -34,12 +34,12 @@ internal sealed partial class LythonRuntime
                     var formatSpecifier = expression.FormatSpecifierParts is null
                         ? expression.FormatSpecifier
                         : EvaluateFormattedStringParts(expression.FormatSpecifierParts, context, span).AsString();
-                    builder.Append(FormatInterpolatedStringPart(
+                    builder.Append(PyRendering.OwnJoinItem(FormatInterpolatedStringPart(
                         EvaluateExpression(expression.Expression, context),
                         expression.Conversion,
                         formatSpecifier,
                         context,
-                        span));
+                        span), context));
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown formatted string part: {part.GetType().Name}");
@@ -48,6 +48,10 @@ internal sealed partial class LythonRuntime
 
         var value = builder.ToPyStringAndRelease();
         context.ObserveString(value, span);
+        // M05: the built string commits at construction with no owning display
+        // coupon, so dropped f-strings stranded 128+len B. Fresh results adopt
+        // here and reclaim on sweep; retained results stay charged.
+        context.Services.State.CallTemporaries.TrackFreshString(value, span);
         return value;
     }
 
