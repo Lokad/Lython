@@ -615,9 +615,14 @@ internal sealed partial class LythonRuntime
             maps.Add(argument.Value);
         }
 
-        return maps.Count == 0
-            ? new PyChainMap([new PyDict(context.MemoryGovernor, span)])
-            : new PyChainMap(PyChainMap.NormalizeMaps(maps, span, context.MemoryGovernor));
+        if (maps.Count == 0)
+        {
+            var first = new PyDict(context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(first, first.CommittedStorageBytes);
+            return new PyChainMap([first]);
+        }
+
+        return new PyChainMap(PyChainMap.NormalizeMaps(maps, span, context.MemoryGovernor, context));
     }
 
     private static void PopulateDefaultDict(PyDefaultDict dict, object source, LythonSourceSpan span, ExecutionContext context)

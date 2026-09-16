@@ -190,6 +190,7 @@ internal sealed partial class LythonRuntime
                 maps.Add(leftChainMap.Maps[i]);
             }
 
+            context.Services.State.CallTemporaries.TrackFreshMutable(first, first.CommittedStorageBytes);
             return new PyChainMap(maps);
         }
 
@@ -206,6 +207,7 @@ internal sealed partial class LythonRuntime
                 merged.SetItem(pair.Key, pair.Value);
             }
 
+            context.Services.State.CallTemporaries.TrackFreshMutable(merged, merged.CommittedStorageBytes);
             return new PyChainMap([merged]);
         }
 

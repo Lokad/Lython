@@ -906,18 +906,18 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         return keys.Count;
     }
 
-    private static PyDict ExpectMap(object value, LythonSourceSpan span, MemoryGovernor governor)
+    private static PyDict ExpectMap(object value, LythonSourceSpan span, MemoryGovernor governor, LythonRuntime.ExecutionContext context)
         => value switch
         {
             PyDict dict => dict,
-            PyDefaultDict defaultDict => ToPyDict(defaultDict, governor, span),
+            PyDefaultDict defaultDict => ToPyDict(defaultDict, governor, span, context),
             _ => throw new LythonRuntimeException("TypeError", "ChainMap maps must be dictionaries.", span)
         };
 
-    internal static IReadOnlyList<PyDict> NormalizeMaps(IEnumerable<object> values, LythonSourceSpan span, MemoryGovernor governor)
-        => values.Select(value => ExpectMap(value, span, governor)).ToArray();
+    internal static IReadOnlyList<PyDict> NormalizeMaps(IEnumerable<object> values, LythonSourceSpan span, MemoryGovernor governor, LythonRuntime.ExecutionContext context)
+        => values.Select(value => ExpectMap(value, span, governor, context)).ToArray();
 
-    private static PyDict ToPyDict(PyDefaultDict defaultDict, MemoryGovernor governor, LythonSourceSpan span)
+    private static PyDict ToPyDict(PyDefaultDict defaultDict, MemoryGovernor governor, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         var dict = new PyDict(governor, span);
         foreach (var pair in defaultDict)
@@ -925,6 +925,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
             dict.SetItem(pair.Key, pair.Value);
         }
 
+        context.Services.State.CallTemporaries.TrackFreshMutable(dict, dict.CommittedStorageBytes);
         return dict;
     }
 
@@ -1049,10 +1050,18 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
                 throw new LythonRuntimeException("TypeError", "ChainMap.new_child([m]) expects zero or one mapping.", span);
             }
 
-            var maps = new List<PyDict>
+            PyDict first;
+            if (arguments.Length == 0)
             {
-                arguments.Length == 0 ? new PyDict(context.MemoryGovernor, span) : ExpectMap(arguments[0].Value, span, context.MemoryGovernor)
-            };
+                first = new PyDict(context.MemoryGovernor, span);
+                context.Services.State.CallTemporaries.TrackFreshMutable(first, first.CommittedStorageBytes);
+            }
+            else
+            {
+                first = ExpectMap(arguments[0].Value, span, context.MemoryGovernor, context);
+            }
+
+            var maps = new List<PyDict> { first };
             maps.AddRange(_owner._maps);
             return new PyChainMap(maps);
         }
@@ -1072,7 +1081,9 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
                 throw new LythonRuntimeException("TypeError", "ChainMap.copy() expects no arguments.", span);
             }
 
-            var maps = new List<PyDict> { new(_owner._maps[0], context.MemoryGovernor, span) };
+            var copy = new PyDict(_owner._maps[0], context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(copy, copy.CommittedStorageBytes);
+            var maps = new List<PyDict> { copy };
             maps.AddRange(_owner._maps.Skip(1));
             return new PyChainMap(maps);
         }
