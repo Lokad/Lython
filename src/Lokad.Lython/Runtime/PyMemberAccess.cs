@@ -259,6 +259,10 @@ internal static class PyMemberAccess
                 var items = LythonRuntime.ToSequence(value, span, context);
                 var tuple = new PyTuple(items, context.MemoryGovernor, span);
                 context.ObserveCollectionCount(tuple.Count, span);
+                // M05: the replacement tuple commits with no owning funnel, so dropped
+                // reassignments stranded 32+16n B. Fresh results adopt here and reclaim
+                // on sweep; the replaced override reclaims through its own entry.
+                context.Services.State.CallTemporaries.TrackFreshMutable(tuple, tuple.CommittedStorageBytes, span);
                 exception.ArgsOverride = tuple;
                 return true;
             }
@@ -329,12 +333,25 @@ internal static class PyMemberAccess
                     exception.CustomDict.SetItem(entry.Key, entry.Value);
                 }
 
+                // M05: the swapped dict commits with no owning funnel (Clear releases
+                // and re-snapshots, but the refill has no owner), so adopt-or-resnapshot
+                // here; dropped swaps reclaim on sweep while retained ones stay charged.
+                context.Services.State.CallTemporaries.TrackGrowth(exception.CustomDict, exception.CustomDict.CommittedStorageBytes, span);
                 return true;
             }
 
             exception.CustomDict ??= new PyDict(context.MemoryGovernor, span);
             exception.CustomDict.AttachMemoryGovernor(context.MemoryGovernor, span);
-            exception.CustomDict.SetItem(PyString.FromString(memberName, context.MemoryGovernor, span), value);
+            var attributeKey = PyString.FromString(memberName, context.MemoryGovernor, span);
+            // Own the fresh key before storing: a later entry denial refunds exactly
+            // this dropped transient instead of live dict contents.
+            context.Services.State.CallTemporaries.TrackFreshString(attributeKey, span);
+            exception.CustomDict.SetItem(attributeKey, value);
+            // M05: the dict commits with no owning funnel and the fresh key commits
+            // beside it (dict slots cover storage, not key objects), so dropped
+            // custom attributes stranded both. Adopt-or-resnapshot the dict and own
+            // the fresh key; both reclaim on sweep while retained ones stay charged.
+            context.Services.State.CallTemporaries.TrackGrowth(exception.CustomDict, exception.CustomDict.CommittedStorageBytes, span);
             return true;
         }
 

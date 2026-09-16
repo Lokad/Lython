@@ -77,4 +77,50 @@ public sealed class ExceptionLifetimeScenarioTests
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
         Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
     }
+
+    [Fact]
+    public async Task ArgsReassignDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(100000):\n    e = ValueError(1)\n    e.args = (1, 2)\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task EmptyArgsReassignDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(100000):\n    e = ValueError(1)\n    e.args = ()\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task CustomAttrDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(100000):\n    e = ValueError(1)\n    e.custom = 2\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task CustomAttrBehaves()
+    {
+        var script = new LythonEngine().Compile(
+            "e = ValueError(1)\ne.custom = 2\nreturn [e.custom, str(e)]\n");
+        Assert.True(script.IsValid);
+        var expected = new List<object?> { new System.Numerics.BigInteger(2), "1" };
+        var sync = script.Run(new MockLythonHost(), Budgeted(ThreeMib));
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(sync.ReturnValue));
+        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(ThreeMib));
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
+    }
+    [Fact]
+    public async Task RetainedCustomAttrDenied()
+    {
+        var script = new LythonEngine().Compile(
+            "objs = []\ni = 0\nwhile i < 20000:\n    e = ValueError(1, 2)\n    e.extra = i\n    objs.append(e)\n    i = i + 1\nreturn len(objs)\n");
+        Assert.True(script.IsValid);
+        var options = Budgeted(OneMib);
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib);
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
+    }
 }
