@@ -75,7 +75,11 @@ internal sealed partial class LythonRuntime
 
             _builder.AppendString(_format[literalStart..]);
             EnsureAllArgumentsConsumed();
-            return _builder.ToPyStringAndRelease();
+            // The built string commits with no owning funnel on the operator path:
+            // adopt it here; drops reclaim on sweep while retained results stay charged.
+            var formatted = _builder.ToPyStringAndRelease();
+            _context.Services.State.CallTemporaries.TrackFreshString(formatted, _span);
+            return formatted;
         }
 
         private object NextArgument()
@@ -164,20 +168,22 @@ internal sealed partial class LythonRuntime
 
         private void AppendText(object value, PercentSpecifier specifier)
         {
-            var rendered = specifier.Conversion switch
+            // Rendered items are byte-copied below, so own them like other join
+            // items (drops reclaim on sweep); the precision slice re-owns its copy.
+            var rendered = PyRendering.OwnJoinItem(specifier.Conversion switch
             {
                 's' => ToInterpolatedPyString(value, _context),
                 'r' => ToReprPyString(value, _context),
                 'a' => PyString.FromString(
-                    EscapeNonAscii(ToReprPyString(value, _context).AsString()),
+                    EscapeNonAscii(PyRendering.OwnJoinItem(ToReprPyString(value, _context), _context).AsString()),
                     _context.MemoryGovernor,
                     _span),
                 _ => PyString.Empty
-            };
+            }, _context);
 
             if (specifier.Precision is { } precision && rendered.Length > precision)
             {
-                rendered = rendered.Slice(new PyIndexing.SliceBounds(0, precision, 1));
+                rendered = PyRendering.OwnJoinItem(rendered.Slice(new PyIndexing.SliceBounds(0, precision, 1)), _context);
             }
 
             AppendPadded(rendered, specifier.Width, specifier.LeftAdjust);
@@ -358,7 +364,7 @@ internal sealed partial class LythonRuntime
                 _builder.AppendRepeated((byte)' ', padding);
             }
 
-            _builder.Append(value);
+            _builder.Append(PyRendering.OwnJoinItem(value, _context));
             if (leftAdjust)
             {
                 _builder.AppendRepeated((byte)' ', padding);

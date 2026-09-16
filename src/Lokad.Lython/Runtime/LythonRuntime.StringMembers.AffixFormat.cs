@@ -91,12 +91,17 @@ internal sealed partial class LythonRuntime
                                 }
                             }
 
-                            return OwnMethodResult(PyStringOps.Format(
+                            // Own each rendered part (it dies inside the join) and the
+                            // governed result: CustomMethodCallable bypasses the call funnel
+                            // that OwnMethodResult assumes will adopt governed results.
+                            var formatted = OwnMethodResult(PyStringOps.Format(
                                 text,
                                 positional,
                                 keywords,
                                 (current, suffix) => ResolveFormatFieldSuffix(current, suffix, span, context),
-                                (value, conversion, spec) => FormatInterpolatedStringPart(value, conversion, spec, context, span)), text, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
+                                (value, conversion, spec) => PyRendering.OwnJoinItem(FormatInterpolatedStringPart(value, conversion, spec, context, span), context)), text, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
+                            context.Services.State.CallTemporaries.TrackFreshString(formatted, span);
+                            return formatted;
                         }
                         catch (InvalidOperationException ex)
                         {
@@ -127,7 +132,7 @@ internal sealed partial class LythonRuntime
                                 positional,
                                 keywords,
                                 (current, suffix) => ResolveFormatFieldSuffix(current, suffix, span, context),
-                                (value, conversion, spec) => FormatInterpolatedStringPart(value, conversion, spec, context, span),
+                                (value, conversion, spec) => PyRendering.OwnJoinItem(FormatInterpolatedStringPart(value, conversion, spec, context, span), context),
                                 forbidPositionalFields: true), text, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
                         }
                         catch (InvalidOperationException ex)
