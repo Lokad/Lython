@@ -39,4 +39,34 @@ public sealed class WrapperLifetimeScenarioTests
     public async Task DefaultdictDiscardCompletes()
         => await AssertCompletes(
             "from collections import defaultdict\nfor i in range(100000):\n    x = defaultdict(list)\nreturn 0\n", "0");
-}
+    [Fact]
+    public async Task FromKeysDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(100000):\n    x = dict.fromkeys(['a', 'b'], 0)\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task FromKeysNoDefaultDiscardCompletes()
+        => await AssertCompletes(
+            "for i in range(100000):\n    x = {}.fromkeys(['a'])\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task FromKeysBehaves()
+        => await AssertCompletes(
+            "return str(dict.fromkeys(['a', 'b'], 0))\n", "{'a': 0, 'b': 0}");
+
+    [Fact]
+    public async Task RetainedFromKeysDenied()
+    {
+        var script = new LythonEngine().Compile(
+            "objs = []\ni = 0\nwhile i < 20000:\n    objs.append(dict.fromkeys(['a', 'b'], 0))\n    i = i + 1\nreturn len(objs)\n");
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+        Assert.True(sync.PeakExecutionMemoryBytes <= 1048576);
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= 1048576);
+    }}

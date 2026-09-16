@@ -1449,6 +1449,9 @@ internal sealed partial class LythonRuntime
         }
 
         context.ObserveCollectionCount(result.Count, span);
+        // Dropped results reclaim through the pool (dict-ctor pattern: keys stay
+        // aliased, only the container adopts).
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
