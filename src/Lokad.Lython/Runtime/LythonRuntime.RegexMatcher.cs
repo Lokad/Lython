@@ -169,7 +169,9 @@ internal sealed partial class LythonRuntime
                 items[i] = part.ValueText is null ? PyNone.Instance : CreateString(part.ValueText, context, span);
             }
 
-            return new PyList(items, context.MemoryGovernor, span);
+            // Split items never pass a funnel (see OwnSplitListResult): adopt the fresh
+            // strings and the fresh list here; drops reclaim on sweep.
+            return OwnSplitListResult(new PyList(items, context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);
         }
 
         private static PyString SpliceRangeResult(RegexSubjectRange range, PyString segmentReplacement)

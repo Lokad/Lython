@@ -18,14 +18,14 @@ internal sealed partial class LythonRuntime
                     {
                         if (arguments.Length == 0)
                         {
-                            return PyStringOps.SplitWhitespace(text, context.MemoryGovernor, span);
+                            return OwnSplitListResult(PyStringOps.SplitWhitespace(text, context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);
                         }
 
                         int maxSplit;
                         if (arguments[0] is PyNone)
                         {
                             maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.split([sep[, maxsplit]])", span, context) : -1;
-                            return PyStringOps.SplitWhitespace(text, maxSplit, context.MemoryGovernor, span);
+                            return OwnSplitListResult(PyStringOps.SplitWhitespace(text, maxSplit, context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);
                         }
 
                         if (arguments.Length > 2)
@@ -41,7 +41,7 @@ internal sealed partial class LythonRuntime
                         maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.split([sep[, maxsplit]])", span, context) : -1;
                         try
                         {
-                            return PyStringOps.Split(text, separator, maxSplit, context.MemoryGovernor, span);
+                            return OwnSplitListResult(PyStringOps.Split(text, separator, maxSplit, context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);
                         }
                         catch (InvalidOperationException ex)
                         {
@@ -52,14 +52,14 @@ internal sealed partial class LythonRuntime
                     {
                         if (arguments.Length == 0)
                         {
-                            return PyStringOps.RSplitWhitespace(text, -1, context.MemoryGovernor, span);
+                            return OwnSplitListResult(PyStringOps.RSplitWhitespace(text, -1, context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);
                         }
 
                         int maxSplit;
                         if (arguments[0] is PyNone)
                         {
                             maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.rsplit([sep[, maxsplit]])", span, context) : -1;
-                            return PyStringOps.RSplitWhitespace(text, maxSplit, context.MemoryGovernor, span);
+                            return OwnSplitListResult(PyStringOps.RSplitWhitespace(text, maxSplit, context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);
                         }
 
                         if (arguments.Length > 2)
@@ -75,7 +75,7 @@ internal sealed partial class LythonRuntime
                         maxSplit = arguments.Length == 2 ? ParseStringOptionalInt(arguments[1], "maxsplit", "str.rsplit([sep[, maxsplit]])", span, context) : -1;
                         try
                         {
-                            return PyStringOps.RSplit(text, separator, maxSplit, context.MemoryGovernor, span);
+                            return OwnSplitListResult(PyStringOps.RSplit(text, separator, maxSplit, context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);
                         }
                         catch (InvalidOperationException ex)
                         {
@@ -90,7 +90,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         var keepEnds = arguments.Length == 1 && IsTruthy(arguments[0]);
-                        return PyStringOps.SplitLines(text, keepEnds, context.MemoryGovernor, span);
+                        return OwnSplitListResult(PyStringOps.SplitLines(text, keepEnds, context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);
                     }, LythonCallableSignature.Create("str.splitlines", ["keepends"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 0)),
                     "expandtabs" => BoundCallable.Create((arguments, span, context) =>
                     {

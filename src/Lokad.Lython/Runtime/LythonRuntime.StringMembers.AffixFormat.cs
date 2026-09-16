@@ -165,7 +165,7 @@ internal sealed partial class LythonRuntime
 
                         try
                         {
-                            return operation(text, separator, context.MemoryGovernor, span);
+                            return OwnSplitTupleResult(operation(text, separator, context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);
                         }
                         catch (InvalidOperationException ex)
                         {

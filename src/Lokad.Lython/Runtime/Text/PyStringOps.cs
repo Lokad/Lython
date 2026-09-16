@@ -489,12 +489,14 @@ internal static partial class PyStringOps
         }
 
         var index = PyString.IndexOfBytes(value.Utf8Bytes.Span, separator.Utf8Bytes.Span);
+        // Slice items through the call governor like split does: the value-owned
+        // helper below would leave literal-receiver partitions ungoverned.
         return index < 0
             ? CreateTuple([value, PyString.Empty, PyString.Empty], governor, span)
             : CreateTuple([
-                SliceByByteRange(value, 0, index),
+                SliceUtf8(value, 0, index, governor, span),
                 separator,
-                SliceByByteRange(value, index + separator.Utf8Bytes.Length, value.Utf8Bytes.Length)
+                SliceUtf8(value, index + separator.Utf8Bytes.Length, value.Utf8Bytes.Length, governor, span)
             ], governor, span);
     }
 
@@ -515,9 +517,9 @@ internal static partial class PyStringOps
         return index < 0
             ? CreateTuple([PyString.Empty, PyString.Empty, value], governor, span)
             : CreateTuple([
-                SliceByByteRange(value, 0, index),
+                SliceUtf8(value, 0, index, governor, span),
                 separator,
-                SliceByByteRange(value, index + separator.Utf8Bytes.Length, value.Utf8Bytes.Length)
+                SliceUtf8(value, index + separator.Utf8Bytes.Length, value.Utf8Bytes.Length, governor, span)
             ], governor, span);
     }
 

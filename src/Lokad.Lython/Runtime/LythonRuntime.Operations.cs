@@ -696,6 +696,56 @@ internal sealed partial class LythonRuntime
         return owned;
     }
 
+    // Split-family members build fresh item strings beside their container: the
+    // call funnel owns the container snapshot at most, while the items never
+    // pass a funnel, so dropped results stranded every item. Adopt every governed
+    // string item first (shared items dedup; ungoverned stay free), then the fresh
+    // container with refund; drops reclaim on sweep while retained results stay
+    // charged. Items-first ordering keeps denial atomic: an item denial strands
+    // only its own bytes, and a container denial refunds with every item already
+    // owned. A null pool is only valid beside a null governor like above.
+    internal static PyList OwnSplitListResult(PyList result, LythonSourceSpan? span, ChargeReclamationPool? pool)
+    {
+        if (pool is not null)
+        {
+            foreach (var item in result)
+            {
+                if (item is PyString text)
+                {
+                    pool.TrackString(text, span);
+                }
+            }
+
+            if (result.OwnerMemoryGovernor is not null)
+            {
+                pool.TrackFreshMutable(result, result.CommittedStorageBytes, span);
+            }
+        }
+
+        return result;
+    }
+
+    internal static PyTuple OwnSplitTupleResult(PyTuple result, LythonSourceSpan? span, ChargeReclamationPool? pool)
+    {
+        if (pool is not null)
+        {
+            for (var i = 0; i < result.Count; i++)
+            {
+                if (result[i] is PyString text)
+                {
+                    pool.TrackString(text, span);
+                }
+            }
+
+            if (result.OwnerMemoryGovernor is not null)
+            {
+                pool.TrackFreshMutable(result, result.CommittedStorageBytes, span);
+            }
+        }
+
+        return result;
+    }
+
     // Path values wrap a governed string payload; the wrapper itself retains a
     // small object header beside that payload, so own both together.
     internal static PyPath OwnPathResult(PyString raw, PyString receiver, MemoryGovernor? governor, LythonSourceSpan? span, ChargeReclamationPool? pool)
