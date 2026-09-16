@@ -88,8 +88,11 @@ internal sealed partial class LythonRuntime
                 throw classFlow.Return;
             }
 
-            var type = CreateLoweredClassType(classDefinition, resolvedBases, classContext, context);
-            InvokeInitSubclass(type, classKeywordArguments, classDefinition.Span, context);
+            var type = CreateLoweredClassType(classDefinition, resolvedBases, baseTypes, classContext, context);
+            if (type is PyType defined)
+            {
+                InvokeInitSubclass(defined, classKeywordArguments, classDefinition.Span, context);
+            }
             StoreName(classDefinition.Syntax.Name, ApplyDecorators(type, classDefinition.Decorators, classDefinition.Span, context), context, classDefinition.Span);
         }
         finally

@@ -324,7 +324,7 @@ internal static partial class PyDataclass
             _ => false
         };
 
-    private static DataclassFieldKind ClassifyFieldKind(ExpressionSyntax annotation)
+    internal static DataclassFieldKind ClassifyFieldKind(ExpressionSyntax annotation)
     {
         if (IsInitVarAnnotation(annotation))
         {
@@ -339,7 +339,7 @@ internal static partial class PyDataclass
         return DataclassFieldKind.Normal;
     }
 
-    private static DataclassFieldKind ClassifyFieldKind(object annotation)
+    internal static DataclassFieldKind ClassifyFieldKind(object annotation)
         => annotation switch
         {
             PyDataclassInitVarMarker => DataclassFieldKind.InitVar,

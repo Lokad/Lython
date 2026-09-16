@@ -415,12 +415,128 @@ internal sealed partial class LythonRuntime
         return function;
     }
 
-    private static PyType CreateLoweredClassType(
+    // Class-based typing.NamedTuple builds the same pooled namedtuple type the
+    // functional form returns. Fields are annotated names in definition order
+    // (ClassVar names are excluded like dataclasses); values on annotated names
+    // are rightmost defaults like CPython, and member values stay aliased like
+    // plain class attributes. Anything else in the body (methods, plain
+    // attributes) is explicitly unsupported. The type adopts through the shared
+    // namedtuple choke while dropped definitions reclaim on sweep.
+    private static object CreateNamedTupleClassType(
         LoweredClassDefinitionStatement classDefinition,
-        IReadOnlyList<PyType> resolvedBases,
         ExecutionContext classContext,
         ExecutionContext definingContext)
     {
+        var members = classContext.Variables;
+        var fields = new List<string>();
+        var defaults = new List<object>();
+        var classVars = new HashSet<string>(StringComparer.Ordinal);
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var defaulted = false;
+        foreach (var statement in classDefinition.Syntax.Body.OfType<AnnotatedAssignmentStatementSyntax>())
+        {
+            if (statement.Target is not NameAssignmentTargetSyntax name)
+            {
+                continue;
+            }
+
+            if (PyDataclass.ClassifyFieldKind(statement.Annotation) == DataclassFieldKind.ClassVar)
+            {
+                classVars.Add(name.Name);
+                continue;
+            }
+
+            if (!seen.Add(name.Name))
+            {
+                continue;
+            }
+
+            fields.Add(name.Name);
+            if (statement.Expression is not null &&
+                members.TryGetValue(name.Name, out var defaultValue))
+            {
+                defaults.Add(defaultValue);
+                defaulted = true;
+            }
+            else if (defaulted)
+            {
+                throw new LythonRuntimeException("TypeError", $"non-default argument '{name.Name}' follows default argument.", classDefinition.Span);
+            }
+        }
+
+        var allowed = new HashSet<string>(fields, StringComparer.Ordinal);
+        foreach (var classVar in classVars)
+        {
+            allowed.Add(classVar);
+        }
+
+        allowed.Add("__doc__");
+        allowed.Add("__module__");
+        foreach (var member in members.Keys)
+        {
+            if (!allowed.Contains(member))
+            {
+                throw new LythonRuntimeException("TypeError", $"typing.NamedTuple class body member '{member}' is unsupported in Lython (only annotated fields with optional defaults are supported).", classDefinition.Span);
+            }
+        }
+
+        object? moduleName = null;
+        if (members.TryGetValue("__module__", out var moduleValue) && moduleValue is not PyNone)
+        {
+            if (!PyStringOps.TryAsString(moduleValue, out var moduleText))
+            {
+                throw new LythonRuntimeException("TypeError", "typing.NamedTuple __module__ must be a string.", classDefinition.Span);
+            }
+
+            moduleName = moduleText;
+        }
+        else if (PyFunctionBase.TryGetModuleName(definingContext, out var callerModule))
+        {
+            moduleName = callerModule;
+        }
+        else
+        {
+            moduleName = PyNone.Instance;
+        }
+
+        var created = new PyNamedTupleType(
+            classDefinition.Syntax.Name,
+            fields,
+            defaults,
+            definingContext.MemoryGovernor,
+            classDefinition.Span);
+        created.ModuleName = moduleName;
+        return PyNamedTupleType.TrackFreshNamedTupleType(created, classDefinition.Span, definingContext);
+    }
+    private static object CreateLoweredClassType(
+        LoweredClassDefinitionStatement classDefinition,
+        IReadOnlyList<PyType> resolvedBases,
+        object[] baseTypes,
+        ExecutionContext classContext,
+        ExecutionContext definingContext)
+    {
+        // A bare typing.NamedTuple base builds the pooled namedtuple type the
+        // functional form returns instead of a plain class; anything beside the
+        // lone alias base is explicitly unsupported.
+        var namedTupleBase = false;
+        foreach (var baseValue in baseTypes)
+        {
+            if (baseValue is PyTypingAlias { ShortName: "NamedTuple", IsSubscripted: false })
+            {
+                namedTupleBase = true;
+            }
+        }
+
+        if (namedTupleBase)
+        {
+            if (baseTypes.Length != 1)
+            {
+                throw new LythonRuntimeException("TypeError", "typing.NamedTuple class bases support only a lone NamedTuple base in Lython.", classDefinition.Span);
+            }
+
+            return CreateNamedTupleClassType(classDefinition, classContext, definingContext);
+        }
+
         // Class docstrings follow the function rule; an explicit __doc__ assignment
         // in the body wins since it already ran. The entry rides the member charge.
         if (PyFunctionBase.LeadingDocstring(classDefinition.Body) is { } docText &&

@@ -95,4 +95,60 @@ public sealed class NamedTupleLifetimeScenarioTests
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
         Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
     }
+
+    [Fact]
+    public async Task ClassNamedTupleModuleLoopDiscardCompletes()
+        => await AssertCompletes(
+            "import typing\nfor i in range(20000):\n    class P(typing.NamedTuple):\n        x: int\n        y: str = 'd'\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task ClassNamedTupleNestedDiscardCompletes()
+        => await AssertCompletes(
+            "import typing\ndef make():\n    class Q(typing.NamedTuple):\n        a: int\n    return Q(1)\nfor i in range(20000):\n    x = make()\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task RetainedClassNamedTupleDenied()
+    {
+        var script = new LythonEngine().Compile(
+            "import typing\nobjs = []\ni = 0\nwhile i < 2000:\n    class P(typing.NamedTuple):\n        x: int\n        y: str\n    objs.append(P(1, 'a'))\n    i = i + 1\nreturn len(objs)\n");
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = OneMib };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib);
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
+    }
+
+    private static async Task AssertFails(string source, string exceptionType, string messagePart)
+    {
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
+        var sync = script.Run(new MockLythonHost(), Budgeted());
+        Assert.False(sync.Success);
+        Assert.Equal(exceptionType, sync.Failure?.ExceptionType);
+        Assert.Contains(messagePart, sync.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
+        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted());
+        Assert.False(asyncResult.Success);
+        Assert.Equal(exceptionType, asyncResult.Failure?.ExceptionType);
+        Assert.Contains(messagePart, asyncResult.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ClassNamedTupleBadDefaultOrderFails()
+        => await AssertFails(
+            "import typing\nclass P(typing.NamedTuple):\n    x: int = 1\n    y: str\n", "TypeError", "non-default");
+
+    [Fact]
+    public async Task ClassNamedTupleMethodMemberFails()
+        => await AssertFails(
+            "import typing\nclass P(typing.NamedTuple):\n    x: int\n    def double(self):\n        return self.x * 2\n", "TypeError", "unsupported");
+
+    [Fact]
+    public async Task ClassNamedTupleMultiBaseFails()
+        => await AssertFails(
+            "import typing\nclass P(typing.NamedTuple, object):\n    x: int\n", "TypeError", "lone NamedTuple base");
 }

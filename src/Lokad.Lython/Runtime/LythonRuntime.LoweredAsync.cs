@@ -87,8 +87,11 @@ internal sealed partial class LythonRuntime
                 throw classFlow.Return;
             }
 
-            var type = CreateLoweredClassType(classDefinition, resolvedBases, classContext, context);
-            await InvokeInitSubclassAsync(type, classKeywordArguments, classDefinition.Span, context).ConfigureAwait(false);
+            var type = CreateLoweredClassType(classDefinition, resolvedBases, baseTypes, classContext, context);
+            if (type is PyType defined)
+            {
+                await InvokeInitSubclassAsync(defined, classKeywordArguments, classDefinition.Span, context).ConfigureAwait(false);
+            }
             StoreName(
                 classDefinition.Syntax.Name,
                 await ApplyDecoratorsAsync(type, classDefinition.Decorators, classDefinition.Span, context).ConfigureAwait(false),

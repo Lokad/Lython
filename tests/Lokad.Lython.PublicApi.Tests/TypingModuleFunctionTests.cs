@@ -135,5 +135,41 @@ args = get_args(Dict[str, int])
 
         Assert.Empty(compiled.Diagnostics);
     }
+    [Fact]
+    public void TypingModule_ClassBasedNamedTupleMatchesFunctionalForm()
+    {
+        var host = new MockLythonHost();
+
+        var result = new LythonEngine().Run(
+            """
+import typing
+
+class Point(typing.NamedTuple):
+    x: int
+    y: str = "dflt"
+
+class Tagged(typing.NamedTuple):
+    x: int
+    label: typing.ClassVar[str] = "tag"
+
+point = Point(1)
+made = Point._make([2, "z"])
+tagged = Tagged(3)
+parts = []
+parts.append(str(point))
+parts.append(str(point.y))
+parts.append(str(made))
+parts.append(str(Point._fields))
+parts.append(str(tagged))
+parts.append(str(Tagged._fields))
+__lython_file = open("/out.txt", "w")
+__lython_file.write("|".join(parts))
+__lython_file.close()
+""",
+            host);
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("Point(x=1, y='dflt')|dflt|Point(x=2, y='z')|('x', 'y')|Tagged(x=3)|('x',)", host.ReadText("/out.txt"));
+    }
 }
 
