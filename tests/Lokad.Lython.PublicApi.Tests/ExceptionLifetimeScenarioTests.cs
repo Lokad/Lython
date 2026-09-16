@@ -42,6 +42,16 @@ public sealed class ExceptionLifetimeScenarioTests
             "for i in range(100000):\n    x = KeyError(\"k\")\nreturn 0\n", "0");
 
     [Fact]
+    public async Task SharedArgConstructDiscardCompletes()
+        => await AssertCompletes(
+            "shared_str = \"shared message\"\nfor i in range(100000):\n    e = ValueError(shared_str)\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task SharedMultiArgConstructDiscardCompletes()
+        => await AssertCompletes(
+            "shared_str = \"shared message\"\nfor i in range(100000):\n    e = ValueError(shared_str, shared_str)\nreturn 0\n", "0");
+
+    [Fact]
     public async Task CaughtRaiseDiscardCompletes()
         => await AssertCompletes(
             "def f():\n    raise ValueError(1)\nfor i in range(100000):\n    try:\n        f()\n    except ValueError:\n        pass\nreturn 0\n", "0");
