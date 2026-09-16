@@ -544,7 +544,10 @@ internal sealed partial class LythonRuntime
         {
             if (argument.IsKeyword)
             {
-                target.SetItem(PyString.FromString(argument.KeywordName, context.MemoryGovernor, span), argument.Value);
+                // Fresh names reclaim through the pool once the dict drops (dict-ctor kwargs-key pattern).
+                var keyword = PyString.FromString(argument.KeywordName, context.MemoryGovernor, span);
+                context.Services.State.CallTemporaries.TrackFreshString(keyword);
+                target.SetItem(keyword, argument.Value);
             }
         }
 
