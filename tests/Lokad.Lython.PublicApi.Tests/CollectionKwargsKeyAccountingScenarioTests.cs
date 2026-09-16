@@ -6,13 +6,15 @@ namespace Lokad.Lython.PublicApi.Tests;
 /// <summary>
 /// MG11: kwargs-derived keys in fresh collections own their string payload
 /// beside the already-governed backing. Twenty thousand retained counters
-/// must exceed a 6MB budget and twenty thousand retained keyword dicts an
-/// 8MB budget in both modes; pre-fix the keys ride invisible.
+/// must exceed a 6MB budget and twenty thousand retained keyword dicts a
+/// 5MB budget in both modes; pre-fix the keys ride invisible.
 /// </summary>
 public sealed class CollectionKwargsKeyAccountingScenarioTests
 {
     private const long CounterBudgetBytes = 6291456;
-    private const long KeywordsBudgetBytes = 8388608;
+    // 20k retained keywords dicts own ~300B each, so they trip 5MB now that dropped
+    // partial shells reclaim instead of stranding ~128B each on top.
+    private const long KeywordsBudgetBytes = 5242880;
 
     [Fact]
     public async Task ManyRetainedCounterKeysStayCharged()
