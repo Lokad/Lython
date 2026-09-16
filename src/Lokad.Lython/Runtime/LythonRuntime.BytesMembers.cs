@@ -1661,11 +1661,18 @@ internal sealed partial class LythonRuntime
             var missed = isFirst
                 ? new object[] { value, CreateBytes([], context, span), CreateBytes([], context, span) }
                 : new object[] { CreateBytes([], context, span), CreateBytes([], context, span), value };
-            return governor is null ? new PyTuple(missed) : new PyTuple(missed, governor, span);
+            // M05: the partition tuple is a fresh container beside self-tracked items and live aliases, and
+            // this raw callable bypasses every funnel, so own the container here with refund while leaving
+            // item ownership untouched (fresh items self-track, receiver and separator stay aliased).
+            var missedTuple = governor is null ? new PyTuple(missed) : new PyTuple(missed, governor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(missedTuple, missedTuple.CommittedStorageBytes, span);
+            return missedTuple;
         }
 
         var parts = new object[] { SliceBytesRange(source, 0, match, context, span), separatorBytes, SliceBytesRange(source, match + needle.Length, source.Length, context, span) };
-        return governor is null ? new PyTuple(parts) : new PyTuple(parts, governor, span);
+        var tuple = governor is null ? new PyTuple(parts) : new PyTuple(parts, governor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(tuple, tuple.CommittedStorageBytes, span);
+        return tuple;
     }
     private static object JoinBytes(PyBytes separator, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
