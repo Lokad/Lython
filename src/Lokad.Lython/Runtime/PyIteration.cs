@@ -68,6 +68,52 @@ internal static class PyIteration
         return result;
     }
 
+    /// <summary>Materializes an arbitrary iterable in synchronous execution, resolving user-defined <c>__iter__</c>.</summary>
+    public static List<object> Materialize(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => Drain(ToSequence(value, span, context), span, context);
+
+    /// <summary>
+    /// Shared synchronous drain behind every eager materializer: growth is charged
+    /// before the backing array can allocate (lists double from an initial
+    /// four, matching the storage capacity prediction), so an unbounded input
+    /// meets the memory budget instead of over-allocating first. The temporary
+    /// reservation also covers the caller-owned final copy and is released
+    /// before ownership transfers.
+    /// </summary>
+    internal static List<object> Drain(
+        IEnumerable<object> items,
+        LythonSourceSpan span,
+        LythonRuntime.ExecutionContext context)
+    {
+        using var reservation = context.MemoryGovernor.ReserveTemporary(0, span);
+        var result = new List<object>();
+        var chargedCapacity = 0;
+        foreach (var item in items)
+        {
+            if (result.Count == result.Capacity)
+            {
+                var predicted = result.Capacity == 0 ? 4L : (long)result.Capacity * 2L;
+                reservation.Grow(checked(16L * (predicted - chargedCapacity)), span);
+            }
+
+            result.Add(item);
+            if (result.Capacity > chargedCapacity)
+            {
+                reservation.Grow(16L * (result.Capacity - chargedCapacity), span);
+                chargedCapacity = result.Capacity;
+            }
+
+            context.ObserveCollectionCount(result.Count, span);
+            if ((result.Count & 63) == 0)
+            {
+                context.CheckExecutionBudget(span);
+            }
+        }
+
+        reservation.Grow(16L * result.Count, span);
+        return result;
+    }
+
     private static async IAsyncEnumerable<object> EnumerateUserIteratorAsync(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         // R08: both __iter__ resolution and __next__ advancement await real

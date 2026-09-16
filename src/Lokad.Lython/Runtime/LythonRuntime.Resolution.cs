@@ -261,6 +261,9 @@ internal sealed partial class LythonRuntime
     internal static IAsyncEnumerable<object> ToSequenceAsync(object value, LythonSourceSpan span, ExecutionContext context)
         => PyIteration.ToSequenceAsync(value, span, context);
 
+    internal static List<object> Materialize(object value, LythonSourceSpan span, ExecutionContext context)
+        => PyIteration.Materialize(value, span, context);
+
     internal static bool AreEqual(object left, object right) => PyEquality.AreEqual(left, right);
 
     private static int Compare(object left, object right, LythonSourceSpan span) => PyComparison.Compare(left, right, span);

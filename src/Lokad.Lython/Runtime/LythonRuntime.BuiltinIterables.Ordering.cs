@@ -30,8 +30,7 @@ internal sealed partial class LythonRuntime
         // Materialize before resolving the key so one-time iterable effects precede
         // the key error, matching CPython. R13: an invalid key only fails when it
         // would actually be called, so empty input with a bad key succeeds.
-        var materialized = new PyList(ToSequence(arguments[0], span, context), context.MemoryGovernor, span);
-        context.ObserveCollectionCount(materialized.Count, span);
+        var materialized = Materialize(arguments[0], span, context);
 
         var keyArgument = arguments.Length >= 2 ? arguments[1] : null;
 
