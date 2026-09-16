@@ -82,7 +82,7 @@ var exitCode = 0;
 for (var index = 0; index < snippets.Length; index++)
 {
     var source = snippets[index];
-    var lython = RunLython(engine, host, source);
+    var lython = await RunLythonAsync(engine, host, source, parsed);
     ProbeResult? python = null;
 
     if (parsed.ComparePython)
@@ -111,11 +111,11 @@ for (var index = 0; index < snippets.Length; index++)
 
     if (parsed.JsonOutput || parsed.BatchJson)
     {
-        Console.WriteLine(JsonSerializer.Serialize(new ProbeReport(index, lython, python, matches, note)));
+        Console.WriteLine(JsonSerializer.Serialize(new ProbeReport(index, lython, python, matches, note, python is not null, new ProbeRunOptions(parsed.MaxMemoryBytes, parsed.RunAsync))));
     }
     else
     {
-        PrintHumanReport(lython, python, matches, note);
+        PrintHumanReport(lython, python, matches, note, parsed);
     }
 }
 
@@ -129,13 +129,15 @@ static ParsedArguments ParseArguments(string[] arguments)
     var jsonOutput = false;
     var comparePython = false;
     var pythonCommand = "python";
+    long? maxMemoryBytes = null;
+    var runAsync = false;
 
     for (var i = 0; i < arguments.Length; i++)
     {
         switch (arguments[i])
         {
             case "-h" or "--help":
-                return new ParsedArguments(true, null, null, false, false, false, pythonCommand, null);
+                return new ParsedArguments(true, null, null, false, false, false, pythonCommand, null, false, null);
             case "-c" or "--code":
                 if (++i >= arguments.Length)
                 {
@@ -160,6 +162,22 @@ static ParsedArguments ParseArguments(string[] arguments)
                 }
 
                 pythonCommand = arguments[i];
+                break;
+            case "--max-memory-bytes":
+                if (++i >= arguments.Length)
+                {
+                    return ParsedArguments.Failure("Missing byte count after --max-memory-bytes.");
+                }
+
+                if (!long.TryParse(arguments[i], out var parsedBudget) || parsedBudget <= 0)
+                {
+                    return ParsedArguments.Failure("Invalid byte count after --max-memory-bytes: expected a positive integer.");
+                }
+
+                maxMemoryBytes = parsedBudget;
+                break;
+            case "--async":
+                runAsync = true;
                 break;
             default:
                 if (arguments[i].StartsWith("-", StringComparison.Ordinal))
@@ -188,7 +206,7 @@ static ParsedArguments ParseArguments(string[] arguments)
         return ParsedArguments.Failure("--batch-json reads its JSON array from stdin and cannot be combined with -c or a source file.");
     }
 
-    return new ParsedArguments(false, code, file, batchJson, jsonOutput, comparePython, pythonCommand, null);
+    return new ParsedArguments(false, code, file, batchJson, jsonOutput, comparePython, pythonCommand, maxMemoryBytes, runAsync, null);
 }
 
 static string[] ReadSnippets(ParsedArguments arguments)
@@ -213,12 +231,23 @@ static string[] ReadSnippets(ParsedArguments arguments)
         ?? throw new JsonException("Expected a JSON array of Python source strings.");
 }
 
-static ProbeResult RunLython(LythonEngine engine, ILythonHost host, string source)
+static string TypesetSpan(LythonSourceSpan span) =>
+    "line " + span.Line + ", column " + span.Column;
+
+static string TypesetFrame(LythonStackFrame frame) =>
+    frame.Span is null ? frame.FunctionName : frame.FunctionName + " (line " + frame.Span.Line + ")";
+
+static async Task<ProbeResult> RunLythonAsync(LythonEngine engine, ILythonHost host, string source, ParsedArguments parsed)
 {
+    var options = parsed.MaxMemoryBytes is long budget
+        ? new LythonRunOptions { MaxExecutionMemoryBytes = budget }
+        : new LythonRunOptions();
     LythonExecutionResult result;
     try
     {
-        result = engine.Run(source, host, new LythonRunOptions());
+        result = parsed.RunAsync
+            ? await engine.RunAsync(source, host, options)
+            : engine.Run(source, host, options);
     }
     catch (Exception exception)
     {
@@ -228,9 +257,14 @@ static ProbeResult RunLython(LythonEngine engine, ILythonHost host, string sourc
             StandardError: string.Empty,
             ExitCode: null,
             Diagnostics: [],
+            PeakExecutionMemoryBytes: null,
+            PeakProjectionMemoryBytes: null,
+            DeniedReservationBytes: null,
             Failure: new ProbeFailure(
                 $"CLR:{exception.GetType().FullName}",
-                exception.Message));
+                exception.Message,
+                null,
+                null));
     }
 
     return new ProbeResult(
@@ -239,9 +273,16 @@ static ProbeResult RunLython(LythonEngine engine, ILythonHost host, string sourc
         result.StandardError,
         result.ExitCode,
         result.Diagnostics.Select(d => new ProbeDiagnostic(d.Code, d.Message)).ToArray(),
+        result.PeakExecutionMemoryBytes,
+        result.PeakProjectionMemoryBytes,
+        result.DeniedReservationBytes,
         result.Failure is null
             ? null
-            : new ProbeFailure(result.Failure.ExceptionType, result.Failure.Message));
+            : new ProbeFailure(
+                result.Failure.ExceptionType,
+                result.Failure.Message,
+                result.Failure.Span is null ? null : TypesetSpan(result.Failure.Span),
+                result.Failure.StackTrace.Select(TypesetFrame).ToArray()));
 }
 
 static ProbeResult RunPython(string pythonCommand, string source)
@@ -338,9 +379,13 @@ static bool Equivalent(ProbeResult left, ProbeResult right) =>
     left.Failure?.ExceptionType == right.Failure?.ExceptionType &&
     left.Failure?.Message == right.Failure?.Message;
 
-static void PrintHumanReport(ProbeResult lython, ProbeResult? python, bool matches, string? note)
+static void PrintHumanReport(ProbeResult lython, ProbeResult? python, bool matches, string? note, ParsedArguments parsed)
 {
     PrintResult("Lython", lython);
+    if (parsed.RunAsync)
+    {
+        Console.WriteLine("mode: async");
+    }
     if (python is not null)
     {
         PrintResult("CPython", python);
@@ -349,6 +394,10 @@ static void PrintHumanReport(ProbeResult lython, ProbeResult? python, bool match
         {
             Console.WriteLine(note);
         }
+    }
+    else
+    {
+        Console.WriteLine("Parity: not compared");
     }
 }
 
@@ -384,6 +433,29 @@ static void PrintResult(string name, ProbeResult result)
     if (result.Failure is not null)
     {
         Console.WriteLine($"failure: {result.Failure.ExceptionType}: {result.Failure.Message}");
+        if (result.Failure.Span is not null)
+        {
+            Console.WriteLine($"at {result.Failure.Span}");
+        }
+        if (result.Failure.Frames is not null)
+        {
+            foreach (var frame in result.Failure.Frames)
+            {
+                Console.WriteLine($"  at {frame}");
+            }
+        }
+    }
+    if (result.PeakExecutionMemoryBytes is not null)
+    {
+        Console.WriteLine($"peak execution memory: {result.PeakExecutionMemoryBytes} bytes");
+    }
+    if (result.PeakProjectionMemoryBytes is not null)
+    {
+        Console.WriteLine($"peak projection memory: {result.PeakProjectionMemoryBytes} bytes");
+    }
+    if (result.DeniedReservationBytes is not null && result.DeniedReservationBytes != 0)
+    {
+        Console.WriteLine($"denied reservation: {result.DeniedReservationBytes} bytes");
     }
 
     if (result.ExitCode is not null)
@@ -398,10 +470,10 @@ static void PrintHelp()
 LythonProbe runs small, independent Python snippets through Lython's public API.
 
 Usage:
-  LythonProbe -c <source> [--json] [--compare-python]
-  LythonProbe <script.py> [--json] [--compare-python]
-  <source> | LythonProbe [--json] [--compare-python]
-  <json-array> | LythonProbe --batch-json [--compare-python]
+  LythonProbe -c <source> [--json] [--compare-python] [--max-memory-bytes N] [--async]
+  LythonProbe <script.py> [--json] [--compare-python] [--max-memory-bytes N] [--async]
+  <source> | LythonProbe [--json] [--compare-python] [--max-memory-bytes N] [--async]
+  <json-array> | LythonProbe --batch-json [--compare-python] [--max-memory-bytes N] [--async]
 
 Options:
   -c, --code <source>   Run source supplied on the command line.
@@ -409,7 +481,14 @@ Options:
   --json                Emit a structured JSON result for a single probe.
   --compare-python      Also run each snippet under isolated local CPython.
   --python <executable> Override the CPython command used for comparison.
+  --max-memory-bytes N  Cap accounted execution memory (bytes, positive integer).
+  --async               Run snippets through the asynchronous execution path.
   -h, --help            Show this help.
+
+Exit codes:
+  0  Every snippet succeeded (and matched CPython when compared).
+  1  A snippet failed, mismatched, or exceeded its budget.
+  2  Usage, input, batch, or tool error (including an invalid budget).
 
 The deterministic probe host supplies fixed clocks but no filesystem, standard
 streams, subprocess, or local-import capabilities. Use the xUnit harness for
@@ -426,13 +505,15 @@ sealed record ParsedArguments(
     bool JsonOutput,
     bool ComparePython,
     string PythonCommand,
+    long? MaxMemoryBytes,
+    bool RunAsync,
     string? Error)
 {
     public static ParsedArguments Failure(string error) =>
-        new(false, null, null, false, false, false, "python", error);
+        new(false, null, null, false, false, false, "python", null, false, error);
 }
 
-sealed record ProbeReport(int Index, ProbeResult Lython, ProbeResult? CPython, bool Matches, string? Note);
+sealed record ProbeReport(int Index, ProbeResult Lython, ProbeResult? CPython, bool Matches, string? Note, bool Compared, ProbeRunOptions Options);
 
 sealed record ProbeResult(
     bool Success,
@@ -440,11 +521,16 @@ sealed record ProbeResult(
     string StandardError,
     int? ExitCode,
     ProbeDiagnostic[] Diagnostics,
+    long? PeakExecutionMemoryBytes,
+    long? PeakProjectionMemoryBytes,
+    long? DeniedReservationBytes,
     ProbeFailure? Failure);
+
+sealed record ProbeRunOptions(long? MaxMemoryBytes, bool Async);
 
 sealed record ProbeDiagnostic(string Code, string Message);
 
-sealed record ProbeFailure(string ExceptionType, string Message);
+sealed record ProbeFailure(string ExceptionType, string Message, string? Span, string[]? Frames);
 
 sealed class PureProbeHost : ILythonHost
 {

@@ -29,6 +29,15 @@ ConvertTo-Json -InputObject $snippets -Compress |
   ./tools/LythonProbe/lythonprobe.ps1 --batch-json --compare-python
 ```
 
+Select the execution path and cap accounted memory per probe (JSON reports carry the effective options, accounted peaks, denied bytes, and failure spans/frames):
+
+```powershell
+./tools/LythonProbe/lythonprobe.ps1 -c 'x = [0]*2000000' --max-memory-bytes 100000 --json
+./tools/LythonProbe/lythonprobe.ps1 -c 'print(40 + 2)' --async
+```
+
+Exit codes: `0` when every snippet succeeds (and matches CPython when compared), `1` when a snippet fails, mismatches, or exceeds its budget, and `2` for usage, input, batch, or tool errors.
+
 The probe host is deterministic and intentionally supplies no file, directory,
 standard-stream, subprocess, or local-import capabilities. Use the xUnit test
 harness for host-mediated scenarios. Normal Lython execution limits remain in
