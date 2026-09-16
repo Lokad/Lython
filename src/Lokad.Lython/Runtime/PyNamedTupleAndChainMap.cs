@@ -576,7 +576,7 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
     public PyString RenderPython(PyRenderingContext context)
     {
         var parts = _type.FieldNames
-            .Select((fieldName, index) => $"{fieldName}={PyRendering.ToPythonString(_values[index], context)}");
+            .Select((fieldName, index) => $"{fieldName}={PyRendering.ToReprPyString(_values[index], context).AsString()}");
         return PyString.FromString($"{_type.Name}({string.Join(", ", parts)})");
     }
 

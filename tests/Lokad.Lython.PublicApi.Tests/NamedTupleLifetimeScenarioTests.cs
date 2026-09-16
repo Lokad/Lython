@@ -75,6 +75,11 @@ public sealed class NamedTupleLifetimeScenarioTests
             "from collections import namedtuple\nP = namedtuple('P', ['x', 'y'])\np = P(1, 2)\nreturn str(P._make([3, 4])) + str(p._replace(x=5)) + str(p._asdict())\n", "P(x=3, y=4)P(x=5, y=2){'x': 1, 'y': 2}");
 
     [Fact]
+    public async Task NamedTupleStrReprBehaves()
+        => await AssertCompletes(
+            "from collections import namedtuple\nP = namedtuple('P', ['x', 'y'])\nreturn str(P(1, 'a')) + repr(P(2, 'b'))\n", "P(x=1, y='a')P(x=2, y='b')");
+
+    [Fact]
     public async Task RetainedNamedTupleDenied()
     {
         var script = new LythonEngine().Compile(
