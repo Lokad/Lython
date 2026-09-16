@@ -100,4 +100,26 @@ public sealed class InstanceLifetimeScenarioTests
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
         Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
     }
+
+    [Fact]
+    public async Task AttributeDeleteDiscardCompletes()
+        => await AssertCompletes(
+            "class R:\n    pass\nfor i in range(100000):\n    x = R()\n    x.n = 1\n    del x.n\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task RetainedAfterDeleteDenied()
+    {
+        var script = new LythonEngine().Compile(
+            YieldingIterator + "objs = []\ni = 0\nwhile i < 20000:\n    o = R()\n    del o.n\n    objs.append(o)\n    i = i + 1\nreturn len(objs)\n");
+        Assert.True(script.IsValid);
+        var options = Budgeted(OneMib);
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib);
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
+    }
 }

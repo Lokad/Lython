@@ -414,4 +414,40 @@ public sealed class ChargeReclamationPoolTests
         GC.KeepAlive(oldKeys);
         GC.KeepAlive(youngKeys);
     }
+
+    [Fact]
+    public void InstanceAttributeCouponTracksSetsAndRemovals()
+    {
+        // CommittedAttributeBytes mirrors live slots exactly: adopting through
+        // TrackGrowth snapshots the total, later sets and removals re-snapshot,
+        // and dropping releases exactly the coupon plus one entry charge.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var governor = context.MemoryGovernor;
+        var pool = context.State.CallTemporaries;
+        var baseline = governor.CurrentCommittedBytes;
+        var entriesBefore = pool.Count;
+        TrackInstanceWithTwoAttrsThenDropOne(pool, governor, entriesBefore);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        pool.Sweep();
+        Assert.Equal(entriesBefore, pool.Count);
+        Assert.Equal(baseline + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static void TrackInstanceWithTwoAttrsThenDropOne(ChargeReclamationPool pool, MemoryGovernor governor, int entriesBefore)
+    {
+        var type = new PyType("R", [], new System.Collections.Generic.Dictionary<string, object>());
+        var instance = new PyInstance(type, governor, null);
+        instance.SetAttribute("a", 1);
+        Assert.Equal(64, instance.CommittedAttributeBytes);
+        pool.TrackGrowth(instance, instance.CommittedAttributeBytes, null);
+        Assert.Equal(entriesBefore + 1, pool.Count);
+        instance.SetAttribute("b", 2);
+        instance.RemoveAttribute("a");
+        Assert.Equal(64, instance.CommittedAttributeBytes);
+        Assert.Equal(entriesBefore + 1, pool.Count);
+    }
 }
