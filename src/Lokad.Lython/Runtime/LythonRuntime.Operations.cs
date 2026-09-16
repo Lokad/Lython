@@ -765,7 +765,11 @@ internal sealed partial class LythonRuntime
         var owned = OwnMethodResult(raw, receiver, governor, span, pool);
         governor.Reserve(64L, span);
         governor.Commit(64L);
-        return new PyPath(owned);
+        var result = new PyPath(owned);
+        // The wrapper header has no owner yet: adopt the shell beside its payload so
+        // dropped paths reclaim on sweep while retained paths stay charged.
+        pool?.TrackFreshMutable(result, 64L, span);
+        return result;
     }
 
     private static PyString RepeatString(PyString text, BigInteger count, ExecutionContext context, LythonSourceSpan span)
