@@ -153,6 +153,10 @@ internal sealed class MemoryGovernor
         GC.Collect();
         foreach (var pool in live)
         {
+            // Drain the old backlog before re-sweeping: a live young entry's
+            // promotion slot would otherwise deny against the full tier and
+            // abort the re-sweep before it frees anything.
+            pool.DrainOldTier();
             try
             {
                 pool.Sweep(full: true);

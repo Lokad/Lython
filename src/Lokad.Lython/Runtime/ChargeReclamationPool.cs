@@ -307,27 +307,64 @@ internal sealed class ChargeReclamationPool
         }
     }
 
+    // Old-tier-only drain for exhaustion relief after collecting: with a full
+    // old backlog the young scan below would abort on promotion funding before
+    // reaching any drain, so free the collected backlog first and let the
+    // re-sweep's promotions fit. Releasing needs no funding and cannot deny.
+    internal long DrainOldTier()
+    {
+        var released = DrainTier(_old);
+        if (released > 0)
+        {
+            _governor.Release(released);
+        }
+
+        return released;
+    }
+
     private long SweepTier(List<ReclamationEntry> tier, List<ReclamationEntry>? promoteTo)
     {
         var released = 0L;
-        for (var i = tier.Count - 1; i >= 0; i--)
+        // Detach-then-decide: funding a promotion slot can deny into exhaustion
+        // relief, whose inner sweep prunes and moves these same tier lists. An
+        // index held across that call goes stale; an entry held locally stays
+        // exact no matter what the inner sweep removes.
+        List<ReclamationEntry>? retained = null;
+        while (tier.Count > 0)
         {
-            var entry = tier[i];
+            var entry = tier[tier.Count - 1];
+            tier.RemoveAt(tier.Count - 1);
             if (!entry.Target.TryGetTarget(out _))
             {
                 released += entry.ValueCharge + EntryChargeBytes;
-                RemoveAtSwap(tier, i);
             }
-            else if (promoteTo is not null)
+            else if (promoteTo is null)
             {
-                // Fund the old-tier slot before moving: a denial leaves the entry
-                // in the young tier for the next sweep instead of stranding it.
-                var fundedGrowth = ReserveTierInsertion(promoteTo, null);
-                RemoveAtSwap(tier, i);
-                var capacityBefore = promoteTo.Capacity;
-                promoteTo.Add(entry);
-                CommitTierInsertion(promoteTo, fundedGrowth, capacityBefore, null);
+                retained ??= new List<ReclamationEntry>();
+                retained.Add(entry);
             }
+            else
+            {
+                // Fund the old-tier slot before moving: a denial re-queues the entry
+                // in the young tier for the next sweep instead of stranding it.
+                try
+                {
+                    var fundedGrowth = ReserveTierInsertion(promoteTo, null);
+                    var capacityBefore = promoteTo.Capacity;
+                    promoteTo.Add(entry);
+                    CommitTierInsertion(promoteTo, fundedGrowth, capacityBefore, null);
+                }
+                catch (LythonRuntimeException)
+                {
+                    tier.Add(entry);
+                    throw;
+                }
+            }
+        }
+
+        if (retained is not null)
+        {
+            tier.AddRange(retained);
         }
 
         return released;
