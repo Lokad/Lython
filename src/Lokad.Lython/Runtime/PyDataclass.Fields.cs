@@ -486,7 +486,14 @@ internal static partial class PyDataclass
             return;
         }
 
+        var attributesBefore = instance.CommittedAttributeBytes;
         instance.SetAttribute(name, value);
+        // M04: dataclass fields bypass the __setattr__ slot, so adopt here like
+        // the slot wrapper does; change-detected for steady state.
+        if (instance.CommittedAttributeBytes != attributesBefore)
+        {
+            context.Services.State.CallTemporaries.TrackGrowth(instance, instance.CommittedAttributeBytes, span);
+        }
     }
 
     private static bool ExpectBool(object value, string owner, LythonSourceSpan span)

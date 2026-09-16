@@ -562,7 +562,16 @@ internal sealed partial class LythonRuntime
                 }
 
                 instance.AttachMemoryGovernor(context.MemoryGovernor, span);
+                var attributesBefore = instance.CommittedAttributeBytes;
                 instance.SetAttribute(name.AsString(), arguments[2].Value);
+                // M04: adopt first attribution (or re-snapshot growth) through the
+                // pool; change-detected so rebinding steady state costs two field
+                // reads. Dropped instances reclaim on sweep while retained ones
+                // stay charged.
+                if (instance.CommittedAttributeBytes != attributesBefore)
+                {
+                    context.Services.State.CallTemporaries.TrackGrowth(instance, instance.CommittedAttributeBytes, span);
+                }
                 return PyNone.Instance;
             }
 

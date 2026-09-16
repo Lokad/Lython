@@ -111,6 +111,17 @@ internal sealed class ChargeReclamationPool
         }
     }
 
+    // Adopts attribute-style growth the construction site never saw (instances
+    // attribute after construction): re-snapshots tracked owners at their current
+    // charges, adopts untracked values outright. Plain registration (no refund):
+    // the owner stays live in the caller, so a denial must never release live
+    // charges; denial leaves prior ownership exactly as it was.
+    public void TrackGrowth(object value, long currentCharge, LythonSourceSpan? span = null)
+    {
+        NotifyStorageReplaced(value, currentCharge);
+        TrackMutable(value, currentCharge, span);
+    }
+
     // Registers a freshly built value, refunding its snapshot charges when the
     // registry charge itself is denied. Only for values the in-flight denial
     // orphans (fresh factory/slice results the caller drops on failure):
@@ -167,6 +178,11 @@ internal sealed class ChargeReclamationPool
                 break;
             case PyDefaultDict defaultdict when defaultdict.OwnerMemoryGovernor is not null:
                 TrackMutable(defaultdict, defaultdict.CommittedStorageBytes, span);
+                break;
+            case PyInstance instance when instance.OwnerMemoryGovernor is not null:
+                // Plain registration only: attribute stores adopt with TrackGrowth at
+                // their own sites, and this dedups to a no-op for those values.
+                TrackMutable(instance, instance.CommittedAttributeBytes, span);
                 break;
             case LythonRuntime.DictKeysView keysView:
                 Track(keysView, 64L, span);

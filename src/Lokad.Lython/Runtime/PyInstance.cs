@@ -32,6 +32,11 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
 
+    // Current committed attribute-slot charges, for pooled owners that release
+    // them if this instance is dropped. Later growth re-snapshots through the
+    // shared table; adopted (ungoverned-table) attributes carry no charge.
+    internal long CommittedAttributeBytes => _committedAttributeBytes;
+
     public LythonSourceSpan? AllocationSpan => _allocationSpan;
 
     public void AttachMemoryGovernor(MemoryGovernor governor)
@@ -57,6 +62,7 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
             _memoryGovernor.Reserve(AttributeSlotBytes, _allocationSpan);
             _memoryGovernor.Commit(AttributeSlotBytes);
             _committedAttributeBytes += AttributeSlotBytes;
+            ChargeReclamationPool.NotifyStorageReplaced(this, _committedAttributeBytes);
         }
 
         _attributes[name] = value;
@@ -75,6 +81,7 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
         {
             _memoryGovernor.Release(AttributeSlotBytes);
             _committedAttributeBytes -= AttributeSlotBytes;
+            ChargeReclamationPool.NotifyStorageReplaced(this, _committedAttributeBytes);
         }
 
         return true;
