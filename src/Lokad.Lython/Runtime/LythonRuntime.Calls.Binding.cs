@@ -184,6 +184,23 @@ internal sealed partial class LythonRuntime
         governor.Commit(bytes);
     }
 
+    // Registers a freshly constructed class for its own type record, member
+    // slots and governed construction shares (name copy plus bases/mro backing;
+    // member values stay aliased): dropped definitions reclaim through the pool
+    // once collected, and a denied registration refunds the whole coupon so the
+    // failed definition strands nothing.
+    internal static void TrackClassTypeValue(PyType type, int memberCount, ExecutionContext? context, LythonSourceSpan? span)
+    {
+        if (context is null)
+        {
+            return;
+        }
+
+        context.Services.State.CallTemporaries.TrackFreshMutable(
+            type,
+            checked(ClassTypeBaseBytes + ClassMemberSlotBytes * (long)memberCount + type.ConstructionChargeBytes));
+    }
+
     private static void ChargeFunctionValue(ExecutionContext? context, LythonSourceSpan? span)
     {
         context?.MemoryGovernor.Reserve(FunctionValueBytes, span);

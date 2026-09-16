@@ -56,6 +56,15 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
 
     public PyString NameValue { get; }
 
+    // Governed construction shares owned by this type beside the ClassTypeBaseBytes
+    // unit below (name copy plus bases/mro backing; member values stay aliased), so
+    // the defining site can fold them into the type pool coupon instead of stranding
+    // one set per dropped definition.
+    internal long ConstructionChargeBytes =>
+        (ReferenceEquals(NameValue, PyString.Empty) ? 0 : PyString.EstimateApproximateBytes(NameValue.Utf8Bytes.Length))
+        + BasesTuple.CommittedStorageBytes
+        + MroTuple.CommittedStorageBytes;
+
     public PyTuple BasesTuple { get; }
 
     public PyTuple MroTuple { get; }

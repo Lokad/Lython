@@ -87,11 +87,12 @@ internal static partial class PyDataclass
 
         if (decorator.MatchArgs && !type.TryGetOwnMember("__match_args__", out _))
         {
-            type.TrySetMember(
-                "__match_args__",
-                new PyTuple(fields
-                    .Where(field => field.Kind == DataclassFieldKind.Normal && field.Init && !field.KwOnly)
-                    .Select(field => (object)PyString.FromString(field.Name)), context.MemoryGovernor, span));
+            var matchArgs = new PyTuple(fields
+                .Where(field => field.Kind == DataclassFieldKind.Normal && field.Init && !field.KwOnly)
+                .Select(field => (object)PyString.FromString(field.Name)), context.MemoryGovernor, span);
+            // Dropped dataclasses reclaim the tuple through the pool.
+            context.Services.State.CallTemporaries.TrackFreshMutable(matchArgs, matchArgs.CommittedStorageBytes);
+            type.TrySetMember("__match_args__", matchArgs);
         }
     }
 
@@ -364,6 +365,8 @@ internal static partial class PyDataclass
                 }
             }
 
+            // Dropped factories reclaim the filled map through the pool.
+            context.Services.State.CallTemporaries.TrackFreshMutable(annotations, annotations.CommittedStorageBytes);
             members["__annotations__"] = annotations;
 
             PyType type;
@@ -384,6 +387,7 @@ internal static partial class PyDataclass
             ApplyRuntime(type, options, context, span);
             type.InitializeClassMembers(context, span);
             LythonRuntime.ChargeClassTypeValue(members.Count, context.MemoryGovernor, span);
+            LythonRuntime.TrackClassTypeValue(type, members.Count, context, span);
             return type;
         }
     }

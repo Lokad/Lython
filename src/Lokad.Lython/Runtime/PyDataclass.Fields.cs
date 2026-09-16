@@ -24,6 +24,9 @@ internal static partial class PyDataclass
             dict.SetItem(PyString.FromString(field.Name), new PyDataclassFieldObject(field));
         }
 
+        // Dropped dataclasses reclaim the filled map through the pool.
+        context.Services.State.CallTemporaries.TrackFreshMutable(dict, dict.CommittedStorageBytes);
+
         return dict;
     }
 

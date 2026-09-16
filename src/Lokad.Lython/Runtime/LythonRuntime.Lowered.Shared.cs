@@ -448,6 +448,8 @@ internal sealed partial class LythonRuntime
 
             if (annotations is not null)
             {
+                // Dropped annotated definitions reclaim the filled map through the pool.
+                context.Services.State.CallTemporaries.TrackFreshMutable(annotations, annotations.CommittedStorageBytes);
                 members["__annotations__"] = annotations;
             }
         }
@@ -477,6 +479,7 @@ internal sealed partial class LythonRuntime
         PyDataclass.Apply(type, classDefinition.Syntax, classContext.Variables, classContext, classDefinition.Span);
         type.InitializeClassMembers(definingContext, classDefinition.Span);
         ChargeClassTypeValue(classContext.Variables.Count, definingContext.MemoryGovernor, classDefinition.Span);
+        TrackClassTypeValue(type, classContext.Variables.Count, definingContext, classDefinition.Span);
         return type;
     }
 
