@@ -100,7 +100,9 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
             }
         }
 
-        return new PyNamedTupleObject(this, values, context.MemoryGovernor, span);
+        var record = new PyNamedTupleObject(this, values, context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(record, record.CommittedStorageBytes);
+        return record;
     }
 
     public PyNamedTupleObject CreateFromValues(IEnumerable<object> values, LythonSourceSpan? span)
@@ -229,7 +231,9 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
                 throw new LythonRuntimeException("TypeError", $"{_type.Name}._make(iterable) expects one iterable argument.", span);
             }
 
-            return _type.CreateFromValues(LythonRuntime.ToSequence(arguments[0].Value, span, context), context.MemoryGovernor, span);
+            var record = _type.CreateFromValues(LythonRuntime.ToSequence(arguments[0].Value, span, context), context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(record, record.CommittedStorageBytes);
+            return record;
         }
 
         public PyString RenderPython(PyRenderingContext context)
@@ -474,6 +478,10 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
 
     public LythonSourceSpan? AllocationSpan => _allocationSpan;
 
+    // Current committed backing charges, mirroring the tuple slot rate: records never grow,
+    // so the snapshot stays exact. Unowned records carry nothing.
+    internal long CommittedStorageBytes => OwnerMemoryGovernor is null ? 0 : PyTuple.EstimateApproximateBytes(_values.Length);
+
     public PyNamedTupleType Type => _type;
 
     public int Count => _values.Length;
@@ -573,6 +581,7 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
                 dict.SetItem(PyString.FromString(_owner._type.FieldNames[i]), _owner._values[i]);
             }
 
+            context.Services.State.CallTemporaries.TrackFreshMutable(dict, dict.CommittedStorageBytes);
             return dict;
         }
 
@@ -614,7 +623,9 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
                 values[fieldIndex] = argument.Value;
             }
 
-            return new PyNamedTupleObject(_owner._type, values, context.MemoryGovernor, span);
+            var record = new PyNamedTupleObject(_owner._type, values, context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(record, record.CommittedStorageBytes);
+            return record;
         }
 
         public PyString RenderPython(PyRenderingContext context)
