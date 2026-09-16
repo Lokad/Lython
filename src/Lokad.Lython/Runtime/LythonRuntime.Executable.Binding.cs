@@ -306,6 +306,9 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(functionBinding.Function.Span);
         try
         {
+            var (closureCells, closureCellBytes) = functionBinding.CodeObject is null
+                ? ([], 0L)
+                : CaptureExecutableClosures(functionBinding.CodeObject, context, functionBinding.Function.Span);
             var function = functionBinding.CodeObject is null
                 ? (object)new PyFunction(
                     functionBinding.Function.Syntax.Name,
@@ -319,20 +322,20 @@ internal sealed partial class LythonRuntime
                     functionBinding.Function.Parameters,
                     functionBinding.CodeObject,
                     context.FunctionClosureContext,
-                    CaptureExecutableClosures(functionBinding.CodeObject, context, functionBinding.Function.Span),
+                    closureCells,
                     MaterializeExecutableDefaultValues(functionBinding.DefaultValues, context),
                     functionBinding.CodeObject.ScopeFacts);
             ChargeFunctionValue(context, functionBinding.Function.Span);
             ChargeDefaultArguments(functionBinding.DefaultValues.Count, context.MemoryGovernor, functionBinding.Function.Span);
-            TrackFunctionValue(function, functionBinding.DefaultValues.Count, context, functionBinding.Function.Span);
+            var closureRetentionBytes = ChargeClosureRetention(
+                context.FunctionClosureContext,
+                context.MemoryGovernor,
+                functionBinding.Function.Span);
+            TrackFunctionValue(function, functionBinding.DefaultValues.Count, closureRetentionBytes + closureCellBytes, context, functionBinding.Function.Span);
             if (function is PyFunctionBase defined)
             {
                 PyFunctionBase.CaptureFunctionDocstring(defined, functionBinding.Function.Body, context, functionBinding.Function.Span);
             }
-            ChargeClosureRetention(
-                context.FunctionClosureContext,
-                context.MemoryGovernor,
-                functionBinding.Function.Span);
             var decorated = ApplyDecorators(function, functionBinding.Function.Decorators, functionBinding.Function.Span, context);
             AssignExecutableBoundName(codeObject, locals, localCells, functionBinding.Function.Syntax.Name, decorated, context, functionBinding.Function.Span);
         }
@@ -387,14 +390,14 @@ internal sealed partial class LythonRuntime
         return RuntimeValue(InvokeCallableTarget(target, callSite.TargetSpan, callSite.CallSpan, context, arguments));
     }
 
-    private static ExecutableCell[] CaptureExecutableClosures(
+    private static (ExecutableCell[] Cells, long RetainedBytes) CaptureExecutableClosures(
         ExecutableCodeObject codeObject,
         ExecutionContext context,
         LythonSourceSpan span)
     {
         if (codeObject.ClosureNames.Count == 0)
         {
-            return [];
+            return ([], 0);
         }
 
         var frame = context.CurrentExecutableFrame;
@@ -434,12 +437,14 @@ internal sealed partial class LythonRuntime
             ClosureCellSlotBytes * (long)uncharged);
         context.MemoryGovernor.Reserve(retainedBytes, span);
         context.MemoryGovernor.Commit(retainedBytes);
+        // The array travels on the new function value (same lifetime, same first-wins
+        // aliasing as contexts above), so the caller folds the delta into the coupon.
         foreach (var cell in cells)
         {
             cell.RetentionCharged = true;
         }
 
-        return cells;
+        return (cells, retainedBytes);
     }
 
     // Lambdas resolve free names by walking parent Variables, but executable

@@ -190,19 +190,23 @@ internal sealed partial class LythonRuntime
         context?.MemoryGovernor.Commit(FunctionValueBytes);
     }
 
-    // Registers a freshly constructed function or lambda for its own value and
-    // default-map charges (closure retention stays context-owned): dropped
-    // definitions reclaim through the pool once collected.
-    internal static void TrackFunctionValue(object function, int defaultCount, ExecutionContext? context, LythonSourceSpan? span)
+    // Registers a freshly constructed function or lambda for its own value,
+    // default-map, freshly retained closure-context/cell and governed name charges:
+    // dropped definitions reclaim through the pool once collected, and a denied
+    // registration refunds the whole coupon so the failed definition strands nothing.
+    // Lambdas carry the shared ungoverned name, so only def-built functions add
+    // a name share.
+    internal static void TrackFunctionValue(object function, int defaultCount, long retentionBytes, ExecutionContext? context, LythonSourceSpan? span)
     {
         if (context is null)
         {
             return;
         }
 
+        var nameBytes = function is PyFunctionBase defined ? defined.NameCommittedBytes : 0;
         context.Services.State.CallTemporaries.TrackFreshMutable(
             function,
-            checked(FunctionValueBytes + DefaultArgumentSlotBytes * (long)defaultCount));
+            checked(FunctionValueBytes + DefaultArgumentSlotBytes * (long)defaultCount + retentionBytes + nameBytes));
     }
 
     // MG11: default-argument maps survive with the function value. The 128B
@@ -229,20 +233,28 @@ internal sealed partial class LythonRuntime
     // it retains, module frames included (imported modules keep per-module
     // scopes alive through their functions). Shared frames pay once (first-wins
     // aliasing), with later definitions paying only for variables bound since.
-    // The function CLR wrapper itself stays MG04-owned.
+    // The function CLR wrapper itself stays MG04-owned. Newly charged non-module
+    // retention is returned so the defining site can fold it into the function pool
+    // coupon: dropped definitions then release their own contexts on sweep. Module
+    // frames outlive the run, so their share stays durably committed. Sibling
+    // definitions alias shared frames first-wins, so a partial sibling drop can
+    // transiently undercount one chain while survivors live; the charge balances
+    // once the whole group drops.
     private const long ClosureContextBaseBytes = 512;
     private const long ClosureCellSlotBytes = 32;
 
-    internal static void ChargeClosureRetention(ExecutionContext? closure, MemoryGovernor? governor, LythonSourceSpan? span)
+    internal static long ChargeClosureRetention(ExecutionContext? closure, MemoryGovernor? governor, LythonSourceSpan? span)
     {
+        var retained = 0L;
         if (closure is null || governor is null)
         {
-            return;
+            return retained;
         }
 
         for (var current = closure; current is not null; current = current.ParentContext)
         {
-            var owned = current.Frame.Parent is null
+            var isModuleFrame = current.Frame.Parent is null;
+            var owned = isModuleFrame
                 ? CountOwnedModuleVariables(current)
                 : current.Frame.Variables.Count;
 
@@ -253,6 +265,11 @@ internal sealed partial class LythonRuntime
                 governor.Commit(bytes);
                 current.ClosureRetentionCharged = true;
                 current.ClosureChargedVariableCount = owned;
+                if (!isModuleFrame)
+                {
+                    retained = checked(retained + bytes);
+                }
+
                 continue;
             }
 
@@ -263,12 +280,18 @@ internal sealed partial class LythonRuntime
                 governor.Reserve(delta, span);
                 governor.Commit(delta);
                 current.ClosureChargedVariableCount = owned;
+                if (!isModuleFrame)
+                {
+                    retained = checked(retained + delta);
+                }
             }
 
             // A paid context implies paid ancestors: every walk covers the whole
             // chain and chains only grow at the leaf, so the walk ends here.
             break;
         }
+
+        return retained;
     }
 
     // Module frames start as copies of the run builtins table; those aliases

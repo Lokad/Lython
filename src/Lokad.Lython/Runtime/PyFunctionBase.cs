@@ -14,6 +14,9 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     private const long AttributeSlotBytes = 64;
     private MemoryGovernor? _memoryGovernor;
     private readonly PyString _nameValue;
+    // The constructor governs the name copy; the defining site folds it into the
+    // function pool coupon instead of stranding one string per dropped definition.
+    internal long NameCommittedBytes { get; }
     private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
     private readonly ScopeDirectiveFacts _scopeFacts;
 
@@ -28,6 +31,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         _closure = closure;
         _memoryGovernor = closure.MemoryGovernor;
         _nameValue = PyString.FromString(name, closure.MemoryGovernor, null);
+        NameCommittedBytes = ReferenceEquals(_nameValue, PyString.Empty) ? 0 : PyString.EstimateApproximateBytes(_nameValue.Utf8Bytes.Length);
         _bindingPlan = new FunctionBindingPlan(name, PythonCallableKind.Function, parameters, defaultValues);
         _scopeFacts = scopeFacts;
     }
