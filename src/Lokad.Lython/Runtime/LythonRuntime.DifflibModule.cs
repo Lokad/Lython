@@ -88,7 +88,10 @@ internal sealed partial class LythonRuntime
             var options = ParseDiffArguments(arguments, "difflib.unified_diff", span);
             var a = RequireStringSequence(arguments[0], "difflib.unified_diff(a, b)", span, context);
             var b = RequireStringSequence(arguments[1], "difflib.unified_diff(a, b)", span, context);
-            return new PyList(BuildUnifiedDiff(a, b, options, context, span), context.MemoryGovernor, span);
+            // Rendered lines own lifetime like split results: drops reclaim items and
+            // container on sweep while retained results stay charged.
+            var unified = new PyList(BuildUnifiedDiff(a, b, options, context, span), context.MemoryGovernor, span);
+            return OwnSplitListResult(unified, span, context.Services.State.CallTemporaries);
         }
 
         private static object ContextDiff(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -96,7 +99,8 @@ internal sealed partial class LythonRuntime
             var options = ParseDiffArguments(arguments, "difflib.context_diff", span);
             var a = RequireStringSequence(arguments[0], "difflib.context_diff(a, b)", span, context);
             var b = RequireStringSequence(arguments[1], "difflib.context_diff(a, b)", span, context);
-            return new PyList(BuildContextDiff(a, b, options, context, span), context.MemoryGovernor, span);
+            var contextual = new PyList(BuildContextDiff(a, b, options, context, span), context.MemoryGovernor, span);
+            return OwnSplitListResult(contextual, span, context.Services.State.CallTemporaries);
         }
 
         private static object Ndiff(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -113,7 +117,8 @@ internal sealed partial class LythonRuntime
                 ? ParseOptionalPredicate(arguments, 3, "difflib.ndiff(..., charjunk=...)", span)
                 : DefaultCharacterJunkCallable();
             var differ = new DifflibDifferObject(linejunk, charjunk);
-            return new PyList(differ.CompareLines(a, b, span, context), context.MemoryGovernor, span);
+            var compared = new PyList(differ.CompareLines(a, b, span, context), context.MemoryGovernor, span);
+            return OwnSplitListResult(compared, span, context.Services.State.CallTemporaries);
         }
 
         private static object Restore(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -455,7 +460,9 @@ internal sealed partial class LythonRuntime
 
         private static IEnumerable<object> BuildUnifiedDiff(IReadOnlyList<PyString> a, IReadOnlyList<PyString> b, DiffOptions options, ExecutionContext context, LythonSourceSpan span)
         {
-            var matcher = new DifflibSequenceMatcherObject(null, new PyList(a.Cast<object>(), context.MemoryGovernor, span), new PyList(b.Cast<object>(), context.MemoryGovernor, span), autojunk: true, span, context);
+            // The matcher materializes its own governed arrays, so wrapping the already
+            // validated line lists would strand two transient lists per call.
+            var matcher = new DifflibSequenceMatcherObject(null, a, b, autojunk: true, span, context);
             var groups = matcher.BuildGroupedOpcodes(options.ContextLines, span, context);
             var started = false;
             foreach (var group in groups)
@@ -482,7 +489,9 @@ internal sealed partial class LythonRuntime
 
         private static IEnumerable<object> BuildContextDiff(IReadOnlyList<PyString> a, IReadOnlyList<PyString> b, DiffOptions options, ExecutionContext context, LythonSourceSpan span)
         {
-            var matcher = new DifflibSequenceMatcherObject(null, new PyList(a.Cast<object>(), context.MemoryGovernor, span), new PyList(b.Cast<object>(), context.MemoryGovernor, span), autojunk: true, span, context);
+            // The matcher materializes its own governed arrays, so wrapping the already
+            // validated line lists would strand two transient lists per call.
+            var matcher = new DifflibSequenceMatcherObject(null, a, b, autojunk: true, span, context);
             var groups = matcher.BuildGroupedOpcodes(options.ContextLines, span, context);
             var started = false;
             foreach (var group in groups)

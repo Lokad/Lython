@@ -36,7 +36,10 @@ internal sealed partial class LythonRuntime
 
                     var a = DifflibModule.RequireStringSequence(arguments[0], "Differ.compare(a, b)", span, context);
                     var b = DifflibModule.RequireStringSequence(arguments[1], "Differ.compare(a, b)", span, context);
-                    return new PyList(CompareLines(a, b, span, context), context.MemoryGovernor, span);
+                    // The result list owns its fresh rendered lines like split results do;
+                    // drops reclaim items and container on sweep while retained results stay charged.
+                    var result = new PyList(CompareLines(a, b, span, context), context.MemoryGovernor, span);
+                    return OwnSplitListResult(result, span, context.Services.State.CallTemporaries);
                 }, "Differ.compare", ["a", "b"]),
                 _ => MissingMemberValue.Instance,
             };
@@ -46,7 +49,9 @@ internal sealed partial class LythonRuntime
 
         internal IEnumerable<object> CompareLines(IReadOnlyList<PyString> a, IReadOnlyList<PyString> b, LythonSourceSpan span, ExecutionContext context)
         {
-            var matcher = new DifflibSequenceMatcherObject(_linejunk, new PyList(a.Cast<object>(), context.MemoryGovernor, span), new PyList(b.Cast<object>(), context.MemoryGovernor, span), autojunk: true, span, context);
+            // The matcher materializes its own governed arrays, so wrapping the already
+            // validated line lists would strand two transient lists per call.
+            var matcher = new DifflibSequenceMatcherObject(_linejunk, a, b, autojunk: true, span, context);
             foreach (var opcode in matcher.BuildOpcodes(span, context))
             {
                 foreach (var line in opcode.Tag switch
