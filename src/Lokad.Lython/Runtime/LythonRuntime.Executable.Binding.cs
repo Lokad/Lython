@@ -331,11 +331,10 @@ internal sealed partial class LythonRuntime
                 context.FunctionClosureContext,
                 context.MemoryGovernor,
                 functionBinding.Function.Span);
-            TrackFunctionValue(function, functionBinding.DefaultValues.Count, closureRetentionBytes + closureCellBytes, context, functionBinding.Function.Span);
-            if (function is PyFunctionBase defined)
-            {
-                PyFunctionBase.CaptureFunctionDocstring(defined, functionBinding.Function.Body, context, functionBinding.Function.Span);
-            }
+            var docstringBytes = function is PyFunctionBase defined
+                ? PyFunctionBase.CaptureFunctionDocstring(defined, functionBinding.Function.Body, context, functionBinding.Function.Span)
+                : 0;
+            TrackFunctionValue(function, functionBinding.DefaultValues.Count, closureRetentionBytes + closureCellBytes, docstringBytes, context, functionBinding.Function.Span);
             var decorated = ApplyDecorators(function, functionBinding.Function.Decorators, functionBinding.Function.Span, context);
             AssignExecutableBoundName(codeObject, locals, localCells, functionBinding.Function.Syntax.Name, decorated, context, functionBinding.Function.Span);
         }

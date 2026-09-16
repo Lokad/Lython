@@ -473,7 +473,7 @@ internal sealed partial class LythonRuntime
         ChargeFunctionValue(context, lambda.Span);
         ChargeDefaultArguments(loweredParameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, lambda.Span);
         var closureRetentionBytes = ChargeClosureRetention(context, context.MemoryGovernor, lambda.Span);
-        TrackFunctionValue(function, loweredParameters.Count(static p => p.DefaultValue is not null), closureRetentionBytes, context, lambda.Span);
+        TrackFunctionValue(function, loweredParameters.Count(static p => p.DefaultValue is not null), closureRetentionBytes, 0, context, lambda.Span);
         RetainLocalsForLambda(context);
         return function;
     }

@@ -44,6 +44,16 @@ public sealed class NestedFunctionLifetimeScenarioTests
             "def outer(v):\n    x = 1\n    def inner():\n        return v * 2 + x\n    return inner\nreturn str(outer(21)())\n", "43");
 
     [Fact]
+    public async Task DocumentedNestedDefDiscardCompletes()
+        => await AssertCompletes(
+            "def outer():\n    def inner():\n        'docs'\n        return 1\n    return inner\nfor i in range(20000):\n    y = outer()\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task DocumentedNestedDefBehaves()
+        => await AssertCompletes(
+            "def f():\n    'hello'\n    return 1\nreturn f.__doc__\n", "hello");
+
+    [Fact]
     public async Task RetainedNestedDefDenied()
     {
         var script = new LythonEngine().Compile(

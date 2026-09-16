@@ -218,8 +218,8 @@ internal sealed partial class LythonRuntime
         ChargeFunctionValue(context, statement.Span);
         ChargeDefaultArguments(loweredParameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, statement.Span);
         var closureRetentionBytes = ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, statement.Span);
-        TrackFunctionValue(function, loweredParameters.Count(static p => p.DefaultValue is not null), closureRetentionBytes, context, statement.Span);
-        PyFunctionBase.CaptureFunctionDocstring(function, loweredBody, context, statement.Span);
+        var docstringBytes = PyFunctionBase.CaptureFunctionDocstring(function, loweredBody, context, statement.Span);
+        TrackFunctionValue(function, loweredParameters.Count(static p => p.DefaultValue is not null), closureRetentionBytes, docstringBytes, context, statement.Span);
         StoreName(
             statement.Name,
             ApplyDecorators(function, statement.Decorators.Select(LoweredScript.LowerStandaloneExpression).ToArray(), statement.Span, context),

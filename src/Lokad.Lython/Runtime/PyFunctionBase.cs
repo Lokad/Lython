@@ -177,16 +177,25 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         return doc.Literal.Value;
     }
 
-    internal static void CaptureFunctionDocstring(
+    // Returns the governed bytes the capture commits (string copy plus the fresh
+    // metadata slot), so the defining site can fold them into the function pool
+    // coupon like the name share. Fresh functions never carry __doc__ yet, so the
+    // slot always charges here.
+    internal static long CaptureFunctionDocstring(
         PyFunctionBase function,
         IReadOnlyList<LoweredStatement> body,
         LythonRuntime.ExecutionContext context,
         LythonSourceSpan span)
     {
-        if (LeadingDocstring(body) is { } text)
+        if (LeadingDocstring(body) is not { } text)
         {
-            function.TrySetMember("__doc__", PyString.FromString(text, context.MemoryGovernor, span));
+            return 0;
         }
+
+        var doc = PyString.FromString(text, context.MemoryGovernor, span);
+        function.TrySetMember("__doc__", doc);
+        return (ReferenceEquals(doc, PyString.Empty) ? 0 : PyString.EstimateApproximateBytes(doc.Utf8Bytes.Length))
+            + AttributeSlotBytes;
     }
 
     public bool TrySetMember(string name, object value)

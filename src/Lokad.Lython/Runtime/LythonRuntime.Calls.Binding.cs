@@ -208,12 +208,13 @@ internal sealed partial class LythonRuntime
     }
 
     // Registers a freshly constructed function or lambda for its own value,
-    // default-map, freshly retained closure-context/cell and governed name charges:
+    // default-map, freshly retained closure-context/cell, governed name and docstring
+    // charges:
     // dropped definitions reclaim through the pool once collected, and a denied
     // registration refunds the whole coupon so the failed definition strands nothing.
     // Lambdas carry the shared ungoverned name, so only def-built functions add
     // a name share.
-    internal static void TrackFunctionValue(object function, int defaultCount, long retentionBytes, ExecutionContext? context, LythonSourceSpan? span)
+    internal static void TrackFunctionValue(object function, int defaultCount, long retentionBytes, long docstringBytes, ExecutionContext? context, LythonSourceSpan? span)
     {
         if (context is null)
         {
@@ -223,7 +224,7 @@ internal sealed partial class LythonRuntime
         var nameBytes = function is PyFunctionBase defined ? defined.NameCommittedBytes : 0;
         context.Services.State.CallTemporaries.TrackFreshMutable(
             function,
-            checked(FunctionValueBytes + DefaultArgumentSlotBytes * (long)defaultCount + retentionBytes + nameBytes));
+            checked(FunctionValueBytes + DefaultArgumentSlotBytes * (long)defaultCount + retentionBytes + nameBytes + docstringBytes));
     }
 
     // MG11: default-argument maps survive with the function value. The 128B
