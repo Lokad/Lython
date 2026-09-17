@@ -6,7 +6,8 @@ namespace Lokad.Lython.Tests;
 /// MG24: pairing imbalances fail loudly instead of being absorbed. Debug
 /// builds throw on commit-without-reserve and release-without-commit; release
 /// builds keep the documented tolerance. The full suite stays green with the
-/// strict checks on, which proves pairing discipline across every path.
+/// strict checks on, which exercises pairing discipline on every covered path;
+/// passing suites alone are not containment proof.
 /// </summary>
 public sealed class MemoryGovernorInvariantTests
 {
