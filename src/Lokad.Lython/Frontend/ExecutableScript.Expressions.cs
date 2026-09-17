@@ -168,6 +168,9 @@ internal sealed partial class ExecutableScript
                 case LoweredChainedComparisonExpression chained:
                     return CompileChainedComparisonExpression(chained, currentBlock);
 
+                case LoweredAssignmentExpression walrus:
+                    return CompileAssignmentExpression(walrus, currentBlock);
+
                 default:
                     AddInstruction(currentBlock, ExecutableInstruction.EvaluateFallbackExpression(InternExpressionFallback(expression), expression.Span));
                     return currentBlock;
@@ -245,6 +248,19 @@ internal sealed partial class ExecutableScript
             AddInstruction(failBlock, ExecutableInstruction.LoadConst(InternConstant(false), chained.Span));
             AddInstruction(failBlock, ExecutableInstruction.Jump(joinBlock, chained.Span));
             return joinBlock;
+        }
+
+        // Assignment expressions duplicate the value and store one copy
+        // through the same bound-name machinery as assignment statements,
+        // instead of paying one lowered-dispatch state machine per
+        // evaluation. Scope facts resolve the target exactly like a plain
+        // store in the same position.
+        private int CompileAssignmentExpression(LoweredAssignmentExpression walrus, int currentBlock)
+        {
+            currentBlock = CompileExpression(walrus.Expression, currentBlock);
+            AddInstruction(currentBlock, ExecutableInstruction.Dup(walrus.Expression.Span));
+            CompileStoreBoundName(walrus.Assignment.Name, walrus.Span, currentBlock);
+            return currentBlock;
         }
 
         private bool TryCompileCallExpression(LoweredCallExpression call, int currentBlock, out int exitBlock)
