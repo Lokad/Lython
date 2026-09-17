@@ -423,9 +423,33 @@ internal sealed partial class LythonRuntime
         object right,
         ExecutionContext context,
         LythonSourceSpan span)
-        => AreEqualWithProtocolsCoreAsync(left, right, context, span, InvokeBinarySpecialMethod, EvaluateTruthiness)
-            .GetAwaiter()
-            .GetResult();
+    {
+        // Sync twin of the async core below. The miss path runs per
+        // comparison, so routing it through an async state machine
+        // allocates on every sync == even though the sync invoker and
+        // truthiness checks below never suspend.
+        if (left is PyCmpKey leftKey && right is PyCmpKey rightKey)
+        {
+            return leftKey.CompareTo(rightKey, span, context) == 0;
+        }
+
+        // A NotImplemented answer declines like a missing slot (CPython reflected
+        // dispatch): the root object slots always decline, so operators keep their
+        // identity and relational fallbacks instead of reading NotImplemented as true.
+        if (TryInvokeBinarySpecialMethod(left, "__eq__", right, context, span, out var leftValue) &&
+            leftValue is not PyNotImplemented)
+        {
+            return IsTruthy(leftValue, context, span);
+        }
+
+        if (TryInvokeBinarySpecialMethod(right, "__eq__", left, context, span, out var rightValue) &&
+            rightValue is not PyNotImplemented)
+        {
+            return IsTruthy(rightValue, context, span);
+        }
+
+        return AreEqual(left, right);
+    }
 
     private static ValueTask<bool> AreEqualWithProtocolsAsync(
         object left,
@@ -466,9 +490,30 @@ internal sealed partial class LythonRuntime
         object right,
         ExecutionContext context,
         LythonSourceSpan span)
-        => AreNotEqualWithProtocolsCoreAsync(left, right, context, span, InvokeBinarySpecialMethod, EvaluateTruthiness)
-            .GetAwaiter()
-            .GetResult();
+    {
+        // Sync twin of the async core below (same shape as == above).
+        if (left is PyCmpKey leftKey && right is PyCmpKey rightKey)
+        {
+            return leftKey.CompareTo(rightKey, span, context) != 0;
+        }
+
+        // != consults __ne__ first like CPython; a NotImplemented answer
+        // declines to the reflected slot and then to the negated __eq__
+        // protocol (which honors NotImplemented itself).
+        if (TryInvokeBinarySpecialMethod(left, "__ne__", right, context, span, out var leftValue) &&
+            leftValue is not PyNotImplemented)
+        {
+            return IsTruthy(leftValue, context, span);
+        }
+
+        if (TryInvokeBinarySpecialMethod(right, "__ne__", left, context, span, out var rightValue) &&
+            rightValue is not PyNotImplemented)
+        {
+            return IsTruthy(rightValue, context, span);
+        }
+
+        return !AreEqualWithProtocols(left, right, context, span);
+    }
 
     private static ValueTask<bool> AreNotEqualWithProtocolsAsync(
         object left,
@@ -512,17 +557,45 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span,
         Func<int, bool> fallback)
-        => EvaluateRichComparisonCoreAsync(
-                left,
-                right,
-                new BinarySpecialMethodPair(method, reflectedMethod),
-                context,
-                span,
-                fallback,
-                InvokeBinarySpecialMethod,
-                EvaluateTruthiness)
-            .GetAwaiter()
-            .GetResult();
+    {
+        // Sync twin of the async core below. The miss path runs per ordered
+        // comparison, so routing it through an async state machine allocates
+        // on every sync <, <=, > and >= even though the sync invoker and
+        // truthiness checks below never suspend.
+        if (left is PyCmpKey leftKey && right is PyCmpKey rightKey)
+        {
+            return fallback(leftKey.CompareTo(rightKey, span, context));
+        }
+
+        if (left is PySet leftSet && right is PySet rightSet)
+        {
+            return method switch
+            {
+                "__lt__" => leftSet.IsProperSubsetOf(rightSet),
+                "__le__" => leftSet.IsSubsetOf(rightSet),
+                "__gt__" => leftSet.IsProperSupersetOf(rightSet),
+                "__ge__" => leftSet.IsSupersetOf(rightSet),
+                _ => false,
+            };
+        }
+
+        // A NotImplemented answer declines like a missing slot (CPython reflected
+        // dispatch): the root object slots always decline, so unsupported orderings
+        // keep the relational fallback instead of reading NotImplemented as true.
+        if (TryInvokeBinarySpecialMethod(left, method, right, context, span, out var leftValue) &&
+            leftValue is not PyNotImplemented)
+        {
+            return IsTruthy(leftValue, context, span);
+        }
+
+        if (TryInvokeBinarySpecialMethod(right, reflectedMethod, left, context, span, out var rightValue) &&
+            rightValue is not PyNotImplemented)
+        {
+            return IsTruthy(rightValue, context, span);
+        }
+
+        return CompareRelational(left, right, span, fallback, ComparisonSymbol(method));
+    }
 
     private static ValueTask<bool> EvaluateRichComparisonAsync(
         object left,
@@ -592,9 +665,18 @@ internal sealed partial class LythonRuntime
     };
 
     private static bool Contains(object container, object candidate, ExecutionContext context, LythonSourceSpan span)
-        => ContainsCoreAsync(container, candidate, context, span, InvokeBinarySpecialMethod, EvaluateTruthiness)
-            .GetAwaiter()
-            .GetResult();
+    {
+        // Sync twin of the async core below. The miss path runs per
+        // membership check, so routing it through an async state machine
+        // allocates on every sync in even though the sync invoker and
+        // truthiness checks below never suspend.
+        if (TryInvokeBinarySpecialMethod(container, "__contains__", candidate, context, span, out var value))
+        {
+            return IsTruthy(value, context, span);
+        }
+
+        return PyContainment.Contains(container, candidate, span);
+    }
 
     private static ValueTask<bool> ContainsAsync(
         object container,

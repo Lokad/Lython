@@ -20,6 +20,7 @@ internal static class PyContainment
             PySet set => ContainsInSet(set, candidate, span),
             LythonRuntime.DictKeysView keysView => ContainsInValidatedView(keysView, candidate, span),
             LythonRuntime.DictItemsView itemsView => ContainsInValidatedView(itemsView, candidate, span),
+            PyTuple tuple => ContainsInTuple(tuple, candidate),
             IEnumerable<object> sequence => ContainsInTypedSequence(sequence, candidate),
             System.Collections.IEnumerable sequence => ContainsInUntypedSequence(sequence, candidate),
             _ => throw RuntimeErrors.ArgumentNotIterable(container, span),
@@ -82,6 +83,22 @@ internal static class PyContainment
     {
         LythonRuntime.ValidateDictionaryKey(candidate, span);
         return ContainsInTypedSequence(view, candidate);
+    }
+
+    // Tuples are immutable and array-backed: scan by index instead of
+    // enumerating through the interface, which boxes an enumerator per
+    // membership check.
+    private static bool ContainsInTuple(PyTuple tuple, object candidate)
+    {
+        for (var i = 0; i < tuple.Count; i++)
+        {
+            if (PyEquality.AreEqual(tuple[i], candidate))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static bool ContainsInTypedSequence(IEnumerable<object> sequence, object candidate)

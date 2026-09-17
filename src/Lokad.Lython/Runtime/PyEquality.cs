@@ -116,11 +116,7 @@ internal static class PyEquality
 
         if (left is PyDict leftDict && right is PyDict rightDict)
         {
-            return DictContentEqual(
-                leftDict.Count,
-                leftDict,
-                rightDict.Count,
-                key => rightDict.TryGetValue(key, out var value) ? (true, value) : (false, null));
+            return DictsEqual(leftDict, rightDict);
         }
 
         if (left is PyCounter counterLeft && (right is PyDict || right is PyDefaultDict))
@@ -301,6 +297,16 @@ internal static class PyEquality
 
         return true;
     }
+
+    // The dict lookup lambda captures rightDict, so Roslyn instantiates its
+    // closure on every AreEqual call; keep it in a callee so only dict
+    // comparisons pay for it (same pattern as the operator counter branches).
+    private static bool DictsEqual(PyDict leftDict, PyDict rightDict)
+        => DictContentEqual(
+            leftDict.Count,
+            leftDict,
+            rightDict.Count,
+            key => rightDict.TryGetValue(key, out var value) ? (true, value) : (false, null));
 
     // Counter equality treats absent keys as having a zero count, unlike
     // ordinary dictionary equality, so compare the union of both key sets.
