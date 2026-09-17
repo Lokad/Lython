@@ -124,7 +124,11 @@ internal sealed partial class LythonRuntime
                     var dict = new PyDict(context.MemoryGovernor, span);
                     foreach (var entry in match.NamedGroups.OrderBy(entry => entry.Value))
                     {
-                        dict.SetItem(PyString.FromString(entry.Key, context.MemoryGovernor, span), ResolveIndexedGroup(match, entry.Value, span, defaultValue));
+                        // Fresh group names reclaim through the pool once the dict drops,
+                        // mirroring fresh kwargs keys (dict slots cover storage, not keys).
+                        var groupName = PyString.FromString(entry.Key, context.MemoryGovernor, span);
+                        context.Services.State.CallTemporaries.TrackFreshString(groupName, span);
+                        dict.SetItem(groupName, ResolveIndexedGroup(match, entry.Value, span, defaultValue));
                     }
 
                     return dict;
