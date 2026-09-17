@@ -7,6 +7,8 @@ namespace Lokad.Lython.Tests;
 /// <summary>
 /// MG11: constructed decimal Context values own their storage like other
 /// constructed values; the shared run context stays aliased and free.
+// M05: adopted results additionally hold one 128 B pool entry each, plus tier
+// growth where the shared pool crosses a backing boundary.
 /// </summary>
 public sealed class DecimalContextObjectAccountingTests
 {
@@ -28,14 +30,14 @@ public sealed class DecimalContextObjectAccountingTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
         _ = InvokeFactory("DecimalContextCtor", context, span);
-        Assert.Equal(64L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(224L, context.MemoryGovernor.CurrentCommittedBytes);
         _ = InvokeFactory("DecimalLocalContext", context, span);
-        Assert.Equal(2L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(416L, context.MemoryGovernor.CurrentCommittedBytes);
         var member = PyDecimalContext.Default().TryGetMember("copy", out var value)
             ? value
             : throw new InvalidOperationException("copy member not found.");
         _ = ((LythonRuntime.ICallable)member).Invoke([], span, context);
-        Assert.Equal(3L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(608L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }
