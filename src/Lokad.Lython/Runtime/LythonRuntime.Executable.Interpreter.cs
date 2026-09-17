@@ -20,7 +20,12 @@ internal sealed partial class LythonRuntime
         private PendingAbruptSignal? _pendingAbrupt;
         private object? _frameReturnValue;
         private bool _hasFrameReturn;
-        private readonly Stack<ActiveExceptionSave> _savedActiveExceptions = new();
+        // Handler-save chain, created on first except-route push: plain calls
+        // never touch it, so the per-frame Stack box is skipped.
+        private Stack<ActiveExceptionSave>? _savedActiveExceptions;
+
+        private Stack<ActiveExceptionSave> SavedActiveExceptions() => _savedActiveExceptions ??= new();
+
         private readonly PyException? _entryActiveException = context.Services.CurrentException;
 
         private sealed record ActiveExceptionSave(
@@ -33,7 +38,7 @@ internal sealed partial class LythonRuntime
         // names and restoring the previous exception on frame exit.
         private void AbandonFrame(LythonSourceSpan span)
         {
-            _savedActiveExceptions.Clear();
+            _savedActiveExceptions?.Clear();
             AbandonActiveHandlerVars(context, span);
             context.Services.SetCurrentException(_entryActiveException);
         }
@@ -44,11 +49,11 @@ internal sealed partial class LythonRuntime
         // than dropping a live save.
         private void UnwindAbandonedHandlers(int targetBlockIndex)
         {
-            while (_savedActiveExceptions.Count > 0 &&
-                _savedActiveExceptions.Peek() is { SuiteStartBlockIndex: int start, SuiteEndBlockIndex: int end } &&
+            while (_savedActiveExceptions is { Count: > 0 } saves &&
+                saves.Peek() is { SuiteStartBlockIndex: int start, SuiteEndBlockIndex: int end } &&
                 (targetBlockIndex < start || targetBlockIndex > end))
             {
-                context.Services.SetCurrentException(_savedActiveExceptions.Pop().SavedException);
+                context.Services.SetCurrentException(saves.Pop().SavedException);
             }
         }
 
@@ -255,7 +260,7 @@ internal sealed partial class LythonRuntime
                             // Suppression completes the cleanup suite: restore
                             // the active exception saved on entry.
                             context.Services.SetCurrentException(
-                                _savedActiveExceptions.Count > 0 ? _savedActiveExceptions.Pop().SavedException : null);
+                                _savedActiveExceptions is { Count: > 0 } saves ? saves.Pop().SavedException : null);
                         }
                     }
                     else
@@ -416,7 +421,7 @@ internal sealed partial class LythonRuntime
                         }
                     }
                     context.Services.SetCurrentException(
-                        _savedActiveExceptions.Count > 0 ? _savedActiveExceptions.Pop().SavedException : null);
+                        _savedActiveExceptions is { Count: > 0 } saves ? saves.Pop().SavedException : null);
                     return false;
 
                 case ExecutableOpCode.EndFinally:
@@ -425,7 +430,7 @@ internal sealed partial class LythonRuntime
                         // An exception-routed finally suite exits: restore the
                         // active exception saved when the suite was entered.
                         context.Services.SetCurrentException(
-                            _savedActiveExceptions.Count > 0 ? _savedActiveExceptions.Pop().SavedException : null);
+                            _savedActiveExceptions is { Count: > 0 } restored ? restored.Pop().SavedException : null);
                     }
 
                     if (_pendingAbrupt is not null)
@@ -602,7 +607,7 @@ internal sealed partial class LythonRuntime
                             var installed = routedToHandler ? context.Services.CurrentException : null;
                             context.Services.SetCurrentException(previousActive);
                             UnwindAbandonedHandlers(_currentBlockIndex);
-                            _savedActiveExceptions.Push(new ActiveExceptionSave(
+                            SavedActiveExceptions().Push(new ActiveExceptionSave(
                                 context.Services.CurrentException,
                                 matchedRegion?.SuiteStartBlockIndex,
                                 matchedRegion?.SuiteEndBlockIndex));
