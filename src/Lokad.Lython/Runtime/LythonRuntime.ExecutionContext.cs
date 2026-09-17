@@ -16,6 +16,12 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
+        // Resolution tables are built once in ResolveNonlocalTargets; every
+        // other path has no nonlocal names, so they share one empty table
+        // instead of allocating a dictionary per frame (never mutated:
+        // only TryGetNonlocalTarget reads it).
+        private static readonly Dictionary<string, ExecutionContext> EmptyNonlocalTargets = new(StringComparer.Ordinal);
+
         public ExecutionContext(ILythonHost host, LythonRunOptions? options)
         {
             var builtinVariables = CreateBuiltinVariables();
@@ -26,7 +32,7 @@ internal sealed partial class LythonRuntime
             ParentContext = null;
             FunctionClosureContext = this;
             ScopeFacts = ScopeDirectiveFacts.Empty;
-            NonlocalTargets = new Dictionary<string, ExecutionContext>(StringComparer.Ordinal);
+            NonlocalTargets = EmptyNonlocalTargets;
 
             var globals = options?.Globals;
             if (globals is null)
@@ -52,7 +58,7 @@ internal sealed partial class LythonRuntime
             ParentContext = parent;
             FunctionClosureContext = this;
             ScopeFacts = ScopeDirectiveFacts.Empty;
-            NonlocalTargets = new Dictionary<string, ExecutionContext>(StringComparer.Ordinal);
+            NonlocalTargets = EmptyNonlocalTargets;
         }
 
         public ExecutionContext(ExecutionContext parent, ScopeDirectiveFacts scopeFacts)
@@ -67,6 +73,11 @@ internal sealed partial class LythonRuntime
 
             static Dictionary<string, ExecutionContext> ResolveNonlocalTargets(ExecutionContext parent, ScopeDirectiveFacts scopeFacts)
             {
+                if (scopeFacts.NonlocalNames.Count == 0)
+                {
+                    return EmptyNonlocalTargets;
+                }
+
                 var targets = new Dictionary<string, ExecutionContext>(StringComparer.Ordinal);
                 foreach (var name in scopeFacts.NonlocalNames)
                 {
@@ -108,7 +119,7 @@ internal sealed partial class LythonRuntime
             ParentContext = null;
             FunctionClosureContext = this;
             ScopeFacts = ScopeDirectiveFacts.Empty;
-            NonlocalTargets = new Dictionary<string, ExecutionContext>(StringComparer.Ordinal);
+            NonlocalTargets = EmptyNonlocalTargets;
         }
 
         private ExecutionContext(ExecutionContext parent, ClassBodyScope _)
@@ -119,7 +130,7 @@ internal sealed partial class LythonRuntime
             ParentContext = parent;
             FunctionClosureContext = parent.FunctionClosureContext;
             ScopeFacts = ScopeDirectiveFacts.Empty;
-            NonlocalTargets = new Dictionary<string, ExecutionContext>(StringComparer.Ordinal);
+            NonlocalTargets = EmptyNonlocalTargets;
         }
 
         private readonly record struct ModuleScope(string? SourcePath, string Name);
