@@ -98,7 +98,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
-            return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => AddCounterCounts(lhs, rhs, span, leftCounter.OwnerMemoryGovernor ?? rightCounter.OwnerMemoryGovernor, context.Services.State.CallTemporaries), keepPositiveOnly: true, span, context);
+            return AddCounters(leftCounter, rightCounter, span, context);
         }
 
         if (left is PyString)
@@ -156,6 +156,16 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    // Counter branches keep their combining lambda in a callee: the lambda
+    // captures span/context, so Roslyn instantiates its closure on every
+    // call of the enclosing operator even when the operands take the fast
+    // numeric path below.
+    private static object AddCounters(PyCounter leftCounter, PyCounter rightCounter, LythonSourceSpan span, ExecutionContext context)
+        => BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => AddCounterCounts(lhs, rhs, span, leftCounter.OwnerMemoryGovernor ?? rightCounter.OwnerMemoryGovernor, context.Services.State.CallTemporaries), keepPositiveOnly: true, span, context);
+
+    private static object SubtractCounters(PyCounter leftCounter, PyCounter rightCounter, LythonSourceSpan span, ExecutionContext context)
+        => BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => SubtractCounterCounts(lhs, rhs, span, leftCounter.OwnerMemoryGovernor ?? rightCounter.OwnerMemoryGovernor, context.Services.State.CallTemporaries), keepPositiveOnly: true, span, context);
+
     internal static object AddRuntimeValues(object left, object right, ExecutionContext context, LythonSourceSpan span)
         => EvaluateAdd(left, right, context, span);
 
@@ -181,7 +191,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
-            return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => SubtractCounterCounts(lhs, rhs, span, leftCounter.OwnerMemoryGovernor ?? rightCounter.OwnerMemoryGovernor, context.Services.State.CallTemporaries), keepPositiveOnly: true, span, context);
+            return SubtractCounters(leftCounter, rightCounter, span, context);
         }
 
         if (left is PyDecimal || right is PyDecimal)

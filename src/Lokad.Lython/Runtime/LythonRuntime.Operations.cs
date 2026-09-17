@@ -168,7 +168,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
-            return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) >= 0 ? lhs : rhs, keepPositiveOnly: true, span, context);
+            return UnionCounters(leftCounter, rightCounter, span, context);
         }
 
         if (left is PyChainMap leftChainMap && right is PyDict or PyDefaultDict or PyCounter or PyChainMap)
@@ -296,6 +296,15 @@ internal sealed partial class LythonRuntime
         return OwnHeapInteger(PyNumberOps.BitwiseOr(lhs, rhs), context.MemoryGovernor, span);
     }
 
+    // Counter branches keep their combining lambda in a callee: the lambda
+    // captures span, so Roslyn instantiates its closure on every call of the
+    // enclosing operator even when the operands take the fast integer path.
+    private static object UnionCounters(PyCounter leftCounter, PyCounter rightCounter, LythonSourceSpan span, ExecutionContext context)
+        => BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) >= 0 ? lhs : rhs, keepPositiveOnly: true, span, context);
+
+    private static object IntersectCounters(PyCounter leftCounter, PyCounter rightCounter, LythonSourceSpan span, ExecutionContext context)
+        => BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) < 0 ? lhs : rhs, keepPositiveOnly: true, span, context);
+
     private static object EvaluateBitwiseXor(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
         if (left is bool leftBoolean && right is bool rightBoolean)
@@ -340,7 +349,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
-            return BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) < 0 ? lhs : rhs, keepPositiveOnly: true, span, context);
+            return IntersectCounters(leftCounter, rightCounter, span, context);
         }
 
         if (left is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView || right is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView)

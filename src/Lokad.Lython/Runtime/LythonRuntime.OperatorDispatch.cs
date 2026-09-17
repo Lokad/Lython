@@ -183,13 +183,68 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         out object result)
     {
-        // The sync invoker always returns an already-completed ValueTask, so the
-        // shared policy core cannot suspend or block the synchronous runtime.
-        var invocation = EvaluateNumericProtocolCoreAsync(op, left, right, context, span, InvokeBinarySpecialMethod)
-            .GetAwaiter()
-            .GetResult();
-        result = invocation.Value;
-        return invocation.Kind == SpecialMethodInvocationKind.Invoked;
+        // Sync twin of the async policy core below. The miss path runs per
+        // binary operation, so routing it through an async state machine
+        // allocates on every sync operator even though the sync invoker
+        // below never suspends.
+        if (op == BinaryOperatorSyntax.Modulo && left is Runtime.Text.PyString)
+        {
+            result = PyNone.Instance;
+            return false;
+        }
+
+        if (!TryGetNumericProtocolMethods(op, out var methods))
+        {
+            result = PyNone.Instance;
+            return false;
+        }
+
+        if (TryInvokeBinarySpecialMethod(left, methods.Left, right, context, span, out var leftValue) &&
+            leftValue is not PyNotImplemented)
+        {
+            result = leftValue;
+            return true;
+        }
+
+        if (TryInvokeBinarySpecialMethod(right, methods.Right, left, context, span, out var rightValue) &&
+            rightValue is not PyNotImplemented)
+        {
+            result = rightValue;
+            return true;
+        }
+
+        result = PyNone.Instance;
+        return false;
+    }
+
+    private static bool TryGetNumericProtocolMethods(
+        BinaryOperatorSyntax op,
+        out BinarySpecialMethodPair methods)
+    {
+        BinarySpecialMethodPair? resolved = op switch
+        {
+            BinaryOperatorSyntax.Add => new BinarySpecialMethodPair("__add__", "__radd__"),
+            BinaryOperatorSyntax.Subtract => new BinarySpecialMethodPair("__sub__", "__rsub__"),
+            BinaryOperatorSyntax.Multiply => new BinarySpecialMethodPair("__mul__", "__rmul__"),
+            BinaryOperatorSyntax.Divide => new BinarySpecialMethodPair("__truediv__", "__rtruediv__"),
+            BinaryOperatorSyntax.FloorDivide => new BinarySpecialMethodPair("__floordiv__", "__rfloordiv__"),
+            BinaryOperatorSyntax.Modulo => new BinarySpecialMethodPair("__mod__", "__rmod__"),
+            BinaryOperatorSyntax.Power => new BinarySpecialMethodPair("__pow__", "__rpow__"),
+            BinaryOperatorSyntax.BitwiseOr => new BinarySpecialMethodPair("__or__", "__ror__"),
+            BinaryOperatorSyntax.BitwiseXor => new BinarySpecialMethodPair("__xor__", "__rxor__"),
+            BinaryOperatorSyntax.BitwiseAnd => new BinarySpecialMethodPair("__and__", "__rand__"),
+            BinaryOperatorSyntax.LeftShift => new BinarySpecialMethodPair("__lshift__", "__rlshift__"),
+            BinaryOperatorSyntax.RightShift => new BinarySpecialMethodPair("__rshift__", "__rrshift__"),
+            _ => (BinarySpecialMethodPair?)null,
+        };
+        if (resolved is not { } pair)
+        {
+            methods = default;
+            return false;
+        }
+
+        methods = pair;
+        return true;
     }
 
     private static ValueTask<SpecialMethodInvocation> EvaluateNumericProtocolAsync(
