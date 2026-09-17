@@ -110,8 +110,12 @@ internal sealed partial class LythonRuntime
         out ExecutableExceptionRegion? matchedRegion)
     {
         matchedRegion = null;
-        foreach (var region in codeObject.ExceptionRegions)
+        // Indexed to avoid boxing the region-list enumerator on every
+        // routing scan (same order, no disposal semantics).
+        var regions = codeObject.ExceptionRegions;
+        for (var regionIndex = 0; regionIndex < regions.Count; regionIndex++)
         {
+            var region = regions[regionIndex];
             if (currentBlockIndex < region.ProtectedStartBlockIndex ||
                 currentBlockIndex > region.ProtectedEndBlockIndex)
             {
