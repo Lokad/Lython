@@ -1,3 +1,4 @@
+using System.Numerics;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
@@ -119,6 +120,47 @@ public sealed class RegexLifetimeScenarioTests
     {
         var script = new LythonEngine().Compile(
             "import re\nobjs = []\ni = 0\nwhile i < 200:\n    objs.append(re.compile(\"(a)(b)\"))\n    i = i + 1\nreturn len(objs)\n");
+        Assert.True(script.IsValid);
+        var options = Budgeted(OneMib);
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib);
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
+    }
+    [Fact]
+    public async Task SubnDiscardCompletes()
+        => await AssertCompletes(
+            "import re\nfor i in range(50000):\n    x = re.subn(\"a\", \"b\", \"aaa\")\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task SubnCallableDiscardCompletes()
+        => await AssertCompletes(
+            "import re\nfor i in range(50000):\n    x = re.subn(\"a\", lambda m: \"b\", \"aaa\")\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task SubnBehaves()
+    {
+        var script = new LythonEngine().Compile(
+            "import re\nreturn re.subn(\"a\", \"b\", \"aaa\")\n");
+        Assert.True(script.IsValid);
+        var expected = new object?[] { "bbb", new BigInteger(3) };
+        var sync = script.Run(new MockLythonHost(), Budgeted(ThreeMib));
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<object[]>(sync.ReturnValue));
+        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(ThreeMib));
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, Assert.IsType<object[]>(asyncResult.ReturnValue));
+    }
+
+    [Fact]
+    public async Task RetainedSubnDenied()
+    {
+        var script = new LythonEngine().Compile(
+            "import re\nobjs = []\ni = 0\nwhile i < 20000:\n    objs.append(re.subn(\"a\", \"b\", \"aaa\"))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = Budgeted(OneMib);
         var sync = script.Run(new MockLythonHost(), options);

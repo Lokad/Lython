@@ -32,7 +32,7 @@ internal sealed partial class LythonRuntime
 
                 var result = pattern.Regex.Subn(range.Segment.Utf8Bytes.Span, replacementText.AsString(), count);
                 var replacedTextWithCount = CreateUtf8String(result.ResultBytes, context, span);
-                return PyTuple.FromOwnedArray([SpliceRangeResult(range, replacedTextWithCount), new BigInteger(result.ReplacementCount)], context.MemoryGovernor, span);
+                return OwnSplitTupleResult(PyTuple.FromOwnedArray([SpliceRangeResult(range, replacedTextWithCount), new BigInteger(result.ReplacementCount)], context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);
             }
 
             if (replacement is not ICallable)
@@ -44,7 +44,7 @@ internal sealed partial class LythonRuntime
 
             var resultWithCount = ExecuteCallableSubstitute(pattern, replacement, range, count, span, context);
             return mode == RegexSubstitutionMode.TextAndCount
-                ? PyTuple.FromOwnedArray([resultWithCount.Result, new BigInteger(resultWithCount.ReplacementCount)], context.MemoryGovernor, span)
+                ? OwnSplitTupleResult(PyTuple.FromOwnedArray([resultWithCount.Result, new BigInteger(resultWithCount.ReplacementCount)], context.MemoryGovernor, span), span, context.Services.State.CallTemporaries)
                 : resultWithCount.Result;
         }
 
@@ -312,7 +312,7 @@ internal sealed partial class LythonRuntime
             builder.Append(sourceBytes[lastByte..]);
             var result = SpliceRangeResult(range, builder.ToPyStringAndRelease());
             return mode == RegexSubstitutionMode.TextAndCount
-                ? PyTuple.FromOwnedArray([result, new BigInteger(replaced)], context.MemoryGovernor, span)
+                ? OwnSplitTupleResult(PyTuple.FromOwnedArray([result, new BigInteger(replaced)], context.MemoryGovernor, span), span, context.Services.State.CallTemporaries)
                 : result;
         }
 
