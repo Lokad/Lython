@@ -445,34 +445,109 @@ internal static partial class PyStringOps
 
     public static BigInteger Find(PyString value, PyString needle) => new(value.Find(needle));
 
+    // Bounded searches compare over the UTF-8 span instead of slicing: the
+    // shared SliceRange materialized a governed copy per call, so bounded
+    // scans (e.g. startswith per index) allocated quadratically beside
+    // stranding the transient charge. Bounds arrive normalized and clamped.
     public static BigInteger Find(PyString value, PyString needle, int start, int end)
     {
-        var slice = SliceRange(value, start, end);
-        var found = slice.Find(needle);
-        return new(found < 0 ? -1 : start + found);
+        var startByte = value.GetByteIndexForRuneBoundary(start);
+        var endByte = value.GetByteIndexForRuneBoundary(end);
+        if (endByte <= startByte)
+        {
+            // Mirrors the empty slice: only an empty needle matches, at start.
+            return new(needle.Length == 0 ? start : -1);
+        }
+
+        var found = PyString.IndexOfBytes(value.Utf8Bytes.Span[startByte..endByte], needle.Utf8Bytes.Span);
+        return new(found < 0 ? -1 : value.ByteIndexToRuneIndex(startByte + found));
     }
 
     public static BigInteger RFind(PyString value, PyString needle, int start, int end)
     {
-        var slice = SliceRange(value, start, end);
-        var found = LastFind(slice, needle);
-        return new(found < 0 ? -1 : start + found);
+        var startByte = value.GetByteIndexForRuneBoundary(start);
+        var endByte = value.GetByteIndexForRuneBoundary(end);
+        if (endByte <= startByte)
+        {
+            return new(needle.Length == 0 ? start : -1);
+        }
+
+        var found = LastIndexOfBytes(value.Utf8Bytes.Span[startByte..endByte], needle.Utf8Bytes.Span);
+        if (found < 0)
+        {
+            return new(-1);
+        }
+
+        if (needle.Length == 0)
+        {
+            return new(value.ByteIndexToRuneIndex(endByte) - value.ByteIndexToRuneIndex(startByte) + start);
+        }
+
+        return new(value.ByteIndexToRuneIndex(startByte + found));
     }
 
     public static BigInteger Count(PyString value, PyString needle, int start, int end)
     {
-        var slice = SliceRange(value, start, end);
-        return new BigInteger(slice.Count(needle));
+        var startByte = value.GetByteIndexForRuneBoundary(start);
+        var endByte = value.GetByteIndexForRuneBoundary(end);
+        if (needle.Length == 0)
+        {
+            if (endByte <= startByte)
+            {
+                return new BigInteger(1);
+            }
+
+            return new(value.ByteIndexToRuneIndex(endByte) - value.ByteIndexToRuneIndex(startByte) + 1);
+        }
+
+        if (endByte <= startByte)
+        {
+            return new BigInteger(0);
+        }
+
+        var span = value.Utf8Bytes.Span[startByte..endByte];
+        var needleBytes = needle.Utf8Bytes.Span;
+        var count = 0;
+        var offset = 0;
+        while (true)
+        {
+            var found = PyString.IndexOfBytes(span[offset..], needleBytes);
+            if (found < 0)
+            {
+                return new BigInteger(count);
+            }
+
+            count++;
+            offset += found + needleBytes.Length;
+        }
     }
 
     public static bool StartsWith(PyString value, PyString prefix, int start, int end)
     {
-        return SliceRange(value, start, end).StartsWith(prefix);
+        var startByte = value.GetByteIndexForRuneBoundary(start);
+        var endByte = value.GetByteIndexForRuneBoundary(end);
+        if (endByte <= startByte)
+        {
+            return prefix.Utf8Bytes.Length == 0;
+        }
+
+        var span = value.Utf8Bytes.Span[startByte..endByte];
+        var prefixBytes = prefix.Utf8Bytes.Span;
+        return prefixBytes.Length <= span.Length && span[..prefixBytes.Length].SequenceEqual(prefixBytes);
     }
 
     public static bool EndsWith(PyString value, PyString suffix, int start, int end)
     {
-        return SliceRange(value, start, end).EndsWith(suffix);
+        var startByte = value.GetByteIndexForRuneBoundary(start);
+        var endByte = value.GetByteIndexForRuneBoundary(end);
+        if (endByte <= startByte)
+        {
+            return suffix.Utf8Bytes.Length == 0;
+        }
+
+        var span = value.Utf8Bytes.Span[startByte..endByte];
+        var suffixBytes = suffix.Utf8Bytes.Span;
+        return suffixBytes.Length <= span.Length && span.Slice(span.Length - suffixBytes.Length).SequenceEqual(suffixBytes);
     }
 
     public static PyTuple Partition(PyString value, PyString separator)
