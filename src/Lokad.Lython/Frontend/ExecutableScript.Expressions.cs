@@ -149,8 +149,7 @@ internal sealed partial class ExecutableScript
                 case LoweredBinaryExpression binary:
                     if (binary.Binary.Operator is BinaryOperatorSyntax.Or or BinaryOperatorSyntax.And)
                     {
-                        AddInstruction(currentBlock, ExecutableInstruction.EvaluateFallbackExpression(InternExpressionFallback(binary), binary.Span));
-                        return currentBlock;
+                        return CompileShortCircuitExpression(binary, currentBlock);
                     }
 
                     currentBlock = CompileExpression(binary.Left, currentBlock);
@@ -170,6 +169,40 @@ internal sealed partial class ExecutableScript
                     AddInstruction(currentBlock, ExecutableInstruction.EvaluateFallbackExpression(InternExpressionFallback(expression), expression.Span));
                     return currentBlock;
             }
+        }
+
+        // and/or branch natively instead of paying one lowered-dispatch
+        // state machine per evaluation. Both keep the left operand value
+        // for its deciding edge (CPython returns operands, not bools) and
+        // test it with the left span like the lowered path does, so both
+        // join edges arrive with the same stack depth.
+        private int CompileShortCircuitExpression(LoweredBinaryExpression binary, int currentBlock)
+        {
+            currentBlock = CompileExpression(binary.Left, currentBlock);
+            AddInstruction(currentBlock, ExecutableInstruction.Dup(binary.Left.Span));
+
+            var joinBlock = CreateBlock();
+            if (binary.Binary.Operator == BinaryOperatorSyntax.And)
+            {
+                AddInstruction(currentBlock, ExecutableInstruction.JumpIfFalse(joinBlock, binary.Left.Span));
+                AddInstruction(currentBlock, ExecutableInstruction.PopTop(binary.Binary.Span));
+                currentBlock = CompileExpression(binary.Right, currentBlock);
+            }
+            else
+            {
+                var rightBlock = CreateBlock();
+                AddInstruction(currentBlock, ExecutableInstruction.JumpIfFalse(rightBlock, binary.Left.Span));
+                AddInstruction(currentBlock, ExecutableInstruction.Jump(joinBlock, binary.Binary.Span));
+                AddInstruction(rightBlock, ExecutableInstruction.PopTop(binary.Binary.Span));
+                currentBlock = CompileExpression(binary.Right, rightBlock);
+            }
+
+            if (!IsTerminated(currentBlock))
+            {
+                AddInstruction(currentBlock, ExecutableInstruction.Jump(joinBlock, binary.Right.Span));
+            }
+
+            return joinBlock;
         }
 
         private bool TryCompileCallExpression(LoweredCallExpression call, int currentBlock, out int exitBlock)
