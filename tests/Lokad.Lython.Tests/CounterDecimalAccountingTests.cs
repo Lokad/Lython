@@ -10,6 +10,9 @@ namespace Lokad.Lython.Tests;
 /// MG11: fresh decimal counts produced on Counter paths own their storage;
 /// increments, totals and arithmetic over decimal counts commit per fresh value.
 /// Ungoverned counters stay free.
+// M05: adopted decimal results additionally hold one 128 B pool entry each;
+// totals/subtracts cross one 32 B young-tier growth on their fresh pool (operators
+// pre-warm tiers past it, holding exactly one entry).
 /// </summary>
 public sealed class CounterDecimalAccountingTests
 {
@@ -23,7 +26,7 @@ public sealed class CounterDecimalAccountingTests
         var counter = new PyCounter(context.MemoryGovernor, span);
         counter.SetItem(key, new PyDecimal(1m));
         var before = context.MemoryGovernor.CurrentCommittedBytes;
-        counter.Increment(key, new PyDecimal(2m), span);
+        counter.Increment(key, new PyDecimal(2m), span, null);
         Assert.True(counter.TryGetValue(key, out var stored));
         Assert.Equal(3m, ((PyDecimal)stored).Value);
         Assert.Equal(before + 64L, context.MemoryGovernor.CurrentCommittedBytes);
@@ -44,7 +47,7 @@ public sealed class CounterDecimalAccountingTests
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var total = callable.Invoke([], span, context);
         Assert.Equal(3m, ((PyDecimal)total).Value);
-        Assert.Equal(before + 128L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(before + 416L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -56,7 +59,7 @@ public sealed class CounterDecimalAccountingTests
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var counter = new PyCounter();
         counter.SetItem(PyString.FromString("a"), new PyDecimal(1m));
-        counter.Increment(PyString.FromString("a"), new PyDecimal(2m), span);
+        counter.Increment(PyString.FromString("a"), new PyDecimal(2m), span, null);
         Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
@@ -78,7 +81,7 @@ public sealed class CounterDecimalAccountingTests
         callable.Invoke([CallArgumentValue.Positional(delta)], span, context);
         Assert.True(counter.TryGetValue(key, out var stored));
         Assert.Equal(-1m, ((PyDecimal)stored).Value);
-        Assert.Equal(before + 128L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(before + 416L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -132,7 +135,7 @@ public sealed class CounterDecimalAccountingTests
             CounterWith(context, span, key, new PyDecimal(1m)), CounterWith(context, span, key, new PyDecimal(2m)));
         Assert.True(sum.TryGetValue(key, out var sumValue));
         Assert.Equal(3m, ((PyDecimal)sumValue).Value);
-        Assert.Equal(intAddBacking + 64L, Committed(context) - beforeDecAdd);
+        Assert.Equal(intAddBacking + 192L, Committed(context) - beforeDecAdd);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
 
         var beforeIntSub = Committed(context);
@@ -144,7 +147,7 @@ public sealed class CounterDecimalAccountingTests
             CounterWith(context, span, key, new PyDecimal(2m)), CounterWith(context, span, key, new PyDecimal(1m)));
         Assert.True(diff.TryGetValue(key, out var diffValue));
         Assert.Equal(1m, ((PyDecimal)diffValue).Value);
-        Assert.Equal(intSubBacking + 64L, Committed(context) - beforeDecSub);
+        Assert.Equal(intSubBacking + 192L, Committed(context) - beforeDecSub);
 
         var beforeIntNeg = Committed(context);
         var intNeg = (PyCounter)InvokeOperator("EvaluateUnaryMinus", context, span,
@@ -155,7 +158,7 @@ public sealed class CounterDecimalAccountingTests
         var neg = (PyCounter)InvokeOperator("EvaluateUnaryMinus", context, span,
             CounterWith(context, span, key, new PyDecimal(2m)));
         Assert.Equal(0, neg.Count);
-        Assert.Equal(intNegBacking + 64L, Committed(context) - beforeDecNeg);
+        Assert.Equal(intNegBacking + 192L, Committed(context) - beforeDecNeg);
     }
 
     [Fact]

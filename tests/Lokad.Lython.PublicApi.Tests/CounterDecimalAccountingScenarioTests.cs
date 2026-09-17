@@ -4,7 +4,7 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 /// <summary>
 /// MG11: accumulated decimal counts on Counter paths stay charged like other
-/// small constructed values. Repeated decimal updates must exceed a 512KiB
+/// small constructed values. Repeated accumulating decimal updates must exceed a 512KiB
 /// budget in both modes.
 /// </summary>
 public sealed class CounterDecimalAccountingScenarioTests
@@ -18,11 +18,10 @@ public sealed class CounterDecimalAccountingScenarioTests
             import decimal
             from collections import Counter
             one = decimal.Decimal(1)
-            c = Counter({"a": one})
-            d = {"a": one}
+            c = Counter()
             i = 0
             while i < 10000:
-                c.update(d)
+                c.update({str(i): one})
                 i = i + 1
             return 0
             """);

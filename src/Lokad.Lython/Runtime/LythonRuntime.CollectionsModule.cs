@@ -704,7 +704,7 @@ internal sealed partial class LythonRuntime
             foreach (var pair in otherCounter)
             {
                 var delta = ExpectCounterCount(pair.Value, span);
-                counter.Increment(pair.Key, subtract ? NegateCounterCount(delta, span, counter.OwnerMemoryGovernor) : delta, span);
+                counter.Increment(pair.Key, subtract ? NegateCounterCount(delta, span, counter.OwnerMemoryGovernor, context.Services.State.CallTemporaries) : delta, span, context.Services.State.CallTemporaries);
                 context.ObserveCollectionCount(counter.Count, span);
             }
 
@@ -716,7 +716,7 @@ internal sealed partial class LythonRuntime
             foreach (var pair in dict)
             {
                 var delta = ExpectCounterCount(pair.Value, span);
-                counter.Increment(pair.Key, subtract ? NegateCounterCount(delta, span, counter.OwnerMemoryGovernor) : delta, span);
+                counter.Increment(pair.Key, subtract ? NegateCounterCount(delta, span, counter.OwnerMemoryGovernor, context.Services.State.CallTemporaries) : delta, span, context.Services.State.CallTemporaries);
                 context.ObserveCollectionCount(counter.Count, span);
             }
 
@@ -728,7 +728,7 @@ internal sealed partial class LythonRuntime
             foreach (var pair in defaultdict.Items)
             {
                 var delta = ExpectCounterCount(pair.Value, span);
-                counter.Increment(pair.Key, subtract ? NegateCounterCount(delta, span, counter.OwnerMemoryGovernor) : delta, span);
+                counter.Increment(pair.Key, subtract ? NegateCounterCount(delta, span, counter.OwnerMemoryGovernor, context.Services.State.CallTemporaries) : delta, span, context.Services.State.CallTemporaries);
                 context.ObserveCollectionCount(counter.Count, span);
             }
 
@@ -740,7 +740,7 @@ internal sealed partial class LythonRuntime
             foreach (var key in chainMap.BuildMergedKeys())
             {
                 var delta = ExpectCounterCount(chainMap.GetSubscript(key, span), span);
-                counter.Increment(key, subtract ? NegateCounterCount(delta, span, counter.OwnerMemoryGovernor) : delta, span);
+                counter.Increment(key, subtract ? NegateCounterCount(delta, span, counter.OwnerMemoryGovernor, context.Services.State.CallTemporaries) : delta, span, context.Services.State.CallTemporaries);
                 context.ObserveCollectionCount(counter.Count, span);
             }
 
@@ -749,7 +749,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var item in ToSequence(source, span, context))
         {
-            counter.Increment(RuntimeValue(item), subtract ? -BigInteger.One : BigInteger.One, span);
+            counter.Increment(RuntimeValue(item), subtract ? -BigInteger.One : BigInteger.One, span, context.Services.State.CallTemporaries);
             context.ObserveCollectionCount(counter.Count, span);
         }
     }
@@ -766,7 +766,7 @@ internal sealed partial class LythonRuntime
             var delta = ExpectCounterCount(pair.Value, span);
             var keyword = PyString.FromString(pair.Key, context.MemoryGovernor, span);
             context.Services.State.CallTemporaries.TrackFreshString(keyword);
-            counter.Increment(keyword, subtract ? NegateCounterCount(delta, span, counter.OwnerMemoryGovernor) : delta, span);
+            counter.Increment(keyword, subtract ? NegateCounterCount(delta, span, counter.OwnerMemoryGovernor, context.Services.State.CallTemporaries) : delta, span, context.Services.State.CallTemporaries);
             context.ObserveCollectionCount(counter.Count, span);
         }
     }

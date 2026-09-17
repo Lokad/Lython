@@ -53,6 +53,20 @@ public sealed class CounterArithmeticLifetimeScenarioTests
             "from collections import Counter\nc = Counter(a=1)\nfor i in range(50000):\n    x = c | {'b': 2}\n    y = {'b': 2} | c\nreturn 0\n", "0");
 
     [Fact]
+    public async Task CounterDecimalAddDiscardCompletes()
+        => await AssertCompletes(
+            "from collections import Counter\nimport decimal\na = Counter({'x': decimal.Decimal('1')})\nb = Counter({'y': decimal.Decimal('2')})\nfor i in range(50000):\n    x = a + b\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task CounterDecimalUpdateDiscardCompletes()
+        => await AssertCompletes(
+            "from collections import Counter\nimport decimal\nc = Counter()\nd = {'x': decimal.Decimal('1')}\nfor i in range(50000):\n    c.update(d)\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task CounterDecimalBehaves()
+        => await AssertCompletes(
+            "from collections import Counter\nimport decimal\na = Counter({'x': decimal.Decimal('1')})\nb = Counter({'y': decimal.Decimal('2')})\nreturn str(sorted((a+b).items()))\n", "[('x', Decimal('1')), ('y', Decimal('2'))]");
+    [Fact]
     public async Task CounterArithmeticBehaves()
         => await AssertCompletes(
             "from collections import Counter\na = Counter(a=2)\nb = Counter(a=1, b=1)\nreturn str(sorted((a+b).items())) + str(sorted((a-b).items())) + str(sorted((a|b).items())) + str(sorted((a&b).items()))\n", "[('a', 3), ('b', 1)][('a', 1)][('a', 2), ('b', 1)][('a', 1)]");

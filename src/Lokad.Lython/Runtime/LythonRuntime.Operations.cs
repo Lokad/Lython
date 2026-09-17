@@ -452,7 +452,7 @@ internal sealed partial class LythonRuntime
     {
         if (operand is PyCounter negativeCounter)
         {
-            return BuildCounterUnaryResult(negativeCounter, count => NegateCounterCount(count, span, negativeCounter.OwnerMemoryGovernor), keepPositiveOnly: true, span, context);
+            return BuildCounterUnaryResult(negativeCounter, count => NegateCounterCount(count, span, negativeCounter.OwnerMemoryGovernor, context.Services.State.CallTemporaries), keepPositiveOnly: true, span, context);
         }
 
         if (operand is PyTimedelta)
@@ -543,13 +543,13 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal static object AddCounterCounts(object left, object right, LythonSourceSpan span, MemoryGovernor? governor)
+    internal static object AddCounterCounts(object left, object right, LythonSourceSpan span, MemoryGovernor? governor, ChargeReclamationPool? pool)
     {
         left = ExpectCounterCount(left, span);
         right = ExpectCounterCount(right, span);
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.Add(left, right, span, "+"), governor, span);
+            return OwnDecimalValue(PyDecimalOps.Add(left, right, span, "+"), governor, span, pool);
         }
 
         PyNumberOps.TryAsNumber(left, out var lhs);
@@ -557,11 +557,11 @@ internal sealed partial class LythonRuntime
         return PyNumberOps.Add(lhs, rhs);
     }
 
-    private static object SubtractCounterCounts(object left, object right, LythonSourceSpan span, MemoryGovernor? governor)
+    private static object SubtractCounterCounts(object left, object right, LythonSourceSpan span, MemoryGovernor? governor, ChargeReclamationPool? pool)
     {
         if (left is PyDecimal || right is PyDecimal)
         {
-            return OwnDecimalValue(PyDecimalOps.Subtract(left, right, span, "-"), governor, span);
+            return OwnDecimalValue(PyDecimalOps.Subtract(left, right, span, "-"), governor, span, pool);
         }
 
         PyNumberOps.TryAsNumber(left, out var lhs);
@@ -569,9 +569,9 @@ internal sealed partial class LythonRuntime
         return PyNumberOps.Subtract(lhs, rhs);
     }
 
-    private static object NegateCounterCount(object value, LythonSourceSpan span, MemoryGovernor? governor)
+    private static object NegateCounterCount(object value, LythonSourceSpan span, MemoryGovernor? governor, ChargeReclamationPool? pool)
         => value is PyDecimal decimalValue
-            ? OwnDecimalValue(new PyDecimal(-decimalValue.Value, decimalValue.Exponent), governor, span)
+            ? OwnDecimalValue(new PyDecimal(-decimalValue.Value, decimalValue.Exponent), governor, span, pool)
             : PyNumberOps.TryAsNumber(value, out var number)
                 ? PyNumberOps.Negate(number)
                 : throw new LythonRuntimeException("TypeError", "Counter mapping values must be numeric.", span);

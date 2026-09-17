@@ -285,12 +285,12 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
         NoteGrowth(innerBefore);
     }
 
-    public void Increment(object key, object delta, LythonSourceSpan span)
+    public void Increment(object key, object delta, LythonSourceSpan span, ChargeReclamationPool? pool)
     {
         var innerBefore = _items.CommittedStorageBytes;
         if (_items.TryGetValue(key, out var value))
         {
-            _items.SetItem(key, LythonRuntime.AddCounterCounts(value, delta, span, OwnerMemoryGovernor));
+            _items.SetItem(key, LythonRuntime.AddCounterCounts(value, delta, span, OwnerMemoryGovernor, pool));
             NoteGrowth(innerBefore);
             return;
         }
