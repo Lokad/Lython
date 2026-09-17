@@ -195,7 +195,12 @@ internal sealed partial class LythonRuntime
                 pattern = CreatePattern(patternArguments, signature, span, context);
             }
 
-            return new RegexSubstituteInputs(pattern, replacement, CreateSubjectRange(text, pos, endPos), count);
+            // The subject segment is a fresh governed copy on every call:
+            // own it so dropped substitutions reclaim on sweep (split and
+            // match paths keep their own ranges; the funnel never sees this).
+            var substituteInputs = new RegexSubstituteInputs(pattern, replacement, CreateSubjectRange(text, pos, endPos), count);
+            context.Services.State.CallTemporaries.TrackFreshString(substituteInputs.Range.Segment, span);
+            return substituteInputs;
         }
 
         internal static RegexSplitInputs CreateSplitInputs(object[] arguments, string signature, LythonSourceSpan span, ExecutionContext context)

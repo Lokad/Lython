@@ -27,12 +27,12 @@ internal sealed partial class LythonRuntime
                 if (mode == RegexSubstitutionMode.TextOnly)
                 {
                     var replacedText = CreateUtf8String(pattern.Regex.Replace(range.Segment.Utf8Bytes.Span, replacementText.AsString(), count), context, span);
-                    return SpliceRangeResult(range, replacedText);
+                    return SpliceRangeResult(range, replacedText, span, context.Services.State.CallTemporaries);
                 }
 
                 var result = pattern.Regex.Subn(range.Segment.Utf8Bytes.Span, replacementText.AsString(), count);
                 var replacedTextWithCount = CreateUtf8String(result.ResultBytes, context, span);
-                return OwnSplitTupleResult(PyTuple.FromOwnedArray([SpliceRangeResult(range, replacedTextWithCount), new BigInteger(result.ReplacementCount)], context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);
+                return OwnSplitTupleResult(PyTuple.FromOwnedArray([SpliceRangeResult(range, replacedTextWithCount, span, context.Services.State.CallTemporaries), new BigInteger(result.ReplacementCount)], context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);
             }
 
             if (replacement is not ICallable)
@@ -192,7 +192,7 @@ internal sealed partial class LythonRuntime
             return OwnSplitListResult(new PyList(items, context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);
         }
 
-        private static PyString SpliceRangeResult(RegexSubjectRange range, PyString segmentReplacement)
+        private static PyString SpliceRangeResult(RegexSubjectRange range, PyString segmentReplacement, LythonSourceSpan? span, ChargeReclamationPool? pool)
         {
             if (range.Pos == 0 && range.EndPos == range.Original.Length)
             {
@@ -201,9 +201,18 @@ internal sealed partial class LythonRuntime
 
             var startByte = range.Original.GetByteIndexForRuneBoundary(range.Pos);
             var endByte = range.Original.GetByteIndexForRuneBoundary(range.EndPos);
+            // Partial splices consume the segment replacement beside two slice
+            // copies plus one join transient, all beside the downstream-owned
+            // final string: own all four so dropped splices reclaim on sweep
+            // (the final string stays downstream-owned).
+            pool?.TrackFreshString(segmentReplacement, span);
             var prefix = range.Original.SliceByByteRange(0, startByte);
             var suffix = range.Original.SliceByByteRange(endByte, range.Original.Utf8Bytes.Length);
-            return prefix.Concat(segmentReplacement).Concat(suffix);
+            pool?.TrackFreshString(prefix, span);
+            pool?.TrackFreshString(suffix, span);
+            var joined = prefix.Concat(segmentReplacement);
+            pool?.TrackFreshString(joined, span);
+            return joined.Concat(suffix);
         }
 
         private static bool UsesDotStarLazyProgression(RePatternObject pattern)
@@ -310,7 +319,7 @@ internal sealed partial class LythonRuntime
             }
 
             builder.Append(sourceBytes[lastByte..]);
-            var result = SpliceRangeResult(range, builder.ToPyStringAndRelease());
+            var result = SpliceRangeResult(range, builder.ToPyStringAndRelease(), span, context.Services.State.CallTemporaries);
             return mode == RegexSubstitutionMode.TextAndCount
                 ? OwnSplitTupleResult(PyTuple.FromOwnedArray([result, new BigInteger(replaced)], context.MemoryGovernor, span), span, context.Services.State.CallTemporaries)
                 : result;
@@ -331,7 +340,7 @@ internal sealed partial class LythonRuntime
                 static (replacementState, match) => EvaluateRegexReplacement(replacementState, match),
                 count);
             return new RegexSubstitutionResult(
-                SpliceRangeResult(range, CreateUtf8String(result.ResultBytes, context, span)),
+                SpliceRangeResult(range, CreateUtf8String(result.ResultBytes, context, span), span, context.Services.State.CallTemporaries),
                 result.ReplacementCount);
         }
 

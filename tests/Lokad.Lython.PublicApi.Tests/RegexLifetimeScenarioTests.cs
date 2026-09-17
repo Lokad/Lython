@@ -213,4 +213,49 @@ public sealed class RegexLifetimeScenarioTests
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
         Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
     }
+    [Fact]
+    public async Task PartialSubDiscardCompletes()
+        => await AssertCompletes(
+            "import re\nfor i in range(50000):\n    x = re.sub(\"a\", \"b\", \"xaay\", 0, 0, 1, 3)\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task PartialSubnDiscardCompletes()
+        => await AssertCompletes(
+            "import re\nfor i in range(50000):\n    x = re.subn(\"a\", \"b\", \"xaay\", 0, 0, 1, 3)\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task PartialSubCallableDiscardCompletes()
+        => await AssertCompletes(
+            "import re\nfor i in range(20000):\n    x = re.sub(\"a\", lambda m: \"b\", \"xaay\", 0, 0, 1, 3)\nreturn 0\n", "0");
+
+    [Fact]
+    public async Task PartialSubBehaves()
+    {
+        var script = new LythonEngine().Compile(
+            "import re\nreturn re.sub(\"a\", \"b\", \"xaay\", 0, 0, 1, 3)\n");
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost(), Budgeted(ThreeMib));
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("xbby", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(ThreeMib));
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("xbby", asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task RetainedPartialDenied()
+    {
+        var script = new LythonEngine().Compile(
+            "import re\nobjs = []\ni = 0\nwhile i < 20000:\n    objs.append(re.sub(\"a\", \"b\", \"xaay\", 0, 0, 1, 3))\n    i = i + 1\nreturn len(objs)\n");
+        Assert.True(script.IsValid);
+        var options = Budgeted(OneMib);
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib);
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
+    }
 }
