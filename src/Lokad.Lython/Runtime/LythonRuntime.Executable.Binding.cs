@@ -344,6 +344,59 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    // Pooled per-call argument boxes for the common arities, confined per
+    // thread: tests run test classes in parallel, so a process-wide box
+    // could be taken twice at once. The retention audit shows no live
+    // caller-provided array reaches a retainer (the only storing callable,
+    // PyMethodCaller, is built from a range slice), so take-null with
+    // keep-first stays safe under recursion and suspension: each live use
+    // exclusively owns its array. Boxes are scrubbed before caching so
+    // reuse never leaks values.
+    [ThreadStatic]
+    private static CallArgumentValue[]? _pooledOneCallArgument;
+    [ThreadStatic]
+    private static CallArgumentValue[]? _pooledTwoCallArguments;
+
+    private static CallArgumentValue[] RentCallArguments(int count)
+    {
+        if (count == 1)
+        {
+            var rented = _pooledOneCallArgument;
+            if (rented is not null)
+            {
+                _pooledOneCallArgument = null;
+                return rented;
+            }
+            return new CallArgumentValue[1];
+        }
+        if (count == 2)
+        {
+            var rented = _pooledTwoCallArguments;
+            if (rented is not null)
+            {
+                _pooledTwoCallArguments = null;
+                return rented;
+            }
+            return new CallArgumentValue[2];
+        }
+        return count == 0 ? Array.Empty<CallArgumentValue>() : new CallArgumentValue[count];
+    }
+
+    private static void ReturnCallArguments(CallArgumentValue[] arguments)
+    {
+        if (arguments.Length == 1)
+        {
+            arguments[0] = CallArgumentValue.Positional(PyNone.Instance);
+            _pooledOneCallArgument ??= arguments;
+        }
+        else if (arguments.Length == 2)
+        {
+            arguments[0] = CallArgumentValue.Positional(PyNone.Instance);
+            arguments[1] = CallArgumentValue.Positional(PyNone.Instance);
+            _pooledTwoCallArguments ??= arguments;
+        }
+    }
+
     private static object ExecuteExecutableCall(
         ExecutableCallSite callSite,
         ExecutableValueStack stack,
@@ -358,7 +411,7 @@ internal sealed partial class LythonRuntime
 
         var start = stack.Count - valueCount;
         var target = stack[start];
-        var arguments = new CallArgumentValue[callSite.ArgumentCount];
+        var arguments = RentCallArguments(callSite.ArgumentCount);
         for (var i = 0; i < callSite.ArgumentCount; i++)
         {
             var spec = callSite.Arguments[i];
@@ -374,19 +427,26 @@ internal sealed partial class LythonRuntime
 
         stack.RemoveTail(valueCount);
 
-        if (cache is not null && ReferenceEquals(cache.Target, target))
+        try
         {
-            return InvokeCallableTarget(cache.Callable, callSite.TargetSpan, callSite.CallSpan, context, arguments);
-        }
+            if (cache is not null && ReferenceEquals(cache.Target, target))
+            {
+                return InvokeCallableTarget(cache.Callable, callSite.TargetSpan, callSite.CallSpan, context, arguments);
+            }
 
-        if (target is ICallable callable)
+            if (target is ICallable callable)
+            {
+                cache = new ExecutableCallCache(target, callable);
+                return InvokeCallableTarget(callable, callSite.TargetSpan, callSite.CallSpan, context, arguments);
+            }
+
+            cache = null;
+            return RuntimeValue(InvokeCallableTarget(target, callSite.TargetSpan, callSite.CallSpan, context, arguments));
+        }
+        finally
         {
-            cache = new ExecutableCallCache(target, callable);
-            return InvokeCallableTarget(callable, callSite.TargetSpan, callSite.CallSpan, context, arguments);
+            ReturnCallArguments(arguments);
         }
-
-        cache = null;
-        return RuntimeValue(InvokeCallableTarget(target, callSite.TargetSpan, callSite.CallSpan, context, arguments));
     }
 
     private static (ExecutableCell[] Cells, long RetainedBytes) CaptureExecutableClosures(

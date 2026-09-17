@@ -437,4 +437,28 @@ operator.iconcat('d', 1)
         Assert.Equal(exceptionType, result.Failure?.ExceptionType);
         Assert.Contains(messageFragment, result.Failure?.Message, StringComparison.Ordinal);
     }
+    [Fact]
+    public void OperatorModule_MethodcallerKeepsConstructionArgumentsAcrossLaterCalls()
+    {
+        // The caller keeps its construction array and re-passes it on every
+        // later invocation, while its factory slices a copy at construction and
+        // call-site boxes are pooled, scrubbed and reused after return. The
+        // two-slot box the construction call used. Sync only: async calls
+        // build their boxes on a separate path.
+        var result = new LythonEngine().Run(
+            """
+            import operator
+            lst = []
+            mc = operator.methodcaller("append", 5)
+            for i in range(1000):
+                x = operator.add(i, i)
+            mc(lst)
+            mc(lst)
+            print(lst)
+            """,
+            new MockLythonHost());
+
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("[5, 5]\n", result.StandardOutput);
+    }
 }
