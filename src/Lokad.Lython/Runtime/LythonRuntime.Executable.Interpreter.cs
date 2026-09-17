@@ -57,8 +57,10 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private readonly ExecutableMemberCache?[] _memberCaches = new ExecutableMemberCache?[codeObject.MemberCacheCount];
-        private readonly ExecutableCallCache?[] _callCaches = new ExecutableCallCache?[codeObject.CallCacheCount];
+        // Empty cache tables are shared: no instruction can name an index the
+        // compiler never emitted (any such access already throws today).
+        private readonly ExecutableMemberCache?[] _memberCaches = codeObject.MemberCacheCount == 0 ? Array.Empty<ExecutableMemberCache?>() : new ExecutableMemberCache?[codeObject.MemberCacheCount];
+        private readonly ExecutableCallCache?[] _callCaches = codeObject.CallCacheCount == 0 ? Array.Empty<ExecutableCallCache?>() : new ExecutableCallCache?[codeObject.CallCacheCount];
         private readonly int?[] _blockEntryStackDepths = new int?[codeObject.Blocks.Count];
 
         // Stores through the same cell-mirroring and host-mirroring policy as
