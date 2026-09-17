@@ -10,6 +10,58 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    // Pooled binder value slots for the common layout widths. The consumer
+    // audit shows bound Values never escape alive: frames copy refs out,
+    // bodies and dataclass dunders read transiently, and the struct itself
+    // never leaves its Invoke. ThreadStatic plus take-null with keep-first
+    // stays safe under recursion, suspension and parallel tests; slots are
+    // cleared before caching (fresh arrays start null too). Binding failures
+    // drop the box instead of caching it. Only the hot user-function paths
+    // return boxes; colder paths simply do not cache.
+    [ThreadStatic]
+    private static object[]? _pooledOneBoundValue;
+    [ThreadStatic]
+    private static object[]? _pooledTwoBoundValues;
+
+    private static object[] RentBoundValues(int count)
+    {
+        if (count == 1)
+        {
+            var rented = _pooledOneBoundValue;
+            if (rented is not null)
+            {
+                _pooledOneBoundValue = null;
+                return rented;
+            }
+            return new object[1];
+        }
+        if (count == 2)
+        {
+            var rented = _pooledTwoBoundValues;
+            if (rented is not null)
+            {
+                _pooledTwoBoundValues = null;
+                return rented;
+            }
+            return new object[2];
+        }
+        return new object[count];
+    }
+
+    internal static void ReturnBoundValues(object[] values)
+    {
+        if (values.Length == 1)
+        {
+            Array.Clear(values);
+            _pooledOneBoundValue ??= values;
+        }
+        else if (values.Length == 2)
+        {
+            Array.Clear(values);
+            _pooledTwoBoundValues ??= values;
+        }
+    }
+
     internal static BoundCallArguments BindFunctionArguments(
         CallArgumentValue[] arguments,
         LythonSourceSpan span,
@@ -24,7 +76,7 @@ internal sealed partial class LythonRuntime
         // slots are per-call.
         var values = plan.LayoutParameterNames.Count == 0
             ? Array.Empty<object>()
-            : new object[plan.LayoutParameterNames.Count];
+            : RentBoundValues(plan.LayoutParameterNames.Count);
         var assigned = new ArgumentPresence(plan.LayoutParameterNames.Count);
         // The overflow list is scratch: most calls never spill positionals,
         // so materialize it only on the first spill, tracked in the call pool
@@ -1014,6 +1066,7 @@ internal sealed partial class LythonRuntime
             finally
             {
                 frame.LeaveFunctionCall();
+                ReturnBoundValues(boundArguments.Values);
             }
         }
 
@@ -1042,6 +1095,7 @@ internal sealed partial class LythonRuntime
             finally
             {
                 frame.LeaveFunctionCall();
+                ReturnBoundValues(boundArguments.Values);
             }
         }
     }

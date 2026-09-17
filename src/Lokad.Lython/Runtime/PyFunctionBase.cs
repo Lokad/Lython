@@ -66,6 +66,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         finally
         {
             frame.LeaveFunctionCall();
+            LythonRuntime.ReturnBoundValues(boundArguments.Values);
         }
     }
 
@@ -90,6 +91,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         finally
         {
             frame.LeaveFunctionCall();
+            LythonRuntime.ReturnBoundValues(boundArguments.Values);
         }
     }
 
