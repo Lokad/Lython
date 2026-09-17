@@ -61,7 +61,9 @@ internal sealed partial class LythonRuntime
         // compiler never emitted (any such access already throws today).
         private readonly ExecutableMemberCache?[] _memberCaches = codeObject.MemberCacheCount == 0 ? Array.Empty<ExecutableMemberCache?>() : new ExecutableMemberCache?[codeObject.MemberCacheCount];
         private readonly ExecutableCallCache?[] _callCaches = codeObject.CallCacheCount == 0 ? Array.Empty<ExecutableCallCache?>() : new ExecutableCallCache?[codeObject.CallCacheCount];
-        private readonly int?[] _blockEntryStackDepths = new int?[codeObject.Blocks.Count];
+        // Depth entries are recorded per block visit but only read when a
+        // region matches, so region-free frames share the empty table.
+        private readonly int?[] _blockEntryStackDepths = codeObject.ExceptionRegions.Count == 0 ? Array.Empty<int?>() : new int?[codeObject.Blocks.Count];
 
         // Stores through the same cell-mirroring and host-mirroring policy as
         // StoreLocal, so synthetic slots (chain, match, with) behave exactly
@@ -493,7 +495,10 @@ internal sealed partial class LythonRuntime
             while (true)
             {
                 var block = codeObject.Blocks[_currentBlockIndex];
-                _blockEntryStackDepths[_currentBlockIndex] ??= _stack.Count;
+                if (_blockEntryStackDepths.Length != 0)
+                {
+                    _blockEntryStackDepths[_currentBlockIndex] ??= _stack.Count;
+                }
                 var jumped = false;
 
                 var instructions = block.Instructions;
