@@ -23,7 +23,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "load" => BuiltinCallable.Create(LythonKnownCallableSignatures.JsonLoad, Load),
+                "load" => BuiltinCallable.Create(LythonKnownCallableSignatures.JsonLoad, Load, LoadAsync),
                 "loads" => BuiltinCallable.Create(LythonKnownCallableSignatures.JsonLoads, Loads),
                 "dump" => BuiltinCallable.Create(LythonKnownCallableSignatures.JsonDump, Dump),
                 "dumps" => BuiltinCallable.Create(LythonKnownCallableSignatures.JsonDumps, Dumps),
@@ -46,6 +46,18 @@ internal sealed partial class LythonRuntime
 
             var loadOptions = ParseJsonLoadOptions(arguments, span);
             return ParseJsonText(file.Read(), loadOptions, context, span);
+        }
+
+        private async ValueTask<object> LoadAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            if (arguments.Length < 1 || arguments[0] is not ExecutionContext.TextFileHandle file)
+            {
+                throw new LythonRuntimeException("TypeError", "json.load(fp, *, ...) expects a readable text file handle.", span);
+            }
+
+            var loadOptions = ParseJsonLoadOptions(arguments, span);
+            return ParseJsonText(await file.ReadAsync(-1).ConfigureAwait(false), loadOptions, context, span);
         }
 
         private object Loads(object[] arguments, LythonSourceSpan span, ExecutionContext context)

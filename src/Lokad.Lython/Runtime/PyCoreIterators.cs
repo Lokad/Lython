@@ -206,6 +206,21 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
         return true;
     }
 
+    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+    {
+        var (hasValue, item) = await _cursor.TryMoveNextAsync().ConfigureAwait(false);
+        if (!hasValue)
+        {
+            return PyIterationResult.End;
+        }
+
+        // Same fresh-tuple ownership as the sync path above.
+        var produced = new PyTuple([_index, item], _governor, _span);
+        _index++;
+        _pool.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
+        return PyIterationResult.Yield(produced);
+    }
+
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<enumerate object>");
 }
 
@@ -275,6 +290,51 @@ internal sealed class PyZipIterator : PyIteratorBase
         _pool.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
         value = produced;
         return true;
+    }
+
+    public override async ValueTask<PyIterationResult> TryMoveNextAsync()
+    {
+        if (_finished || _cursors.Length == 0)
+        {
+            return PyIterationResult.End;
+        }
+
+        var items = new object[_cursors.Length];
+        for (var i = 0; i < _cursors.Length; i++)
+        {
+            var (hasValue, item) = await _cursors[i].TryMoveNextAsync().ConfigureAwait(false);
+            if (hasValue)
+            {
+                items[i] = item;
+                continue;
+            }
+
+            _finished = true;
+            if (_strict)
+            {
+                // Same strict tail-peeking as the sync path above.
+                if (i > 0)
+                {
+                    throw new LythonRuntimeException("ValueError", "zip() argument " + (i + 1) + " is shorter than " + StrictOthers(i), _span);
+                }
+
+                for (var j = i + 1; j < _cursors.Length; j++)
+                {
+                    var (laterHasValue, _) = await _cursors[j].TryMoveNextAsync().ConfigureAwait(false);
+                    if (laterHasValue)
+                    {
+                        throw new LythonRuntimeException("ValueError", "zip() argument " + (j + 1) + " is longer than " + StrictOthers(j), _span);
+                    }
+                }
+            }
+
+            return PyIterationResult.End;
+        }
+
+        // Same fresh-tuple ownership as the sync path above.
+        var produced = new PyTuple(items, _governor, _span);
+        _pool.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
+        return PyIterationResult.Yield(produced);
     }
 
     private static string StrictOthers(int index)
