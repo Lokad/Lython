@@ -47,7 +47,7 @@ internal sealed partial class ExecutableScript
                     return CompileAssignmentStatement(assignment, currentBlock);
 
                 case LoweredExpressionStatement expressionStatement:
-                    CompileExpression(expressionStatement.Expression, currentBlock);
+                    currentBlock = CompileExpression(expressionStatement.Expression, currentBlock);
                     AddInstruction(currentBlock, ExecutableInstruction.PopTop(expressionStatement.Span));
                     return currentBlock;
 
@@ -85,7 +85,7 @@ internal sealed partial class ExecutableScript
                     }
                     else
                     {
-                        CompileExpression(returnStatement.Expression, currentBlock);
+                        currentBlock = CompileExpression(returnStatement.Expression, currentBlock);
                         AddInstruction(currentBlock, ExecutableInstruction.Return(returnStatement.Span));
                     }
 
@@ -102,7 +102,7 @@ internal sealed partial class ExecutableScript
             switch (assignment)
             {
                 case LoweredNameAssignmentStatement simple:
-                    CompileExpression(simple.Expression, currentBlock);
+                    currentBlock = CompileExpression(simple.Expression, currentBlock);
                     CompileStoreBoundName(simple.Assignment.Name, simple.Span, currentBlock);
                     return currentBlock;
 
@@ -118,7 +118,7 @@ internal sealed partial class ExecutableScript
                         return currentBlock;
                     }
 
-                    CompileExpression(annotated.Expression, currentBlock);
+                    currentBlock = CompileExpression(annotated.Expression, currentBlock);
                     CompileStoreBoundName(targetName.Name, annotated.Span, currentBlock);
                     return currentBlock;
 
@@ -130,13 +130,13 @@ internal sealed partial class ExecutableScript
                     }
 
                     CompileLoadIdentifier(augmentedName.Target.Name, augmented.Span, currentBlock);
-                    CompileExpression(augmented.Expression, currentBlock);
+                    currentBlock = CompileExpression(augmented.Expression, currentBlock);
                     AddInstruction(currentBlock, ExecutableInstruction.Augmented(MapAugmentedAssignmentOperator(augmented.Assignment.Operator), augmented.Span));
                     CompileStoreBoundName(augmentedName.Target.Name, augmented.Span, currentBlock);
                     return currentBlock;
 
                 case LoweredChainedAssignmentStatement chained:
-                    CompileExpression(chained.Expression, currentBlock);
+                    currentBlock = CompileExpression(chained.Expression, currentBlock);
                     for (var i = 0; i < chained.Assignment.Targets.Count; i++)
                     {
                         if (chained.Assignment.Targets[i] is not NameAssignmentTargetSyntax name)
@@ -154,7 +154,7 @@ internal sealed partial class ExecutableScript
                     return currentBlock;
 
                 case LoweredUnpackingAssignmentStatement unpacking:
-                    CompileExpression(unpacking.Expression, currentBlock);
+                    currentBlock = CompileExpression(unpacking.Expression, currentBlock);
                     AddInstruction(currentBlock, ExecutableInstruction.AssignUnpackingTargets(InternUnpackingTargets(unpacking.Assignment.Targets, unpacking.Span), unpacking.Span));
                     return currentBlock;
 
@@ -166,7 +166,7 @@ internal sealed partial class ExecutableScript
 
         private int CompileForStatement(LoweredForStatement statement, int currentBlock)
         {
-            CompileExpression(statement.Iterable, currentBlock);
+            currentBlock = CompileExpression(statement.Iterable, currentBlock);
             AddInstruction(currentBlock, ExecutableInstruction.GetIter(statement.Iterable.Span));
 
             var headBlock = CreateBlock();
@@ -326,7 +326,7 @@ internal sealed partial class ExecutableScript
         {
             var managerSlot = InternSyntheticLocal("with_manager");
 
-            CompileExpression(statement.ContextExpression, currentBlock);
+            currentBlock = CompileExpression(statement.ContextExpression, currentBlock);
             AddInstruction(currentBlock, ExecutableInstruction.ResolveContextManager(statement.ContextExpression.Span));
             AddInstruction(currentBlock, ExecutableInstruction.Dup(statement.Span));
             AddInstruction(currentBlock, ExecutableInstruction.StoreLocal(managerSlot, statement.Span));
@@ -384,7 +384,7 @@ internal sealed partial class ExecutableScript
         private int CompileMatchStatement(LoweredMatchStatement statement, int currentBlock)
         {
             var subjectSlot = InternSyntheticLocal("match_subject");
-            CompileExpression(statement.Subject, currentBlock);
+            currentBlock = CompileExpression(statement.Subject, currentBlock);
             AddInstruction(currentBlock, ExecutableInstruction.StoreLocal(subjectSlot, statement.Subject.Span));
 
             var afterBlock = CreateBlock();
@@ -415,7 +415,7 @@ internal sealed partial class ExecutableScript
 
         private int CompileIfStatement(LoweredIfStatement statement, int currentBlock)
         {
-            CompileExpression(statement.Condition, currentBlock);
+            currentBlock = CompileExpression(statement.Condition, currentBlock);
 
             var thenBlock = CreateBlock();
             var elseBlock = statement.ElseStatements is null ? -1 : CreateBlock();
@@ -451,7 +451,7 @@ internal sealed partial class ExecutableScript
 
             AddInstruction(currentBlock, ExecutableInstruction.Jump(conditionBlock, statement.Span));
 
-            CompileExpression(statement.Condition, conditionBlock);
+            conditionBlock = CompileExpression(statement.Condition, conditionBlock);
             AddInstruction(conditionBlock, ExecutableInstruction.JumpIfFalse(statement.ElseStatements is null ? exitBlock : elseBlock, statement.Condition.Span));
             AddInstruction(conditionBlock, ExecutableInstruction.Jump(bodyBlock, statement.Span));
 
