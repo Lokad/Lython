@@ -47,6 +47,7 @@ internal enum ExecutableOpCode
     Unary,
     Jump,
     JumpIfFalse,
+    ChainLink,
     ClearException,
     EndFinally,
     Return,
@@ -189,6 +190,7 @@ internal readonly record struct ExecutableInstruction
     public int MatchCaseIndex => ReadOperand(_primaryOperand, OperandKind.MatchCaseIndex);
     public int FailureBlockIndex => ReadOperand(_secondaryOperand, OperandKind.BlockIndex);
     public int TargetBlockIndex => ReadOperand(_primaryOperand, OperandKind.BlockIndex);
+    public int ChainSlot => ReadOperand(_primaryOperand, OperandKind.LocalSlot);
     public int LoopTargetIndex => ReadOperand(_primaryOperand, OperandKind.LoopTargetIndex);
     public int UnpackingTargetIndex => ReadOperand(_primaryOperand, OperandKind.UnpackingTargetIndex);
     public int CallSiteIndex => ReadOperand(_primaryOperand, OperandKind.CallSiteIndex);
@@ -319,6 +321,9 @@ internal readonly record struct ExecutableInstruction
     public static ExecutableInstruction JumpIfFalse(int targetBlockIndex, LythonSourceSpan span)
         => CreateIndexed(ExecutableOpCode.JumpIfFalse, new Operand(OperandKind.BlockIndex, targetBlockIndex), span);
 
+    public static ExecutableInstruction ChainLink(int slot, ExecutableBinaryOperator op, int failBlockIndex, LythonSourceSpan span)
+        => new(ExecutableOpCode.ChainLink, span, new Operand(OperandKind.LocalSlot, slot), new Operand(OperandKind.BlockIndex, failBlockIndex), op, default, default, default);
+
     public static ExecutableInstruction ClearException(int exceptionNameIndex, LythonSourceSpan span)
         => CreateIndexed(ExecutableOpCode.ClearException, new Operand(OperandKind.ExceptionNameIndex, exceptionNameIndex), span);
 
@@ -342,9 +347,12 @@ internal readonly record struct ExecutableInstruction
         };
 
     public ExecutableInstruction WithFailureBlockIndex(int failureBlockIndex)
-        => OpCode == ExecutableOpCode.MatchCase
-            ? MatchCase(MatchCaseIndex, failureBlockIndex, Span)
-            : throw new InvalidOperationException($"Instruction '{OpCode}' has no failure block.");
+        => OpCode switch
+        {
+            ExecutableOpCode.MatchCase => MatchCase(MatchCaseIndex, failureBlockIndex, Span),
+            ExecutableOpCode.ChainLink => ChainLink(ChainSlot, BinaryOperator, failureBlockIndex, Span),
+            _ => throw new InvalidOperationException($"Instruction '{OpCode}' has no failure block.")
+        };
 
     private static ExecutableInstruction Create(ExecutableOpCode opCode, LythonSourceSpan span)
         => new(opCode, span, Operand.None, Operand.None, default, default, default, default);

@@ -170,6 +170,7 @@ internal sealed partial class ExecutableScript
                             pending.Push(FinalJumpTarget(instruction.TargetBlockIndex));
                             break;
                         case ExecutableOpCode.MatchCase:
+                        case ExecutableOpCode.ChainLink:
                             pending.Push(FinalJumpTarget(instruction.FailureBlockIndex));
                             break;
                     }
@@ -215,6 +216,7 @@ internal sealed partial class ExecutableScript
                 ExecutableOpCode.ForNext or
                 ExecutableOpCode.EndFinally => instruction.WithTargetBlockIndex(indexMap[FinalJumpTarget(instruction.TargetBlockIndex)]),
                 ExecutableOpCode.MatchCase => instruction.WithFailureBlockIndex(indexMap[FinalJumpTarget(instruction.FailureBlockIndex)]),
+                ExecutableOpCode.ChainLink => instruction.WithFailureBlockIndex(indexMap[FinalJumpTarget(instruction.FailureBlockIndex)]),
                 _ => instruction
             };
         }

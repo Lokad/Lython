@@ -56,6 +56,30 @@ internal sealed partial class LythonRuntime
         private readonly ExecutableCallCache?[] _callCaches = new ExecutableCallCache?[codeObject.CallCacheCount];
         private readonly int?[] _blockEntryStackDepths = new int?[codeObject.Blocks.Count];
 
+        // Stores through the same cell-mirroring and host-mirroring policy as
+        // StoreLocal, so synthetic slots (chain, match, with) behave exactly
+        // like compiler-issued stores.
+        private static void StoreLocalValue(
+            ExecutableCodeObject codeObject,
+            object[] locals,
+            ExecutableCell?[]? localCells,
+            ExecutionContext context,
+            int slot,
+            object value,
+            LythonSourceSpan span)
+        {
+            locals[slot] = value;
+            if (localCells?[slot] is ExecutableCell localCell)
+            {
+                localCell.Value = value;
+            }
+
+            if (codeObject.RequiresLocalVariableMirroring || context.MirrorLocalStores)
+            {
+                context.Variables[codeObject.LocalNames[slot]] = value;
+            }
+        }
+
         private void PushObserved(object value, LythonSourceSpan span)
         {
             context.ObserveValue(value, span);
@@ -145,17 +169,7 @@ internal sealed partial class LythonRuntime
                     break;
 
                 case ExecutableOpCode.StoreLocal:
-                    var local = Pop(_stack, instruction.Span);
-                    locals[instruction.LocalSlot] = local;
-                    if (localCells?[instruction.LocalSlot] is ExecutableCell localCell)
-                    {
-                        localCell.Value = local;
-                    }
-
-                    if (codeObject.RequiresLocalVariableMirroring || context.MirrorLocalStores)
-                    {
-                        context.Variables[codeObject.LocalNames[instruction.LocalSlot]] = local;
-                    }
+                    StoreLocalValue(codeObject, locals, localCells, context, instruction.LocalSlot, Pop(_stack, instruction.Span), instruction.Span);
                     break;
 
                 case ExecutableOpCode.StoreClosure:
@@ -381,6 +395,9 @@ internal sealed partial class LythonRuntime
                     }
                     return false;
 
+                case ExecutableOpCode.ChainLink:
+                    return ExecuteChainLink(instruction);
+
                 case ExecutableOpCode.Jump:
                     _currentBlockIndex = instruction.TargetBlockIndex;
                     return true;
@@ -424,6 +441,32 @@ internal sealed partial class LythonRuntime
                 default:
                     throw new InvalidOperationException($"Unknown executable opcode: {instruction.OpCode}");
             }
+        }
+
+        // Fused compare-and-branch for one chained-comparison link: pops the
+        // fresh right operand, compares it against the retained left through
+        // the shared Binary path, retains the right for the next link, and
+        // jumps to the shared fail edge when the link is falsy. The transient
+        // link value is observed like a Binary result would be; the delivered
+        // chain value is observed at its own LoadConst.
+        private bool ExecuteChainLink(ExecutableInstruction instruction)
+        {
+            var right = Pop(_stack, instruction.Span);
+            var linkValue = EvaluateExecutableBinary(
+                instruction.BinaryOperator,
+                LoadLocal(codeObject, locals, instruction.ChainSlot, instruction.Span),
+                right,
+                instruction.Span,
+                context);
+            context.ObserveValue(linkValue, instruction.Span);
+            StoreLocalValue(codeObject, locals, localCells, context, instruction.ChainSlot, right, instruction.Span);
+            if (!IsTruthy(linkValue, context, instruction.Span))
+            {
+                _currentBlockIndex = instruction.FailureBlockIndex;
+                return true;
+            }
+
+            return false;
         }
 
         public void Execute()
@@ -495,6 +538,7 @@ internal sealed partial class LythonRuntime
                                 break;
 
                             case ExecutableOpCode.JumpIfFalse or
+                                 ExecutableOpCode.ChainLink or
                                  ExecutableOpCode.Jump or
                                  ExecutableOpCode.ClearException or
                                  ExecutableOpCode.EndFinally or

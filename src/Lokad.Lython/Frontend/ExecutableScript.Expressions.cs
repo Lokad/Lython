@@ -165,6 +165,9 @@ internal sealed partial class ExecutableScript
                 case LoweredConditionalExpression conditional:
                     return CompileConditionalExpression(conditional, currentBlock);
 
+                case LoweredChainedComparisonExpression chained:
+                    return CompileChainedComparisonExpression(chained, currentBlock);
+
                 default:
                     AddInstruction(currentBlock, ExecutableInstruction.EvaluateFallbackExpression(InternExpressionFallback(expression), expression.Span));
                     return currentBlock;
@@ -202,6 +205,45 @@ internal sealed partial class ExecutableScript
                 AddInstruction(currentBlock, ExecutableInstruction.Jump(joinBlock, binary.Right.Span));
             }
 
+            return joinBlock;
+        }
+
+        // Chained comparisons evaluate through one fused link opcode per
+        // comparison instead of paying one lowered-dispatch state machine
+        // per operand and link. The left operand is retained in a synthetic
+        // slot (fresh per site, so nesting is safe); each link pops the
+        // fresh right operand, compares, retains it, and branches false to
+        // a shared fail edge, so every edge preserves stack depth.
+        private int CompileChainedComparisonExpression(LoweredChainedComparisonExpression chained, int currentBlock)
+        {
+            var slot = InternSyntheticLocal("chain_left");
+
+            currentBlock = CompileExpression(chained.Operands[0], currentBlock);
+            AddInstruction(currentBlock, ExecutableInstruction.StoreLocal(slot, chained.Operands[0].Span));
+
+            var failBlock = CreateBlock();
+            var joinBlock = CreateBlock();
+
+            for (var i = 0; i < chained.ChainedComparison.Operators.Count; i++)
+            {
+                var linkBlock = CreateBlock();
+                AddInstruction(currentBlock, ExecutableInstruction.Jump(linkBlock, chained.Span));
+                currentBlock = linkBlock;
+
+                currentBlock = CompileExpression(chained.Operands[i + 1], currentBlock);
+                AddInstruction(currentBlock, ExecutableInstruction.ChainLink(slot, MapBinaryOperator(chained.ChainedComparison.Operators[i]), failBlock, chained.Span));
+
+                if (i < chained.ChainedComparison.Operators.Count - 1)
+                {
+                    continue;
+                }
+
+                AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(true), chained.Span));
+                AddInstruction(currentBlock, ExecutableInstruction.Jump(joinBlock, chained.Span));
+            }
+
+            AddInstruction(failBlock, ExecutableInstruction.LoadConst(InternConstant(false), chained.Span));
+            AddInstruction(failBlock, ExecutableInstruction.Jump(joinBlock, chained.Span));
             return joinBlock;
         }
 
