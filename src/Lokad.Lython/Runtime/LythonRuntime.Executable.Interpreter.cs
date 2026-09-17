@@ -369,12 +369,14 @@ internal sealed partial class LythonRuntime
         // Ordinary returns deliver without throwing: a cleanup that handles
         // them in-frame routes through TryHandleAbrupt, otherwise the frame
         // records the value and exits normally (the Execute loop-end picks up
-        // the flags). Propagated signals from nested calls still arrive
-        // through the per-instruction catch below, which stays as the routing
-        // backstop.
+        // the flags). Frames without protected regions skip the routing scan
+        // (and its per-return signal box) entirely. Propagated signals from
+        // nested calls still arrive through the per-instruction catch below,
+        // which stays as the routing backstop.
         private bool DeliverReturn(object value, LythonSourceSpan span)
         {
-            if (TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingReturn(value), span, ref _pendingAbrupt, ref _currentBlockIndex, out _))
+            if (codeObject.ExceptionRegions.Count != 0 &&
+                TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingReturn(value), span, ref _pendingAbrupt, ref _currentBlockIndex, out _))
             {
                 return true;
             }
