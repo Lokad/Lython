@@ -250,12 +250,22 @@ internal sealed partial class LythonRuntime
     }
 
     internal static void ExecuteExecutableCodeObject(ExecutableCodeObject codeObject, ExecutionContext context)
-        => ExecuteExecutableCodeObject(codeObject, context, default, Array.Empty<int>(), null);
+    {
+        // Module top-level keeps the historical contract: an explicit frame
+        // return surfaces once as a signal for Run to project (sync function
+        // bodies consume the value directly instead).
+        if (ExecuteExecutableCodeObject(codeObject, context, default, Array.Empty<int>(), null) is { } returnValue)
+        {
+            throw new ReturnSignal(returnValue);
+        }
+    }
 
     // Bound arguments arrive in plan layout order with a precomputed
     // layout-to-slot map (or -1 for names that are not frame locals).
     // Indexed stores replace the previous per-local name lookups.
-    internal static void ExecuteExecutableCodeObject(
+    // Returns the frame's explicit return value, or null when the body fell
+    // through (an explicit guest return is never raw null).
+    internal static object? ExecuteExecutableCodeObject(
         ExecutableCodeObject codeObject,
         ExecutionContext context,
         BoundCallArguments boundArguments,
@@ -300,7 +310,9 @@ internal sealed partial class LythonRuntime
                 context.EnterExecutableSlots(new ExecutableFrameState(codeObject, locals, localCells, closureCells));
             }
 
-            new ExecutableFrameInterpreter(codeObject, context, locals, localCells).Execute();
+            var interpreter = new ExecutableFrameInterpreter(codeObject, context, locals, localCells);
+            interpreter.Execute();
+            return interpreter.HasFrameReturn ? interpreter.FrameReturnValue : null;
         }
         finally
         {

@@ -366,10 +366,12 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
-        // Ordinary returns deliver without throwing when a cleanup handles them
-        // in-frame; otherwise the frame exits by throwing once (instead of the
-        // previous throw-catch-rethrow cycle). Propagated signals from nested
-        // calls still arrive through the per-instruction catch above.
+        // Ordinary returns deliver without throwing: a cleanup that handles
+        // them in-frame routes through TryHandleAbrupt, otherwise the frame
+        // records the value and exits normally (the Execute loop-end picks up
+        // the flags). Propagated signals from nested calls still arrive
+        // through the per-instruction catch below, which stays as the routing
+        // backstop.
         private bool DeliverReturn(object value, LythonSourceSpan span)
         {
             if (TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingReturn(value), span, ref _pendingAbrupt, ref _currentBlockIndex, out _))
@@ -468,6 +470,10 @@ internal sealed partial class LythonRuntime
 
             return false;
         }
+
+        internal bool HasFrameReturn => _hasFrameReturn;
+
+        internal object FrameReturnValue => _frameReturnValue.RequireNotNull();
 
         public void Execute()
         {
@@ -613,7 +619,7 @@ internal sealed partial class LythonRuntime
 
                 if (_hasFrameReturn)
                 {
-                    throw new ReturnSignal(_frameReturnValue.RequireNotNull());
+                    return;
                 }
 
                 if (!jumped)

@@ -38,7 +38,7 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         LythonSourceSpan span)
     {
         _ = span;
-        LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _argumentSlotMap, _closureCells);
-        return PyNone.Instance;
+        return LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _argumentSlotMap, _closureCells)
+            ?? PyNone.Instance;
     }
 }
