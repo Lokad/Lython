@@ -413,6 +413,9 @@ internal sealed partial class LythonRuntime
                 text,
                 arguments.Length >= 2 ? RegexCompiler.ParseExplicitInt(arguments[1], "pos", "compiled regex method", span, context) : 0,
                 arguments.Length >= 3 ? RegexCompiler.ParseExplicitInt(arguments[2], "endpos", "compiled regex method", span, context) : text.Length);
+            // The subject segment is a fresh governed copy on every call:
+            // own it so dropped results reclaim on sweep.
+            context.Services.State.CallTemporaries.TrackFreshString(range.Segment, span);
             if (!range.IsValid)
             {
                 return PyNone.Instance;
@@ -434,6 +437,9 @@ internal sealed partial class LythonRuntime
                 text,
                 arguments.Length >= 2 ? RegexCompiler.ParseExplicitInt(arguments[1], "pos", "pattern.findall", span, context) : 0,
                 arguments.Length >= 3 ? RegexCompiler.ParseExplicitInt(arguments[2], "endpos", "pattern.findall", span, context) : text.Length);
+            // The subject segment is a fresh governed copy on every call:
+            // own it so dropped results reclaim on sweep.
+            context.Services.State.CallTemporaries.TrackFreshString(range.Segment, span);
             return RegexMatcher.CreateFindAllResult(pattern, range, span, context);
         }
 
@@ -486,6 +492,9 @@ internal sealed partial class LythonRuntime
                 text,
                 arguments.Length >= 2 ? RegexCompiler.ParseExplicitInt(arguments[1], "pos", "pattern.finditer", span, context) : 0,
                 arguments.Length >= 3 ? RegexCompiler.ParseExplicitInt(arguments[2], "endpos", "pattern.finditer", span, context) : text.Length);
+            // The subject segment is a fresh governed copy on every call:
+            // own it so dropped results reclaim on sweep.
+            context.Services.State.CallTemporaries.TrackFreshString(range.Segment, span);
             // Finditer shells charge per live instance like other iterator factories.
             PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
             var findIter = RegexMatcher.CreateFindIterMatches(pattern, range, context, span);
@@ -517,6 +526,9 @@ internal sealed partial class LythonRuntime
                 text,
                 arguments.Length >= 4 ? RegexCompiler.ParseExplicitInt(arguments[3], "pos", operationName, span, context) : 0,
                 arguments.Length >= 5 ? RegexCompiler.ParseExplicitInt(arguments[4], "endpos", operationName, span, context) : text.Length);
+            // The subject segment is a fresh governed copy on every call:
+            // own it so dropped results reclaim on sweep.
+            context.Services.State.CallTemporaries.TrackFreshString(range.Segment, span);
             return RegexMatcher.ExecuteSubstitute(pattern, replacement, range, count, span, context, mode);
         }
 
@@ -533,6 +545,9 @@ internal sealed partial class LythonRuntime
                 text,
                 arguments.Length >= 3 ? RegexCompiler.ParseExplicitInt(arguments[2], "pos", "pattern.split", span, context) : 0,
                 arguments.Length >= 4 ? RegexCompiler.ParseExplicitInt(arguments[3], "endpos", "pattern.split", span, context) : text.Length);
+            // The subject segment is a fresh governed copy on every call:
+            // own it so dropped results reclaim on sweep.
+            context.Services.State.CallTemporaries.TrackFreshString(range.Segment, span);
             return RegexMatcher.ProjectSplitResult(pattern.Regex.SplitDetailed(range.Segment.Utf8Bytes.Span, maxSplit), span, context);
         }
     }

@@ -150,15 +150,22 @@ internal sealed partial class LythonRuntime
             if (arguments[0] is RePatternObject compiled)
             {
                 ThrowIfCompiledFlags(arguments, 2, span, context);
-                return new RegexPatternRange(compiled, CreateSubjectRange(text, pos, endPos));
+                var compiledRange = CreateSubjectRange(text, pos, endPos);
+                context.Services.State.CallTemporaries.TrackFreshString(compiledRange.Segment, span);
+                return new RegexPatternRange(compiled, compiledRange);
             }
 
             object[] patternArguments = arguments.Length >= 3 && !ReferenceEquals(arguments[2], PyNone.Instance)
                 ? [arguments[0], arguments[2]]
                 : [arguments[0]];
+            // The subject segment is a fresh governed copy on every call:
+            // own it so dropped matches reclaim on sweep (substitute and
+            // split adopt their own segments; the funnel never sees these).
+            var matchRange = CreateSubjectRange(text, pos, endPos);
+            context.Services.State.CallTemporaries.TrackFreshString(matchRange.Segment, span);
             return new RegexPatternRange(
                 CreatePattern(patternArguments, signature, span, context),
-                CreateSubjectRange(text, pos, endPos));
+                matchRange);
         }
 
         internal static RegexSubstituteInputs CreateSubstituteInputs(object[] arguments, string signature, LythonSourceSpan span, ExecutionContext context)
@@ -237,7 +244,12 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            return new RegexSplitInputs(pattern, CreateSubjectRange(text, pos, endPos), maxSplit);
+            // The subject segment is a fresh governed copy on every call:
+            // own it so dropped splits reclaim on sweep (substitute and
+            // match adopt their own segments; the funnel never sees these).
+            var splitRange = CreateSubjectRange(text, pos, endPos);
+            context.Services.State.CallTemporaries.TrackFreshString(splitRange.Segment, span);
+            return new RegexSplitInputs(pattern, splitRange, maxSplit);
         }
 
         // Regex bounds coerce through __index__ like CPython. Module-level
