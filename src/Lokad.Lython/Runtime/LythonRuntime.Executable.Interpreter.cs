@@ -438,8 +438,10 @@ internal sealed partial class LythonRuntime
                 _blockEntryStackDepths[_currentBlockIndex] ??= _stack.Count;
                 var jumped = false;
 
-                foreach (var instruction in block.Instructions)
+                var instructions = block.Instructions;
+                for (var instructionIndex = 0; instructionIndex < instructions.Count; instructionIndex++)
                 {
+                    var instruction = instructions[instructionIndex];
                     context.Services.CheckExecutionBudget(instruction.Span);
 
                     try
