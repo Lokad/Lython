@@ -64,6 +64,9 @@ internal sealed partial class LythonRuntime
     {
         context.MemoryGovernor.Reserve(DecimalValueBytes, span);
         context.MemoryGovernor.Commit(DecimalValueBytes);
+        // Fresh shells reclaim through the pool once dropped; adopt with refund so a
+        // denied registry charge releases the construction charge instead of stranding it.
+        context.Services.State.CallTemporaries.TrackFreshMutable(value, DecimalValueBytes, span);
         return value;
     }
 
