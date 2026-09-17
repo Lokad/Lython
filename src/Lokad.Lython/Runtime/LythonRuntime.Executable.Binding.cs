@@ -360,6 +360,8 @@ internal sealed partial class LythonRuntime
     private static CallArgumentValue[]? _pooledOneCallArgument;
     [ThreadStatic]
     private static CallArgumentValue[]? _pooledTwoCallArguments;
+    [ThreadStatic]
+    private static CallArgumentValue[]? _pooledThreeCallArguments;
 
     private static CallArgumentValue[] RentCallArguments(int count)
     {
@@ -383,6 +385,16 @@ internal sealed partial class LythonRuntime
             }
             return new CallArgumentValue[2];
         }
+        if (count == 3)
+        {
+            var rentedThree = _pooledThreeCallArguments;
+            if (rentedThree is not null)
+            {
+                _pooledThreeCallArguments = null;
+                return rentedThree;
+            }
+            return new CallArgumentValue[3];
+        }
         return count == 0 ? Array.Empty<CallArgumentValue>() : new CallArgumentValue[count];
     }
 
@@ -398,6 +410,13 @@ internal sealed partial class LythonRuntime
             arguments[0] = CallArgumentValue.Positional(PyNone.Instance);
             arguments[1] = CallArgumentValue.Positional(PyNone.Instance);
             _pooledTwoCallArguments ??= arguments;
+        }
+        else if (arguments.Length == 3)
+        {
+            arguments[0] = CallArgumentValue.Positional(PyNone.Instance);
+            arguments[1] = CallArgumentValue.Positional(PyNone.Instance);
+            arguments[2] = CallArgumentValue.Positional(PyNone.Instance);
+            _pooledThreeCallArguments ??= arguments;
         }
     }
 

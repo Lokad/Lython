@@ -22,6 +22,8 @@ internal sealed partial class LythonRuntime
     private static object[]? _pooledOneBoundValue;
     [ThreadStatic]
     private static object[]? _pooledTwoBoundValues;
+    [ThreadStatic]
+    private static object[]? _pooledThreeBoundValues;
 
     private static object[] RentBoundValues(int count)
     {
@@ -45,6 +47,16 @@ internal sealed partial class LythonRuntime
             }
             return new object[2];
         }
+        if (count == 3)
+        {
+            var rentedThree = _pooledThreeBoundValues;
+            if (rentedThree is not null)
+            {
+                _pooledThreeBoundValues = null;
+                return rentedThree;
+            }
+            return new object[3];
+        }
         return new object[count];
     }
 
@@ -59,6 +71,11 @@ internal sealed partial class LythonRuntime
         {
             Array.Clear(values);
             _pooledTwoBoundValues ??= values;
+        }
+        else if (values.Length == 3)
+        {
+            Array.Clear(values);
+            _pooledThreeBoundValues ??= values;
         }
     }
 
