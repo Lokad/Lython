@@ -170,14 +170,14 @@ internal sealed partial class LythonRuntime
                     return listIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(list, "list.__len__", static (receiver, span, context) => Len([receiver], span, context)),
-                "__contains__" => BoundCallable.Create((arguments, span, _) =>
+                "__contains__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "list.__contains__(item) expects one argument.", span);
                     }
 
-                    return PyContainment.Contains(list, arguments[0], span);
+                    return PyContainment.ContainsWithProtocols(list, arguments[0], context, span);
                 }, "list.__contains__", ["item"]),
                 "__getitem__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -517,14 +517,14 @@ internal sealed partial class LythonRuntime
                     return tupleIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(source, "tuple.__len__", static (receiver, span, context) => Len([receiver], span, context)),
-                "__contains__" => BoundCallable.Create((arguments, span, _) =>
+                "__contains__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "tuple.__contains__(item) expects one argument.", span);
                     }
 
-                    return PyContainment.Contains(source, arguments[0], span);
+                    return PyContainment.ContainsWithProtocols(source, arguments[0], context, span);
                 }, "tuple.__contains__", ["item"]),
                 "__getitem__" => BoundCallable.Create((arguments, span, context) =>
                 {

@@ -6,8 +6,9 @@ namespace Lokad.Lython.PublicApi.Tests;
 // P03: tuple membership scans by index (no per-check enumerator box).
 // Guards the indexed scan against the old enumerating path: positions,
 // misses, empty and mixed-type tuples, identity fast path, and negation,
-// in both execution modes. Member __eq__ dispatch inside containment is a
-// known separate gap (pinned unchanged here); only identity is asserted.
+// in both execution modes. Member __eq__ dispatch inside containment is
+// covered by ContainmentProtocolScenarioTests; default equality still
+// resolves by identity here.
 public sealed class TupleMembershipScenarioTests
 {
     private static async Task AssertValue(string source, object expected)

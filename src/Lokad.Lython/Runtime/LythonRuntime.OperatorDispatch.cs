@@ -485,6 +485,76 @@ internal sealed partial class LythonRuntime
             : AreEqual(left, right);
     }
 
+    // Sequence membership consults the member __eq__ protocol like == does,
+    // with CPython identity shortcut first (an identical object matches
+    // without invoking __eq__). Sync twin of the async core below.
+    internal static bool MembershipEquals(
+        object item,
+        object candidate,
+        ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        if (ReferenceEquals(item, candidate))
+        {
+            return true;
+        }
+
+        if (item is PyCmpKey itemKey && candidate is PyCmpKey candidateKey)
+        {
+            return itemKey.CompareTo(candidateKey, span, context) == 0;
+        }
+
+        if (TryInvokeBinarySpecialMethod(item, "__eq__", candidate, context, span, out var leftValue) &&
+            leftValue is not PyNotImplemented)
+        {
+            return IsTruthy(leftValue, context, span);
+        }
+
+        if (TryInvokeBinarySpecialMethod(candidate, "__eq__", item, context, span, out var rightValue) &&
+            rightValue is not PyNotImplemented)
+        {
+            return IsTruthy(rightValue, context, span);
+        }
+
+        return AreEqual(item, candidate);
+    }
+
+    internal static ValueTask<bool> MembershipEqualsAsync(
+        object item,
+        object candidate,
+        ExecutionContext context,
+        LythonSourceSpan span)
+        => MembershipEqualsCoreAsync(item, candidate, context, span, InvokeBinarySpecialMethodAsync, IsTruthyAsync);
+
+    private static async ValueTask<bool> MembershipEqualsCoreAsync(
+        object item,
+        object candidate,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        BinarySpecialMethodInvoker invoke,
+        TruthinessEvaluator evaluateTruthiness)
+    {
+        if (ReferenceEquals(item, candidate))
+        {
+            return true;
+        }
+
+        if (item is PyCmpKey itemKey && candidate is PyCmpKey candidateKey)
+        {
+            return itemKey.CompareTo(candidateKey, span, context) == 0;
+        }
+
+        var invocation = await invoke(item, "__eq__", candidate, context, span).ConfigureAwait(false);
+        if (invocation.Kind == SpecialMethodInvocationKind.Missing || invocation.Value is PyNotImplemented)
+        {
+            invocation = await invoke(candidate, "__eq__", item, context, span).ConfigureAwait(false);
+        }
+
+        return invocation.Kind == SpecialMethodInvocationKind.Invoked && invocation.Value is not PyNotImplemented
+            ? await evaluateTruthiness(invocation.Value, context, span).ConfigureAwait(false)
+            : AreEqual(item, candidate);
+    }
+
     private static bool AreNotEqualWithProtocols(
         object left,
         object right,
@@ -675,7 +745,7 @@ internal sealed partial class LythonRuntime
             return IsTruthy(value, context, span);
         }
 
-        return PyContainment.Contains(container, candidate, span);
+        return PyContainment.ContainsWithProtocols(container, candidate, context, span);
     }
 
     private static ValueTask<bool> ContainsAsync(
@@ -696,7 +766,7 @@ internal sealed partial class LythonRuntime
         var invocation = await invoke(container, "__contains__", candidate, context, span).ConfigureAwait(false);
         return invocation.Kind == SpecialMethodInvocationKind.Invoked
             ? await evaluateTruthiness(invocation.Value, context, span).ConfigureAwait(false)
-            : PyContainment.Contains(container, candidate, span);
+            : await PyContainment.ContainsWithProtocolsAsync(container, candidate, context, span).ConfigureAwait(false);
     }
 
     private static ValueTask<bool> EvaluateTruthiness(object value, ExecutionContext context, LythonSourceSpan span)
