@@ -382,13 +382,13 @@ internal sealed partial class LythonRuntime
                     set.Add(ValidateSetItem(arguments[0], span));
                     context.ObserveCollectionCount(set.Count, span);
                     return PyNone.Instance;
-                }, OnePositional("set.add", "value")),
+                }, SetAddSignature),
                 "discard" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     set.Remove(ValidateSetItem(arguments[0], span));
                     return PyNone.Instance;
-                }, OnePositional("set.discard", "value")),
+                }, SetDiscardSignature),
                 "remove" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -399,7 +399,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNone.Instance;
-                }, OnePositional("set.remove", "value")),
+                }, SetRemoveSignature),
                 "copy" => BoundCallable.CreateNoArguments(
                     set,
                     "set.copy",
@@ -429,7 +429,7 @@ internal sealed partial class LythonRuntime
                     var result = new PySet(set, context.MemoryGovernor, span);
                     Update(result, arguments, span, context);
                     return result;
-                }, VariadicPositional("set.union")),
+                }, SetUnionSignature),
                 "intersection" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -440,7 +440,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return result;
-                }, VariadicPositional("set.intersection")),
+                }, SetIntersectionSignature),
                 "difference" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -451,7 +451,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return result;
-                }, VariadicPositional("set.difference")),
+                }, SetDifferenceSignature),
                 "symmetric_difference" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -459,7 +459,7 @@ internal sealed partial class LythonRuntime
                     result.SymmetricExceptWith(MaterializeSet(arguments[0], span, context));
                     context.ObserveCollectionCount(result.Count, span);
                     return result;
-                }, OnePositional("set.symmetric_difference", "other")),
+                }, SetSymmetricDifferenceSignature),
                 "isdisjoint" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -472,13 +472,13 @@ internal sealed partial class LythonRuntime
                     }
 
                     return true;
-                }, OnePositional("set.isdisjoint", "other")),
+                }, SetIsDisjointSignature),
                 "issubset" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     return IsSubsetOfIterable(set, arguments[0], span, context);
                 },
-                    OnePositional("set.issubset", "other")),
+                    SetIsSubsetSignature),
                 "issuperset" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -491,14 +491,14 @@ internal sealed partial class LythonRuntime
                     }
 
                     return true;
-                }, OnePositional("set.issuperset", "other")),
+                }, SetIsSupersetSignature),
                 "update" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     set.AttachMemoryGovernor(context.MemoryGovernor, span);
                     Update(set, arguments, span, context);
                     return PyNone.Instance;
-                }, VariadicPositional("set.update")),
+                }, SetUpdateSignature),
                 "intersection_update" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -509,7 +509,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNone.Instance;
-                }, VariadicPositional("set.intersection_update")),
+                }, SetIntersectionUpdateSignature),
                 "difference_update" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -520,7 +520,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNone.Instance;
-                }, VariadicPositional("set.difference_update")),
+                }, SetDifferenceUpdateSignature),
                 "symmetric_difference_update" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -528,7 +528,7 @@ internal sealed partial class LythonRuntime
                     set.SymmetricExceptWith(MaterializeSet(arguments[0], span, context));
                     context.ObserveCollectionCount(set.Count, span);
                     return PyNone.Instance;
-                }, OnePositional("set.symmetric_difference_update", "other")),
+                }, SetSymmetricDifferenceUpdateSignature),
                 "__iter__" => BoundCallable.CreateNoArguments(set, "set.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
@@ -820,11 +820,26 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        private static LythonCallableSignature OnePositional(string name, string parameterName)
-            => LythonCallableSignature.Create(name, [parameterName], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
-
-        private static LythonCallableSignature VariadicPositional(string name)
-            => LythonCallableSignature.Create(name, requiredCount: 0);
+        // Fixed-shape member signatures as shared immutable facts: every call
+        // above passes a compile-time literal, so each signature is built once
+        // instead of rebuilding the parameter-name array and consulting the
+        // signature interner (lookup plus locking) on every member resolution.
+        // The interner still returns these same instances; hoisting only
+        // removes the per-resolution rebuild.
+        private static readonly LythonCallableSignature SetAddSignature = LythonCallableSignature.Create("set.add", ["value"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+        private static readonly LythonCallableSignature SetDiscardSignature = LythonCallableSignature.Create("set.discard", ["value"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+        private static readonly LythonCallableSignature SetRemoveSignature = LythonCallableSignature.Create("set.remove", ["value"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+        private static readonly LythonCallableSignature SetSymmetricDifferenceSignature = LythonCallableSignature.Create("set.symmetric_difference", ["other"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+        private static readonly LythonCallableSignature SetIsDisjointSignature = LythonCallableSignature.Create("set.isdisjoint", ["other"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+        private static readonly LythonCallableSignature SetIsSubsetSignature = LythonCallableSignature.Create("set.issubset", ["other"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+        private static readonly LythonCallableSignature SetIsSupersetSignature = LythonCallableSignature.Create("set.issuperset", ["other"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+        private static readonly LythonCallableSignature SetSymmetricDifferenceUpdateSignature = LythonCallableSignature.Create("set.symmetric_difference_update", ["other"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+        private static readonly LythonCallableSignature SetUnionSignature = LythonCallableSignature.Create("set.union", requiredCount: 0);
+        private static readonly LythonCallableSignature SetIntersectionSignature = LythonCallableSignature.Create("set.intersection", requiredCount: 0);
+        private static readonly LythonCallableSignature SetDifferenceSignature = LythonCallableSignature.Create("set.difference", requiredCount: 0);
+        private static readonly LythonCallableSignature SetUpdateSignature = LythonCallableSignature.Create("set.update", requiredCount: 0);
+        private static readonly LythonCallableSignature SetIntersectionUpdateSignature = LythonCallableSignature.Create("set.intersection_update", requiredCount: 0);
+        private static readonly LythonCallableSignature SetDifferenceUpdateSignature = LythonCallableSignature.Create("set.difference_update", requiredCount: 0);
 
         internal static PySet AsSetOperand(object value, LythonSourceSpan span, ExecutionContext context)
             => value as PySet ?? MaterializeSet(value, span, context);

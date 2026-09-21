@@ -2202,7 +2202,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return true;
-                }, OnePositional("dict_keys.isdisjoint", "other")),
+                }, DictKeysIsDisjointSignature),
                 "__iter__" => BoundCallable.CreateNoArguments(view, "dict_keys.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
@@ -2444,7 +2444,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return true;
-                }, OnePositional("dict_items.isdisjoint", "other")),
+                }, DictItemsIsDisjointSignature),
                 "__iter__" => BoundCallable.CreateNoArguments(view, "dict_items.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
@@ -2652,7 +2652,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return true;
-                }, OnePositional("ChainMap.keys.isdisjoint", "other")),
+                }, ChainMapKeysIsDisjointSignature),
                 "__iter__" => BoundCallable.CreateNoArguments(view, "ChainMap.keys.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
@@ -2899,7 +2899,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return true;
-                }, OnePositional("ChainMap.items.isdisjoint", "other")),
+                }, ChainMapItemsIsDisjointSignature),
                 "__iter__" => BoundCallable.CreateNoArguments(view, "ChainMap.items.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
@@ -3156,8 +3156,13 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        private static LythonCallableSignature OnePositional(string name, string parameterName)
-            => LythonCallableSignature.Create(name, [parameterName], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+        // Fixed-shape member signatures as shared immutable facts (see the
+        // set-member hoisting): each call site passes a compile-time literal,
+        // so each signature is built once instead of per member resolution.
+        private static readonly LythonCallableSignature DictKeysIsDisjointSignature = LythonCallableSignature.Create("dict_keys.isdisjoint", ["other"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+        private static readonly LythonCallableSignature DictItemsIsDisjointSignature = LythonCallableSignature.Create("dict_items.isdisjoint", ["other"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+        private static readonly LythonCallableSignature ChainMapKeysIsDisjointSignature = LythonCallableSignature.Create("ChainMap.keys.isdisjoint", ["other"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+        private static readonly LythonCallableSignature ChainMapItemsIsDisjointSignature = LythonCallableSignature.Create("ChainMap.items.isdisjoint", ["other"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
     }
 
     internal static class DefaultDictMembers
