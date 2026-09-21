@@ -1443,6 +1443,7 @@ internal sealed partial class LythonRuntime
 
         var value = arguments.Length == 2 ? arguments[1] : PyNone.Instance;
         var result = new PyDict(context.MemoryGovernor, span);
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         foreach (var key in ToSequence(arguments[0], span, context))
         {
             result.SetItem(ValidateDictionaryKey(key, span), value);

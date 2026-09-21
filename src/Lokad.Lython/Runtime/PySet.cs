@@ -330,12 +330,13 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         }
 
         var hash = PyHashProtocols.GetProtocolHash(item, context, useSpan);
+        var structuralHash = PyValueComparer.Instance.GetHashCode(item);
         if (_protocol is not null)
         {
             var snapshot = _protocol.ToArray();
             foreach (var entry in snapshot)
             {
-                if (entry.Hash == hash && (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan)))
+                if ((entry.Hash == hash || entry.Hash == structuralHash) && (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan)))
                 {
                     return false;
                 }
@@ -344,7 +345,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
         foreach (var existing in _items.ToArray())
         {
-            if (PyValueComparer.Instance.GetHashCode(existing) == hash && (ReferenceEquals(existing, item) || LythonRuntime.ElementEquals(existing, item, context, useSpan)))
+            if ((PyValueComparer.Instance.GetHashCode(existing) == hash || PyValueComparer.Instance.GetHashCode(existing) == structuralHash) && (ReferenceEquals(existing, item) || LythonRuntime.ElementEquals(existing, item, context, useSpan)))
             {
                 return false;
             }
@@ -414,10 +415,11 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         }
 
         var hash = PyHashProtocols.GetProtocolHash(item, context, useSpan);
+        var structuralHash = PyValueComparer.Instance.GetHashCode(item);
         var snapshot = _protocol.ToArray();
         foreach (var entry in snapshot)
         {
-            if (entry.Hash == hash && (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan)))
+            if ((entry.Hash == hash || entry.Hash == structuralHash) && (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan)))
             {
                 return true;
             }
@@ -473,12 +475,13 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         }
 
         var hash = PyHashProtocols.GetProtocolHash(item, context, useSpan);
+        var structuralHash = PyValueComparer.Instance.GetHashCode(item);
         if (_protocol is not null)
         {
             var snapshot = _protocol.ToArray();
             foreach (var entry in snapshot)
             {
-                if (entry.Hash == hash && (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan)))
+                if ((entry.Hash == hash || entry.Hash == structuralHash) && (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan)))
                 {
                     RemoveSideEntry(entry.Item);
                     return true;
@@ -488,7 +491,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
         foreach (var existing in _items.ToArray())
         {
-            if (PyValueComparer.Instance.GetHashCode(existing) == hash && (ReferenceEquals(existing, item) || LythonRuntime.ElementEquals(existing, item, context, useSpan)))
+            if ((PyValueComparer.Instance.GetHashCode(existing) == hash || PyValueComparer.Instance.GetHashCode(existing) == structuralHash) && (ReferenceEquals(existing, item) || LythonRuntime.ElementEquals(existing, item, context, useSpan)))
             {
                 _ = _items.Remove(existing);
                 RemoveProtocolShadow(existing);

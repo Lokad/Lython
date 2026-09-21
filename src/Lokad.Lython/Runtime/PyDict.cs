@@ -271,12 +271,13 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         }
 
         var hash = PyHashProtocols.GetProtocolHash(key, context, useSpan);
+        var structuralHash = PyValueComparer.Instance.GetHashCode(key);
         if (_protocol is not null)
         {
             var snapshot = _protocol.ToArray();
             foreach (var entry in snapshot)
             {
-                if (entry.Hash == hash && (ReferenceEquals(entry.Key, key) || LythonRuntime.ElementEquals(entry.Key, key, context, useSpan)))
+                if ((entry.Hash == hash || entry.Hash == structuralHash) && (ReferenceEquals(entry.Key, key) || LythonRuntime.ElementEquals(entry.Key, key, context, useSpan)))
                 {
                     if (_items.TryGetValue(ToStorageKey(entry.Key), out var stored))
                     {
@@ -289,7 +290,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
         foreach (var pair in _items)
         {
-            if (PyValueComparer.Instance.GetHashCode(pair.Key) == hash && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(FromStorageKey(pair.Key), key, context, useSpan)))
+            if ((PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(FromStorageKey(pair.Key), key, context, useSpan)))
             {
                 value = FromStorageValue(pair.Value);
                 return true;
@@ -404,12 +405,13 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         }
 
         var hash = PyHashProtocols.GetProtocolHash(key, context, useSpan);
+        var structuralHash = PyValueComparer.Instance.GetHashCode(key);
         if (_protocol is not null)
         {
             var snapshot = _protocol.ToArray();
             foreach (var entry in snapshot)
             {
-                if (entry.Hash == hash && (ReferenceEquals(entry.Key, key) || LythonRuntime.ElementEquals(entry.Key, key, context, useSpan)))
+                if ((entry.Hash == hash || entry.Hash == structuralHash) && (ReferenceEquals(entry.Key, key) || LythonRuntime.ElementEquals(entry.Key, key, context, useSpan)))
                 {
                     _ = _items.SetItem(ToStorageKey(entry.Key), storageValue);
                     return;
@@ -419,7 +421,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
         foreach (var pair in _items.ToArray())
         {
-            if (PyValueComparer.Instance.GetHashCode(pair.Key) == hash && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(FromStorageKey(pair.Key), key, context, useSpan)))
+            if ((PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(FromStorageKey(pair.Key), key, context, useSpan)))
             {
                 _ = _items.SetItem(ToStorageKey(pair.Key), storageValue);
                 return;
@@ -482,12 +484,13 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         }
 
         var hash = PyHashProtocols.GetProtocolHash(key, context, useSpan);
+        var structuralHash = PyValueComparer.Instance.GetHashCode(key);
         if (_protocol is not null)
         {
             var snapshot = _protocol.ToArray();
             foreach (var entry in snapshot)
             {
-                if (entry.Hash == hash && (ReferenceEquals(entry.Key, key) || LythonRuntime.ElementEquals(entry.Key, key, context, useSpan)))
+                if ((entry.Hash == hash || entry.Hash == structuralHash) && (ReferenceEquals(entry.Key, key) || LythonRuntime.ElementEquals(entry.Key, key, context, useSpan)))
                 {
                     RemoveSideEntry(entry.Key);
                     return true;
@@ -497,7 +500,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
         foreach (var pair in _items.ToArray())
         {
-            if (PyValueComparer.Instance.GetHashCode(pair.Key) == hash && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(FromStorageKey(pair.Key), key, context, useSpan)))
+            if ((PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(FromStorageKey(pair.Key), key, context, useSpan)))
             {
                 _items.Remove(ToStorageKey(pair.Key));
                 RemoveProtocolShadow(pair.Key);

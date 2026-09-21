@@ -238,6 +238,34 @@ public sealed class ContextualDictTests
     }
 
     [Fact]
+    public void DerivedForms()
+    {
+        var result = new LythonEngine().Run(
+            """
+            import collections
+            class A:
+                def __init__(self, v):
+                    self.v = v
+                def __eq__(self, other):
+                    return isinstance(other, A) and self.v == other.v
+                def __hash__(self):
+                    return self.v
+            d = dict.fromkeys([A(1), A(2)], 0)
+            e = dict(d)
+            e2 = d.copy()
+            c = collections.Counter()
+            c.update([A(1), A(1), A(2)])
+            c.subtract([A(1)])
+            return [len(d), d[A(1)], e[A(2)], e2[A(1)], c[A(1)] + c[A(2)]]
+            """,
+            new MockLythonHost());
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(
+            new List<object?> { new BigInteger(2), new BigInteger(0), new BigInteger(0), new BigInteger(0), new BigInteger(2) },
+            result.ReturnValue);
+    }
+
+    [Fact]
     public void RetainedProtocolTablesDeny()
     {
         var result = new LythonEngine().Run(
