@@ -205,9 +205,11 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
             return false;
         }
 
+        // The row array is built fresh above and never escapes except into
+        // the tuple, so the tuple takes ownership instead of copying it.
         var produced = _memoryGovernor is null
-            ? new PyTuple(items)
-            : new PyTuple(items, _memoryGovernor, _allocationSpan);
+            ? PyTuple.FromOwnedArray(items)
+            : PyTuple.FromOwnedArray(items, _memoryGovernor, _allocationSpan);
         _reclamationPool?.TrackFreshMutable(produced, produced.CommittedStorageBytes, _allocationSpan);
         value = produced;
         return true;
@@ -251,9 +253,10 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
             return PyIterationResult.End;
         }
 
+        // Same fresh-owned-array escape proof as the synchronous path.
         var produced = _memoryGovernor is null
-            ? new PyTuple(items)
-            : new PyTuple(items, _memoryGovernor, _allocationSpan);
+            ? PyTuple.FromOwnedArray(items)
+            : PyTuple.FromOwnedArray(items, _memoryGovernor, _allocationSpan);
         _reclamationPool?.TrackFreshMutable(produced, produced.CommittedStorageBytes, _allocationSpan);
         return PyIterationResult.Yield(produced);
     }

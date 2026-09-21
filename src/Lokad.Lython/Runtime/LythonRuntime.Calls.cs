@@ -1931,8 +1931,12 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "a bytes-like object is required, not '" + UnboundTypeMethod.PythonTypeName(offender, context) + "'", span);
         }
 
-        var source = from.ToArray();
-        var target = to.ToArray();
+        // Both operands are immutable, so length checks and indexed
+        // traversal read their spans directly: no per-call array copies and
+        // no transient reservation tripwires for scratch that no longer
+        // allocates. The 256-byte table and the result stay governed.
+        ReadOnlySpan<byte> source = from.Bytes;
+        ReadOnlySpan<byte> target = to.Bytes;
         if (source.Length != target.Length)
         {
             throw new LythonRuntimeException("ValueError", "maketrans arguments must have same length", span);
@@ -1960,6 +1964,15 @@ internal sealed partial class LythonRuntime
     private static bool TryGetUnboundTypeMethod(object owner, string ownerName, ref Dictionary<string, UnboundTypeMethod>? cache, string memberName, [MaybeNullWhen(false)] out object value)
     {
         value = PyNone.Instance;
+        // Consult the existing method cache before constructing a probe
+        // receiver and resolving its member: tables are fixed per run, so a
+        // cached entry is exactly what the full path below would return.
+        if (cache is not null && cache.TryGetValue(memberName, out var cachedMethod))
+        {
+            value = cachedMethod;
+            return true;
+        }
+
         var probe = ownerName switch
         {
             "list" => (object)new PyList(),
@@ -2000,6 +2013,14 @@ internal sealed partial class LythonRuntime
     private static bool TryGetUnboundDataDescriptor(object owner, string ownerName, ref Dictionary<string, BuiltinDataDescriptor>? cache, string memberName, [MaybeNullWhen(false)] out object value)
     {
         value = PyNone.Instance;
+        // Same cache-first shape as the method choke above: descriptor tables
+        // are fixed per run, so a cached entry matches the full path.
+        if (cache is not null && cache.TryGetValue(memberName, out var cachedDescriptor))
+        {
+            value = cachedDescriptor;
+            return true;
+        }
+
         (string? documentation, DataDescriptorKind? kind) = (ownerName, memberName) switch
         {
             ("int", "real") => ("the real part of a complex number", DataDescriptorKind.GetSet),
