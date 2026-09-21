@@ -142,6 +142,12 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
     private readonly LythonSourceSpan? _allocationSpan;
     private bool _done;
     private readonly ChargeReclamationPool? _reclamationPool;
+    // Per-input exhaustion latches shared by both paths: an input that raises
+    // StopIteration stays exhausted (fill value) instead of being retried every
+    // row, and _remaining short-circuits the finished state without pulling or
+    // allocating a final unused row.
+    private readonly bool[] _exhausted;
+    private int _remaining;
 
     public PyZipLongestIterator(IReadOnlyList<object> iterables, object fillValue, LythonSourceSpan span, MemoryGovernor? memoryGovernor, LythonSourceSpan? allocationSpan, LythonRuntime.ExecutionContext context)
     {
@@ -156,12 +162,15 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
         _memoryGovernor = memoryGovernor;
         _allocationSpan = allocationSpan;
         _reclamationPool = context.Services.State.CallTemporaries;
+        _exhausted = new bool[iterables.Count];
+        _remaining = iterables.Count;
     }
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
-        if (_done || _iterators.Length == 0)
+        if (_done || _remaining == 0)
         {
+            _done = true;
             value = PyNone.Instance;
             return false;
         }
@@ -170,6 +179,12 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
         var anyAdvanced = false;
         for (var i = 0; i < _iterators.Length; i++)
         {
+            if (_exhausted[i])
+            {
+                items[i] = _fillValue;
+                continue;
+            }
+
             if (_iterators[i].TryMoveNext(out var current))
             {
                 items[i] = LythonRuntime.RuntimeValue(current);
@@ -177,6 +192,8 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
             }
             else
             {
+                _exhausted[i] = true;
+                _remaining--;
                 items[i] = _fillValue;
             }
         }
@@ -198,8 +215,9 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
-        if (_done || _iterators.Length == 0)
+        if (_done || _remaining == 0)
         {
+            _done = true;
             return PyIterationResult.End;
         }
 
@@ -207,6 +225,12 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
         var anyAdvanced = false;
         for (var i = 0; i < _iterators.Length; i++)
         {
+            if (_exhausted[i])
+            {
+                items[i] = _fillValue;
+                continue;
+            }
+
             var (hasValue, current) = await _iterators[i].TryMoveNextAsync().ConfigureAwait(false);
             if (hasValue)
             {
@@ -215,6 +239,8 @@ internal sealed class PyZipLongestIterator : PyIteratorBase
             }
             else
             {
+                _exhausted[i] = true;
+                _remaining--;
                 items[i] = _fillValue;
             }
         }
