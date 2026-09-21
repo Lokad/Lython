@@ -118,14 +118,17 @@ internal sealed partial class LythonRuntime
                 return InvokeJsonCallback(options.ParseInt, CreateString(raw, context, span), context, span);
             }
 
-            if (element.TryGetInt64(out var integer))
-            {
-                return new BigInteger(integer);
-            }
-
             if (!isFloat)
             {
-                return BigInteger.Parse(raw, CultureInfo.InvariantCulture);
+                // Deny on digit scale before parsing allocates the limbs; each
+                // parse yields a fresh magnitude that owns its payload below.
+                GuardIntegerParseBytes(raw, 4, context.MemoryGovernor, span);
+                if (element.TryGetInt64(out var integer))
+                {
+                    return new BigInteger(integer);
+                }
+
+                return OwnFreshInteger(BigInteger.Parse(raw, CultureInfo.InvariantCulture), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
             }
 
             return element.GetDouble();

@@ -175,6 +175,11 @@ internal sealed partial class LythonRuntime
     // Range bounds are inline values; charge one table slot for the object itself.
     private const long RangeValueBytes = 64;
 
+    private static long BoundMagnitudeBytes(BigInteger bound)
+        => RuntimeMemoryEstimates.GetMagnitudeBitLength(bound) > 64
+            ? RuntimeMemoryEstimates.EstimateBigIntegerBytes(bound)
+            : 0;
+
     private static object Range(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length < 1)
@@ -224,11 +229,16 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("ValueError", "range() arg 3 must not be zero", span);
         }
 
-        context.MemoryGovernor.Reserve(RangeValueBytes, span);
-        context.MemoryGovernor.Commit(RangeValueBytes);
+        // Bounds are inline values, but huge bounds retain heap limb arrays with
+        // the range: fold those payloads into the shell coupon so the object owns
+        // its full retained scale and drops reclaim it through the pool below.
+        var boundPayloadBytes = BoundMagnitudeBytes(start) + BoundMagnitudeBytes(stop) + BoundMagnitudeBytes(step);
+        var rangeBytes = checked(RangeValueBytes + boundPayloadBytes);
+        context.MemoryGovernor.Reserve(rangeBytes, span);
+        context.MemoryGovernor.Commit(rangeBytes);
         // Fresh shells reclaim through the pool once dropped.
         var range = new PyRange(start, stop, step);
-        context.Services.State.CallTemporaries.TrackFreshMutable(range, RangeValueBytes);
+        context.Services.State.CallTemporaries.TrackFreshMutable(range, rangeBytes);
         return range;
     }
 

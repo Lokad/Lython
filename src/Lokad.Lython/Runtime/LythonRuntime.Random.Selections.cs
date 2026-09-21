@@ -263,7 +263,14 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "random.getrandbits(k) expects k to be a non-negative integer.", span);
             }
 
-            return state.GetRandBits((int)rawCount);
+            // A k-bit draw retains k bits of fresh magnitude: deny on bit scale
+            // before generating, then own the fresh result.
+            var bits = (int)rawCount;
+            GuardIntegerResultBytes(
+                RuntimeMemoryEstimates.SaturatingMultiply(2, RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(bits)),
+                context.MemoryGovernor,
+                span);
+            return OwnFreshInteger(state.GetRandBits(bits), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
         }
 
         private static object RandBytes(PyRandomState state, object[] arguments, LythonSourceSpan span, ExecutionContext context)

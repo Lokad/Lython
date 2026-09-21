@@ -286,7 +286,9 @@ internal sealed partial class LythonRuntime
 
         if (arguments.Length == 1 && arguments[0] is PyInstance intInstance)
         {
-            return ConvertInstanceToInteger(intInstance, context, span);
+            // Guest-produced boxes adopt first ownership here when untracked;
+            // already-owned aliases dedup instead of double-charging.
+            return OwnFreshInteger(ConvertInstanceToInteger(intInstance, context, span), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
         }
 
         var numberBase = 10;
@@ -317,10 +319,10 @@ internal sealed partial class LythonRuntime
             return arguments[0] switch
             {
                 BigInteger integer => integer,
-                double floating => OwnHeapInteger(FloatToInteger(floating, span, Math.Truncate), context.MemoryGovernor, span),
-                PyDecimal decimalValue => OwnHeapInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, span),
-                PyString text => OwnHeapInteger(ParsePythonIntegerText(text.AsString(), numberBase, span, text, context), context.MemoryGovernor, span),
-                PyBytes bytes => OwnHeapInteger(ParsePythonIntegerText(System.Text.Encoding.ASCII.GetString(bytes.Bytes), numberBase, span, bytes, context), context.MemoryGovernor, span),
+                double floating => OwnFreshInteger(FloatToInteger(floating, span, Math.Truncate), context.MemoryGovernor, context.Services.State.CallTemporaries, span),
+                PyDecimal decimalValue => OwnFreshInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, context.Services.State.CallTemporaries, span),
+                PyString text => OwnFreshInteger(ParsePythonIntegerText(text.AsString(), numberBase, span, text, context), context.MemoryGovernor, context.Services.State.CallTemporaries, span),
+                PyBytes bytes => OwnFreshInteger(ParsePythonIntegerText(System.Text.Encoding.ASCII.GetString(bytes.Bytes), numberBase, span, bytes, context), context.MemoryGovernor, context.Services.State.CallTemporaries, span),
                 bool boolean => boolean ? BigInteger.One : BigInteger.Zero,
                 _ => throw new LythonRuntimeException("TypeError", "int() argument must be a string, a bytes-like object or a real number, not '" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "'", span)
             };
@@ -679,6 +681,8 @@ internal sealed partial class LythonRuntime
     private static BigInteger ParsePythonIntegerText(string text, int numberBase, LythonSourceSpan span, object displaySource, ExecutionContext context)
     {
         var value = text.Trim();
+        // Deny on digit scale before the conversion allocates the limbs.
+        GuardIntegerParseBytes(value, numberBase == 0 ? 4 : IntegerParseBitsPerDigit(numberBase), context.MemoryGovernor, span);
         var negative = false;
         if (value.StartsWith('+') || value.StartsWith('-'))
         {

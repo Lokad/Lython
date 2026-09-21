@@ -65,6 +65,11 @@ internal sealed class ChargeReclamationPool
 
     public int Count => _young.Count + _old.Count;
 
+    // Reports whether a value already owns a reclamation entry, so fresh-value
+    // helpers can alias-dedup before committing instead of double-charging a
+    // shared box (whose sweep would then release only once).
+    public bool IsTracked(object value) => TrackedStorage.TryGetValue(value, out _);
+
     // Re-snapshots a pooled value whose backing charges were released and
     // recommitted through the value itself, so a later sweep releases exactly
     // the current backing. Untracked values cost one lookup and no entry.

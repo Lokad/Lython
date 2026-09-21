@@ -47,7 +47,7 @@ internal sealed partial class LythonRuntime
         GuardIntegerResultBytes(RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(resultBits), governor, span);
     }
 
-    private static void GuardIntegerResultBytes(long estimatedBytes, MemoryGovernor governor, LythonSourceSpan span)
+    private static void GuardIntegerResultBytes(long estimatedBytes, MemoryGovernor governor, LythonSourceSpan? span)
     {
         // Preflight only: fail before materializing a giant result. Durable
         // ownership of the actual result happens at the arithmetic sites below.
@@ -68,6 +68,51 @@ internal sealed partial class LythonRuntime
 
         return value;
     }
+
+    // Fresh heap magnitudes produced outside ordinary arithmetic (parses, random
+    // draws, enumerated indices, copied host inputs): commit durable payload
+    // ownership above the inline range like arithmetic does, and pool-track the
+    // box so dropped values reclaim on sweep instead of stranding. Aliases dedup
+    // before committing so a shared box never double-charges; distinct boxes
+    // sharing limb arrays overcount conservatively until R11 reclaims precisely.
+    // Callers must pass the single box that flows onward: boxing a struct twice
+    // would track a dead box while the live twin escapes unowned.
+    internal static object OwnFreshInteger(object box, MemoryGovernor governor, ChargeReclamationPool pool, LythonSourceSpan? span)
+    {
+        if (box is BigInteger integer &&
+            RuntimeMemoryEstimates.GetMagnitudeBitLength(integer) > 64 &&
+            !pool.IsTracked(box))
+        {
+            var bytes = RuntimeMemoryEstimates.EstimateBigIntegerBytes(integer);
+            governor.Reserve(bytes, span);
+            governor.Commit(bytes);
+            try
+            {
+                pool.Track(box, bytes, span);
+            }
+            catch (LythonRuntimeException)
+            {
+                governor.Release(bytes);
+                throw;
+            }
+        }
+
+        return box;
+    }
+
+    // Preflight for text-parsed magnitudes: deny on digit scale before the
+    // conversion allocates the limbs. Bits-per-digit upper-bounds the base.
+    internal static void GuardIntegerParseBytes(string text, int bitsPerDigit, MemoryGovernor governor, LythonSourceSpan? span)
+    {
+        GuardIntegerResultBytes(
+            RuntimeMemoryEstimates.SaturatingMultiply(2, RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(
+                RuntimeMemoryEstimates.SaturatingMultiply(text.Length, bitsPerDigit))),
+            governor,
+            span);
+    }
+
+    internal static int IntegerParseBitsPerDigit(int numberBase)
+        => numberBase <= 2 ? 1 : numberBase <= 4 ? 2 : numberBase <= 8 ? 3 : numberBase <= 16 ? 4 : 6;
 
     private static IEnumerable<KeyValuePair<object, object>>? MergeUnionPairs(object value) => value switch
     {

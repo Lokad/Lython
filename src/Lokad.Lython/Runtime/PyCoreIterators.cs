@@ -197,7 +197,11 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
 
         // Each yielded pair is a fresh governed tuple: track it at this factory
         // so dropped items reclaim through the pool; later registrations dedup.
-        var produced = new PyTuple([_index, item], _governor, _span);
+        // The boxed index is one box from here on: heap-scale counters own their
+        // magnitude the same way instead of riding free beside the tuple.
+        object indexBox = _index;
+        var produced = new PyTuple([indexBox, item], _governor, _span);
+        LythonRuntime.OwnFreshInteger(indexBox, _governor, _pool, _span);
         // Consume the index with the item: a denied track below orphans the tuple
         // after the cursor advanced, so the index must advance too to stay aligned.
         _index++;
@@ -215,7 +219,9 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
         }
 
         // Same fresh-tuple ownership as the sync path above.
-        var produced = new PyTuple([_index, item], _governor, _span);
+        object indexBox = _index;
+        var produced = new PyTuple([indexBox, item], _governor, _span);
+        LythonRuntime.OwnFreshInteger(indexBox, _governor, _pool, _span);
         _index++;
         _pool.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
         return PyIterationResult.Yield(produced);

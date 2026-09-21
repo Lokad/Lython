@@ -459,9 +459,11 @@ internal sealed partial class LythonRuntime
                     return PyNone.Instance;
                 case bool boolean:
                     return boolean;
-                case BigInteger integer:
-                    context.ObserveValue(integer, null);
-                    return integer;
+                case BigInteger:
+                    // Host magnitudes copy into Lython-owned scalars: observe limits
+                    // as before, then own heap payloads above the inline range.
+                    context.ObserveValue(value, null);
+                    return OwnFreshInteger(value!, context.MemoryGovernor, context.Services.State.CallTemporaries, null);
                 case sbyte integer:
                     return integer;
                 case byte integer:
