@@ -240,11 +240,9 @@ internal sealed class ChargeReclamationPool
         return released;
     }
 
-    // Reserves the registry charge before publishing: a denial leaves no mark
-    // behind, so a funded retry registers instead of stranding the value
-    // charge without an entry. Publishing itself cannot fail halfway here:
-    // the runtime is single-threaded, so a present mark implies an earlier
-    // registration of this same value.
+    // Registers one pooled value transactionally (R08): every stage below is owned
+    // by this operation until the final commit, so any denial strands nothing
+    // and publishes no mark, and a funded retry registers cleanly.
     private void TrackCore(object value, long valueCharge, LythonSourceSpan? span = null)
     {
         if (TrackedStorage.TryGetValue(value, out _))
@@ -252,16 +250,73 @@ internal sealed class ChargeReclamationPool
             return;
         }
 
-        // Fund entry and tier growth before either becomes visible: a denial
-        // strands nothing countable, and the funded retry registers cleanly.
+        // Every stage rolls back on denial: the entry reservation, the tier-growth
+        // reservation, and the table/list publication are all owned by this
+        // operation until the final commit. A denied registration therefore strands
+        // no reserved bytes and publishes no mark, so a funded retry registers
+        // cleanly. Only LythonRuntimeException (budget denial) is expected here;
+        // any other failure rolls back identically before propagating.
         _governor.Reserve(EntryChargeBytes, span);
-        var fundedGrowth = ReserveTierInsertion(_young, span);
-        var entry = new ReclamationEntry(value, valueCharge);
-        TrackedStorage.Add(value, entry);
-        var capacityBefore = _young.Capacity;
-        _young.Add(entry);
-        CommitTierInsertion(_young, fundedGrowth, capacityBefore, span);
-        _governor.Commit(EntryChargeBytes);
+        long fundedGrowth = 0;
+        var entryReserved = true;
+        var growthReserved = false;
+        try
+        {
+            fundedGrowth = ReserveTierInsertion(_young, span);
+            growthReserved = fundedGrowth > 0;
+            var entry = new ReclamationEntry(value, valueCharge);
+            var capacityBefore = _young.Capacity;
+            var published = false;
+            try
+            {
+                TrackedStorage.Add(value, entry);
+                _young.Add(entry);
+                published = true;
+                CommitTierInsertion(_young, fundedGrowth, capacityBefore, span);
+            }
+            catch
+            {
+                if (published)
+                {
+                    UnpublishEntry(value, entry);
+                }
+
+                throw;
+            }
+
+            entryReserved = false;
+            growthReserved = false;
+            _governor.Commit(EntryChargeBytes);
+        }
+        catch
+        {
+            if (growthReserved)
+            {
+                _governor.ReleaseReserved(checked(fundedGrowth * 8));
+            }
+
+            if (entryReserved)
+            {
+                _governor.ReleaseReserved(EntryChargeBytes);
+            }
+
+            throw;
+        }
+    }
+
+    private void UnpublishEntry(object value, ReclamationEntry entry)
+    {
+        TrackedStorage.Remove(value);
+        // The entry was appended last with no interleaving publication on this
+        // single-threaded runtime; fall back to a linear remove defensively.
+        if (_young.Count > 0 && ReferenceEquals(_young[_young.Count - 1], entry))
+        {
+            _young.RemoveAt(_young.Count - 1);
+        }
+        else
+        {
+            _young.Remove(entry);
+        }
     }
 
     // Tier backing arrays never shrink on prune, so committed capacity rides the
@@ -346,7 +401,9 @@ internal sealed class ChargeReclamationPool
             else
             {
                 // Fund the old-tier slot before moving: a denial re-queues the entry
-                // in the young tier for the next sweep instead of stranding it.
+                // in the young tier for the next sweep instead of stranding it, and
+                // releases whatever dead entries were already removed so no reclaimed
+                // charge strands across the exceptional exit.
                 try
                 {
                     var fundedGrowth = ReserveTierInsertion(promoteTo, null);
@@ -357,6 +414,12 @@ internal sealed class ChargeReclamationPool
                 catch (LythonRuntimeException)
                 {
                     tier.Add(entry);
+                    if (released > 0)
+                    {
+                        _governor.Release(released);
+                        released = 0;
+                    }
+
                     throw;
                 }
             }

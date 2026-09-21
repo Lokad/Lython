@@ -246,7 +246,7 @@ internal sealed class MemoryGovernor
         CurrentCommittedBytes = Math.Max(0, CurrentCommittedBytes - bytes);
     }
 
-    private void ReleaseReserved(long bytes)
+    internal void ReleaseReserved(long bytes)
     {
         if (bytes <= 0)
         {
