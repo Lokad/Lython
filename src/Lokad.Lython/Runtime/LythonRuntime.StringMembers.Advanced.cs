@@ -38,6 +38,32 @@ internal sealed partial class LythonRuntime
                                 index++;
                             }
                         }
+                    }, async (arguments, span, context) =>
+                    {
+                        if (arguments.Length != 1)
+                        {
+                            throw new LythonRuntimeException("TypeError", "str.join(iterable) expects one argument.", span);
+                        }
+
+                        // Async twin of the drain above: parts await each pull
+                        // while validation order and messages stay identical.
+                        var parts = await PyIteration.MaterializeAsync(arguments[0], span, context).ConfigureAwait(false);
+                        return JoinStrings(text, EnumerateParts(parts), context.MemoryGovernor, span);
+
+                        IEnumerable<PyString> EnumerateParts(List<object> parts)
+                        {
+                            var index = 0;
+                            foreach (var part in parts)
+                            {
+                                if (!PyStringOps.TryAsString(part, out var partText))
+                                {
+                                    throw new LythonRuntimeException("TypeError", "sequence item " + index + ": expected str instance, " + RuntimeErrors.OperandTypeName(part) + " found", span);
+                                }
+
+                                yield return partText;
+                                index++;
+                            }
+                        }
                     }, "str.join", ["iterable"]),
                     "center" => CreatePaddingMethod("center", PyStringOps.Center),
                     "ljust" => CreatePaddingMethod("ljust", PyStringOps.LJust),

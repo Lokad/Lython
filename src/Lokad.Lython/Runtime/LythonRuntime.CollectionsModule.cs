@@ -32,9 +32,9 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "defaultdict" => new CollectionsCallable("collections.defaultdict", DefaultDict),
-                "Counter" => new CollectionsCallable("collections.Counter", Counter),
-                "deque" => new CollectionsCallable("collections.deque", Deque),
+                "defaultdict" => new CollectionsCallable("collections.defaultdict", DefaultDict, DefaultDictAsync),
+                "Counter" => new CollectionsCallable("collections.Counter", Counter, CounterAsync),
+                "deque" => new CollectionsCallable("collections.deque", Deque, DequeAsync),
                 "namedtuple" => new CollectionsCallable("collections.namedtuple", NamedTuple),
                 "OrderedDict" => new CollectionsCallable("collections.OrderedDict", OrderedDict),
                 "ChainMap" => new CollectionsCallable("collections.ChainMap", ChainMap),
@@ -87,13 +87,20 @@ internal sealed partial class LythonRuntime
     internal sealed class CollectionsCallable : ICallable, IPyRenderableValue, INamedRuntimeCallable, IPyDynamicAttributes, IPyContextualDynamicAttributes
     {
         private readonly Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> _implementation;
+        private readonly Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
 
         internal LythonRuntime.TypeNewMethod? NewSlot { get; set; }
 
         public CollectionsCallable(string name, Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation)
+            : this(name, implementation, null)
+        {
+        }
+
+        public CollectionsCallable(string name, Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation, Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation)
         {
             Name = name;
             _implementation = implementation;
+            _asyncImplementation = asyncImplementation;
             _shortName = PyString.FromString(name.Substring(name.LastIndexOf((char)46) + 1));
         }
 
@@ -184,6 +191,14 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecutionBudget(span);
             return _implementation(arguments, span, context);
+        }
+
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            return _asyncImplementation is null
+                ? ValueTask.FromResult(_implementation(arguments, span, context))
+                : _asyncImplementation(arguments, span, context);
         }
 
         public PyString RenderPython(PyRenderingContext context)
@@ -304,6 +319,86 @@ internal sealed partial class LythonRuntime
         return result;
     }
 
+    private static async ValueTask<object> DefaultDictAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        // Async twin of the constructor above: only the source drain awaits;
+        // shaping, defaults and keyword handling stay identical.
+        var positional = new List<object>();
+        object defaultFactory = PyNone.Instance;
+        object source = PyNone.Instance;
+        var hasDefaultFactory = false;
+        var hasSource = false;
+        var keywordItems = new List<KeyValuePair<string, object>>();
+
+        foreach (var argument in arguments)
+        {
+            if (argument.IsPositional)
+            {
+                positional.Add(argument.Value);
+                continue;
+            }
+
+            if (argument.KeywordName == "default_factory")
+            {
+                if (hasDefaultFactory || positional.Count >= 1)
+                {
+                    throw new LythonRuntimeException("TypeError", "collections.defaultdict(...) got multiple values for argument 'default_factory'.", span);
+                }
+
+                defaultFactory = argument.Value;
+                hasDefaultFactory = true;
+                continue;
+            }
+
+            if (argument.KeywordName is "iterable" or "mapping")
+            {
+                if (hasSource || positional.Count >= 2)
+                {
+                    throw new LythonRuntimeException("TypeError", "collections.defaultdict(...) got multiple values for mapping.", span);
+                }
+
+                source = argument.Value;
+                hasSource = true;
+                continue;
+            }
+
+            keywordItems.Add(new(argument.KeywordName, argument.Value));
+        }
+
+        if (positional.Count > 2)
+        {
+            throw new LythonRuntimeException("TypeError", "collections.defaultdict([default_factory][, iterable], **kwargs) expects at most two positional arguments.", span);
+        }
+
+        if (positional.Count >= 1)
+        {
+            defaultFactory = RuntimeValue(positional[0]);
+        }
+
+        if (positional.Count == 2)
+        {
+            source = positional[1];
+            hasSource = true;
+        }
+
+        var result = new PyDefaultDict(defaultFactory, context.MemoryGovernor, span);
+        if (hasSource)
+        {
+            await PopulateDefaultDictAsync(result, source, span, context).ConfigureAwait(false);
+        }
+
+        foreach (var pair in keywordItems)
+        {
+            var keyword = PyString.FromString(pair.Key, context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshString(keyword);
+            result.SetItem(keyword, RuntimeValue(pair.Value));
+            context.ObserveCollectionCount(result.Count, span);
+        }
+
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
+        return result;
+    }
+
     private static object DefaultDict(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length > 2)
@@ -364,6 +459,56 @@ internal sealed partial class LythonRuntime
         if (hasSource)
         {
             PopulateCounter(result, source, span, context, subtract: false);
+        }
+
+        PopulateCounterKeywords(result, keywordItems, span, context, subtract: false);
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
+        return result;
+    }
+
+    private static async ValueTask<object> CounterAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        // Async twin of the constructor above: argument shaping stays
+        // identical; only the source drain awaits each pull.
+        object source = PyNone.Instance;
+        var hasSource = false;
+        var keywordItems = new List<KeyValuePair<string, object>>();
+        var positionalCount = 0;
+
+        foreach (var argument in arguments)
+        {
+            if (argument.IsPositional)
+            {
+                if (positionalCount >= 1)
+                {
+                    throw new LythonRuntimeException("TypeError", "collections.Counter([iterable], **kwargs) expects at most one positional argument.", span);
+                }
+
+                source = argument.Value;
+                hasSource = true;
+                positionalCount++;
+                continue;
+            }
+
+            if (argument.KeywordName is "iterable" or "mapping")
+            {
+                if (hasSource)
+                {
+                    throw new LythonRuntimeException("TypeError", "collections.Counter(...) got multiple values for iterable.", span);
+                }
+
+                source = argument.Value;
+                hasSource = true;
+                continue;
+            }
+
+            keywordItems.Add(new(argument.KeywordName, argument.Value));
+        }
+
+        var result = new PyCounter(context.MemoryGovernor, span);
+        if (hasSource)
+        {
+            await PopulateCounterAsync(result, source, span, context, subtract: false).ConfigureAwait(false);
         }
 
         PopulateCounterKeywords(result, keywordItems, span, context, subtract: false);
@@ -448,6 +593,74 @@ internal sealed partial class LythonRuntime
 
         var result = hasIterable
             ? new PyDeque(ToSequence(iterable, span, context), maxLength, context.MemoryGovernor, span)
+            : new PyDeque(maxLength, context.MemoryGovernor, span);
+        context.ObserveCollectionCount(result.Count, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
+        return result;
+    }
+
+    private static async ValueTask<object> DequeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        // Async twin of the constructor above: only the iterable drain
+        // awaits; shaping and maxlen handling stay identical.
+        object iterable = PyNone.Instance;
+        var hasIterable = false;
+        int? maxLength = null;
+        var hasMaxLength = false;
+        var positionalCount = 0;
+
+        foreach (var argument in arguments)
+        {
+            if (argument.IsPositional)
+            {
+                if (positionalCount == 0)
+                {
+                    iterable = argument.Value;
+                    hasIterable = true;
+                }
+                else if (positionalCount == 1)
+                {
+                    maxLength = ExpectDequeMaxLength(argument.Value, span, context);
+                    hasMaxLength = true;
+                }
+                else
+                {
+                    throw new LythonRuntimeException("TypeError", "collections.deque([iterable][, maxlen]) expects at most two positional arguments.", span);
+                }
+
+                positionalCount++;
+                continue;
+            }
+
+            if (argument.KeywordName == "iterable")
+            {
+                if (hasIterable)
+                {
+                    throw new LythonRuntimeException("TypeError", "collections.deque(...) got multiple values for argument 'iterable'.", span);
+                }
+
+                iterable = argument.Value;
+                hasIterable = true;
+                continue;
+            }
+
+            if (argument.KeywordName == "maxlen")
+            {
+                if (hasMaxLength)
+                {
+                    throw new LythonRuntimeException("TypeError", "collections.deque(...) got multiple values for argument 'maxlen'.", span);
+                }
+
+                maxLength = ExpectDequeMaxLength(argument.Value, span, context);
+                hasMaxLength = true;
+                continue;
+            }
+
+            throw new LythonRuntimeException("TypeError", $"collections.deque(...) received an unexpected keyword argument '{argument.KeywordName}'.", span);
+        }
+
+        var result = hasIterable
+            ? new PyDeque(await PyIteration.MaterializeAsync(iterable, span, context).ConfigureAwait(false), maxLength, context.MemoryGovernor, span)
             : new PyDeque(maxLength, context.MemoryGovernor, span);
         context.ObserveCollectionCount(result.Count, span);
         context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
@@ -661,6 +874,44 @@ internal sealed partial class LythonRuntime
         }
     }
 
+    private static async ValueTask PopulateDefaultDictAsync(PyDefaultDict dict, object source, LythonSourceSpan span, ExecutionContext context)
+    {
+        // Async twin of the fallback drain above: mapping fast paths stay
+        // synchronous and pure while arbitrary pair streams await each pull.
+        if (source is PyDict pyDict)
+        {
+            foreach (var pair in pyDict)
+            {
+                dict.SetItem(pair.Key, pair.Value);
+                context.ObserveCollectionCount(dict.Count, span);
+            }
+
+            return;
+        }
+
+        if (source is PyDefaultDict defaultDict)
+        {
+            foreach (var pair in defaultDict)
+            {
+                dict.SetItem(pair.Key, pair.Value);
+                context.ObserveCollectionCount(dict.Count, span);
+            }
+
+            return;
+        }
+
+        await foreach (var item in ToSequenceAsync(source, span, context).ConfigureAwait(false))
+        {
+            if (item is not PyTuple tuple || tuple.Count != 2)
+            {
+                throw new LythonRuntimeException("TypeError", "collections.defaultdict(..., iterable) expects key/value pairs.", span);
+            }
+
+            dict.SetItem(ValidateDictionaryKey(tuple[0], span), RuntimeValue(tuple[1]));
+            context.ObserveCollectionCount(dict.Count, span);
+        }
+    }
+
     private static void PopulateDict(PyDict dict, object source, string signature, LythonSourceSpan span, ExecutionContext context)
     {
         if (source is PyDict pyDict)
@@ -700,6 +951,39 @@ internal sealed partial class LythonRuntime
     private static void PopulateCounter(PyCounter counter, object source, LythonSourceSpan span, ExecutionContext context, bool subtract)
     {
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
+        if (TryCountKnownMapping(counter, source, span, context, subtract))
+        {
+            return;
+        }
+
+        foreach (var item in ToSequence(source, span, context))
+        {
+            counter.Increment(RuntimeValue(item), subtract ? -BigInteger.One : BigInteger.One, span, context.Services.State.CallTemporaries);
+            context.ObserveCollectionCount(counter.Count, span);
+        }
+    }
+
+    private static async ValueTask PopulateCounterAsync(PyCounter counter, object source, LythonSourceSpan span, ExecutionContext context, bool subtract)
+    {
+        // Async twin of the fallback drain above: known mappings stay on the
+        // shared pure-memory path while arbitrary iterables await each pull.
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
+        if (TryCountKnownMapping(counter, source, span, context, subtract))
+        {
+            return;
+        }
+
+        await foreach (var item in ToSequenceAsync(source, span, context).ConfigureAwait(false))
+        {
+            counter.Increment(RuntimeValue(item), subtract ? -BigInteger.One : BigInteger.One, span, context.Services.State.CallTemporaries);
+            context.ObserveCollectionCount(counter.Count, span);
+        }
+    }
+
+    // Pure-memory mapping fast paths shared by both populate twins above: no
+    // pulls, so no suspension is possible here.
+    private static bool TryCountKnownMapping(PyCounter counter, object source, LythonSourceSpan span, ExecutionContext context, bool subtract)
+    {
         if (source is PyCounter otherCounter)
         {
             foreach (var pair in otherCounter)
@@ -709,7 +993,7 @@ internal sealed partial class LythonRuntime
                 context.ObserveCollectionCount(counter.Count, span);
             }
 
-            return;
+            return true;
         }
 
         if (source is PyDict dict)
@@ -721,7 +1005,7 @@ internal sealed partial class LythonRuntime
                 context.ObserveCollectionCount(counter.Count, span);
             }
 
-            return;
+            return true;
         }
 
         if (source is PyDefaultDict defaultdict)
@@ -733,7 +1017,7 @@ internal sealed partial class LythonRuntime
                 context.ObserveCollectionCount(counter.Count, span);
             }
 
-            return;
+            return true;
         }
 
         if (source is PyChainMap chainMap)
@@ -745,14 +1029,10 @@ internal sealed partial class LythonRuntime
                 context.ObserveCollectionCount(counter.Count, span);
             }
 
-            return;
+            return true;
         }
 
-        foreach (var item in ToSequence(source, span, context))
-        {
-            counter.Increment(RuntimeValue(item), subtract ? -BigInteger.One : BigInteger.One, span, context.Services.State.CallTemporaries);
-            context.ObserveCollectionCount(counter.Count, span);
-        }
+        return false;
     }
 
     private static void PopulateCounterKeywords(

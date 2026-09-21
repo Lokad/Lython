@@ -207,6 +207,19 @@ internal sealed partial class LythonRuntime
         };
     }
 
+    private static async ValueTask<object> BytesAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        // Only the iterable-operand fallback can suspend (user-protocol
+        // iterables keep the sync path with its fail-fast); every other
+        // shape reuses the sync constructor unchanged.
+        if (arguments.Length == 1 && arguments[0] is not (PyBytes or PyString or string or BigInteger or int or bool or PyInstance))
+        {
+            return CreateBytes(await FromBytesOperandsAsync(arguments[0], context, span).ConfigureAwait(false), context, span);
+        }
+
+        return Bytes(arguments, span, context);
+    }
+
     // CPython sizes bytes() through __index__ when present; a TypeError from
     // the index attempt (bad return or inner TypeError) falls back to the
     // iterable path, while other failures propagate. The iterable path and

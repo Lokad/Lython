@@ -14,6 +14,13 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
     /// in its __iter__, are observed at creation, not at first advance.
     /// </summary>
     private readonly IEnumerable<object> _outerSequence;
+    // Eager async outer for async-created generators over async iterables
+    // (files and friends): resolving the async enumerator at creation
+    // preserves creation-time effects and rebinding like the sync outer,
+    // while pulls suspend properly instead of failing on the sync path.
+    // Generators over plain values never take this path and keep the shared
+    // sync outer for both modes.
+    private IAsyncEnumerator<object>? _outerAsyncEnumerator;
     private LythonRuntime.ExecutionContext? _iterationScope;
     private readonly IReadOnlyList<LoopTargetSyntax> _targets;
     private IEnumerator<object>? _iterator;
@@ -56,6 +63,35 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
 
         value = PyNone.Instance;
         return false;
+    }
+
+    internal void AttachAsyncOuter(object outerValue)
+    {
+        if (outerValue is IPyAsyncIterableValue asyncIterable)
+        {
+            _outerAsyncEnumerator = asyncIterable.IterateAsync().GetAsyncEnumerator();
+        }
+    }
+
+    private async IAsyncEnumerable<object> EnumerateOuterAsync()
+    {
+        var enumerator = _outerAsyncEnumerator;
+        if (enumerator is null)
+        {
+            yield break;
+        }
+
+        try
+        {
+            while (await enumerator.MoveNextAsync().ConfigureAwait(false))
+            {
+                yield return enumerator.Current;
+            }
+        }
+        finally
+        {
+            await enumerator.DisposeAsync().ConfigureAwait(false);
+        }
     }
 
     public async ValueTask<List<object>> MaterializeAsync()
@@ -141,9 +177,11 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
         LythonRuntime.ExecutionContext scope)
     {
         var clause = clauses[index];
-        var items = index == 0
-            ? LythonRuntime.ToSequenceAsync(_outerSequence, clause.Iterable.Span)
-            : LythonRuntime.ToSequenceAsync(await LythonRuntime.EvaluateLoweredExpressionAsync(clause.Iterable, scope).ConfigureAwait(false), clause.Iterable.Span, scope);
+        var items = index == 0 && _outerAsyncEnumerator is not null
+            ? EnumerateOuterAsync()
+            : index == 0
+                ? LythonRuntime.ToSequenceAsync(_outerSequence, clause.Iterable.Span)
+                : LythonRuntime.ToSequenceAsync(await LythonRuntime.EvaluateLoweredExpressionAsync(clause.Iterable, scope).ConfigureAwait(false), clause.Iterable.Span, scope);
         await foreach (var item in items.ConfigureAwait(false))
         {
             // One shared scope per generator run: loop targets rebind the same

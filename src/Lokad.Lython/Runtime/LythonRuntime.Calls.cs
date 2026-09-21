@@ -1290,6 +1290,7 @@ internal sealed partial class LythonRuntime
         private readonly string _memberName;
         private readonly bool _bindsOwner;
         private readonly Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> _implementation;
+        private readonly Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? _asyncImplementation;
         private readonly string _qualifiedName;
 
         // str.maketrans carries no run state (names plus static
@@ -1300,11 +1301,17 @@ internal sealed partial class LythonRuntime
         internal static readonly BuiltinTypeMethod BytesMaketrans = new("bytes", "maketrans", bindsOwner: false, BytesMaketransImpl);
 
         internal BuiltinTypeMethod(string ownerName, string memberName, bool bindsOwner, Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation)
+            : this(ownerName, memberName, bindsOwner, implementation, null)
+        {
+        }
+
+        internal BuiltinTypeMethod(string ownerName, string memberName, bool bindsOwner, Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation, Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation)
         {
             _ownerName = ownerName;
             _memberName = memberName;
             _bindsOwner = bindsOwner;
             _implementation = implementation;
+            _asyncImplementation = asyncImplementation;
             _qualifiedName = ownerName + "." + memberName;
         }
 
@@ -1316,6 +1323,14 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecutionBudget(span);
             return _implementation(arguments, span, context);
+        }
+
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            return _asyncImplementation is null
+                ? ValueTask.FromResult(_implementation(arguments, span, context))
+                : _asyncImplementation(arguments, span, context);
         }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
@@ -1383,7 +1398,7 @@ internal sealed partial class LythonRuntime
         _ = owner;
         value = (ownerName, memberName) switch
         {
-            ("dict", "fromkeys") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, DictFromKeys),
+            ("dict", "fromkeys") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, DictFromKeys, DictFromKeysAsync),
             ("bytes", "fromhex") => new BuiltinTypeMethod(ownerName, memberName, bindsOwner: true, BytesFromHex),
             ("str", "maketrans") => BuiltinTypeMethod.StrMaketrans,
             ("bytes", "maketrans") => BuiltinTypeMethod.BytesMaketrans,
@@ -1455,6 +1470,39 @@ internal sealed partial class LythonRuntime
         // aliased, only the container adopts).
         context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
+    }
+
+    private static async ValueTask<object> DictFromKeysPositionalAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        // Async twin: keys await each pull while validation and insertion
+        // stay identical to the streaming sync path above.
+        if (arguments.Length < 1)
+        {
+            throw new LythonRuntimeException("TypeError", "fromkeys expected at least 1 argument, got 0", span);
+        }
+
+        if (arguments.Length > 2)
+        {
+            throw new LythonRuntimeException("TypeError", "fromkeys expected at most 2 arguments, got " + arguments.Length, span);
+        }
+
+        var value = arguments.Length == 2 ? arguments[1] : PyNone.Instance;
+        var result = new PyDict(context.MemoryGovernor, span);
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
+        await foreach (var key in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
+        {
+            result.SetItem(ValidateDictionaryKey(key, span), value);
+        }
+
+        context.ObserveCollectionCount(result.Count, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
+        return result;
+    }
+
+    private static async ValueTask<object> DictFromKeysAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        RejectKeywordArguments("dict.fromkeys", arguments, span);
+        return await DictFromKeysPositionalAsync(PositionalArguments(arguments), span, context).ConfigureAwait(false);
     }
 
     private static object BytesFromHex(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -1872,6 +1920,32 @@ internal sealed partial class LythonRuntime
         try
         {
             foreach (var item in ToSequence(source, span, context))
+            {
+                var number = InterpretByteInteger(item, context, span);
+                if (number < 0 || number > 255)
+                {
+                    throw new LythonRuntimeException("ValueError", "bytes must be in range(0, 256)", span);
+                }
+
+                octets.Add((byte)number);
+            }
+        }
+        catch (PyNotIterableException)
+        {
+            throw new LythonRuntimeException("TypeError", "cannot convert '" + UnboundTypeMethod.PythonTypeName(source, context) + "' object to bytes", span);
+        }
+
+        return [.. octets];
+    }
+
+    private static async ValueTask<byte[]> FromBytesOperandsAsync(object source, ExecutionContext context, LythonSourceSpan span)
+    {
+        // Async twin of the drain above: per-octet conversion stays identical
+        // while pulls await; the not-iterable translation is preserved.
+        var octets = new List<byte>();
+        try
+        {
+            await foreach (var item in ToSequenceAsync(source, span, context).ConfigureAwait(false))
             {
                 var number = InterpretByteInteger(item, context, span);
                 if (number < 0 || number > 255)
@@ -3056,6 +3130,14 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecutionBudget(span);
             var result = (PyDict)Dict(arguments, span, context);
+            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
+            return result;
+        }
+
+        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            var result = (PyDict)await DictAsync(arguments, span, context).ConfigureAwait(false);
             context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
             return result;
         }

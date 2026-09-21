@@ -399,10 +399,60 @@ internal sealed partial class LythonRuntime
         return result;
     }
 
+    private static async ValueTask<object> DictAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        // Async twin of the kwargs constructor above: keyword names stay pure
+        // while the positional pair stream awaits each pull.
+        var positional = arguments.Where(argument => argument.IsPositional).ToArray();
+        if (positional.Length > 1)
+        {
+            throw new LythonRuntimeException("TypeError", "dict expected at most 1 positional argument", span);
+        }
+
+        var result = new PyDict(context.MemoryGovernor, span);
+        if (positional.Length == 1)
+        {
+            await UpdateDictionaryFromSourceAsync(result, positional[0].Value, context, span).ConfigureAwait(false);
+        }
+
+        foreach (var argument in arguments)
+        {
+            if (argument.IsKeyword)
+            {
+                // Fresh names reclaim through the pool once the dict drops.
+                var keyword = PyString.FromString(argument.KeywordName, context.MemoryGovernor, span);
+                context.Services.State.CallTemporaries.TrackFreshString(keyword);
+                result.SetItem(keyword, argument.Value);
+            }
+        }
+
+        context.ObserveCollectionCount(result.Count, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
+        return result;
+    }
+
     internal static void UpdateDictionaryFromSource(IChainMapSource target, object source, ExecutionContext context, LythonSourceSpan span)
     {
         // R13b: protocol-key inserts below observe ambient provenance.
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
+        if (TryUpdateFromKnownMapping(target, source, span, context))
+        {
+            return;
+        }
+
+        var elementIndex = 0;
+        foreach (var pair in ToSequence(source, span, context))
+        {
+            ReadUpdatePair(pair, elementIndex, context, span, out var key, out var elementValue);
+            target.SetItem(ValidateDictionaryKey(key, span), elementValue);
+            elementIndex++;
+        }
+    }
+
+    // Pure-memory mapping fast paths shared by the sync drain above and the
+    // async twin below: no pulls, so no suspension is possible here.
+    private static bool TryUpdateFromKnownMapping(IChainMapSource target, object source, LythonSourceSpan span, ExecutionContext context)
+    {
         if (source is PyDict mapping)
         {
             foreach (var pair in mapping)
@@ -410,7 +460,7 @@ internal sealed partial class LythonRuntime
                 target.SetItem(pair.Key, pair.Value);
             }
 
-            return;
+            return true;
         }
 
         if (source is PyDefaultDict defaultdict)
@@ -420,7 +470,7 @@ internal sealed partial class LythonRuntime
                 target.SetItem(pair.Key, pair.Value);
             }
 
-            return;
+            return true;
         }
 
         if (source is PyCounter counter)
@@ -430,7 +480,7 @@ internal sealed partial class LythonRuntime
                 target.SetItem(pair.Key, pair.Value);
             }
 
-            return;
+            return true;
         }
 
         if (source is PyChainMap chainMap)
@@ -440,11 +490,26 @@ internal sealed partial class LythonRuntime
                 target.SetItem(key, chainMap.GetSubscript(key, span));
             }
 
+            return true;
+        }
+
+        return false;
+    }
+
+    internal static async ValueTask UpdateDictionaryFromSourceAsync(IChainMapSource target, object source, ExecutionContext context, LythonSourceSpan span)
+    {
+        // Async twin of the drain above: known mappings stay on the shared
+        // pure-memory path; arbitrary pair streams await each pull while pair
+        // validation reuses the same bounded sync checks over materialized
+        // pair values.
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
+        if (TryUpdateFromKnownMapping(target, source, span, context))
+        {
             return;
         }
 
         var elementIndex = 0;
-        foreach (var pair in ToSequence(source, span, context))
+        await foreach (var pair in ToSequenceAsync(source, span, context).ConfigureAwait(false))
         {
             ReadUpdatePair(pair, elementIndex, context, span, out var key, out var elementValue);
             target.SetItem(ValidateDictionaryKey(key, span), elementValue);

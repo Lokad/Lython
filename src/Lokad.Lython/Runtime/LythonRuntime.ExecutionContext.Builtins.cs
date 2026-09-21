@@ -116,7 +116,7 @@ internal sealed partial class LythonRuntime
                 ["bool"] = BuiltinCallable.Create(LythonCallableSignature.Create("bool", ["value"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Bool),
                 ["int"] = BuiltinCallable.Create(LythonCallableSignature.Create("int", ["x", "base"], requiredCount: 0, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Int),
                 ["float"] = BuiltinCallable.Create(LythonCallableSignature.Create("float", ["value"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Float),
-                ["bytes"] = BuiltinCallable.Create(LythonCallableSignature.Create("bytes", ["source", "encoding", "errors"], requiredCount: 0, maximumPositionalArgumentCount: 3, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Bytes),
+                ["bytes"] = BuiltinCallable.Create(LythonCallableSignature.Create("bytes", ["source", "encoding", "errors"], requiredCount: 0, maximumPositionalArgumentCount: 3, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Bytes, BytesAsync),
                 ["staticmethod"] = BuiltinCallable.Create("staticmethod", StaticMethod, ["func"], requiredCount: 1),
                 ["classmethod"] = BuiltinCallable.Create("classmethod", ClassMethod, ["func"], requiredCount: 1),
                 ["property"] = BuiltinCallable.Create("property", Property, ["fget", "fset"], requiredCount: 0),
