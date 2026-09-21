@@ -60,7 +60,7 @@ internal static class PyEquality
                 for (var i = 0; i < leftList.Count; i++)
                 {
                     PyStructuralGuard.NoteWork();
-                    if (!AreEqual(leftList[i], rightList[i]))
+                    if (!LythonRuntime.ElementEqualsAmbient(leftList[i], rightList[i]))
                     {
                         return false;
                     }
@@ -82,7 +82,7 @@ internal static class PyEquality
                 for (var i = 0; i < leftTuple.Count; i++)
                 {
                     PyStructuralGuard.NoteWork();
-                    if (!AreEqual(leftTuple[i], rightTuple[i]))
+                    if (!LythonRuntime.ElementEqualsAmbient(leftTuple[i], rightTuple[i]))
                     {
                         return false;
                     }
@@ -107,7 +107,7 @@ internal static class PyEquality
                 {
                     _ = rightItems.MoveNext();
                     PyStructuralGuard.NoteWork();
-                    if (!AreEqual(leftItems.Current, rightItems.Current))
+                    if (!LythonRuntime.ElementEqualsAmbient(leftItems.Current, rightItems.Current))
                     {
                         return false;
                     }
@@ -239,7 +239,7 @@ internal static class PyEquality
                         PyStructuralGuard.NoteWork();
                         _ = leftInstance.TryGetOwnAttribute(field.Name, out var leftValue);
                         _ = rightInstance.TryGetOwnAttribute(field.Name, out var rightValue);
-                        if (!AreEqual(leftValue ?? PyNone.Instance, rightValue ?? PyNone.Instance))
+                        if (!LythonRuntime.ElementEqualsAmbient(leftValue ?? PyNone.Instance, rightValue ?? PyNone.Instance))
                         {
                             return false;
                         }
@@ -342,7 +342,7 @@ internal static class PyEquality
             var (found, other) = rightLookup(pair.Key);
             // A miss carries the null (short-circuited above); every hit flows
             // from a successful TryGetValue whose contract guarantees non-null.
-            if (!found || !AreEqual(pair.Value, other!))
+            if (!found || !LythonRuntime.ElementEqualsAmbient(pair.Value, other!))
             {
                 return false;
             }
@@ -381,7 +381,7 @@ internal static class PyEquality
             }
 
             var (found, other) = leftLookup(key);
-            if (!found || !AreEqual(other!, rightValue ?? PyNone.Instance))
+            if (!found || !LythonRuntime.ElementEqualsAmbient(other!, rightValue ?? PyNone.Instance))
             {
                 return false;
             }
@@ -410,7 +410,7 @@ internal static class PyEquality
             }
 
             var (found, other) = rightLookup(key);
-            if (!found || !AreEqual(leftValue ?? PyNone.Instance, other!))
+            if (!found || !LythonRuntime.ElementEqualsAmbient(leftValue ?? PyNone.Instance, other!))
             {
                 return false;
             }
@@ -505,7 +505,7 @@ internal static class PyEquality
             PyStructuralGuard.NoteWork();
             var leftValue = left.TryGetValue(key, out var foundLeft) ? foundLeft : BigInteger.Zero;
             var rightValue = right.TryGetValue(key, out var foundRight) ? foundRight : BigInteger.Zero;
-            if (!AreEqual(leftValue, rightValue))
+            if (!LythonRuntime.ElementEqualsAmbient(leftValue, rightValue))
             {
                 return false;
             }

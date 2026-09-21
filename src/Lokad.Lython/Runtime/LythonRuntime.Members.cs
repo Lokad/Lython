@@ -29,6 +29,67 @@ internal sealed partial class LythonRuntime
 
     internal static class ListMembers
     {
+        // Async twins for the searching members: the synchronous lambdas below
+        // run contextually in both modes, but a suspending __eq__ (for example
+        // over delayed host reads) needs awaited dispatch under RunAsync.
+        private static async ValueTask<object> CountAsync(PyList list, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length != 1)
+            {
+                throw new LythonRuntimeException("TypeError", "list.count(value) expects one argument.", span);
+            }
+
+            var count = 0;
+            foreach (var item in list)
+            {
+                if (await MembershipEqualsAsync(item, arguments[0], context, span).ConfigureAwait(false))
+                {
+                    count++;
+                }
+            }
+
+            return new BigInteger(count);
+        }
+
+        private static async ValueTask<object> IndexAsync(PyList list, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length is < 1 or > 3)
+            {
+                throw new LythonRuntimeException("TypeError", "list.index(value[, start[, stop]]) expects one to three arguments.", span);
+            }
+
+            var start = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 2 ? arguments[1] : null, list.Count, 0, context, span);
+            var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, list.Count, list.Count, context, span);
+            for (var i = start; i < stop; i++)
+            {
+                if (await MembershipEqualsAsync(list[i], arguments[0], context, span).ConfigureAwait(false))
+                {
+                    return new BigInteger(i);
+                }
+            }
+
+            throw new LythonRuntimeException("ValueError", ToReprPyString(arguments[0], context).AsString() + " is not in list", span);
+        }
+
+        private static async ValueTask<object> RemoveAsync(PyList list, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length != 1)
+            {
+                throw new LythonRuntimeException("TypeError", "list.remove(value) expects one argument.", span);
+            }
+
+            for (var i = 0; i < list.Count; i++)
+            {
+                if (await MembershipEqualsAsync(list[i], arguments[0], context, span).ConfigureAwait(false))
+                {
+                    list.RemoveAt(i);
+                    return PyNone.Instance;
+                }
+            }
+
+            throw new LythonRuntimeException("ValueError", "list.remove(x): x not in list", span);
+        }
+
         public static bool TryGetMember(PyList list, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -68,15 +129,15 @@ internal sealed partial class LythonRuntime
                     var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, list.Count, list.Count, context, span);
                     for (var i = start; i < stop; i++)
                     {
-                        if (AreEqual(list[i], arguments[0]))
+                        if (MembershipEquals(list[i], arguments[0], context, span))
                         {
                             return new BigInteger(i);
                         }
                     }
 
                     throw new LythonRuntimeException("ValueError", ToReprPyString(arguments[0], context).AsString() + " is not in list", span);
-                }, "list.index", ["value", "start", "stop"], 1),
-                "count" => BoundCallable.Create((arguments, span, _) =>
+                }, (arguments, span, context) => IndexAsync(list, arguments, span, context), "list.index", ["value", "start", "stop"], 1),
+                "count" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -86,14 +147,14 @@ internal sealed partial class LythonRuntime
                     var count = 0;
                     foreach (var item in list)
                     {
-                        if (AreEqual(item, arguments[0]))
+                        if (MembershipEquals(item, arguments[0], context, span))
                         {
                             count++;
                         }
                     }
 
                     return new BigInteger(count);
-                }, "list.count", ["value"]),
+                }, (arguments, span, context) => CountAsync(list, arguments, span, context), "list.count", ["value"]),
                 "insert" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 2)
@@ -107,7 +168,7 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(list.Count, span);
                     return PyNone.Instance;
                 }, "list.insert", ["index", "value"]),
-                "remove" => BoundCallable.Create((arguments, span, _) =>
+                "remove" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -116,7 +177,7 @@ internal sealed partial class LythonRuntime
 
                     for (var i = 0; i < list.Count; i++)
                     {
-                        if (AreEqual(list[i], arguments[0]))
+                        if (MembershipEquals(list[i], arguments[0], context, span))
                         {
                             list.RemoveAt(i);
                             return PyNone.Instance;
@@ -124,7 +185,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     throw new LythonRuntimeException("ValueError", "list.remove(x): x not in list", span);
-                }, "list.remove", ["value"]),
+                }, (arguments, span, context) => RemoveAsync(list, arguments, span, context), "list.remove", ["value"]),
                 "pop" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length > 1)
@@ -465,6 +526,45 @@ internal sealed partial class LythonRuntime
 
     internal static class TupleMembers
     {
+        private static async ValueTask<object> CountAsync(int count, Func<int, object> getItem, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length != 1)
+            {
+                throw new LythonRuntimeException("TypeError", "tuple.count(value) expects one argument.", span);
+            }
+
+            var itemCount = 0;
+            for (var i = 0; i < count; i++)
+            {
+                if (await MembershipEqualsAsync(getItem(i), arguments[0], context, span).ConfigureAwait(false))
+                {
+                    itemCount++;
+                }
+            }
+
+            return new BigInteger(itemCount);
+        }
+
+        private static async ValueTask<object> IndexAsync(int count, Func<int, object> getItem, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length is < 1 or > 3)
+            {
+                throw new LythonRuntimeException("TypeError", "tuple.index(value[, start[, stop]]) expects one to three arguments.", span);
+            }
+
+            var start = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 2 ? arguments[1] : null, count, 0, context, span);
+            var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, count, count, context, span);
+            for (var i = start; i < stop; i++)
+            {
+                if (await MembershipEqualsAsync(getItem(i), arguments[0], context, span).ConfigureAwait(false))
+                {
+                    return new BigInteger(i);
+                }
+            }
+
+            throw new LythonRuntimeException("ValueError", "tuple.index(x): x not in tuple", span);
+        }
+
         public static bool TryGetMember(PyTuple tuple, string name, [MaybeNullWhen(false)] out object value)
             => TryGetMember(tuple, name, tuple.Count, index => tuple[index], out value);
 
@@ -489,15 +589,15 @@ internal sealed partial class LythonRuntime
                     var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, count, count, context, span);
                     for (var i = start; i < stop; i++)
                     {
-                        if (AreEqual(getItem(i), arguments[0]))
+                        if (MembershipEquals(getItem(i), arguments[0], context, span))
                         {
                             return new BigInteger(i);
                         }
                     }
 
                     throw new LythonRuntimeException("ValueError", "tuple.index(x): x not in tuple", span);
-                }, "tuple.index", ["value", "start", "stop"], 1),
-                "count" => BoundCallable.Create((arguments, span, _) =>
+                }, (arguments, span, context) => IndexAsync(count, getItem, arguments, span, context), "tuple.index", ["value", "start", "stop"], 1),
+                "count" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -507,14 +607,14 @@ internal sealed partial class LythonRuntime
                     var itemCount = 0;
                     for (var i = 0; i < count; i++)
                     {
-                        if (AreEqual(getItem(i), arguments[0]))
+                        if (MembershipEquals(getItem(i), arguments[0], context, span))
                         {
                             itemCount++;
                         }
                     }
 
                     return new BigInteger(itemCount);
-                }, "tuple.count", ["value"]),
+                }, (arguments, span, context) => CountAsync(count, getItem, arguments, span, context), "tuple.count", ["value"]),
                 "__iter__" => BoundCallable.CreateNoArguments(source, "tuple.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);

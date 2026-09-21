@@ -1,3 +1,4 @@
+using System.Numerics;
 using Lokad.Lython.Frontend;
 
 namespace Lokad.Lython.Runtime;
@@ -490,8 +491,423 @@ internal sealed partial class LythonRuntime
 
         using (PyStructuralGuard.PushAmbient(context, span))
         {
+            // Async structural twin of the __eq__ members and AreEqual branches:
+            // sequence elements and mapping values await element == so
+            // suspending __eq__ (for example over delayed host reads) works in
+            // nested positions. Keys stay structural until R13b.
+            if (left is PyList leftList && right is PyList rightList)
+            {
+                return await ListsEqualAsync(leftList, rightList, context, span).ConfigureAwait(false);
+            }
+
+            if (PyTupleLike.TryGetItems(left, out var leftTupleItems) && PyTupleLike.TryGetItems(right, out var rightTupleItems))
+            {
+                return await TupleLikesEqualAsync(left, right, leftTupleItems, rightTupleItems, context, span).ConfigureAwait(false);
+            }
+
+            if (left is PyDeque leftDeque && right is PyDeque rightDeque)
+            {
+                return await DequesEqualAsync(leftDeque, rightDeque, context, span).ConfigureAwait(false);
+            }
+
+            var dictResult = await DictFamilyEqualAsync(left, right, context, span).ConfigureAwait(false);
+            if (dictResult.HasValue)
+            {
+                return dictResult.Value;
+            }
+
             return AreEqual(left, right);
         }
+    }
+
+    private static async ValueTask<bool> ListsEqualAsync(PyList left, PyList right, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (left.Count != right.Count)
+        {
+            return false;
+        }
+
+        using (PyStructuralGuard.EnterPair(left, right, span))
+        {
+            for (var i = 0; i < left.Count; i++)
+            {
+                PyStructuralGuard.NoteWork();
+                if (!await ElementEqualsAsync(left[i], right[i], context, span).ConfigureAwait(false))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    private static async ValueTask<bool> TupleLikesEqualAsync(object left, object right, IReadOnlyList<object> leftItems, IReadOnlyList<object> rightItems, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (leftItems.Count != rightItems.Count)
+        {
+            return false;
+        }
+
+        using (PyStructuralGuard.EnterPair(left, right, span))
+        {
+            for (var i = 0; i < leftItems.Count; i++)
+            {
+                PyStructuralGuard.NoteWork();
+                if (!await ElementEqualsAsync(leftItems[i], rightItems[i], context, span).ConfigureAwait(false))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    private static async ValueTask<bool> DequesEqualAsync(PyDeque left, PyDeque right, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (left.Count != right.Count)
+        {
+            return false;
+        }
+
+        using (PyStructuralGuard.EnterPair(left, right, span))
+        {
+            using var leftItems = left.GetEnumerator();
+            using var rightItems = right.GetEnumerator();
+            while (leftItems.MoveNext())
+            {
+                _ = rightItems.MoveNext();
+                PyStructuralGuard.NoteWork();
+                if (!await ElementEqualsAsync(leftItems.Current, rightItems.Current, context, span).ConfigureAwait(false))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    private static async ValueTask<bool> DictContentEqualAsync(
+        int leftCount,
+        IEnumerable<KeyValuePair<object, object>> leftPairs,
+        int rightCount,
+        Func<object, (bool Found, object? Value)> rightLookup,
+        ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        if (leftCount != rightCount)
+        {
+            return false;
+        }
+
+        foreach (var pair in leftPairs)
+        {
+            PyStructuralGuard.NoteWork();
+            var (found, other) = rightLookup(pair.Key);
+            if (!found || !await ElementEqualsAsync(pair.Value, other!, context, span).ConfigureAwait(false))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static async ValueTask<bool> ChainMapContentEqualAsync(
+        PyChainMap leftChain,
+        int rightCount,
+        Func<object, (bool Found, object? Value)> rightLookup,
+        ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        var leftKeys = leftChain.BuildMergedKeys();
+        if (leftKeys.Count != rightCount)
+        {
+            return false;
+        }
+
+        foreach (var key in leftKeys)
+        {
+            PyStructuralGuard.NoteWork();
+            if (!leftChain.TryGetStrictValue(key, out var leftValue))
+            {
+                return false;
+            }
+
+            var (found, other) = rightLookup(key);
+            if (!found || !await ElementEqualsAsync(leftValue ?? PyNone.Instance, other!, context, span).ConfigureAwait(false))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static async ValueTask<bool> ChainMapContentEqualRightAsync(
+        PyChainMap rightChain,
+        int leftCount,
+        Func<object, (bool Found, object? Value)> leftLookup,
+        ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        var rightKeys = rightChain.BuildMergedKeys();
+        if (rightKeys.Count != leftCount)
+        {
+            return false;
+        }
+
+        foreach (var key in rightKeys)
+        {
+            PyStructuralGuard.NoteWork();
+            if (!rightChain.TryGetStrictValue(key, out var rightValue))
+            {
+                return false;
+            }
+
+            var (found, other) = leftLookup(key);
+            if (!found || !await ElementEqualsAsync(other!, rightValue ?? PyNone.Instance, context, span).ConfigureAwait(false))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static async ValueTask<bool> CountersEqualAsync(PyCounter left, PyCounter right, ExecutionContext context, LythonSourceSpan span)
+    {
+        var keys = new HashSet<object>(left.Keys, PyValueComparer.Instance);
+        keys.UnionWith(right.Keys);
+
+        foreach (var key in keys)
+        {
+            PyStructuralGuard.NoteWork();
+            var leftValue = left.TryGetValue(key, out var foundLeft) ? foundLeft : BigInteger.Zero;
+            var rightValue = right.TryGetValue(key, out var foundRight) ? foundRight : BigInteger.Zero;
+            if (!await ElementEqualsAsync(leftValue, rightValue, context, span).ConfigureAwait(false))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // Mirrors PyEquality dict-family dispatch; a null result falls back to
+    // structural AreEqual. Key lookups stay synchronous and structural.
+    private static async ValueTask<bool?> DictFamilyEqualAsync(object left, object right, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (left is PyDict leftDict && right is PyDict rightDict)
+        {
+            using (PyStructuralGuard.EnterPair(left, right, span))
+            {
+                return await DictContentEqualAsync(
+                    leftDict.Count,
+                    leftDict,
+                    rightDict.Count,
+                    key => rightDict.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                    context,
+                    span).ConfigureAwait(false);
+            }
+        }
+
+        if (left is PyChainMap leftChain && right is PyChainMap rightChain)
+        {
+            using (PyStructuralGuard.EnterPair(left, right, span))
+            {
+                var leftKeys = leftChain.BuildMergedKeys();
+                if (leftKeys.Count != rightChain.Count)
+                {
+                    return false;
+                }
+
+                foreach (var key in leftKeys)
+                {
+                    PyStructuralGuard.NoteWork();
+                    if (!leftChain.TryGetStrictValue(key, out var leftValue))
+                    {
+                        return false;
+                    }
+
+                    if (!rightChain.TryGetStrictValue(key, out var rightValue))
+                    {
+                        return false;
+                    }
+
+                    if (!await ElementEqualsAsync(leftValue ?? PyNone.Instance, rightValue ?? PyNone.Instance, context, span).ConfigureAwait(false))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        if (left is PyChainMap leftMap && right is PyDict rightPlain)
+        {
+            using (PyStructuralGuard.EnterPair(left, right, span))
+            {
+                return await ChainMapContentEqualAsync(leftMap, rightPlain.Count,
+                    key => rightPlain.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                    context, span).ConfigureAwait(false);
+            }
+        }
+
+        if (left is PyChainMap leftDefaultMap && right is PyDefaultDict rightDefault)
+        {
+            using (PyStructuralGuard.EnterPair(left, right, span))
+            {
+                return await ChainMapContentEqualAsync(leftDefaultMap, rightDefault.Count,
+                    key => rightDefault.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                    context, span).ConfigureAwait(false);
+            }
+        }
+
+        if (left is PyChainMap leftCounterMap && right is PyCounter rightCounterMap)
+        {
+            using (PyStructuralGuard.EnterPair(left, right, span))
+            {
+                return await ChainMapContentEqualAsync(leftCounterMap, rightCounterMap.Count,
+                    key => rightCounterMap.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                    context, span).ConfigureAwait(false);
+            }
+        }
+
+        if (right is PyChainMap rightChainMap && left is PyDict leftPlain)
+        {
+            using (PyStructuralGuard.EnterPair(left, right, span))
+            {
+                return await ChainMapContentEqualRightAsync(rightChainMap, leftPlain.Count,
+                    key => leftPlain.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                    context, span).ConfigureAwait(false);
+            }
+        }
+
+        if (right is PyChainMap rightDefaultChain && left is PyDefaultDict leftDefaultOther)
+        {
+            using (PyStructuralGuard.EnterPair(left, right, span))
+            {
+                return await ChainMapContentEqualRightAsync(rightDefaultChain, leftDefaultOther.Count,
+                    key => leftDefaultOther.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                    context, span).ConfigureAwait(false);
+            }
+        }
+
+        if (right is PyChainMap rightCounterChain && left is PyCounter leftCounterOperand)
+        {
+            using (PyStructuralGuard.EnterPair(left, right, span))
+            {
+                return await ChainMapContentEqualRightAsync(rightCounterChain, leftCounterOperand.Count,
+                    key => leftCounterOperand.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                    context, span).ConfigureAwait(false);
+            }
+        }
+
+        if (left is PyCounter counterLeft && (right is PyDict || right is PyDefaultDict))
+        {
+            using (PyStructuralGuard.EnterPair(left, right, span))
+            {
+                return await CounterDictContentEqualAsync(counterLeft, right, context, span).ConfigureAwait(false);
+            }
+        }
+
+        if (right is PyCounter counterRight && (left is PyDict || left is PyDefaultDict))
+        {
+            using (PyStructuralGuard.EnterPair(left, right, span))
+            {
+                return await CounterDictContentEqualAsync(counterRight, left, context, span).ConfigureAwait(false);
+            }
+        }
+
+        if (left is PyDefaultDict leftDefaultDict)
+        {
+            using (PyStructuralGuard.EnterPair(left, right, span))
+            {
+                return await DefaultDictContentEqualAsync(leftDefaultDict, right, context, span).ConfigureAwait(false);
+            }
+        }
+
+        if (right is PyDefaultDict rightDefaultDict)
+        {
+            using (PyStructuralGuard.EnterPair(left, right, span))
+            {
+                return await DefaultDictContentEqualAsync(rightDefaultDict, left, context, span).ConfigureAwait(false);
+            }
+        }
+
+        if (left is PyCounter leftCounter && right is PyCounter rightCounter)
+        {
+            using (PyStructuralGuard.EnterPair(left, right, span))
+            {
+                return await CountersEqualAsync(leftCounter, rightCounter, context, span).ConfigureAwait(false);
+            }
+        }
+
+        return null;
+    }
+
+    private static async ValueTask<bool> CounterDictContentEqualAsync(PyCounter counter, object other, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (other is PyDict plain)
+        {
+            return await DictContentEqualAsync(
+                counter.Count,
+                counter.Items,
+                plain.Count,
+                key => plain.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                context, span).ConfigureAwait(false);
+        }
+
+        if (other is PyDefaultDict fellow)
+        {
+            return await DictContentEqualAsync(
+                counter.Count,
+                counter.Items,
+                fellow.Count,
+                key => fellow.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                context, span).ConfigureAwait(false);
+        }
+
+        return false;
+    }
+
+    private static async ValueTask<bool> DefaultDictContentEqualAsync(PyDefaultDict candidate, object other, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (other is PyDict plain)
+        {
+            return await DictContentEqualAsync(
+                candidate.Count,
+                candidate.Items,
+                plain.Count,
+                key => plain.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                context, span).ConfigureAwait(false);
+        }
+
+        if (other is PyDefaultDict fellow)
+        {
+            return await DictContentEqualAsync(
+                candidate.Count,
+                candidate.Items,
+                fellow.Count,
+                key => fellow.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                context, span).ConfigureAwait(false);
+        }
+
+        if (other is PyCounter counter)
+        {
+            return await DictContentEqualAsync(
+                candidate.Count,
+                candidate.Items,
+                counter.Count,
+                key => counter.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                context, span).ConfigureAwait(false);
+        }
+
+        return false;
     }
 
     // Sequence membership consults the member __eq__ protocol like == does,
@@ -570,6 +986,95 @@ internal sealed partial class LythonRuntime
         using (PyStructuralGuard.PushAmbient(context, span))
         {
             return AreEqual(item, candidate);
+        }
+    }
+
+    // Nested == positions (R13): CPython identity shortcut, then the full
+    // == dispatch (reflected __eq__, NotImplemented, truthiness) with the
+    // structural fallback. Container element loops and value comparisons
+    // share this instead of context-free AreEqual, so [a] == [b] honors
+    // custom __eq__ while scalar NaN keeps numeric inequality (no shortcut
+    // at the top-level operator itself).
+    internal static bool ElementEquals(
+        object left,
+        object right,
+        ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        if (ReferenceEquals(left, right))
+        {
+            return true;
+        }
+
+        return AreEqualWithProtocols(left, right, context, span);
+    }
+
+    // Ambient twin for context-free AreEqual branches: dispatches only when
+    // reached under an operator or member comparison that pushed an ambient
+    // context. Comparer callbacks, hashing, and sorts observe suppression or
+    // a null ambient and stay structural, so guest code never runs through
+    // CLR comparer internals.
+    internal static bool ElementEqualsAmbient(object left, object right)
+    {
+        if (ReferenceEquals(left, right))
+        {
+            return true;
+        }
+
+        if (PyStructuralGuard.GuestDispatchSuppressed)
+        {
+            return PyEquality.AreEqual(left, right);
+        }
+
+        var context = PyStructuralGuard.AmbientContext;
+        var span = PyStructuralGuard.AmbientSpan;
+        if (context is null || span is null)
+        {
+            return PyEquality.AreEqual(left, right);
+        }
+
+        return AreEqualWithProtocols(left, right, context, span);
+    }
+
+    internal static ValueTask<bool> ElementEqualsAsync(
+        object left,
+        object right,
+        ExecutionContext context,
+        LythonSourceSpan span)
+        => ElementEqualsCoreAsync(left, right, context, span, InvokeBinarySpecialMethodAsync, IsTruthyAsync);
+
+    private static async ValueTask<bool> ElementEqualsCoreAsync(
+        object left,
+        object right,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        BinarySpecialMethodInvoker invoke,
+        TruthinessEvaluator evaluateTruthiness)
+    {
+        if (ReferenceEquals(left, right))
+        {
+            return true;
+        }
+
+        if (left is PyCmpKey leftKey && right is PyCmpKey rightKey)
+        {
+            return leftKey.CompareTo(rightKey, span, context) == 0;
+        }
+
+        var invocation = await invoke(left, "__eq__", right, context, span).ConfigureAwait(false);
+        if (invocation.Kind == SpecialMethodInvocationKind.Missing || invocation.Value is PyNotImplemented)
+        {
+            invocation = await invoke(right, "__eq__", left, context, span).ConfigureAwait(false);
+        }
+
+        if (invocation.Kind == SpecialMethodInvocationKind.Invoked && invocation.Value is not PyNotImplemented)
+        {
+            return await evaluateTruthiness(invocation.Value, context, span).ConfigureAwait(false);
+        }
+
+        using (PyStructuralGuard.PushAmbient(context, span))
+        {
+            return PyEquality.AreEqual(left, right);
         }
     }
 

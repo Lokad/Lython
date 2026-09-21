@@ -183,6 +183,38 @@ internal static class PyStructuralGuard
         }
     }
 
+    // Ambient comparison provenance (R13/R16): structural positions reached under
+    // an operator or member comparison may dispatch guest __eq__ through this
+    // context; context-free paths (CLR comparer callbacks below, hashing, sorts)
+    // see null and stay structural. Guest dispatch is additionally suppressed
+    // while a CLR comparer callback runs, so reentrant lookups from inside
+    // __eq__ never execute guest code through comparer internals.
+    internal static LythonRuntime.ExecutionContext? AmbientContext => t_ambientContext;
+
+    internal static LythonSourceSpan? AmbientSpan => t_ambientSpan;
+
+    [ThreadStatic]
+    private static int t_suppressGuestDispatch;
+
+    internal static bool GuestDispatchSuppressed => t_suppressGuestDispatch > 0;
+
+    internal readonly struct ComparerScope : IDisposable
+    {
+        public void Dispose()
+        {
+            if (t_suppressGuestDispatch > 0)
+            {
+                t_suppressGuestDispatch--;
+            }
+        }
+    }
+
+    internal static ComparerScope SuppressGuestDispatch()
+    {
+        t_suppressGuestDispatch++;
+        return new ComparerScope();
+    }
+
     internal static AmbientScope PushAmbient(LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
     {
         var prevContext = t_ambientContext;

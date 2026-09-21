@@ -8,6 +8,49 @@ internal sealed partial class LythonRuntime
 {
     internal static class DequeMembers
     {
+        private static async ValueTask<object> CountAsync(PyDeque deque, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length != 1)
+            {
+                throw new LythonRuntimeException("TypeError", "deque.count(value) expects one argument.", span);
+            }
+
+            return new BigInteger(await deque.CountValueAsync(arguments[0], context, span).ConfigureAwait(false));
+        }
+
+        private static async ValueTask<object> IndexAsync(PyDeque deque, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length is < 1 or > 3)
+            {
+                throw new LythonRuntimeException("TypeError", "deque.index(value[, start[, stop]]) expects one to three arguments.", span);
+            }
+
+            var start = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 2 ? arguments[1] : null, deque.Count, 0, context, span);
+            var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, deque.Count, deque.Count, context, span);
+            var index = await deque.IndexOfAsync(arguments[0], start, stop, context, span).ConfigureAwait(false);
+            if (index < 0)
+            {
+                throw new LythonRuntimeException("ValueError", ToReprPyString(arguments[0], context).AsString() + " is not in deque", span);
+            }
+
+            return new BigInteger(index);
+        }
+
+        private static async ValueTask<object> RemoveAsync(PyDeque deque, object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length != 1)
+            {
+                throw new LythonRuntimeException("TypeError", "deque.remove(value) expects one argument.", span);
+            }
+
+            if (!await deque.RemoveValueAsync(arguments[0], context, span).ConfigureAwait(false))
+            {
+                throw new LythonRuntimeException("ValueError", ToReprPyString(arguments[0], context).AsString() + " is not in deque", span);
+            }
+
+            return PyNone.Instance;
+        }
+
         // Fresh copies reclaim through the pool once dropped; the later funnel
         // no-ops on the already-tracked value through reference-identity dedup.
         private static PyDeque TrackDequeCopy(PyDeque receiver, ExecutionContext context, LythonSourceSpan span)
@@ -102,15 +145,15 @@ internal sealed partial class LythonRuntime
                     deque,
                     "deque.copy",
                     static (receiver, span, context) => TrackDequeCopy(receiver, context, span)),
-                "count" => BoundCallable.Create((arguments, span, _) =>
+                "count" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "deque.count(value) expects one argument.", span);
                     }
 
-                    return new BigInteger(deque.CountValue(arguments[0]));
-                }),
+                    return new BigInteger(deque.CountValue(arguments[0], context, span));
+                }, (arguments, span, context) => CountAsync(deque, arguments, span, context), "deque.count", ["value"]),
                 "index" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length is < 1 or > 3)
@@ -120,14 +163,14 @@ internal sealed partial class LythonRuntime
 
                     var start = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 2 ? arguments[1] : null, deque.Count, 0, context, span);
                     var stop = RuntimeArgumentValidation.NormalizeSearchBound(arguments.Length >= 3 ? arguments[2] : null, deque.Count, deque.Count, context, span);
-                    var index = deque.IndexOf(arguments[0], start, stop);
+                    var index = deque.IndexOf(arguments[0], start, stop, context, span);
                     if (index < 0)
                     {
                         throw new LythonRuntimeException("ValueError", ToReprPyString(arguments[0], context).AsString() + " is not in deque", span);
                     }
 
                     return new BigInteger(index);
-                }, "deque.index", ["value", "start", "stop"], 1),
+                }, (arguments, span, context) => IndexAsync(deque, arguments, span, context), "deque.index", ["value", "start", "stop"], 1),
                 "insert" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 2)
@@ -156,13 +199,13 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "deque.remove(value) expects one argument.", span);
                     }
 
-                    if (!deque.RemoveValue(arguments[0]))
+                    if (!deque.RemoveValue(arguments[0], context, span))
                     {
                         throw new LythonRuntimeException("ValueError", ToReprPyString(arguments[0], context).AsString() + " is not in deque", span);
                     }
 
                     return PyNone.Instance;
-                }, "deque.remove", ["value"]),
+                }, (arguments, span, context) => RemoveAsync(deque, arguments, span, context), "deque.remove", ["value"]),
                 "reverse" => BoundCallable.CreateNoArguments(deque, "deque.reverse", static (receiver, _, _) =>
                 {
                     receiver.Reverse();

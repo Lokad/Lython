@@ -10,7 +10,14 @@ internal sealed class PyValueComparer : IEqualityComparer<object>
 
     public new bool Equals(object? x, object? y)
     {
-        return x is not null && y is not null && PyEquality.AreEqual(x, y);
+        // R13: comparer callbacks stay context-free even when reached under an
+        // ambient comparison (for example a dict lookup inside __eq__): nested
+        // structural positions observe the suppression and never dispatch
+        // guest code through comparer internals.
+        using (PyStructuralGuard.SuppressGuestDispatch())
+        {
+            return x is not null && y is not null && PyEquality.AreEqual(x, y);
+        }
     }
 
     public int GetHashCode(object obj)

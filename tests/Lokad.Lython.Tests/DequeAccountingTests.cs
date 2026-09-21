@@ -62,7 +62,7 @@ public sealed class DequeAccountingTests
         _ = deque.Pop();
         _ = deque.PopLeft();
         Assert.Equal(128L + 8L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.True(deque.RemoveValue(new BigInteger(5)));
+        Assert.True(deque.RemoveValue(new BigInteger(5), context, span));
         Assert.Equal(128L + 7L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }

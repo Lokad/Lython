@@ -295,7 +295,7 @@ internal static partial class PyDataclass
                     PyStructuralGuard.NoteWork();
                     _ = self.TryGetOwnAttribute(field.Name, out var left);
                     _ = other.TryGetOwnAttribute(field.Name, out var right);
-                    if (!PyEquality.AreEqual(left ?? PyNone.Instance, right ?? PyNone.Instance))
+                    if (!LythonRuntime.ElementEquals(left ?? PyNone.Instance, right ?? PyNone.Instance, context, span))
                     {
                         return false;
                     }

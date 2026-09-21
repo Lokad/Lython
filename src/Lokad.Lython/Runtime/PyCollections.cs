@@ -598,14 +598,26 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         }
     }
 
-    public int CountValue(object candidate) => _items.Count(item => PyEquality.AreEqual(item, candidate));
+    public int CountValue(object candidate, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var count = 0;
+        foreach (var item in _items)
+        {
+            if (LythonRuntime.MembershipEquals(item, candidate, context, span))
+            {
+                count++;
+            }
+        }
 
-    public int IndexOf(object candidate, int start, int stop)
+        return count;
+    }
+
+    public int IndexOf(object candidate, int start, int stop, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         var index = 0;
         foreach (var item in _items)
         {
-            if (index >= start && index < stop && PyEquality.AreEqual(item, candidate))
+            if (index >= start && index < stop && LythonRuntime.MembershipEquals(item, candidate, context, span))
             {
                 return index;
             }
@@ -614,6 +626,55 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         }
 
         return -1;
+    }
+
+    public async ValueTask<int> CountValueAsync(object candidate, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var count = 0;
+        foreach (var item in _items)
+        {
+            if (await LythonRuntime.MembershipEqualsAsync(item, candidate, context, span).ConfigureAwait(false))
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    public async ValueTask<int> IndexOfAsync(object candidate, int start, int stop, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var index = 0;
+        foreach (var item in _items)
+        {
+            if (index >= start && index < stop && await LythonRuntime.MembershipEqualsAsync(item, candidate, context, span).ConfigureAwait(false))
+            {
+                return index;
+            }
+
+            index++;
+        }
+
+        return -1;
+    }
+
+    public async ValueTask<bool> RemoveValueAsync(object candidate, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var current = _items.First;
+        while (current is not null)
+        {
+            if (await LythonRuntime.MembershipEqualsAsync(current.Value, candidate, context, span).ConfigureAwait(false))
+            {
+                _items.Remove(current);
+                ReleaseNode();
+                ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
+                return true;
+            }
+
+            current = current.Next;
+        }
+
+        return false;
     }
 
     public void Insert(int index, object value)
@@ -641,12 +702,12 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         _items.AddBefore(GetNodeAt(index), value);
     }
 
-    public bool RemoveValue(object candidate)
+    public bool RemoveValue(object candidate, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         var current = _items.First;
         while (current is not null)
         {
-            if (PyEquality.AreEqual(current.Value, candidate))
+            if (LythonRuntime.MembershipEquals(current.Value, candidate, context, span))
             {
                 _items.Remove(current);
                 ReleaseNode();
