@@ -3170,6 +3170,7 @@ internal sealed partial class LythonRuntime
                 "default_factory" => dict.DefaultFactory ?? PyNone.Instance,
                 "get" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length is < 1 or > 2)
                     {
                         throw new LythonRuntimeException("TypeError", "defaultdict.get(key[, default]) expects one key and an optional default.", span);
@@ -3199,8 +3200,9 @@ internal sealed partial class LythonRuntime
                     return new DictItemsView(receiver.InnerDict);
                 }),
                 "update" => new RawBoundCallable((arguments, span, context) => dict.UpdateFrom(arguments, context, span)) { BoundName = "defaultdict.update", BoundReceiver = dict },
-                "pop" => BoundCallable.Create((arguments, span, _) =>
+                "pop" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length is < 1 or > 2)
                     {
                         throw new LythonRuntimeException("TypeError", "defaultdict.pop(key[, default]) expects one key and an optional default.", span);
@@ -3232,6 +3234,7 @@ internal sealed partial class LythonRuntime
                 }, "defaultdict.pop", ["key", "default"], 1),
                 "popitem" => BoundCallable.CreateNoArguments(dict, "defaultdict.popitem", static (receiver, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (!receiver.TryRemoveLast(out var key, out var value))
                     {
                         throw new LythonRuntimeException("KeyError", "popitem(): dictionary is empty", span, null, PyString.FromString("popitem(): dictionary is empty"));
@@ -3241,6 +3244,7 @@ internal sealed partial class LythonRuntime
                 }),
                 "setdefault" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length is < 1 or > 2)
                     {
                         throw new LythonRuntimeException("TypeError", "defaultdict.setdefault(key[, default]) expects one key and an optional default.", span);
@@ -3259,6 +3263,7 @@ internal sealed partial class LythonRuntime
                 }, "defaultdict.setdefault", ["key", "default"], 1),
                 "copy" => BoundCallable.CreateNoArguments(dict, "defaultdict.copy", static (receiver, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     var copy = new PyDict(context.MemoryGovernor, span);
                     foreach (var pair in receiver.Items)
                     {
@@ -3284,8 +3289,9 @@ internal sealed partial class LythonRuntime
                     return defaultDictIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(dict, "defaultdict.__len__", static (receiver, span, context) => Len([receiver], span, context)),
-                "__contains__" => BoundCallable.Create((arguments, span, _) =>
+                "__contains__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "defaultdict.__contains__(item) expects one argument.", span);
@@ -3522,8 +3528,9 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("collections"),
-                "get" => BoundCallable.Create((arguments, span, _) =>
+                "get" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length is < 1 or > 2)
                     {
                         throw new LythonRuntimeException("TypeError", "Counter.get(key[, default]) expects one key and an optional default.", span);
@@ -3637,8 +3644,9 @@ internal sealed partial class LythonRuntime
                     context.MemoryGovernor.Commit(64L);
                     return new DictItemsView(receiver.InnerDict);
                 }),
-                "pop" => BoundCallable.Create((arguments, span, _) =>
+                "pop" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length is < 1 or > 2)
                     {
                         throw new LythonRuntimeException("TypeError", "Counter.pop(key[, default]) expects one key and an optional default.", span);
@@ -3676,8 +3684,9 @@ internal sealed partial class LythonRuntime
                     return counterIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(counter, "Counter.__len__", static (receiver, span, context) => Len([receiver], span, context)),
-                "__contains__" => BoundCallable.Create((arguments, span, _) =>
+                "__contains__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "Counter.__contains__(item) expects one argument.", span);

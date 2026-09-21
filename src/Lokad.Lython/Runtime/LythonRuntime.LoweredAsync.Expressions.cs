@@ -131,6 +131,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> EvaluateLoweredSetLiteralAsync(LoweredSetLiteralExpression set, ExecutionContext context)
     {
         var items = new PySet(context.MemoryGovernor, set.Span);
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, set.Span);
         for (var i = 0; i < set.Items.Count; i++)
         {
             var value = RuntimeValue(await EvaluateLoweredExpressionAsync(set.Items[i].Expression, context).ConfigureAwait(false));
@@ -178,6 +179,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> EvaluateLoweredSetComprehensionAsync(LoweredSetComprehensionExpression comprehension, ExecutionContext context)
     {
         var result = new PySet(context.MemoryGovernor, comprehension.Span);
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, comprehension.Span);
         var scope = new ExecutionContext(context);
         await EvaluateLoweredComprehensionClausesAsync(
                 comprehension.Clauses,

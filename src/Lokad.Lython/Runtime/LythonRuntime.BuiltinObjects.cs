@@ -201,6 +201,7 @@ internal sealed partial class LythonRuntime
         }
 
         var result = new PySet(context.MemoryGovernor, span);
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         foreach (var item in ToSequence(arguments[0], span, context))
         {
             result.Add(ValidateSetItem(item, span));
@@ -226,6 +227,7 @@ internal sealed partial class LythonRuntime
         }
 
         var result = new PySet(context.MemoryGovernor, span);
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
         {
             result.Add(ValidateSetItem(item, span));

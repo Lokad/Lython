@@ -1160,6 +1160,8 @@ internal sealed partial class LythonRuntime
             return fallback(leftKey.CompareTo(rightKey, span, context));
         }
 
+        // R13b: set comparisons below observe ambient provenance.
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         if (left is PySet leftSet && right is PySet rightSet)
         {
             return method switch
@@ -1226,6 +1228,8 @@ internal sealed partial class LythonRuntime
             return fallback(leftKey.CompareTo(rightKey, span, context));
         }
 
+        // R13b: set comparisons below observe ambient provenance.
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         if (left is PySet leftSet && right is PySet rightSet)
         {
             return methods.Left switch

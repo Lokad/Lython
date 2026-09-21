@@ -699,6 +699,7 @@ internal sealed partial class LythonRuntime
 
     private static void PopulateCounter(PyCounter counter, object source, LythonSourceSpan span, ExecutionContext context, bool subtract)
     {
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         if (source is PyCounter otherCounter)
         {
             foreach (var pair in otherCounter)

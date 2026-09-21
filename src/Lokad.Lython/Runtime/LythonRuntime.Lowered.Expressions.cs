@@ -103,6 +103,7 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateLoweredSetLiteral(LoweredSetLiteralExpression set, ExecutionContext context)
     {
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, set.Span);
         var items = new PySet(context.MemoryGovernor, set.Span);
         for (var i = 0; i < set.Items.Count; i++)
         {
@@ -142,6 +143,7 @@ internal sealed partial class LythonRuntime
     private static object EvaluateLoweredSetComprehension(LoweredSetComprehensionExpression comprehension, ExecutionContext context)
     {
         var result = new PySet(context.MemoryGovernor, comprehension.Span);
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, comprehension.Span);
         var scope = new ExecutionContext(context);
         EvaluateLoweredComprehensionClauses(
             comprehension.Clauses,

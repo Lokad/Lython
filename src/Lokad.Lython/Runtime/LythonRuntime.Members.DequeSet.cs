@@ -377,6 +377,7 @@ internal sealed partial class LythonRuntime
             {
                 "add" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     set.AttachMemoryGovernor(context.MemoryGovernor, span);
                     set.Add(ValidateSetItem(arguments[0], span));
                     context.ObserveCollectionCount(set.Count, span);
@@ -384,11 +385,13 @@ internal sealed partial class LythonRuntime
                 }, OnePositional("set.add", "value")),
                 "discard" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     set.Remove(ValidateSetItem(arguments[0], span));
                     return PyNone.Instance;
                 }, OnePositional("set.discard", "value")),
                 "remove" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     var candidate = ValidateSetItem(arguments[0], span);
                     if (!set.Remove(candidate))
                     {
@@ -422,12 +425,14 @@ internal sealed partial class LythonRuntime
                 }),
                 "union" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     var result = new PySet(set, context.MemoryGovernor, span);
                     Update(result, arguments, span, context);
                     return result;
                 }, VariadicPositional("set.union")),
                 "intersection" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     var result = new PySet(set, context.MemoryGovernor, span);
                     foreach (var argument in arguments)
                     {
@@ -438,6 +443,7 @@ internal sealed partial class LythonRuntime
                 }, VariadicPositional("set.intersection")),
                 "difference" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     var result = new PySet(set, context.MemoryGovernor, span);
                     foreach (var argument in arguments)
                     {
@@ -448,6 +454,7 @@ internal sealed partial class LythonRuntime
                 }, VariadicPositional("set.difference")),
                 "symmetric_difference" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     var result = new PySet(set, context.MemoryGovernor, span);
                     result.SymmetricExceptWith(MaterializeSet(arguments[0], span, context));
                     context.ObserveCollectionCount(result.Count, span);
@@ -455,6 +462,7 @@ internal sealed partial class LythonRuntime
                 }, OnePositional("set.symmetric_difference", "other")),
                 "isdisjoint" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     foreach (var item in ToSequence(arguments[0], span, context))
                     {
                         if (set.Contains(ValidateSetItem(item, span)))
@@ -466,10 +474,14 @@ internal sealed partial class LythonRuntime
                     return true;
                 }, OnePositional("set.isdisjoint", "other")),
                 "issubset" => BoundCallable.Create((arguments, span, context) =>
-                    IsSubsetOfIterable(set, arguments[0], span, context),
+                {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
+                    return IsSubsetOfIterable(set, arguments[0], span, context);
+                },
                     OnePositional("set.issubset", "other")),
                 "issuperset" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     foreach (var item in ToSequence(arguments[0], span, context))
                     {
                         if (!set.Contains(ValidateSetItem(item, span)))
@@ -482,12 +494,14 @@ internal sealed partial class LythonRuntime
                 }, OnePositional("set.issuperset", "other")),
                 "update" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     set.AttachMemoryGovernor(context.MemoryGovernor, span);
                     Update(set, arguments, span, context);
                     return PyNone.Instance;
                 }, VariadicPositional("set.update")),
                 "intersection_update" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     set.AttachMemoryGovernor(context.MemoryGovernor, span);
                     foreach (var argument in arguments)
                     {
@@ -498,6 +512,7 @@ internal sealed partial class LythonRuntime
                 }, VariadicPositional("set.intersection_update")),
                 "difference_update" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     set.AttachMemoryGovernor(context.MemoryGovernor, span);
                     foreach (var argument in arguments)
                     {
@@ -508,6 +523,7 @@ internal sealed partial class LythonRuntime
                 }, VariadicPositional("set.difference_update")),
                 "symmetric_difference_update" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     set.AttachMemoryGovernor(context.MemoryGovernor, span);
                     set.SymmetricExceptWith(MaterializeSet(arguments[0], span, context));
                     context.ObserveCollectionCount(set.Count, span);
@@ -521,8 +537,9 @@ internal sealed partial class LythonRuntime
                     return setIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(set, "set.__len__", static (receiver, span, context) => Len([receiver], span, context)),
-                "__contains__" => BoundCallable.Create((arguments, span, _) =>
+                "__contains__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "set.__contains__(item) expects one argument.", span);
@@ -532,6 +549,7 @@ internal sealed partial class LythonRuntime
                 }, "set.__contains__", ["item"]),
                 "__or__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "set.__or__(value) expects one argument.", span);
@@ -546,6 +564,7 @@ internal sealed partial class LythonRuntime
                 }, "set.__or__", ["value"]),
                 "__and__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "set.__and__(value) expects one argument.", span);
@@ -560,6 +579,7 @@ internal sealed partial class LythonRuntime
                 }, "set.__and__", ["value"]),
                 "__sub__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "set.__sub__(value) expects one argument.", span);
@@ -574,6 +594,7 @@ internal sealed partial class LythonRuntime
                 }, "set.__sub__", ["value"]),
                 "__xor__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "set.__xor__(value) expects one argument.", span);
@@ -642,8 +663,9 @@ internal sealed partial class LythonRuntime
 
                     return EvaluateBitwiseXor(left, set, context, span);
                 }, "set.__rxor__", ["value"]),
-                "__ior__" => BoundCallable.Create((arguments, span, _) =>
+                "__ior__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "set.__ior__(value) expects one argument.", span);
@@ -657,8 +679,9 @@ internal sealed partial class LythonRuntime
                     set.UnionWith(right);
                     return set;
                 }, "set.__ior__", ["value"]),
-                "__iand__" => BoundCallable.Create((arguments, span, _) =>
+                "__iand__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "set.__iand__(value) expects one argument.", span);
@@ -672,8 +695,9 @@ internal sealed partial class LythonRuntime
                     set.IntersectWith(right);
                     return set;
                 }, "set.__iand__", ["value"]),
-                "__isub__" => BoundCallable.Create((arguments, span, _) =>
+                "__isub__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "set.__isub__(value) expects one argument.", span);
@@ -687,8 +711,9 @@ internal sealed partial class LythonRuntime
                     set.ExceptWith(right);
                     return set;
                 }, "set.__isub__", ["value"]),
-                "__ixor__" => BoundCallable.Create((arguments, span, _) =>
+                "__ixor__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "set.__ixor__(value) expects one argument.", span);
@@ -702,8 +727,9 @@ internal sealed partial class LythonRuntime
                     set.SymmetricExceptWith(right);
                     return set;
                 }, "set.__ixor__", ["value"]),
-                "__eq__" => BoundCallable.Create((arguments, span, _) =>
+                "__eq__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "set.__eq__(value) expects one argument.", span);
@@ -716,8 +742,9 @@ internal sealed partial class LythonRuntime
 
                     return set.SetEquals(other);
                 }, "set.__eq__", ["value"]),
-                "__ne__" => BoundCallable.Create((arguments, span, _) =>
+                "__ne__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "set.__ne__(value) expects one argument.", span);

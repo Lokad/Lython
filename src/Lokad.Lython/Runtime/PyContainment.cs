@@ -50,8 +50,8 @@ internal static class PyContainment
             PyDefaultDict defaultDict => defaultDict.TryGetValue(LythonRuntime.ValidateDictionaryKey(candidate, span), out _),
             PyChainMap chainMap => chainMap.ContainsKey(candidate, span),
             PySet set => ContainsInSet(set, candidate, span),
-            LythonRuntime.DictKeysView keysView => ContainsInValidatedView(keysView, candidate, span),
-            LythonRuntime.DictItemsView itemsView => ContainsInValidatedView(itemsView, candidate, span),
+            LythonRuntime.DictKeysView keysView => ContainsInValidatedViewWithProtocols(keysView, candidate, context, span),
+            LythonRuntime.DictItemsView itemsView => ContainsInValidatedViewWithProtocols(itemsView, candidate, context, span),
             ChainMapKeysView chainKeys => chainKeys.Owner.ContainsKey(candidate, span),
             ChainMapValuesView chainValues => ContainsInChainMapValuesWithProtocols(chainValues, candidate, context, span),
             ChainMapItemsView chainItems => ContainsInChainMapItemsWithProtocols(chainItems, candidate, context, span),
@@ -151,6 +151,24 @@ internal static class PyContainment
     {
         LythonRuntime.ValidateDictionaryKey(candidate, span);
         return ContainsInTypedSequence(view, candidate);
+    }
+
+    // R13b: view membership consults member == like the sequence scans so
+    // custom keys and values match through the ambient push at the
+    // WithProtocols entry.
+    private static bool ContainsInValidatedViewWithProtocols(IEnumerable<object> view, object candidate, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        LythonRuntime.ValidateDictionaryKey(candidate, span);
+        foreach (var item in view)
+        {
+            PyStructuralGuard.NoteWork(context, span);
+            if (LythonRuntime.MembershipEquals(item, candidate, context, span))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // ChainMap view membership scans the underlying mappings directly instead

@@ -360,6 +360,7 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateSetComprehension(SetComprehensionExpressionSyntax comprehension, ExecutionContext context)
     {
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, comprehension.Span);
         var result = new PySet(context.MemoryGovernor, comprehension.Span);
         EvaluateComprehensionClauses(
             comprehension.Clauses,
@@ -380,6 +381,7 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateDictComprehension(DictComprehensionExpressionSyntax comprehension, ExecutionContext context)
     {
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, comprehension.Span);
         var result = new PyDict(context.MemoryGovernor, comprehension.Span);
         EvaluateComprehensionClauses(
             comprehension.Clauses,

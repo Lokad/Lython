@@ -40,6 +40,7 @@ internal sealed partial class LythonRuntime
 
         var start = stack.Count - count;
         var set = new PySet(context.MemoryGovernor, span);
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         for (var i = start; i < stack.Count; i++)
         {
             set.Add(ValidateSetItem(stack[i], span));

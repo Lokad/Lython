@@ -8,6 +8,19 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     private MemoryGovernor? _memoryGovernor;
     private LythonSourceSpan? _allocationSpan;
     private long _committedBytes;
+
+    // Protocol-item side index (R13b): items needing __hash__/__eq__ dispatch
+    // bypass HashSet probing (which cannot run guest code) and scan with
+    // precomputed hashes plus element ==. Dual-homed like PyDict: every
+    // entry lives in the fast table (iteration, Count, copies untouched)
+    // with a shadow here carrying its contextual hash for dispatch scans.
+    private List<ProtocolEntry>? _protocol;
+    private long _protocolBytes;
+    private long _protocolSeq;
+
+    internal readonly record struct ProtocolEntry(long Seq, int Hash, object Item);
+
+    internal const long ProtocolEntryBytes = 64;
     // Committed capacity, not live CLR capacity: it lags behind after a failed
     // growth so the retry re-charges instead of riding enlarged storage for free.
     private int _capacity;
@@ -135,6 +148,9 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     public PySet(PySet other)
     {
         _items = new HashSet<object>(other._items, PyValueComparer.Instance);
+        _protocol = other._protocol is null ? null : new List<ProtocolEntry>(other._protocol);
+        _protocolBytes = 0;
+        _protocolSeq = other._protocolSeq;
         _memoryGovernor = other._memoryGovernor;
         _allocationSpan = other._allocationSpan;
         if (_memoryGovernor is not null)
@@ -150,6 +166,17 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     public PySet(PySet other, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
         : this(other._items, governor, allocationSpan)
     {
+        // The enumerating ctor above homes every entry fast by identity;
+        // re-index protocol items with their contextual hashes.
+        if (other._protocol is not null)
+        {
+            _protocol = new List<ProtocolEntry>(other._protocol);
+            _protocolSeq = other._protocolSeq;
+            var bytes = checked(ProtocolEntryBytes * _protocol.Count);
+            governor.Reserve(bytes, allocationSpan);
+            governor.Commit(bytes);
+            _protocolBytes = bytes;
+        }
     }
 
     public int Count => _items.Count;
@@ -160,7 +187,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     // release them if this set is dropped. Incremental growth after the
     // snapshot only ever leaves a safe residual behind; wholesale
     // replacement re-snapshots through Clear below.
-    internal long CommittedStorageBytes => _shellCharged ? SetShellBytes + _committedBytes : _committedBytes;
+    internal long CommittedStorageBytes => (_shellCharged ? SetShellBytes + _committedBytes : _committedBytes) + _protocolBytes;
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
 
@@ -168,10 +195,20 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
     public bool Add(object item)
     {
+        if (PyHashProtocols.NeedsProtocolKey(item))
+        {
+            return AddProtocolItem(item);
+        }
+
         // At a growth boundary, probe first so a duplicate cannot allocate before
         // the memory governor approves the next table. Otherwise Add needs one lookup.
         // Committed capacity, not live CLR capacity, so usage past a failed growth
         // still routes through EnsureCapacity below.
+        if (_protocol is not null && TryGetProtocolBuiltin(item, out _))
+        {
+            return false;
+        }
+
         if (Count < _capacity)
         {
             return _items.Add(item);
@@ -209,7 +246,16 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         _allocationSpan ??= allocationSpan;
     }
 
-    public bool Remove(object item) => _items.Remove(item);
+    public bool Remove(object item)
+    {
+        if (_items.Remove(item))
+        {
+            RemoveProtocolShadow(item);
+            return true;
+        }
+
+        return RemoveProtocolItem(item);
+    }
 
     public bool TryPop(out object item)
     {
@@ -221,11 +267,24 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         }
 
         item = enumerator.Current;
-        _items.Remove(item);
+        Remove(item);
         return true;
     }
 
-    public bool Contains(object item) => _items.Contains(item);
+    public bool Contains(object item)
+    {
+        if (_items.Contains(item))
+        {
+            return true;
+        }
+
+        if (PyHashProtocols.NeedsProtocolKey(item))
+        {
+            return ContainsProtocolItem(item);
+        }
+
+        return _protocol is not null && ContainsProtocolBuiltin(item);
+    }
 
     public void Clear()
     {
@@ -239,12 +298,270 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
                 _capacity = 0;
             }
 
+            if (_protocolBytes > 0)
+            {
+                _memoryGovernor.Release(_protocolBytes);
+                _protocolBytes = 0;
+            }
+
             _items = new HashSet<object>(PyValueComparer.Instance);
+            _protocol = null;
             ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
             return;
         }
 
         _items.Clear();
+        _protocol = null;
+        _protocolBytes = 0;
+    }
+
+    private LythonRuntime.ExecutionContext? ActiveProtocolContext()
+        => PyStructuralGuard.GuestDispatchSuppressed ? null : PyStructuralGuard.AmbientContext;
+
+    // Dual-home protocol insert: update nothing (sets hold no values),
+    // returning false when the logical item already lives in either home.
+    private bool AddProtocolItem(object item)
+    {
+        var context = ActiveProtocolContext();
+        var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
+        if (context is null || useSpan is null)
+        {
+            return AddProtocolStructural(item);
+        }
+
+        var hash = PyHashProtocols.GetProtocolHash(item, context, useSpan);
+        if (_protocol is not null)
+        {
+            var snapshot = _protocol.ToArray();
+            foreach (var entry in snapshot)
+            {
+                if (entry.Hash == hash && (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan)))
+                {
+                    return false;
+                }
+            }
+        }
+
+        foreach (var existing in _items.ToArray())
+        {
+            if (PyValueComparer.Instance.GetHashCode(existing) == hash && (ReferenceEquals(existing, item) || LythonRuntime.ElementEquals(existing, item, context, useSpan)))
+            {
+                return false;
+            }
+        }
+
+        AppendProtocolItem(item, hash);
+        return true;
+    }
+
+    private bool AddProtocolStructural(object item)
+    {
+        if (_protocol is not null)
+        {
+            foreach (var entry in _protocol)
+            {
+                if (ReferenceEquals(entry.Item, item))
+                {
+                    return false;
+                }
+            }
+        }
+
+        AppendProtocolItem(item, PyValueComparer.Instance.GetHashCode(item));
+        return true;
+    }
+
+    private void AppendProtocolItem(object item, int hash)
+    {
+        var committedBefore = CommittedStorageBytes;
+        EnsureCapacity(Count + 1);
+        _ = _items.Add(item);
+        _protocol ??= new List<ProtocolEntry>();
+        _protocol.Add(new ProtocolEntry(_protocolSeq++, hash, item));
+        if (_memoryGovernor is not null)
+        {
+            _memoryGovernor.Reserve(ProtocolEntryBytes, _allocationSpan);
+            _memoryGovernor.Commit(ProtocolEntryBytes);
+            _protocolBytes += ProtocolEntryBytes;
+        }
+
+        if (CommittedStorageBytes != committedBefore)
+        {
+            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
+        }
+    }
+
+    private bool ContainsProtocolItem(object item)
+    {
+        var context = ActiveProtocolContext();
+        var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
+        if (_protocol is null)
+        {
+            return false;
+        }
+
+        if (context is null || useSpan is null)
+        {
+            foreach (var entry in _protocol)
+            {
+                if (ReferenceEquals(entry.Item, item))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        var hash = PyHashProtocols.GetProtocolHash(item, context, useSpan);
+        var snapshot = _protocol.ToArray();
+        foreach (var entry in snapshot)
+        {
+            if (entry.Hash == hash && (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan)))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool ContainsProtocolBuiltin(object item)
+    {
+        if (_protocol is null)
+        {
+            return false;
+        }
+
+        return TryGetProtocolBuiltin(item, out _);
+    }
+
+    private bool TryGetProtocolBuiltin(object item, out object _)
+    {
+        _ = PyNone.Instance;
+        var context = ActiveProtocolContext();
+        var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
+        var hash = PyValueComparer.Instance.GetHashCode(item);
+        foreach (var entry in _protocol!)
+        {
+            if (entry.Hash != hash)
+            {
+                continue;
+            }
+
+            if (ReferenceEquals(entry.Item, item))
+            {
+                return true;
+            }
+
+            if (context is not null && useSpan is not null && LythonRuntime.ElementEquals(entry.Item, item, context, useSpan))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool RemoveProtocolItem(object item)
+    {
+        var context = ActiveProtocolContext();
+        var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
+        if (context is null || useSpan is null)
+        {
+            return RemoveProtocolStructural(item);
+        }
+
+        var hash = PyHashProtocols.GetProtocolHash(item, context, useSpan);
+        if (_protocol is not null)
+        {
+            var snapshot = _protocol.ToArray();
+            foreach (var entry in snapshot)
+            {
+                if (entry.Hash == hash && (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan)))
+                {
+                    RemoveSideEntry(entry.Item);
+                    return true;
+                }
+            }
+        }
+
+        foreach (var existing in _items.ToArray())
+        {
+            if (PyValueComparer.Instance.GetHashCode(existing) == hash && (ReferenceEquals(existing, item) || LythonRuntime.ElementEquals(existing, item, context, useSpan)))
+            {
+                _ = _items.Remove(existing);
+                RemoveProtocolShadow(existing);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool RemoveProtocolStructural(object item)
+    {
+        if (_protocol is not null)
+        {
+            foreach (var entry in _protocol.ToArray())
+            {
+                if (ReferenceEquals(entry.Item, item))
+                {
+                    RemoveSideEntry(entry.Item);
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private void RemoveProtocolShadow(object item)
+    {
+        if (_protocol is null)
+        {
+            return;
+        }
+
+        for (var i = 0; i < _protocol.Count; i++)
+        {
+            if (ReferenceEquals(_protocol[i].Item, item))
+            {
+                _protocol.RemoveAt(i);
+                ReleaseSideBytes(ProtocolEntryBytes);
+                return;
+            }
+        }
+    }
+
+    private void RemoveSideEntry(object item)
+    {
+        if (_protocol is not null)
+        {
+            for (var i = 0; i < _protocol.Count; i++)
+            {
+                if (ReferenceEquals(_protocol[i].Item, item))
+                {
+                    _protocol.RemoveAt(i);
+                    break;
+                }
+            }
+        }
+
+        _ = _items.Remove(item);
+        ReleaseSideBytes(ProtocolEntryBytes);
+    }
+
+    private void ReleaseSideBytes(long bytes)
+    {
+        if (_memoryGovernor is null || bytes <= 0)
+        {
+            return;
+        }
+
+        _memoryGovernor.Release(bytes);
+        _protocolBytes -= bytes;
+        ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
     }
 
     public void UnionWith(PySet other)
@@ -300,7 +617,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         var symmetric = new List<object>(Count + other.Count);
         foreach (var item in _items)
         {
-            if (!other._items.Contains(item))
+            if (!other.Contains(item))
             {
                 symmetric.Add(item);
             }
@@ -308,7 +625,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
         foreach (var item in other._items)
         {
-            if (!_items.Contains(item))
+            if (!Contains(item))
             {
                 symmetric.Add(item);
             }
@@ -317,15 +634,69 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         RebuildFrom(symmetric);
     }
 
-    public bool SetEquals(PySet other) => _items.SetEquals(other._items);
+    // Protocol-involved comparisons go manual (counts plus both-direction
+    // Contains, which observes ambient provenance); pure-builtin pairs keep
+    // the HashSet fast path bit-for-bit.
+    private bool HasProtocolItems(PySet other)
+        => (_protocol is not null && _protocol.Count > 0) || (other._protocol is not null && other._protocol.Count > 0);
 
-    public bool IsSubsetOf(PySet other) => _items.IsSubsetOf(other._items);
+    public bool SetEquals(PySet other)
+    {
+        if (HasProtocolItems(other))
+        {
+            return Count == other.Count && IsSubsetOf(other) && other.IsSubsetOf(this);
+        }
 
-    public bool IsProperSubsetOf(PySet other) => _items.IsProperSubsetOf(other._items);
+        return _items.SetEquals(other._items);
+    }
 
-    public bool IsSupersetOf(PySet other) => _items.IsSupersetOf(other._items);
+    public bool IsSubsetOf(PySet other)
+    {
+        if (HasProtocolItems(other))
+        {
+            foreach (var item in _items)
+            {
+                if (!other.Contains(item))
+                {
+                    return false;
+                }
+            }
 
-    public bool IsProperSupersetOf(PySet other) => _items.IsProperSupersetOf(other._items);
+            return true;
+        }
+
+        return _items.IsSubsetOf(other._items);
+    }
+
+    public bool IsProperSubsetOf(PySet other)
+    {
+        if (HasProtocolItems(other))
+        {
+            return Count < other.Count && IsSubsetOf(other);
+        }
+
+        return _items.IsProperSubsetOf(other._items);
+    }
+
+    public bool IsSupersetOf(PySet other)
+    {
+        if (HasProtocolItems(other))
+        {
+            return other.IsSubsetOf(this);
+        }
+
+        return _items.IsSupersetOf(other._items);
+    }
+
+    public bool IsProperSupersetOf(PySet other)
+    {
+        if (HasProtocolItems(other))
+        {
+            return Count > other.Count && IsSupersetOf(other);
+        }
+
+        return _items.IsProperSupersetOf(other._items);
+    }
 
     public bool IsTruthy() => Count != 0;
 
@@ -376,7 +747,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         var result = new List<object>(Count);
         foreach (var item in _items)
         {
-            if (other._items.Contains(item) == keepContained)
+            if (other.Contains(item) == keepContained)
             {
                 result.Add(item);
             }
@@ -388,10 +759,27 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     private void RebuildFrom(List<object> items)
     {
         _items.Clear();
+        var hadProtocol = _protocol is not null;
+        if (hadProtocol)
+        {
+            if (_memoryGovernor is not null && _protocolBytes > 0)
+            {
+                _memoryGovernor.Release(_protocolBytes);
+            }
+
+            _protocol = null;
+            _protocolBytes = 0;
+        }
+
         EnsureCapacity(items.Count);
         foreach (var item in items)
         {
-            _items.Add(item);
+            Add(item);
+        }
+
+        if (hadProtocol)
+        {
+            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
         }
     }
 }

@@ -171,6 +171,8 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateSubtract(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
+        // R13b: set/counter regions below observe ambient provenance.
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         if (left is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView || right is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView)
         {
             left = SetMembers.AsSetOperand(left, span, context);

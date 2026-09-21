@@ -750,6 +750,8 @@ internal sealed partial class LythonRuntime
             return multipliedDeque;
         }
 
+        // R13b: in-place set algebra below observes ambient provenance.
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         if (currentValue is PySet currentSet && right is PySet rightSet)
         {
             switch (op)

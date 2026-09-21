@@ -167,6 +167,7 @@ internal sealed partial class LythonRuntime
     // full <= operator, exactly like CPython (element failures propagate).
     internal static bool MultisetLessEqual(PyCounter left, PyCounter right, ExecutionContext context, LythonSourceSpan span)
     {
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         var keys = new HashSet<object>(left.Keys, PyValueComparer.Instance);
         keys.UnionWith(right.Keys);
 
@@ -354,6 +355,7 @@ internal sealed partial class LythonRuntime
         {
             return leftBoolean ^ rightBoolean;
         }
+            using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
 
         if (left is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView || right is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView)
         {
@@ -390,6 +392,8 @@ internal sealed partial class LythonRuntime
             return leftBoolean & rightBoolean;
         }
 
+        // R13b: set/counter regions below observe ambient provenance.
+            using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
             return IntersectCounters(leftCounter, rightCounter, span, context);
@@ -1029,6 +1033,7 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateSetLiteral(SetLiteralExpressionSyntax set, ExecutionContext context)
     {
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, set.Span);
         var result = new PySet(context.MemoryGovernor, set.Span);
         for (var i = 0; i < set.Items.Count; i++)
         {
