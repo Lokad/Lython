@@ -55,7 +55,19 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     {
         context.CheckExecutionBudget(span);
         var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context);
-        var frame = EnterInvocationFrame(boundArguments, span);
+        LythonRuntime.ExecutionContext frame;
+        try
+        {
+            frame = EnterInvocationFrame(boundArguments, span);
+        }
+        catch
+        {
+            // Recursion or budget failure during frame entry must not strand
+            // the rented bound-values box: hand it back before propagating.
+            LythonRuntime.ReturnBoundValues(boundArguments.Values);
+            throw;
+        }
+
         try
         {
             return ExecuteBody(frame, boundArguments, span);
@@ -80,7 +92,18 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     {
         context.CheckExecutionBudget(span);
         var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context);
-        var frame = EnterInvocationFrame(boundArguments, span);
+        LythonRuntime.ExecutionContext frame;
+        try
+        {
+            frame = EnterInvocationFrame(boundArguments, span);
+        }
+        catch
+        {
+            // Async twin of the entry cleanup above.
+            LythonRuntime.ReturnBoundValues(boundArguments.Values);
+            throw;
+        }
+
         try
         {
             return await ExecuteBodyAsync(frame, boundArguments, span).ConfigureAwait(false);

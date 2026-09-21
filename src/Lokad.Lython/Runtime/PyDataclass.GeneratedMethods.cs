@@ -94,72 +94,81 @@ internal static partial class PyDataclass
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             var bound = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context);
-            if (bound.Values[_bindingPlan.LayoutParameterIndex["self"]] is not PyInstance instance)
+            try
             {
-                throw new LythonRuntimeException("TypeError", $"{_typeName}.__init__ expected a bound instance.", span);
-            }
-
-            var initVarValues = new List<object>();
-            foreach (var field in _fields)
-            {
-                if (!field.Store)
+                if (bound.Values[_bindingPlan.LayoutParameterIndex["self"]] is not PyInstance instance)
                 {
-                    if (field.Kind == DataclassFieldKind.InitVar && field.Init)
-                    {
-                        var initVarValue = bound.Values[_bindingPlan.LayoutParameterIndex[field.Name]];
-                        if (ReferenceEquals(initVarValue, DefaultFactorySentinel))
-                        {
-                            initVarValue = InvokeDefaultFactory(field, span, context);
-                        }
-
-                        initVarValues.Add(initVarValue);
-                    }
-                    continue;
+                    throw new LythonRuntimeException("TypeError", $"{_typeName}.__init__ expected a bound instance.", span);
                 }
 
-                object value;
-                if (field.Init)
+                var initVarValues = new List<object>();
+                foreach (var field in _fields)
                 {
-                    value = bound.Values[_bindingPlan.LayoutParameterIndex[field.Name]];
-                    if (ReferenceEquals(value, DefaultFactorySentinel))
+                    if (!field.Store)
+                    {
+                        if (field.Kind == DataclassFieldKind.InitVar && field.Init)
+                        {
+                            var initVarValue = bound.Values[_bindingPlan.LayoutParameterIndex[field.Name]];
+                            if (ReferenceEquals(initVarValue, DefaultFactorySentinel))
+                            {
+                                initVarValue = InvokeDefaultFactory(field, span, context);
+                            }
+
+                            initVarValues.Add(initVarValue);
+                        }
+                        continue;
+                    }
+
+                    object value;
+                    if (field.Init)
+                    {
+                        value = bound.Values[_bindingPlan.LayoutParameterIndex[field.Name]];
+                        if (ReferenceEquals(value, DefaultFactorySentinel))
+                        {
+                            value = InvokeDefaultFactory(field, span, context);
+                        }
+                    }
+                    else if (field.HasDefaultFactory)
                     {
                         value = InvokeDefaultFactory(field, span, context);
                     }
-                }
-                else if (field.HasDefaultFactory)
-                {
-                    value = InvokeDefaultFactory(field, span, context);
-                }
-                else if (field.HasDefault)
-                {
-                    value = field.DefaultValue;
-                }
-                else
-                {
-                    continue;
+                    else if (field.HasDefault)
+                    {
+                        value = field.DefaultValue;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    SetAttributeDuringDataclassInit(instance, field.Name, value, context, span);
                 }
 
-                SetAttributeDuringDataclassInit(instance, field.Name, value, context, span);
+                if (instance.Type.TryGetMember("__post_init__", out var postInitRaw))
+                {
+                    var callable = postInitRaw switch
+                    {
+                        IPyBindableCallable bindable => bindable.Bind(instance),
+                        IPyDescriptor descriptor => descriptor.Get(instance, instance.Type, context, span),
+                        _ => postInitRaw
+                    };
+                    if (callable is not LythonRuntime.ICallable postInitCallable)
+                    {
+                        throw new LythonRuntimeException("TypeError", $"{_typeName}.__post_init__ must be callable.", span);
+                    }
+
+                    var postInitArguments = initVarValues.Select(value => CallArgumentValue.Positional(value)).ToArray();
+                    _ = postInitCallable.Invoke(postInitArguments, span, context);
+                }
+
+                return PyNone.Instance;
             }
-
-            if (instance.Type.TryGetMember("__post_init__", out var postInitRaw))
+            finally
             {
-                var callable = postInitRaw switch
-                {
-                    IPyBindableCallable bindable => bindable.Bind(instance),
-                    IPyDescriptor descriptor => descriptor.Get(instance, instance.Type, context, span),
-                    _ => postInitRaw
-                };
-                if (callable is not LythonRuntime.ICallable postInitCallable)
-                {
-                    throw new LythonRuntimeException("TypeError", $"{_typeName}.__post_init__ must be callable.", span);
-                }
-
-                var postInitArguments = initVarValues.Select(value => CallArgumentValue.Positional(value)).ToArray();
-                _ = postInitCallable.Invoke(postInitArguments, span, context);
+                // Generated dunders enter no frame, so the rented
+                // bound-values box is returned on every exit path.
+                LythonRuntime.ReturnBoundValues(bound.Values);
             }
-
-            return PyNone.Instance;
         }
 
         internal static object InvokeDefaultFactory(DataclassFieldSpec field, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -278,30 +287,39 @@ internal static partial class PyDataclass
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             var bound = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context);
-            if (bound.Values[_bindingPlan.LayoutParameterIndex["self"]] is not PyInstance self)
+            try
             {
-                throw new LythonRuntimeException("TypeError", $"{typeName}.__eq__ expected a bound instance.", span);
-            }
-
-            if (bound.Values[_bindingPlan.LayoutParameterIndex["other"]] is not PyInstance other || !ReferenceEquals(self.Type, other.Type))
-            {
-                return false;
-            }
-
-            using (PyStructuralGuard.EnterPair(self, other, span))
-            {
-                foreach (var field in fields)
+                if (bound.Values[_bindingPlan.LayoutParameterIndex["self"]] is not PyInstance self)
                 {
-                    PyStructuralGuard.NoteWork();
-                    _ = self.TryGetOwnAttribute(field.Name, out var left);
-                    _ = other.TryGetOwnAttribute(field.Name, out var right);
-                    if (!LythonRuntime.ElementEquals(left ?? PyNone.Instance, right ?? PyNone.Instance, context, span))
-                    {
-                        return false;
-                    }
+                    throw new LythonRuntimeException("TypeError", $"{typeName}.__eq__ expected a bound instance.", span);
                 }
 
-                return true;
+                if (bound.Values[_bindingPlan.LayoutParameterIndex["other"]] is not PyInstance other || !ReferenceEquals(self.Type, other.Type))
+                {
+                    return false;
+                }
+
+                using (PyStructuralGuard.EnterPair(self, other, span))
+                {
+                    foreach (var field in fields)
+                    {
+                        PyStructuralGuard.NoteWork();
+                        _ = self.TryGetOwnAttribute(field.Name, out var left);
+                        _ = other.TryGetOwnAttribute(field.Name, out var right);
+                        if (!LythonRuntime.ElementEquals(left ?? PyNone.Instance, right ?? PyNone.Instance, context, span))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+            }
+            finally
+            {
+                // Generated dunders enter no frame, so the rented
+                // bound-values box is returned on every exit path.
+                LythonRuntime.ReturnBoundValues(bound.Values);
             }
         }
     }
@@ -383,20 +401,29 @@ internal static partial class PyDataclass
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             var bound = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context);
-            if (bound.Values[_bindingPlan.LayoutParameterIndex["self"]] is not PyInstance self || bound.Values[_bindingPlan.LayoutParameterIndex["other"]] is not PyInstance other || !ReferenceEquals(self.Type, other.Type))
+            try
             {
-                throw new LythonRuntimeException("TypeError", $"{_typeName} ordering expects two instances of the same dataclass type.", span);
-            }
+                if (bound.Values[_bindingPlan.LayoutParameterIndex["self"]] is not PyInstance self || bound.Values[_bindingPlan.LayoutParameterIndex["other"]] is not PyInstance other || !ReferenceEquals(self.Type, other.Type))
+                {
+                    throw new LythonRuntimeException("TypeError", $"{_typeName} ordering expects two instances of the same dataclass type.", span);
+                }
 
-            var comparison = CompareOrderedInstances(self, other, span);
-            return _operation switch
+                var comparison = CompareOrderedInstances(self, other, span);
+                return _operation switch
+                {
+                    DataclassOrderOperation.Less => comparison < 0,
+                    DataclassOrderOperation.LessEqual => comparison <= 0,
+                    DataclassOrderOperation.Greater => comparison > 0,
+                    DataclassOrderOperation.GreaterEqual => comparison >= 0,
+                    _ => throw new InvalidOperationException("Unsupported dataclass order operation.")
+                };
+            }
+            finally
             {
-                DataclassOrderOperation.Less => comparison < 0,
-                DataclassOrderOperation.LessEqual => comparison <= 0,
-                DataclassOrderOperation.Greater => comparison > 0,
-                DataclassOrderOperation.GreaterEqual => comparison >= 0,
-                _ => throw new InvalidOperationException("Unsupported dataclass order operation.")
-            };
+                // Generated dunders enter no frame, so the rented
+                // bound-values box is returned on every exit path.
+                LythonRuntime.ReturnBoundValues(bound.Values);
+            }
         }
 
     }

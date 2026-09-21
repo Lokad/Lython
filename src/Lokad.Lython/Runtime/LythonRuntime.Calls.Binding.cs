@@ -86,7 +86,6 @@ internal sealed partial class LythonRuntime
         ExecutionContext context)
     {
         context.State.NoteBoundCall();
-        var pool = context.State.CallTemporaries;
         // Values travel in plan layout order (positional, keyword-only, then
         // variadic names) with presence bits, instead of a per-call name
         // dictionary. The layout arrays live on the shared plan; only the value
@@ -94,6 +93,31 @@ internal sealed partial class LythonRuntime
         var values = plan.LayoutParameterNames.Count == 0
             ? Array.Empty<object>()
             : RentBoundValues(plan.LayoutParameterNames.Count);
+        try
+        {
+            return BindInto(values, arguments, span, plan, context);
+        }
+        catch
+        {
+            // Arity failures after the rent must not strand the pooled box:
+            // clear it and hand it back so the next bind reuses the array
+            // instead of allocating (and retaining argument refs until GC).
+            ReturnBoundValues(values);
+            throw;
+        }
+    }
+
+    // Post-rent binding body: every throw inside (too many positionals,
+    // unexpected or duplicated keywords, missing arguments) funnels through
+    // the catch in BindFunctionArguments, which returns the rented box.
+    private static BoundCallArguments BindInto(
+        object[] values,
+        CallArgumentValue[] arguments,
+        LythonSourceSpan span,
+        FunctionBindingPlan plan,
+        ExecutionContext context)
+    {
+        var pool = context.State.CallTemporaries;
         var assigned = new ArgumentPresence(plan.LayoutParameterNames.Count);
         // The overflow list is scratch: most calls never spill positionals,
         // so materialize it only on the first spill, tracked in the call pool
@@ -1063,14 +1087,25 @@ internal sealed partial class LythonRuntime
             context.CheckExecutionBudget(span);
             var boundArguments = BindFunctionArguments(arguments, span, _bindingPlan, context);
 
-            var frame = PyFunctionBinding.EnterInvocationFrame(
-                _closure,
-                ScopeDirectiveFacts.Empty,
-                _bindingPlan,
-                boundArguments,
-                mirrorBoundArguments: true,
-                ownerType: null,
-                span);
+            ExecutionContext frame;
+            try
+            {
+                frame = PyFunctionBinding.EnterInvocationFrame(
+                    _closure,
+                    ScopeDirectiveFacts.Empty,
+                    _bindingPlan,
+                    boundArguments,
+                    mirrorBoundArguments: true,
+                    ownerType: null,
+                    span);
+            }
+            catch
+            {
+                // Entry failure must not strand the rented bound-values box.
+                ReturnBoundValues(boundArguments.Values);
+                throw;
+            }
+
             try
             {
                 return EvaluateLoweredExpression(_body, frame);
@@ -1092,14 +1127,25 @@ internal sealed partial class LythonRuntime
             context.CheckExecutionBudget(span);
             var boundArguments = BindFunctionArguments(arguments, span, _bindingPlan, context);
 
-            var frame = PyFunctionBinding.EnterInvocationFrame(
-                _closure,
-                ScopeDirectiveFacts.Empty,
-                _bindingPlan,
-                boundArguments,
-                mirrorBoundArguments: true,
-                ownerType: null,
-                span);
+            ExecutionContext frame;
+            try
+            {
+                frame = PyFunctionBinding.EnterInvocationFrame(
+                    _closure,
+                    ScopeDirectiveFacts.Empty,
+                    _bindingPlan,
+                    boundArguments,
+                    mirrorBoundArguments: true,
+                    ownerType: null,
+                    span);
+            }
+            catch
+            {
+                // Async twin of the entry cleanup above.
+                ReturnBoundValues(boundArguments.Values);
+                throw;
+            }
+
             try
             {
                 return await EvaluateLoweredExpressionAsync(_body, frame).ConfigureAwait(false);
