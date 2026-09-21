@@ -2069,24 +2069,30 @@ internal sealed partial class LythonRuntime
     {
         private readonly object _owner;
         private readonly string _shortName;
+        // Names derive from the immutable short type name, so each wrapper caches
+        // its two constants once: repeated reads alias stably like CPython
+        // instead of minting (and retaining) a fresh string per read.
+        private readonly PyString _nameValue = PyString.FromString("__new__");
+        private readonly PyString _qualNameValue;
 
         internal TypeNewMethod(object owner, string shortName)
         {
             _owner = owner;
             _shortName = shortName;
+            _qualNameValue = PyString.FromString(shortName + ".__new__");
         }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             if (name is "__name__")
             {
-                value = PyString.FromString("__new__");
+                value = _nameValue;
                 return true;
             }
 
             if (name is "__qualname__")
             {
-                value = PyString.FromString(_shortName + ".__new__");
+                value = _qualNameValue;
                 return true;
             }
 
@@ -2150,24 +2156,28 @@ internal sealed partial class LythonRuntime
     {
         private readonly object _owner;
         private readonly string _shortName;
+        // Same immutable-name caching as TypeNewMethod above.
+        private readonly PyString _nameValue = PyString.FromString("__new__");
+        private readonly PyString _qualNameValue;
 
         internal FunctionNewMethod(object owner, string shortName)
         {
             _owner = owner;
             _shortName = shortName;
+            _qualNameValue = PyString.FromString(shortName + ".__new__");
         }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             if (name is "__name__")
             {
-                value = PyString.FromString("__new__");
+                value = _nameValue;
                 return true;
             }
 
             if (name is "__qualname__")
             {
-                value = PyString.FromString(_shortName + ".__new__");
+                value = _qualNameValue;
                 return true;
             }
 

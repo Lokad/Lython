@@ -1214,13 +1214,19 @@ internal sealed partial class LythonRuntime
 
         internal TypeNewMethod? NewSlot { get; set; }
 
+        // Exception identities are immutable, so the name renders once and every
+        // later read aliases it (matching CPython identity) instead of minting a
+        // fresh string per read. Only builtin identities reach this type, keeping
+        // each cached constant tiny.
+        private PyString? _nameValue;
+
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
-                "__name__" => PyString.FromString(TypeName),
+                "__name__" => _nameValue ??= PyString.FromString(TypeName),
                 "__module__" => SharedModuleLabel(ExceptionIdentity.ModuleName),
-                "type" => PyString.FromString(TypeName),
+                "type" => _nameValue ??= PyString.FromString(TypeName),
                 _ => MissingMemberValue.Instance
             };
 

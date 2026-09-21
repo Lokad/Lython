@@ -36,11 +36,15 @@ internal sealed class PyTypingAlias : IPySubscriptableValue, IPyRenderableValue,
         return new PyTypingAlias(ShortName, Qualified, NormalizeSubscriptArguments(index));
     }
 
+    // Alias short names come from a fixed vocabulary, so cache the single
+    // constant instead of minting per read.
+    private PyString? _nameValue;
+
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
         value = name switch
         {
-            "__name__" => PyString.FromString(ShortName),
+            "__name__" => _nameValue ??= PyString.FromString(ShortName),
             "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("typing"),
             _ => MissingMemberValue.Instance,
         };

@@ -14,6 +14,12 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     private const long AttributeSlotBytes = 64;
     private MemoryGovernor? _memoryGovernor;
     private readonly PyString _nameValue;
+    // Computed qualnames are immutable for a bound owner/shape, so the first
+    // qualified read caches its governed copy and every later read aliases it
+    // (matching CPython identity). Explicit metadata assignments shadow through
+    // _metadata before this cache is ever consulted, and binding an owner below
+    // clears a premature ownerless computation.
+    private PyString? _qualNameValue;
     // The constructor governs the name copy; the defining site folds it into the
     // function pool coupon instead of stranding one string per dropped definition.
     internal long NameCommittedBytes { get; }
@@ -97,7 +103,14 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
 
     public object Bind(object self) => new PyBoundMethod(self, this);
 
-    public void BindOwner(PyType owner) => OwnerType ??= owner;
+    public void BindOwner(PyType owner)
+    {
+        if (OwnerType is null)
+        {
+            OwnerType = owner;
+            _qualNameValue = null;
+        }
+    }
 
     public object Get(object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
         => instance is null ? this : Bind(instance);
@@ -135,14 +148,29 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     // scope and the definition stays invisible, so that segment is missing.
     private PyString QualName()
     {
-        if (OwnerType is { } owner)
+        if (_qualNameValue is { } cached)
         {
-            return PyString.FromString(owner.Name + "." + Name);
+            return cached;
         }
 
-        return PyFunctionBinding.EnclosingFunctionPath(_closure) is { } path
-            ? PyString.FromString(path + ".<locals>." + Name)
-            : _nameValue;
+        var text = OwnerType is { } owner
+            ? owner.Name + "." + Name
+            : PyFunctionBinding.EnclosingFunctionPath(_closure) is { } path
+                ? path + ".<locals>." + Name
+                : null;
+        if (text is null)
+        {
+            return _nameValue;
+        }
+        // Publish only a fully constructed copy: a denied reservation leaves
+        // the field null so the next read retries instead of aliasing half
+        // ownership. Governorless hosts keep the previous unowned behavior,
+        // still bounded to one object by the cache above.
+        var computed = _memoryGovernor is null
+            ? PyString.FromString(text)
+            : PyString.FromString(text, _memoryGovernor, null);
+        _qualNameValue = computed;
+        return computed;
     }
 
     internal bool TryGetModuleName([MaybeNullWhen(false)] out PyString moduleName)
