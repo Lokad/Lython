@@ -165,21 +165,26 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
         // the owning PyBytes charge the final copy.
         using var temporary = _memoryGovernor?.ReserveTemporary(0, _allocationSpan);
         var values = new List<byte>();
-        var chargedCapacity = 0;
+        long fundedCapacity = 0;
         foreach (var item in indices)
         {
             if (temporary is not null && values.Count == values.Capacity)
             {
-                // Charge the imminent backing-array growth before appending.
+                // Charge the imminent backing-array growth before appending,
+                // tracking funded capacity so each increment charges once.
                 var predicted = values.Capacity == 0 ? 4L : (long)values.Capacity * 2L;
-                temporary.Grow(checked(predicted - chargedCapacity), _allocationSpan);
+                if (predicted > fundedCapacity)
+                {
+                    temporary.Grow(checked(predicted - fundedCapacity), _allocationSpan);
+                    fundedCapacity = predicted;
+                }
             }
 
             values.Add(_bytes[item]);
-            if (values.Capacity > chargedCapacity)
+            if (values.Capacity > fundedCapacity)
             {
-                temporary?.Grow(values.Capacity - chargedCapacity, _allocationSpan);
-                chargedCapacity = values.Capacity;
+                temporary?.Grow(values.Capacity - fundedCapacity, _allocationSpan);
+                fundedCapacity = values.Capacity;
             }
         }
 

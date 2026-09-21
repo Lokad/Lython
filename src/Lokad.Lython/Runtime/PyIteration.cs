@@ -90,9 +90,13 @@ internal static class PyIteration
     /// Shared asynchronous drain behind every materializer: growth is charged
     /// before the backing array can allocate (lists double from an initial
     /// four, matching the storage capacity prediction), so an unbounded input
-    /// meets the memory budget instead of over-allocating first. The temporary
+    /// meets the memory budget instead of over-allocating first. Funded
+    /// capacity (reserved but not yet observed) is tracked separately from
+    /// observed capacity, so each growth increment charges exactly once and a
+    /// surprising reallocation only funds its real discrepancy. The temporary
     /// reservation also covers the caller-owned final copy and is released
-    /// before ownership transfers.
+    /// before ownership transfers; every consumer below converts the returned
+    /// scratch into governed storage immediately (R12 audit).
     /// </summary>
     internal static async ValueTask<List<object>> DrainAsync(
         IAsyncEnumerable<object> items,
@@ -101,20 +105,24 @@ internal static class PyIteration
     {
         using var reservation = context.MemoryGovernor.ReserveTemporary(0, span);
         var result = new List<object>();
-        var chargedCapacity = 0;
+        long fundedCapacity = 0;
         await foreach (var item in items.ConfigureAwait(false))
         {
             if (result.Count == result.Capacity)
             {
                 var predicted = result.Capacity == 0 ? 4L : (long)result.Capacity * 2L;
-                reservation.Grow(checked(16L * (predicted - chargedCapacity)), span);
+                if (predicted > fundedCapacity)
+                {
+                    reservation.Grow(checked(16L * (predicted - fundedCapacity)), span);
+                    fundedCapacity = predicted;
+                }
             }
 
             result.Add(item);
-            if (result.Capacity > chargedCapacity)
+            if (result.Capacity > fundedCapacity)
             {
-                reservation.Grow(16L * (result.Capacity - chargedCapacity), span);
-                chargedCapacity = result.Capacity;
+                reservation.Grow(16L * (result.Capacity - fundedCapacity), span);
+                fundedCapacity = result.Capacity;
             }
 
             context.ObserveCollectionCount(result.Count, span);
@@ -138,7 +146,8 @@ internal static class PyIteration
     /// four, matching the storage capacity prediction), so an unbounded input
     /// meets the memory budget instead of over-allocating first. The temporary
     /// reservation also covers the caller-owned final copy and is released
-    /// before ownership transfers.
+    /// before ownership transfers. Funded-versus-observed capacity follows the
+    /// asynchronous twin above.
     /// </summary>
     internal static List<object> Drain(
         IEnumerable<object> items,
@@ -147,20 +156,24 @@ internal static class PyIteration
     {
         using var reservation = context.MemoryGovernor.ReserveTemporary(0, span);
         var result = new List<object>();
-        var chargedCapacity = 0;
+        long fundedCapacity = 0;
         foreach (var item in items)
         {
             if (result.Count == result.Capacity)
             {
                 var predicted = result.Capacity == 0 ? 4L : (long)result.Capacity * 2L;
-                reservation.Grow(checked(16L * (predicted - chargedCapacity)), span);
+                if (predicted > fundedCapacity)
+                {
+                    reservation.Grow(checked(16L * (predicted - fundedCapacity)), span);
+                    fundedCapacity = predicted;
+                }
             }
 
             result.Add(item);
-            if (result.Capacity > chargedCapacity)
+            if (result.Capacity > fundedCapacity)
             {
-                reservation.Grow(16L * (result.Capacity - chargedCapacity), span);
-                chargedCapacity = result.Capacity;
+                reservation.Grow(16L * (result.Capacity - fundedCapacity), span);
+                fundedCapacity = result.Capacity;
             }
 
             context.ObserveCollectionCount(result.Count, span);

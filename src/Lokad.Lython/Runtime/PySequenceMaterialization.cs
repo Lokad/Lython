@@ -27,22 +27,27 @@ internal static class PySequenceMaterialization
         // the whole source, and let the owning container charge the final copy.
         using var temporary = memoryGovernor?.ReserveTemporary(0, allocationSpan);
         var values = new List<object>();
-        var chargedCapacity = 0;
+        long fundedCapacity = 0;
         foreach (var sourceIndex in indices)
         {
             if (temporary is not null && values.Count == values.Capacity)
             {
                 // Charge the imminent backing-array growth before appending,
-                // mirroring the shared asynchronous drain.
+                // tracking funded (not observed) capacity like the shared
+                // drains so each increment charges exactly once.
                 var predicted = values.Capacity == 0 ? 4L : (long)values.Capacity * 2L;
-                temporary.Grow(checked(16L * (predicted - chargedCapacity)), allocationSpan);
+                if (predicted > fundedCapacity)
+                {
+                    temporary.Grow(checked(16L * (predicted - fundedCapacity)), allocationSpan);
+                    fundedCapacity = predicted;
+                }
             }
 
             values.Add(source[sourceIndex]);
-            if (values.Capacity > chargedCapacity)
+            if (values.Capacity > fundedCapacity)
             {
-                temporary?.Grow(16L * (values.Capacity - chargedCapacity), allocationSpan);
-                chargedCapacity = values.Capacity;
+                temporary?.Grow(16L * (values.Capacity - fundedCapacity), allocationSpan);
+                fundedCapacity = values.Capacity;
             }
         }
 
