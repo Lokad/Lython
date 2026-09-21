@@ -63,14 +63,24 @@ internal sealed partial class LythonRuntime
         {
             if (options.ObjectPairsHook is not null)
             {
+                // R10: every fresh graph node owns a refundable pool snapshot
+                // so dropped parses reclaim on sweep. Hook results adopt via
+                // plain TrackCallResult inside InvokeJsonCallback, never
+                // refunding an arbitrary callback value that may alias live
+                // state.
                 var pairs = new PyList([], context.MemoryGovernor, span);
+                context.Services.State.CallTemporaries.TrackFreshMutable(pairs, pairs.CommittedStorageBytes, span);
                 foreach (var property in element.EnumerateObject())
                 {
                     context.CheckExecutionBudget(span);
-                    pairs.Add(PyTuple.FromOwnedArray([
-                        CreateString(property.Name, context, span),
-                        ConvertJson(property.Value, options, context, span)
-                    ], context.MemoryGovernor, span));
+                    // Track the key before converting the value: a denied
+                    // value conversion must not strand the key charge.
+                    var key = CreateString(property.Name, context, span);
+                    context.Services.State.CallTemporaries.TrackFreshString(key, span);
+                    var value = ConvertJson(property.Value, options, context, span);
+                    var pair = PyTuple.FromOwnedArray([key, value], context.MemoryGovernor, span);
+                    context.Services.State.CallTemporaries.TrackFreshMutable(pair, pair.CommittedStorageBytes, span);
+                    pairs.Add(pair);
                     context.ObserveCollectionCount(pairs.Count, span);
                 }
 
@@ -78,10 +88,14 @@ internal sealed partial class LythonRuntime
             }
 
             var result = new PyDict(context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
             foreach (var property in element.EnumerateObject())
             {
                 context.CheckExecutionBudget(span);
-                result.SetItem(CreateString(property.Name, context, span), ConvertJson(property.Value, options, context, span));
+                var key = CreateString(property.Name, context, span);
+                context.Services.State.CallTemporaries.TrackFreshString(key, span);
+                var value = ConvertJson(property.Value, options, context, span);
+                result.SetItem(key, value);
                 context.ObserveCollectionCount(result.Count, span);
             }
 
@@ -92,7 +106,11 @@ internal sealed partial class LythonRuntime
 
         private static PyList ConvertJsonArray(JsonElement element, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
         {
+            // R10: the fresh list owns a refundable snapshot; each element
+            // adopts ownership at its own construction boundary below, so a
+            // dropped array reclaims both the backing and every element.
             var result = new PyList([], context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
             foreach (var item in element.EnumerateArray())
             {
                 context.CheckExecutionBudget(span);
@@ -110,12 +128,20 @@ internal sealed partial class LythonRuntime
                 raw.Contains('e', StringComparison.OrdinalIgnoreCase);
             if (isFloat && options.ParseFloat is not null)
             {
-                return InvokeJsonCallback(options.ParseFloat, CreateString(raw, context, span), context, span);
+                // R10: the raw text is a fresh string the callback may drop;
+                // track it before invoking so a denied callback strands
+                // nothing. The callback result adopts via plain
+                // TrackCallResult inside InvokeJsonCallback.
+                var floatText = CreateString(raw, context, span);
+                context.Services.State.CallTemporaries.TrackFreshString(floatText, span);
+                return InvokeJsonCallback(options.ParseFloat, floatText, context, span);
             }
 
             if (!isFloat && options.ParseInt is not null)
             {
-                return InvokeJsonCallback(options.ParseInt, CreateString(raw, context, span), context, span);
+                var intText = CreateString(raw, context, span);
+                context.Services.State.CallTemporaries.TrackFreshString(intText, span);
+                return InvokeJsonCallback(options.ParseInt, intText, context, span);
             }
 
             if (!isFloat)

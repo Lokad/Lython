@@ -22,15 +22,25 @@ internal sealed partial class LythonRuntime
                 return false;
             }
 
-            var constantText = CreateString(trimmed, context, span);
-            value = options.ParseConstant is not null
-                ? InvokeJsonCallback(options.ParseConstant, constantText, context, span)
-                : trimmed switch
+            // R10: only mint governed text when a callback needs it, so the
+            // success path without parse_constant strands nothing. The text
+            // owns a refundable snapshot and the callback result adopts via
+            // plain TrackCallResult inside InvokeJsonCallback.
+            if (options.ParseConstant is not null)
+            {
+                var constantText = CreateString(trimmed, context, span);
+                context.Services.State.CallTemporaries.TrackFreshString(constantText, span);
+                value = InvokeJsonCallback(options.ParseConstant, constantText, context, span);
+            }
+            else
+            {
+                value = trimmed switch
                 {
                     "NaN" => double.NaN,
                     "Infinity" => double.PositiveInfinity,
                     _ => double.NegativeInfinity
                 };
+            }
             return true;
         }
 
@@ -43,8 +53,13 @@ internal sealed partial class LythonRuntime
             var bytePosition = NormalizeJsonErrorBytePosition(document.Utf8Bytes.Span, reportedBytePosition, exception.Message);
             var position = document.ByteIndexToRuneIndex(bytePosition);
             var location = ComputeJsonErrorLocation(document, bytePosition);
+            // R10: the error payload and message own refundable snapshots
+            // so a caught and dropped decode error reclaims on sweep.
             var payload = new PyDict(context.MemoryGovernor, span);
-            payload.SetItem(PyString.FromString("msg"), CreateString(exception.Message, context, span));
+            context.Services.State.CallTemporaries.TrackFreshMutable(payload, payload.CommittedStorageBytes, span);
+            var errorMessage = CreateString(exception.Message, context, span);
+            context.Services.State.CallTemporaries.TrackFreshString(errorMessage, span);
+            payload.SetItem(PyString.FromString("msg"), errorMessage);
             payload.SetItem(PyString.FromString("doc"), document);
             payload.SetItem(PyString.FromString("pos"), new BigInteger(position));
             payload.SetItem(PyString.FromString("lineno"), new BigInteger(location.Line));
@@ -186,7 +201,13 @@ internal sealed partial class LythonRuntime
             => value is >= (byte)'0' and <= (byte)'9' or (byte)'-' or (byte)'+' or (byte)'.' or (byte)'e' or (byte)'E';
 
         private static object InvokeJsonCallback(ICallable callable, object argument, ExecutionContext context, LythonSourceSpan span)
-            => InvokeCallableTarget(callable, span, span, context, [CallArgumentValue.Positional(argument)]);
+        {
+            var result = InvokeCallableTarget(callable, span, span, context, [CallArgumentValue.Positional(argument)]);
+            // Plain adoption only: callback results may alias live values, so
+            // a denial must never refund charges the caller still holds.
+            context.Services.State.CallTemporaries.TrackCallResult(result, span);
+            return result;
+        }
 
         private static ICallable? OptionalJsonCallable(object value, string parameterName, LythonSourceSpan span)
         {
@@ -347,7 +368,11 @@ internal sealed partial class LythonRuntime
 
         private static PyString JsonStringToPyString(JsonElement element, ExecutionContext context, LythonSourceSpan span)
         {
-            return CreateString(element.GetString() ?? string.Empty, context, span);
+            // R10: each decoded string owns a refundable snapshot so dropped
+            // scalar parses reclaim instead of stranding.
+            var text = CreateString(element.GetString() ?? string.Empty, context, span);
+            context.Services.State.CallTemporaries.TrackFreshString(text, span);
+            return text;
         }
     }
 }
