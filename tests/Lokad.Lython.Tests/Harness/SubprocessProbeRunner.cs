@@ -55,16 +55,20 @@ internal static class SubprocessProbeRunner
 
         using (process)
         {
-            if (standardInput is not null)
-            {
-                process.StandardInput.Write(standardInput);
-                process.StandardInput.Close();
-            }
-
+            // Start both drains and construct the deadline BEFORE delivering
+            // stdin: a child that never reads a pipe-sized input must trip the
+            // deadline instead of wedging a synchronous write issued first,
+            // and a child that writes heavily before reading must find a
+            // reader already draining. Write/close/wait/drain share the one
+            // bounded operation below; expiry reaps the owned child tree.
             var stdoutTask = process.StandardOutput.ReadToEndAsync();
             var stderrTask = process.StandardError.ReadToEndAsync();
             var budget = timeout ?? DefaultTimeout;
             var deadline = DateTime.UtcNow + budget;
+            var stdinTask = standardInput is not null
+                ? WriteAndCloseStandardInputAsync(process, standardInput)
+                : null;
+
             if (!process.WaitForExit(RemainingMs(deadline)))
             {
                 KillProcessTree(process);
@@ -72,7 +76,10 @@ internal static class SubprocessProbeRunner
                     $"'{executable} {string.Join(" ", arguments)}' did not complete within {budget.TotalSeconds} seconds.");
             }
 
-            if (!Task.WaitAll([stdoutTask, stderrTask], RemainingMs(deadline)))
+            Task[] drainTasks = stdinTask is null
+                ? [stdoutTask, stderrTask]
+                : [stdoutTask, stderrTask, stdinTask];
+            if (!Task.WaitAll(drainTasks, RemainingMs(deadline)))
             {
                 KillProcessTree(process);
                 throw new TimeoutException(
@@ -113,6 +120,33 @@ internal static class SubprocessProbeRunner
         throw new InvalidOperationException(
             "LythonProbe.dll was not found; build it first, e.g. `dotnet build tools/LythonProbe/LythonProbe.csproj -c "
             + (matching ?? "Release") + "`.");
+    }
+
+    // Asynchronous stdin delivery under the caller's deadline. A child may
+    // exit (or be reaped on timeout) without consuming all input, so a broken
+    // pipe surfaces here as a quiet completion: the exit code and captured
+    // streams carry the outcome instead. The task never faults, keeping the
+    // bounded drain wait above a pure completion wait.
+    private static async Task WriteAndCloseStandardInputAsync(Process process, string standardInput)
+    {
+        try
+        {
+            await process.StandardInput.WriteAsync(standardInput).ConfigureAwait(false);
+            await process.StandardInput.FlushAsync().ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception is IOException or InvalidOperationException or OperationCanceledException)
+        {
+        }
+        finally
+        {
+            try
+            {
+                process.StandardInput.Close();
+            }
+            catch (Exception exception) when (exception is IOException or InvalidOperationException)
+            {
+            }
+        }
     }
 
     private static int RemainingMs(DateTime deadline)

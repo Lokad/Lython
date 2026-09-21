@@ -303,22 +303,24 @@ static ProbeResult RunPython(string pythonCommand, string source)
     startInfo.ArgumentList.Add(PythonWrapper);
 
     using var process = StartPythonProcess(pythonCommand, startInfo);
-    process.StandardInput.Write(source);
-    process.StandardInput.Close();
 
     // Drain both streams concurrently: sequential drains can deadlock when the
-    // child fills the pipe nobody is reading. One deadline covers completion
-    // and both drains; on expiry the owned child process tree is killed.
+    // child fills the pipe nobody is reading. The drains and the deadline
+    // start BEFORE stdin delivery, so a child that never consumes a
+    // pipe-sized input trips the deadline instead of wedging a synchronous
+    // write issued first. One deadline covers delivery, completion and both
+    // drains; on expiry the owned child process tree is killed.
     var stdoutTask = process.StandardOutput.ReadToEndAsync();
     var stderrTask = process.StandardError.ReadToEndAsync();
     var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(PythonProbeTimeoutSeconds);
+    var stdinTask = WriteAndCloseStandardInputAsync(process, source);
     if (!process.WaitForExit(RemainingMs(deadline)))
     {
         KillProcessTree(process);
         throw new TimeoutException($"CPython probe did not complete within {PythonProbeTimeoutSeconds} seconds.");
     }
 
-    if (!Task.WaitAll([stdoutTask, stderrTask], RemainingMs(deadline)))
+    if (!Task.WaitAll([stdoutTask, stderrTask, stdinTask], RemainingMs(deadline)))
     {
         KillProcessTree(process);
         throw new TimeoutException($"CPython probe output drain did not complete within {PythonProbeTimeoutSeconds} seconds.");
@@ -349,6 +351,31 @@ static Process StartPythonProcess(string pythonCommand, ProcessStartInfo startIn
     {
         // Missing executables surface as Win32Exception, outside the IO filter.
         throw new InvalidOperationException($"Could not start CPython executable '{pythonCommand}': {exception.Message}", exception);
+    }
+}
+
+// Asynchronous stdin delivery under the probe deadline. The wrapper may
+// exit (or be reaped on timeout) without consuming all input, so a broken
+// pipe surfaces here as a quiet completion and never masks the run outcome.
+static async Task WriteAndCloseStandardInputAsync(Process process, string source)
+{
+    try
+    {
+        await process.StandardInput.WriteAsync(source).ConfigureAwait(false);
+        await process.StandardInput.FlushAsync().ConfigureAwait(false);
+    }
+    catch (Exception exception) when (exception is IOException or InvalidOperationException or OperationCanceledException)
+    {
+    }
+    finally
+    {
+        try
+        {
+            process.StandardInput.Close();
+        }
+        catch (Exception exception) when (exception is IOException or InvalidOperationException)
+        {
+        }
     }
 }
 
