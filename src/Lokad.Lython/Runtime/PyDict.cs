@@ -2,7 +2,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue, IChainMapSource
+internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue, IChainMapSource, IPyOwnershipSnapshot
 {
     private IPyDictStorage _items;
     private MemoryGovernor? _memoryGovernor;
@@ -80,6 +80,9 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     public int Length => Count;
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
+
+    bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes) =>
+        OwnershipSnapshot.Owned(OwnerMemoryGovernor, CommittedStorageBytes, out chargeBytes);
 
     public LythonSourceSpan? AllocationSpan => _allocationSpan;
 

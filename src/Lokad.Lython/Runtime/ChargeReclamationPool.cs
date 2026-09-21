@@ -146,60 +146,20 @@ internal sealed class ChargeReclamationPool
         }
     }
 
-    // Registers an arbitrary call result for whatever it currently owns: strings
-    // for their construction charge, mutables for their backing snapshot. Coupons
-    // mirror current committed charges (exact for fresh results, safe residuals
-    // for later growth); wholesale replacement re-snapshots through the value,
-    // and unowned results carry nothing to release. Plain (non-refunding)
+    // Registers an arbitrary call result for whatever it currently owns.
+    // The snapshot rule lives on the value (IPyOwnershipSnapshot) instead of
+    // a pool-side concrete-type switch: strings report their construction
+    // charge, mutables their backing snapshot, views their fixed shell, and
+    // unowned or unknown results report nothing. Plain (non-refunding)
     // registration: some results alias stored values, so a denial must never
     // refund live charges.
     public void TrackCallResult(object result, LythonSourceSpan? span = null)
     {
-        switch (result)
+        if (result is IPyOwnershipSnapshot snapshot &&
+            snapshot.TrySnapshotOwnership(out var charge) &&
+            charge > 0)
         {
-            case PyString text:
-                TrackString(text, span);
-                break;
-            case PyList list when list.OwnerMemoryGovernor is not null:
-                TrackMutable(list, list.CommittedStorageBytes, span);
-                break;
-            case PyDict dict when dict.OwnerMemoryGovernor is not null:
-                TrackMutable(dict, dict.CommittedStorageBytes, span);
-                break;
-            case PySet set when set.OwnerMemoryGovernor is not null:
-                TrackMutable(set, set.CommittedStorageBytes, span);
-                break;
-            case PyTuple tuple when tuple.OwnerMemoryGovernor is not null:
-                TrackMutable(tuple, tuple.CommittedStorageBytes, span);
-                break;
-            case PyDeque deque when deque.OwnerMemoryGovernor is not null:
-                // Plain registration only: fresh deque factories track with refund at
-                // their own sites, and this dedups to a no-op for those values.
-                TrackMutable(deque, deque.CommittedStorageBytes, span);
-                break;
-            case PyCounter counter when counter.OwnerMemoryGovernor is not null:
-                // Plain registration only, like deques: factories track with refund.
-                TrackMutable(counter, counter.CommittedStorageBytes, span);
-                break;
-            case PyDefaultDict defaultdict when defaultdict.OwnerMemoryGovernor is not null:
-                TrackMutable(defaultdict, defaultdict.CommittedStorageBytes, span);
-                break;
-            case PyInstance instance when instance.OwnerMemoryGovernor is not null:
-                // Plain registration only: attribute stores adopt with TrackGrowth at
-                // their own sites, and this dedups to a no-op for those values.
-                TrackMutable(instance, instance.CommittedAttributeBytes, span);
-                break;
-            case LythonRuntime.DictKeysView keysView:
-                Track(keysView, 64L, span);
-                break;
-            case LythonRuntime.DictValuesView valuesView:
-                Track(valuesView, 64L, span);
-                break;
-            case LythonRuntime.DictItemsView itemsView:
-                // View wrappers commit a fixed shell charge at construction with
-                // no backing to snapshot; the coupon is exact and immutable.
-                Track(itemsView, 64L, span);
-                break;
+            Track(result, charge, span);
         }
     }
 

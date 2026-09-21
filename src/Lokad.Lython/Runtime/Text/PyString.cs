@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace Lokad.Lython.Runtime.Text;
 
-internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexableValue, IPySliceableValue, IPyIterableValue, IPyRenderableValue, IPyHashableValue, IPyGovernedValue, IPySizedValue
+internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexableValue, IPySliceableValue, IPyIterableValue, IPyRenderableValue, IPyHashableValue, IPyGovernedValue, IPySizedValue, IPyOwnershipSnapshot
 {
     private readonly record struct RuneByteRange(int Start, int Length);
 
@@ -108,6 +108,9 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     public ReadOnlyMemory<byte> Utf8Bytes => _utf8;
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
+
+    bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes) =>
+        OwnershipSnapshot.Owned(OwnerMemoryGovernor, CommittedOwnedBytes, out chargeBytes);
 
     public LythonSourceSpan? AllocationSpan => _allocationSpan;
 

@@ -2,7 +2,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyHashableValue, IPyGovernedValue
+internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyHashableValue, IPyGovernedValue, IPyOwnershipSnapshot
 {
     private readonly object[] _items;
     private readonly MemoryGovernor? _memoryGovernor;
@@ -55,6 +55,9 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
     }
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
+
+    bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes) =>
+        OwnershipSnapshot.Owned(OwnerMemoryGovernor, CommittedStorageBytes, out chargeBytes);
 
     public LythonSourceSpan? AllocationSpan => _allocationSpan;
 

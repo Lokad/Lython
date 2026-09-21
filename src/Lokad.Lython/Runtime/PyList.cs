@@ -2,7 +2,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue
+internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPyOwnershipSnapshot
 {
     private IPyListStorage _items;
     private MemoryGovernor? _memoryGovernor;
@@ -43,6 +43,9 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
     internal long CommittedStorageBytes => _items.CommittedBytes;
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
+
+    bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes) =>
+        OwnershipSnapshot.Owned(OwnerMemoryGovernor, CommittedStorageBytes, out chargeBytes);
 
     public LythonSourceSpan? AllocationSpan => _allocationSpan;
 
