@@ -236,8 +236,9 @@ internal sealed partial class LythonRuntime
         var rangeBytes = checked(RangeValueBytes + boundPayloadBytes);
         context.MemoryGovernor.Reserve(rangeBytes, span);
         context.MemoryGovernor.Commit(rangeBytes);
-        // Fresh shells reclaim through the pool once dropped.
-        var range = new PyRange(start, stop, step);
+        // Fresh shells reclaim through the pool once dropped. The range keeps
+        // the reservations below so heap-scale yields own their magnitudes.
+        var range = new PyRange(start, stop, step, context.MemoryGovernor, context.Services.State.CallTemporaries, span);
         context.Services.State.CallTemporaries.TrackFreshMutable(range, rangeBytes);
         return range;
     }

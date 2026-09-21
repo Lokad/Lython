@@ -5,6 +5,10 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscriptableValue, IPyRenderableValue, IPyTruthyValue, IPyHashableValue
 {
+    private readonly MemoryGovernor? _memoryGovernor;
+    private readonly ChargeReclamationPool? _pool;
+    private readonly LythonSourceSpan? _allocationSpan;
+
     public PyRange(BigInteger start, BigInteger stop, BigInteger step)
     {
         Start = start;
@@ -12,9 +16,46 @@ internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscrip
         Step = step;
     }
 
+    // Governed ranges own their heap-scale yields through these reservations:
+    // each yielded magnitude below commits its payload and pool-tracks the box
+    // that flows onward, so dropped iterations reclaim on sweep. Ungoverned
+    // ranges (annotation defaults) never yield heap magnitudes.
+    public PyRange(BigInteger start, BigInteger stop, BigInteger step, MemoryGovernor governor, ChargeReclamationPool pool, LythonSourceSpan? allocationSpan)
+    {
+        Start = start;
+        Stop = stop;
+        Step = step;
+        _memoryGovernor = governor;
+        _pool = pool;
+        _allocationSpan = allocationSpan;
+    }
+
     public BigInteger Start { get; }
     public BigInteger Stop { get; }
     public BigInteger Step { get; }
+
+    // Shell coupon matching the range() factory below: the object slot plus
+    // heap payloads of the retained bound limbs.
+    internal long CommittedStorageBytes => 64L + BoundMagnitudeBytes(Start) + BoundMagnitudeBytes(Stop) + BoundMagnitudeBytes(Step);
+
+    private static long BoundMagnitudeBytes(BigInteger bound)
+        => RuntimeMemoryEstimates.GetMagnitudeBitLength(bound) > 64
+            ? RuntimeMemoryEstimates.EstimateBigIntegerBytes(bound)
+            : 0;
+
+    // Boxes one produced magnitude: the single box that flows onward owns its
+    // payload through the shared fresh-magnitude rule, so sweeps release it
+    // once dropped. Small magnitudes and ungoverned ranges stay free.
+    private object OwnYield(BigInteger value)
+    {
+        object box = value;
+        if (_memoryGovernor is not null && _pool is not null)
+        {
+            LythonRuntime.OwnFreshInteger(box, _memoryGovernor, _pool, _allocationSpan);
+        }
+
+        return box;
+    }
     public BigInteger Length => Step > 0
         ? Stop <= Start ? 0 : (Stop - Start - 1) / Step + 1
         : Stop >= Start ? 0 : (Start - Stop - 1) / -Step + 1;
@@ -43,7 +84,7 @@ internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscrip
     {
         for (var value = Start; Step > 0 ? value < Stop : value > Stop; value += Step)
         {
-            yield return value;
+            yield return OwnYield(value);
         }
     }
 
@@ -64,7 +105,7 @@ internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscrip
             throw new LythonRuntimeException("IndexError", "range object index out of range", span);
         }
 
-        return Start + integer * Step;
+        return OwnYield(Start + integer * Step);
     }
 
     public object GetSlice(object? start, object? end, object? step, LythonSourceSpan span)
@@ -81,7 +122,7 @@ internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscrip
             var sliceTo = AdjustNegativeStop(end, span);
             var sliceLength = sliceFrom > sliceTo ? (sliceFrom - sliceTo - 1) / (-sliceStep) + 1 : BigInteger.Zero;
             var sliceNewStart = Start + sliceFrom * Step;
-            return new PyRange(sliceNewStart, sliceNewStart + sliceLength * Step * sliceStep, Step * sliceStep);
+            return SliceRange(sliceNewStart, sliceNewStart + sliceLength * Step * sliceStep, Step * sliceStep);
         }
 
         if (sliceStep < 0)
@@ -97,7 +138,25 @@ internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscrip
         to = BigInteger.Min(to, Length);
         var newStart = Start + from * Step;
         var newStop = Start + BigInteger.Max(from, to) * Step;
-        return new PyRange(newStart, newStop, Step * sliceStep);
+        return SliceRange(newStart, newStop, Step * sliceStep);
+    }
+
+    // Slice results own a fresh shell coupon over their recomputed bounds and
+    // pool-track it with refund, so a dropped slice reclaims instead of
+    // stranding. Ungoverned ranges keep the plain construction.
+    private PyRange SliceRange(BigInteger newStart, BigInteger newStop, BigInteger newStep)
+    {
+        if (_memoryGovernor is null || _pool is null)
+        {
+            return new PyRange(newStart, newStop, newStep);
+        }
+
+        var bytes = 64L + BoundMagnitudeBytes(newStart) + BoundMagnitudeBytes(newStop) + BoundMagnitudeBytes(newStep);
+        _memoryGovernor.Reserve(bytes, _allocationSpan);
+        _memoryGovernor.Commit(bytes);
+        var child = new PyRange(newStart, newStop, newStep, _memoryGovernor, _pool, _allocationSpan);
+        _pool.TrackFreshMutable(child, bytes, _allocationSpan);
+        return child;
     }
 
     private BigInteger AdjustNegativeStart(object? value, LythonSourceSpan span)
