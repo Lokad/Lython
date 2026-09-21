@@ -59,8 +59,8 @@ internal sealed partial class LythonRuntime
                 "fmod" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathFmod, Fmod),
                 "copysign" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathCopySign, CopySign),
                 "isclose" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathIsClose, IsClose),
-                "prod" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathProd, Prod),
-                "fsum" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathFsum, Fsum),
+                "prod" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathProd, Prod, ProdAsync),
+                "fsum" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathFsum, Fsum, FsumAsync),
                 "factorial" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathFactorial, Factorial),
                 "gcd" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathGcd, Gcd),
                 "lcm" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathLcm, Lcm),
@@ -360,12 +360,62 @@ internal sealed partial class LythonRuntime
             }
 
             object total = arguments.Length == 2 ? ExpectNumericObject(arguments[1], "math.prod", span) : BigInteger.One;
+            var pairs = 0;
             foreach (var item in ToSequence(arguments[0], span, context))
             {
+                // Deny before growth for large magnitudes: an integer product needs
+                // at most bits(total) + bits(item), with scratch coexisting.
+                GuardProdGrowth(total, item, span, context);
                 total = OwnHeapInteger(MultiplyNumeric(total, item, span), context.MemoryGovernor, span);
+                pairs++;
+                context.ObserveCollectionCount(pairs, span);
+                if ((pairs & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
             }
 
             return RuntimeValue(total);
+        }
+
+        private static async ValueTask<object> ProdAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length is < 1 or > 2)
+            {
+                throw new LythonRuntimeException("TypeError", "math.prod(iterable[, start]) expects one iterable and an optional numeric start.", span);
+            }
+
+            // Async twin of the guarded body above: awaits delayed host reads
+            // through the async boundary with the same per-pair enforcement.
+            object total = arguments.Length == 2 ? ExpectNumericObject(arguments[1], "math.prod", span) : BigInteger.One;
+            var pairs = 0;
+            await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
+            {
+                GuardProdGrowth(total, item, span, context);
+                total = OwnHeapInteger(MultiplyNumeric(total, item, span), context.MemoryGovernor, span);
+                pairs++;
+                context.ObserveCollectionCount(pairs, span);
+                if ((pairs & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+            }
+
+            return RuntimeValue(total);
+        }
+
+        private static void GuardProdGrowth(object total, object item, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (total is BigInteger totalInteger && PyNumberOps.TryAsInteger(item, out var itemInteger))
+            {
+                GuardIntegerResultBytes(
+                    RuntimeMemoryEstimates.SaturatingMultiply(3, RuntimeMemoryEstimates.EstimateBigIntegerBytesFromBitCount(
+                        RuntimeMemoryEstimates.SaturatingAdd(
+                            RuntimeMemoryEstimates.GetMagnitudeBitLength(totalInteger),
+                            RuntimeMemoryEstimates.GetMagnitudeBitLength(itemInteger)))),
+                    context.MemoryGovernor,
+                    span);
+            }
         }
 
         private static object Fsum(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -375,11 +425,24 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "math.fsum(iterable) expects one iterable.", span);
             }
 
+            // Shewchuk partials stay small in practice (one per live binary
+            // exponent), but adversarial inputs grow both the scan and the table:
+            // count every consumed input and fund partial slots before they grow.
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
             var partials = new List<double>();
+            long partialsCharged = 0;
             var infinitySign = 0;
             var sawNaN = false;
+            var seen = 0;
             foreach (var item in ToSequence(arguments[0], span, context))
             {
+                seen++;
+                context.ObserveCollectionCount(seen, span);
+                if ((seen & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+
                 var value = ExpectReal(item, "math.fsum", span);
                 if (double.IsNaN(value))
                 {
@@ -429,7 +492,132 @@ internal sealed partial class LythonRuntime
                     partials.RemoveRange(writeIndex, partials.Count - writeIndex);
                 }
 
+                if (partials.Count == partials.Capacity)
+                {
+                    var predicted = partials.Capacity == 0 ? 4L : (long)partials.Capacity * 2L;
+                    if (predicted > partialsCharged)
+                    {
+                        scratch.Grow(checked(8L * (predicted - partialsCharged)), span);
+                        partialsCharged = predicted;
+                    }
+                }
+
                 partials.Add(x);
+                if (partials.Capacity > partialsCharged)
+                {
+                    scratch.Grow(8L * (partials.Capacity - partialsCharged), span);
+                    partialsCharged = partials.Capacity;
+                }
+            }
+
+            if (infinitySign != 0)
+            {
+                return infinitySign > 0 ? double.PositiveInfinity : double.NegativeInfinity;
+            }
+
+            if (sawNaN)
+            {
+                return double.NaN;
+            }
+
+            var total = 0.0;
+            for (var i = partials.Count - 1; i >= 0; i--)
+            {
+                total += partials[i];
+            }
+
+            return total;
+        }
+
+        private static async ValueTask<object> FsumAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length != 1)
+            {
+                throw new LythonRuntimeException("TypeError", "math.fsum(iterable) expects one iterable.", span);
+            }
+
+            // Async twin of the guarded body above: drains through the async
+            // boundary with the same per-input enforcement.
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var partials = new List<double>();
+            long partialsCharged = 0;
+            var infinitySign = 0;
+            var sawNaN = false;
+            var seen = 0;
+            await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
+            {
+                seen++;
+                context.ObserveCollectionCount(seen, span);
+                if ((seen & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+
+                var value = ExpectReal(item, "math.fsum", span);
+                if (double.IsNaN(value))
+                {
+                    sawNaN = true;
+                    continue;
+                }
+
+                if (double.IsInfinity(value))
+                {
+                    var sign = value > 0.0 ? 1 : -1;
+                    if (infinitySign != 0 && infinitySign != sign)
+                    {
+                        throw new LythonRuntimeException("ValueError", "-inf + inf in fsum", span);
+                    }
+
+                    infinitySign = sign;
+                    continue;
+                }
+
+                var x = value;
+                var writeIndex = 0;
+                for (var i = 0; i < partials.Count; i++)
+                {
+                    var y = partials[i];
+                    if (Math.Abs(x) < Math.Abs(y))
+                    {
+                        (x, y) = (y, x);
+                    }
+
+                    var high = x + y;
+                    if (double.IsInfinity(high))
+                    {
+                        throw new LythonRuntimeException("OverflowError", "intermediate overflow in fsum", span);
+                    }
+
+                    var low = y - (high - x);
+                    if (low != 0.0)
+                    {
+                        partials[writeIndex++] = low;
+                    }
+
+                    x = high;
+                }
+
+                if (writeIndex < partials.Count)
+                {
+                    partials.RemoveRange(writeIndex, partials.Count - writeIndex);
+                }
+
+                if (partials.Count == partials.Capacity)
+                {
+                    var predicted = partials.Capacity == 0 ? 4L : (long)partials.Capacity * 2L;
+                    if (predicted > partialsCharged)
+                    {
+                        scratch.Grow(checked(8L * (predicted - partialsCharged)), span);
+                        partialsCharged = predicted;
+                    }
+                }
+
+                partials.Add(x);
+                if (partials.Capacity > partialsCharged)
+                {
+                    scratch.Grow(8L * (partials.Capacity - partialsCharged), span);
+                    partialsCharged = partials.Capacity;
+                }
             }
 
             if (infinitySign != 0)
