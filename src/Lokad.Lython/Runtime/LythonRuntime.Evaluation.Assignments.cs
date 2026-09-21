@@ -140,6 +140,7 @@ internal sealed partial class LythonRuntime
 
     internal static void DeleteSubscriptValue(object target, object index, LythonSourceSpan span, ExecutionContext context)
     {
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         // Slice objects delete through the shared slice path on lists like
         // CPython; every other receiver keeps its existing behaviour.
         if (index is PySlice sliceIndex && target is PyList)
@@ -350,6 +351,7 @@ internal sealed partial class LythonRuntime
 
     internal static void SetSubscriptValue(object target, object index, object value, LythonSourceSpan span, ExecutionContext context)
     {
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         // Slice objects assign through the shared slice path on lists like
         // CPython; every other receiver keeps its existing behaviour.
         if (index is PySlice slice && target is PyList)

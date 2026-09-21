@@ -55,8 +55,12 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
 
     public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value) => _items.TryGetValue(key, out value);
 
+    public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => _items.TryGetValue(key, out value, context, span);
+
     public object GetOrCreate(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         _items.AttachMemoryGovernor(context.MemoryGovernor, span);
         if (_items.TryGetValue(key, out var value))
         {
@@ -242,6 +246,9 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
     public object GetCount(object key) => _items.TryGetValue(key, out var value) ? value : BigInteger.Zero;
 
     public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value) => _items.TryGetValue(key, out value);
+
+    public bool TryGetValue(object key, [MaybeNullWhen(false)] out object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => _items.TryGetValue(key, out value, context, span);
 
     // Current committed shell-plus-inner charges, for pooled owners that release
     // them if this wrapper is dropped. Inner growth refreshes the snapshot through

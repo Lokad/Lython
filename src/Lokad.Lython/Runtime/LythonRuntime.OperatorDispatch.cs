@@ -708,7 +708,7 @@ internal sealed partial class LythonRuntime
                     leftDict.Count,
                     leftDict,
                     rightDict.Count,
-                    key => rightDict.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                    key => rightDict.TryGetValue(key, out var value, context, span) ? (true, value) : (false, null),
                     context,
                     span).ConfigureAwait(false);
             }
@@ -752,7 +752,7 @@ internal sealed partial class LythonRuntime
             using (PyStructuralGuard.EnterPair(left, right, span))
             {
                 return await ChainMapContentEqualAsync(leftMap, rightPlain.Count,
-                    key => rightPlain.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                    key => rightPlain.TryGetValue(key, out var value, context, span) ? (true, value) : (false, null),
                     context, span).ConfigureAwait(false);
             }
         }
@@ -762,7 +762,7 @@ internal sealed partial class LythonRuntime
             using (PyStructuralGuard.EnterPair(left, right, span))
             {
                 return await ChainMapContentEqualAsync(leftDefaultMap, rightDefault.Count,
-                    key => rightDefault.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                    key => rightDefault.TryGetValue(key, out var value, context, span) ? (true, value) : (false, null),
                     context, span).ConfigureAwait(false);
             }
         }
@@ -772,7 +772,7 @@ internal sealed partial class LythonRuntime
             using (PyStructuralGuard.EnterPair(left, right, span))
             {
                 return await ChainMapContentEqualAsync(leftCounterMap, rightCounterMap.Count,
-                    key => rightCounterMap.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                    key => rightCounterMap.TryGetValue(key, out var value, context, span) ? (true, value) : (false, null),
                     context, span).ConfigureAwait(false);
             }
         }
@@ -782,7 +782,7 @@ internal sealed partial class LythonRuntime
             using (PyStructuralGuard.EnterPair(left, right, span))
             {
                 return await ChainMapContentEqualRightAsync(rightChainMap, leftPlain.Count,
-                    key => leftPlain.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                    key => leftPlain.TryGetValue(key, out var value, context, span) ? (true, value) : (false, null),
                     context, span).ConfigureAwait(false);
             }
         }
@@ -792,7 +792,7 @@ internal sealed partial class LythonRuntime
             using (PyStructuralGuard.EnterPair(left, right, span))
             {
                 return await ChainMapContentEqualRightAsync(rightDefaultChain, leftDefaultOther.Count,
-                    key => leftDefaultOther.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                    key => leftDefaultOther.TryGetValue(key, out var value, context, span) ? (true, value) : (false, null),
                     context, span).ConfigureAwait(false);
             }
         }
@@ -802,7 +802,7 @@ internal sealed partial class LythonRuntime
             using (PyStructuralGuard.EnterPair(left, right, span))
             {
                 return await ChainMapContentEqualRightAsync(rightCounterChain, leftCounterOperand.Count,
-                    key => leftCounterOperand.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                    key => leftCounterOperand.TryGetValue(key, out var value, context, span) ? (true, value) : (false, null),
                     context, span).ConfigureAwait(false);
             }
         }
@@ -858,7 +858,7 @@ internal sealed partial class LythonRuntime
                 counter.Count,
                 counter.Items,
                 plain.Count,
-                key => plain.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                key => plain.TryGetValue(key, out var value, context, span) ? (true, value) : (false, null),
                 context, span).ConfigureAwait(false);
         }
 
@@ -868,7 +868,7 @@ internal sealed partial class LythonRuntime
                 counter.Count,
                 counter.Items,
                 fellow.Count,
-                key => fellow.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                key => fellow.TryGetValue(key, out var value, context, span) ? (true, value) : (false, null),
                 context, span).ConfigureAwait(false);
         }
 
@@ -883,7 +883,7 @@ internal sealed partial class LythonRuntime
                 candidate.Count,
                 candidate.Items,
                 plain.Count,
-                key => plain.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                key => plain.TryGetValue(key, out var value, context, span) ? (true, value) : (false, null),
                 context, span).ConfigureAwait(false);
         }
 
@@ -893,7 +893,7 @@ internal sealed partial class LythonRuntime
                 candidate.Count,
                 candidate.Items,
                 fellow.Count,
-                key => fellow.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                key => fellow.TryGetValue(key, out var value, context, span) ? (true, value) : (false, null),
                 context, span).ConfigureAwait(false);
         }
 
@@ -903,7 +903,7 @@ internal sealed partial class LythonRuntime
                 candidate.Count,
                 candidate.Items,
                 counter.Count,
-                key => counter.TryGetValue(key, out var value) ? (true, value) : (false, null),
+                key => counter.TryGetValue(key, out var value, context, span) ? (true, value) : (false, null),
                 context, span).ConfigureAwait(false);
         }
 

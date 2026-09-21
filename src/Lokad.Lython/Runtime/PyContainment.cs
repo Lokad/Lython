@@ -36,6 +36,8 @@ internal static class PyContainment
     // Contains, so this mirror must gain any arm added there.
     public static bool ContainsWithProtocols(object container, object candidate, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
+        // R13b: mapping arms below observe ambient provenance.
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         return container switch
         {
             PyRange range => LythonRuntime.RangeContains(range, candidate),
@@ -65,6 +67,10 @@ internal static class PyContainment
     // synchronous helper without allocating a state machine.
     public static ValueTask<bool> ContainsWithProtocolsAsync(object container, object candidate, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
+        // R13b: mapping arms below observe ambient provenance. The arms
+        // evaluate synchronously here (sequence scans suspend through
+        // explicit contexts instead), so no thread hop can intervene.
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         return container switch
         {
             PyRange range => new ValueTask<bool>(LythonRuntime.RangeContains(range, candidate)),

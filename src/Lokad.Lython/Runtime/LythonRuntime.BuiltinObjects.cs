@@ -399,6 +399,8 @@ internal sealed partial class LythonRuntime
 
     internal static void UpdateDictionaryFromSource(IChainMapSource target, object source, ExecutionContext context, LythonSourceSpan span)
     {
+        // R13b: protocol-key inserts below observe ambient provenance.
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         if (source is PyDict mapping)
         {
             foreach (var pair in mapping)

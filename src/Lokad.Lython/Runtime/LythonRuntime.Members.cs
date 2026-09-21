@@ -1866,6 +1866,7 @@ internal sealed partial class LythonRuntime
             {
                 "get" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length is < 1 or > 2)
                     {
                         throw new LythonRuntimeException("TypeError", "dict.get(key[, default]) expects one key and an optional default.", span);
@@ -1895,8 +1896,9 @@ internal sealed partial class LythonRuntime
                     return new DictItemsView(receiver);
                 }),
                 "update" => new RawBoundCallable((arguments, span, context) => UpdateDictionary(dict, arguments, span, context)) { BoundName = "dict.update", BoundReceiver = dict },
-                "pop" => BoundCallable.Create((arguments, span, _) =>
+                "pop" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length is < 1 or > 2)
                     {
                         throw new LythonRuntimeException("TypeError", "dict.pop(key[, default]) expects one key and an optional default.", span);
@@ -1928,6 +1930,7 @@ internal sealed partial class LythonRuntime
                 }, "dict.pop", ["key", "default"], 1),
                 "popitem" => BoundCallable.CreateNoArguments(dict, "dict.popitem", static (receiver, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (!receiver.TryRemoveLast(out var key, out var value))
                     {
                         throw new LythonRuntimeException("KeyError", "popitem(): dictionary is empty", span, null, PyString.FromString("popitem(): dictionary is empty"));
@@ -1947,6 +1950,7 @@ internal sealed partial class LythonRuntime
                 "fromkeys" => new BuiltinTypeMethod("dict", "fromkeys", bindsOwner: true, DictFromKeys),
                 "setdefault" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length is < 1 or > 2)
                     {
                         throw new LythonRuntimeException("TypeError", "dict.setdefault(key[, default]) expects one key and an optional default.", span);
@@ -1971,8 +1975,9 @@ internal sealed partial class LythonRuntime
                     return dictIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(dict, "dict.__len__", static (receiver, span, context) => Len([receiver], span, context)),
-                "__contains__" => BoundCallable.Create((arguments, span, _) =>
+                "__contains__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "dict.__contains__(item) expects one argument.", span);
@@ -2047,6 +2052,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     var merged = new PyDict(context.MemoryGovernor, span);
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     foreach (var pair in left)
                     {
                         merged.SetItem(pair.Key, pair.Value);
@@ -2065,6 +2071,7 @@ internal sealed partial class LythonRuntime
                     {
                         throw new LythonRuntimeException("TypeError", "dict.__ior__(value) expects one argument.", span);
                     }
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
 
                     dict.AttachMemoryGovernor(context.MemoryGovernor, span);
                     UpdateDictionaryFromSource(dict, arguments[0], context, span);
@@ -3321,6 +3328,7 @@ internal sealed partial class LythonRuntime
                     {
                         throw new LythonRuntimeException("TypeError", "defaultdict.__or__(value) expects one argument.", span);
                     }
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
 
                     if (MergeUnionPairs(arguments[0]) is null)
                     {
@@ -3351,6 +3359,7 @@ internal sealed partial class LythonRuntime
                     {
                         throw new LythonRuntimeException("TypeError", "defaultdict.__ror__(value) expects one argument.", span);
                     }
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
 
                     if (MergeUnionPairs(arguments[0]) is null)
                     {
@@ -3381,6 +3390,7 @@ internal sealed partial class LythonRuntime
                     {
                         throw new LythonRuntimeException("TypeError", "defaultdict.__ior__(value) expects one argument.", span);
                     }
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
 
                     dict.AttachMemoryGovernor(context.MemoryGovernor, span);
                     UpdateDictionaryFromSource(dict.InnerDict, arguments[0], context, span);
@@ -3710,6 +3720,7 @@ internal sealed partial class LythonRuntime
                     {
                         throw new LythonRuntimeException("TypeError", "Counter.__or__(value) expects one argument.", span);
                     }
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
 
                     if (arguments[0] is not PyCounter right)
                     {
@@ -3752,6 +3763,7 @@ internal sealed partial class LythonRuntime
                     {
                         throw new LythonRuntimeException("TypeError", "Counter.__ror__(value) expects one argument.", span);
                     }
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
 
                     if (MergeUnionPairs(arguments[0]) is null)
                     {
@@ -3777,6 +3789,7 @@ internal sealed partial class LythonRuntime
                     {
                         throw new LythonRuntimeException("TypeError", "Counter.__ior__(value) expects one argument.", span);
                     }
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
 
                     var other = arguments[0];
                     if (IsInPlaceMergeOperand(other))

@@ -377,6 +377,7 @@ internal sealed partial class LythonRuntime
 
     private static object DelItem(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         if (arguments.Length != 2)
         {
             throw new LythonRuntimeException("TypeError", "operator.delitem(obj, key) expects two arguments.", span);

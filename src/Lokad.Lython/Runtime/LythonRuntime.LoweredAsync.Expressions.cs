@@ -102,6 +102,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> EvaluateLoweredDictLiteralAsync(LoweredDictLiteralExpression dict, ExecutionContext context)
     {
         var result = new PyDict(context.MemoryGovernor, dict.Span);
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, dict.Span);
         foreach (var item in dict.Items)
         {
             if (item is LoweredDictionaryUnpackingItem unpacking)
@@ -200,6 +201,7 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> EvaluateLoweredDictComprehensionAsync(LoweredDictComprehensionExpression comprehension, ExecutionContext context)
     {
         var result = new PyDict(context.MemoryGovernor, comprehension.Span);
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, comprehension.Span);
         var scope = new ExecutionContext(context);
         await EvaluateLoweredComprehensionClausesAsync(
                 comprehension.Clauses,

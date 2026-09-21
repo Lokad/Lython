@@ -75,6 +75,7 @@ internal sealed partial class LythonRuntime
     private static object EvaluateLoweredDictLiteral(LoweredDictLiteralExpression dict, ExecutionContext context)
     {
         var result = new PyDict(context.MemoryGovernor, dict.Span);
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, dict.Span);
         foreach (var item in dict.Items)
         {
             if (item is LoweredDictionaryUnpackingItem unpacking)
@@ -163,6 +164,7 @@ internal sealed partial class LythonRuntime
     private static object EvaluateLoweredDictComprehension(LoweredDictComprehensionExpression comprehension, ExecutionContext context)
     {
         var result = new PyDict(context.MemoryGovernor, comprehension.Span);
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, comprehension.Span);
         var scope = new ExecutionContext(context);
         EvaluateLoweredComprehensionClauses(
             comprehension.Clauses,
@@ -381,6 +383,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         ExecutionContext context)
     {
+            using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         // Slice objects delete through the shared slice path on lists like
         // CPython; every other receiver keeps its existing behaviour.
         if (index is PySlice slice && target is PyList)

@@ -207,6 +207,8 @@ internal sealed partial class LythonRuntime
             return leftBoolean | rightBoolean;
         }
 
+        // R13b: mapping merges below observe ambient provenance.
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
             return UnionCounters(leftCounter, rightCounter, span, context);
@@ -999,6 +1001,7 @@ internal sealed partial class LythonRuntime
     private static object EvaluateDictLiteral(DictLiteralExpressionSyntax dict, ExecutionContext context)
     {
         var result = new PyDict(context.MemoryGovernor, dict.Span);
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, dict.Span);
         foreach (var item in dict.Items)
         {
             if (item is DictionaryUnpackingItemSyntax unpacking)

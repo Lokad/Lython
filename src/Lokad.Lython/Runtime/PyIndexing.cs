@@ -63,6 +63,10 @@ internal static class PyIndexing
 
     public static object ReadIndex(object target, object index, LythonSourceSpan span, LythonRuntime.ExecutionContext? context = null)
     {
+        // R13b: protocol-key lookups below observe ambient provenance.
+        using var _ambientScope = context is null
+            ? default(PyStructuralGuard.AmbientScope)
+            : PyStructuralGuard.PushAmbient(context, span);
         // Keyed lookups resolve first like CPython, so slice objects serve
         // as dictionary keys instead of slicing the mapping.
         if (target is PyDict dict)

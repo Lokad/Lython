@@ -221,6 +221,7 @@ internal sealed partial class LythonRuntime
         {
             return false;
         }
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, pattern.Span);
 
         var matchedKeys = new HashSet<object>(new PyValueComparer());
         foreach (var item in pattern.Items)

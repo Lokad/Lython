@@ -804,6 +804,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
     // chain in both cases like CPython. Plain misses continue onward.
     internal object GetSubscript(object index, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         var key = LythonRuntime.ValidateDictionaryKey(index, span);
         foreach (var map in _maps)
         {
@@ -1511,6 +1512,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         {
             context.CheckExecutionBudget(span);
             var bound = CallBinder.BindNamedArguments(arguments, span, ContainsCallSignature, PythonCallableKind.Method);
+            using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
             return PyContainment.Contains(_owner, bound[0], span);
         }
     }

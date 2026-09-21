@@ -17,6 +17,7 @@ internal sealed partial class LythonRuntime
 
         var start = stack.Count - valueCount;
         var dict = new PyDict(context.MemoryGovernor, span);
+        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         for (var i = 0; i < valueCount; i += 2)
         {
             var key = ValidateDictionaryKey(stack[start + i], span);
