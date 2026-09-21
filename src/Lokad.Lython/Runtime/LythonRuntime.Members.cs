@@ -239,8 +239,9 @@ internal sealed partial class LythonRuntime
 
                     return EvaluateMultiply(arguments[0], list, context, span);
                 }, "list.__rmul__", ["value"]),
-                "__eq__" => BoundCallable.Create((arguments, span, _) =>
+                "__eq__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "list.__eq__(value) expects one argument.", span);
@@ -253,8 +254,9 @@ internal sealed partial class LythonRuntime
 
                     return PyEquality.AreEqual(list, other);
                 }, "list.__eq__", ["value"]),
-                "__ne__" => BoundCallable.Create((arguments, span, _) =>
+                "__ne__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "list.__ne__(value) expects one argument.", span);
@@ -267,8 +269,9 @@ internal sealed partial class LythonRuntime
 
                     return !PyEquality.AreEqual(list, other);
                 }, "list.__ne__", ["value"]),
-                "__lt__" => BoundCallable.Create((arguments, span, _) =>
+                "__lt__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "list.__lt__(value) expects one argument.", span);
@@ -281,8 +284,9 @@ internal sealed partial class LythonRuntime
 
                     return PyComparison.Compare(list, other, span, "<") < 0;
                 }, "list.__lt__", ["value"]),
-                "__le__" => BoundCallable.Create((arguments, span, _) =>
+                "__le__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "list.__le__(value) expects one argument.", span);
@@ -295,8 +299,9 @@ internal sealed partial class LythonRuntime
 
                     return PyComparison.Compare(list, other, span, "<=") <= 0;
                 }, "list.__le__", ["value"]),
-                "__gt__" => BoundCallable.Create((arguments, span, _) =>
+                "__gt__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "list.__gt__(value) expects one argument.", span);
@@ -309,8 +314,9 @@ internal sealed partial class LythonRuntime
 
                     return PyComparison.Compare(list, other, span, ">") > 0;
                 }, "list.__gt__", ["value"]),
-                "__ge__" => BoundCallable.Create((arguments, span, _) =>
+                "__ge__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "list.__ge__(value) expects one argument.", span);
@@ -566,8 +572,9 @@ internal sealed partial class LythonRuntime
 
                     return EvaluateMultiply(arguments[0], source, context, span);
                 }, "tuple.__rmul__", ["value"]),
-                "__eq__" => BoundCallable.Create((arguments, span, _) =>
+                "__eq__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "tuple.__eq__(value) expects one argument.", span);
@@ -580,8 +587,9 @@ internal sealed partial class LythonRuntime
 
                     return PyEquality.AreEqual(source, arguments[0]);
                 }, "tuple.__eq__", ["value"]),
-                "__ne__" => BoundCallable.Create((arguments, span, _) =>
+                "__ne__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "tuple.__ne__(value) expects one argument.", span);
@@ -594,8 +602,9 @@ internal sealed partial class LythonRuntime
 
                     return !PyEquality.AreEqual(source, arguments[0]);
                 }, "tuple.__ne__", ["value"]),
-                "__lt__" => BoundCallable.Create((arguments, span, _) =>
+                "__lt__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "tuple.__lt__(value) expects one argument.", span);
@@ -608,8 +617,9 @@ internal sealed partial class LythonRuntime
 
                     return PyComparison.Compare(source, arguments[0], span, "<") < 0;
                 }, "tuple.__lt__", ["value"]),
-                "__le__" => BoundCallable.Create((arguments, span, _) =>
+                "__le__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "tuple.__le__(value) expects one argument.", span);
@@ -622,8 +632,9 @@ internal sealed partial class LythonRuntime
 
                     return PyComparison.Compare(source, arguments[0], span, "<=") <= 0;
                 }, "tuple.__le__", ["value"]),
-                "__gt__" => BoundCallable.Create((arguments, span, _) =>
+                "__gt__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "tuple.__gt__(value) expects one argument.", span);
@@ -636,8 +647,9 @@ internal sealed partial class LythonRuntime
 
                     return PyComparison.Compare(source, arguments[0], span, ">") > 0;
                 }, "tuple.__gt__", ["value"]),
-                "__ge__" => BoundCallable.Create((arguments, span, _) =>
+                "__ge__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "tuple.__ge__(value) expects one argument.", span);
@@ -865,7 +877,7 @@ internal sealed partial class LythonRuntime
 
                     return new PyTuple([integer.Value, BigInteger.One], context.MemoryGovernor, span);
                 }, "int.as_integer_ratio"),
-                "is_integer" => BoundCallable.Create((arguments, span, _) =>
+                "is_integer" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -1625,7 +1637,7 @@ internal sealed partial class LythonRuntime
                     return rangeIterResult;
                 }),
                 "__len__" => BoundCallable.CreateNoArguments(range, "range.__len__", static (receiver, span, context) => Len([receiver], span, context)),
-                "__contains__" => BoundCallable.Create((arguments, span, _) =>
+                "__contains__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
                     {
@@ -1643,8 +1655,9 @@ internal sealed partial class LythonRuntime
 
                     return ReadSubscriptValue(range, arguments[0], span, context);
                 }, "range.__getitem__", ["index"]),
-                "__eq__" => BoundCallable.Create((arguments, span, _) =>
+                "__eq__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "range.__eq__(value) expects one argument.", span);
@@ -1657,8 +1670,9 @@ internal sealed partial class LythonRuntime
 
                     return PyEquality.AreEqual(range, other);
                 }, "range.__eq__", ["value"]),
-                "__ne__" => BoundCallable.Create((arguments, span, _) =>
+                "__ne__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "range.__ne__(value) expects one argument.", span);
@@ -1781,7 +1795,7 @@ internal sealed partial class LythonRuntime
                     return new DictItemsView(receiver);
                 }),
                 "update" => new RawBoundCallable((arguments, span, context) => UpdateDictionary(dict, arguments, span, context)) { BoundName = "dict.update", BoundReceiver = dict },
-                "pop" => BoundCallable.Create((arguments, span, context) =>
+                "pop" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length is < 1 or > 2)
                     {
@@ -1957,8 +1971,9 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(dict.Count, span);
                     return dict;
                 }, "dict.__ior__", ["value"]),
-                "__eq__" => BoundCallable.Create((arguments, span, _) =>
+                "__eq__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "dict.__eq__(value) expects one argument.", span);
@@ -1971,8 +1986,9 @@ internal sealed partial class LythonRuntime
 
                     return PyEquality.AreEqual(dict, arguments[0]);
                 }, "dict.__eq__", ["value"]),
-                "__ne__" => BoundCallable.Create((arguments, span, _) =>
+                "__ne__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "dict.__ne__(value) expects one argument.", span);
@@ -2309,6 +2325,7 @@ internal sealed partial class LythonRuntime
             {
                 "isdisjoint" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     foreach (var item in ToSequence(arguments[0], span, context))
                     {
                         if (item is PyTuple pair && pair.Count == 2 &&
@@ -2763,6 +2780,7 @@ internal sealed partial class LythonRuntime
             {
                 "isdisjoint" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     foreach (var item in ToSequence(arguments[0], span, context))
                     {
                         if (item is PyTuple pair && pair.Count == 2 &&
@@ -3074,7 +3092,7 @@ internal sealed partial class LythonRuntime
                     return new DictItemsView(receiver.InnerDict);
                 }),
                 "update" => new RawBoundCallable((arguments, span, context) => dict.UpdateFrom(arguments, context, span)) { BoundName = "defaultdict.update", BoundReceiver = dict },
-                "pop" => BoundCallable.Create((arguments, span, context) =>
+                "pop" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length is < 1 or > 2)
                     {
@@ -3269,8 +3287,9 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(dict.Count, span);
                     return dict;
                 }, "defaultdict.__ior__", ["value"]),
-                "__eq__" => BoundCallable.Create((arguments, span, _) =>
+                "__eq__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "defaultdict.__eq__(value) expects one argument.", span);
@@ -3283,8 +3302,9 @@ internal sealed partial class LythonRuntime
 
                     return PyEquality.AreEqual(dict, arguments[0]);
                 }, "defaultdict.__eq__", ["value"]),
-                "__ne__" => BoundCallable.Create((arguments, span, _) =>
+                "__ne__" => BoundCallable.Create((arguments, span, context) =>
                 {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     if (arguments.Length != 1)
                     {
                         throw new LythonRuntimeException("TypeError", "defaultdict.__ne__(value) expects one argument.", span);
@@ -3392,7 +3412,7 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "__module__" => LythonRuntime.ExceptionTypeValue.SharedModuleLabel("collections"),
-                "get" => BoundCallable.Create((arguments, span, context) =>
+                "get" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length is < 1 or > 2)
                     {
@@ -3507,7 +3527,7 @@ internal sealed partial class LythonRuntime
                     context.MemoryGovernor.Commit(64L);
                     return new DictItemsView(receiver.InnerDict);
                 }),
-                "pop" => BoundCallable.Create((arguments, span, context) =>
+                "pop" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length is < 1 or > 2)
                     {

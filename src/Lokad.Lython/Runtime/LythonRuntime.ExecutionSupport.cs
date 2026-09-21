@@ -38,12 +38,16 @@ internal sealed partial class LythonRuntime
 
     private static PyTuple ValidateTupleKey(PyTuple tuple, LythonSourceSpan? span)
     {
-        for (var i = 0; i < tuple.Count; i++)
+        using (PyStructuralGuard.EnterSingle(tuple, span))
         {
-            ValidateHashableKey(tuple[i], span);
-        }
+            for (var i = 0; i < tuple.Count; i++)
+            {
+                PyStructuralGuard.NoteWork();
+                ValidateHashableKey(tuple[i], span);
+            }
 
-        return tuple;
+            return tuple;
+        }
     }
 
     private static object EnsureHashableValue(object value, LythonSourceSpan? span)

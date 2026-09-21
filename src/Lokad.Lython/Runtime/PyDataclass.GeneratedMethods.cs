@@ -288,17 +288,21 @@ internal static partial class PyDataclass
                 return false;
             }
 
-            foreach (var field in fields)
+            using (PyStructuralGuard.EnterPair(self, other, span))
             {
-                _ = self.TryGetOwnAttribute(field.Name, out var left);
-                _ = other.TryGetOwnAttribute(field.Name, out var right);
-                if (!PyEquality.AreEqual(left ?? PyNone.Instance, right ?? PyNone.Instance))
+                foreach (var field in fields)
                 {
-                    return false;
+                    PyStructuralGuard.NoteWork();
+                    _ = self.TryGetOwnAttribute(field.Name, out var left);
+                    _ = other.TryGetOwnAttribute(field.Name, out var right);
+                    if (!PyEquality.AreEqual(left ?? PyNone.Instance, right ?? PyNone.Instance))
+                    {
+                        return false;
+                    }
                 }
-            }
 
-            return true;
+                return true;
+            }
         }
     }
 

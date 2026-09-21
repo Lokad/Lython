@@ -145,6 +145,7 @@ internal static class PyContainment
     {
         for (var i = 0; i < tuple.Count; i++)
         {
+            PyStructuralGuard.NoteWork();
             if (PyEquality.AreEqual(tuple[i], candidate))
             {
                 return true;
@@ -158,6 +159,7 @@ internal static class PyContainment
     {
         foreach (var item in sequence)
         {
+            PyStructuralGuard.NoteWork();
             if (PyEquality.AreEqual(item, candidate))
             {
                 return true;
@@ -171,6 +173,7 @@ internal static class PyContainment
     {
         foreach (var item in sequence)
         {
+            PyStructuralGuard.NoteWork();
             if (PyEquality.AreEqual(LythonRuntime.RuntimeValue(item), candidate))
             {
                 return true;
@@ -186,6 +189,7 @@ internal static class PyContainment
     {
         for (var i = 0; i < tuple.Count; i++)
         {
+            PyStructuralGuard.NoteWork(context, span);
             if (LythonRuntime.MembershipEquals(tuple[i], candidate, context, span))
             {
                 return true;
@@ -199,6 +203,7 @@ internal static class PyContainment
     {
         foreach (var item in sequence)
         {
+            PyStructuralGuard.NoteWork(context, span);
             if (LythonRuntime.MembershipEquals(item, candidate, context, span))
             {
                 return true;
@@ -212,6 +217,7 @@ internal static class PyContainment
     {
         foreach (var item in sequence)
         {
+            PyStructuralGuard.NoteWork(context, span);
             if (LythonRuntime.MembershipEquals(LythonRuntime.RuntimeValue(item), candidate, context, span))
             {
                 return true;
@@ -225,6 +231,7 @@ internal static class PyContainment
     {
         for (var i = 0; i < tuple.Count; i++)
         {
+            PyStructuralGuard.NoteWork(context, span);
             if (await LythonRuntime.MembershipEqualsAsync(tuple[i], candidate, context, span).ConfigureAwait(false))
             {
                 return true;
@@ -238,6 +245,7 @@ internal static class PyContainment
     {
         foreach (var item in sequence)
         {
+            PyStructuralGuard.NoteWork(context, span);
             if (await LythonRuntime.MembershipEqualsAsync(item, candidate, context, span).ConfigureAwait(false))
             {
                 return true;
@@ -251,6 +259,7 @@ internal static class PyContainment
     {
         foreach (var item in sequence)
         {
+            PyStructuralGuard.NoteWork(context, span);
             if (await LythonRuntime.MembershipEqualsAsync(LythonRuntime.RuntimeValue(item), candidate, context, span).ConfigureAwait(false))
             {
                 return true;

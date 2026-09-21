@@ -50,103 +50,139 @@ internal static class PyEquality
 
         if (left is PyList leftList && right is PyList rightList)
         {
-            if (leftList.Count != rightList.Count)
+            using (PyStructuralGuard.EnterPair(left, right, null))
             {
-                return false;
-            }
-
-            for (var i = 0; i < leftList.Count; i++)
-            {
-                if (!AreEqual(leftList[i], rightList[i]))
+                if (leftList.Count != rightList.Count)
                 {
                     return false;
                 }
-            }
 
-            return true;
+                for (var i = 0; i < leftList.Count; i++)
+                {
+                    PyStructuralGuard.NoteWork();
+                    if (!AreEqual(leftList[i], rightList[i]))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
         }
 
         if (PyTupleLike.TryGetItems(left, out var leftTuple) && PyTupleLike.TryGetItems(right, out var rightTuple))
         {
-            if (leftTuple.Count != rightTuple.Count)
+            using (PyStructuralGuard.EnterPair(left, right, null))
             {
-                return false;
-            }
-
-            for (var i = 0; i < leftTuple.Count; i++)
-            {
-                if (!AreEqual(leftTuple[i], rightTuple[i]))
+                if (leftTuple.Count != rightTuple.Count)
                 {
                     return false;
                 }
-            }
 
-            return true;
+                for (var i = 0; i < leftTuple.Count; i++)
+                {
+                    PyStructuralGuard.NoteWork();
+                    if (!AreEqual(leftTuple[i], rightTuple[i]))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
         }
 
         if (left is PyDeque leftDeque && right is PyDeque rightDeque)
         {
-            if (leftDeque.Count != rightDeque.Count)
+            using (PyStructuralGuard.EnterPair(left, right, null))
             {
-                return false;
-            }
-
-            using var leftItems = leftDeque.GetEnumerator();
-            using var rightItems = rightDeque.GetEnumerator();
-            while (leftItems.MoveNext())
-            {
-                _ = rightItems.MoveNext();
-                if (!AreEqual(leftItems.Current, rightItems.Current))
+                if (leftDeque.Count != rightDeque.Count)
                 {
                     return false;
                 }
-            }
 
-            return true;
+                using var leftItems = leftDeque.GetEnumerator();
+                using var rightItems = rightDeque.GetEnumerator();
+                while (leftItems.MoveNext())
+                {
+                    _ = rightItems.MoveNext();
+                    PyStructuralGuard.NoteWork();
+                    if (!AreEqual(leftItems.Current, rightItems.Current))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
         }
 
         // Slices compare structurally like CPython; bounds compare through
         // shared equality over the null-normalised bound shape.
         if (left is PySlice leftSlice && right is PySlice rightSlice)
         {
-            return AreEqual(leftSlice.StartBound ?? PyNone.Instance, rightSlice.StartBound ?? PyNone.Instance)
-                && AreEqual(leftSlice.StopBound ?? PyNone.Instance, rightSlice.StopBound ?? PyNone.Instance)
-                && AreEqual(leftSlice.StepBound ?? PyNone.Instance, rightSlice.StepBound ?? PyNone.Instance);
+            using (PyStructuralGuard.EnterPair(left, right, null))
+            {
+                return AreEqual(leftSlice.StartBound ?? PyNone.Instance, rightSlice.StartBound ?? PyNone.Instance)
+                    && AreEqual(leftSlice.StopBound ?? PyNone.Instance, rightSlice.StopBound ?? PyNone.Instance)
+                    && AreEqual(leftSlice.StepBound ?? PyNone.Instance, rightSlice.StepBound ?? PyNone.Instance);
+            }
         }
 
         if (left is PyDict leftDict && right is PyDict rightDict)
         {
-            return DictsEqual(leftDict, rightDict);
+            using (PyStructuralGuard.EnterPair(left, right, null))
+            {
+                return DictsEqual(leftDict, rightDict);
+            }
         }
 
         if (left is PyCounter counterLeft && (right is PyDict || right is PyDefaultDict))
         {
-            return CounterDictContentEquals(counterLeft, right);
+            using (PyStructuralGuard.EnterPair(left, right, null))
+            {
+                return CounterDictContentEquals(counterLeft, right);
+            }
         }
 
         if (right is PyCounter counterRight && (left is PyDict || left is PyDefaultDict))
         {
-            return CounterDictContentEquals(counterRight, left);
+            using (PyStructuralGuard.EnterPair(left, right, null))
+            {
+                return CounterDictContentEquals(counterRight, left);
+            }
         }
 
         if (left is PyDefaultDict leftDefaultDict)
         {
-            return DefaultDictContentEquals(leftDefaultDict, right);
+            using (PyStructuralGuard.EnterPair(left, right, null))
+            {
+                return DefaultDictContentEquals(leftDefaultDict, right);
+            }
         }
 
         if (right is PyDefaultDict rightDefaultDict)
         {
-            return DefaultDictContentEquals(rightDefaultDict, left);
+            using (PyStructuralGuard.EnterPair(left, right, null))
+            {
+                return DefaultDictContentEquals(rightDefaultDict, left);
+            }
         }
 
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
-            return CountersEqual(leftCounter, rightCounter);
+            using (PyStructuralGuard.EnterPair(left, right, null))
+            {
+                return CountersEqual(leftCounter, rightCounter);
+            }
         }
 
         if (left is PySet leftSet && right is PySet rightSet)
         {
-            return leftSet.SetEquals(rightSet);
+            using (PyStructuralGuard.EnterPair(left, right, null))
+            {
+                return leftSet.SetEquals(rightSet);
+            }
         }
 
         if (left is PyRange leftRange && right is PyRange rightRange)
@@ -162,15 +198,18 @@ internal static class PyEquality
 
         if (left is LythonRuntime.DictKeysView or LythonRuntime.DictItemsView or ChainMapKeysView or ChainMapItemsView || right is LythonRuntime.DictKeysView or LythonRuntime.DictItemsView or ChainMapKeysView or ChainMapItemsView)
         {
-            // Dict keys and items views compare as sets like CPython;
-            // anything else falls through to the default comparison.
-            if (!IsSetComparableViewOperand(left) || !IsSetComparableViewOperand(right))
+            using (PyStructuralGuard.EnterPair(left, right, null))
             {
-                return false;
-            }
+                // Dict keys and items views compare as sets like CPython;
+                // anything else falls through to the default comparison.
+                if (!IsSetComparableViewOperand(left) || !IsSetComparableViewOperand(right))
+                {
+                    return false;
+                }
 
-            var leftItems = new HashSet<object>(ViewComparisonItems(left), PyValueComparer.Instance);
-            return leftItems.SetEquals(ViewComparisonItems(right));
+                var leftItems = new HashSet<object>(ViewComparisonItems(left), PyValueComparer.Instance);
+                return leftItems.SetEquals(ViewComparisonItems(right));
+            }
         }
 
         if (left is PyInstance leftInstance && right is PyInstance rightInstance)
@@ -184,17 +223,21 @@ internal static class PyEquality
 
             if (leftInstance.Type.DataclassEqEnabled && leftInstance.Type.DataclassComparableFields is { } fields)
             {
-                foreach (var field in fields)
+                using (PyStructuralGuard.EnterPair(left, right, null))
                 {
-                    _ = leftInstance.TryGetOwnAttribute(field.Name, out var leftValue);
-                    _ = rightInstance.TryGetOwnAttribute(field.Name, out var rightValue);
-                    if (!AreEqual(leftValue ?? PyNone.Instance, rightValue ?? PyNone.Instance))
+                    foreach (var field in fields)
                     {
-                        return false;
+                        PyStructuralGuard.NoteWork();
+                        _ = leftInstance.TryGetOwnAttribute(field.Name, out var leftValue);
+                        _ = rightInstance.TryGetOwnAttribute(field.Name, out var rightValue);
+                        if (!AreEqual(leftValue ?? PyNone.Instance, rightValue ?? PyNone.Instance))
+                        {
+                            return false;
+                        }
                     }
-                }
 
-                return true;
+                    return true;
+                }
             }
         }
 
@@ -286,6 +329,7 @@ internal static class PyEquality
 
         foreach (var pair in leftPairs)
         {
+            PyStructuralGuard.NoteWork();
             var (found, other) = rightLookup(pair.Key);
             // A miss carries the null (short-circuited above); every hit flows
             // from a successful TryGetValue whose contract guarantees non-null.
@@ -317,6 +361,7 @@ internal static class PyEquality
 
         foreach (var key in keys)
         {
+            PyStructuralGuard.NoteWork();
             var leftValue = left.TryGetValue(key, out var foundLeft) ? foundLeft : BigInteger.Zero;
             var rightValue = right.TryGetValue(key, out var foundRight) ? foundRight : BigInteger.Zero;
             if (!AreEqual(leftValue, rightValue))

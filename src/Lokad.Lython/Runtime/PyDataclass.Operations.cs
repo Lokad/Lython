@@ -184,18 +184,22 @@ internal static partial class PyDataclass
             throw new LythonRuntimeException("TypeError", "Values are not comparable.", span);
         }
 
-        foreach (var field in left.Type.DataclassComparableFields.RequireNotNull())
+        using (PyStructuralGuard.EnterPair(left, right, span))
         {
-            _ = left.TryGetOwnAttribute(field.Name, out var leftValue);
-            _ = right.TryGetOwnAttribute(field.Name, out var rightValue);
-            var result = PyComparison.Compare(leftValue ?? PyNone.Instance, rightValue ?? PyNone.Instance, span);
-            if (result != 0)
+            foreach (var field in left.Type.DataclassComparableFields.RequireNotNull())
             {
-                return result;
+                PyStructuralGuard.NoteWork();
+                _ = left.TryGetOwnAttribute(field.Name, out var leftValue);
+                _ = right.TryGetOwnAttribute(field.Name, out var rightValue);
+                var result = PyComparison.Compare(leftValue ?? PyNone.Instance, rightValue ?? PyNone.Instance, span);
+                if (result != 0)
+                {
+                    return result;
+                }
             }
-        }
 
-        return 0;
+            return 0;
+        }
     }
 
 

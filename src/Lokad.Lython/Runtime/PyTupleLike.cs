@@ -4,13 +4,19 @@ internal static class PyTupleLike
 {
     public static int ComputeHashCode(IEnumerable<object> items)
     {
-        var hash = new HashCode();
-        foreach (var item in items)
+        // Tuple hashing recurses into element hashes; bound deep nesting before CLR exhaustion.
+        // The items enumerable is the live tuple storage for the common path, so guard its identity.
+        using (PyStructuralGuard.EnterSingle(items, null))
         {
-            hash.Add(PyValueComparer.Instance.GetHashCode(item));
-        }
+            var hash = new HashCode();
+            foreach (var item in items)
+            {
+                PyStructuralGuard.NoteWork();
+                hash.Add(PyValueComparer.Instance.GetHashCode(item));
+            }
 
-        return hash.ToHashCode();
+            return hash.ToHashCode();
+        }
     }
 
     public static PyTuple CreateSlice(IReadOnlyList<object> items, IEnumerable<int> indices)

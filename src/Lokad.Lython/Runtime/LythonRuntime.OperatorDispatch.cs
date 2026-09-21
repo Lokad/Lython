@@ -448,7 +448,10 @@ internal sealed partial class LythonRuntime
             return IsTruthy(rightValue, context, span);
         }
 
-        return AreEqual(left, right);
+        using (PyStructuralGuard.PushAmbient(context, span))
+        {
+            return AreEqual(left, right);
+        }
     }
 
     private static ValueTask<bool> AreEqualWithProtocolsAsync(
@@ -480,9 +483,15 @@ internal sealed partial class LythonRuntime
             invocation = await invoke(right, "__eq__", left, context, span).ConfigureAwait(false);
         }
 
-        return invocation.Kind == SpecialMethodInvocationKind.Invoked && invocation.Value is not PyNotImplemented
-            ? await evaluateTruthiness(invocation.Value, context, span).ConfigureAwait(false)
-            : AreEqual(left, right);
+        if (invocation.Kind == SpecialMethodInvocationKind.Invoked && invocation.Value is not PyNotImplemented)
+        {
+            return await evaluateTruthiness(invocation.Value, context, span).ConfigureAwait(false);
+        }
+
+        using (PyStructuralGuard.PushAmbient(context, span))
+        {
+            return AreEqual(left, right);
+        }
     }
 
     // Sequence membership consults the member __eq__ protocol like == does,
@@ -516,7 +525,10 @@ internal sealed partial class LythonRuntime
             return IsTruthy(rightValue, context, span);
         }
 
-        return AreEqual(item, candidate);
+        using (PyStructuralGuard.PushAmbient(context, span))
+        {
+            return AreEqual(item, candidate);
+        }
     }
 
     internal static ValueTask<bool> MembershipEqualsAsync(
@@ -550,9 +562,15 @@ internal sealed partial class LythonRuntime
             invocation = await invoke(candidate, "__eq__", item, context, span).ConfigureAwait(false);
         }
 
-        return invocation.Kind == SpecialMethodInvocationKind.Invoked && invocation.Value is not PyNotImplemented
-            ? await evaluateTruthiness(invocation.Value, context, span).ConfigureAwait(false)
-            : AreEqual(item, candidate);
+        if (invocation.Kind == SpecialMethodInvocationKind.Invoked && invocation.Value is not PyNotImplemented)
+        {
+            return await evaluateTruthiness(invocation.Value, context, span).ConfigureAwait(false);
+        }
+
+        using (PyStructuralGuard.PushAmbient(context, span))
+        {
+            return AreEqual(item, candidate);
+        }
     }
 
     private static bool AreNotEqualWithProtocols(
@@ -664,7 +682,10 @@ internal sealed partial class LythonRuntime
             return IsTruthy(rightValue, context, span);
         }
 
-        return CompareRelational(left, right, span, fallback, ComparisonSymbol(method));
+        using (PyStructuralGuard.PushAmbient(context, span))
+        {
+            return CompareRelational(left, right, span, fallback, ComparisonSymbol(method));
+        }
     }
 
     private static ValueTask<bool> EvaluateRichComparisonAsync(
@@ -721,9 +742,15 @@ internal sealed partial class LythonRuntime
             invocation = await invoke(right, methods.Right, left, context, span).ConfigureAwait(false);
         }
 
-        return invocation.Kind == SpecialMethodInvocationKind.Invoked && invocation.Value is not PyNotImplemented
-            ? await evaluateTruthiness(invocation.Value, context, span).ConfigureAwait(false)
-            : CompareRelational(left, right, span, fallback, ComparisonSymbol(methods.Left));
+        if (invocation.Kind == SpecialMethodInvocationKind.Invoked && invocation.Value is not PyNotImplemented)
+        {
+            return await evaluateTruthiness(invocation.Value, context, span).ConfigureAwait(false);
+        }
+
+        using (PyStructuralGuard.PushAmbient(context, span))
+        {
+            return CompareRelational(left, right, span, fallback, ComparisonSymbol(methods.Left));
+        }
     }
 
     private static string ComparisonSymbol(string method) => method switch
@@ -745,7 +772,10 @@ internal sealed partial class LythonRuntime
             return IsTruthy(value, context, span);
         }
 
-        return PyContainment.ContainsWithProtocols(container, candidate, context, span);
+        using (PyStructuralGuard.PushAmbient(context, span))
+        {
+            return PyContainment.ContainsWithProtocols(container, candidate, context, span);
+        }
     }
 
     private static ValueTask<bool> ContainsAsync(

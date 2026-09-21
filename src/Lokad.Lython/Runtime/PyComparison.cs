@@ -39,12 +39,18 @@ internal static class PyComparison
 
         if (left is PyList leftList && right is PyList rightList)
         {
-            return CompareSequences(leftList, rightList, span, operation);
+            using (PyStructuralGuard.EnterPair(left, right, span))
+            {
+                return CompareSequences(leftList, rightList, span, operation);
+            }
         }
 
         if (PyTupleLike.TryGetItems(left, out var leftTuple) && PyTupleLike.TryGetItems(right, out var rightTuple))
         {
-            return CompareSequences(leftTuple, rightTuple, span, operation);
+            using (PyStructuralGuard.EnterPair(left, right, span))
+            {
+                return CompareSequences(leftTuple, rightTuple, span, operation);
+            }
         }
 
         // Slices order lexicographically over their bounds like CPython;
@@ -52,11 +58,14 @@ internal static class PyComparison
         // names the first differing element pair.
         if (left is PySlice leftSlice && right is PySlice rightSlice)
         {
-            return CompareSequences(
-                [leftSlice.StartBound ?? PyNone.Instance, leftSlice.StopBound ?? PyNone.Instance, leftSlice.StepBound ?? PyNone.Instance],
-                [rightSlice.StartBound ?? PyNone.Instance, rightSlice.StopBound ?? PyNone.Instance, rightSlice.StepBound ?? PyNone.Instance],
-                span,
-                operation);
+            using (PyStructuralGuard.EnterPair(left, right, span))
+            {
+                return CompareSequences(
+                    [leftSlice.StartBound ?? PyNone.Instance, leftSlice.StopBound ?? PyNone.Instance, leftSlice.StepBound ?? PyNone.Instance],
+                    [rightSlice.StartBound ?? PyNone.Instance, rightSlice.StopBound ?? PyNone.Instance, rightSlice.StepBound ?? PyNone.Instance],
+                    span,
+                    operation);
+            }
         }
 
         if (left is PyTimedelta or PyDate or PyTime or PyDateTime)
@@ -80,6 +89,7 @@ internal static class PyComparison
         var common = Math.Min(left.Count, right.Count);
         for (var i = 0; i < common; i++)
         {
+            PyStructuralGuard.NoteWork();
             if (PyEquality.AreEqual(left[i], right[i]))
             {
                 continue;
