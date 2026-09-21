@@ -370,7 +370,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "bad operand type for abs(): '" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "'", span);
         }
 
-        return number.IsFloat ? Math.Abs(number.Floating) : OwnHeapInteger(BigInteger.Abs(number.Integer), context.MemoryGovernor, span);
+        return number.IsFloat ? Math.Abs(number.Floating) : OwnHeapInteger(BigInteger.Abs(number.Integer), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
     }
 
     private static object Pow(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -425,7 +425,7 @@ internal sealed partial class LythonRuntime
             }
 
             var result = BigInteger.ModPow(normalizedBase, exponent, absModulus);
-            return OwnHeapInteger(modulus < BigInteger.Zero && result != BigInteger.Zero ? result - absModulus : result, context.MemoryGovernor, span);
+            return OwnHeapInteger(modulus < BigInteger.Zero && result != BigInteger.Zero ? result - absModulus : result, context.MemoryGovernor, context.Services.State.CallTemporaries, span);
         }
 
         return EvaluatePower(arguments[0], arguments[1], context, span);

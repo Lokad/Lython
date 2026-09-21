@@ -57,7 +57,7 @@ internal sealed partial class LythonRuntime
             return OwnDecimalValue(roundedDecimal, context, span);
         }
 
-        return OwnHeapInteger(rounded, context.MemoryGovernor, span);
+        return OwnHeapInteger(rounded, context.MemoryGovernor, context.Services.State.CallTemporaries, span);
 
         static object RoundInteger(BigInteger value, int? digits, LythonSourceSpan span)
         {

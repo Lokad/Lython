@@ -40,7 +40,7 @@ internal sealed partial class LythonRuntime
                 result *= i;
             }
 
-            return OwnHeapInteger(result, context.MemoryGovernor, span);
+            return OwnHeapInteger(result, context.MemoryGovernor, context.Services.State.CallTemporaries, span);
         }
 
         private static void GuardFactorialBytes(int count, BigInteger n, string owner, LythonSourceSpan span, ExecutionContext context)
@@ -66,7 +66,7 @@ internal sealed partial class LythonRuntime
                 result = BigInteger.GreatestCommonDivisor(result, BigInteger.Abs(ExpectInteger(argument, span, context)));
             }
 
-            return OwnHeapInteger(result, context.MemoryGovernor, span);
+            return OwnHeapInteger(result, context.MemoryGovernor, context.Services.State.CallTemporaries, span);
         }
 
         private static object Lcm(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -101,7 +101,7 @@ internal sealed partial class LythonRuntime
                 result = BigInteger.Abs(result / BigInteger.GreatestCommonDivisor(result, value) * value);
             }
 
-            return OwnHeapInteger(result, context.MemoryGovernor, span);
+            return OwnHeapInteger(result, context.MemoryGovernor, context.Services.State.CallTemporaries, span);
         }
 
         private static object Comb(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -133,7 +133,7 @@ internal sealed partial class LythonRuntime
                 result = result * (n - count + i) / i;
             }
 
-            return OwnHeapInteger(result, context.MemoryGovernor, span);
+            return OwnHeapInteger(result, context.MemoryGovernor, context.Services.State.CallTemporaries, span);
         }
 
         private static object Perm(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -162,12 +162,12 @@ internal sealed partial class LythonRuntime
                 result *= n - i;
             }
 
-            return OwnHeapInteger(result, context.MemoryGovernor, span);
+            return OwnHeapInteger(result, context.MemoryGovernor, context.Services.State.CallTemporaries, span);
         }
 
         private static object ISqrt(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            return OwnHeapInteger(IntegerSquareRoot(ExpectNonNegativeInteger(arguments[0], "isqrt() argument must be nonnegative", span, context), context, span), context.MemoryGovernor, span);
+            return OwnHeapInteger(IntegerSquareRoot(ExpectNonNegativeInteger(arguments[0], "isqrt() argument must be nonnegative", span, context), context, span), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
         }
 
         private static object Dist(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -623,7 +623,7 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("OverflowError", ex.Message, span);
                 }
 
-                total = EvaluateAdd(total, OwnHeapInteger(product, context.MemoryGovernor, span), context, span);
+                total = EvaluateAdd(total, OwnHeapInteger(product, context.MemoryGovernor, context.Services.State.CallTemporaries, span), context, span);
                 pairs++;
                 context.ObserveCollectionCount(pairs, span);
                 if ((pairs & 63) == 0)
@@ -679,7 +679,7 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("OverflowError", ex.Message, span);
                 }
 
-                total = EvaluateAdd(total, OwnHeapInteger(product, context.MemoryGovernor, span), context, span);
+                total = EvaluateAdd(total, OwnHeapInteger(product, context.MemoryGovernor, context.Services.State.CallTemporaries, span), context, span);
                 pairs++;
                 context.ObserveCollectionCount(pairs, span);
                 if ((pairs & 63) == 0)

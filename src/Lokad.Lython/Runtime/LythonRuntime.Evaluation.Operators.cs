@@ -148,7 +148,7 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            return OwnHeapInteger(PyNumberOps.Add(lhs, rhs), context.MemoryGovernor, span);
+            return OwnHeapInteger(PyNumberOps.Add(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
         }
         catch (OverflowException ex)
         {
@@ -216,7 +216,7 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            return OwnHeapInteger(PyNumberOps.Subtract(lhs, rhs), context.MemoryGovernor, span);
+            return OwnHeapInteger(PyNumberOps.Subtract(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
         }
         catch (OverflowException ex)
         {
@@ -312,7 +312,7 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            return OwnHeapInteger(PyNumberOps.Multiply(lhs, rhs), context.MemoryGovernor, span);
+            return OwnHeapInteger(PyNumberOps.Multiply(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
         }
         catch (OverflowException ex)
         {
@@ -423,7 +423,7 @@ internal sealed partial class LythonRuntime
         {
             var floored = PyDateTimeOps.FloorDivide(left, right, context, span, operation);
             return floored is BigInteger flooredInteger
-                ? OwnHeapInteger(flooredInteger, context.MemoryGovernor, span)
+                ? OwnHeapInteger(flooredInteger, context.MemoryGovernor, context.Services.State.CallTemporaries, span)
                 : floored;
         }
 
@@ -434,7 +434,7 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            return OwnHeapInteger(PyNumberOps.FloorDivide(lhs, rhs), context.MemoryGovernor, span);
+            return OwnHeapInteger(PyNumberOps.FloorDivide(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
         }
         catch (DivideByZeroException)
         {
@@ -473,7 +473,7 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            return OwnHeapInteger(PyNumberOps.Modulo(lhs, rhs), context.MemoryGovernor, span);
+            return OwnHeapInteger(PyNumberOps.Modulo(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
         }
         catch (DivideByZeroException)
         {
@@ -515,7 +515,7 @@ internal sealed partial class LythonRuntime
             }
 
             GuardIntegerPower(lhs, rhs, context.MemoryGovernor, span);
-            return OwnHeapInteger(PyNumberOps.Power(lhs, rhs), context.MemoryGovernor, span);
+            return OwnHeapInteger(PyNumberOps.Power(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
         }
         catch (OverflowException ex) when (ex.Message == "int too large to convert to float")
         {

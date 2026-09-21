@@ -54,20 +54,16 @@ internal sealed partial class LythonRuntime
         governor.EnsureCanReserve(estimatedBytes, span);
     }
 
-    // Integers above the inline range retain heap magnitude storage with no owner
-    // tracking after this point; own them durably. Inline-range values, floats
-    // and aliased inputs stay free.
-    private static object OwnHeapInteger(object value, MemoryGovernor governor, LythonSourceSpan span)
-    {
-        if (value is BigInteger integer && RuntimeMemoryEstimates.GetMagnitudeBitLength(integer) > 64)
-        {
-            var bytes = RuntimeMemoryEstimates.EstimateBigIntegerBytes(integer);
-            governor.Reserve(bytes, span);
-            governor.Commit(bytes);
-        }
-
-        return value;
-    }
+    // Integers above the inline range retain heap magnitude storage. R11 shares
+    // the fresh-magnitude rule below: commit durable payload ownership and
+    // pool-track the box so dropped values reclaim on sweep instead of
+    // stranding. Each box owns its coupon independently (charge on track,
+    // release exactly once on collection), so shared limb arrays stay
+    // conservatively charged while shared and exact once fully collected;
+    // alias dedup keeps a shared box from double-committing. Inline-range
+    // values, floats and untracked inputs stay free.
+    private static object OwnHeapInteger(object value, MemoryGovernor governor, ChargeReclamationPool pool, LythonSourceSpan? span)
+        => OwnFreshInteger(value, governor, pool, span);
 
     // Fresh heap magnitudes produced outside ordinary arithmetic (parses, random
     // draws, enumerated indices, copied host inputs): commit durable payload
@@ -338,7 +334,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.UnsupportedOperands(operation ?? "|", left, right, span);
         }
 
-        return OwnHeapInteger(PyNumberOps.BitwiseOr(lhs, rhs), context.MemoryGovernor, span);
+        return OwnHeapInteger(PyNumberOps.BitwiseOr(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
     }
 
     // Counter branches keep their combining lambda in a callee: the lambda
@@ -382,7 +378,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.UnsupportedOperands(operation ?? "^", left, right, span);
         }
 
-        return OwnHeapInteger(PyNumberOps.BitwiseXor(lhs, rhs), context.MemoryGovernor, span);
+        return OwnHeapInteger(PyNumberOps.BitwiseXor(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
     }
 
     private static object EvaluateBitwiseAnd(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
@@ -422,7 +418,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.UnsupportedOperands(operation ?? "&", left, right, span);
         }
 
-        return OwnHeapInteger(PyNumberOps.BitwiseAnd(lhs, rhs), context.MemoryGovernor, span);
+        return OwnHeapInteger(PyNumberOps.BitwiseAnd(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
     }
 
     private static object EvaluateLeftShift(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
@@ -435,7 +431,7 @@ internal sealed partial class LythonRuntime
         try
         {
             GuardIntegerLeftShift(lhs, rhs, context.MemoryGovernor, span);
-            return OwnHeapInteger(PyNumberOps.LeftShift(lhs, rhs), context.MemoryGovernor, span);
+            return OwnHeapInteger(PyNumberOps.LeftShift(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
         }
         catch (InvalidOperationException ex) when (ex.Message == "negative shift count")
         {
@@ -456,7 +452,7 @@ internal sealed partial class LythonRuntime
 
         try
         {
-            return OwnHeapInteger(PyNumberOps.RightShift(lhs, rhs), context.MemoryGovernor, span);
+            return OwnHeapInteger(PyNumberOps.RightShift(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
         }
         catch (InvalidOperationException ex) when (ex.Message == "negative shift count")
         {
@@ -534,7 +530,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.BadUnaryOperand("-", operand, span);
         }
 
-        return OwnHeapInteger(PyNumberOps.Negate(numeric), context.MemoryGovernor, span);
+        return OwnHeapInteger(PyNumberOps.Negate(numeric), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
     }
 
     private static PyCounter BuildCounterUnaryResult(
@@ -672,7 +668,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.BadUnaryOperand("~", operand, span);
         }
 
-        return OwnHeapInteger(PyNumberOps.BitwiseNot(integer), context.MemoryGovernor, span);
+        return OwnHeapInteger(PyNumberOps.BitwiseNot(integer), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
     }
 
     private static bool TryGetNumericOperands(object left, object right, out PyNumber lhs, out PyNumber rhs)

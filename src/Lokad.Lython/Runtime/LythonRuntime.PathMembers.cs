@@ -488,7 +488,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "Decimal.__int__() expects no arguments.", span);
                     }
 
-                    return OwnHeapInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, span);
+                    return OwnHeapInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
                 }, "Decimal.__int__"),
                 "__float__" => BoundCallable.Create((arguments, span, _) =>
                 {
@@ -506,7 +506,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "Decimal.__trunc__() expects no arguments.", span);
                     }
 
-                    return OwnHeapInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, span);
+                    return OwnHeapInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
                 }, "Decimal.__trunc__"),
                 "__floor__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -515,7 +515,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "Decimal.__floor__() expects no arguments.", span);
                     }
 
-                    return OwnHeapInteger(new BigInteger(decimal.Floor(decimalValue.Value)), context.MemoryGovernor, span);
+                    return OwnHeapInteger(new BigInteger(decimal.Floor(decimalValue.Value)), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
                 }, "Decimal.__floor__"),
                 "__ceil__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -524,7 +524,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "Decimal.__ceil__() expects no arguments.", span);
                     }
 
-                    return OwnHeapInteger(new BigInteger(decimal.Ceiling(decimalValue.Value)), context.MemoryGovernor, span);
+                    return OwnHeapInteger(new BigInteger(decimal.Ceiling(decimalValue.Value)), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
                 }, "Decimal.__ceil__"),
                 "__round__" => BoundCallable.Create((arguments, span, context) =>
                 {

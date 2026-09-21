@@ -1232,7 +1232,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "float.__int__() expects no arguments.", span);
                     }
 
-                    return OwnHeapInteger(FloatToInteger(number, span, Math.Truncate), context.MemoryGovernor, span);
+                    return OwnHeapInteger(FloatToInteger(number, span, Math.Truncate), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
                 }, "float.__int__"),
                 "__float__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -1250,7 +1250,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "float.__trunc__() expects no arguments.", span);
                     }
 
-                    return OwnHeapInteger(FloatToInteger(number, span, Math.Truncate), context.MemoryGovernor, span);
+                    return OwnHeapInteger(FloatToInteger(number, span, Math.Truncate), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
                 }, "float.__trunc__"),
                 "__floor__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -1259,7 +1259,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "float.__floor__() expects no arguments.", span);
                     }
 
-                    return OwnHeapInteger(FloatToInteger(number, span, Math.Floor), context.MemoryGovernor, span);
+                    return OwnHeapInteger(FloatToInteger(number, span, Math.Floor), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
                 }, "float.__floor__"),
                 "__ceil__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -1268,7 +1268,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "float.__ceil__() expects no arguments.", span);
                     }
 
-                    return OwnHeapInteger(FloatToInteger(number, span, Math.Ceiling), context.MemoryGovernor, span);
+                    return OwnHeapInteger(FloatToInteger(number, span, Math.Ceiling), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
                 }, "float.__ceil__"),
                 "__round__" => BoundCallable.Create((arguments, span, context) =>
                 {
