@@ -26,6 +26,14 @@ internal sealed partial class LythonRuntime
     // never transforms items; anything unhashable throws UnhashableType.
     private static object ValidateHashableKey(object value, LythonSourceSpan? span)
     {
+        // R13b: customizing __eq__ without __hash__ is unhashable like CPython.
+        // The slot-presence check is a pure MRO walk, so validation stays
+        // context-free across all key entry points.
+        if (value is PyInstance instance && PyHashProtocols.IsEqWithoutHash(instance))
+        {
+            throw RuntimeErrors.UnhashableType(value, span);
+        }
+
         var normalized = value switch
         {
             PyTuple tuple => ValidateTupleKey(tuple, span),

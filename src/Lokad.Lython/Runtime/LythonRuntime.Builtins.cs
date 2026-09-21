@@ -619,17 +619,12 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "hash(object) expects one argument.", span);
         }
 
-        if (arguments[0] is PyInstance instance &&
-            instance.TryGetAttribute("__hash__", context, span, out var hashMember) &&
-            hashMember is ICallable hashCallable)
+        // R13b: instances route through contextual hashing (custom __hash__
+        // dispatch with integer validation, eq-without-hash and None-hash
+        // unhashability); everything else keeps the structural funnel.
+        if (arguments[0] is PyInstance || PyTupleLike.TryGetItems(arguments[0], out _))
         {
-            var hashValue = hashCallable.Invoke([], span, context);
-            if (!PyNumberOps.TryAsInteger(hashValue, out var integerHash))
-            {
-                throw new LythonRuntimeException("TypeError", "__hash__ method should return an integer", span);
-            }
-
-            return integerHash;
+            return PyHashProtocols.GetProtocolHashValue(arguments[0], context, span);
         }
 
         return ComputeBuiltinHash(arguments[0], span);
