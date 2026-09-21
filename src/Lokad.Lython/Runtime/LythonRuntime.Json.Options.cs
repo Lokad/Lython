@@ -265,6 +265,19 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "json.dumps(separators=...) expects a two-item tuple/list of strings or None.", span);
             }
 
+            // Fixed-arity input: check the concrete count before copying so an
+            // oversized tuple/list fails without a full materialization.
+            var knownCount = value switch
+            {
+                PyTuple tuple => tuple.Count,
+                PyList list => list.Count,
+                _ => -1,
+            };
+            if (knownCount != -1 && knownCount != 2)
+            {
+                throw new LythonRuntimeException("TypeError", "json.dumps(separators=...) expects a two-item tuple/list of strings.", span);
+            }
+
             var items = ToSequence(value, span, context).ToArray();
             if (items.Length != 2 ||
                 !PyStringOps.TryAsString(items[0], out var itemSeparator) ||

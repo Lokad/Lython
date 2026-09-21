@@ -195,17 +195,20 @@ internal sealed partial class LythonRuntime
             return;
         }
 
-        object[] items;
+        // Emptiness pulls at most one element: an arbitrary iterable (such as a
+        // huge range) must not materialize just to prove it is non-empty.
+        bool hasElement;
         try
         {
-            items = ToSequence(GetArgument(arguments, index), span).ToArray();
+            using var enumerator = ToSequence(GetArgument(arguments, index), span).GetEnumerator();
+            hasElement = enumerator.MoveNext();
         }
         catch (LythonRuntimeException)
         {
             throw new LythonRuntimeException("TypeError", $"subprocess.Popen(..., {name}=...) expects an iterable.", span);
         }
 
-        if (items.Length != 0)
+        if (hasElement)
         {
             throw new LythonRuntimeException(
                 "NotImplementedError",

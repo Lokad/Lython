@@ -67,7 +67,7 @@ internal sealed partial class LythonRuntime
                 "comb" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathComb, Comb),
                 "perm" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathPerm, Perm),
                 "isqrt" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathIsqrt, ISqrt),
-                "dist" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathDist, Dist),
+                "dist" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathDist, Dist, DistAsync),
                 "frexp" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathFrexp, Frexp),
                 "ldexp" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathLdexp, Ldexp),
                 "modf" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathModf, Modf),
@@ -83,7 +83,7 @@ internal sealed partial class LythonRuntime
                 "gamma" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathGamma, Gamma),
                 "lgamma" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathLgamma, LGamma),
                 "fma" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathFma, Fma),
-                "sumprod" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathSumProd, SumProd),
+                "sumprod" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathSumProd, SumProd, SumProdAsync),
                 _ => MissingMemberValue.Instance,
             };
 

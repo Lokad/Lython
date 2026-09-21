@@ -114,22 +114,56 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", $"{owner}(args) expects an iterable of strings or Paths, not a single Path.", span);
         }
 
+        // The request argument vector must materialize fully to launch, so drain
+        // it under the same governed discipline as every eager materializer:
+        // reference slots fund before backing growth, with collection/step
+        // enforcement per part instead of an unbounded accumulation.
+        using var reservation = context.MemoryGovernor.ReserveTemporary(0, span);
         var items = new List<string>();
+        var chargedCapacity = 0;
         foreach (var item in ToSequence(value, span, context))
         {
+            string part;
             if (item is PyPath path)
             {
-                items.Add(path.Value.AsString());
-                continue;
+                part = path.Value.AsString();
             }
-
-            if (!PyStringOps.TryAsString(item, out var text))
+            else if (!PyStringOps.TryAsString(item, out var text))
             {
                 throw new LythonRuntimeException("TypeError", $"{owner}(args) expects an iterable of strings or Paths.", span);
             }
+            else
+            {
+                part = text.AsString();
+            }
 
-            items.Add(text.AsString());
+            if (items.Count == items.Capacity)
+            {
+                var predicted = items.Capacity == 0 ? 4L : (long)items.Capacity * 2L;
+                if (predicted > chargedCapacity)
+                {
+                    reservation.Grow(checked(8L * (predicted - chargedCapacity)), span);
+                    chargedCapacity = (int)predicted;
+                }
+            }
+
+            items.Add(part);
+            if (items.Capacity > chargedCapacity)
+            {
+                reservation.Grow(8L * (items.Capacity - chargedCapacity), span);
+                chargedCapacity = items.Capacity;
+            }
+
+            context.ObserveCollectionCount(items.Count, span);
+            if ((items.Count & 63) == 0)
+            {
+                context.CheckExecutionBudget(span);
+            }
         }
+
+        // The returned vector coexists with the request that retains it, so fund
+        // the final reference array beside the transient growth reservation.
+        reservation.Grow(8L * items.Count, span);
 
         if (items.Count == 0)
         {

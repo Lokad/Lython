@@ -61,17 +61,97 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "time.struct_time() expects one positional sequence argument.", span);
             }
 
-            var values = ToSequence(arguments[0].Value, span, context).ToArray();
-            if (values.Length < 9)
+            // Fixed arity (9-11) bounds the pull before full materialization: buffer
+            // at most 12 elements, then drain-count any remainder for the exact
+            // arity message. Arbitrary iterables therefore meet collection/step
+            // budgets per element instead of allocating first and erroring after.
+            using var cursor = PyIteration.Cursor.Create(arguments[0].Value, span, context);
+            var head = new object[12];
+            var buffered = 0;
+            while (buffered < 12 && cursor.TryMoveNext(out var item))
             {
-                throw new LythonRuntimeException("TypeError", $"time.struct_time() takes an at least 9-sequence ({values.Length}-sequence given)", span);
+                head[buffered++] = item!;
+                context.ObserveCollectionCount(buffered, span);
             }
 
-            if (values.Length > 11)
+            if (buffered < 9)
             {
-                throw new LythonRuntimeException("TypeError", $"time.struct_time() takes an at most 11-sequence ({values.Length}-sequence given)", span);
+                throw new LythonRuntimeException("TypeError", $"time.struct_time() takes an at least 9-sequence ({buffered}-sequence given)", span);
             }
 
+            var total = buffered;
+            if (buffered == 12)
+            {
+                while (cursor.TryMoveNext(out _))
+                {
+                    total++;
+                    context.ObserveCollectionCount(total, span);
+                    if ((total & 63) == 0)
+                    {
+                        context.CheckExecutionBudget(span);
+                    }
+                }
+
+                throw new LythonRuntimeException("TypeError", $"time.struct_time() takes an at most 11-sequence ({total}-sequence given)", span);
+            }
+
+            var values = head[..buffered];
+            return new TimeStructTimeValue(
+                values[..9],
+                values.Length >= 10 ? values[9] : PyNone.Instance,
+                values.Length >= 11 ? values[10] : PyNone.Instance,
+                context.MemoryGovernor,
+                span);
+        }
+
+        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            if (arguments.Length != 1 || arguments[0].IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "time.struct_time() expects one positional sequence argument.", span);
+            }
+
+            // Async twin of the bounded body above: the cursor awaits delayed host
+            // reads through the async boundary instead of driving them
+            // synchronously, with the same per-element enforcement.
+            await using var cursor = PyIteration.Cursor.Create(arguments[0].Value, span, context);
+            var head = new object[12];
+            var buffered = 0;
+            while (buffered < 12)
+            {
+                var next = await cursor.TryMoveNextAsync().ConfigureAwait(false);
+                if (!next.HasValue)
+                {
+                    break;
+                }
+
+                head[buffered++] = next.Value;
+                context.ObserveCollectionCount(buffered, span);
+            }
+
+            if (buffered < 9)
+            {
+                throw new LythonRuntimeException("TypeError", $"time.struct_time() takes an at least 9-sequence ({buffered}-sequence given)", span);
+            }
+
+            var total = buffered;
+            if (buffered == 12)
+            {
+                while ((await cursor.TryMoveNextAsync().ConfigureAwait(false)).HasValue)
+                {
+                    total++;
+                    context.ObserveCollectionCount(total, span);
+                    if ((total & 63) == 0)
+                    {
+                        context.CheckExecutionBudget(span);
+                    }
+                }
+
+                throw new LythonRuntimeException("TypeError", $"time.struct_time() takes an at most 11-sequence ({total}-sequence given)", span);
+            }
+
+            var values = head[..buffered];
             return new TimeStructTimeValue(
                 values[..9],
                 values.Length >= 10 ? values[9] : PyNone.Instance,

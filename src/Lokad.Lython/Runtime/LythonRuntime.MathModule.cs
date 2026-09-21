@@ -111,25 +111,174 @@ internal sealed partial class LythonRuntime
 
         private static object Dist(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var p = ToSequence(arguments[0], span, context).ToArray();
-            var q = ToSequence(arguments[1], span, context).ToArray();
-            if (p.Length != q.Length)
+            // Stream paired inputs instead of draining both into object arrays: when
+            // both sides expose a cheap count the dimension check runs before any
+            // iteration (matching CPython error precedence), otherwise pairs pull
+            // lockstep with collection/step/cancellation enforcement per element.
+            // Differences convert to doubles immediately, so peak scratch is one
+            // double per dimension under a live temporary reservation.
+            if (TryGetKnownLength(arguments[0], out var pLength) &&
+                TryGetKnownLength(arguments[1], out var qLength) &&
+                pLength != qLength)
             {
                 throw new LythonRuntimeException("ValueError", "both points must have the same number of dimensions", span);
             }
 
-            if (p.Length == 0)
+            using var pCursor = PyIteration.Cursor.Create(arguments[0], span, context);
+            using var qCursor = PyIteration.Cursor.Create(arguments[1], span, context);
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var differences = new List<double>();
+            long charged = 0;
+            while (true)
+            {
+                var pHas = pCursor.TryMoveNext(out var pItem);
+                var qHas = qCursor.TryMoveNext(out var qItem);
+                if (!pHas || !qHas)
+                {
+                    if (pHas != qHas)
+                    {
+                        throw new LythonRuntimeException("ValueError", "both points must have the same number of dimensions", span);
+                    }
+
+                    break;
+                }
+
+                if (differences.Count == differences.Capacity)
+                {
+                    // Fund the predicted backing before it can allocate, tracking
+                    // funded (not observed) capacity so the post-add charge below
+                    // covers only a real discrepancy (R12 double-charge pattern).
+                    var predicted = differences.Capacity == 0 ? 4L : (long)differences.Capacity * 2L;
+                    if (predicted > charged)
+                    {
+                        scratch.Grow(checked(8L * (predicted - charged)), span);
+                        charged = predicted;
+                    }
+                }
+
+                differences.Add(ExpectReal(pItem!, "math.dist", span) - ExpectReal(qItem!, "math.dist", span));
+                if (differences.Capacity > charged)
+                {
+                    scratch.Grow(8L * (differences.Capacity - charged), span);
+                    charged = differences.Capacity;
+                }
+
+                context.ObserveCollectionCount(differences.Count, span);
+                if ((differences.Count & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+            }
+
+            if (differences.Count == 0)
             {
                 return 0.0;
             }
 
-            var coordinates = new double[p.Length];
-            for (var i = 0; i < p.Length; i++)
+            return ScaledHypot(differences);
+        }
+
+        private static async ValueTask<object> DistAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            // Async twin of the streaming body above: cursors await delayed host
+            // reads through the async boundary instead of driving them
+            // synchronously, with the same per-element enforcement.
+            if (TryGetKnownLength(arguments[0], out var pLength) &&
+                TryGetKnownLength(arguments[1], out var qLength) &&
+                pLength != qLength)
             {
-                coordinates[i] = ExpectReal(p[i], "math.dist", span) - ExpectReal(q[i], "math.dist", span);
+                throw new LythonRuntimeException("ValueError", "both points must have the same number of dimensions", span);
             }
 
-            return ScaledHypot(coordinates);
+            await using var pCursor = PyIteration.Cursor.Create(arguments[0], span, context);
+            await using var qCursor = PyIteration.Cursor.Create(arguments[1], span, context);
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var differences = new List<double>();
+            long charged = 0;
+            while (true)
+            {
+                var pNext = await pCursor.TryMoveNextAsync().ConfigureAwait(false);
+                var qNext = await qCursor.TryMoveNextAsync().ConfigureAwait(false);
+                if (!pNext.HasValue || !qNext.HasValue)
+                {
+                    if (pNext.HasValue != qNext.HasValue)
+                    {
+                        throw new LythonRuntimeException("ValueError", "both points must have the same number of dimensions", span);
+                    }
+
+                    break;
+                }
+
+                if (differences.Count == differences.Capacity)
+                {
+                    var predicted = differences.Capacity == 0 ? 4L : (long)differences.Capacity * 2L;
+                    if (predicted > charged)
+                    {
+                        scratch.Grow(checked(8L * (predicted - charged)), span);
+                        charged = predicted;
+                    }
+                }
+
+                differences.Add(ExpectReal(pNext.Value, "math.dist", span) - ExpectReal(qNext.Value, "math.dist", span));
+                if (differences.Capacity > charged)
+                {
+                    scratch.Grow(8L * (differences.Capacity - charged), span);
+                    charged = differences.Capacity;
+                }
+
+                context.ObserveCollectionCount(differences.Count, span);
+                if ((differences.Count & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+            }
+
+            if (differences.Count == 0)
+            {
+                return 0.0;
+            }
+
+            return ScaledHypot(differences);
+        }
+
+        // Cheap lengths for concrete collections, used only to order the
+        // dimension check before iteration. Unsized iterables (generators,
+        // user iterators) fall through to lockstep streaming.
+        private static bool TryGetKnownLength(object value, out long length)
+        {
+            switch (value)
+            {
+                case PyList list:
+                    length = list.Count;
+                    return true;
+                case PyDict dict:
+                    length = dict.Count;
+                    return true;
+                case PySet set:
+                    length = set.Count;
+                    return true;
+                case PyDeque deque:
+                    length = deque.Count;
+                    return true;
+                case PyCounter counter:
+                    length = counter.Count;
+                    return true;
+                case PyDefaultDict defaultdict:
+                    length = defaultdict.Count;
+                    return true;
+                case PyRange range:
+                    length = range.Length > long.MaxValue ? long.MaxValue : (long)range.Length;
+                    return true;
+                default:
+                    if (PyTupleLike.TryGetItems(value, out var tuple))
+                    {
+                        length = tuple.Count;
+                        return true;
+                    }
+
+                    length = 0;
+                    return false;
+            }
         }
 
         private static object Frexp(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -370,17 +519,35 @@ internal sealed partial class LythonRuntime
 
         private static object SumProd(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var p = ToSequence(arguments[0], span, context).ToArray();
-            var q = ToSequence(arguments[1], span, context).ToArray();
-            if (p.Length != q.Length)
+            // Fully streaming pairwise accumulation: no input is ever materialized,
+            // so arbitrary iterables meet collection/step/cancellation budgets per
+            // pair instead of allocating two object arrays up front.
+            if (TryGetKnownLength(arguments[0], out var pLength) &&
+                TryGetKnownLength(arguments[1], out var qLength) &&
+                pLength != qLength)
             {
                 throw new LythonRuntimeException("ValueError", "Inputs are not the same length", span);
             }
 
+            using var pCursor = PyIteration.Cursor.Create(arguments[0], span, context);
+            using var qCursor = PyIteration.Cursor.Create(arguments[1], span, context);
             object total = BigInteger.Zero;
-            for (var i = 0; i < p.Length; i++)
+            var pairs = 0;
+            while (true)
             {
-                if (!PyNumberOps.TryAsNumber(p[i], out var left) || !PyNumberOps.TryAsNumber(q[i], out var right))
+                var pHas = pCursor.TryMoveNext(out var pItem);
+                var qHas = qCursor.TryMoveNext(out var qItem);
+                if (!pHas || !qHas)
+                {
+                    if (pHas != qHas)
+                    {
+                        throw new LythonRuntimeException("ValueError", "Inputs are not the same length", span);
+                    }
+
+                    break;
+                }
+
+                if (!PyNumberOps.TryAsNumber(pItem!, out var left) || !PyNumberOps.TryAsNumber(qItem!, out var right))
                 {
                     throw new LythonRuntimeException("TypeError", "math.sumprod(...) expects iterables of real numbers.", span);
                 }
@@ -396,6 +563,68 @@ internal sealed partial class LythonRuntime
                 }
 
                 total = EvaluateAdd(total, OwnHeapInteger(product, context.MemoryGovernor, span), context, span);
+                pairs++;
+                context.ObserveCollectionCount(pairs, span);
+                if ((pairs & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+            }
+
+            return RuntimeValue(total);
+        }
+
+        private static async ValueTask<object> SumProdAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            // Async twin of the streaming body above: cursors await delayed host
+            // reads through the async boundary with the same per-pair enforcement.
+            if (TryGetKnownLength(arguments[0], out var pLength) &&
+                TryGetKnownLength(arguments[1], out var qLength) &&
+                pLength != qLength)
+            {
+                throw new LythonRuntimeException("ValueError", "Inputs are not the same length", span);
+            }
+
+            await using var pCursor = PyIteration.Cursor.Create(arguments[0], span, context);
+            await using var qCursor = PyIteration.Cursor.Create(arguments[1], span, context);
+            object total = BigInteger.Zero;
+            var pairs = 0;
+            while (true)
+            {
+                var pNext = await pCursor.TryMoveNextAsync().ConfigureAwait(false);
+                var qNext = await qCursor.TryMoveNextAsync().ConfigureAwait(false);
+                if (!pNext.HasValue || !qNext.HasValue)
+                {
+                    if (pNext.HasValue != qNext.HasValue)
+                    {
+                        throw new LythonRuntimeException("ValueError", "Inputs are not the same length", span);
+                    }
+
+                    break;
+                }
+
+                if (!PyNumberOps.TryAsNumber(pNext.Value, out var left) || !PyNumberOps.TryAsNumber(qNext.Value, out var right))
+                {
+                    throw new LythonRuntimeException("TypeError", "math.sumprod(...) expects iterables of real numbers.", span);
+                }
+
+                object product;
+                try
+                {
+                    product = PyNumberOps.Multiply(left, right);
+                }
+                catch (OverflowException ex)
+                {
+                    throw new LythonRuntimeException("OverflowError", ex.Message, span);
+                }
+
+                total = EvaluateAdd(total, OwnHeapInteger(product, context.MemoryGovernor, span), context, span);
+                pairs++;
+                context.ObserveCollectionCount(pairs, span);
+                if ((pairs & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
             }
 
             return RuntimeValue(total);
@@ -451,18 +680,21 @@ internal sealed partial class LythonRuntime
             return x;
         }
 
-        private static double ScaledHypot(IEnumerable<double> values)
+        private static double ScaledHypot(IReadOnlyList<double> values)
         {
+            // Single pass over the caller-owned differences with absolute values
+            // taken inline: no coordinate or absolute-value copies are made, while
+            // the max-abs scaling keeps infinities, NaNs, and extreme scales exact.
             var max = 0.0;
-            var materialized = values.Select(Math.Abs).ToArray();
-            foreach (var value in materialized)
+            foreach (var value in values)
             {
-                if (double.IsPositiveInfinity(value))
+                var absolute = Math.Abs(value);
+                if (double.IsPositiveInfinity(absolute))
                 {
                     return double.PositiveInfinity;
                 }
 
-                max = Math.Max(max, value);
+                max = Math.Max(max, absolute);
             }
 
             if (max == 0.0 || double.IsNaN(max))
@@ -471,9 +703,9 @@ internal sealed partial class LythonRuntime
             }
 
             var scaled = 0.0;
-            foreach (var value in materialized)
+            foreach (var value in values)
             {
-                var ratio = value / max;
+                var ratio = Math.Abs(value) / max;
                 scaled += ratio * ratio;
             }
 
