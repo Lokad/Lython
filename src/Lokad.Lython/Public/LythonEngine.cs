@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using Lokad.Lython.Frontend;
@@ -38,6 +39,21 @@ public sealed class LythonEngine
             }
         }
 
+        // Host-requirement diagnostics depend on the script plus exactly two
+        // host capability flags (standard input and subprocess support), so
+        // they are computed once per capability state and shared across
+        // invocations. The fingerprint re-reads both flags on every call, so
+        // a host that gains capabilities between runs re-analyzes instead of
+        // serving a stale denial. The cache lives on the compiled script
+        // (at most four small entries) and is safe for concurrent runs.
+        var hostRequirementCache = new ConcurrentDictionary<(bool HasStandardInput, bool HasSubprocessRunner), IReadOnlyList<LythonDiagnostic>>();
+
+        IReadOnlyList<LythonDiagnostic> GetHostDiagnostics(ILythonHost host)
+        {
+            var fingerprint = (host.StandardInput is not null, host.SubprocessRunner is not null);
+            return hostRequirementCache.GetOrAdd(fingerprint, _ => StaticAnalyzer.AnalyzeHostRequirements(script!, host));
+        }
+
         LythonExecutionResult? CreatePreExecutionFailure(ILythonHost host)
         {
             if (!isValid)
@@ -54,7 +70,7 @@ public sealed class LythonEngine
                 return null;
             }
 
-            var hostDiagnostics = StaticAnalyzer.AnalyzeHostRequirements(script, host);
+            var hostDiagnostics = GetHostDiagnostics(host);
             if (hostDiagnostics.Count == 0)
             {
                 return null;
