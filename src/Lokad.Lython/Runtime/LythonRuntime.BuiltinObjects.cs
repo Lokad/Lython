@@ -397,7 +397,7 @@ internal sealed partial class LythonRuntime
         return result;
     }
 
-    private static void UpdateDictionaryFromSource(PyDict target, object source, ExecutionContext context, LythonSourceSpan span)
+    internal static void UpdateDictionaryFromSource(IChainMapSource target, object source, ExecutionContext context, LythonSourceSpan span)
     {
         if (source is PyDict mapping)
         {

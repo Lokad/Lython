@@ -1222,9 +1222,8 @@ deque().pop()
     public async Task ChainMapUnionOperatorsAdvanceLikeCpython()
     {
         // Unions involving a ChainMap build a fresh ChainMap (copied
-        // first map plus shared tails, or one merged map), like CPython,
-        // except multi-map key order follows the house first-map-first
-        // merge rather than CPython last-map-first.
+        // first map plus shared tails, or one merged map) with CPython
+        // last-map-first merged key order (R14).
         var script = new LythonEngine().Compile("""
             from collections import ChainMap, Counter, defaultdict
             results = []
@@ -1261,12 +1260,12 @@ deque().pop()
         Assert.True(script.IsValid);
         var expected = new List<object?>
         {
-            "[('c', 3), ('a', 1), ('b', 2)]",
+            "[('c', 3), ('b', 2), ('a', 1)]",
             "1",
-            "[('a', 1), ('c', 3), ('b', 2)]",
+            "[('b', 2), ('a', 1), ('c', 3)]",
             "2",
             "99",
-            "[('a', 1), ('c', 3), ('b', 2)]",
+            "[('b', 2), ('a', 1), ('c', 3)]",
             "ChainMap({'x': 1, 'a': 2})",
             "ChainMap({'x': [1], 'a': 2})",
             "1",

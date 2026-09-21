@@ -9,18 +9,78 @@ internal static class PyIteration
 
     /// <summary>Resolves the Python iteration protocol for arbitrary values, including user-defined <c>__iter__</c>.</summary>
     public static IEnumerable<object> ToSequence(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => value is PyInstance instance
-            ? new PyUserIterator(instance, context, span).Iterate()
-            : GetSyncEnumerable(value, span);
+        => value switch
+        {
+            PyInstance instance => new PyUserIterator(instance, context, span).Iterate(),
+            // ChainMap iteration snapshots merged keys eagerly with lifetime
+            // ownership; values and items keep live per-pull lookups over an
+            // owned key order (see PyChainMap for the CPython behavior notes).
+            PyChainMap chainMap => chainMap.BuildOwnedKeySnapshot(context, span),
+            ChainMapKeysView keysView => keysView.Owner.BuildOwnedKeySnapshot(context, span),
+            ChainMapValuesView valuesView => PyChainMap.EnumerateOwnedValues(
+                valuesView.Owner,
+                valuesView.Owner.BuildOwnedKeySnapshot(context, span),
+                span),
+            ChainMapItemsView itemsView => PyChainMap.EnumerateOwnedItems(
+                itemsView.Owner,
+                itemsView.Owner.BuildOwnedKeySnapshot(context, span),
+                span),
+            _ => GetSyncEnumerable(value, span),
+        };
 
     public static IAsyncEnumerable<object> ToSequenceAsync(object value, LythonSourceSpan span)
         => EnumerateCursorAsync(Cursor.Create(value, span));
 
     /// <summary>Resolves the Python iteration protocol for asynchronous execution, driving synchronous user protocols when needed.</summary>
     public static IAsyncEnumerable<object> ToSequenceAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => value is PyInstance instance
-            ? EnumerateUserIteratorAsync(instance, context, span)
-            : EnumerateCursorAsync(Cursor.Create(value, span));
+        => value switch
+        {
+            PyInstance instance => EnumerateUserIteratorAsync(instance, context, span),
+            // Same owned shapes as the sync router above; snapshot construction
+            // and key lookups are pure memory work, so no host reads are driven.
+            PyChainMap chainMap => EnumerateOwnedSnapshotAsync(chainMap.BuildOwnedKeySnapshot(context, span)),
+            ChainMapKeysView keysView => EnumerateOwnedSnapshotAsync(keysView.Owner.BuildOwnedKeySnapshot(context, span)),
+            ChainMapValuesView valuesView => EnumerateOwnedValuesAsync(
+                valuesView.Owner,
+                valuesView.Owner.BuildOwnedKeySnapshot(context, span),
+                span),
+            ChainMapItemsView itemsView => EnumerateOwnedItemsAsync(
+                itemsView.Owner,
+                itemsView.Owner.BuildOwnedKeySnapshot(context, span),
+                span),
+            _ => EnumerateCursorAsync(Cursor.Create(value, span)),
+        };
+
+    private static async IAsyncEnumerable<object> EnumerateOwnedSnapshotAsync(List<object> snapshot)
+    {
+        await Task.CompletedTask.ConfigureAwait(false);
+        foreach (var key in snapshot)
+        {
+            yield return key;
+        }
+    }
+
+    private static async IAsyncEnumerable<object> EnumerateOwnedValuesAsync(PyChainMap owner, List<object> snapshotKeys, LythonSourceSpan span)
+    {
+        await Task.CompletedTask.ConfigureAwait(false);
+        foreach (var key in snapshotKeys)
+        {
+            yield return owner.GetLiveValue(key);
+        }
+    }
+
+    private static async IAsyncEnumerable<object> EnumerateOwnedItemsAsync(PyChainMap owner, List<object> snapshotKeys, LythonSourceSpan span)
+    {
+        await Task.CompletedTask.ConfigureAwait(false);
+        var governor = owner.OwnerMemoryGovernor;
+        foreach (var key in snapshotKeys)
+        {
+            var value = owner.GetLiveValue(key);
+            yield return governor is null
+                ? PyTuple.FromOwnedArray([key, value])
+                : PyTuple.FromOwnedArray([key, value], governor, null);
+        }
+    }
 
     /// <summary>Materializes an arbitrary iterable in asynchronous execution, resolving user-defined <c>__iter__</c>.</summary>
     public static async ValueTask<List<object>> MaterializeAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -228,6 +288,33 @@ internal static class PyIteration
             if (value is PyInstance instance)
             {
                 return new Cursor(value, span, new PyUserIterator(instance, context, span));
+            }
+
+            // ChainMap cursors enumerate owned snapshots (see ToSequence above)
+            // so retained enumerate/zip iterators stay charged instead of
+            // holding unowned merge scratch.
+            if (value is PyChainMap chainMap)
+            {
+                return new Cursor(chainMap.BuildOwnedKeySnapshot(context, span), span);
+            }
+
+            if (value is ChainMapKeysView keysView)
+            {
+                return new Cursor(keysView.Owner.BuildOwnedKeySnapshot(context, span), span);
+            }
+
+            if (value is ChainMapValuesView valuesView)
+            {
+                return new Cursor(
+                    PyChainMap.EnumerateOwnedValues(valuesView.Owner, valuesView.Owner.BuildOwnedKeySnapshot(context, span), span),
+                    span);
+            }
+
+            if (value is ChainMapItemsView itemsView)
+            {
+                return new Cursor(
+                    PyChainMap.EnumerateOwnedItems(itemsView.Owner, itemsView.Owner.BuildOwnedKeySnapshot(context, span), span),
+                    span);
             }
 
             _ = GetSyncEnumerable(value, span);

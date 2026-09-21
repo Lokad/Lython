@@ -39,12 +39,15 @@ public sealed class ChainMapAccountingScenarioTests
     [Fact]
     public async Task ManyDefaultDictEntriesStayCharged()
     {
+        // R14: ChainMap aliases its mappings, so construction itself stays cheap
+        // and the entries below charge once in their home map. Two hundred
+        // thousand entries still exceed a 1MiB budget while filling.
         var script = new LythonEngine().Compile(
             """
             from collections import ChainMap, defaultdict
             d = defaultdict(int)
             i = 0
-            while i < 20000:
+            while i < 200000:
                 d[i] = i
                 i = i + 1
             cm = ChainMap(d)

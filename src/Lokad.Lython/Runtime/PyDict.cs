@@ -2,7 +2,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue
+internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue, IChainMapSource
 {
     private IPyDictStorage _items;
     private MemoryGovernor? _memoryGovernor;
@@ -42,6 +42,8 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     }
 
     public int Count => _items.Count;
+
+    object IChainMapSource.Underlying => this;
 
     // Current committed backing charges, for pooled owners that release them
     // if this dictionary is dropped without wholesale storage replacement.

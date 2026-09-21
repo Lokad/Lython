@@ -20,6 +20,9 @@ internal static class PyContainment
             PySet set => ContainsInSet(set, candidate, span),
             LythonRuntime.DictKeysView keysView => ContainsInValidatedView(keysView, candidate, span),
             LythonRuntime.DictItemsView itemsView => ContainsInValidatedView(itemsView, candidate, span),
+            ChainMapKeysView chainKeys => chainKeys.Owner.ContainsKey(candidate, span),
+            ChainMapValuesView chainValues => ContainsInChainMapValues(chainValues, candidate, span),
+            ChainMapItemsView chainItems => ContainsInChainMapItems(chainItems, candidate, span),
             PyTuple tuple => ContainsInTuple(tuple, candidate),
             IEnumerable<object> sequence => ContainsInTypedSequence(sequence, candidate),
             System.Collections.IEnumerable sequence => ContainsInUntypedSequence(sequence, candidate),
@@ -47,6 +50,9 @@ internal static class PyContainment
             PySet set => ContainsInSet(set, candidate, span),
             LythonRuntime.DictKeysView keysView => ContainsInValidatedView(keysView, candidate, span),
             LythonRuntime.DictItemsView itemsView => ContainsInValidatedView(itemsView, candidate, span),
+            ChainMapKeysView chainKeys => chainKeys.Owner.ContainsKey(candidate, span),
+            ChainMapValuesView chainValues => ContainsInChainMapValuesWithProtocols(chainValues, candidate, context, span),
+            ChainMapItemsView chainItems => ContainsInChainMapItemsWithProtocols(chainItems, candidate, context, span),
             PyTuple tuple => ContainsInTupleWithProtocols(tuple, candidate, context, span),
             IEnumerable<object> sequence => ContainsInTypedSequenceWithProtocols(sequence, candidate, context, span),
             System.Collections.IEnumerable sequence => ContainsInUntypedSequenceWithProtocols(sequence, candidate, context, span),
@@ -73,6 +79,9 @@ internal static class PyContainment
             PySet set => new ValueTask<bool>(ContainsInSet(set, candidate, span)),
             LythonRuntime.DictKeysView keysView => new ValueTask<bool>(ContainsInValidatedView(keysView, candidate, span)),
             LythonRuntime.DictItemsView itemsView => new ValueTask<bool>(ContainsInValidatedView(itemsView, candidate, span)),
+            ChainMapKeysView chainKeys => new ValueTask<bool>(chainKeys.Owner.ContainsKey(candidate, span)),
+            ChainMapValuesView chainValues => ContainsInChainMapValuesWithProtocolsAsync(chainValues, candidate, context, span),
+            ChainMapItemsView chainItems => ContainsInChainMapItemsWithProtocolsAsync(chainItems, candidate, context, span),
             PyTuple tuple => ContainsInTupleWithProtocolsAsync(tuple, candidate, context, span),
             IEnumerable<object> sequence => ContainsInTypedSequenceWithProtocolsAsync(sequence, candidate, context, span),
             System.Collections.IEnumerable sequence => ContainsInUntypedSequenceWithProtocolsAsync(sequence, candidate, context, span),
@@ -136,6 +145,121 @@ internal static class PyContainment
     {
         LythonRuntime.ValidateDictionaryKey(candidate, span);
         return ContainsInTypedSequence(view, candidate);
+    }
+
+    // ChainMap view membership scans the underlying mappings directly instead
+    // of materializing a merged snapshot per check. Keys consult containment
+    // (never factories); items stop at the first map holding the key like a
+    // subscript read; values test existence. No snapshot is retained.
+    private static bool ContainsInChainMapValues(ChainMapValuesView view, object candidate, LythonSourceSpan span)
+    {
+        foreach (var map in view.Owner.Maps)
+        {
+            foreach (var value in map.Values)
+            {
+                PyStructuralGuard.NoteWork();
+                if (PyEquality.AreEqual(value, candidate))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static bool ContainsInChainMapItems(ChainMapItemsView view, object candidate, LythonSourceSpan span)
+    {
+        LythonRuntime.ValidateDictionaryKey(candidate, span);
+        if (candidate is not PyTuple pair || pair.Count != 2)
+        {
+            return false;
+        }
+
+        foreach (var map in view.Owner.Maps)
+        {
+            PyStructuralGuard.NoteWork();
+            if (map.TryGetValue(pair[0], out var value))
+            {
+                return PyEquality.AreEqual(value, pair[1]);
+            }
+        }
+
+        return false;
+    }
+
+    private static bool ContainsInChainMapValuesWithProtocols(ChainMapValuesView view, object candidate, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        foreach (var map in view.Owner.Maps)
+        {
+            foreach (var value in map.Values)
+            {
+                PyStructuralGuard.NoteWork(context, span);
+                if (LythonRuntime.MembershipEquals(value, candidate, context, span))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static bool ContainsInChainMapItemsWithProtocols(ChainMapItemsView view, object candidate, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        LythonRuntime.ValidateDictionaryKey(candidate, span);
+        if (candidate is not PyTuple pair || pair.Count != 2)
+        {
+            return false;
+        }
+
+        foreach (var map in view.Owner.Maps)
+        {
+            PyStructuralGuard.NoteWork(context, span);
+            if (map.TryGetValue(pair[0], out var value))
+            {
+                return LythonRuntime.MembershipEquals(value, pair[1], context, span);
+            }
+        }
+
+        return false;
+    }
+
+    private static async ValueTask<bool> ContainsInChainMapValuesWithProtocolsAsync(ChainMapValuesView view, object candidate, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        foreach (var map in view.Owner.Maps)
+        {
+            foreach (var value in map.Values)
+            {
+                PyStructuralGuard.NoteWork(context, span);
+                if (await LythonRuntime.MembershipEqualsAsync(value, candidate, context, span).ConfigureAwait(false))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static async ValueTask<bool> ContainsInChainMapItemsWithProtocolsAsync(ChainMapItemsView view, object candidate, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        LythonRuntime.ValidateDictionaryKey(candidate, span);
+        if (candidate is not PyTuple pair || pair.Count != 2)
+        {
+            return false;
+        }
+
+        foreach (var map in view.Owner.Maps)
+        {
+            PyStructuralGuard.NoteWork(context, span);
+            if (map.TryGetValue(pair[0], out var value))
+            {
+                return await LythonRuntime.MembershipEqualsAsync(value, pair[1], context, span).ConfigureAwait(false);
+            }
+        }
+
+        return false;
     }
 
     // Tuples are immutable and array-backed: scan by index instead of

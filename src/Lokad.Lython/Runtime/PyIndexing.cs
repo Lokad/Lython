@@ -76,10 +76,14 @@ internal static class PyIndexing
         }
 
         // ChainMaps resolve every key through the mapped lookup like CPython,
-        // so slice objects serve as keys instead of slicing the mapping.
+        // so slice objects serve as keys instead of slicing the mapping. The
+        // contextful read invokes defaultdict factories (storing the result)
+        // where plain misses continue.
         if (target is PyChainMap chainMap)
         {
-            return chainMap.GetSubscript(index, span);
+            return context is null
+                ? chainMap.GetSubscript(index, span)
+                : chainMap.GetSubscript(index, span, context);
         }
 
         if (index is PySlice slice)
@@ -125,7 +129,9 @@ internal static class PyIndexing
 
             if (target is PyChainMap chainMap)
             {
-                return chainMap.GetSubscript(key, span);
+                return context is null
+                    ? chainMap.GetSubscript(key, span)
+                    : chainMap.GetSubscript(key, span, context);
             }
 
             var defaultDict = (PyDefaultDict)target;

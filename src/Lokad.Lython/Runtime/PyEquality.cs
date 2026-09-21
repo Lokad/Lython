@@ -137,6 +137,15 @@ internal static class PyEquality
             }
         }
 
+        // ChainMap content compares out of line so the hot comparison body
+        // above stays untouched: its size is allocation-measurement sensitive
+        // (see the CsvWriter history bound), so new operand families belong
+        // here rather than inline.
+        if (left is PyChainMap || right is PyChainMap)
+        {
+            return AreEqualChainMap(left, right);
+        }
+
         if (left is PyCounter counterLeft && (right is PyDict || right is PyDefaultDict))
         {
             using (PyStructuralGuard.EnterPair(left, right, null))
@@ -345,6 +354,138 @@ internal static class PyEquality
     // The dict lookup lambda captures rightDict, so Roslyn instantiates its
     // closure on every AreEqual call; keep it in a callee so only dict
     // comparisons pay for it (same pattern as the operator counter branches).
+    // Merged ChainMap content compares by unique keys with strict (factory-
+    // and zero-fill-free) lookups on both sides, so absent stays absent even
+    // where a subscript read would manufacture a value.
+    private static bool ChainMapsEqual(PyChainMap leftChain, PyChainMap rightChain)
+        => ChainMapContentEquals(leftChain, rightChain.Count,
+            key => rightChain.TryGetStrictValue(key, out var value) ? (true, value) : (false, null));
+
+    private static bool ChainMapContentEqualsRight(
+        PyChainMap rightChain,
+        int leftCount,
+        Func<object, (bool Found, object? Value)> leftLookup)
+    {
+        var rightKeys = rightChain.BuildMergedKeys();
+        if (rightKeys.Count != leftCount)
+        {
+            return false;
+        }
+
+        foreach (var key in rightKeys)
+        {
+            PyStructuralGuard.NoteWork();
+            if (!rightChain.TryGetStrictValue(key, out var rightValue))
+            {
+                return false;
+            }
+
+            var (found, other) = leftLookup(key);
+            if (!found || !AreEqual(other!, rightValue ?? PyNone.Instance))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool ChainMapContentEquals(
+        PyChainMap leftChain,
+        int rightCount,
+        Func<object, (bool Found, object? Value)> rightLookup)
+    {
+        var leftKeys = leftChain.BuildMergedKeys();
+        if (leftKeys.Count != rightCount)
+        {
+            return false;
+        }
+
+        foreach (var key in leftKeys)
+        {
+            PyStructuralGuard.NoteWork();
+            if (!leftChain.TryGetStrictValue(key, out var leftValue))
+            {
+                return false;
+            }
+
+            var (found, other) = rightLookup(key);
+            if (!found || !AreEqual(leftValue ?? PyNone.Instance, other!))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool AreEqualChainMap(object left, object right)
+    {
+        if (left is PyChainMap leftChain && right is PyChainMap rightChain)
+        {
+            using (PyStructuralGuard.EnterPair(left, right, null))
+            {
+                return ChainMapsEqual(leftChain, rightChain);
+            }
+        }
+
+        if (left is PyChainMap leftMap && right is PyDict rightPlain)
+        {
+            using (PyStructuralGuard.EnterPair(left, right, null))
+            {
+                return ChainMapContentEquals(leftMap, rightPlain.Count,
+                    key => rightPlain.TryGetValue(key, out var value) ? (true, value) : (false, null));
+            }
+        }
+
+        if (left is PyChainMap leftDefaultMap && right is PyDefaultDict rightDefault)
+        {
+            using (PyStructuralGuard.EnterPair(left, right, null))
+            {
+                return ChainMapContentEquals(leftDefaultMap, rightDefault.Count,
+                    key => rightDefault.TryGetValue(key, out var value) ? (true, value) : (false, null));
+            }
+        }
+
+        if (left is PyChainMap leftCounterMap && right is PyCounter rightCounterMap)
+        {
+            using (PyStructuralGuard.EnterPair(left, right, null))
+            {
+                return ChainMapContentEquals(leftCounterMap, rightCounterMap.Count,
+                    key => rightCounterMap.TryGetValue(key, out var value) ? (true, value) : (false, null));
+            }
+        }
+
+        if (right is PyChainMap rightChainMap && left is PyDict leftPlain)
+        {
+            using (PyStructuralGuard.EnterPair(left, right, null))
+            {
+                return ChainMapContentEqualsRight(rightChainMap, leftPlain.Count,
+                    key => leftPlain.TryGetValue(key, out var value) ? (true, value) : (false, null));
+            }
+        }
+
+        if (right is PyChainMap rightDefaultChain && left is PyDefaultDict leftDefaultOther)
+        {
+            using (PyStructuralGuard.EnterPair(left, right, null))
+            {
+                return ChainMapContentEqualsRight(rightDefaultChain, leftDefaultOther.Count,
+                    key => leftDefaultOther.TryGetValue(key, out var value) ? (true, value) : (false, null));
+            }
+        }
+
+        if (right is PyChainMap rightCounterChain && left is PyCounter leftCounterOperand)
+        {
+            using (PyStructuralGuard.EnterPair(left, right, null))
+            {
+                return ChainMapContentEqualsRight(rightCounterChain, leftCounterOperand.Count,
+                    key => leftCounterOperand.TryGetValue(key, out var value) ? (true, value) : (false, null));
+            }
+        }
+
+        return Equals(left, right);
+    }
+
     private static bool DictsEqual(PyDict leftDict, PyDict rightDict)
         => DictContentEqual(
             leftDict.Count,
