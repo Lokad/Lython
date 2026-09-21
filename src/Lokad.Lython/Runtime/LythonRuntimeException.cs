@@ -1,6 +1,8 @@
 namespace Lokad.Lython.Runtime;
 
-internal sealed class LythonRuntimeException : Exception
+// Unsealed for PyNotIterableException (R17): protocol absence carries a
+// distinct type so catchers never match English message text.
+internal class LythonRuntimeException : Exception
 {
     public LythonRuntimeException(string exceptionType, string message, LythonSourceSpan? span)
         : this(PythonExceptionIdentity.FromRuntimeTypeName(exceptionType), message, span, null, null) { }

@@ -465,9 +465,7 @@ internal sealed partial class LythonRuntime
         {
             return ToSequence(pair, span, context).GetEnumerator();
         }
-        catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" &&
-            (ex.Message == "Object is not iterable." ||
-                ex.Message == "'" + RuntimeErrors.OperandTypeName(pair) + "' object is not iterable"))
+        catch (PyNotIterableException)
         {
             throw new LythonRuntimeException("TypeError", "cannot convert dictionary update sequence element #" + elementIndex + " to a sequence", span);
         }

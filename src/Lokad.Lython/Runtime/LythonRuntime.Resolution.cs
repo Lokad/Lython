@@ -607,16 +607,11 @@ internal sealed partial class LythonRuntime
         {
             return MaterializeSequenceForUnpacking(value, span, context);
         }
-        catch (LythonRuntimeException ex) when (IsNonIterableFailure(ex, value))
+        catch (PyNotIterableException)
         {
             throw new LythonRuntimeException("TypeError", $"cannot unpack non-iterable {UnboundTypeMethod.PythonTypeName(value, context)} object", span);
         }
     }
-
-    internal static bool IsNonIterableFailure(LythonRuntimeException ex, object value)
-        => ex.ExceptionType == "TypeError"
-            && (ex.Message == "Object is not iterable."
-                || ex.Message == "'" + RuntimeErrors.OperandTypeName(value) + "' object is not iterable");
 
     private static string DescribeLoopArityMismatch(int targetCount, int valueCount)
         => valueCount > targetCount

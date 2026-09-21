@@ -1881,9 +1881,7 @@ internal sealed partial class LythonRuntime
                 octets.Add((byte)number);
             }
         }
-        catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" &&
-            (ex.Message == "Object is not iterable." ||
-                ex.Message == "'" + RuntimeErrors.OperandTypeName(source) + "' object is not iterable"))
+        catch (PyNotIterableException)
         {
             throw new LythonRuntimeException("TypeError", "cannot convert '" + UnboundTypeMethod.PythonTypeName(source, context) + "' object to bytes", span);
         }

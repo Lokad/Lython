@@ -34,7 +34,7 @@ internal sealed class PyUserIterator : IPyIteratorValue
     {
         if (!iterable.TryGetAttribute("__iter__", context, span, out var member) || member is not LythonRuntime.ICallable callable)
         {
-            throw new LythonRuntimeException("TypeError", $"'{iterable.Type.Name}' object is not iterable", span);
+            throw new PyNotIterableException($"'{iterable.Type.Name}' object is not iterable", span);
         }
 
         return callable.Invoke([], span, context);
@@ -44,7 +44,7 @@ internal sealed class PyUserIterator : IPyIteratorValue
     {
         if (!iterable.TryGetAttribute("__iter__", context, span, out var member) || member is not LythonRuntime.ICallable callable)
         {
-            throw new LythonRuntimeException("TypeError", $"'{iterable.Type.Name}' object is not iterable", span);
+            throw new PyNotIterableException($"'{iterable.Type.Name}' object is not iterable", span);
         }
 
         return await callable.InvokeAsync([], span, context).ConfigureAwait(false);

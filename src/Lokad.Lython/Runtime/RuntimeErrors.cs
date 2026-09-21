@@ -66,8 +66,8 @@ internal static class RuntimeErrors
     public static LythonRuntimeException NotAnIterator(object value, LythonSourceSpan? span)
         => Type($"'{OperandTypeName(value)}' object is not an iterator", span);
 
-    public static LythonRuntimeException NotIterable(object? value, LythonSourceSpan? span)
-        => Type($"'{OperandTypeName(value)}' object is not iterable", span);
+    public static PyNotIterableException NotIterable(object? value, LythonSourceSpan? span)
+        => new PyNotIterableException($"\'{OperandTypeName(value)}\' object is not iterable", span);
 
     public static LythonRuntimeException ArgumentNotIterable(object? value, LythonSourceSpan? span)
         => Type($"argument of type '{OperandTypeName(value)}' is not iterable", span);

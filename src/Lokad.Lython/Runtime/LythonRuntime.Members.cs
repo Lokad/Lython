@@ -2179,7 +2179,7 @@ internal sealed partial class LythonRuntime
             _ = PyIteration.ToSequence(value, span);
             return true;
         }
-        catch (LythonRuntimeException ex) when (IsNonIterableFailure(ex, value))
+        catch (PyNotIterableException)
         {
             return false;
         }
@@ -4024,7 +4024,7 @@ internal sealed partial class LythonRuntime
                     {
                         PopulateCounter(_counter, source.RequireNotNull(), span, context, _subtract);
                     }
-                    catch (LythonRuntimeException ex) when (ex.ExceptionType == "TypeError" && (ex.Message == "Object is not iterable." || ex.Message == "'" + RuntimeErrors.OperandTypeName(source) + "' object is not iterable"))
+                    catch (PyNotIterableException)
                     {
                         throw new LythonRuntimeException("TypeError", $"Counter.{Name}(iterable) expects one iterable or mapping argument.", span);
                     }
