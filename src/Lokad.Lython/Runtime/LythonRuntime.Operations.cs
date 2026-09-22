@@ -931,18 +931,28 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("RuntimeError", "Tuple repetition is too large.", span);
         }
 
+        // N02: deny before the sized allocation; bound the output count.
+        context.ObserveCollectionCount((int)totalLength, span);
+        context.MemoryGovernor.EnsureCanReserve(PyTuple.EstimateApproximateBytes((int)totalLength), span);
         var items = new object[(int)totalLength];
+        var filled = 0;
         for (var i = 0; i < repeatCount; i++)
         {
             for (var j = 0; j < tuple.Count; j++)
             {
-                items[i * tuple.Count + j] = tuple[j];
+                items[filled++] = tuple[j];
+                if ((filled & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
             }
 
             context.ObserveCollectionCount((i + 1) * tuple.Count, span);
         }
 
-        var repeated = new PyTuple(items, context.MemoryGovernor, span);
+        // Fresh array transfers without copying (escape proof: allocated here,
+        // never retained elsewhere).
+        var repeated = PyTuple.FromOwnedArray(items, context.MemoryGovernor, span);
         context.Services.State.CallTemporaries.TrackFreshMutable(repeated, repeated.CommittedStorageBytes);
         return repeated;
     }
