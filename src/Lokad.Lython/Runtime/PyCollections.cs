@@ -405,6 +405,7 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
     private const long DequeNodeBytes = 64;
     private const long DequeShellBytes = 128;
     private bool _shellCharged;
+    private AdoptedScalarCoupons? _scalarCoupons;
     private MemoryGovernor? _memoryGovernor;
     private LythonSourceSpan? _allocationSpan;
     private long _committedNodeBytes;
@@ -434,7 +435,8 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
     // Current committed shell-plus-node charges, for pooled owners that
     // release them if this deque is dropped. Growth after the snapshot only
     // ever leaves a safe residual behind; every release path re-snapshots below.
-    internal long CommittedStorageBytes => (_shellCharged ? DequeShellBytes : 0) + _committedNodeBytes;
+    // Adopted scalar coupons fold in, so snapshots and drop sweeps carry them.
+    internal long CommittedStorageBytes => (_shellCharged ? DequeShellBytes : 0) + _committedNodeBytes + (_scalarCoupons?.CommittedBytes ?? 0);
 
     public PyDeque(int? maxLength, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
@@ -458,9 +460,19 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
     public PyDeque(IEnumerable<object> items, int? maxLength, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
         : this(maxLength, governor, allocationSpan)
     {
-        foreach (var item in items)
+        // A denied coupon strands nothing: Append rolls back its own node, and
+        // the refund below releases earlier items plus the shell.
+        try
         {
-            Append(item);
+            foreach (var item in items)
+            {
+                Append(item);
+            }
+        }
+        catch
+        {
+            RefundAbortedConstruction();
+            throw;
         }
     }
 
@@ -510,18 +522,47 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
             return;
         }
 
+        var committedBefore = CommittedStorageBytes;
         if (MaxLength is int maxLength && _items.Count == maxLength)
         {
-            // Bounded eviction reuses one node charge: the list stays at maxlen,
-            // so no new budget is needed and a tight budget still rotates.
+            // Bounded eviction reuses one node charge: the list stays at maxlen.
+            // Coupons still turn over (the retained identity changes), so a
+            // razor-exhausted budget can deny rotation that costs no node charge.
+            AdoptIncoming(value);
+            var evicted = _items.First.RequireNotNull().Value;
             _items.RemoveFirst();
+            ReleaseOutgoing(evicted);
             _items.AddLast(value);
+            NoteGrowth(committedBefore);
             return;
         }
 
-        ReserveNode();
-        _items.AddLast(value);
+        AdoptIncoming(value);
+        try
+        {
+            ReserveNode();
+        }
+        catch (Exception)
+        {
+            UnadoptIncoming(value);
+            throw;
+        }
+
+        LinkedListNode<object> node;
+        try
+        {
+            node = _items.AddLast(value);
+        }
+        catch (Exception)
+        {
+            ReleaseNode();
+            UnadoptIncoming(value);
+            throw;
+        }
+
+        NoteGrowth(committedBefore);
     }
+
 
     public void AppendLeft(object value)
     {
@@ -530,16 +571,43 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
             return;
         }
 
+        var committedBefore = CommittedStorageBytes;
         if (MaxLength is int maxLength && _items.Count == maxLength)
         {
             // Same charge reuse as Append: eviction keeps the node count flat.
+            AdoptIncoming(value);
+            var evicted = _items.Last.RequireNotNull().Value;
             _items.RemoveLast();
+            ReleaseOutgoing(evicted);
             _items.AddFirst(value);
+            NoteGrowth(committedBefore);
             return;
         }
 
-        ReserveNode();
-        _items.AddFirst(value);
+        AdoptIncoming(value);
+        try
+        {
+            ReserveNode();
+        }
+        catch (Exception)
+        {
+            UnadoptIncoming(value);
+            throw;
+        }
+
+        LinkedListNode<object> node;
+        try
+        {
+            node = _items.AddFirst(value);
+        }
+        catch (Exception)
+        {
+            ReleaseNode();
+            UnadoptIncoming(value);
+            throw;
+        }
+
+        NoteGrowth(committedBefore);
     }
 
     public object Pop()
@@ -552,6 +620,7 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         var value = _items.Last.RequireNotNull().Value;
         _items.RemoveLast();
         ReleaseNode();
+        ReleaseOutgoing(value);
         ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
         return value;
     }
@@ -566,6 +635,7 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         var value = _items.First.RequireNotNull().Value;
         _items.RemoveFirst();
         ReleaseNode();
+        ReleaseOutgoing(value);
         ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
         return value;
     }
@@ -681,8 +751,10 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         {
             if (await LythonRuntime.MembershipEqualsAsync(current.Value, candidate, context, span).ConfigureAwait(false))
             {
+                var removed = current.Value;
                 _items.Remove(current);
                 ReleaseNode();
+                ReleaseOutgoing(removed);
                 ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
                 return true;
             }
@@ -700,22 +772,42 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
             throw new InvalidOperationException("deque already at its maximum size");
         }
 
-        if (index <= 0)
+        var committedBefore = CommittedStorageBytes;
+        AdoptIncoming(value);
+        LinkedListNode<object> node;
+        try
         {
             ReserveNode();
-            _items.AddFirst(value);
-            return;
         }
-
-        if (index >= _items.Count)
+        catch (Exception)
         {
-            ReserveNode();
-            _items.AddLast(value);
-            return;
+            UnadoptIncoming(value);
+            throw;
         }
 
-        ReserveNode();
-        _items.AddBefore(GetNodeAt(index), value);
+        try
+        {
+            if (index <= 0)
+            {
+                node = _items.AddFirst(value);
+            }
+            else if (index >= _items.Count)
+            {
+                node = _items.AddLast(value);
+            }
+            else
+            {
+                node = _items.AddBefore(GetNodeAt(index), value);
+            }
+        }
+        catch (Exception)
+        {
+            ReleaseNode();
+            UnadoptIncoming(value);
+            throw;
+        }
+
+        NoteGrowth(committedBefore);
     }
 
     public bool RemoveValue(object candidate, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
@@ -725,8 +817,10 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         {
             if (LythonRuntime.MembershipEquals(current.Value, candidate, context, span))
             {
+                var removed = current.Value;
                 _items.Remove(current);
                 ReleaseNode();
+                ReleaseOutgoing(removed);
                 ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
                 return true;
             }
@@ -803,6 +897,7 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
             _committedNodeBytes = 0;
         }
 
+        ReleaseAllCoupons();
         _items.Clear();
         ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
     }
@@ -850,14 +945,24 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
     public void SetIndex(int index, object value)
     {
         var node = GetNodeAt(index);
+        if (ReferenceEquals(node.Value, value))
+        {
+            return;
+        }
+
+        AdoptIncoming(value);
+        var outgoing = node.Value;
         node.Value = value;
+        ReleaseOutgoing(outgoing);
     }
 
     public void RemoveAt(int index)
     {
         var node = GetNodeAt(index);
+        var outgoing = node.Value;
         _items.Remove(node);
         ReleaseNode();
+        ReleaseOutgoing(outgoing);
         ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
     }
 
@@ -906,6 +1011,98 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
         _memoryGovernor.Release(DequeNodeBytes);
         _committedNodeBytes -= DequeNodeBytes;
     }
+
+    // Refreshes the tracked snapshot when the owned total moved (nodes or
+    // coupons): a stale snapshot would over-release on a later drop sweep.
+    private void NoteGrowth(long committedBefore)
+    {
+        if (CommittedStorageBytes != committedBefore)
+        {
+            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
+        }
+    }
+
+    // Releases every adopted coupon plus shell and node charges when construction
+    // aborts: the orphaned deque publishes nothing.
+    private void RefundAbortedConstruction()
+    {
+        if (_memoryGovernor is not null)
+        {
+            var release = CommittedStorageBytes;
+            if (release > 0)
+            {
+                _memoryGovernor.Release(release);
+            }
+        }
+
+        _committedNodeBytes = 0;
+        _shellCharged = false;
+        _scalarCoupons = null;
+    }
+
+    // Adopts one incoming value when governed; denies before the caller mutates.
+    private void AdoptIncoming(object value)
+    {
+        if (_memoryGovernor is null || !AdoptedScalarCoupons.IsAdoptableScalar(value))
+        {
+            return;
+        }
+
+        _scalarCoupons ??= new AdoptedScalarCoupons();
+        _scalarCoupons.Adopt(value, _memoryGovernor, _allocationSpan);
+        if (_scalarCoupons.CommittedBytes == 0)
+        {
+            _scalarCoupons = null;
+        }
+    }
+
+    private void UnadoptIncoming(object value)
+    {
+        if (_scalarCoupons is null || _memoryGovernor is null)
+        {
+            return;
+        }
+
+        _scalarCoupons.Release(value, _memoryGovernor);
+        if (_scalarCoupons.CommittedBytes == 0)
+        {
+            _scalarCoupons = null;
+        }
+    }
+
+    // Releases one outgoing reference and refreshes the snapshot when the owned
+    // total moved, so drops never sweep a stale charge.
+    private void ReleaseOutgoing(object? value)
+    {
+        if (_scalarCoupons is null || _memoryGovernor is null)
+        {
+            return;
+        }
+
+        var committedBefore = CommittedStorageBytes;
+        _scalarCoupons.Release(value, _memoryGovernor);
+        if (_scalarCoupons.CommittedBytes == 0)
+        {
+            _scalarCoupons = null;
+        }
+
+        NoteGrowth(committedBefore);
+    }
+
+    private void ReleaseAllCoupons()
+    {
+        if (_scalarCoupons is null || _memoryGovernor is null)
+        {
+            _scalarCoupons = null;
+            return;
+        }
+
+        var committedBefore = CommittedStorageBytes;
+        _scalarCoupons.ReleaseAll(_memoryGovernor);
+        _scalarCoupons = null;
+        NoteGrowth(committedBefore);
+    }
+
 
     private LinkedListNode<object> GetNodeAt(int index)
     {

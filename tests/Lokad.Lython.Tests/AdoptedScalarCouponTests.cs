@@ -418,6 +418,88 @@ public sealed class AdoptedScalarCouponTests
     }
 
     [Fact]
+    public void DequeEvictionTurnsOverCoupon()
+    {
+        // Bounded eviction adopts the incoming box and releases the evicted one:
+        // node and coupon totals both stay flat across rotation.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var governor = context.MemoryGovernor;
+        var deque = new PyDeque(2, governor, span);
+        object a = new BigInteger(1);
+        object b = new BigInteger(2);
+        deque.Append(a);
+        deque.Append(b);
+        var tracked = deque.CommittedStorageBytes;
+        deque.Append(new BigInteger(3));
+        var current = deque.ToArray();
+        Assert.Equal(2, current.Length);
+        Assert.Same(b, current[0]);
+        Assert.Equal(new BigInteger(3), current[1]);
+        Assert.Equal(tracked, deque.CommittedStorageBytes);
+    }
+
+    [Fact]
+    public void DequeFailedAppendRollsBackNode()
+    {
+        // A denied coupon rolls the node insertion back: count and charges are
+        // exactly as before, and a funded retry succeeds. Nothing is
+        // pool-tracked here, so exhaustion relief short-circuits deterministically.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        static PyDeque BuildDeque(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        {
+            var deque = new PyDeque(null, context.MemoryGovernor, span);
+            for (var i = 0; i < 5; i++)
+            {
+                deque.Append(new BigInteger(i));
+            }
+
+            return deque;
+        }
+
+        var measureContext = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        _ = BuildDeque(measureContext, span);
+        var baseline = measureContext.MemoryGovernor.CurrentCommittedBytes;
+        var denyContext = new LythonRuntime.ExecutionContext(
+            host, new LythonRunOptions { MaxExecutionMemoryBytes = baseline + AdoptedScalarCoupons.CouponBytes - 1 });
+        var denied = BuildDeque(denyContext, span);
+        Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(5, denied.Count);
+        var storedBefore = denied.CommittedStorageBytes;
+        Assert.Throws<LythonRuntimeException>(() => denied.Append(new BigInteger(999)));
+        Assert.Equal(5, denied.Count);
+        Assert.Equal(storedBefore, denied.CommittedStorageBytes);
+        Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
+        var retryContext = new LythonRuntime.ExecutionContext(
+            host, new LythonRunOptions { MaxExecutionMemoryBytes = baseline + 65536 });
+        var retried = BuildDeque(retryContext, span);
+        retried.Append(new BigInteger(999));
+        Assert.Equal(6, retried.Count);
+    }
+
+    [Fact]
+    public void DequeSetIndexTurnsOverCoupon()
+    {
+        // Indexed writes adopt the incoming box and release the displaced one.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var governor = context.MemoryGovernor;
+        var deque = new PyDeque(null, governor, span);
+        object kept = new BigInteger(1);
+        deque.Append(kept);
+        deque.Append(new BigInteger(2));
+        var before = governor.CurrentCommittedBytes;
+        deque.SetIndex(1, new BigInteger(3));
+        Assert.True(ReferenceEquals(kept, deque.GetIndex(0)));
+        Assert.Equal(new BigInteger(3), deque.GetIndex(1));
+        Assert.Equal(before, governor.CurrentCommittedBytes);
+    }
+
+    [Fact]
     public void ReleaseAllDropsEveryCoupon()
     {
         var (context, span) = Budgeted(65536);

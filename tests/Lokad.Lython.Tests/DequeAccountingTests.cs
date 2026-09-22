@@ -23,7 +23,8 @@ public sealed class DequeAccountingTests
             deque.Append(new BigInteger(i));
         }
 
-        Assert.Equal(128L + 100L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
+        // Plus one 64B coupon per distinct int (N06); Clear releases both.
+        Assert.Equal(128L + 100L * 64L + 100L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         deque.Clear();
         Assert.Equal(128L, context.MemoryGovernor.CurrentCommittedBytes);
@@ -43,7 +44,8 @@ public sealed class DequeAccountingTests
         }
 
         Assert.Equal(8, deque.Count);
-        Assert.Equal(128L + 8L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
+        // Steady-state eviction turns coupons over: 8 nodes plus 8 coupons (N06).
+        Assert.Equal(128L + 8L * 64L + 8L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -61,9 +63,9 @@ public sealed class DequeAccountingTests
 
         _ = deque.Pop();
         _ = deque.PopLeft();
-        Assert.Equal(128L + 8L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(128L + 8L * 64L + 8L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.True(deque.RemoveValue(new BigInteger(5), context, span));
-        Assert.Equal(128L + 7L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(128L + 7L * 64L + 7L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }
