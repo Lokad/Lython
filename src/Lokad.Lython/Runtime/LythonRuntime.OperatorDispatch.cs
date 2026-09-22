@@ -489,49 +489,53 @@ internal sealed partial class LythonRuntime
             return await evaluateTruthiness(invocation.Value, context, span).ConfigureAwait(false);
         }
 
+        // N01: no ambient scope spans awaits here. Async element paths carry
+        // ExecutionContext explicitly; the synchronous fallback below needs
+        // ambient only for its own synchronous duration.
+        // Async structural twin of the __eq__ members and AreEqual branches:
+        // sequence elements and mapping values await element == so
+        // suspending __eq__ (for example over delayed host reads) works in
+        // nested positions. Keys stay structural until R13b.
+        if (left is PyList leftList && right is PyList rightList)
+        {
+            return await ListsEqualAsync(leftList, rightList, context, span).ConfigureAwait(false);
+        }
+
+        if (PyTupleLike.TryGetItems(left, out var leftTupleItems) && PyTupleLike.TryGetItems(right, out var rightTupleItems))
+        {
+            return await TupleLikesEqualAsync(left, right, leftTupleItems, rightTupleItems, context, span).ConfigureAwait(false);
+        }
+
+        if (left is PyDeque leftDeque && right is PyDeque rightDeque)
+        {
+            return await DequesEqualAsync(leftDeque, rightDeque, context, span).ConfigureAwait(false);
+        }
+
+        var dictResult = await DictFamilyEqualAsync(left, right, context, span).ConfigureAwait(false);
+        if (dictResult.HasValue)
+        {
+            return dictResult.Value;
+        }
+
         using (PyStructuralGuard.PushAmbient(context, span))
         {
-            // Async structural twin of the __eq__ members and AreEqual branches:
-            // sequence elements and mapping values await element == so
-            // suspending __eq__ (for example over delayed host reads) works in
-            // nested positions. Keys stay structural until R13b.
-            if (left is PyList leftList && right is PyList rightList)
-            {
-                return await ListsEqualAsync(leftList, rightList, context, span).ConfigureAwait(false);
-            }
-
-            if (PyTupleLike.TryGetItems(left, out var leftTupleItems) && PyTupleLike.TryGetItems(right, out var rightTupleItems))
-            {
-                return await TupleLikesEqualAsync(left, right, leftTupleItems, rightTupleItems, context, span).ConfigureAwait(false);
-            }
-
-            if (left is PyDeque leftDeque && right is PyDeque rightDeque)
-            {
-                return await DequesEqualAsync(leftDeque, rightDeque, context, span).ConfigureAwait(false);
-            }
-
-            var dictResult = await DictFamilyEqualAsync(left, right, context, span).ConfigureAwait(false);
-            if (dictResult.HasValue)
-            {
-                return dictResult.Value;
-            }
-
             return AreEqual(left, right);
         }
     }
 
     private static async ValueTask<bool> ListsEqualAsync(PyList left, PyList right, ExecutionContext context, LythonSourceSpan span)
     {
+        var guardState = context.Services.State.StructuralTraversal;
         if (left.Count != right.Count)
         {
             return false;
         }
 
-        using (PyStructuralGuard.EnterPair(left, right, span))
+        using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
         {
             for (var i = 0; i < left.Count; i++)
             {
-                PyStructuralGuard.NoteWork();
+                PyStructuralGuard.NoteWork(guardState, context, span);
                 if (!await ElementEqualsAsync(left[i], right[i], context, span).ConfigureAwait(false))
                 {
                     return false;
@@ -544,16 +548,17 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<bool> TupleLikesEqualAsync(object left, object right, IReadOnlyList<object> leftItems, IReadOnlyList<object> rightItems, ExecutionContext context, LythonSourceSpan span)
     {
+        var guardState = context.Services.State.StructuralTraversal;
         if (leftItems.Count != rightItems.Count)
         {
             return false;
         }
 
-        using (PyStructuralGuard.EnterPair(left, right, span))
+        using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
         {
             for (var i = 0; i < leftItems.Count; i++)
             {
-                PyStructuralGuard.NoteWork();
+                PyStructuralGuard.NoteWork(guardState, context, span);
                 if (!await ElementEqualsAsync(leftItems[i], rightItems[i], context, span).ConfigureAwait(false))
                 {
                     return false;
@@ -566,19 +571,20 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<bool> DequesEqualAsync(PyDeque left, PyDeque right, ExecutionContext context, LythonSourceSpan span)
     {
+        var guardState = context.Services.State.StructuralTraversal;
         if (left.Count != right.Count)
         {
             return false;
         }
 
-        using (PyStructuralGuard.EnterPair(left, right, span))
+        using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
         {
             using var leftItems = left.GetEnumerator();
             using var rightItems = right.GetEnumerator();
             while (leftItems.MoveNext())
             {
                 _ = rightItems.MoveNext();
-                PyStructuralGuard.NoteWork();
+                PyStructuralGuard.NoteWork(guardState, context, span);
                 if (!await ElementEqualsAsync(leftItems.Current, rightItems.Current, context, span).ConfigureAwait(false))
                 {
                     return false;
@@ -597,6 +603,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
+        var guardState = context.Services.State.StructuralTraversal;
         if (leftCount != rightCount)
         {
             return false;
@@ -604,7 +611,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var pair in leftPairs)
         {
-            PyStructuralGuard.NoteWork();
+            PyStructuralGuard.NoteWork(guardState, context, span);
             var (found, other) = rightLookup(pair.Key);
             if (!found || !await ElementEqualsAsync(pair.Value, other!, context, span).ConfigureAwait(false))
             {
@@ -622,6 +629,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
+        var guardState = context.Services.State.StructuralTraversal;
         var leftKeys = leftChain.BuildMergedKeys();
         if (leftKeys.Count != rightCount)
         {
@@ -630,7 +638,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var key in leftKeys)
         {
-            PyStructuralGuard.NoteWork();
+            PyStructuralGuard.NoteWork(guardState, context, span);
             if (!leftChain.TryGetStrictValue(key, out var leftValue))
             {
                 return false;
@@ -653,6 +661,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
+        var guardState = context.Services.State.StructuralTraversal;
         var rightKeys = rightChain.BuildMergedKeys();
         if (rightKeys.Count != leftCount)
         {
@@ -661,7 +670,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var key in rightKeys)
         {
-            PyStructuralGuard.NoteWork();
+            PyStructuralGuard.NoteWork(guardState, context, span);
             if (!rightChain.TryGetStrictValue(key, out var rightValue))
             {
                 return false;
@@ -679,12 +688,13 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<bool> CountersEqualAsync(PyCounter left, PyCounter right, ExecutionContext context, LythonSourceSpan span)
     {
+        var guardState = context.Services.State.StructuralTraversal;
         var keys = new HashSet<object>(left.Keys, PyValueComparer.Instance);
         keys.UnionWith(right.Keys);
 
         foreach (var key in keys)
         {
-            PyStructuralGuard.NoteWork();
+            PyStructuralGuard.NoteWork(guardState, context, span);
             var leftValue = left.TryGetValue(key, out var foundLeft) ? foundLeft : BigInteger.Zero;
             var rightValue = right.TryGetValue(key, out var foundRight) ? foundRight : BigInteger.Zero;
             if (!await ElementEqualsAsync(leftValue, rightValue, context, span).ConfigureAwait(false))
@@ -700,9 +710,10 @@ internal sealed partial class LythonRuntime
     // structural AreEqual. Key lookups stay synchronous and structural.
     private static async ValueTask<bool?> DictFamilyEqualAsync(object left, object right, ExecutionContext context, LythonSourceSpan span)
     {
+        var guardState = context.Services.State.StructuralTraversal;
         if (left is PyDict leftDict && right is PyDict rightDict)
         {
-            using (PyStructuralGuard.EnterPair(left, right, span))
+            using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
             {
                 return await DictContentEqualAsync(
                     leftDict.Count,
@@ -716,7 +727,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyChainMap leftChain && right is PyChainMap rightChain)
         {
-            using (PyStructuralGuard.EnterPair(left, right, span))
+            using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
             {
                 var leftKeys = leftChain.BuildMergedKeys();
                 if (leftKeys.Count != rightChain.Count)
@@ -726,7 +737,7 @@ internal sealed partial class LythonRuntime
 
                 foreach (var key in leftKeys)
                 {
-                    PyStructuralGuard.NoteWork();
+                    PyStructuralGuard.NoteWork(guardState, context, span);
                     if (!leftChain.TryGetStrictValue(key, out var leftValue))
                     {
                         return false;
@@ -749,7 +760,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyChainMap leftMap && right is PyDict rightPlain)
         {
-            using (PyStructuralGuard.EnterPair(left, right, span))
+            using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
             {
                 return await ChainMapContentEqualAsync(leftMap, rightPlain.Count,
                     key => rightPlain.TryGetValue(key, out var value, context, span) ? (true, value) : (false, null),
@@ -759,7 +770,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyChainMap leftDefaultMap && right is PyDefaultDict rightDefault)
         {
-            using (PyStructuralGuard.EnterPair(left, right, span))
+            using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
             {
                 return await ChainMapContentEqualAsync(leftDefaultMap, rightDefault.Count,
                     key => rightDefault.TryGetValue(key, out var value, context, span) ? (true, value) : (false, null),
@@ -769,7 +780,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyChainMap leftCounterMap && right is PyCounter rightCounterMap)
         {
-            using (PyStructuralGuard.EnterPair(left, right, span))
+            using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
             {
                 return await ChainMapContentEqualAsync(leftCounterMap, rightCounterMap.Count,
                     key => rightCounterMap.TryGetValue(key, out var value, context, span) ? (true, value) : (false, null),
@@ -779,7 +790,7 @@ internal sealed partial class LythonRuntime
 
         if (right is PyChainMap rightChainMap && left is PyDict leftPlain)
         {
-            using (PyStructuralGuard.EnterPair(left, right, span))
+            using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
             {
                 return await ChainMapContentEqualRightAsync(rightChainMap, leftPlain.Count,
                     key => leftPlain.TryGetValue(key, out var value, context, span) ? (true, value) : (false, null),
@@ -789,7 +800,7 @@ internal sealed partial class LythonRuntime
 
         if (right is PyChainMap rightDefaultChain && left is PyDefaultDict leftDefaultOther)
         {
-            using (PyStructuralGuard.EnterPair(left, right, span))
+            using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
             {
                 return await ChainMapContentEqualRightAsync(rightDefaultChain, leftDefaultOther.Count,
                     key => leftDefaultOther.TryGetValue(key, out var value, context, span) ? (true, value) : (false, null),
@@ -799,7 +810,7 @@ internal sealed partial class LythonRuntime
 
         if (right is PyChainMap rightCounterChain && left is PyCounter leftCounterOperand)
         {
-            using (PyStructuralGuard.EnterPair(left, right, span))
+            using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
             {
                 return await ChainMapContentEqualRightAsync(rightCounterChain, leftCounterOperand.Count,
                     key => leftCounterOperand.TryGetValue(key, out var value, context, span) ? (true, value) : (false, null),
@@ -809,7 +820,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyCounter counterLeft && (right is PyDict || right is PyDefaultDict))
         {
-            using (PyStructuralGuard.EnterPair(left, right, span))
+            using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
             {
                 return await CounterDictContentEqualAsync(counterLeft, right, context, span).ConfigureAwait(false);
             }
@@ -817,7 +828,7 @@ internal sealed partial class LythonRuntime
 
         if (right is PyCounter counterRight && (left is PyDict || left is PyDefaultDict))
         {
-            using (PyStructuralGuard.EnterPair(left, right, span))
+            using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
             {
                 return await CounterDictContentEqualAsync(counterRight, left, context, span).ConfigureAwait(false);
             }
@@ -825,7 +836,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyDefaultDict leftDefaultDict)
         {
-            using (PyStructuralGuard.EnterPair(left, right, span))
+            using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
             {
                 return await DefaultDictContentEqualAsync(leftDefaultDict, right, context, span).ConfigureAwait(false);
             }
@@ -833,7 +844,7 @@ internal sealed partial class LythonRuntime
 
         if (right is PyDefaultDict rightDefaultDict)
         {
-            using (PyStructuralGuard.EnterPair(left, right, span))
+            using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
             {
                 return await DefaultDictContentEqualAsync(rightDefaultDict, left, context, span).ConfigureAwait(false);
             }
@@ -841,7 +852,7 @@ internal sealed partial class LythonRuntime
 
         if (left is PyCounter leftCounter && right is PyCounter rightCounter)
         {
-            using (PyStructuralGuard.EnterPair(left, right, span))
+            using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
             {
                 return await CountersEqualAsync(leftCounter, rightCounter, context, span).ConfigureAwait(false);
             }
@@ -1229,9 +1240,10 @@ internal sealed partial class LythonRuntime
         }
 
         // R13b: set comparisons below observe ambient provenance.
-        using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
+        // N01: ambient must not span awaits; scope only the synchronous set check.
         if (left is PySet leftSet && right is PySet rightSet)
         {
+            using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
             return methods.Left switch
             {
                 "__lt__" => leftSet.IsProperSubsetOf(rightSet),

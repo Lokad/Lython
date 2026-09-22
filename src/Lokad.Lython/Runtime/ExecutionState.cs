@@ -115,6 +115,12 @@ internal sealed class ExecutionState
     // retained aliases stay charged.
     internal ChargeReclamationPool CallTemporaries { get; }
 
+    // N01: execution-local structural traversal state (cycle pairs, depth,
+    // cooperative work ticks). One per run, carried explicitly through async
+    // recursion via ExecutionContext so continuations hopping pool threads
+    // dispose the same state they entered. Never shared across runs.
+    internal StructuralGuardState StructuralTraversal { get; } = new StructuralGuardState();
+
     public PyRandomState RandomState { get; }
 
     public PyDecimalContext DecimalContext { get; set; }
