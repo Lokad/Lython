@@ -414,6 +414,65 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        // N07: sized populations serve indexed picks without draining.
+        // Lengths beyond int range, and non-sequences, return null so callers
+        // fall back to the materializing path, preserving its validation and
+        // denial behavior. The limit observation keeps oversized-denial
+        // identical to the drain it replaces.
+        private static (int Length, Func<int, object> GetAt)? TryGetDirectPopulation(object value, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (value is IPyIndexableValue indexable)
+            {
+                context.ObserveCollectionCount(indexable.Length, span);
+                return (indexable.Length, indexable.GetIndex);
+            }
+
+            if (value is PyRange range && range.Length <= int.MaxValue)
+            {
+                var length = (int)range.Length;
+                context.ObserveCollectionCount(length, span);
+                // Raw CLR ints are outside the numeric tower; the subscript
+                // funnel only accepts normalized magnitudes.
+                return (length, index => range.GetSubscript(new BigInteger(index), span));
+            }
+
+            return null;
+        }
+
+        // Floyd positions over an indexable population: k draws and O(k)
+        // state instead of a full drain and shuffle. Uniform over k-subsets;
+        // larger takes keep the legacy shuffle path and its exact draws.
+        private static object SampleDirectPositions(PyRandomState state, Func<int, object> getAt, int length, int count, MemoryGovernor governor, LythonSourceSpan span, ExecutionContext context)
+        {
+            var selected = count == 0 ? new HashSet<int>() : new HashSet<int>(count);
+            if (count > 0)
+            {
+                governor.Reserve(80L + (24L * count), span);
+                governor.Commit(80L + (24L * count));
+            }
+
+            var result = new object[count];
+            for (var drawn = 0; drawn < count; drawn++)
+            {
+                var resume = length - count + drawn;
+                var draw = (int)state.NextBelow((ulong)(resume + 1));
+                var picked = draw;
+                if (!selected.Add(draw))
+                {
+                    picked = (int)resume;
+                    selected.Add(picked);
+                }
+
+                result[drawn] = RuntimeValue(getAt(picked));
+                if (((drawn + 1) & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+            }
+
+            return new PyList(result, governor, span);
+        }
+
         private static double SampleGamma(PyRandomState state, double alpha, double beta)
         {
             if (alpha < 1.0)

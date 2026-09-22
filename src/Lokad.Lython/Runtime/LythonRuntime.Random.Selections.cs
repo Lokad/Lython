@@ -124,6 +124,18 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "random.choice(seq) expects one sequence argument.", span);
             }
 
+            // N07: one indexed pick needs no drain. The single draw below is
+            // exactly the legacy draw, so seeded sequences are unchanged.
+            if (TryGetDirectPopulation(arguments[0], span, context) is { } directChoice)
+            {
+                if (directChoice.Length == 0)
+                {
+                    throw new LythonRuntimeException("IndexError", "Cannot choose from an empty sequence", span);
+                }
+
+                return RuntimeValue(directChoice.GetAt((int)state.NextBelow((ulong)directChoice.Length)));
+            }
+
             var items = MaterializePopulation(arguments[0], "random.choice", span, context);
             if (items.Count == 0)
             {
@@ -140,14 +152,18 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "random.choices(population[, weights][, cum_weights][, k]) expects one to four arguments.", span);
             }
 
-            var population = MaterializePopulation(arguments[0], "random.choices", span, context);
-            if (population.Count == 0)
+            // N07: indexed picks need no drain; per-pick draws below are
+            // exactly the legacy draws, so seeded sequences are unchanged.
+            var directChoices = TryGetDirectPopulation(arguments[0], span, context);
+            var population = directChoices is null ? MaterializePopulation(arguments[0], "random.choices", span, context) : null;
+            var populationLength = directChoices?.Length ?? population!.Count;
+            if (populationLength == 0)
             {
                 throw new LythonRuntimeException("IndexError", "Cannot choose from an empty sequence", span);
             }
 
-            var weights = arguments.Length >= 2 && arguments[1] is not PyNone ? ReadWeights(arguments[1], population.Count, "random.choices(..., weights=...)", span, context) : null;
-            var cumulative = arguments.Length >= 3 && arguments[2] is not PyNone ? ReadCumulativeWeights(arguments[2], population.Count, "random.choices(..., cum_weights=...)", span, context) : null;
+            var weights = arguments.Length >= 2 && arguments[1] is not PyNone ? ReadWeights(arguments[1], populationLength, "random.choices(..., weights=...)", span, context) : null;
+            var cumulative = arguments.Length >= 3 && arguments[2] is not PyNone ? ReadCumulativeWeights(arguments[2], populationLength, "random.choices(..., cum_weights=...)", span, context) : null;
             if (weights is not null && cumulative is not null)
             {
                 throw new LythonRuntimeException("TypeError", "random.choices(...) does not accept both weights and cum_weights.", span);
@@ -164,7 +180,8 @@ internal sealed partial class LythonRuntime
             var result = new PyList([], context.MemoryGovernor, span);
             for (var i = 0; i < count; i++)
             {
-                result.Add(population[ChooseWeightedIndex(state, population.Count, weights, cumulative, span)]);
+                var pick = ChooseWeightedIndex(state, populationLength, weights, cumulative, span);
+                result.Add(directChoices is { } direct ? RuntimeValue(direct.GetAt(pick)) : population![pick]);
                 context.ObserveCollectionCount(result.Count, span);
             }
 
@@ -203,7 +220,9 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "random.sample(population, k, *, counts=None) expects two arguments plus optional counts.", span);
             }
 
-            var population = MaterializePopulation(arguments[0], "random.sample", span, context);
+            var directSample = TryGetDirectPopulation(arguments[0], span, context);
+            var population = directSample is null ? MaterializePopulation(arguments[0], "random.sample", span, context) : null;
+            var populationLength = directSample?.Length ?? population!.Count;
             var rawCount = arguments[1] is int smallCount ? new BigInteger(smallCount) : arguments[1];
             // Like CPython, k flows through dispatched comparisons first and
             // the selection multiplies by k, so each failure keeps its own text.
@@ -215,20 +234,27 @@ internal sealed partial class LythonRuntime
 
             if (arguments.Length >= 3 && arguments[2] is not PyNone)
             {
-                return SampleCountedPositions(population, arguments[2], rawCount, state, span, context);
+                var counted = population ?? MaterializePopulation(arguments[0], "random.sample", span, context);
+                return SampleCountedPositions(counted, arguments[2], rawCount, state, span, context);
             }
 
-            if (!IsTruthy(EvaluateBinaryOperator(BinaryOperatorSyntax.LessEqual, rawCount, new BigInteger(population.Count), context, span), context, span))
+            if (!IsTruthy(EvaluateBinaryOperator(BinaryOperatorSyntax.LessEqual, rawCount, new BigInteger(populationLength), context, span), context, span))
             {
                 throw new LythonRuntimeException("ValueError", "Sample larger than population or is negative", span);
             }
 
             var count = CoerceSampleCount(rawCount, span);
-            ShuffleMaterialized(state, population);
+            if (directSample is { } direct && (long)count * 4 <= populationLength)
+            {
+                return SampleDirectPositions(state, direct.GetAt, populationLength, count, context.MemoryGovernor, span, context);
+            }
+
+            var materialized = population ?? MaterializePopulation(arguments[0], "random.sample", span, context);
+            ShuffleMaterialized(state, materialized);
             var result = new object[count];
             for (var i = 0; i < count; i++)
             {
-                result[i] = population[i];
+                result[i] = materialized[i];
             }
 
             return new PyList(result, context.MemoryGovernor, span);

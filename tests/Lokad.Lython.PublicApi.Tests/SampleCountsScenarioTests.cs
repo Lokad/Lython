@@ -209,13 +209,14 @@ public sealed class SampleCountsScenarioTests
     [Fact]
     public async Task PopulationDrainStaysCharged()
     {
-        // MG15: sample and choices populations drain through the shared
-        // governed sequence. 100,000 refs used to materialize free; now the
-        // backing alone exceeds the budget.
+        // MG15: large takes still drain through the shared governed
+        // sequence. 100,000 refs used to materialize free; now the backing
+        // alone exceeds the budget. Small takes serve Floyd positions
+        // without draining (see RandomDirectSelectionTests).
         var script = new LythonEngine().Compile(
             """
             import random
-            return random.sample(range(100000), 5)
+            return random.sample(range(100000), 50000)
             """);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
