@@ -73,15 +73,7 @@ internal sealed partial class Parser
                 var prefix = _tokens.GetString(_position);
                 if (IsFormattedStringPrefix(prefix))
                 {
-                    var prefixToken = ReadToken();
-                    var stringToken = ReadToken();
-                    if (!TryParseFormattedStringLiteral(prefix, _tokens.GetString(stringToken), out var parts))
-                    {
-                        AddDiagnostic("LA1007", "Invalid string literal. Malformed f-string replacement field or unmatched brace.", prefixToken);
-                        return null;
-                    }
-
-                    return new FormattedStringExpressionSyntax(parts, Merge(SpanOf(prefixToken), SpanOf(stringToken)));
+                    return ParseStringLiteralExpression();
                 }
 
                 if (IsBytesStringPrefix(prefix))
@@ -147,33 +139,100 @@ internal sealed partial class Parser
         return null;
     }
 
+    // Adjacent literal pieces fold left-to-right exactly like CPython implicit
+    // concatenation. Plain text accumulates into one constant, while any
+    // formatted piece lifts the whole run into a single formatted node whose
+    // parts preserve source order (and therefore exactly-once evaluation).
+    // Bytes-prefixed pieces never mix with text. Callers enter with either a
+    // plain string token or a formatted-prefix pair, so at least one piece is
+    // always consumed.
     private ExpressionSyntax? ParseStringLiteralExpression()
     {
         var firstToken = -1;
         var lastToken = -1;
-        var builder = new System.Text.StringBuilder();
+        var text = new System.Text.StringBuilder();
+        var parts = new List<FormattedStringPartSyntax>();
+        var hasFormatted = false;
 
-        while (CurrentToken == Token.String)
+        while (true)
         {
-            var tokenIndex = ReadToken();
-            if (firstToken < 0)
+            if (CurrentToken == Token.String)
             {
-                firstToken = tokenIndex;
+                var tokenIndex = ReadToken();
+                if (firstToken < 0)
+                {
+                    firstToken = tokenIndex;
+                }
+
+                var literal = _tokens.GetString(tokenIndex);
+                if (!TryDecodeStringLiteral(literal, out var value, out var message))
+                {
+                    AddDiagnostic("LA1007", message, tokenIndex);
+                    return null;
+                }
+
+                text.Append(value);
+                lastToken = tokenIndex;
+                continue;
             }
 
-            var literal = _tokens.GetString(tokenIndex);
-            if (!TryDecodeStringLiteral(literal, out var value, out var message))
+            if (IsNameToken(CurrentToken) && PeekToken(1) == Token.String)
             {
-                AddDiagnostic("LA1007", message, tokenIndex);
-                return null;
+                var prefix = _tokens.GetString(_position);
+                if (!IsFormattedStringPrefix(prefix))
+                {
+                    if (IsBytesStringPrefix(prefix))
+                    {
+                        AddDiagnostic("LA1007", "Invalid string literal. Cannot mix bytes and nonbytes literals.", _position);
+                        return null;
+                    }
+
+                    break;
+                }
+
+                var prefixToken = ReadToken();
+                var stringToken = ReadToken();
+                if (firstToken < 0)
+                {
+                    firstToken = prefixToken;
+                }
+
+                if (!TryParseFormattedStringLiteral(prefix, _tokens.GetString(stringToken), out var segmentParts))
+                {
+                    AddDiagnostic("LA1007", "Invalid string literal. Malformed f-string replacement field or unmatched brace.", prefixToken);
+                    return null;
+                }
+
+                if (text.Length > 0)
+                {
+                    parts.Add(new FormattedStringTextPartSyntax(text.ToString()));
+                    text.Clear();
+                }
+
+                parts.AddRange(segmentParts);
+                hasFormatted = true;
+                lastToken = stringToken;
+                continue;
             }
 
-            builder.Append(value);
-            lastToken = tokenIndex;
+            break;
         }
 
-        return new StringLiteralExpressionSyntax(
-            builder.ToString(),
+        if (!hasFormatted)
+        {
+            return new StringLiteralExpressionSyntax(
+                text.ToString(),
+                Merge(SpanOf(firstToken), SpanOf(lastToken)));
+        }
+
+        if (text.Length > 0)
+        {
+            parts.Add(new FormattedStringTextPartSyntax(text.ToString()));
+            text.Clear();
+        }
+
+        return new FormattedStringExpressionSyntax(
+            parts,
             Merge(SpanOf(firstToken), SpanOf(lastToken)));
     }
 

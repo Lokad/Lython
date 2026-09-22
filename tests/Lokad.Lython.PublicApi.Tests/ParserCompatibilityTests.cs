@@ -5,6 +5,159 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class ParserCompatibilityTests
 {
     [Fact]
+    public async Task AdjacentFormattedStrings_Concatenate()
+    {
+        var script = new LythonEngine().Compile("""
+            n = 2
+            s = (f"a{n}"
+                 f"b{n}")
+            return s
+            """);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("a2b2", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("a2b2", asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task MixedPlainAndFormattedSegments_AssembleInOrder()
+    {
+        var script = new LythonEngine().Compile("""
+            n = 2
+            return [("a" f"b{n}" "c"), (f"a{n}" "b" f"c{n}")]
+            """);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
+        var expected = new List<object?> { "ab2c", "a2bc2" };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task RawPlainSegment_PreservesBackslashNextToFormatted()
+    {
+        var backslash = (char)92;
+        var script = new LythonEngine().Compile(
+            """s = r"a""" + backslash + """
+            n" f"{1}"
+            return s
+            """);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
+        var expected = "a" + backslash + "n1";
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task RawFormattedPrefixes_Concatenate()
+    {
+        var script = new LythonEngine().Compile("""
+            n = 2
+            return [fr"x{n}y", rf"z{n}"]
+            """);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
+        var expected = new List<object?> { "x2y", "z2" };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task EscapedBracesConversionsAndSpecs_SpanSegments()
+    {
+        var script = new LythonEngine().Compile("""
+            n = 2
+            return [f"{{}}", f"{n!r}", f"{n:03d}", f"{{}}" f"{n!r}" f"{n:03d}"]
+            """);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
+        var expected = new List<object?> { "{}", "2", "002", "{}2002" };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task AdjacentSegments_EvaluateOnceLeftToRight()
+    {
+        var script = new LythonEngine().Compile("""
+            calls = []
+            def p(v):
+                calls.append(v)
+                return v
+            return [f"{p(1)}" f"{p(2)}", calls]
+            """);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
+        var expected = new List<object?> { "12", new List<object?> { new System.Numerics.BigInteger(1), new System.Numerics.BigInteger(2) } };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task EmptySegments_ConcatenateToEmpty()
+    {
+        var script = new LythonEngine().Compile("""
+            return "" f""
+            """);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("", asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public void MixedBytesAndText_StillRejected()
+    {
+        var cases = new List<string>
+        {
+            """
+            return "a" b"b"
+            """,
+            """
+            return f"a" b"b"
+            """,
+        };
+        foreach (var source in cases)
+        {
+            var script = new LythonEngine().Compile(source);
+            Assert.False(script.IsValid, source);
+            Assert.Contains(script.Diagnostics, d => d.Code == "LA1007");
+        }
+    }
+
+    [Fact]
+    public void MalformedFieldAcrossSegments_StillRejected()
+    {
+        var script = new LythonEngine().Compile("""
+            return f"a{1" "b"
+            """);
+        Assert.False(script.IsValid);
+        Assert.Contains(script.Diagnostics, d => d.Code == "LA1007");
+    }
+
+    [Fact]
     public void Run_NormalizesUtf8BomAndPhysicalSourceNewlines()
     {
         var source = "\uFEFFvalue = '''a\r\nb'''\r\nreturn chr(13) in value\r\n";
