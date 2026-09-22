@@ -49,13 +49,16 @@ internal sealed partial class LythonRuntime
 
         private static object FMean(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var values = GetNumericValuesFromData(arguments, "statistics.fmean", span, context);
+            // N07: drained inputs are caller-scoped scratch: values and weights share
+            // one reservation and release on every exit path instead of stranding.
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var values = GetNumericValuesFromData(arguments, "statistics.fmean", span, context, scratch);
             if (arguments.Length < 2 || arguments[1] is PyNone)
             {
                 return values.Average();
             }
 
-            var weights = GetNumericValuesFromIterable(arguments[1], "statistics.fmean(..., weights=...)", span, context);
+            var weights = GetNumericValuesFromIterable(arguments[1], "statistics.fmean(..., weights=...)", span, context, scratch);
             if (weights.Count != values.Count)
             {
                 throw StatisticsError("data and weights must be the same length", span);
@@ -79,7 +82,10 @@ internal sealed partial class LythonRuntime
 
         private static object Median(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var values = GetNumericValues(arguments, "statistics.median", span, context);
+            // N07: the objects drain and the converted copy share one caller-scoped
+            // reservation instead of stranding two durable backings.
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var values = GetNumericValues(arguments, "statistics.median", span, context, scratch);
             values.Sort();
             var middle = values.Count / 2;
             if (values.Count % 2 == 1)
@@ -93,14 +99,19 @@ internal sealed partial class LythonRuntime
 
         private static object MedianLow(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var values = GetNumericObjects(arguments, "statistics.median_low", span, context);
+            // N07: the drain lives for the selection (including guest sort
+            // callbacks) and releases on every exit path.
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var values = GetNumericObjects(arguments, "statistics.median_low", span, context, scratch);
             values.Sort((left, right) => Compare(left, right, span));
             return values[(values.Count - 1) / 2];
         }
 
         private static object MedianHigh(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var values = GetNumericObjects(arguments, "statistics.median_high", span, context);
+            // N07: same caller-scoped lifetime as MedianLow.
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var values = GetNumericObjects(arguments, "statistics.median_high", span, context, scratch);
             values.Sort((left, right) => Compare(left, right, span));
             return values[values.Count / 2];
         }
@@ -128,7 +139,8 @@ internal sealed partial class LythonRuntime
 
         private static object MedianGrouped(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var values = GetNumericValuesFromData(arguments, "statistics.median_grouped", span, context);
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var values = GetNumericValuesFromData(arguments, "statistics.median_grouped", span, context, scratch);
             values.Sort();
             var interval = arguments.Length >= 2 && arguments[1] is not PyNone
                 ? RuntimeArgumentValidation.ExpectReal(arguments[1], "statistics.median_grouped(..., interval=...)", span)
@@ -159,7 +171,8 @@ internal sealed partial class LythonRuntime
 
         private static object HarmonicMean(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var data = GetNumericValuesFromData(arguments, "statistics.harmonic_mean", span, context);
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var data = GetNumericValuesFromData(arguments, "statistics.harmonic_mean", span, context, scratch);
             if (arguments.Length < 2 || arguments[1] is PyNone)
             {
                 var reciprocalTotal = 0.0;
@@ -181,7 +194,7 @@ internal sealed partial class LythonRuntime
                 return data.Count / reciprocalTotal;
             }
 
-            var weights = GetNumericValuesFromIterable(arguments[1], "statistics.harmonic_mean(..., weights=...)", span, context);
+            var weights = GetNumericValuesFromIterable(arguments[1], "statistics.harmonic_mean(..., weights=...)", span, context, scratch);
             if (weights.Count != data.Count)
             {
                 throw StatisticsError("Number of weights does not match data size", span);
@@ -220,7 +233,8 @@ internal sealed partial class LythonRuntime
 
         private static object GeometricMean(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var values = GetNumericValuesFromData(arguments, "statistics.geometric_mean", span, context);
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var values = GetNumericValuesFromData(arguments, "statistics.geometric_mean", span, context, scratch);
             var logTotal = 0.0;
             foreach (var value in values)
             {
@@ -254,7 +268,8 @@ internal sealed partial class LythonRuntime
 
         private static double ComputeVariance(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, bool sample)
         {
-            var values = GetNumericValuesFromData(arguments, owner, span, context);
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var values = GetNumericValuesFromData(arguments, owner, span, context, scratch);
             if (sample && values.Count < 2)
             {
                 throw StatisticsError($"{owner}(data) requires at least two data points.", span);
@@ -269,7 +284,8 @@ internal sealed partial class LythonRuntime
 
         private static object Quantiles(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var values = GetNumericValuesFromData(arguments, "statistics.quantiles", span, context);
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var values = GetNumericValuesFromData(arguments, "statistics.quantiles", span, context, scratch);
             values.Sort();
             var n = arguments.Length >= 2 && arguments[1] is not PyNone
                 ? ExpectPositivePartitionCount(arguments[1], "statistics.quantiles(..., n=...)", span)
@@ -476,8 +492,10 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", $"{owner}(x, y) expects two iterable arguments.", span);
             }
 
-            var x = GetNumericValuesFromIterable(arguments[0], owner + "(x, y)", span, context);
-            var y = GetNumericValuesFromIterable(arguments[1], owner + "(x, y)", span, context);
+            // N07: both paired drains share one caller-scoped reservation.
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var x = GetNumericValuesFromIterable(arguments[0], owner + "(x, y)", span, context, scratch);
+            var y = GetNumericValuesFromIterable(arguments[1], owner + "(x, y)", span, context, scratch);
             if (x.Count != y.Count)
             {
                 throw StatisticsError($"{owner.Split('.').Last()} requires that both inputs have same number of data points", span);
@@ -557,25 +575,24 @@ internal sealed partial class LythonRuntime
             return (int)integer;
         }
 
-        private static List<object> GetNumericObjects(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context)
+        private static List<object> GetNumericObjects(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
         {
             if (arguments.Length != 1)
             {
                 throw new LythonRuntimeException("TypeError", $"{owner}(data) expects one iterable argument.", span);
             }
 
-            // Same durable backing ownership as the doubles drain: the objects
+            // Same caller-scoped scratch shape as the doubles drain: the objects
             // list is required scratch for selection with no governed adopter.
-            // Payloads stay owned elsewhere; only reference slots commit here.
-            var governor = context.MemoryGovernor;
+            // Payloads stay owned elsewhere; only reference slots reserve here,
+            // released on every exit path instead of stranding.
             var values = arguments[0] is IReadOnlyCollection<object> sized
                 ? new List<object>(sized.Count)
                 : new List<object>();
             var chargedCapacity = values.Capacity;
             if (chargedCapacity > 0)
             {
-                governor.Reserve(8L * chargedCapacity, span);
-                governor.Commit(8L * chargedCapacity);
+                scratch.Grow(8L * chargedCapacity, span);
             }
 
             foreach (var value in ToSequence(arguments[0], span, context))
@@ -584,8 +601,7 @@ internal sealed partial class LythonRuntime
                 {
                     var predicted = values.Capacity == 0 ? 4L : (long)values.Capacity * 2L;
                     var delta = checked(8L * (predicted - chargedCapacity));
-                    governor.Reserve(delta, span);
-                    governor.Commit(delta);
+                    scratch.Grow(delta, span);
                     chargedCapacity = (int)predicted;
                 }
 
@@ -593,8 +609,7 @@ internal sealed partial class LythonRuntime
                 if (values.Capacity > chargedCapacity)
                 {
                     var delta = checked(8L * (values.Capacity - chargedCapacity));
-                    governor.Reserve(delta, span);
-                    governor.Commit(delta);
+                    scratch.Grow(delta, span);
                     chargedCapacity = values.Capacity;
                 }
 
@@ -618,7 +633,7 @@ internal sealed partial class LythonRuntime
             return values;
         }
 
-        private static List<double> GetNumericValuesFromData(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context)
+        private static List<double> GetNumericValuesFromData(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
         {
             if (arguments.Length < 1)
             {
@@ -629,25 +644,24 @@ internal sealed partial class LythonRuntime
             {
             }
 
-            return GetNumericValuesFromIterable(arguments[0], owner, span, context);
+            return GetNumericValuesFromIterable(arguments[0], owner, span, context, scratch);
         }
 
-        private static List<double> GetNumericValuesFromIterable(object data, string owner, LythonSourceSpan span, ExecutionContext context)
+        private static List<double> GetNumericValuesFromIterable(object data, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
         {
             // The doubles list is required scratch for sorting and multi-pass
-            // statistics with no governed adopter, so growth commits durably
-            // (like string payloads), instead of riding a released transient.
-            // Sized inputs commit the exact backing once up front; the loop
-            // keeps a growth backstop for sources whose count disagrees.
-            var governor = context.MemoryGovernor;
+            // statistics with no governed adopter, so growth reserves as
+            // caller-scoped scratch: identical growth math, released on every
+            // exit path instead of stranding. Sized inputs reserve the exact
+            // backing once up front; the loop keeps a growth backstop for
+            // sources whose count disagrees.
             var values = data is IReadOnlyCollection<object> sized
                 ? new List<double>(sized.Count)
                 : new List<double>();
             var chargedCapacity = values.Capacity;
             if (chargedCapacity > 0)
             {
-                governor.Reserve(8L * chargedCapacity, span);
-                governor.Commit(8L * chargedCapacity);
+                scratch.Grow(8L * chargedCapacity, span);
             }
 
             foreach (var value in ToSequence(data, span, context))
@@ -657,8 +671,7 @@ internal sealed partial class LythonRuntime
                 {
                     var predicted = values.Capacity == 0 ? 4L : (long)values.Capacity * 2L;
                     var delta = checked(8L * (predicted - chargedCapacity));
-                    governor.Reserve(delta, span);
-                    governor.Commit(delta);
+                    scratch.Grow(delta, span);
                     chargedCapacity = (int)predicted;
                 }
 
@@ -666,8 +679,7 @@ internal sealed partial class LythonRuntime
                 if (values.Capacity > chargedCapacity)
                 {
                     var delta = checked(8L * (values.Capacity - chargedCapacity));
-                    governor.Reserve(delta, span);
-                    governor.Commit(delta);
+                    scratch.Grow(delta, span);
                     chargedCapacity = values.Capacity;
                 }
 
@@ -686,14 +698,18 @@ internal sealed partial class LythonRuntime
             return values;
         }
 
-        private static List<double> GetNumericValues(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context)
+        private static List<double> GetNumericValues(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
         {
-            var values = GetNumericObjects(arguments, owner, span, context);
-            // The converted copy coexists with the objects list, so it commits
-            // its own exact backing: both live representations stay charged.
+            var values = GetNumericObjects(arguments, owner, span, context, scratch);
+            // The converted copy coexists with the objects list, so it reserves
+            // its own exact backing on the same caller scratch: both live
+            // representations stay charged through the selection, then release.
             var result = new List<double>(values.Count);
-            context.MemoryGovernor.Reserve(8L * values.Count, span);
-            context.MemoryGovernor.Commit(8L * values.Count);
+            if (values.Count > 0)
+            {
+                scratch.Grow(8L * values.Count, span);
+            }
+
             foreach (var value in values)
             {
                 result.Add(ExpectRealForStatistics(value, owner, span));

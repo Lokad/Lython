@@ -6,25 +6,26 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-/// MG15: the shared numeric drain commits its backing as it grows. Sized
-/// inputs pay exactly once up front; lazy inputs pay each doubling. The
-/// doubles list has no governed adopter, so the charges stay committed like
-/// string payloads. Reflection reaches the private helper; renames fail
+/// N07: the shared numeric drains reserve caller-scoped scratch as they grow.
+/// Sized inputs reserve exactly once up front; lazy inputs reserve each doubling.
+/// Nothing commits durably: the reservation releases on every exit path, so the
+/// growth math (and denial points) match the old durable commits exactly while
+/// discarded calls reclaim. Reflection reaches the private helpers; renames fail
 /// loudly here by design.
 /// </summary>
 public sealed class StatisticsDrainAccountingTests
 {
-    private static List<double> InvokeDrain(object data, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    private static List<double> InvokeDrain(object data, LythonRuntime.ExecutionContext context, LythonSourceSpan span, MemoryGovernor.TemporaryMemoryReservation scratch)
     {
         var moduleType = typeof(LythonRuntime).GetNestedType("StatisticsModule", BindingFlags.NonPublic)
             ?? throw new InvalidOperationException("StatisticsModule not found.");
         var drain = moduleType.GetMethod("GetNumericValuesFromIterable", BindingFlags.NonPublic | BindingFlags.Static)
             ?? throw new InvalidOperationException("GetNumericValuesFromIterable not found.");
-        return Assert.IsType<List<double>>(drain.Invoke(null, [data, "statistics.test", span, context]));
+        return Assert.IsType<List<double>>(drain.Invoke(null, [data, "statistics.test", span, context, scratch]));
     }
 
     [Fact]
-    public void SizedDrainCommitsExactBackingOnce()
+    public void SizedDrainReservesExactBackingOnce()
     {
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
@@ -32,15 +33,22 @@ public sealed class StatisticsDrainAccountingTests
         var data = Enumerable.Range(0, 1000).Select(static i => (object)(double)i).ToList();
 
         var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;
-        var values = InvokeDrain(data, context, span);
+        List<double> values;
+        using (var scratch = context.MemoryGovernor.ReserveTemporary(0, span))
+        {
+            values = InvokeDrain(data, context, span, scratch);
+            Assert.Equal(1000, values.Count);
+            Assert.Equal(8000, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Equal(committedBefore, context.MemoryGovernor.CurrentCommittedBytes);
+        }
 
         Assert.Equal(1000, values.Count);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(8000, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
+        Assert.Equal(committedBefore, context.MemoryGovernor.CurrentCommittedBytes);
     }
 
     [Fact]
-    public void LazyDrainCommitsEachDoubling()
+    public void LazyDrainReservesEachDoubling()
     {
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
@@ -55,25 +63,32 @@ public sealed class StatisticsDrainAccountingTests
         }
 
         var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;
-        var values = InvokeDrain(Lazy(), context, span);
+        List<double> values;
+        using (var scratch = context.MemoryGovernor.ReserveTemporary(0, span))
+        {
+            values = InvokeDrain(Lazy(), context, span, scratch);
+            Assert.Equal(1000, values.Count);
+            // List<double> doubles from an initial four; incremental deltas sum to
+            // exactly the final backing size: (4 - 0) + (8 - 4) + ... + (1024 - 512).
+            Assert.Equal(8 * 1024, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Equal(committedBefore, context.MemoryGovernor.CurrentCommittedBytes);
+        }
 
-        // List<double> doubles from an initial four; incremental deltas sum to
         Assert.Equal(1000, values.Count);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        // exactly the final backing size: (4 - 0) + (8 - 4) + ... + (1024 - 512).
-        Assert.Equal(8 * 1024, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
+        Assert.Equal(committedBefore, context.MemoryGovernor.CurrentCommittedBytes);
     }
-    private static List<object> InvokeObjectsDrain(object[] arguments, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    private static List<object> InvokeObjectsDrain(object[] arguments, LythonRuntime.ExecutionContext context, LythonSourceSpan span, MemoryGovernor.TemporaryMemoryReservation scratch)
     {
         var moduleType = typeof(LythonRuntime).GetNestedType("StatisticsModule", BindingFlags.NonPublic)
             ?? throw new InvalidOperationException("StatisticsModule not found.");
         var drain = moduleType.GetMethod("GetNumericObjects", BindingFlags.NonPublic | BindingFlags.Static)
             ?? throw new InvalidOperationException("GetNumericObjects not found.");
-        return Assert.IsType<List<object>>(drain.Invoke(null, [arguments, "statistics.test", span, context]));
+        return Assert.IsType<List<object>>(drain.Invoke(null, [arguments, "statistics.test", span, context, scratch]));
     }
 
     [Fact]
-    public void ObjectsDrainCommitsExactBackingOnce()
+    public void ObjectsDrainReservesExactBackingOnce()
     {
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
@@ -81,18 +96,26 @@ public sealed class StatisticsDrainAccountingTests
         var data = Enumerable.Range(0, 1000).Select(static i => (object)(double)i).ToList();
 
         var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;
-        var values = InvokeObjectsDrain([data], context, span);
+        List<object> values;
+        using (var scratch = context.MemoryGovernor.ReserveTemporary(0, span))
+        {
+            values = InvokeObjectsDrain([data], context, span, scratch);
+            Assert.Equal(1000, values.Count);
+            Assert.Equal(8000, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Equal(committedBefore, context.MemoryGovernor.CurrentCommittedBytes);
+        }
 
         Assert.Equal(1000, values.Count);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(8000, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
+        Assert.Equal(committedBefore, context.MemoryGovernor.CurrentCommittedBytes);
     }
 
     [Fact]
-    public void ConvertedCopyCommitsAlongsideObjects()
+    public void ConvertedCopyReservesAlongsideObjects()
     {
         // Median keeps the objects list and the converted doubles list alive
-        // together; both backings stay charged, not just the first.
+        // together on one shared reservation; both backings stay reserved, not
+        // just the first, and both release at scope end.
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
@@ -103,11 +126,18 @@ public sealed class StatisticsDrainAccountingTests
         var data = Enumerable.Range(0, 1000).Select(static i => (object)(double)i).ToList();
 
         var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;
-        var values = Assert.IsType<List<double>>(convert.Invoke(null, [new object[] { data }, "statistics.test", span, context]));
+        List<double> values;
+        using (var scratch = context.MemoryGovernor.ReserveTemporary(0, span))
+        {
+            values = Assert.IsType<List<double>>(convert.Invoke(null, [new object[] { data }, "statistics.test", span, context, scratch]));
+            Assert.Equal(1000, values.Count);
+            Assert.Equal(16000, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Equal(committedBefore, context.MemoryGovernor.CurrentCommittedBytes);
+        }
 
         Assert.Equal(1000, values.Count);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(16000, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
+        Assert.Equal(committedBefore, context.MemoryGovernor.CurrentCommittedBytes);
     }
     [Fact]
     public void FrequencyMapScratchReleasesOnReturn()

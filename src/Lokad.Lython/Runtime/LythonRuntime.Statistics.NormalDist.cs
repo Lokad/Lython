@@ -43,7 +43,10 @@ internal sealed partial class LythonRuntime
 
         private static object NormalDistFromSamples(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var values = GetNumericValuesFromData(arguments, "statistics.NormalDist.from_samples", span, context);
+            // N07: the samples drain is caller-scoped scratch like every other
+            // statistics drain.
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var values = GetNumericValuesFromData(arguments, "statistics.NormalDist.from_samples", span, context, scratch);
             if (values.Count < 2)
             {
                 throw StatisticsError("statistics.NormalDist.from_samples(data) requires at least two data points.", span);
