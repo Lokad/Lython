@@ -380,78 +380,84 @@ internal sealed partial class Parser
         IReadOnlyList<StatementSyntax>? elseStatements = null;
         LythonSourceSpan span = Merge(SpanOf(ifToken), thenStatements[^1].Span);
 
-        IfStatementSyntax? nestedElseIf = null;
-        while (CurrentToken == Token.Elif)
+        // Elif clauses read as a flat chain but execute as nested statements:
+        // collect them first, then fold back-to-front so every clause (and a
+        // trailing else) attaches to the deepest node. Each clause holds one
+        // level of the shared syntax-nesting budget for the rest of this
+        // statement, bounding lowering recursion exactly like nested suites.
+        var elifClauses = new List<(ExpressionSyntax Condition, IReadOnlyList<StatementSyntax> Body, LythonSourceSpan Span)>();
+        var heldElifDepths = 0;
+        try
         {
-            var elifToken = ReadToken();
-            var elifCondition = ParseExpression();
-            if (elifCondition is null)
+            while (CurrentToken == Token.Elif)
             {
-                AddDiagnostic("LA1013", "Expected condition after 'elif'.", elifToken);
-                return null;
-            }
-
-            if (!TryRead(Token.Colon, out _))
-            {
-                AddDiagnostic("LA1014", "Expected ':' after elif condition.", elifCondition.Span);
-                return null;
-            }
-
-            var elifBody = ParseSuite("LA1015", "Expected indented block after 'elif'.");
-            if (elifBody is null)
-            {
-                return null;
-            }
-
-            var elifSyntax = new IfStatementSyntax(elifCondition, elifBody, null, Merge(SpanOf(elifToken), elifBody[^1].Span));
-            if (nestedElseIf is null)
-            {
-                nestedElseIf = elifSyntax;
-            }
-            else
-            {
-                nestedElseIf = nestedElseIf with
+                if (!EnterNestingDepth(_position))
                 {
-                    ElseStatements = [elifSyntax],
-                    Span = Merge(nestedElseIf.Span, elifSyntax.Span)
-                };
+                    return null;
+                }
+
+                heldElifDepths++;
+                var elifToken = ReadToken();
+                var elifCondition = ParseExpression();
+                if (elifCondition is null)
+                {
+                    AddDiagnostic("LA1013", "Expected condition after 'elif'.", elifToken);
+                    return null;
+                }
+
+                if (!TryRead(Token.Colon, out _))
+                {
+                    AddDiagnostic("LA1014", "Expected ':' after elif condition.", elifCondition.Span);
+                    return null;
+                }
+
+                var elifBody = ParseSuite("LA1015", "Expected indented block after 'elif'.");
+                if (elifBody is null)
+                {
+                    return null;
+                }
+
+                elifClauses.Add((elifCondition, elifBody, Merge(SpanOf(elifToken), elifBody[^1].Span)));
             }
 
-            elseStatements = [nestedElseIf];
-            span = Merge(span, nestedElseIf.Span);
-            break;
+            IReadOnlyList<StatementSyntax>? elifTail = null;
+            LythonSourceSpan tailEnd = thenStatements[^1].Span;
+            if (CurrentToken == Token.Else)
+            {
+                var elseToken = ReadToken();
+                if (!TryRead(Token.Colon, out _))
+                {
+                    AddDiagnostic("LA1016", "Expected ':' after 'else'.", elseToken);
+                    return null;
+                }
+
+                var parsedElse = ParseSuite("LA1017", "Expected indented block after 'else'.");
+                if (parsedElse is null)
+                {
+                    return null;
+                }
+
+                elifTail = parsedElse;
+                tailEnd = parsedElse[^1].Span;
+            }
+
+            for (var i = elifClauses.Count - 1; i >= 0; i--)
+            {
+                var (clauseCondition, clauseBody, clauseSpan) = elifClauses[i];
+                var nodeSpan = Merge(clauseSpan, tailEnd);
+                elifTail = [new IfStatementSyntax(clauseCondition, clauseBody, elifTail, nodeSpan)];
+                tailEnd = nodeSpan;
+            }
+
+            elseStatements = elifTail;
+            span = Merge(span, tailEnd);
         }
-
-        if (CurrentToken == Token.Else)
+        finally
         {
-            var elseToken = ReadToken();
-            if (!TryRead(Token.Colon, out _))
+            while (heldElifDepths-- > 0)
             {
-                AddDiagnostic("LA1016", "Expected ':' after 'else'.", elseToken);
-                return null;
+                LeaveNestingDepth();
             }
-
-            var parsedElse = ParseSuite("LA1017", "Expected indented block after 'else'.");
-            if (parsedElse is null)
-            {
-                return null;
-            }
-
-            if (nestedElseIf is not null)
-            {
-                nestedElseIf = nestedElseIf with
-                {
-                    ElseStatements = parsedElse,
-                    Span = Merge(nestedElseIf.Span, parsedElse[^1].Span)
-                };
-                elseStatements = [nestedElseIf];
-            }
-            else
-            {
-                elseStatements = parsedElse;
-            }
-
-            span = Merge(span, parsedElse[^1].Span);
         }
 
         _ = colonToken;
