@@ -42,6 +42,22 @@ internal static class PyNumberOps
     internal static double ToDoubleChecked(PyNumber number)
         => number.IsFloat ? number.Floating : BigIntegerToDouble(number.Integer);
 
+    // Non-throwing twin for callers that translate conversion overflow themselves
+    // instead of matching the overflow message text (N16).
+    internal static bool TryToDoubleChecked(PyNumber number, out double value)
+    {
+        try
+        {
+            value = ToDoubleChecked(number);
+            return true;
+        }
+        catch (OverflowException)
+        {
+            value = default;
+            return false;
+        }
+    }
+
     // Correctly rounded like CPython (the BCL cast clamps near the range
     // top and rounds some magnitudes down by one ulp); ties go to even and
     // true overflow raises.

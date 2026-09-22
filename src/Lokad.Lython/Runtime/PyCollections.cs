@@ -393,6 +393,28 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
+// Typed deque state signals (N16): thrown where the deque itself reports empty/full
+// (never for user-raised failures, even with identical text), so member bindings
+// recognize them by type instead of comparing English message text. Deriving from
+// InvalidOperationException keeps any unknown CLR-level catcher behaving as before.
+// The public IndexError identity and message flow from these origins like any
+// guest-visible failure.
+internal sealed class PyDequeEmptyException : InvalidOperationException
+{
+    public PyDequeEmptyException(string message)
+        : base(message)
+    {
+    }
+}
+
+internal sealed class PyDequeFullException : InvalidOperationException
+{
+    public PyDequeFullException(string message)
+        : base(message)
+    {
+    }
+}
+
 internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPyOwnershipSnapshot
 {
     private readonly LinkedList<object> _items = [];
@@ -614,7 +636,7 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
     {
         if (_items.Count == 0)
         {
-            throw new InvalidOperationException("pop from an empty deque");
+            throw new PyDequeEmptyException("pop from an empty deque");
         }
 
         var value = _items.Last.RequireNotNull().Value;
@@ -629,7 +651,7 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
     {
         if (_items.Count == 0)
         {
-            throw new InvalidOperationException("pop from an empty deque");
+            throw new PyDequeEmptyException("pop from an empty deque");
         }
 
         var value = _items.First.RequireNotNull().Value;
@@ -769,7 +791,7 @@ internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValu
     {
         if (MaxLength is int maxLength && _items.Count == maxLength)
         {
-            throw new InvalidOperationException("deque already at its maximum size");
+            throw new PyDequeFullException("deque already at its maximum size");
         }
 
         var committedBefore = CommittedStorageBytes;

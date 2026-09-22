@@ -509,8 +509,25 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("ZeroDivisionError", "0.0 cannot be raised to a negative power", span);
             }
 
-            var leftValue = lhs.IsFloat ? lhs.Floating : PyNumberOps.ToDoubleChecked(lhs);
-            var rightValue = rhs.IsFloat ? rhs.Floating : PyNumberOps.ToDoubleChecked(rhs);
+            double leftValue;
+            double rightValue;
+            if (lhs.IsFloat)
+            {
+                leftValue = lhs.Floating;
+            }
+            else if (!PyNumberOps.TryToDoubleChecked(lhs, out leftValue))
+            {
+                throw new LythonRuntimeException("OverflowError", "int too large to convert to float", span);
+            }
+
+            if (rhs.IsFloat)
+            {
+                rightValue = rhs.Floating;
+            }
+            else if (!PyNumberOps.TryToDoubleChecked(rhs, out rightValue))
+            {
+                throw new LythonRuntimeException("OverflowError", "int too large to convert to float", span);
+            }
             if (leftValue < 0 && double.IsFinite(rightValue) && rightValue != Math.Truncate(rightValue))
             {
                 throw new LythonRuntimeException("TypeError", "complex results are not supported by Lython", span);
@@ -518,10 +535,6 @@ internal sealed partial class LythonRuntime
 
             GuardIntegerPower(lhs, rhs, context.MemoryGovernor, span);
             return OwnHeapInteger(PyNumberOps.Power(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
-        }
-        catch (OverflowException ex) when (ex.Message == "int too large to convert to float")
-        {
-            throw new LythonRuntimeException("OverflowError", ex.Message, span);
         }
         catch (OverflowException)
         {

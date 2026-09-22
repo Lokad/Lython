@@ -96,9 +96,9 @@ internal sealed partial class LythonRuntime
                     {
                         return receiver.Pop();
                     }
-                    catch (InvalidOperationException)
+                    catch (PyDequeEmptyException ex)
                     {
-                        throw new LythonRuntimeException("IndexError", "pop from an empty deque", span);
+                        throw new LythonRuntimeException("IndexError", ex.Message, span);
                     }
                 }),
                 "popleft" => BoundCallable.CreateNoArguments(deque, "deque.popleft", static (receiver, span, _) =>
@@ -107,9 +107,9 @@ internal sealed partial class LythonRuntime
                     {
                         return receiver.PopLeft();
                     }
-                    catch (InvalidOperationException)
+                    catch (PyDequeEmptyException ex)
                     {
-                        throw new LythonRuntimeException("IndexError", "pop from an empty deque", span);
+                        throw new LythonRuntimeException("IndexError", ex.Message, span);
                     }
                 }),
                 "extend" => BoundCallable.Create((arguments, span, context) =>
@@ -184,7 +184,7 @@ internal sealed partial class LythonRuntime
                         deque.AttachMemoryGovernor(context.MemoryGovernor, span);
                         deque.Insert(index, arguments[1]);
                     }
-                    catch (InvalidOperationException ex) when (ex.Message == "deque already at its maximum size")
+                    catch (PyDequeFullException ex)
                     {
                         throw new LythonRuntimeException("IndexError", ex.Message, span);
                     }
