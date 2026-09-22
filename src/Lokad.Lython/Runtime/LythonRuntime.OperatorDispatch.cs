@@ -419,7 +419,53 @@ internal sealed partial class LythonRuntime
         return false;
     }
 
-    private static bool AreEqualWithProtocols(
+    // CPython reflective dispatch: when the right operand's type strictly
+    // subclasses the left operand's type and overrides the reflected slot,
+    // the reflected call goes first. A NotImplemented answer (or a missing
+    // slot) declines to the other side; when both decline, structural
+    // comparison decides.
+    private static bool ShouldTryReflectedFirst(object left, object right, string reflectedMethod)
+    {
+        if (left is not PyInstance leftInstance || right is not PyInstance rightInstance)
+        {
+            return false;
+        }
+
+        var leftType = leftInstance.Type;
+        var rightType = rightInstance.Type;
+        if (ReferenceEquals(leftType, rightType))
+        {
+            return false;
+        }
+
+        var mro = rightType.Mro;
+        var leftIndex = -1;
+        for (var i = 0; i < mro.Count; i++)
+        {
+            if (ReferenceEquals(mro[i], leftType))
+            {
+                leftIndex = i;
+                break;
+            }
+        }
+
+        if (leftIndex <= 0)
+        {
+            return false;
+        }
+
+        for (var i = 0; i < leftIndex; i++)
+        {
+            if (mro[i].TryGetOwnMember(reflectedMethod, out _))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static object AreEqualWithProtocols(
         object left,
         object right,
         ExecutionContext context,
@@ -427,8 +473,8 @@ internal sealed partial class LythonRuntime
     {
         // Sync twin of the async core below. The miss path runs per
         // comparison, so routing it through an async state machine
-        // allocates on every sync == even though the sync invoker and
-        // truthiness checks below never suspend.
+        // allocates on every sync == even though the sync invoker below
+        // never suspends.
         if (left is PyCmpKey leftKey && right is PyCmpKey rightKey)
         {
             return leftKey.CompareTo(rightKey, span, context) == 0;
@@ -436,17 +482,36 @@ internal sealed partial class LythonRuntime
 
         // A NotImplemented answer declines like a missing slot (CPython reflected
         // dispatch): the root object slots always decline, so operators keep their
-        // identity and relational fallbacks instead of reading NotImplemented as true.
-        if (TryInvokeBinarySpecialMethod(left, "__eq__", right, context, span, out var leftValue) &&
-            leftValue is not PyNotImplemented)
+        // identity and relational fallbacks instead of reading NotImplemented as a value.
+        // A strict subclass overriding the reflected slot goes first, and a
+        // successful __eq__ result flows back raw (no truth coercion).
+        if (ShouldTryReflectedFirst(left, right, "__eq__"))
         {
-            return IsTruthy(leftValue, context, span);
-        }
+            if (TryInvokeBinarySpecialMethod(right, "__eq__", left, context, span, out var reflectedValue) &&
+                reflectedValue is not PyNotImplemented)
+            {
+                return reflectedValue;
+            }
 
-        if (TryInvokeBinarySpecialMethod(right, "__eq__", left, context, span, out var rightValue) &&
-            rightValue is not PyNotImplemented)
+            if (TryInvokeBinarySpecialMethod(left, "__eq__", right, context, span, out var leftFallback) &&
+                leftFallback is not PyNotImplemented)
+            {
+                return leftFallback;
+            }
+        }
+        else
         {
-            return IsTruthy(rightValue, context, span);
+            if (TryInvokeBinarySpecialMethod(left, "__eq__", right, context, span, out var leftValue) &&
+                leftValue is not PyNotImplemented)
+            {
+                return leftValue;
+            }
+
+            if (TryInvokeBinarySpecialMethod(right, "__eq__", left, context, span, out var rightValue) &&
+                rightValue is not PyNotImplemented)
+            {
+                return rightValue;
+            }
         }
 
         using (PyStructuralGuard.PushAmbient(context, span))
@@ -455,38 +520,49 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static ValueTask<bool> AreEqualWithProtocolsAsync(
+    private static ValueTask<object> AreEqualWithProtocolsAsync(
         object left,
         object right,
         ExecutionContext context,
         LythonSourceSpan span)
-        => AreEqualWithProtocolsCoreAsync(left, right, context, span, InvokeBinarySpecialMethodAsync, IsTruthyAsync);
+        => AreEqualWithProtocolsCoreAsync(left, right, context, span, InvokeBinarySpecialMethodAsync);
 
-    private static async ValueTask<bool> AreEqualWithProtocolsCoreAsync(
+    private static async ValueTask<object> AreEqualWithProtocolsCoreAsync(
         object left,
         object right,
         ExecutionContext context,
         LythonSourceSpan span,
-        BinarySpecialMethodInvoker invoke,
-        TruthinessEvaluator evaluateTruthiness)
+        BinarySpecialMethodInvoker invoke)
     {
         if (left is PyCmpKey leftKey && right is PyCmpKey rightKey)
         {
             return leftKey.CompareTo(rightKey, span, context) == 0;
         }
 
-        // A NotImplemented answer declines like a missing slot (CPython reflected
-        // dispatch): the root object slots always decline, so operators keep their
-        // identity and relational fallbacks instead of reading NotImplemented as true.
-        var invocation = await invoke(left, "__eq__", right, context, span).ConfigureAwait(false);
-        if (invocation.Kind == SpecialMethodInvocationKind.Missing || invocation.Value is PyNotImplemented)
+        // Same precedence as the sync twin above; the raw __eq__ result flows
+        // back without truth coercion so `==` prints the method's own value.
+        // A NotImplemented answer declines like a missing slot.
+        SpecialMethodInvocation invocation;
+        if (ShouldTryReflectedFirst(left, right, "__eq__"))
         {
             invocation = await invoke(right, "__eq__", left, context, span).ConfigureAwait(false);
+            if (invocation.Kind == SpecialMethodInvocationKind.Missing || invocation.Value is PyNotImplemented)
+            {
+                invocation = await invoke(left, "__eq__", right, context, span).ConfigureAwait(false);
+            }
+        }
+        else
+        {
+            invocation = await invoke(left, "__eq__", right, context, span).ConfigureAwait(false);
+            if (invocation.Kind == SpecialMethodInvocationKind.Missing || invocation.Value is PyNotImplemented)
+            {
+                invocation = await invoke(right, "__eq__", left, context, span).ConfigureAwait(false);
+            }
         }
 
         if (invocation.Kind == SpecialMethodInvocationKind.Invoked && invocation.Value is not PyNotImplemented)
         {
-            return await evaluateTruthiness(invocation.Value, context, span).ConfigureAwait(false);
+            return invocation.Value;
         }
 
         // N01: no ambient scope spans awaits here. Async element paths carry
@@ -940,16 +1016,34 @@ internal sealed partial class LythonRuntime
             return itemKey.CompareTo(candidateKey, span, context) == 0;
         }
 
-        if (TryInvokeBinarySpecialMethod(item, "__eq__", candidate, context, span, out var leftValue) &&
-            leftValue is not PyNotImplemented)
+        // Same reflected precedence as == (membership truth-tests each element).
+        if (ShouldTryReflectedFirst(item, candidate, "__eq__"))
         {
-            return IsTruthy(leftValue, context, span);
-        }
+            if (TryInvokeBinarySpecialMethod(candidate, "__eq__", item, context, span, out var reflectedValue) &&
+                reflectedValue is not PyNotImplemented)
+            {
+                return IsTruthy(reflectedValue, context, span);
+            }
 
-        if (TryInvokeBinarySpecialMethod(candidate, "__eq__", item, context, span, out var rightValue) &&
-            rightValue is not PyNotImplemented)
+            if (TryInvokeBinarySpecialMethod(item, "__eq__", candidate, context, span, out var leftFallback) &&
+                leftFallback is not PyNotImplemented)
+            {
+                return IsTruthy(leftFallback, context, span);
+            }
+        }
+        else
         {
-            return IsTruthy(rightValue, context, span);
+            if (TryInvokeBinarySpecialMethod(item, "__eq__", candidate, context, span, out var leftValue) &&
+                leftValue is not PyNotImplemented)
+            {
+                return IsTruthy(leftValue, context, span);
+            }
+
+            if (TryInvokeBinarySpecialMethod(candidate, "__eq__", item, context, span, out var rightValue) &&
+                rightValue is not PyNotImplemented)
+            {
+                return IsTruthy(rightValue, context, span);
+            }
         }
 
         using (PyStructuralGuard.PushAmbient(context, span))
@@ -983,10 +1077,23 @@ internal sealed partial class LythonRuntime
             return itemKey.CompareTo(candidateKey, span, context) == 0;
         }
 
-        var invocation = await invoke(item, "__eq__", candidate, context, span).ConfigureAwait(false);
-        if (invocation.Kind == SpecialMethodInvocationKind.Missing || invocation.Value is PyNotImplemented)
+        // Same reflected precedence as ==.
+        SpecialMethodInvocation invocation;
+        if (ShouldTryReflectedFirst(item, candidate, "__eq__"))
         {
             invocation = await invoke(candidate, "__eq__", item, context, span).ConfigureAwait(false);
+            if (invocation.Kind == SpecialMethodInvocationKind.Missing || invocation.Value is PyNotImplemented)
+            {
+                invocation = await invoke(item, "__eq__", candidate, context, span).ConfigureAwait(false);
+            }
+        }
+        else
+        {
+            invocation = await invoke(item, "__eq__", candidate, context, span).ConfigureAwait(false);
+            if (invocation.Kind == SpecialMethodInvocationKind.Missing || invocation.Value is PyNotImplemented)
+            {
+                invocation = await invoke(candidate, "__eq__", item, context, span).ConfigureAwait(false);
+            }
         }
 
         if (invocation.Kind == SpecialMethodInvocationKind.Invoked && invocation.Value is not PyNotImplemented)
@@ -1017,7 +1124,7 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        return AreEqualWithProtocols(left, right, context, span);
+        return IsTruthy(AreEqualWithProtocols(left, right, context, span), context, span);
     }
 
     // Ambient twin for context-free AreEqual branches: dispatches only when
@@ -1044,7 +1151,7 @@ internal sealed partial class LythonRuntime
             return PyEquality.AreEqual(left, right);
         }
 
-        return AreEqualWithProtocols(left, right, context, span);
+        return IsTruthy(AreEqualWithProtocols(left, right, context, span), context, span);
     }
 
     internal static ValueTask<bool> ElementEqualsAsync(
@@ -1072,10 +1179,23 @@ internal sealed partial class LythonRuntime
             return leftKey.CompareTo(rightKey, span, context) == 0;
         }
 
-        var invocation = await invoke(left, "__eq__", right, context, span).ConfigureAwait(false);
-        if (invocation.Kind == SpecialMethodInvocationKind.Missing || invocation.Value is PyNotImplemented)
+        // Same reflected precedence as == (nested positions truth-test).
+        SpecialMethodInvocation invocation;
+        if (ShouldTryReflectedFirst(left, right, "__eq__"))
         {
             invocation = await invoke(right, "__eq__", left, context, span).ConfigureAwait(false);
+            if (invocation.Kind == SpecialMethodInvocationKind.Missing || invocation.Value is PyNotImplemented)
+            {
+                invocation = await invoke(left, "__eq__", right, context, span).ConfigureAwait(false);
+            }
+        }
+        else
+        {
+            invocation = await invoke(left, "__eq__", right, context, span).ConfigureAwait(false);
+            if (invocation.Kind == SpecialMethodInvocationKind.Missing || invocation.Value is PyNotImplemented)
+            {
+                invocation = await invoke(right, "__eq__", left, context, span).ConfigureAwait(false);
+            }
         }
 
         if (invocation.Kind == SpecialMethodInvocationKind.Invoked && invocation.Value is not PyNotImplemented)
@@ -1089,7 +1209,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static bool AreNotEqualWithProtocols(
+    private static object AreNotEqualWithProtocols(
         object left,
         object right,
         ExecutionContext context,
@@ -1101,32 +1221,51 @@ internal sealed partial class LythonRuntime
             return leftKey.CompareTo(rightKey, span, context) != 0;
         }
 
-        // != consults __ne__ first like CPython; a NotImplemented answer
-        // declines to the reflected slot and then to the negated __eq__
-        // protocol (which honors NotImplemented itself).
-        if (TryInvokeBinarySpecialMethod(left, "__ne__", right, context, span, out var leftValue) &&
-            leftValue is not PyNotImplemented)
+        // != consults __ne__ first like CPython (with reflected precedence for
+        // the __ne__ pair); a successful __ne__ result flows back raw. A
+        // NotImplemented answer declines to the reflected slot and then to the
+        // negated __eq__ protocol (which honors precedence and NotImplemented
+        // itself); that fallback negates truth, so it stays a bool.
+        if (ShouldTryReflectedFirst(left, right, "__ne__"))
         {
-            return IsTruthy(leftValue, context, span);
+            if (TryInvokeBinarySpecialMethod(right, "__ne__", left, context, span, out var reflectedValue) &&
+                reflectedValue is not PyNotImplemented)
+            {
+                return reflectedValue;
+            }
+
+            if (TryInvokeBinarySpecialMethod(left, "__ne__", right, context, span, out var leftFallback) &&
+                leftFallback is not PyNotImplemented)
+            {
+                return leftFallback;
+            }
+        }
+        else
+        {
+            if (TryInvokeBinarySpecialMethod(left, "__ne__", right, context, span, out var leftValue) &&
+                leftValue is not PyNotImplemented)
+            {
+                return leftValue;
+            }
+
+            if (TryInvokeBinarySpecialMethod(right, "__ne__", left, context, span, out var rightValue) &&
+                rightValue is not PyNotImplemented)
+            {
+                return rightValue;
+            }
         }
 
-        if (TryInvokeBinarySpecialMethod(right, "__ne__", left, context, span, out var rightValue) &&
-            rightValue is not PyNotImplemented)
-        {
-            return IsTruthy(rightValue, context, span);
-        }
-
-        return !AreEqualWithProtocols(left, right, context, span);
+        return !IsTruthy(AreEqualWithProtocols(left, right, context, span), context, span);
     }
 
-    private static ValueTask<bool> AreNotEqualWithProtocolsAsync(
+    private static ValueTask<object> AreNotEqualWithProtocolsAsync(
         object left,
         object right,
         ExecutionContext context,
         LythonSourceSpan span)
         => AreNotEqualWithProtocolsCoreAsync(left, right, context, span, InvokeBinarySpecialMethodAsync, IsTruthyAsync);
 
-    private static async ValueTask<bool> AreNotEqualWithProtocolsCoreAsync(
+    private static async ValueTask<object> AreNotEqualWithProtocolsCoreAsync(
         object left,
         object right,
         ExecutionContext context,
@@ -1139,21 +1278,34 @@ internal sealed partial class LythonRuntime
             return leftKey.CompareTo(rightKey, span, context) != 0;
         }
 
-        // != consults __ne__ first like CPython; a NotImplemented answer
-        // declines to the reflected slot and then to the negated __eq__
-        // protocol (which honors NotImplemented itself).
-        var invocation = await invoke(left, "__ne__", right, context, span).ConfigureAwait(false);
-        if (invocation.Kind == SpecialMethodInvocationKind.Missing || invocation.Value is PyNotImplemented)
+        // Same precedence as the sync twin above; a successful __ne__ result
+        // flows back raw, otherwise the negated __eq__ truth stays a bool.
+        SpecialMethodInvocation invocation;
+        if (ShouldTryReflectedFirst(left, right, "__ne__"))
         {
             invocation = await invoke(right, "__ne__", left, context, span).ConfigureAwait(false);
+            if (invocation.Kind == SpecialMethodInvocationKind.Missing || invocation.Value is PyNotImplemented)
+            {
+                invocation = await invoke(left, "__ne__", right, context, span).ConfigureAwait(false);
+            }
+        }
+        else
+        {
+            invocation = await invoke(left, "__ne__", right, context, span).ConfigureAwait(false);
+            if (invocation.Kind == SpecialMethodInvocationKind.Missing || invocation.Value is PyNotImplemented)
+            {
+                invocation = await invoke(right, "__ne__", left, context, span).ConfigureAwait(false);
+            }
         }
 
-        return invocation.Kind == SpecialMethodInvocationKind.Invoked && invocation.Value is not PyNotImplemented
-            ? await evaluateTruthiness(invocation.Value, context, span).ConfigureAwait(false)
-            : !await AreEqualWithProtocolsCoreAsync(left, right, context, span, invoke, evaluateTruthiness).ConfigureAwait(false);
-    }
+        if (invocation.Kind == SpecialMethodInvocationKind.Invoked && invocation.Value is not PyNotImplemented)
+        {
+            return invocation.Value;
+        }
 
-    private static bool EvaluateRichComparison(
+        return !await evaluateTruthiness(await AreEqualWithProtocolsCoreAsync(left, right, context, span, invoke).ConfigureAwait(false), context, span).ConfigureAwait(false);
+    }
+    private static object EvaluateRichComparison(
         object left,
         object right,
         string method,
@@ -1164,8 +1316,8 @@ internal sealed partial class LythonRuntime
     {
         // Sync twin of the async core below. The miss path runs per ordered
         // comparison, so routing it through an async state machine allocates
-        // on every sync <, <=, > and >= even though the sync invoker and
-        // truthiness checks below never suspend.
+        // on every sync <, <=, > and >= even though the sync invoker below
+        // never suspends.
         if (left is PyCmpKey leftKey && right is PyCmpKey rightKey)
         {
             return fallback(leftKey.CompareTo(rightKey, span, context));
@@ -1187,17 +1339,36 @@ internal sealed partial class LythonRuntime
 
         // A NotImplemented answer declines like a missing slot (CPython reflected
         // dispatch): the root object slots always decline, so unsupported orderings
-        // keep the relational fallback instead of reading NotImplemented as true.
-        if (TryInvokeBinarySpecialMethod(left, method, right, context, span, out var leftValue) &&
-            leftValue is not PyNotImplemented)
+        // keep the relational fallback instead of reading NotImplemented as a value.
+        // A strict subclass overriding the reflected slot goes first, and a
+        // successful result flows back raw.
+        if (ShouldTryReflectedFirst(left, right, reflectedMethod))
         {
-            return IsTruthy(leftValue, context, span);
-        }
+            if (TryInvokeBinarySpecialMethod(right, reflectedMethod, left, context, span, out var reflectedValue) &&
+                reflectedValue is not PyNotImplemented)
+            {
+                return reflectedValue;
+            }
 
-        if (TryInvokeBinarySpecialMethod(right, reflectedMethod, left, context, span, out var rightValue) &&
-            rightValue is not PyNotImplemented)
+            if (TryInvokeBinarySpecialMethod(left, method, right, context, span, out var leftFallback) &&
+                leftFallback is not PyNotImplemented)
+            {
+                return leftFallback;
+            }
+        }
+        else
         {
-            return IsTruthy(rightValue, context, span);
+            if (TryInvokeBinarySpecialMethod(left, method, right, context, span, out var leftValue) &&
+                leftValue is not PyNotImplemented)
+            {
+                return leftValue;
+            }
+
+            if (TryInvokeBinarySpecialMethod(right, reflectedMethod, left, context, span, out var rightValue) &&
+                rightValue is not PyNotImplemented)
+            {
+                return rightValue;
+            }
         }
 
         using (PyStructuralGuard.PushAmbient(context, span))
@@ -1205,8 +1376,7 @@ internal sealed partial class LythonRuntime
             return CompareRelational(left, right, span, fallback, ComparisonSymbol(method));
         }
     }
-
-    private static ValueTask<bool> EvaluateRichComparisonAsync(
+    private static ValueTask<object> EvaluateRichComparisonAsync(
         object left,
         object right,
         string method,
@@ -1223,8 +1393,7 @@ internal sealed partial class LythonRuntime
             fallback,
             InvokeBinarySpecialMethodAsync,
             IsTruthyAsync);
-
-    private static async ValueTask<bool> EvaluateRichComparisonCoreAsync(
+    private static async ValueTask<object> EvaluateRichComparisonCoreAsync(
         object left,
         object right,
         BinarySpecialMethodPair methods,
@@ -1254,18 +1423,29 @@ internal sealed partial class LythonRuntime
             };
         }
 
-        // A NotImplemented answer declines like a missing slot (CPython reflected
-        // dispatch): the root object slots always decline, so unsupported orderings
-        // keep the relational fallback instead of reading NotImplemented as true.
-        var invocation = await invoke(left, methods.Left, right, context, span).ConfigureAwait(false);
-        if (invocation.Kind == SpecialMethodInvocationKind.Missing || invocation.Value is PyNotImplemented)
+        // Same precedence as the sync twin above; a successful result flows
+        // back raw, otherwise the relational fallback stays a bool.
+        SpecialMethodInvocation invocation;
+        if (ShouldTryReflectedFirst(left, right, methods.Right))
         {
             invocation = await invoke(right, methods.Right, left, context, span).ConfigureAwait(false);
+            if (invocation.Kind == SpecialMethodInvocationKind.Missing || invocation.Value is PyNotImplemented)
+            {
+                invocation = await invoke(left, methods.Left, right, context, span).ConfigureAwait(false);
+            }
+        }
+        else
+        {
+            invocation = await invoke(left, methods.Left, right, context, span).ConfigureAwait(false);
+            if (invocation.Kind == SpecialMethodInvocationKind.Missing || invocation.Value is PyNotImplemented)
+            {
+                invocation = await invoke(right, methods.Right, left, context, span).ConfigureAwait(false);
+            }
         }
 
         if (invocation.Kind == SpecialMethodInvocationKind.Invoked && invocation.Value is not PyNotImplemented)
         {
-            return await evaluateTruthiness(invocation.Value, context, span).ConfigureAwait(false);
+            return invocation.Value;
         }
 
         using (PyStructuralGuard.PushAmbient(context, span))
@@ -1273,7 +1453,6 @@ internal sealed partial class LythonRuntime
             return CompareRelational(left, right, span, fallback, ComparisonSymbol(methods.Left));
         }
     }
-
     private static string ComparisonSymbol(string method) => method switch
     {
         "__lt__" => "<",

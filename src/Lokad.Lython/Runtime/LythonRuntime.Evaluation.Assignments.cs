@@ -215,7 +215,8 @@ internal sealed partial class LythonRuntime
 
     private static bool EvaluateComparisonOperator(object left, object right, BinaryOperatorSyntax op, ExecutionContext context, LythonSourceSpan span)
     {
-        return (bool)EvaluateBinaryOperator(op, left, right, context, span);
+        // N11: comparison operators return raw rich results; chains truth-test.
+        return IsTruthy(EvaluateBinaryOperator(op, left, right, context, span), context, span);
     }
 
     private static async ValueTask<bool> EvaluateComparisonOperatorAsync(
@@ -224,7 +225,8 @@ internal sealed partial class LythonRuntime
         BinaryOperatorSyntax op,
         ExecutionContext context,
         LythonSourceSpan span)
-        => (bool)await EvaluateBinaryOperatorAsync(op, left, right, context, span).ConfigureAwait(false);
+        // N11: comparison operators return raw rich results; chains truth-test.
+        => await IsTruthyAsync(await EvaluateBinaryOperatorAsync(op, left, right, context, span).ConfigureAwait(false), context, span).ConfigureAwait(false);
 
     private static object CreateLambda(LambdaExpressionSyntax lambda, ExecutionContext context)
     {

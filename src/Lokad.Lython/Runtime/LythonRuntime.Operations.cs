@@ -175,7 +175,8 @@ internal sealed partial class LythonRuntime
         {
             var leftCount = left.TryGetValue(key, out var foundLeft) ? foundLeft : BigInteger.Zero;
             var rightCount = right.TryGetValue(key, out var foundRight) ? foundRight : BigInteger.Zero;
-            if (!(bool)EvaluateBinaryOperator(BinaryOperatorSyntax.LessEqual, leftCount, rightCount, context, span))
+            // N11: ordering returns raw results; counter comparison truth-tests.
+            if (!IsTruthy(EvaluateBinaryOperator(BinaryOperatorSyntax.LessEqual, leftCount, rightCount, context, span), context, span))
             {
                 return false;
             }
