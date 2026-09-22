@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Reflection;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
 
@@ -122,6 +123,49 @@ public sealed class AdoptedScalarCouponTests
         coupons.Release(box, context.MemoryGovernor);
         Assert.Equal(0, coupons.CommittedBytes);
         Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
+    }
+
+    private static long PooledCharge(ChargeReclamationPool pool, object value)
+    {
+        // Reads the pool entry snapshot like a later drop sweep would: renames
+        // fail loudly here by design.
+        var table = typeof(ChargeReclamationPool)
+            .GetField("TrackedStorage", BindingFlags.NonPublic | BindingFlags.Static)!
+            .GetValue(null)!;
+        var args = new object?[] { value, null };
+        if (!(bool)table.GetType().GetMethod("TryGetValue")!.Invoke(table, args)!)
+        {
+            throw new InvalidOperationException("Value is not pool-tracked.");
+        }
+
+        return (long)args[1]!.GetType().GetProperty("ValueCharge")!.GetValue(args[1])!;
+    }
+
+    [Fact]
+    public void ListRemovalRefreshesThePoolSnapshot()
+    {
+        // Removing adopted identities must refresh the tracked snapshot, or a
+        // later drop sweep would release the stale (higher) charge and corrupt
+        // the governor balance.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var governor = context.MemoryGovernor;
+        var pool = new ChargeReclamationPool(governor);
+        var items = new object[] { new BigInteger(1), new BigInteger(2) };
+        var before = governor.CurrentCommittedBytes;
+        var list = new PyList(items, governor, span);
+        var coupons = 2 * AdoptedScalarCoupons.CouponBytes;
+        pool.TrackFreshMutable(list, list.CommittedStorageBytes, span);
+        Assert.Equal(list.CommittedStorageBytes, PooledCharge(pool, list));
+        var trackedBefore = PooledCharge(pool, list);
+        list.RemoveAt(0);
+        list.RemoveAt(0);
+        Assert.Equal(trackedBefore - coupons, PooledCharge(pool, list));
+        Assert.Equal(list.CommittedStorageBytes, PooledCharge(pool, list));
+        Assert.Equal(
+            list.CommittedStorageBytes + ChargeReclamationPool.EntryChargeBytes + pool.CommittedBackingBytes,
+            governor.CurrentCommittedBytes - before);
     }
 
     [Fact]

@@ -391,9 +391,13 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
 
     public void RemoveAt(int index)
     {
+        // The coupon release below shrinks the owned total, so refresh the
+        // pool snapshot or a later drop sweep would over-release.
+        var committedBefore = CommittedStorageBytes;
         var outgoing = _items[index];
         _items.RemoveAt(index);
         ReleaseOutgoing(outgoing);
+        NoteGrowth(committedBefore);
     }
 
     public void RemoveRange(int index, int count)
@@ -405,6 +409,7 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
 
         // Index reads throw before mutating on a bad range, matching the
         // throwing read the old single-slot path performed.
+        var committedBefore = CommittedStorageBytes;
         var outgoing = new object[count];
         for (var i = 0; i < count; i++)
         {
@@ -413,6 +418,7 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
 
         _items.RemoveRangeAt(index, count);
         ReleaseAllOutgoing(outgoing);
+        NoteGrowth(committedBefore);
     }
 
     public void DeleteSlice(PyIndexing.SliceBounds bounds)
@@ -512,6 +518,7 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
             replaced[i] = _items[indices[i]];
         }
 
+        var extendedBefore = CommittedStorageBytes;
         AdoptAllIncoming(values);
         var position = 0;
         for (var i = 0; i < indices.Length; i++)
@@ -520,6 +527,7 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
         }
 
         ReleaseAllOutgoing(replaced);
+        NoteGrowth(extendedBefore);
     }
 
     public void Clear()
@@ -568,9 +576,11 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
             return;
         }
 
+        var committedBefore = CommittedStorageBytes;
         AdoptIncoming(value);
         _items[index] = value;
         ReleaseOutgoing(outgoing);
+        NoteGrowth(committedBefore);
     }
 
     public object[] ToArray()
