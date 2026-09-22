@@ -111,27 +111,24 @@ public sealed class StatisticsDrainAccountingTests
     }
 
     [Fact]
-    public void ConvertedCopyReservesAlongsideObjects()
+    public void MedianNeedsNoConvertedCopy()
     {
-        // Median keeps the objects list and the converted doubles list alive
-        // together on one shared reservation; both backings stay reserved, not
-        // just the first, and both release at scope end.
+        // N13: median sorts the original objects and returns selected elements
+        // directly, so only the objects backing stays reserved (8000 bytes for
+        // 1000 references) with no converted doubles copy alongside it. Both the
+        // reservation and the release match the objects-drain accounting exactly.
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
-        var moduleType = typeof(LythonRuntime).GetNestedType("StatisticsModule", BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("StatisticsModule not found.");
-        var convert = moduleType.GetMethod("GetNumericValues", BindingFlags.NonPublic | BindingFlags.Static)
-            ?? throw new InvalidOperationException("GetNumericValues not found.");
         var data = Enumerable.Range(0, 1000).Select(static i => (object)(double)i).ToList();
 
         var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;
-        List<double> values;
+        List<object> values;
         using (var scratch = context.MemoryGovernor.ReserveTemporary(0, span))
         {
-            values = Assert.IsType<List<double>>(convert.Invoke(null, [new object[] { data }, "statistics.test", span, context, scratch]));
+            values = InvokeObjectsDrain([data], context, span, scratch);
             Assert.Equal(1000, values.Count);
-            Assert.Equal(16000, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Equal(8000, context.MemoryGovernor.CurrentReservedBytes);
             Assert.Equal(committedBefore, context.MemoryGovernor.CurrentCommittedBytes);
         }
 
