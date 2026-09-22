@@ -331,7 +331,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
     // 24B CallArgumentValue slot (placement enum plus two references) per item,
     // live beside the drained element while the call runs. The sync shape drains
     // lazily, so it grows the reservation incrementally like the shared drains;
-    // the async shape reuses MaterializeAsync and covers the exact final array.
+    // the async shape reuses the leased drain and covers the exact final array.
     private const long ArgumentSlotBytes = 24;
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
@@ -355,9 +355,16 @@ internal sealed class PyStarmapIterator : PyIteratorBase
             {
                 var predicted = collected.Capacity == 0 ? 4L : (long)collected.Capacity * 2L;
                 scratch.Grow(checked(ArgumentSlotBytes * (predicted - chargedCapacity)), _span);
+                chargedCapacity = (int)predicted;
             }
 
             collected.Add(CallArgumentValue.Positional(LythonRuntime.RuntimeValue(item)));
+            // N09: shared-drain count/work checks for mode parity (async MaterializeAsync observes).
+            _context.ObserveCollectionCount(collected.Count, _span);
+            if ((collected.Count & 63) == 0)
+            {
+                _context.CheckExecutionBudget(_span);
+            }
             if (collected.Capacity > chargedCapacity)
             {
                 scratch.Grow(ArgumentSlotBytes * (collected.Capacity - chargedCapacity), _span);
@@ -380,8 +387,11 @@ internal sealed class PyStarmapIterator : PyIteratorBase
             return PyIterationResult.End;
         }
 
-        var values = await PyIteration.MaterializeAsync(current, _span, _context).ConfigureAwait(false);
-        // The drained list stays governed beside this exact-size copy, released
+        // N09: leased drain keeps the element list charged beside the argument array
+        // and callback (reservation ends after the call, not before).
+        using var lease = await PyIteration.MaterializeLeasedAsync(current, _span, _context).ConfigureAwait(false);
+        var values = lease.Items;
+        // The drained list stays leased beside this exact-size copy, released
         // after the call completes.
         using var scratch = _context.MemoryGovernor.ReserveTemporary(checked(ArgumentSlotBytes * (long)values.Count), _span);
         var args = values.Count == 0

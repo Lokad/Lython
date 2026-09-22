@@ -187,6 +187,117 @@ internal static class PyIteration
         return result;
     }
 
+    // N09: explicit reservation lifetime for consumers that keep drained scratch
+    // alive across guest callbacks. Unlike Drain (which releases before returning
+    // for immediate conversion with overlap proof), the lease keeps growth charged
+    // until disposed - dispose after the callback completes and ownership transfers.
+    internal sealed class DrainLease : IDisposable
+    {
+        public List<object> Items { get; }
+        private MemoryGovernor.TemporaryMemoryReservation _reservation;
+
+        internal DrainLease(List<object> items, MemoryGovernor.TemporaryMemoryReservation reservation)
+        {
+            Items = items;
+            _reservation = reservation;
+        }
+
+        public void Dispose()
+        {
+            _reservation.Dispose();
+        }
+    }
+
+    internal static DrainLease DrainLeased(IEnumerable<object> items, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        var reservation = context.MemoryGovernor.ReserveTemporary(0, span);
+        var result = new List<object>();
+        long fundedCapacity = 0;
+        try
+        {
+            foreach (var item in items)
+            {
+                if (result.Count == result.Capacity)
+                {
+                    var predicted = result.Capacity == 0 ? 4L : (long)result.Capacity * 2L;
+                    if (predicted > fundedCapacity)
+                    {
+                        reservation.Grow(checked(16L * (predicted - fundedCapacity)), span);
+                        fundedCapacity = predicted;
+                    }
+                }
+
+                result.Add(item);
+                if (result.Capacity > fundedCapacity)
+                {
+                    reservation.Grow(16L * (result.Capacity - fundedCapacity), span);
+                    fundedCapacity = result.Capacity;
+                }
+
+                context.ObserveCollectionCount(result.Count, span);
+                if ((result.Count & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+            }
+        }
+        catch
+        {
+            reservation.Dispose();
+            throw;
+        }
+
+        return new DrainLease(result, reservation);
+    }
+
+    internal static async ValueTask<DrainLease> DrainLeasedAsync(IAsyncEnumerable<object> items, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        var reservation = context.MemoryGovernor.ReserveTemporary(0, span);
+        var result = new List<object>();
+        long fundedCapacity = 0;
+        try
+        {
+            await foreach (var item in items.ConfigureAwait(false))
+            {
+                if (result.Count == result.Capacity)
+                {
+                    var predicted = result.Capacity == 0 ? 4L : (long)result.Capacity * 2L;
+                    if (predicted > fundedCapacity)
+                    {
+                        reservation.Grow(checked(16L * (predicted - fundedCapacity)), span);
+                        fundedCapacity = predicted;
+                    }
+                }
+
+                result.Add(item);
+                if (result.Capacity > fundedCapacity)
+                {
+                    reservation.Grow(16L * (result.Capacity - fundedCapacity), span);
+                    fundedCapacity = result.Capacity;
+                }
+
+                context.ObserveCollectionCount(result.Count, span);
+                if ((result.Count & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+            }
+        }
+        catch
+        {
+            reservation.Dispose();
+            throw;
+        }
+
+        return new DrainLease(result, reservation);
+    }
+
+    public static DrainLease MaterializeLeased(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => DrainLeased(ToSequence(value, span, context), span, context);
+
+    public static async ValueTask<DrainLease> MaterializeLeasedAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => await DrainLeasedAsync(ToSequenceAsync(value, span, context), span, context).ConfigureAwait(false);
+
     private static async IAsyncEnumerable<object> EnumerateUserIteratorAsync(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         // R08: both __iter__ resolution and __next__ advancement await real
