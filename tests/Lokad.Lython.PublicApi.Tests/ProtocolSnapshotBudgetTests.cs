@@ -28,6 +28,11 @@ public sealed class ProtocolSnapshotBudgetTests
 
     private const int ScanKeyCount = 3000;
     private const int ScanProbeCount = 6000;
+    // N10 index: dict side lookups are hash-bucketed, so each distinct-hash probe skips the
+    // 3000-entry side precheck (the store phase still scans all 3000). Probes tripled so the
+    // scan workload keeps its exhaustion margin in both modes (at 6000 probes the indexed
+    // total straddled the budget: sync exhausted, async fit).
+    private const int DictScanProbeCount = 18000;
     private const int DictScanStepBudget = 600_000;
     private const int SetScanStepBudget = 400_000;
 
@@ -115,7 +120,7 @@ public sealed class ProtocolSnapshotBudgetTests
         for i in range(3000):
             d[K(i)] = i
         total = 0
-        for i in range(6000):
+        for i in range(18000):
             total += d.get(K(1000000 + i), -1)
         return [len(d), total]
         """;
@@ -342,7 +347,7 @@ public sealed class ProtocolSnapshotBudgetTests
         var result = script.Run(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
-            new List<object?> { new BigInteger(ScanKeyCount), new BigInteger(-ScanProbeCount) },
+            new List<object?> { new BigInteger(ScanKeyCount), new BigInteger(-DictScanProbeCount) },
             result.ReturnValue);
     }
 
@@ -353,7 +358,7 @@ public sealed class ProtocolSnapshotBudgetTests
         var result = await script.RunAsync(new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
-            new List<object?> { new BigInteger(ScanKeyCount), new BigInteger(-ScanProbeCount) },
+            new List<object?> { new BigInteger(ScanKeyCount), new BigInteger(-DictScanProbeCount) },
             result.ReturnValue);
     }
 
