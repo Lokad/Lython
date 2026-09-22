@@ -135,6 +135,7 @@ internal sealed partial class Parser
         while (CurrentToken is not Token.Dedent and not Token.End)
         {
             var gapStartTokenIndex = _position;
+            var pendingBeforeParse = _pendingStatements.Count;
             var statement = ParseStatement();
             if (statement is null)
             {
@@ -150,7 +151,7 @@ internal sealed partial class Parser
                 }
 
                 previousStatement = statement;
-                previousEndTokenIndex = _position;
+                previousEndTokenIndex = SeparationGapEnd(previousEndTokenIndex, gapStartTokenIndex, pendingBeforeParse);
             }
 
             SkipEndOfLines();

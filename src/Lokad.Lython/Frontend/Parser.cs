@@ -37,6 +37,7 @@ internal sealed partial class Parser
         while (CurrentToken != Token.End)
         {
             var gapStartTokenIndex = _position;
+            var pendingBeforeParse = _pendingStatements.Count;
             var statement = ParseStatement();
             if (statement is null)
             {
@@ -52,7 +53,7 @@ internal sealed partial class Parser
                 }
 
                 previousStatement = statement;
-                previousEndTokenIndex = _position;
+                previousEndTokenIndex = SeparationGapEnd(previousEndTokenIndex, gapStartTokenIndex, pendingBeforeParse);
             }
 
             SkipEndOfLines();
@@ -97,6 +98,14 @@ internal sealed partial class Parser
 
         AddDiagnostic("LA1001", "Expected end-of-line after statement.", currentSpan);
     }
+
+    // Queued splits (import a, b) drain without consuming tokens: the separator
+    // after the head statement was already skipped, so the gap edge stays where
+    // the head left it instead of collapsing the separation window to empty.
+    private int SeparationGapEnd(int previousEndTokenIndex, int gapStartTokenIndex, int pendingBeforeParse)
+        => pendingBeforeParse != 0 && _position == gapStartTokenIndex
+            ? previousEndTokenIndex
+            : _position;
 
     // Numbers glued to identifiers (1x, 0x1F, 1j) lex as two adjacent tokens
     // but are one invalid literal in Python. Keywords lex as their own tokens,

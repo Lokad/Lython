@@ -48,6 +48,75 @@ public sealed class StatementSeparationScenarioTests
     }
 
     [Fact]
+    public async Task MultiModuleImportSemicolon_RunsBothModes()
+    {
+        var script = new LythonEngine().Compile("""
+            import json, re; x = 1
+            return x
+            """);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(new BigInteger(1), sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(new BigInteger(1), asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task AliasedMultiModuleImportSemicolon_RunsBothModes()
+    {
+        var script = new LythonEngine().Compile("""
+            import json as j, re as r; return [j.dumps(12), len(r.findall("a", "aba"))]
+            """);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
+        var expected = new List<object?> { "12", new BigInteger(2) };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task MultiModuleImportSemicolon_NestedSuite_RunsBothModes()
+    {
+        var script = new LythonEngine().Compile("""
+            if True:
+                import json, re; x = 1
+            return x
+            """);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(new BigInteger(1), sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(new BigInteger(1), asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public void MultiModuleImportMissingSeparator_StillFails()
+    {
+        var cases = new List<string>
+        {
+            """
+            import json re
+            """,
+            """
+            import json, re x = 1
+            """,
+        };
+        foreach (var source in cases)
+        {
+            var script = new LythonEngine().Compile(source);
+            Assert.False(script.IsValid, source);
+            Assert.Contains(script.Diagnostics, d => d.Code == "LA1001");
+        }
+    }
+
+    [Fact]
     public async Task ValidSeparatorsStillCompileAndRun()
     {
         var script = new LythonEngine().Compile(
