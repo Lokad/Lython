@@ -20,11 +20,12 @@ public sealed class HostOperationTests
     public void Invoke_TreatsOrdinaryNotSupportedFailuresAsHostErrors()
     {
         var hostException = new NotSupportedException("binary file I/O failed for C:\\secret\\path");
-        var exception = Assert.Throws<LythonRuntimeException>(() => HostOperation.Invoke<int>(
+        var exception = Assert.Throws<HostOperationException>(() => HostOperation.Invoke<int>(
             () => throw hostException,
             "read",
             span: null));
 
+        Assert.IsAssignableFrom<LythonRuntimeException>(exception);
         Assert.Equal("RuntimeError", exception.ExceptionType);
         Assert.Equal("Host read failed.", exception.Message);
         Assert.Same(hostException, exception.InnerException);

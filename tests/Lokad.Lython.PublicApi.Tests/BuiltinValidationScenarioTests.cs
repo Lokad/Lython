@@ -35,6 +35,7 @@ public sealed class BuiltinValidationScenarioTests
     [InlineData("import functools\ndef f(p):\n return p(*1)\nf(functools.partial(int))\n", "TypeError", "functools.partial(<class 'int'>) argument after * must be an iterable, not int")]
     [InlineData("class C:\n def __call__(self, a):\n  return a\nC()(*1)\n", "TypeError", "<C object> argument after * must be an iterable, not int")]
     [InlineData("class C:\n pass\ndef f(**k):\n return 0\nf(**C())\n", "TypeError", "__main__.f() argument after ** must be a mapping, not C")]
+    [InlineData("class K:\n def keys(self):\n  raise TypeError(\"'K' object is not a mapping\")\n def __getitem__(self, k):\n  return 1\ndef f(**k):\n return 0\nf(**K())\n", "TypeError", "'K' object is not a mapping")]
     [InlineData("def f(s):\n return s.find(1)\nf(\"abc\")\n", "TypeError", "find() argument 1 must be str, not int")]
     [InlineData("def f(s):\n return s.rfind(1)\nf(\"abc\")\n", "TypeError", "rfind() argument 1 must be str, not int")]
     [InlineData("def f(s):\n return s.index(1)\nf(\"abc\")\n", "TypeError", "index() argument 1 must be str, not int")]

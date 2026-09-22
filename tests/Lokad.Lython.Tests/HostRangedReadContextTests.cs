@@ -74,12 +74,12 @@ public sealed class HostRangedReadContextTests
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
 
-        var wholeSync = Assert.Throws<LythonRuntimeException>(() => context.ReadTextUtf8("/missing.txt", null));
-        var rangeSync = Assert.Throws<LythonRuntimeException>(() => context.ReadTextUtf8Range("/missing.txt", 0, 8, null));
+        var wholeSync = Assert.Throws<HostOperationException>(() => context.ReadTextUtf8("/missing.txt", null));
+        var rangeSync = Assert.Throws<HostOperationException>(() => context.ReadTextUtf8Range("/missing.txt", 0, 8, null));
         Assert.Equal(wholeSync.Message, rangeSync.Message);
 
-        var wholeAsync = await Assert.ThrowsAsync<LythonRuntimeException>(() => context.ReadTextUtf8Async("/missing.txt", null).AsTask());
-        var rangeAsync = await Assert.ThrowsAsync<LythonRuntimeException>(() => context.ReadTextUtf8RangeAsync("/missing.txt", 0, 8, null).AsTask());
+        var wholeAsync = await Assert.ThrowsAsync<HostOperationException>(() => context.ReadTextUtf8Async("/missing.txt", null).AsTask());
+        var rangeAsync = await Assert.ThrowsAsync<HostOperationException>(() => context.ReadTextUtf8RangeAsync("/missing.txt", 0, 8, null).AsTask());
         Assert.Equal(wholeAsync.Message, rangeAsync.Message);
     }
 }

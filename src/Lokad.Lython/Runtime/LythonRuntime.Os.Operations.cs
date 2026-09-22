@@ -554,7 +554,7 @@ internal sealed partial class LythonRuntime
                 context.RegisterHostCall(span);
                 context.HostRemove(current, span);
             }
-            catch (LythonRuntimeException ex) when (IsHostRuntimeFailure(ex))
+            catch (HostOperationException)
             {
                 break;
             }
@@ -597,7 +597,7 @@ internal sealed partial class LythonRuntime
                 context.RegisterHostCall(span);
                 await context.HostRemoveAsync(current, span).ConfigureAwait(false);
             }
-            catch (LythonRuntimeException ex) when (IsHostRuntimeFailure(ex))
+            catch (HostOperationException)
             {
                 break;
             }

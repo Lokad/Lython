@@ -1087,25 +1087,35 @@ internal sealed partial class LythonRuntime
         context.ObserveCollectionCount(result.Count, setSpan);
     }
 
-    internal static IEnumerable<KeyValuePair<object, object>> EnumerateMappingItems(
+    // Typed mapping-absence signal (N16): non-mappings report false without throwing,
+    // so callers recognize them by result instead of comparing English message text.
+    // Guest failures from keys()/iteration still throw and propagate untouched, even
+    // with identical wording. The public TypeError identity and message for display
+    // callers flow through EnumerateMappingItems below.
+    internal static bool TryEnumerateMappingItems(
         object mapping,
         ExecutionContext context,
-        LythonSourceSpan span)
+        LythonSourceSpan span,
+        [NotNullWhen(true)] out IEnumerable<KeyValuePair<object, object>>? items)
     {
         switch (mapping)
         {
             case PyDict dict:
-                return dict.Items;
+                items = dict.Items;
+                return true;
             case PyDefaultDict defaultDict:
-                return defaultDict.Items;
+                items = defaultDict.Items;
+                return true;
             case PyCounter counter:
-                return counter.Items;
+                items = counter.Items;
+                return true;
             case PyChainMap chainMap:
             {
                 // The merged-list build below rides Iterate's own transient
                 // estimate; the governed destination is charged as it fills.
-                return chainMap.Iterate().Select(key =>
+                items = chainMap.Iterate().Select(key =>
                     new KeyValuePair<object, object>(key, chainMap.GetSubscript(key, span)));
+                return true;
             }
             case PyInstance instance:
                 if (!TryResolveRuntimeMember(instance, "keys", context, span, out var keysMember))
@@ -1114,8 +1124,23 @@ internal sealed partial class LythonRuntime
                 }
 
                 var keys = InvokeCallableTarget(keysMember, span, span, context, () => []);
-                return ToSequence(keys, span, context).Select(key =>
+                items = ToSequence(keys, span, context).Select(key =>
                     new KeyValuePair<object, object>(key, GetUserItem(instance, key, context, span)));
+                return true;
+        }
+
+        items = null;
+        return false;
+    }
+
+    internal static IEnumerable<KeyValuePair<object, object>> EnumerateMappingItems(
+        object mapping,
+        ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        if (TryEnumerateMappingItems(mapping, context, span, out var items))
+        {
+            return items;
         }
 
         throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.OperandTypeName(mapping) + "' object is not a mapping", span);

@@ -357,11 +357,6 @@ internal sealed partial class LythonRuntime
         return await context.HostStatAsync(path, span).ConfigureAwait(false);
     }
 
-    private static bool IsHostRuntimeFailure(LythonRuntimeException exception)
-        => string.Equals(exception.ExceptionType, "RuntimeError", StringComparison.Ordinal) &&
-           exception.InnerException is not null &&
-           exception.Message.StartsWith("Host ", StringComparison.Ordinal);
-
     private static double PathModifiedAtSeconds(DateTimeOffset? modifiedAt, LythonSourceSpan? span)
     {
         if (modifiedAt is not { } timestamp)

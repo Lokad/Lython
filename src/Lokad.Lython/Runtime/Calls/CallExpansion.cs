@@ -192,12 +192,10 @@ internal static class CallExpansion
         object target,
         LythonRuntime.ExecutionContext context)
     {
-        IEnumerable<KeyValuePair<object, object>> pairs;
-        try
-        {
-            pairs = LythonRuntime.EnumerateMappingItems(value, context, span);
-        }
-        catch (LythonRuntimeException ex) when (IsMappingSplatFailure(ex, value))
+        // N16: the Try signal tells absent mappings apart from guest failures by result,
+        // never by message text: a guest keys() raising the same TypeError wording now
+        // propagates with its own message instead of becoming a call-site diagnostic.
+        if (!LythonRuntime.TryEnumerateMappingItems(value, context, span, out var pairs))
         {
             var calleeName = CallsiteCallableName(target, context);
             if (calleeName is null)
@@ -276,12 +274,6 @@ internal static class CallExpansion
 
         return expanded;
     }
-
-    private static bool IsMappingSplatFailure(LythonRuntimeException ex, object value)
-        => ex.ExceptionType == "TypeError"
-            && ex.Message == "'" + RuntimeErrors.OperandTypeName(value) + "' object is not a mapping";
-
-    
 
     // Call-site splat failures name the callee like CPython: module-qualified
     // Python functions, bare C names, and the repr for values without a qualname.

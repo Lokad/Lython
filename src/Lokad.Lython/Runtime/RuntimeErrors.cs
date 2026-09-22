@@ -129,7 +129,7 @@ internal static class RuntimeErrors
         => new("MemoryError", message, span);
 
     public static LythonRuntimeException Host(string operation, Exception exception, LythonSourceSpan? span)
-        => new("RuntimeError", $"Host {operation} failed.", span, exception);
+        => new HostOperationException($"Host {operation} failed.", span, exception);
 
     // Mapping misses carry their key as the payload so str/args render like
     // CPython; the fixed text stays for the message member and failure paths.

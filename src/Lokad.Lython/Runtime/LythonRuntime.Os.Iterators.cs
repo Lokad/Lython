@@ -406,7 +406,7 @@ internal sealed partial class LythonRuntime
                 HandleWalkError(ex.Message);
                 return false;
             }
-            catch (LythonRuntimeException ex) when (IsHostRuntimeFailure(ex))
+            catch (HostOperationException ex)
             {
                 HandleWalkError(ex.Message);
                 return false;
@@ -451,7 +451,7 @@ internal sealed partial class LythonRuntime
                 await HandleWalkErrorAsync(ex.Message).ConfigureAwait(false);
                 return false;
             }
-            catch (LythonRuntimeException ex) when (IsHostRuntimeFailure(ex))
+            catch (HostOperationException ex)
             {
                 await HandleWalkErrorAsync(ex.Message).ConfigureAwait(false);
                 return false;

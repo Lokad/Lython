@@ -50,16 +50,16 @@ __lython_file.close()
         var output = new HostTextOutputHandle(new ThrowingTextOutput(), "<stdout>", state);
 
         AssertHostFailure(
-            Assert.Throws<LythonRuntimeException>(() => input.ReadAll(span: null)),
+            Assert.Throws<HostOperationException>(() => input.ReadAll(span: null)),
             "stdin.read");
         AssertHostFailure(
-            await Assert.ThrowsAsync<LythonRuntimeException>(async () => await input.ReadAllAsync(span: null)),
+            await Assert.ThrowsAsync<HostOperationException>(async () => await input.ReadAllAsync(span: null)),
             "stdin.read");
         AssertHostFailure(
-            Assert.Throws<LythonRuntimeException>(() => output.Flush(span: null)),
+            Assert.Throws<HostOperationException>(() => output.Flush(span: null)),
             "<stdout>.flush");
         AssertHostFailure(
-            await Assert.ThrowsAsync<LythonRuntimeException>(async () => await output.FlushAsync(span: null)),
+            await Assert.ThrowsAsync<HostOperationException>(async () => await output.FlushAsync(span: null)),
             "<stdout>.flush");
 
         static void AssertHostFailure(LythonRuntimeException exception, string operation)
