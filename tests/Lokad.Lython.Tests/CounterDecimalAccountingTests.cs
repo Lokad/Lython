@@ -81,7 +81,9 @@ public sealed class CounterDecimalAccountingTests
         callable.Invoke([CallArgumentValue.Positional(delta)], span, context);
         Assert.True(counter.TryGetValue(key, out var stored));
         Assert.Equal(-1m, ((PyDecimal)stored).Value);
-        Assert.Equal(before + 416L, context.MemoryGovernor.CurrentCommittedBytes);
+        // N06: the displaced decimal coupon releases when the fresh (pool-tracked,
+        // adoption-skipped) result takes its place: 416 - 64.
+        Assert.Equal(before + 352L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -135,7 +137,9 @@ public sealed class CounterDecimalAccountingTests
             CounterWith(context, span, key, new PyDecimal(1m)), CounterWith(context, span, key, new PyDecimal(2m)));
         Assert.True(sum.TryGetValue(key, out var sumValue));
         Assert.Equal(3m, ((PyDecimal)sumValue).Value);
-        Assert.Equal(intAddBacking + 192L, Committed(context) - beforeDecAdd);
+        // N06: both sides adopt their two operand boxes, but only the int side
+        // adopts its fresh result sum (decimal results arrive pool-tracked): +128.
+        Assert.Equal(intAddBacking + 128L, Committed(context) - beforeDecAdd);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
 
         var beforeIntSub = Committed(context);
@@ -147,7 +151,8 @@ public sealed class CounterDecimalAccountingTests
             CounterWith(context, span, key, new PyDecimal(2m)), CounterWith(context, span, key, new PyDecimal(1m)));
         Assert.True(diff.TryGetValue(key, out var diffValue));
         Assert.Equal(1m, ((PyDecimal)diffValue).Value);
-        Assert.Equal(intSubBacking + 192L, Committed(context) - beforeDecSub);
+        // Same one-sided result adoption as addition above: +128.
+        Assert.Equal(intSubBacking + 128L, Committed(context) - beforeDecSub);
 
         var beforeIntNeg = Committed(context);
         var intNeg = (PyCounter)InvokeOperator("EvaluateUnaryMinus", context, span,

@@ -12,12 +12,17 @@ public sealed class ProtocolSnapshotBudgetTests
     // first protocol insert arrives, so the store snapshot dwarfs every
     // population transient: dict 32 + 16 per entry, set 24 + 8 per entry.
     // N06: set populations also adopt one 64 B coupon per distinct small int
-    // (~6.4 MB for 100000), so the set scripts moved to their own budgets:
+    // (~6.4 MB for 100000), so the set scripts moved to their own budgets.
+    // Dict populations adopt on keys and values alike (one coupon per entry when
+    // the same box flows as both, refcount 2), so the dict scripts moved as well:
+    // asymmetric 10.7 MB (adds peak ~9.88 MB, snapshot 1600032 still binds),
+    // ordinary 11 MiB (peak ~9.88 MB, lookups add nothing).
     // asymmetric 9.5 MB (adds peak ~9.01 MB, snapshot 800024 still binds),
     // ordinary 10 MiB (peak ~9.01 MB, lookups add nothing).
-    private const long DictBudgetBytes = 4_000_000;
     private const long SetAsymmetricBudgetBytes = 9_500_000;
     private const long SetOrdinaryBudgetBytes = 10_485_760;
+    private const long DictAsymmetricBudgetBytes = 10_700_000;
+    private const long DictOrdinaryBudgetBytes = 11_534_336;
     private const long DictStoreSnapshotBytes = 1600032;
     private const long SetStoreSnapshotBytes = 800024;
 
@@ -152,7 +157,7 @@ public sealed class ProtocolSnapshotBudgetTests
     public void DictStoreSnapshotDeniesBeforeCopying()
     {
         var script = Compile(DictAsymmetricSource);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictBudgetBytes };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictAsymmetricBudgetBytes };
         var result = script.Run(new MockLythonHost(), options);
         AssertError(result, "MemoryError", "execution memory budget exceeded");
         Assert.Equal(DictStoreSnapshotBytes, result.DeniedReservationBytes);
@@ -162,7 +167,7 @@ public sealed class ProtocolSnapshotBudgetTests
     public async Task DictStoreSnapshotDeniesBeforeCopyingAsync()
     {
         var script = Compile(DictAsymmetricSource);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictBudgetBytes };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictAsymmetricBudgetBytes };
         var result = await script.RunAsync(new MockLythonHost(), options);
         AssertError(result, "MemoryError", "execution memory budget exceeded");
         Assert.Equal(DictStoreSnapshotBytes, result.DeniedReservationBytes);
@@ -228,7 +233,7 @@ public sealed class ProtocolSnapshotBudgetTests
     public void DictOrdinaryPathsStayUncharged()
     {
         var script = Compile(DictOrdinarySource);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictBudgetBytes };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictOrdinaryBudgetBytes };
         var result = script.Run(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
@@ -240,7 +245,7 @@ public sealed class ProtocolSnapshotBudgetTests
     public async Task DictOrdinaryPathsStayUnchargedAsync()
     {
         var script = Compile(DictOrdinarySource);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictBudgetBytes };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictOrdinaryBudgetBytes };
         var result = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(

@@ -25,8 +25,11 @@ internal sealed class AdoptedScalarCoupons
     public long CommittedBytes => _committedBytes;
 
     // Type gate without ownership lookup, so hot scalar-free paths skip both.
+    // PyDecimal joins the CLR numerics: a boxed decimal retains as much as a
+    // boxed double while carrying no ownership of its own, and int/decimal
+    // cost symmetry is pinned by the Counter accounting tests.
     public static bool IsAdoptableScalar(object? value)
-        => value is BigInteger or double or int or long;
+        => value is BigInteger or double or int or long or PyDecimal;
 
     // Adopts one incoming value. Denies before the caller mutates: a denied
     // coupon commits nothing and records nothing.
@@ -80,6 +83,44 @@ internal sealed class AdoptedScalarCoupons
                 AdoptStaged(value!, governor, span);
                 staged ??= new List<object>();
                 staged.Add(value!);
+            }
+        }
+        catch
+        {
+            if (staged is not null)
+            {
+                for (var i = staged.Count - 1; i >= 0; i--)
+                {
+                    UnadoptOne(staged[i], governor);
+                }
+            }
+
+            throw;
+        }
+    }
+
+    // All-or-nothing batch adoption over stored pairs: both halves adopt per
+    // entry with the same rollback as AdoptAll. Callers pass materialized pairs.
+    public void AdoptAllPairs(IEnumerable<KeyValuePair<object, object>> pairs, MemoryGovernor governor, LythonSourceSpan? span)
+    {
+        List<object>? staged = null;
+        try
+        {
+            foreach (var pair in pairs)
+            {
+                if (IsAdoptableScalar(pair.Key) && !ChargeReclamationPool.IsTrackedValue(pair.Key!))
+                {
+                    AdoptStaged(pair.Key, governor, span);
+                    staged ??= new List<object>();
+                    staged.Add(pair.Key);
+                }
+
+                if (IsAdoptableScalar(pair.Value) && !ChargeReclamationPool.IsTrackedValue(pair.Value!))
+                {
+                    AdoptStaged(pair.Value, governor, span);
+                    staged ??= new List<object>();
+                    staged.Add(pair.Value);
+                }
             }
         }
         catch

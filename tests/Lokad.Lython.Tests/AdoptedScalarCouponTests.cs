@@ -278,6 +278,111 @@ public sealed class AdoptedScalarCouponTests
     }
 
     [Fact]
+    public void DictReplaceTurnsOverValueCoupon()
+    {
+        // Replacing a value adopts the incoming box and releases the displaced
+        // one while the original key stays put: the tracked total is unchanged.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var governor = context.MemoryGovernor;
+        var pool = new ChargeReclamationPool(governor);
+        var dict = new PyDict(governor, span);
+        object key = new BigInteger(1);
+        dict.SetItem(key, new BigInteger(100));
+        pool.TrackFreshMutable(dict, dict.CommittedStorageBytes, span);
+        var trackedAfterInsert = PooledCharge(pool, dict);
+        dict.SetItem(key, new BigInteger(200));
+        Assert.Equal(trackedAfterInsert, PooledCharge(pool, dict));
+        Assert.Equal(new BigInteger(200), dict.GetItem(key));
+    }
+
+    [Fact]
+    public void DictTwinKeyRemovesValueOnly()
+    {
+        // Removing via a structural twin (7.0 for stored 7) evicts the held pair
+        // but releases only the stored value coupon: the twin argument was never
+        // adopted, and the stored key coupon strands conservatively till drop.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var governor = context.MemoryGovernor;
+        var pool = new ChargeReclamationPool(governor);
+        var dict = new PyDict(governor, span);
+        object held = new BigInteger(7);
+        dict.SetItem(held, new BigInteger(100));
+        pool.TrackFreshMutable(dict, dict.CommittedStorageBytes, span);
+        var trackedBefore = PooledCharge(pool, dict);
+        Assert.True(dict.Remove(7.0));
+        Assert.Equal(trackedBefore - AdoptedScalarCoupons.CouponBytes, PooledCharge(pool, dict));
+        Assert.Equal(0, dict.Count);
+    }
+
+    [Fact]
+    public void DictCopyAdoptsSharedPairs()
+    {
+        // Copies adopt shared identities again (bounded double charge), so each
+        // side carries its own coupons: identical construction commits identical
+        // totals, and the shared boxes stay identical across the copy.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var governor = context.MemoryGovernor;
+        var before = governor.CurrentCommittedBytes;
+        var source = new PyDict(governor, span);
+        object key = new BigInteger(1);
+        object value = new BigInteger(2);
+        source.SetItem(key, value);
+        var copy = new PyDict(source);
+        Assert.Equal(source.CommittedStorageBytes, copy.CommittedStorageBytes);
+        Assert.Equal(
+            source.CommittedStorageBytes + copy.CommittedStorageBytes,
+            governor.CurrentCommittedBytes - before);
+        Assert.True(ReferenceEquals(copy.GetItem(key), value));
+    }
+
+    [Fact]
+    public void DictFailedGrowthLeavesTableUnchanged()
+    {
+        // MG05: a denied coupon rolls the dict insertion back, so failed growth
+        // leaves no enlarged uncharged capacity: count and charges are exactly as
+        // before, and a funded retry succeeds. Nothing is pool-tracked here, so
+        // exhaustion relief short-circuits deterministically.
+        var host = new MockLythonHost();
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        static PyDict BuildDict(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        {
+            var dict = new PyDict(context.MemoryGovernor, span);
+            for (var i = 0; i < 10; i++)
+            {
+                dict.SetItem(new BigInteger(1000 + i), new BigInteger(i));
+            }
+
+            return dict;
+        }
+
+        var measureContext = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var measured = BuildDict(measureContext, span);
+        Assert.Equal(10, measured.Count);
+        var baseline = measureContext.MemoryGovernor.CurrentCommittedBytes;
+        var denyContext = new LythonRuntime.ExecutionContext(
+            host, new LythonRunOptions { MaxExecutionMemoryBytes = baseline + AdoptedScalarCoupons.CouponBytes - 1 });
+        var denied = BuildDict(denyContext, span);
+        Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(10, denied.Count);
+        var storedBefore = denied.CommittedStorageBytes;
+        Assert.Throws<LythonRuntimeException>(() => denied.SetItem(new BigInteger(99999), new BigInteger(1)));
+        Assert.Equal(10, denied.Count);
+        Assert.Equal(storedBefore, denied.CommittedStorageBytes);
+        Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
+        var retryContext = new LythonRuntime.ExecutionContext(
+            host, new LythonRunOptions { MaxExecutionMemoryBytes = baseline + 65536 });
+        var retried = BuildDict(retryContext, span);
+        retried.SetItem(new BigInteger(99999), new BigInteger(1));
+        Assert.Equal(11, retried.Count);
+    }
+
+    [Fact]
     public void ReleaseAllDropsEveryCoupon()
     {
         var (context, span) = Budgeted(65536);

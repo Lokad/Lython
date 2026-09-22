@@ -37,8 +37,9 @@ public sealed class KwargsKeyAccountingTests
         var key = kwargs.Keys.OfType<PyString>().Single();
         Assert.Same(context.MemoryGovernor, key.OwnerMemoryGovernor);
         // 325B of dict backing plus key payload, plus two 128B pool entry charges
-        // (tracked dict and key string) that release on prune, beside tier backing.
-        Assert.Equal(325L + 2L * 128L + context.Services.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
+        // (tracked dict and key string) that release on prune, beside tier backing,
+        // plus one 64B coupon for the adopted int value (N06).
+        Assert.Equal(325L + 2L * 128L + 64L + context.Services.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

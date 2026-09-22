@@ -41,8 +41,9 @@ public sealed class CollectionKwargsKeyAccountingTests
         Assert.Same(context.MemoryGovernor, key.OwnerMemoryGovernor);
         Assert.Equal("k", key.AsString());
         // Shell (64) plus the governed backing (192) and key (128 + 1),
-        // plus one pool entry per retained value (2 x 128) and first tier growth (32).
-        Assert.Equal(673L, context.MemoryGovernor.CurrentCommittedBytes);
+        // plus one pool entry per retained value (2 x 128) and first tier growth (32),
+        // plus one 64B coupon for the adopted int value (N06).
+        Assert.Equal(673L + 64L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -57,8 +58,9 @@ public sealed class CollectionKwargsKeyAccountingTests
         Assert.Same(context.MemoryGovernor, key.OwnerMemoryGovernor);
         Assert.Equal("k", key.AsString());
         // Shell (64) plus the governed backing (192) and key (128 + 1),
-        // plus one pool entry per retained value (2 x 128) and first tier growth (32).
-        Assert.Equal(673L, context.MemoryGovernor.CurrentCommittedBytes);
+        // plus one pool entry per retained value (2 x 128) and first tier growth (32),
+        // plus one 64B coupon for the adopted int value (N06).
+        Assert.Equal(673L + 64L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -71,7 +73,8 @@ public sealed class CollectionKwargsKeyAccountingTests
         var dict = Assert.IsType<PyDict>(InvokeFactory("OrderedDict", context, span, CallArgumentValue.Keyword("k", new BigInteger(1))));
         Assert.Equal("k", SingleKey(dict, context.MemoryGovernor).AsString());
         // Governed backing (192) and key (128 + 1); no extra shell.
-        Assert.Equal(321L, context.MemoryGovernor.CurrentCommittedBytes);
+        // Plus one 64B coupon for the adopted int value (N06).
+        Assert.Equal(321L + 64L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }
