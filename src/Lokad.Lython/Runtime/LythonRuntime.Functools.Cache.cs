@@ -113,6 +113,46 @@ internal sealed partial class LythonRuntime
             return result;
         }
 
+        // N15: awaited twin of Invoke for RunAsync paths. Key building, lookup,
+        // hit/miss accounting and failure refunds are identical; only the target
+        // invocation suspends. Key lookup itself stays synchronous (contextual
+        // dispatch has no async twin, like the N12 module tables).
+        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            var key = BuildCacheKey(arguments, _keyMode, context, span, out var keyCharge);
+            if (_maxSize != 0 && _cache.TryGetValue(key, context, span, out var cached))
+            {
+                _hits++;
+                Touch(cached);
+                context.MemoryGovernor.Release(keyCharge);
+                return cached.Value;
+            }
+
+            _misses++;
+            object result;
+            try
+            {
+                result = await _callable.InvokeAsync(arguments, span, context).ConfigureAwait(false);
+            }
+            catch
+            {
+                context.MemoryGovernor.Release(keyCharge);
+                throw;
+            }
+
+            if (_maxSize != 0)
+            {
+                Store(key, keyCharge, result, span, context);
+            }
+            else
+            {
+                context.MemoryGovernor.Release(keyCharge);
+            }
+
+            return result;
+        }
+
         public object Bind(object self) => new PyBoundMethod(self, this);
 
         public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)

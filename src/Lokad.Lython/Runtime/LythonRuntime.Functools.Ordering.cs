@@ -269,6 +269,42 @@ internal sealed partial class LythonRuntime
         return accumulator;
     }
 
+    private static async ValueTask<object> ReduceAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length is < 2 or > 3 || arguments[0] is not ICallable callable)
+        {
+            throw new LythonRuntimeException("TypeError", "functools.reduce(function, iterable[, initializer]) expects a callable, an iterable, and an optional initializer.", span);
+        }
+
+        await using var enumerator = ToSequenceAsync(arguments[1], span, context).GetAsyncEnumerator();
+        object accumulator;
+        if (arguments.Length == 3)
+        {
+            accumulator = arguments[2];
+        }
+        else
+        {
+            if (!await enumerator.MoveNextAsync().ConfigureAwait(false))
+            {
+                throw new LythonRuntimeException("TypeError", "reduce() of empty iterable with no initial value", span);
+            }
+
+            accumulator = RuntimeValue(enumerator.Current);
+        }
+
+        while (await enumerator.MoveNextAsync().ConfigureAwait(false))
+        {
+            accumulator = await CallableInvocation.InvokeBinaryAsync(
+                callable,
+                accumulator,
+                RuntimeValue(enumerator.Current),
+                span,
+                context).ConfigureAwait(false);
+        }
+
+        return accumulator;
+    }
+
     private static object CmpToKey(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         _ = context;

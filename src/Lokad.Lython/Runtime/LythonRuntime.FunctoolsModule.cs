@@ -66,7 +66,7 @@ internal sealed partial class LythonRuntime
                 "update_wrapper" => UpdateWrapperCallable.Instance,
                 "wraps" => WrapsCallable.Instance,
                 "total_ordering" => BuiltinCallable.Create(LythonKnownCallableSignatures.FunctoolsTotalOrdering, TotalOrdering),
-                "reduce" => BuiltinCallable.Create(LythonKnownCallableSignatures.FunctoolsReduce, Reduce),
+                "reduce" => BuiltinCallable.Create(LythonKnownCallableSignatures.FunctoolsReduce, Reduce, ReduceAsync),
                 "partial" => PartialFactory.Instance,
                 "partialmethod" => PartialMethodFactory.Instance,
                 "cmp_to_key" => BuiltinCallable.Create(LythonKnownCallableSignatures.FunctoolsCmpToKey, CmpToKey),

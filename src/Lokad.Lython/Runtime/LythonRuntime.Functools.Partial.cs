@@ -61,6 +61,15 @@ internal sealed partial class LythonRuntime
         }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => _callable.Invoke(CombineArguments(arguments), span, context);
+
+        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            var combined = CombineArguments(arguments);
+            return await _callable.InvokeAsync(combined, span, context).ConfigureAwait(false);
+        }
+
+        private CallArgumentValue[] CombineArguments(CallArgumentValue[] arguments)
         {
             HashSet<string>? overriddenKeywords = null;
             for (var i = 0; i < arguments.Length; i++)
@@ -110,7 +119,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            return _callable.Invoke(count == combined.Length ? combined : combined[..count], span, context);
+            return count == combined.Length ? combined : combined[..count];
         }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
