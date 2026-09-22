@@ -84,7 +84,8 @@ public sealed class FunctoolsCacheOwnershipInvariantTests
         GC.WaitForPendingFinalizers();
         GC.Collect();
         // Coupon (infra + key) plus the pool entry charge release; tier backing persists.
-        Assert.Equal(128L + 48L + 128L, pool.Sweep(full: true));
+        // N06 adds the key tuple's adopted int coupon to both sides of the sweep.
+        Assert.Equal(128L + 48L + 128L + 64L, pool.Sweep(full: true));
         Assert.Equal(baseline + 32L, context.MemoryGovernor.CurrentCommittedBytes);
     }
 

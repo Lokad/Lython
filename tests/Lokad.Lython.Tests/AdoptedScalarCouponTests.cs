@@ -383,6 +383,41 @@ public sealed class AdoptedScalarCouponTests
     }
 
     [Fact]
+    public void TupleAdoptsDistinctOnce()
+    {
+        // Tuples adopt construction contents with per-identity dedup: distinct
+        // boxes earn one coupon each, aliases share.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var governor = context.MemoryGovernor;
+        var before = governor.CurrentCommittedBytes;
+        object shared = new BigInteger(9);
+        var tuple = new PyTuple(new object[] { new BigInteger(1), new BigInteger(2), shared, shared }, governor, span);
+        var expected = PyTuple.EstimateApproximateBytes(4) + 3 * AdoptedScalarCoupons.CouponBytes;
+        Assert.Equal(expected, tuple.CommittedStorageBytes);
+        Assert.Equal(expected, governor.CurrentCommittedBytes - before);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+    }
+
+    [Fact]
+    public void TupleDenialRefundsStorage()
+    {
+        // A denied construction coupon refunds the orphaned backing: nothing
+        // stays committed and the tuple never publishes.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var governor = context.MemoryGovernor;
+        var before = governor.CurrentCommittedBytes;
+        var items = new object[] { new BigInteger(1), new BigInteger(2), new BigInteger(3) };
+        var budget = PyTuple.EstimateApproximateBytes(items.Length) + AdoptedScalarCoupons.CouponBytes - 1;
+        var tight = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = budget });
+        Assert.Throws<LythonRuntimeException>(() => new PyTuple(items, tight.MemoryGovernor, span));
+        Assert.Equal(0, tight.MemoryGovernor.CurrentCommittedBytes);
+    }
+
+    [Fact]
     public void ReleaseAllDropsEveryCoupon()
     {
         var (context, span) = Budgeted(65536);

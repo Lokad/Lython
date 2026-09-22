@@ -7,6 +7,7 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
     private readonly object[] _items;
     private readonly MemoryGovernor? _memoryGovernor;
     private readonly LythonSourceSpan? _allocationSpan;
+    private readonly long _adoptedBytes;
 
     public static readonly PyTuple Empty = new([], takeOwnership: true);
 
@@ -22,6 +23,15 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
         _items = MaterializeGovernedItems(items, governor, allocationSpan);
+        try
+        {
+            _adoptedBytes = AdoptConstructionCoupons(_items, governor, allocationSpan);
+        }
+        catch
+        {
+            governor.Release(EstimateApproximateBytes(_items.Length));
+            throw;
+        }
     }
 
     public PyTuple(object[] items)
@@ -40,6 +50,15 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
         _items = [.. items];
         governor.Reserve(approximateBytes, allocationSpan);
         governor.Commit(approximateBytes);
+        try
+        {
+            _adoptedBytes = AdoptConstructionCoupons(_items, governor, allocationSpan);
+        }
+        catch
+        {
+            governor.Release(approximateBytes);
+            throw;
+        }
     }
 
     private PyTuple(object[] items, bool takeOwnership)
@@ -47,11 +66,12 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
         _items = takeOwnership ? items : [.. items];
     }
 
-    private PyTuple(object[] items, MemoryGovernor governor, LythonSourceSpan? allocationSpan, bool takeOwnership)
+    private PyTuple(object[] items, MemoryGovernor governor, LythonSourceSpan? allocationSpan, bool takeOwnership, long adoptedBytes = 0)
     {
         _items = takeOwnership ? items : [.. items];
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
+        _adoptedBytes = adoptedBytes;
     }
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
@@ -66,8 +86,9 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
     // Current committed backing charges, for pooled owners that release them
     // if this tuple is dropped. Tuples never grow, so the snapshot stays exact.
     // Unowned tuples carry nothing: snapshots must mirror committed charges so a
-    // later sweep can never release what was never committed.
-    internal long CommittedStorageBytes => OwnerMemoryGovernor is null ? 0 : EstimateApproximateBytes(_items.Length);
+    // later sweep can never release what was never committed. Adopted scalar
+    // coupons fold in, so snapshots and drop sweeps carry them.
+    internal long CommittedStorageBytes => OwnerMemoryGovernor is null ? 0 : EstimateApproximateBytes(_items.Length) + _adoptedBytes;
 
     internal static PyTuple FromOwnedArray(object[] items) => new(items, takeOwnership: true);
 
@@ -75,11 +96,43 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
     {
         // Ownership transfer lets collection-expression callers avoid a second
         // backing-array copy. The caller must not retain or mutate the array.
+        // Box identities are only read, so the transfer proof is unaffected.
         var approximateBytes = EstimateApproximateBytes(items.Length);
         governor.Reserve(approximateBytes, allocationSpan);
         governor.Commit(approximateBytes);
-        return new PyTuple(items, governor, allocationSpan, takeOwnership: true);
+        var adopted = AdoptConstructionCouponsShared(items, governor, allocationSpan, approximateBytes);
+        return new PyTuple(items, governor, allocationSpan, takeOwnership: true, adoptedBytes: adopted);
     }
+
+    // Adopts construction contents with a refund of the orphaned backing charge
+    // when a coupon denies: callers publish nothing on failure. AdoptAll rolls its
+    // own coupons back, so only the backing refunds here. Tuples never mutate, so
+    // the total stays fixed and no refcount map is retained: only the total rides
+    // the snapshot.
+    private static long AdoptConstructionCoupons(object[] items, MemoryGovernor governor, LythonSourceSpan? span)
+    {
+        var incoming = new AdoptedScalarCoupons();
+        incoming.AdoptAll(items, governor, span);
+        return incoming.CommittedBytes;
+    }
+
+    private static long AdoptConstructionCouponsShared(object[] items, MemoryGovernor governor, LythonSourceSpan? span, long committedBacking)
+    {
+        var incoming = new AdoptedScalarCoupons();
+        try
+        {
+            incoming.AdoptAll(items, governor, span);
+        }
+        catch
+        {
+            governor.Release(committedBacking);
+            throw;
+        }
+
+        return incoming.CommittedBytes;
+    }
+
+
 
     private static object[] MaterializeGovernedItems(IEnumerable<object> items, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {

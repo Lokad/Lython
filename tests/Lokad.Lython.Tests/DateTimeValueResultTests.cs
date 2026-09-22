@@ -41,17 +41,19 @@ public sealed class DateTimeValueResultTests
         var awareDateTime = new PyDateTime(new DateTime(2020, 1, 2, 3, 4, 5), zone);
 
         Assert.Equal(224, InvokeDelta(context, span, date, "replace"));
-        Assert.Equal(272, InvokeDelta(context, span, date, "isocalendar"));
-        Assert.Equal(240, InvokeDelta(context, span, date, "timetuple"));
+        // N06: isocalendar triples adopt one 64B coupon per field.
+        Assert.Equal(272 + 3 * 64, InvokeDelta(context, span, date, "isocalendar"));
+        // N06: timetuples adopt one 64B coupon per each of the 9 fields.
+        Assert.Equal(240 + 9 * 64, InvokeDelta(context, span, date, "timetuple"));
         Assert.Equal(192, InvokeDelta(context, span, time, "replace"));
         Assert.Equal(0, InvokeDelta(context, span, time, "utcoffset"));
         Assert.Equal(192, InvokeDelta(context, span, awareTime, "utcoffset"));
         Assert.Equal(224, InvokeDelta(context, span, dateTime, "date"));
         Assert.Equal(192, InvokeDelta(context, span, dateTime, "time"));
         Assert.Equal(192, InvokeDelta(context, span, dateTime, "timetz"));
-        Assert.Equal(272, InvokeDelta(context, span, dateTime, "isocalendar"));
-        Assert.Equal(240, InvokeDelta(context, span, dateTime, "timetuple"));
-        Assert.Equal(240, InvokeDelta(context, span, dateTime, "utctimetuple"));
+        Assert.Equal(272 + 3 * 64, InvokeDelta(context, span, dateTime, "isocalendar"));
+        Assert.Equal(240 + 9 * 64, InvokeDelta(context, span, dateTime, "timetuple"));
+        Assert.Equal(240 + 9 * 64, InvokeDelta(context, span, dateTime, "utctimetuple"));
         Assert.Equal(0, InvokeDelta(context, span, dateTime, "utcoffset"));
         Assert.Equal(256, InvokeDelta(context, span, awareDateTime, "utcoffset"));
         Assert.Equal(192, InvokeDelta(context, span, dateTime, "astimezone"));

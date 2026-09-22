@@ -30,8 +30,9 @@ public sealed class IteratorItemAccountingTests
         Assert.Equal(new BigInteger(0), ((PyTuple)first)[0]);
         Assert.Equal(new BigInteger(1), ((PyTuple)second)[0]);
         // Shell (128) plus its entry (128) and first tier growth (32), then one
-        // 64 B tuple and one 128 B entry per retained item.
-        Assert.Equal(committedBefore + 128L + 128L + 32L + 2L * (64L + 128L), context.MemoryGovernor.CurrentCommittedBytes);
+        // 64 B tuple and one 128 B entry per retained item, plus two 64 B coupons
+        // per item tuple (fresh index, aliased value) (N06).
+        Assert.Equal(committedBefore + 128L + 128L + 32L + 2L * (64L + 128L) + 4L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.Equal(countBefore + 3, context.State.CallTemporaries.Count);
         GC.KeepAlive(iterator);

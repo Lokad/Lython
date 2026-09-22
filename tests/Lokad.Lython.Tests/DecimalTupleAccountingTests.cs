@@ -23,7 +23,8 @@ public sealed class DecimalTupleAccountingTests
             ?? throw new InvalidOperationException("DecimalTupleCtor not found.");
         var digits = new PyTuple(new object[] { new BigInteger(1), new BigInteger(2), new BigInteger(3) });
         _ = method.Invoke(null, [new object[] { new BigInteger(0), digits, new BigInteger(-1) }, span, context]);
-        Assert.Equal(304L, context.MemoryGovernor.CurrentCommittedBytes);
+        // Plus three 64B coupons for the digits the governed digits tuple retains (N06).
+        Assert.Equal(304L + 3L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -37,7 +38,8 @@ public sealed class DecimalTupleAccountingTests
             ? value
             : throw new InvalidOperationException("as_tuple member not found.");
         _ = ((LythonRuntime.ICallable)member).Invoke([], span, context);
-        Assert.Equal(288L, context.MemoryGovernor.CurrentCommittedBytes);
+        // Plus two 64B coupons for the digits the governed digits tuple retains (N06).
+        Assert.Equal(288L + 2L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

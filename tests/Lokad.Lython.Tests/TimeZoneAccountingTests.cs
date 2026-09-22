@@ -49,8 +49,9 @@ public sealed class TimeZoneAccountingTests
         var zone = ZoneOf(InvokeTimeFunction("Localtime", context, span));
         Assert.Same(context.MemoryGovernor, zone.OwnerMemoryGovernor);
         Assert.Equal("UTC+01:00", zone.AsString());
-        // Shell (64) plus the values tuple (176) and the zone label (128 + 9).
-        Assert.Equal(377L, context.MemoryGovernor.CurrentCommittedBytes - before);
+        // Shell (64) plus the values tuple (176) and the zone label (128 + 9),
+        // plus nine 64 B coupons for the adopted time fields (N06).
+        Assert.Equal(377L + 9L * 64L, context.MemoryGovernor.CurrentCommittedBytes - before);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -69,8 +70,9 @@ public sealed class TimeZoneAccountingTests
             PyString.FromString("%Y-%m-%d %Z")));
         Assert.Same(context.MemoryGovernor, zone.OwnerMemoryGovernor);
         Assert.Equal("UTC", zone.AsString());
-        // Shell (64) plus the values tuple (176) and the zone label (128 + 3).
-        Assert.Equal(371L, context.MemoryGovernor.CurrentCommittedBytes - before);
+        // Shell (64) plus the values tuple (176) and the zone label (128 + 3),
+        // plus nine 64 B coupons for the adopted time fields (N06).
+        Assert.Equal(371L + 9L * 64L, context.MemoryGovernor.CurrentCommittedBytes - before);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

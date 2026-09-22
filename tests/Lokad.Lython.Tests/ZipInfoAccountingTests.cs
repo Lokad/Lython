@@ -30,8 +30,9 @@ public sealed class ZipInfoAccountingTests
         var span = new LythonSourceSpan(0, 0, 0, 0);
         _ = InvokeZipInfo(context, span, []);
         // Shell (128) plus the NoName filename (128 + 6) plus the default
-        // date_time backing (32 + 16 x 6).
-        Assert.Equal(390L, context.MemoryGovernor.CurrentCommittedBytes);
+        // date_time backing (32 + 16 x 6), plus six 64B coupons for the adopted
+        // date_time fields (N06).
+        Assert.Equal(390L + 6L * 64L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

@@ -37,8 +37,9 @@ public sealed class CacheKeyAccountingTests
         var name = Assert.IsType<PyString>(key[1]);
         Assert.Same(context.MemoryGovernor, name.OwnerMemoryGovernor);
         Assert.Equal("k", name.AsString());
-        // Tuple backing (80) plus the keyword name (128 + 1).
-        Assert.Equal(209L, context.MemoryGovernor.CurrentCommittedBytes - before);
+        // Tuple backing (80) plus the keyword name (128 + 1), plus one 64B coupon
+        // for the adopted int value the key tuple retains (N06).
+        Assert.Equal(209L + 64L, context.MemoryGovernor.CurrentCommittedBytes - before);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -54,8 +55,9 @@ public sealed class CacheKeyAccountingTests
         var token = Assert.IsType<PyString>(key[2]);
         Assert.Same(context.MemoryGovernor, token.OwnerMemoryGovernor);
         Assert.Equal("int", token.AsString());
-        // Tuple backing (80) plus the type token (128 + 3).
-        Assert.Equal(211L, context.MemoryGovernor.CurrentCommittedBytes - before);
+        // Tuple backing (80) plus the type token (128 + 3), plus one 64B coupon
+        // for the adopted int value the key tuple retains (N06).
+        Assert.Equal(211L + 64L, context.MemoryGovernor.CurrentCommittedBytes - before);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }
