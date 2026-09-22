@@ -18,7 +18,11 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     private long _protocolBytes;
     private long _protocolSeq;
 
-    internal readonly record struct ProtocolEntry(long Seq, int Hash, object Item);
+    // StructuralHash is frozen at insert: the comparer never dispatches guest
+    // code, so it cannot change under an item object and scans never recompute it.
+    // Layout stays 24 bytes (long + int + int + reference), covered by the
+    // existing per-entry rate.
+    internal readonly record struct ProtocolEntry(long Seq, int Hash, int StructuralHash, object Item);
 
     internal const long ProtocolEntryBytes = 64;
     // Committed capacity, not live CLR capacity: it lags behind after a failed
@@ -335,40 +339,85 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         var hash = PyHashProtocols.GetProtocolHash(item, context, useSpan);
         var structuralHash = PyValueComparer.Instance.GetHashCode(item);
         // N10 part 1: bound collision and non-collision scans alike.
+        // N10 part 2: the snapshots below are lazy (denial points and check
+        // cadence unchanged; only the copies wait for the first candidate).
         var work = 0;
         if (_protocol is not null)
         {
             EnsureSideSnapshot(_protocol.Count, useSpan);
-            var snapshot = _protocol.ToArray();
-            foreach (var entry in snapshot)
+            var sideHit = -1;
+            for (var i = 0; i < _protocol.Count; i++)
             {
                 if ((++work & 63) == 0)
                 {
                     context.CheckExecutionBudget(useSpan);
                 }
 
-                if ((entry.Hash == hash || entry.Hash == structuralHash) && (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan)))
+                var entry = _protocol[i];
+                if (entry.Hash == hash || entry.StructuralHash == structuralHash)
                 {
-                    return false;
+                    sideHit = i;
+                    break;
+                }
+            }
+
+            if (sideHit >= 0)
+            {
+                var snapshot = _protocol.ToArray();
+                for (var i = sideHit; i < snapshot.Length; i++)
+                {
+                    if (i > sideHit && (++work & 63) == 0)
+                    {
+                        context.CheckExecutionBudget(useSpan);
+                    }
+
+                    var entry = snapshot[i];
+                    if ((entry.Hash == hash || entry.StructuralHash == structuralHash) && (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan)))
+                    {
+                        return false;
+                    }
                 }
             }
         }
 
         EnsureStoreSnapshot(_items.Count, useSpan);
-        foreach (var existing in _items.ToArray())
+        var storeHit = -1;
+        var probe = 0;
+        foreach (var existing in _items)
         {
             if ((++work & 63) == 0)
             {
                 context.CheckExecutionBudget(useSpan);
             }
 
-            if ((PyValueComparer.Instance.GetHashCode(existing) == hash || PyValueComparer.Instance.GetHashCode(existing) == structuralHash) && (ReferenceEquals(existing, item) || LythonRuntime.ElementEquals(existing, item, context, useSpan)))
+            if (PyValueComparer.Instance.GetHashCode(existing) == hash || PyValueComparer.Instance.GetHashCode(existing) == structuralHash)
             {
-                return false;
+                storeHit = probe;
+                break;
+            }
+
+            probe++;
+        }
+
+        if (storeHit >= 0)
+        {
+            var storeSnapshot = _items.ToArray();
+            for (var i = storeHit; i < storeSnapshot.Length; i++)
+            {
+                if (i > storeHit && (++work & 63) == 0)
+                {
+                    context.CheckExecutionBudget(useSpan);
+                }
+
+                var existing = storeSnapshot[i];
+                if ((PyValueComparer.Instance.GetHashCode(existing) == hash || PyValueComparer.Instance.GetHashCode(existing) == structuralHash) && (ReferenceEquals(existing, item) || LythonRuntime.ElementEquals(existing, item, context, useSpan)))
+                {
+                    return false;
+                }
             }
         }
 
-        AppendProtocolItem(item, hash);
+        AppendProtocolItem(item, hash, structuralHash);
         return true;
     }
 
@@ -385,17 +434,18 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             }
         }
 
-        AppendProtocolItem(item, PyValueComparer.Instance.GetHashCode(item));
+        var structuralHash = PyValueComparer.Instance.GetHashCode(item);
+        AppendProtocolItem(item, structuralHash, structuralHash);
         return true;
     }
 
-    private void AppendProtocolItem(object item, int hash)
+    private void AppendProtocolItem(object item, int hash, int structuralHash)
     {
         var committedBefore = CommittedStorageBytes;
         EnsureCapacity(Count + 1);
         _ = _items.Add(item);
         _protocol ??= new List<ProtocolEntry>();
-        _protocol.Add(new ProtocolEntry(_protocolSeq++, hash, item));
+        _protocol.Add(new ProtocolEntry(_protocolSeq++, hash, structuralHash, item));
         if (_memoryGovernor is not null)
         {
             _memoryGovernor.Reserve(ProtocolEntryBytes, _allocationSpan);
@@ -434,19 +484,41 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         var hash = PyHashProtocols.GetProtocolHash(item, context, useSpan);
         var structuralHash = PyValueComparer.Instance.GetHashCode(item);
         // N10 part 1: bound collision and non-collision scans alike.
+        // N10 part 2: the snapshot below is lazy (denial point and check
+        // cadence unchanged; only the copy waits for the first candidate).
         var work = 0;
         EnsureSideSnapshot(_protocol.Count, useSpan);
-        var snapshot = _protocol.ToArray();
-        foreach (var entry in snapshot)
+        var sideHit = -1;
+        for (var i = 0; i < _protocol.Count; i++)
         {
             if ((++work & 63) == 0)
             {
                 context.CheckExecutionBudget(useSpan);
             }
 
-            if ((entry.Hash == hash || entry.Hash == structuralHash) && (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan)))
+            var entry = _protocol[i];
+            if (entry.Hash == hash || entry.StructuralHash == structuralHash)
             {
-                return true;
+                sideHit = i;
+                break;
+            }
+        }
+
+        if (sideHit >= 0)
+        {
+            var snapshot = _protocol.ToArray();
+            for (var i = sideHit; i < snapshot.Length; i++)
+            {
+                if (i > sideHit && (++work & 63) == 0)
+                {
+                    context.CheckExecutionBudget(useSpan);
+                }
+
+                var entry = snapshot[i];
+                if ((entry.Hash == hash || entry.StructuralHash == structuralHash) && (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan)))
+                {
+                    return true;
+                }
             }
         }
 
@@ -469,8 +541,12 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         var context = ActiveProtocolContext();
         var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
         var hash = PyValueComparer.Instance.GetHashCode(item);
+        // N10 part 2: the side list snapshots lazily like every other scan.
+        // Dispatching guest == over the live list crashes when the callback
+        // mutates the table mid-scan.
         var work = 0;
-        foreach (var entry in _protocol!)
+        var hit = -1;
+        for (var i = 0; i < _protocol!.Count; i++)
         {
             // N10 part 1: budget non-collision scans too; the context may be
             // null on context-free paths (identity fast path only then).
@@ -479,19 +555,39 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
                 context.CheckExecutionBudget(useSpan);
             }
 
-            if (entry.Hash != hash)
+            if (_protocol[i].Hash == hash)
             {
-                continue;
+                hit = i;
+                break;
             }
+        }
 
-            if (ReferenceEquals(entry.Item, item))
+        if (hit >= 0)
+        {
+            EnsureSideSnapshot(_protocol.Count, useSpan);
+            var snapshot = _protocol.ToArray();
+            for (var i = hit; i < snapshot.Length; i++)
             {
-                return true;
-            }
+                if (i > hit && (++work & 63) == 0 && context is not null && useSpan is not null)
+                {
+                    context.CheckExecutionBudget(useSpan);
+                }
 
-            if (context is not null && useSpan is not null && LythonRuntime.ElementEquals(entry.Item, item, context, useSpan))
-            {
-                return true;
+                var entry = snapshot[i];
+                if (entry.Hash != hash)
+                {
+                    continue;
+                }
+
+                if (ReferenceEquals(entry.Item, item))
+                {
+                    return true;
+                }
+
+                if (context is not null && useSpan is not null && LythonRuntime.ElementEquals(entry.Item, item, context, useSpan))
+                {
+                    return true;
+                }
             }
         }
 
@@ -520,39 +616,84 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         var hash = PyHashProtocols.GetProtocolHash(item, context, useSpan);
         var structuralHash = PyValueComparer.Instance.GetHashCode(item);
         // N10 part 1: bound collision and non-collision scans alike.
+        // N10 part 2: the snapshots below are lazy (denial points and check
+        // cadence unchanged; only the copies wait for the first candidate).
         var work = 0;
         if (_protocol is not null)
         {
             EnsureSideSnapshot(_protocol.Count, useSpan);
-            var snapshot = _protocol.ToArray();
-            foreach (var entry in snapshot)
+            var sideHit = -1;
+            for (var i = 0; i < _protocol.Count; i++)
             {
                 if ((++work & 63) == 0)
                 {
                     context.CheckExecutionBudget(useSpan);
                 }
 
-                if ((entry.Hash == hash || entry.Hash == structuralHash) && (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan)))
+                var entry = _protocol[i];
+                if (entry.Hash == hash || entry.StructuralHash == structuralHash)
                 {
-                    RemoveSideEntry(entry.Item);
-                    return true;
+                    sideHit = i;
+                    break;
+                }
+            }
+
+            if (sideHit >= 0)
+            {
+                var snapshot = _protocol.ToArray();
+                for (var i = sideHit; i < snapshot.Length; i++)
+                {
+                    if (i > sideHit && (++work & 63) == 0)
+                    {
+                        context.CheckExecutionBudget(useSpan);
+                    }
+
+                    var entry = snapshot[i];
+                    if ((entry.Hash == hash || entry.StructuralHash == structuralHash) && (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan)))
+                    {
+                        RemoveSideEntry(entry.Item);
+                        return true;
+                    }
                 }
             }
         }
 
         EnsureStoreSnapshot(_items.Count, useSpan);
-        foreach (var existing in _items.ToArray())
+        var storeHit = -1;
+        var probe = 0;
+        foreach (var existing in _items)
         {
             if ((++work & 63) == 0)
             {
                 context.CheckExecutionBudget(useSpan);
             }
 
-            if ((PyValueComparer.Instance.GetHashCode(existing) == hash || PyValueComparer.Instance.GetHashCode(existing) == structuralHash) && (ReferenceEquals(existing, item) || LythonRuntime.ElementEquals(existing, item, context, useSpan)))
+            if (PyValueComparer.Instance.GetHashCode(existing) == hash || PyValueComparer.Instance.GetHashCode(existing) == structuralHash)
             {
-                _ = _items.Remove(existing);
-                RemoveProtocolShadow(existing);
-                return true;
+                storeHit = probe;
+                break;
+            }
+
+            probe++;
+        }
+
+        if (storeHit >= 0)
+        {
+            var storeSnapshot = _items.ToArray();
+            for (var i = storeHit; i < storeSnapshot.Length; i++)
+            {
+                if (i > storeHit && (++work & 63) == 0)
+                {
+                    context.CheckExecutionBudget(useSpan);
+                }
+
+                var existing = storeSnapshot[i];
+                if ((PyValueComparer.Instance.GetHashCode(existing) == hash || PyValueComparer.Instance.GetHashCode(existing) == structuralHash) && (ReferenceEquals(existing, item) || LythonRuntime.ElementEquals(existing, item, context, useSpan)))
+                {
+                    _ = _items.Remove(existing);
+                    RemoveProtocolShadow(existing);
+                    return true;
+                }
             }
         }
 
@@ -563,12 +704,11 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     {
         if (_protocol is not null)
         {
-            EnsureSideSnapshot(_protocol.Count, _allocationSpan);
-            foreach (var entry in _protocol.ToArray())
+            for (var i = 0; i < _protocol.Count; i++)
             {
-                if (ReferenceEquals(entry.Item, item))
+                if (ReferenceEquals(_protocol[i].Item, item))
                 {
-                    RemoveSideEntry(entry.Item);
+                    RemoveSideEntry(_protocol[i].Item);
                     return true;
                 }
             }

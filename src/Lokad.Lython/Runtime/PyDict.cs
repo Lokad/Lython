@@ -20,7 +20,11 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     private long _protocolBytes;
     private long _protocolSeq;
 
-    internal readonly record struct ProtocolEntry(long Seq, int Hash, object Key);
+    // StructuralHash is frozen at insert: the comparer never dispatches guest
+    // code, so it cannot change under a key object and scans never recompute it.
+    // Layout stays 24 bytes (long + int + int + reference), covered by the
+    // existing per-entry rate.
+    internal readonly record struct ProtocolEntry(long Seq, int Hash, int StructuralHash, object Key);
 
     internal const long ProtocolEntryBytes = 64;
 
@@ -276,30 +280,59 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
         var hash = PyHashProtocols.GetProtocolHash(key, context, useSpan);
         var structuralHash = PyValueComparer.Instance.GetHashCode(key);
-        // N10 part 1: bound collision and non-collision scans alike.
+        // N10 part 2: scans copy lazily. Hash prechecks (and reference
+        // identity) run guest-free over the live tables, so no copy exists
+        // until the first candidate that could dispatch guest ==. The copy
+        // then reflects pre-dispatch state exactly like an eager snapshot,
+        // and scanning continues from the hit with the work budget carried
+        // over. Denial points and check cadence are unchanged from part 1.
         var work = 0;
         if (_protocol is not null)
         {
             EnsureSideSnapshot(_protocol.Count, useSpan);
-            var snapshot = _protocol.ToArray();
-            foreach (var entry in snapshot)
+            var sideHit = -1;
+            for (var i = 0; i < _protocol.Count; i++)
             {
                 if ((++work & 63) == 0)
                 {
                     context.CheckExecutionBudget(useSpan);
                 }
 
-                if ((entry.Hash == hash || entry.Hash == structuralHash) && (ReferenceEquals(entry.Key, key) || LythonRuntime.ElementEquals(entry.Key, key, context, useSpan)))
+                var entry = _protocol[i];
+                if (entry.Hash == hash || entry.StructuralHash == structuralHash)
                 {
-                    if (_items.TryGetValue(ToStorageKey(entry.Key), out var stored))
+                    sideHit = i;
+                    break;
+                }
+            }
+
+            if (sideHit >= 0)
+            {
+                var snapshot = _protocol.ToArray();
+                for (var i = sideHit; i < snapshot.Length; i++)
+                {
+                    // The hit entry already consumed its budget check above.
+                    if (i > sideHit && (++work & 63) == 0)
                     {
-                        value = FromStorageValue(stored);
-                        return true;
+                        context.CheckExecutionBudget(useSpan);
+                    }
+
+                    var entry = snapshot[i];
+                    if ((entry.Hash == hash || entry.StructuralHash == structuralHash) && (ReferenceEquals(entry.Key, key) || LythonRuntime.ElementEquals(entry.Key, key, context, useSpan)))
+                    {
+                        if (_items.TryGetValue(ToStorageKey(entry.Key), out var stored))
+                        {
+                            value = FromStorageValue(stored);
+                            return true;
+                        }
                     }
                 }
             }
         }
 
+        EnsureStoreSnapshot(_items.Count, useSpan);
+        var storeHit = -1;
+        var probe = 0;
         foreach (var pair in _items)
         {
             if ((++work & 63) == 0)
@@ -307,10 +340,32 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                 context.CheckExecutionBudget(useSpan);
             }
 
-            if ((PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(FromStorageKey(pair.Key), key, context, useSpan)))
+            if (PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash)
             {
-                value = FromStorageValue(pair.Value);
-                return true;
+                storeHit = probe;
+                break;
+            }
+
+            probe++;
+        }
+
+        if (storeHit >= 0)
+        {
+            var storeSnapshot = _items.ToArray();
+            for (var i = storeHit; i < storeSnapshot.Length; i++)
+            {
+                // The hit entry already consumed its budget check above.
+                if (i > storeHit && (++work & 63) == 0)
+                {
+                    context.CheckExecutionBudget(useSpan);
+                }
+
+                var pair = storeSnapshot[i];
+                if ((PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(FromStorageKey(pair.Key), key, context, useSpan)))
+                {
+                    value = FromStorageValue(pair.Value);
+                    return true;
+                }
             }
         }
 
@@ -352,8 +407,12 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         var context = ActiveProtocolContext();
         var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
         var hash = PyValueComparer.Instance.GetHashCode(key);
+        // N10 part 2: the side list snapshots lazily like every other scan.
+        // Dispatching guest == over the live list crashes when the callback
+        // mutates the table mid-scan.
         var work = 0;
-        foreach (var entry in _protocol)
+        var hit = -1;
+        for (var i = 0; i < _protocol.Count; i++)
         {
             // N10 part 1: budget non-collision scans too; the context may be
             // null on context-free paths (identity fast path only then).
@@ -362,21 +421,41 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                 context.CheckExecutionBudget(useSpan);
             }
 
-            if (entry.Hash != hash)
+            if (_protocol[i].Hash == hash)
             {
-                continue;
+                hit = i;
+                break;
             }
+        }
 
-            var match = ReferenceEquals(entry.Key, key);
-            if (!match && context is not null && useSpan is not null)
+        if (hit >= 0)
+        {
+            EnsureSideSnapshot(_protocol.Count, useSpan);
+            var snapshot = _protocol.ToArray();
+            for (var i = hit; i < snapshot.Length; i++)
             {
-                match = LythonRuntime.ElementEquals(entry.Key, key, context, useSpan);
-            }
+                if (i > hit && (++work & 63) == 0 && context is not null && useSpan is not null)
+                {
+                    context.CheckExecutionBudget(useSpan);
+                }
 
-            if (match && _items.TryGetValue(ToStorageKey(entry.Key), out var stored))
-            {
-                value = FromStorageValue(stored);
-                return true;
+                var entry = snapshot[i];
+                if (entry.Hash != hash)
+                {
+                    continue;
+                }
+
+                var match = ReferenceEquals(entry.Key, key);
+                if (!match && context is not null && useSpan is not null)
+                {
+                    match = LythonRuntime.ElementEquals(entry.Key, key, context, useSpan);
+                }
+
+                if (match && _items.TryGetValue(ToStorageKey(entry.Key), out var stored))
+                {
+                    value = FromStorageValue(stored);
+                    return true;
+                }
             }
         }
 
@@ -441,42 +520,86 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         var hash = PyHashProtocols.GetProtocolHash(key, context, useSpan);
         var structuralHash = PyValueComparer.Instance.GetHashCode(key);
         // N10 part 1: bound collision and non-collision scans alike.
+        // N10 part 2: the snapshots below are lazy (see TryGetProtocolValueExplicit).
         var work = 0;
         if (_protocol is not null)
         {
             EnsureSideSnapshot(_protocol.Count, useSpan);
-            var snapshot = _protocol.ToArray();
-            foreach (var entry in snapshot)
+            var sideHit = -1;
+            for (var i = 0; i < _protocol.Count; i++)
             {
                 if ((++work & 63) == 0)
                 {
                     context.CheckExecutionBudget(useSpan);
                 }
 
-                if ((entry.Hash == hash || entry.Hash == structuralHash) && (ReferenceEquals(entry.Key, key) || LythonRuntime.ElementEquals(entry.Key, key, context, useSpan)))
+                var entry = _protocol[i];
+                if (entry.Hash == hash || entry.StructuralHash == structuralHash)
                 {
-                    _ = _items.SetItem(ToStorageKey(entry.Key), storageValue);
-                    return;
+                    sideHit = i;
+                    break;
+                }
+            }
+
+            if (sideHit >= 0)
+            {
+                var snapshot = _protocol.ToArray();
+                for (var i = sideHit; i < snapshot.Length; i++)
+                {
+                    if (i > sideHit && (++work & 63) == 0)
+                    {
+                        context.CheckExecutionBudget(useSpan);
+                    }
+
+                    var entry = snapshot[i];
+                    if ((entry.Hash == hash || entry.StructuralHash == structuralHash) && (ReferenceEquals(entry.Key, key) || LythonRuntime.ElementEquals(entry.Key, key, context, useSpan)))
+                    {
+                        _ = _items.SetItem(ToStorageKey(entry.Key), storageValue);
+                        return;
+                    }
                 }
             }
         }
 
         EnsureStoreSnapshot(_items.Count, useSpan);
-        foreach (var pair in _items.ToArray())
+        var storeHit = -1;
+        var probe = 0;
+        foreach (var pair in _items)
         {
             if ((++work & 63) == 0)
             {
                 context.CheckExecutionBudget(useSpan);
             }
 
-            if ((PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(FromStorageKey(pair.Key), key, context, useSpan)))
+            if (PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash)
             {
-                _ = _items.SetItem(ToStorageKey(pair.Key), storageValue);
-                return;
+                storeHit = probe;
+                break;
+            }
+
+            probe++;
+        }
+
+        if (storeHit >= 0)
+        {
+            var storeSnapshot = _items.ToArray();
+            for (var i = storeHit; i < storeSnapshot.Length; i++)
+            {
+                if (i > storeHit && (++work & 63) == 0)
+                {
+                    context.CheckExecutionBudget(useSpan);
+                }
+
+                var pair = storeSnapshot[i];
+                if ((PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(FromStorageKey(pair.Key), key, context, useSpan)))
+                {
+                    _ = _items.SetItem(ToStorageKey(pair.Key), storageValue);
+                    return;
+                }
             }
         }
 
-        AppendProtocolItem(key, storageValue, hash);
+        AppendProtocolItem(key, storageValue, hash, structuralHash);
     }
 
     // Structural protocol insert for context-free paths: identity scan,
@@ -496,16 +619,17 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             }
         }
 
-        AppendProtocolItem(key, storageValue, PyValueComparer.Instance.GetHashCode(key));
+        var structuralHash = PyValueComparer.Instance.GetHashCode(key);
+        AppendProtocolItem(key, storageValue, structuralHash, structuralHash);
     }
 
-    private void AppendProtocolItem(object key, object storageValue, int hash)
+    private void AppendProtocolItem(object key, object storageValue, int hash, int structuralHash)
     {
         var committedBefore = CommittedStorageBytes;
         _items = PyDictStorage.EnsureCapacity(_items, checked(_items.Count + 1), _memoryGovernor, _allocationSpan);
         _items.AddNew(ToStorageKey(key), storageValue);
         EnsureSideTable();
-        _protocol!.Add(new ProtocolEntry(_protocolSeq++, hash, ToStorageKey(key)));
+        _protocol!.Add(new ProtocolEntry(_protocolSeq++, hash, structuralHash, ToStorageKey(key)));
         _version++;
         if (_memoryGovernor is not null)
         {
@@ -544,39 +668,83 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         var hash = PyHashProtocols.GetProtocolHash(key, context, useSpan);
         var structuralHash = PyValueComparer.Instance.GetHashCode(key);
         // N10 part 1: bound collision and non-collision scans alike.
+        // N10 part 2: the snapshots below are lazy (see TryGetProtocolValueExplicit).
         var work = 0;
         if (_protocol is not null)
         {
             EnsureSideSnapshot(_protocol.Count, useSpan);
-            var snapshot = _protocol.ToArray();
-            foreach (var entry in snapshot)
+            var sideHit = -1;
+            for (var i = 0; i < _protocol.Count; i++)
             {
                 if ((++work & 63) == 0)
                 {
                     context.CheckExecutionBudget(useSpan);
                 }
 
-                if ((entry.Hash == hash || entry.Hash == structuralHash) && (ReferenceEquals(entry.Key, key) || LythonRuntime.ElementEquals(entry.Key, key, context, useSpan)))
+                var entry = _protocol[i];
+                if (entry.Hash == hash || entry.StructuralHash == structuralHash)
                 {
-                    RemoveSideEntry(entry.Key);
-                    return true;
+                    sideHit = i;
+                    break;
+                }
+            }
+
+            if (sideHit >= 0)
+            {
+                var snapshot = _protocol.ToArray();
+                for (var i = sideHit; i < snapshot.Length; i++)
+                {
+                    if (i > sideHit && (++work & 63) == 0)
+                    {
+                        context.CheckExecutionBudget(useSpan);
+                    }
+
+                    var entry = snapshot[i];
+                    if ((entry.Hash == hash || entry.StructuralHash == structuralHash) && (ReferenceEquals(entry.Key, key) || LythonRuntime.ElementEquals(entry.Key, key, context, useSpan)))
+                    {
+                        RemoveSideEntry(entry.Key);
+                        return true;
+                    }
                 }
             }
         }
 
         EnsureStoreSnapshot(_items.Count, useSpan);
-        foreach (var pair in _items.ToArray())
+        var storeHit = -1;
+        var probe = 0;
+        foreach (var pair in _items)
         {
             if ((++work & 63) == 0)
             {
                 context.CheckExecutionBudget(useSpan);
             }
 
-            if ((PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(FromStorageKey(pair.Key), key, context, useSpan)))
+            if (PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash)
             {
-                _items.Remove(ToStorageKey(pair.Key));
-                RemoveProtocolShadow(pair.Key);
-                return true;
+                storeHit = probe;
+                break;
+            }
+
+            probe++;
+        }
+
+        if (storeHit >= 0)
+        {
+            var storeSnapshot = _items.ToArray();
+            for (var i = storeHit; i < storeSnapshot.Length; i++)
+            {
+                if (i > storeHit && (++work & 63) == 0)
+                {
+                    context.CheckExecutionBudget(useSpan);
+                }
+
+                var pair = storeSnapshot[i];
+                if ((PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(FromStorageKey(pair.Key), key, context, useSpan)))
+                {
+                    _items.Remove(ToStorageKey(pair.Key));
+                    RemoveProtocolShadow(pair.Key);
+                    return true;
+                }
             }
         }
 
@@ -587,12 +755,11 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     {
         if (_protocol is not null)
         {
-            EnsureSideSnapshot(_protocol.Count, _allocationSpan);
-            foreach (var entry in _protocol.ToArray())
+            for (var i = 0; i < _protocol.Count; i++)
             {
-                if (ReferenceEquals(entry.Key, key))
+                if (ReferenceEquals(_protocol[i].Key, key))
                 {
-                    RemoveSideEntry(entry.Key);
+                    RemoveSideEntry(_protocol[i].Key);
                     return true;
                 }
             }
