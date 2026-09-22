@@ -304,18 +304,26 @@ internal sealed partial class LythonRuntime
             }
             if (spec.Choices is not null)
             {
+                // N03: stream live choices (never materialized at add_argument); check work
+                // while pulling so huge ranges deny before boxing far above budget.
                 var matched = false;
-                for (var i = 0; i < spec.Choices.Count; i++)
+                var scanned = 0;
+                foreach (var candidate in ToSequence(spec.Choices, span, context))
                 {
-                    if (PyEquality.AreEqual(spec.Choices[i], converted))
+                    if (PyEquality.AreEqual(candidate, converted))
                     {
                         matched = true;
                         break;
                     }
+
+                    if ((++scanned & 63) == 0)
+                    {
+                        context.CheckExecutionBudget(span);
+                    }
                 }
                 if (!matched)
                 {
-                    throw CreateParseFailure($"argument {optionName}: invalid choice: '{token}'", span);
+                    throw CreateParseFailure($"argument {optionName}: invalid choice: \u0027{token}\u0027", span);
                 }
             }
             return converted;

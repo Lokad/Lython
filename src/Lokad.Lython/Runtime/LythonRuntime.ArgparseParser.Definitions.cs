@@ -171,8 +171,10 @@ internal sealed partial class LythonRuntime
                 : nargs.Kind == ArgumentNargsKind.ZeroOrMore
                     ? new PyList([], context.MemoryGovernor, span)
                     : DefaultForAction(action, context, span);
-            object[]? choices = keyword.TryGetValue("choices", out var choicesValue)
-                ? [.. ToSequence(choicesValue, span, context)]
+            // N03: keep the live iterable (no eager ToSequence copy): membership streams
+            // at parse time, so later appends apply and huge ranges never box upfront.
+            object? choices = keyword.TryGetValue("choices", out var choicesValue)
+                ? choicesValue
                 : null;
             var converter = keyword.TryGetValue("type", out var typeValue) ? ValidateConverter(typeValue, span) : null;
             var constValue = (action == ArgumentAction.StoreConst || nargs.Kind == ArgumentNargsKind.Optional) && keyword.TryGetValue("const", out var constant)

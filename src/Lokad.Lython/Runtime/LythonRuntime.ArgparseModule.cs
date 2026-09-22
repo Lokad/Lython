@@ -480,7 +480,9 @@ internal sealed partial class LythonRuntime
         ArgumentAction Action,
         bool Required,
         object DefaultValue,
-        IReadOnlyList<object>? Choices,
+        // N03: live choices source (original iterable), never an eager copy - membership
+        // streams at parse time like CPython, so appends after add_argument apply.
+        object? Choices,
         ICallable? Converter,
         bool IsPositional,
         ArgumentNargs Nargs,
