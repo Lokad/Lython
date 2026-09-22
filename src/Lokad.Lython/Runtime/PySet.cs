@@ -334,11 +334,19 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
         var hash = PyHashProtocols.GetProtocolHash(item, context, useSpan);
         var structuralHash = PyValueComparer.Instance.GetHashCode(item);
+        // N10 part 1: bound collision and non-collision scans alike.
+        var work = 0;
         if (_protocol is not null)
         {
+            EnsureSideSnapshot(_protocol.Count, useSpan);
             var snapshot = _protocol.ToArray();
             foreach (var entry in snapshot)
             {
+                if ((++work & 63) == 0)
+                {
+                    context.CheckExecutionBudget(useSpan);
+                }
+
                 if ((entry.Hash == hash || entry.Hash == structuralHash) && (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan)))
                 {
                     return false;
@@ -346,8 +354,14 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             }
         }
 
+        EnsureStoreSnapshot(_items.Count, useSpan);
         foreach (var existing in _items.ToArray())
         {
+            if ((++work & 63) == 0)
+            {
+                context.CheckExecutionBudget(useSpan);
+            }
+
             if ((PyValueComparer.Instance.GetHashCode(existing) == hash || PyValueComparer.Instance.GetHashCode(existing) == structuralHash) && (ReferenceEquals(existing, item) || LythonRuntime.ElementEquals(existing, item, context, useSpan)))
             {
                 return false;
@@ -419,9 +433,17 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
         var hash = PyHashProtocols.GetProtocolHash(item, context, useSpan);
         var structuralHash = PyValueComparer.Instance.GetHashCode(item);
+        // N10 part 1: bound collision and non-collision scans alike.
+        var work = 0;
+        EnsureSideSnapshot(_protocol.Count, useSpan);
         var snapshot = _protocol.ToArray();
         foreach (var entry in snapshot)
         {
+            if ((++work & 63) == 0)
+            {
+                context.CheckExecutionBudget(useSpan);
+            }
+
             if ((entry.Hash == hash || entry.Hash == structuralHash) && (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan)))
             {
                 return true;
@@ -447,8 +469,16 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         var context = ActiveProtocolContext();
         var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
         var hash = PyValueComparer.Instance.GetHashCode(item);
+        var work = 0;
         foreach (var entry in _protocol!)
         {
+            // N10 part 1: budget non-collision scans too; the context may be
+            // null on context-free paths (identity fast path only then).
+            if ((++work & 63) == 0 && context is not null && useSpan is not null)
+            {
+                context.CheckExecutionBudget(useSpan);
+            }
+
             if (entry.Hash != hash)
             {
                 continue;
@@ -477,13 +507,31 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             return RemoveProtocolStructural(item);
         }
 
+        // N10 part 1: with no protocol entries homed, a builtin item that
+        // missed the structural probe cannot match anything the scan would
+        // reach without guest dispatch, so skip both snapshots entirely.
+        // (A protocol item still scans the store: an always-true __eq__ can
+        // match a builtin-homed entry like CPython.)
+        if ((_protocol is null || _protocol.Count == 0) && !PyHashProtocols.NeedsProtocolKey(item))
+        {
+            return false;
+        }
+
         var hash = PyHashProtocols.GetProtocolHash(item, context, useSpan);
         var structuralHash = PyValueComparer.Instance.GetHashCode(item);
+        // N10 part 1: bound collision and non-collision scans alike.
+        var work = 0;
         if (_protocol is not null)
         {
+            EnsureSideSnapshot(_protocol.Count, useSpan);
             var snapshot = _protocol.ToArray();
             foreach (var entry in snapshot)
             {
+                if ((++work & 63) == 0)
+                {
+                    context.CheckExecutionBudget(useSpan);
+                }
+
                 if ((entry.Hash == hash || entry.Hash == structuralHash) && (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan)))
                 {
                     RemoveSideEntry(entry.Item);
@@ -492,8 +540,14 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             }
         }
 
+        EnsureStoreSnapshot(_items.Count, useSpan);
         foreach (var existing in _items.ToArray())
         {
+            if ((++work & 63) == 0)
+            {
+                context.CheckExecutionBudget(useSpan);
+            }
+
             if ((PyValueComparer.Instance.GetHashCode(existing) == hash || PyValueComparer.Instance.GetHashCode(existing) == structuralHash) && (ReferenceEquals(existing, item) || LythonRuntime.ElementEquals(existing, item, context, useSpan)))
             {
                 _ = _items.Remove(existing);
@@ -509,6 +563,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     {
         if (_protocol is not null)
         {
+            EnsureSideSnapshot(_protocol.Count, _allocationSpan);
             foreach (var entry in _protocol.ToArray())
             {
                 if (ReferenceEquals(entry.Item, item))
@@ -557,6 +612,15 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         _ = _items.Remove(item);
         ReleaseSideBytes(ProtocolEntryBytes);
     }
+
+    // N10 part 1: side-table and store snapshots deny before they can
+    // allocate. Sizes follow the tracked entry rate and the snapshot
+    // estimator; unowned sets skip silently like all other paths.
+    private void EnsureSideSnapshot(int count, LythonSourceSpan? span)
+        => _memoryGovernor?.EnsureCanReserve(checked(ProtocolEntryBytes * (long)count), span ?? _allocationSpan);
+
+    private void EnsureStoreSnapshot(int count, LythonSourceSpan? span)
+        => _memoryGovernor?.EnsureCanReserve(EstimateSnapshotBytes(count), span ?? _allocationSpan);
 
     private void ReleaseSideBytes(long bytes)
     {
