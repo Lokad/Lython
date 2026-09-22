@@ -30,7 +30,8 @@ public sealed class RegexCompilationAccountingTests
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
         _ = CreatePattern(PyString.FromString("a(b|c)*d"), context, span);
-        Assert.Equal(65696L, context.MemoryGovernor.CurrentCommittedBytes);
+        // N19: allowance and pool charges as before, plus one 64B cache slot.
+        Assert.Equal(65760L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -40,9 +41,10 @@ public sealed class RegexCompilationAccountingTests
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
-        // Ten groups: 65536 + 9 x 2048, length inside the free envelope.
+        // Ten groups: 65536 + 9 x 2048, length inside the free envelope, plus one
+        // 64B cache slot (N19).
         _ = CreatePattern(PyString.FromString(string.Concat(Enumerable.Repeat("(a)", 10))), context, span);
-        Assert.Equal(84128L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(84192L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -52,9 +54,9 @@ public sealed class RegexCompilationAccountingTests
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
-        // 100 chars, no groups: 65536 + 36 x 256.
+        // 100 chars, no groups: 65536 + 36 x 256, plus one 64B cache slot (N19).
         _ = CreatePattern(PyString.FromString(new string('a', 100)), context, span);
-        Assert.Equal(74912L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(74976L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 

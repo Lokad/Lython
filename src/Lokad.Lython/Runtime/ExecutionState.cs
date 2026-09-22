@@ -115,6 +115,10 @@ internal sealed class ExecutionState
     // retained aliases stay charged.
     internal ChargeReclamationPool CallTemporaries { get; }
 
+    // N19: bounded per-execution regex compilation cache. Lazy so regex-free runs
+    // pay nothing; shared by every context of the run, never across runs.
+    internal RegexPatternCache? RegexCache { get; set; }
+
     // N01: execution-local structural traversal state (cycle pairs, depth,
     // cooperative work ticks). One per run, carried explicitly through async
     // recursion via ExecutionContext so continuations hopping pool threads

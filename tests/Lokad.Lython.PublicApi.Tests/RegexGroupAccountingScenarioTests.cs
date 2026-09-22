@@ -5,8 +5,9 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 /// <summary>
 /// MG09: the compilation allowance scales with capture slots and pattern size,
-/// not just pattern count. Twenty retained 50-group patterns share one hoisted
-/// pattern string, isolating per-compilation growth from literal costs.
+/// not just pattern count. Twenty retained distinct 50-group patterns isolate
+/// per-compilation growth from literal costs; identical spellings share one
+/// cached compilation instead (N19).
 /// </summary>
 public sealed class RegexGroupAccountingScenarioTests
 {
@@ -17,7 +18,7 @@ public sealed class RegexGroupAccountingScenarioTests
         ps = []
         i = 0
         while i < 20:
-            ps.append(re.compile(pat))
+            ps.append(re.compile(pat + str(i)))
             i = i + 1
         return len(ps)
         """;

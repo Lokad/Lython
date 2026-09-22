@@ -77,7 +77,14 @@ internal sealed partial class LythonRuntime
 
             // Summarizing never throws (best-effort scan); hoisting it ahead of
             // the reservation sizes both the peak scratch and the durable charge.
-            var groupSummary = RegexPatternFacts.SummarizeGroups(pattern.AsString());
+            var patternText = pattern.AsString();
+            var cache = context.Services.State.RegexCache ??= new RegexPatternCache();
+            if (cache.TryGet(patternText, rawFlags, out var cached) && cached is not null)
+            {
+                return cached;
+            }
+
+            var groupSummary = RegexPatternFacts.SummarizeGroups(patternText);
             var patternBytes = EstimatePatternBytes(groupSummary.CaptureSlotCount, pattern.Utf8Bytes.Length);
 
             // Cover peak compilation scratch as well as the retained pattern;
@@ -102,6 +109,7 @@ internal sealed partial class LythonRuntime
                 // compilations stranded ~64KiB each. Fresh results adopt here and
                 // reclaim on sweep; retained patterns stay charged.
                 context.Services.State.CallTemporaries.TrackFreshMutable(result, patternBytes, span);
+                cache.Add(patternText, rawFlags, result, context.MemoryGovernor, span);
                 return result;
             }
             catch (PythonRePatternException ex)

@@ -186,12 +186,15 @@ internal sealed partial class LythonRuntime
 
         private object Purge(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            _ = context;
             if (arguments.Length != 0)
             {
                 throw new LythonRuntimeException("TypeError", "re.purge() expects no arguments.", span);
             }
 
+            // N19: drops every cached reference and releases slot charges. Retained
+            // patterns and matches keep working on their own ownership, so a later
+            // compile of the same pattern simply builds (and caches) anew.
+            context.Services.State.RegexCache?.Clear(context.MemoryGovernor);
             return PyNone.Instance;
         }
 
