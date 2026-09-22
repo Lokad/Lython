@@ -343,7 +343,8 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return PyComparison.Compare(list, other, span, "<") < 0;
+                    // N11: route through the contextual operator path so element protocols apply.
+                    return IsTruthy(EvaluateRichComparison(list, other, "__lt__", "__gt__", context, span, static value => value < 0), context, span);
                 }, "list.__lt__", ["value"]),
                 "__le__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -358,7 +359,7 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return PyComparison.Compare(list, other, span, "<=") <= 0;
+                    return IsTruthy(EvaluateRichComparison(list, other, "__le__", "__ge__", context, span, static value => value <= 0), context, span);
                 }, "list.__le__", ["value"]),
                 "__gt__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -373,7 +374,7 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return PyComparison.Compare(list, other, span, ">") > 0;
+                    return IsTruthy(EvaluateRichComparison(list, other, "__gt__", "__lt__", context, span, static value => value > 0), context, span);
                 }, "list.__gt__", ["value"]),
                 "__ge__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -388,7 +389,7 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return PyComparison.Compare(list, other, span, ">=") >= 0;
+                    return IsTruthy(EvaluateRichComparison(list, other, "__ge__", "__le__", context, span, static value => value >= 0), context, span);
                 }, "list.__ge__", ["value"]),
                 "__hash__" => PyNone.Instance,
                 "__reversed__" => BoundCallable.Create((arguments, span, context) =>
@@ -715,7 +716,7 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return PyComparison.Compare(source, arguments[0], span, "<") < 0;
+                    return IsTruthy(EvaluateRichComparison(source, arguments[0], "__lt__", "__gt__", context, span, static value => value < 0), context, span);
                 }, "tuple.__lt__", ["value"]),
                 "__le__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -730,7 +731,7 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return PyComparison.Compare(source, arguments[0], span, "<=") <= 0;
+                    return IsTruthy(EvaluateRichComparison(source, arguments[0], "__le__", "__ge__", context, span, static value => value <= 0), context, span);
                 }, "tuple.__le__", ["value"]),
                 "__gt__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -745,7 +746,7 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return PyComparison.Compare(source, arguments[0], span, ">") > 0;
+                    return IsTruthy(EvaluateRichComparison(source, arguments[0], "__gt__", "__lt__", context, span, static value => value > 0), context, span);
                 }, "tuple.__gt__", ["value"]),
                 "__ge__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -760,7 +761,7 @@ internal sealed partial class LythonRuntime
                         return PyNotImplemented.Instance;
                     }
 
-                    return PyComparison.Compare(source, arguments[0], span, ">=") >= 0;
+                    return IsTruthy(EvaluateRichComparison(source, arguments[0], "__ge__", "__le__", context, span, static value => value >= 0), context, span);
                 }, "tuple.__ge__", ["value"]),
                 "__hash__" => BoundCallable.Create((arguments, span, _) =>
                 {

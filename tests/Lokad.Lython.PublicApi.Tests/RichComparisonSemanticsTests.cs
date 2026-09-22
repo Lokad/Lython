@@ -99,4 +99,68 @@ public sealed class RichComparisonSemanticsTests
         Assert.False(result.Success);
         Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
     }
+
+    [Fact]
+    public async Task EqualPrefixThenLengthDecides()
+        => await AssertBothModes(
+            "class E:\n    def __eq__(self, other):\n        return True\n    def __lt__(self, other):\n        return False\nprint([E()] < [E(), E()])\nprint([E(), E()] > [E()])\nprint([1, 2] < [1, 2, 3])\nprint([1] < [1])\nprint((1, 2) <= (1, 2))\n",
+            "True\nTrue\nTrue\nFalse\nTrue\n");
+
+    [Fact]
+    public async Task DifferingElementsUseRequestedOperator()
+        => await AssertBothModes(
+            "class V:\n    def __init__(self, v):\n        self.v = v\n    def __eq__(self, other):\n        return isinstance(other, V) and self.v == other.v\n    def __lt__(self, other):\n        return self.v < other.v\nprint([V(2)] < [V(1)])\nprint([V(1)] < [V(2)])\nprint([V(1)] <= [V(1)])\n",
+            "False\nTrue\nTrue\n");
+
+    [Fact]
+    public async Task OrderingRawResultFlowsOut()
+        => await AssertBothModes(
+            "class E:\n    def __eq__(self, other):\n        return False\n    def __lt__(self, other):\n        return \"less\"\nprint([E()] < [E()])\n",
+            "less\n");
+
+    [Fact]
+    public async Task OrderingNotImplementedDeclinesToTypeError()
+    {
+        const string code = "class N:\n    def __lt__(self, other):\n        return NotImplemented\nprint(N() < 1)\n";
+        var script = new LythonEngine().Compile(code);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.False(sync.Success);
+        Assert.Equal("TypeError", sync.Failure?.ExceptionType);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.False(asyncResult.Success);
+        Assert.Equal("TypeError", asyncResult.Failure?.ExceptionType);
+    }
+
+    [Fact]
+    public async Task LexicographicScanOrderAndShortCircuit()
+        => await AssertBothModes(
+            "log = []\nclass E:\n    def __eq__(self, other):\n        log.append(1)\n        return True\nprint([E(), E()] < [E(), E(), E()])\nprint(log)\n",
+            "True\n[1, 1]\n");
+
+    [Fact]
+    public async Task NanElementsCompareLikePython()
+        => await AssertBothModes(
+            "x = float(\"nan\")\nprint([x] == [x])\nprint([x] != [x])\n",
+            "True\nFalse\n");
+
+    [Fact]
+    public async Task MemberDunderOrderingMatchesOperator()
+        => await AssertBothModes(
+            "class E:\n    def __eq__(self, other):\n        return True\n    def __lt__(self, other):\n        return False\nprint([E()].__lt__([E(), E()]))\n",
+            "True\n");
+
+    [Fact]
+    public async Task DelayedElementProtocolsSuspendInOrdering()
+    {
+        const string code = "from pathlib import Path\nclass E:\n    def __eq__(self, other):\n        return Path(\"/v.txt\").read_text() == \"x\\n\"\n    def __lt__(self, other):\n        return False\nprint([E()] < [E(), E()])\n";
+        var script = new LythonEngine().Compile(code);
+        Assert.True(script.IsValid);
+        var host = new DelayedLythonHost();
+        host.SeedFile("/v.txt", "x\n");
+        var asyncResult = await script.RunAsync(host);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("True\n", asyncResult.StandardOutput);
+        Assert.True(host.CompletedAsynchronously > 0);
+    }
 }

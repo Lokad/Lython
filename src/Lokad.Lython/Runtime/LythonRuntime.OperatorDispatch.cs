@@ -1371,9 +1371,110 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        // Lexicographic positions use contextual element protocols; other shapes
+        // stay on the structural relational path.
+        if (left is PyList leftList && right is PyList rightList)
+        {
+            return SequencesCompareOrderedLists(leftList, rightList, method, reflectedMethod, context, span, fallback);
+        }
+
+        if (PyTupleLike.TryGetItems(left, out var leftTupleItems) && PyTupleLike.TryGetItems(right, out var rightTupleItems))
+        {
+            return SequencesCompareOrdered(left, right, leftTupleItems, rightTupleItems, method, reflectedMethod, context, span, fallback);
+        }
+
+        if (left is PySlice leftSlice && right is PySlice rightSlice)
+        {
+            return SequencesCompareOrdered(
+                left,
+                right,
+                [leftSlice.StartBound ?? PyNone.Instance, leftSlice.StopBound ?? PyNone.Instance, leftSlice.StepBound ?? PyNone.Instance],
+                [rightSlice.StartBound ?? PyNone.Instance, rightSlice.StopBound ?? PyNone.Instance, rightSlice.StepBound ?? PyNone.Instance],
+                method,
+                reflectedMethod,
+                context,
+                span,
+                fallback);
+        }
+
         using (PyStructuralGuard.PushAmbient(context, span))
         {
             return CompareRelational(left, right, span, fallback, ComparisonSymbol(method));
+        }
+    }
+
+    // Lexicographic ordering with contextual elements: identical objects and
+    // ==-equal prefixes are skipped (honoring custom __eq__ with N01 traversal
+    // bounds); the first differing pair decides through the requested operator
+    // (honoring custom ordering methods, reflected precedence and raw results).
+    // Unequal lengths decide after the common prefix, like CPython.
+    private static object SequencesCompareOrderedLists(
+        PyList left,
+        PyList right,
+        string method,
+        string reflectedMethod,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        Func<int, bool> fallback)
+    {
+        using (PyStructuralGuard.EnterPair(left, right, span, context))
+        {
+            var common = Math.Min(left.Count, right.Count);
+            for (var i = 0; i < common; i++)
+            {
+                PyStructuralGuard.NoteWork(context, span);
+                var leftItem = left[i];
+                var rightItem = right[i];
+                if (ReferenceEquals(leftItem, rightItem))
+                {
+                    continue;
+                }
+
+                if (ElementEquals(leftItem, rightItem, context, span))
+                {
+                    continue;
+                }
+
+                return EvaluateRichComparison(leftItem, rightItem, method, reflectedMethod, context, span, fallback);
+            }
+
+            return fallback(left.Count.CompareTo(right.Count));
+        }
+    }
+
+    private static object SequencesCompareOrdered(
+        object left,
+        object right,
+        IReadOnlyList<object> leftItems,
+        IReadOnlyList<object> rightItems,
+        string method,
+        string reflectedMethod,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        Func<int, bool> fallback)
+    {
+        using (PyStructuralGuard.EnterPair(left, right, span, context))
+        {
+            var common = Math.Min(leftItems.Count, rightItems.Count);
+            for (var i = 0; i < common; i++)
+            {
+                PyStructuralGuard.NoteWork(context, span);
+                var leftItem = leftItems[i];
+                var rightItem = rightItems[i];
+                if (ReferenceEquals(leftItem, rightItem))
+                {
+                    continue;
+                }
+
+                if (ElementEquals(leftItem, rightItem, context, span))
+                {
+                    continue;
+                }
+
+                return EvaluateRichComparison(leftItem, rightItem, method, reflectedMethod, context, span, fallback);
+            }
+
+            return fallback(leftItems.Count.CompareTo(rightItems.Count));
         }
     }
     private static ValueTask<object> EvaluateRichComparisonAsync(
@@ -1448,9 +1549,105 @@ internal sealed partial class LythonRuntime
             return invocation.Value;
         }
 
+        if (left is PyList leftList && right is PyList rightList)
+        {
+            return await SequencesCompareOrderedListsAsync(leftList, rightList, methods.Left, methods.Right, context, span, fallback).ConfigureAwait(false);
+        }
+
+        if (PyTupleLike.TryGetItems(left, out var leftTupleItems) && PyTupleLike.TryGetItems(right, out var rightTupleItems))
+        {
+            return await SequencesCompareOrderedAsync(left, right, leftTupleItems, rightTupleItems, methods.Left, methods.Right, context, span, fallback).ConfigureAwait(false);
+        }
+
+        if (left is PySlice leftSlice && right is PySlice rightSlice)
+        {
+            return await SequencesCompareOrderedAsync(
+                left,
+                right,
+                [leftSlice.StartBound ?? PyNone.Instance, leftSlice.StopBound ?? PyNone.Instance, leftSlice.StepBound ?? PyNone.Instance],
+                [rightSlice.StartBound ?? PyNone.Instance, rightSlice.StopBound ?? PyNone.Instance, rightSlice.StepBound ?? PyNone.Instance],
+                methods.Left,
+                methods.Right,
+                context,
+                span,
+                fallback).ConfigureAwait(false);
+        }
+
         using (PyStructuralGuard.PushAmbient(context, span))
         {
             return CompareRelational(left, right, span, fallback, ComparisonSymbol(methods.Left));
+        }
+    }
+
+    private static async ValueTask<object> SequencesCompareOrderedListsAsync(
+        PyList left,
+        PyList right,
+        string method,
+        string reflectedMethod,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        Func<int, bool> fallback)
+    {
+        var guardState = context.Services.State.StructuralTraversal;
+        using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
+        {
+            var common = Math.Min(left.Count, right.Count);
+            for (var i = 0; i < common; i++)
+            {
+                PyStructuralGuard.NoteWork(guardState, context, span);
+                var leftItem = left[i];
+                var rightItem = right[i];
+                if (ReferenceEquals(leftItem, rightItem))
+                {
+                    continue;
+                }
+
+                if (await ElementEqualsAsync(leftItem, rightItem, context, span).ConfigureAwait(false))
+                {
+                    continue;
+                }
+
+                return await EvaluateRichComparisonAsync(leftItem, rightItem, method, reflectedMethod, context, span, fallback).ConfigureAwait(false);
+            }
+
+            return fallback(left.Count.CompareTo(right.Count));
+        }
+    }
+
+    private static async ValueTask<object> SequencesCompareOrderedAsync(
+        object left,
+        object right,
+        IReadOnlyList<object> leftItems,
+        IReadOnlyList<object> rightItems,
+        string method,
+        string reflectedMethod,
+        ExecutionContext context,
+        LythonSourceSpan span,
+        Func<int, bool> fallback)
+    {
+        var guardState = context.Services.State.StructuralTraversal;
+        using (PyStructuralGuard.EnterPair(guardState, left, right, span, context))
+        {
+            var common = Math.Min(leftItems.Count, rightItems.Count);
+            for (var i = 0; i < common; i++)
+            {
+                PyStructuralGuard.NoteWork(guardState, context, span);
+                var leftItem = leftItems[i];
+                var rightItem = rightItems[i];
+                if (ReferenceEquals(leftItem, rightItem))
+                {
+                    continue;
+                }
+
+                if (await ElementEqualsAsync(leftItem, rightItem, context, span).ConfigureAwait(false))
+                {
+                    continue;
+                }
+
+                return await EvaluateRichComparisonAsync(leftItem, rightItem, method, reflectedMethod, context, span, fallback).ConfigureAwait(false);
+            }
+
+            return fallback(leftItems.Count.CompareTo(rightItems.Count));
         }
     }
     private static string ComparisonSymbol(string method) => method switch
