@@ -355,24 +355,24 @@ internal static class StaticNameBindingDiagnostics
                 return;
 
             case ListComprehensionExpressionSyntax listComprehension:
-                AnalyzeExpression(listComprehension.ItemExpression, context, localNames, Clone(maybeAssigned));
-                AnalyzeComprehensionClauses(listComprehension.Clauses, context, localNames, maybeAssigned);
+                var listAssigned = AnalyzeComprehensionClauses(listComprehension.Clauses, context, localNames, maybeAssigned);
+                AnalyzeExpression(listComprehension.ItemExpression, context, localNames, listAssigned);
                 return;
 
             case GeneratorExpressionSyntax generator:
-                AnalyzeExpression(generator.ItemExpression, context, localNames, Clone(maybeAssigned));
-                AnalyzeComprehensionClauses(generator.Clauses, context, localNames, maybeAssigned);
+                var generatorAssigned = AnalyzeComprehensionClauses(generator.Clauses, context, localNames, maybeAssigned);
+                AnalyzeExpression(generator.ItemExpression, context, localNames, generatorAssigned);
                 return;
 
             case SetComprehensionExpressionSyntax setComprehension:
-                AnalyzeExpression(setComprehension.ItemExpression, context, localNames, Clone(maybeAssigned));
-                AnalyzeComprehensionClauses(setComprehension.Clauses, context, localNames, maybeAssigned);
+                var setAssigned = AnalyzeComprehensionClauses(setComprehension.Clauses, context, localNames, maybeAssigned);
+                AnalyzeExpression(setComprehension.ItemExpression, context, localNames, setAssigned);
                 return;
 
             case DictComprehensionExpressionSyntax dictComprehension:
-                AnalyzeExpression(dictComprehension.KeyExpression, context, localNames, Clone(maybeAssigned));
-                AnalyzeExpression(dictComprehension.ValueExpression, context, localNames, Clone(maybeAssigned));
-                AnalyzeComprehensionClauses(dictComprehension.Clauses, context, localNames, maybeAssigned);
+                var dictAssigned = AnalyzeComprehensionClauses(dictComprehension.Clauses, context, localNames, maybeAssigned);
+                AnalyzeExpression(dictComprehension.KeyExpression, context, localNames, dictAssigned);
+                AnalyzeExpression(dictComprehension.ValueExpression, context, localNames, dictAssigned);
                 return;
 
             case AssignmentExpressionSyntax assignment:
@@ -395,7 +395,11 @@ internal static class StaticNameBindingDiagnostics
         }
     }
 
-    private static void AnalyzeComprehensionClauses(
+    // The first iterable evaluates in the enclosing scope, while later
+    // iterables, conditions and the result expressions observe the targets
+    // bound by their enclosing clauses. The returned set stays local to the
+    // comprehension: targets never leak into the outer assignment facts.
+    private static HashSet<string> AnalyzeComprehensionClauses(
         IReadOnlyList<ComprehensionClauseSyntax> clauses,
         StaticAnalysisContext context,
         HashSet<string> localNames,
@@ -411,6 +415,8 @@ internal static class StaticNameBindingDiagnostics
                 AnalyzeExpression(clause.Condition, context, localNames, comprehensionAssigned);
             }
         }
+
+        return comprehensionAssigned;
     }
 
     private static void AnalyzeLocalRead(

@@ -1,3 +1,4 @@
+using System.Numerics;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
@@ -2151,6 +2152,71 @@ def bad():
 bad()
 """);
 
+        Assert.False(compiled.IsValid);
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3146");
+    }
+
+    [Fact]
+    public async Task ComprehensionTarget_BeforeLaterOuterAssignment()
+    {
+        var script = new LythonEngine().Compile("""
+            def f():
+                result = [v for v in [1, 2]]
+                v = 0
+                return result
+            return f()
+            """);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
+        var expected = new List<object?> { new BigInteger(1), new BigInteger(2) };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task ComprehensionTargets_CoverAllKindsLaterOuterLoopAndNesting()
+    {
+        var script = new LythonEngine().Compile("""
+            def f():
+                total = sum(v for v in [1, 2])
+                unique = sorted({v for v in [2, 1]})
+                squares = {v: v * v for v in [1, 2]}
+                pairs = [y for x in [[1, 2]] for y in x]
+                first = [v for v in [1, 2]]
+                for v in [3]:
+                    pass
+                return [total, unique, squares, pairs, first]
+            return f()
+            """);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
+        var expected = new List<object?>
+        {
+            new BigInteger(3),
+            new List<object?> { new BigInteger(1), new BigInteger(2) },
+            new Dictionary<object, object?> { [new BigInteger(1)] = new BigInteger(1), [new BigInteger(2)] = new BigInteger(4) },
+            new List<object?> { new BigInteger(1), new BigInteger(2) },
+            new List<object?> { new BigInteger(1), new BigInteger(2) },
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public void FirstIterableReadBeforeAssignment_StillReported()
+    {
+        var compiled = new LythonEngine().Compile("""
+            def f():
+                g = [x for x in data]
+                data = [1]
+                return g
+            """);
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3146");
     }
