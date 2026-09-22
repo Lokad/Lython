@@ -285,7 +285,12 @@ internal sealed partial class LythonRuntime
                 return new PyList([], context.MemoryGovernor, span);
             }
 
-            var cutPoints = new List<object>(n - 1);
+            // N04: preflight output count/capacity; reserve scratch before it can allocate,
+            // keep it alive through governed construction; check work during the fill.
+            var outputCount = n - 1;
+            context.ObserveCollectionCount(outputCount, span);
+            using var cutScratch = context.MemoryGovernor.ReserveTemporary(checked(8L * outputCount), span);
+            var cutPoints = new List<object>(outputCount);
             var count = values.Count;
             for (var i = 1; i < n; i++)
             {
@@ -293,6 +298,10 @@ internal sealed partial class LythonRuntime
                     ? InterpolateInclusiveQuantile(values, i, n)
                     : InterpolateExclusiveQuantile(values, i, n);
                 cutPoints.Add(IsWholeInteger(value) ? new BigInteger(value) : value);
+                if ((i & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
             }
 
             return new PyList(cutPoints, context.MemoryGovernor, span);

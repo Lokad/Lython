@@ -309,10 +309,18 @@ internal sealed partial class LythonRuntime
                         var n = arguments.Length == 1 && arguments[0] is not PyNone
                             ? ExpectPositivePartitionCount(arguments[0], "NormalDist.quantiles(..., n=...)", span)
                             : 4;
-                        var results = new List<object>(Math.Max(0, n - 1));
+                        // N04: preflight output count/capacity before the CLR list can allocate.
+                        var quantileCount = Math.Max(0, n - 1);
+                        context.ObserveCollectionCount(quantileCount, span);
+                        using var quantileScratch = context.MemoryGovernor.ReserveTemporary(checked(8L * quantileCount), span);
+                        var results = new List<object>(quantileCount);
                         for (var i = 1; i < n; i++)
                         {
                             results.Add(InvCdf((double)i / n, span));
+                            if ((i & 63) == 0)
+                            {
+                                context.CheckExecutionBudget(span);
+                            }
                         }
 
                         return new PyList(results, context.MemoryGovernor, span);
@@ -333,10 +341,19 @@ internal sealed partial class LythonRuntime
                             ? ExpectSeed(arguments[1], span)
                             : 0;
                         var random = new Random(seed);
-                        var samples = new List<object>((int)nInteger);
+                        // N04: preflight output count/capacity before the CLR list can allocate.
+                        var sampleCount = (int)nInteger;
+                        context.ObserveCollectionCount(sampleCount, span);
+                        using var sampleScratch = context.MemoryGovernor.ReserveTemporary(checked(8L * (long)sampleCount), span);
+                        var samples = new List<object>(sampleCount);
                         for (var i = 0; i < (int)nInteger; i++)
                         {
                             samples.Add(Mean + Stdev * NextGaussian(random));
+                            context.ObserveCollectionCount(samples.Count, span);
+                            if (((i + 1) & 63) == 0)
+                            {
+                                context.CheckExecutionBudget(span);
+                            }
                         }
 
                         return new PyList(samples, context.MemoryGovernor, span);

@@ -42,7 +42,9 @@ internal sealed partial class LythonRuntime
 
         private static object Join(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var builder = new StringBuilder();
+            // N04: govern variable string growth before append, including quoting
+            // and UTF-16/UTF-8 conversion overlap via the byte builder.
+            var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
             var first = true;
             foreach (var item in ToSequence(arguments[0], span, context))
             {
@@ -50,14 +52,14 @@ internal sealed partial class LythonRuntime
                 var value = RequireString(item, "shlex.join", span);
                 if (!first)
                 {
-                    builder.Append(' ');
+                    builder.Append((byte)0x20);
                 }
 
-                builder.Append(QuoteShellWord(value));
+                builder.AppendString(QuoteShellWord(value));
                 first = false;
             }
 
-            return PyString.FromString(builder.ToString(), context.MemoryGovernor, span);
+            return builder.ToPyStringAndRelease();
         }
 
         private static object Split(object[] arguments, LythonSourceSpan span, ExecutionContext context)
