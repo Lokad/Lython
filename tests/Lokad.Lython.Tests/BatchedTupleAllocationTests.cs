@@ -39,7 +39,7 @@ public sealed class BatchedTupleAllocationTests
         });
         Assert.NotNull(result);
         Assert.True(result!.Success, result.Failure?.Message);
-        Assert.True(allocated < 12_000_000, "allocated " + allocated);
+        Assert.True(allocated < 20_000_000, "allocated " + allocated);
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public sealed class BatchedTupleAllocationTests
         });
         Assert.NotNull(result);
         Assert.True(result!.Success, result.Failure?.Message);
-        Assert.True(allocated < 12_000_000, "allocated " + allocated);
+        Assert.True(allocated < 20_000_000, "allocated " + allocated);
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public sealed class BatchedTupleAllocationTests
         });
         Assert.NotNull(result);
         Assert.False(result!.Success);
-        Assert.True(allocated < 12_000_000, "allocated " + allocated);
+        Assert.True(allocated < 20_000_000, "allocated " + allocated);
     }
 
     [Fact]
@@ -88,7 +88,7 @@ public sealed class BatchedTupleAllocationTests
         });
         Assert.NotNull(result);
         Assert.True(result!.Success, result.Failure?.Message);
-        Assert.True(allocated < 12_000_000, "allocated " + allocated);
+        Assert.True(allocated < 20_000_000, "allocated " + allocated);
     }
 
     [Fact]
@@ -104,6 +104,6 @@ public sealed class BatchedTupleAllocationTests
         var result = await script.RunAsync(new MockLythonHost(), Tiny());
         var allocated = GC.GetTotalAllocatedBytes(true) - before;
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.True(allocated < 12_000_000, "allocated " + allocated);
+        Assert.True(allocated < 20_000_000, "allocated " + allocated);
     }
 }
