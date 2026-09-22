@@ -126,7 +126,7 @@ public sealed class StatisticsDrainAccountingTests
 
         var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;
         var counts = Assert.IsType<List<KeyValuePair<object, int>>>(
-            frequency.Invoke(null, [data, context.MemoryGovernor, span]));
+            frequency.Invoke(null, [data, context.MemoryGovernor, span, context]));
 
         Assert.Equal(1000, counts.Count);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
@@ -137,7 +137,9 @@ public sealed class StatisticsDrainAccountingTests
     {
         // Oversized scratch under a tiny budget denies instead of
         // over-allocating: the temporary reservation is still governed.
-        var governor = new MemoryGovernor(1024);
+        // N12: GetModeCounts now takes the execution context for guest key dispatch.
+        var limited = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 1024 });
+        var governor = limited.MemoryGovernor;
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var moduleType = typeof(LythonRuntime).GetNestedType("StatisticsModule", BindingFlags.NonPublic)
             ?? throw new InvalidOperationException("StatisticsModule not found.");
@@ -146,7 +148,7 @@ public sealed class StatisticsDrainAccountingTests
         var data = Enumerable.Range(0, 1000).Select(static i => (object)new BigInteger(i)).ToList();
 
         var failure = Assert.Throws<TargetInvocationException>(
-            () => frequency.Invoke(null, [data, governor, span]));
+            () => frequency.Invoke(null, [data, governor, span, limited]));
         var denial = Assert.IsType<LythonRuntimeException>(failure.InnerException);
         Assert.Equal("MemoryError", denial.ExceptionType);
     }
@@ -155,7 +157,8 @@ public sealed class StatisticsDrainAccountingTests
     {
         // Multimode over empty input allocates nothing, so it stays free even
         // under a zero budget.
-        var governor = new MemoryGovernor(0);
+        var emptyContext = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var governor = emptyContext.MemoryGovernor;
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var moduleType = typeof(LythonRuntime).GetNestedType("StatisticsModule", BindingFlags.NonPublic)
             ?? throw new InvalidOperationException("StatisticsModule not found.");
@@ -163,7 +166,7 @@ public sealed class StatisticsDrainAccountingTests
             ?? throw new InvalidOperationException("GetModeCounts not found.");
 
         var counts = Assert.IsType<List<KeyValuePair<object, int>>>(
-            frequency.Invoke(null, [new List<object>(), governor, span]));
+            frequency.Invoke(null, [new List<object>(), governor, span, emptyContext]));
 
         Assert.Empty(counts);
         Assert.Equal(0, governor.CurrentCommittedBytes);

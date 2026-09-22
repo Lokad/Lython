@@ -33,10 +33,10 @@ internal sealed partial class LythonRuntime
         private object _bOriginal;
         private IReadOnlyList<object> _a;
         private IReadOnlyList<object> _b;
-        private Dictionary<object, List<int>> _b2j;
-        private HashSet<object> _bjunk;
-        private HashSet<object> _bpopular;
-        private Dictionary<object, int>? _fullBCount;
+        private ContextualKeyTable<List<int>> _b2j;
+        private ContextualKeySet _bjunk;
+        private ContextualKeySet _bpopular;
+        private ContextualKeyTable<int>? _fullBCount;
         private List<MatchingBlock>? _matchingBlocks;
         private List<DiffOpcode>? _opcodes;
         private long _aCharge;
@@ -64,9 +64,9 @@ internal sealed partial class LythonRuntime
             _bOriginal = bOriginal;
             _a = DifflibModule.MaterializeGovernedSequence(aOriginal, span, context, out _aCharge);
             _b = [];
-            _b2j = new Dictionary<object, List<int>>(PyValueComparer.Instance);
-            _bjunk = new HashSet<object>(PyValueComparer.Instance);
-            _bpopular = new HashSet<object>(PyValueComparer.Instance);
+            _b2j = new ContextualKeyTable<List<int>>();
+            _bjunk = new ContextualKeySet();
+            _bpopular = new ContextualKeySet();
             try
             {
                 SetSeq2(bOriginal, span, context);
@@ -304,18 +304,19 @@ internal sealed partial class LythonRuntime
         {
             _fullBCount ??= BuildFullBCount(span, context);
             using var reservation = _governor.ReserveTemporary(0, span);
-            var available = new Dictionary<object, int>(PyValueComparer.Instance);
+            var available = new ContextualKeyTable<int>();
             var peakCount = 0;
             var matches = 0;
             var work = 0;
             foreach (var item in _a)
             {
-                if (!available.TryGetValue(item, out var count))
+                if (!available.TryGetValue(item, context, span, out var count))
                 {
-                    _fullBCount.TryGetValue(item, out count);
+                    _fullBCount.TryGetValue(item, context, span, out count);
                 }
 
-                available[item] = count - 1;
+                // Single hash-plus-scan publish (GetOrAdd returns the stored entry).
+                available.GetOrAdd(item, count - 1, context, span).Value = count - 1;
                 if (available.Count > peakCount)
                 {
                     reservation.Grow(CountBytesPerEntry * (available.Count - peakCount), span);
@@ -477,10 +478,11 @@ internal sealed partial class LythonRuntime
         {
             // Build into locals so a failure (unhashable elements, budgets,
             // junk-predicate errors) leaves the previous index intact with its
-            // charge; only swap and commit on success.
-            var b2j = new Dictionary<object, List<int>>(PyValueComparer.Instance);
-            var bjunk = new HashSet<object>(PyValueComparer.Instance);
-            var bpopular = new HashSet<object>(PyValueComparer.Instance);
+            // charge; only swap and commit on success. Keys compare with guest
+            // __hash__/__eq__ (N12) instead of the structural comparer.
+            var b2j = new ContextualKeyTable<List<int>>();
+            var bjunk = new ContextualKeySet();
+            var bpopular = new ContextualKeySet();
             using var reservation = _governor.ReserveTemporary(0, span);
             var work = 0;
 
@@ -488,10 +490,9 @@ internal sealed partial class LythonRuntime
             {
                 for (var index = 0; index < _b.Count; index++)
                 {
-                    if (!b2j.TryGetValue(_b[index], out var indices))
+                    var indices = b2j.GetOrAdd(_b[index], static () => new List<int>(), context, span).Value;
+                    if (indices.Count == 0)
                     {
-                        indices = [];
-                        b2j[_b[index]] = indices;
                         reservation.Grow(ChainKeyBytesPerElement, span);
                     }
 
@@ -505,11 +506,11 @@ internal sealed partial class LythonRuntime
 
                 if (_isjunk is not null)
                 {
-                    foreach (var item in b2j.Keys.ToArray())
+                    foreach (var item in b2j.EntriesInOrder.Select(static entry => entry.Key).ToArray())
                     {
                         if (DifflibModule.CallJunkPredicate(_isjunk, item, span, context))
                         {
-                            bjunk.Add(item);
+                            bjunk.Add(item, context, span);
                         }
 
                         if ((++work & (BudgetCheckInterval - 1)) == 0)
@@ -518,20 +519,20 @@ internal sealed partial class LythonRuntime
                         }
                     }
 
-                    foreach (var item in bjunk)
+                    foreach (var item in bjunk.Keys)
                     {
-                        b2j.Remove(item);
+                        b2j.Remove(item, context, span);
                     }
                 }
 
                 if (_autojunk && _b.Count >= 200)
                 {
                     var threshold = _b.Count / 100 + 1;
-                    foreach (var pair in b2j)
+                    foreach (var entry in b2j.EntriesInOrder)
                     {
-                        if (pair.Value.Count > threshold)
+                        if (entry.Value.Count > threshold)
                         {
-                            bpopular.Add(pair.Key);
+                            bpopular.Add(entry.Key, context, span);
                         }
 
                         if ((++work & (BudgetCheckInterval - 1)) == 0)
@@ -540,9 +541,9 @@ internal sealed partial class LythonRuntime
                         }
                     }
 
-                    foreach (var item in bpopular)
+                    foreach (var item in bpopular.Keys)
                     {
-                        b2j.Remove(item);
+                        b2j.Remove(item, context, span);
                     }
                 }
             }
@@ -567,21 +568,21 @@ internal sealed partial class LythonRuntime
             _chainCharge = chainCharge;
         }
 
-        private Dictionary<object, int> BuildFullBCount(LythonSourceSpan span, ExecutionContext context)
+        private ContextualKeyTable<int> BuildFullBCount(LythonSourceSpan span, ExecutionContext context)
         {
             var beforeCharges = CommittedStorageBytes;
             using var reservation = _governor.ReserveTemporary(0, span);
-            var counts = new Dictionary<object, int>(PyValueComparer.Instance);
+            // N12: contextual counts (guest __hash__/__eq__).
+            var counts = new ContextualKeyTable<int>();
             var work = 0;
             foreach (var item in _b)
             {
-                if (!counts.TryGetValue(item, out var count))
+                var entry = counts.GetOrAdd(item, 0, context, span);
+                if (entry.Value == 0)
                 {
                     reservation.Grow(CountBytesPerEntry, span);
-                    count = 0;
                 }
-
-                counts[item] = count + 1;
+                entry.Value++;
                 if ((++work & (BudgetCheckInterval - 1)) == 0)
                 {
                     context.CheckExecutionBudget(span);
@@ -621,17 +622,17 @@ internal sealed partial class LythonRuntime
             // N05: preflight before the CLR graph can allocate; the graph (dict +
             // nested index lists/boxes) is covered by one coupon owned by the view itself.
             var charge = ChainBaseBytes;
-            foreach (var pair in _b2j)
+            foreach (var entry in _b2j.EntriesInOrder)
             {
-                charge = checked(charge + ChainKeyBytesPerElement + ViewListBaseBytes + (ChainIndexBytesPerElement * pair.Value.Count));
+                charge = checked(charge + ChainKeyBytesPerElement + ViewListBaseBytes + (ChainIndexBytesPerElement * entry.Value.Count));
             }
 
             _governor.EnsureCanReserve(charge, null);
             var dict = new PyDict();
             var work = 0;
-            foreach (var pair in _b2j)
+            foreach (var entry in _b2j.EntriesInOrder)
             {
-                dict.SetItem(pair.Key, new PyList(pair.Value.Select(index => (object)new BigInteger(index))));
+                dict.SetItem(entry.Key, new PyList(entry.Value.Select(index => (object)new BigInteger(index))));
                 if ((++work & 63) == 0)
                 {
                     _creationContext.CheckExecutionBudget(null);
@@ -662,7 +663,7 @@ internal sealed partial class LythonRuntime
 
             var charge = checked(SetBaseBytes + (SetBytesPerItem * _bjunk.Count));
             _governor.EnsureCanReserve(charge, null);
-            var view = new PySet(_bjunk);
+            var view = new PySet(_bjunk.Keys);
             try
             {
                 _governor.Reserve(charge, null);
@@ -687,7 +688,7 @@ internal sealed partial class LythonRuntime
 
             var charge = checked(SetBaseBytes + (SetBytesPerItem * _bpopular.Count));
             _governor.EnsureCanReserve(charge, null);
-            var view = new PySet(_bpopular);
+            var view = new PySet(_bpopular.Keys);
             try
             {
                 _governor.Reserve(charge, null);
@@ -815,7 +816,7 @@ internal sealed partial class LythonRuntime
             for (var i = range.ALo; i < range.AHi; i++)
             {
                 currentLengths.Clear();
-                if (!_b2j.TryGetValue(_a[i], out var indexes))
+                if (!_b2j.TryGetValue(_a[i], context, span, out var indexes))
                 {
                     // No match: the cleared map becomes the empty previous row.
                     (previousLengths, currentLengths) = (currentLengths, previousLengths);
@@ -867,7 +868,7 @@ internal sealed partial class LythonRuntime
 
             while (bestA > range.ALo &&
                 bestB > range.BLo &&
-                !_bjunk.Contains(_b[bestB - 1]) &&
+                !_bjunk.Contains(_b[bestB - 1], context, span) &&
                 AreEqual(_a[bestA - 1], _b[bestB - 1]))
             {
                 bestA--;
@@ -882,7 +883,7 @@ internal sealed partial class LythonRuntime
 
             while (bestA + bestSize < range.AHi &&
                 bestB + bestSize < range.BHi &&
-                !_bjunk.Contains(_b[bestB + bestSize]) &&
+                !_bjunk.Contains(_b[bestB + bestSize], context, span) &&
                 AreEqual(_a[bestA + bestSize], _b[bestB + bestSize]))
             {
                 bestSize++;
@@ -895,7 +896,7 @@ internal sealed partial class LythonRuntime
 
             while (bestA > range.ALo &&
                 bestB > range.BLo &&
-                _bjunk.Contains(_b[bestB - 1]) &&
+                _bjunk.Contains(_b[bestB - 1], context, span) &&
                 AreEqual(_a[bestA - 1], _b[bestB - 1]))
             {
                 bestA--;
@@ -910,7 +911,7 @@ internal sealed partial class LythonRuntime
 
             while (bestA + bestSize < range.AHi &&
                 bestB + bestSize < range.BHi &&
-                _bjunk.Contains(_b[bestB + bestSize]) &&
+                _bjunk.Contains(_b[bestB + bestSize], context, span) &&
                 AreEqual(_a[bestA + bestSize], _b[bestB + bestSize]))
             {
                 bestSize++;

@@ -162,7 +162,228 @@ internal static class PyHashProtocols
         return PyValueComparer.Instance.GetHashCode(key);
     }
 
+    // Table bucket for one key: guest __hash__ when customized (with
+    // unhashability), otherwise the structural comparer. Unhashable
+    // builtins surface as UnhashableType naming the key, preserving the
+    // structural funnel convention (tuples name the tuple).
+    public static int BucketHash(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        try
+        {
+            return GetProtocolHash(key, context, span);
+        }
+        catch (PyUnhashableException)
+        {
+            throw RuntimeErrors.UnhashableType(key, span);
+        }
+    }
+
     // Protocol key comparison: identity first (always safe), then element ==.
     public static bool ProtocolKeysEqual(object left, object right, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         => ReferenceEquals(left, right) || LythonRuntime.ElementEquals(left, right, context, span);
+}
+
+// N12 inventory: module-local object-key tables by purpose.
+//
+// Python-equality tables (guest __hash__/__eq__ via the policy below):
+// - statistics mode/multimode frequency counts (first-seen order decides ties);
+// - difflib b2j/bjunk/bpopular/fullBCount/available (element identity decides matches);
+// - functools cache keys (tuple graphs; ownership transaction stays N08);
+// - core dict/set protocol side lists (lookup/unhashability; N10 owns the redesign).
+//
+// Identity tables (must never acquire Python equality semantics):
+// - id() registry (ConditionalWeakTable keyed by live reference);
+// - runtime member caches (ReferenceEquals on the cached target);
+// - reclamation pool registrations (WeakReference owner handles);
+// - PyValueComparer structural paths (comparer callbacks, hashing, sorts run
+//   with guest dispatch suppressed);
+// - memoization keyed by object identity (must stay reference-based).
+//
+// Shared contextual key policy for the equality tables above: hash-bucketed
+// side storage with guest __hash__ precomputed once per operation plus
+// element == scans (never through CLR comparer callbacks, mirroring the core
+// dict/set side lists). First-seen insertion order is preserved for tie
+// breaks. Callers own growth accounting (temporaries for scratch, durable
+// coupons for retained graphs) exactly like the Dictionary/HashSet versions
+// these replace; buckets add no new rates.
+internal sealed class ContextualKeyTable<TValue>
+{
+    internal sealed class Entry
+    {
+        public Entry(object key, TValue value)
+        {
+            Key = key;
+            Value = value;
+        }
+
+        public object Key { get; }
+
+        public TValue Value { get; set; }
+    }
+
+    private readonly Dictionary<int, List<Entry>> _buckets = new();
+    private readonly List<Entry> _entries = new();
+
+    public int Count => _entries.Count;
+
+    public IReadOnlyList<Entry> EntriesInOrder => _entries;
+
+    public bool TryGetValue(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span, out TValue value)
+    {
+        var hash = PyHashProtocols.BucketHash(key, context, span);
+        if (_buckets.TryGetValue(hash, out var bucket))
+        {
+            foreach (var entry in bucket)
+            {
+                if (PyHashProtocols.ProtocolKeysEqual(entry.Key, key, context, span))
+                {
+                    value = entry.Value;
+                    return true;
+                }
+            }
+        }
+
+        value = default!;
+        return false;
+    }
+
+    // Single hash-plus-scan for get-or-create: first-seen order on adds.
+    public Entry GetOrAdd(object key, TValue value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var hash = PyHashProtocols.BucketHash(key, context, span);
+        if (!_buckets.TryGetValue(hash, out var bucket))
+        {
+            bucket = new List<Entry>();
+            _buckets[hash] = bucket;
+        }
+        else
+        {
+            foreach (var entry in bucket)
+            {
+                if (PyHashProtocols.ProtocolKeysEqual(entry.Key, key, context, span))
+                {
+                    return entry;
+                }
+            }
+        }
+
+        var added = new Entry(key, value);
+        bucket.Add(added);
+        _entries.Add(added);
+        return added;
+    }
+
+    // Single hash-plus-scan get-or-create with a miss-only factory (avoids
+    // eager garbage like one empty list per duplicate element).
+    public Entry GetOrAdd(object key, Func<TValue> factory, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var hash = PyHashProtocols.BucketHash(key, context, span);
+        if (!_buckets.TryGetValue(hash, out var bucket))
+        {
+            bucket = new List<Entry>();
+            _buckets[hash] = bucket;
+        }
+        else
+        {
+            foreach (var entry in bucket)
+            {
+                if (PyHashProtocols.ProtocolKeysEqual(entry.Key, key, context, span))
+                {
+                    return entry;
+                }
+            }
+        }
+
+        var added = new Entry(key, factory());
+        bucket.Add(added);
+        _entries.Add(added);
+        return added;
+    }
+
+    // Updates an existing entry in place (no order change); false if missing.
+    public bool TrySet(object key, TValue value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var hash = PyHashProtocols.BucketHash(key, context, span);
+        if (_buckets.TryGetValue(hash, out var bucket))
+        {
+            foreach (var entry in bucket)
+            {
+                if (PyHashProtocols.ProtocolKeysEqual(entry.Key, key, context, span))
+                {
+                    entry.Value = value;
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public void Add(object key, TValue value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var hash = PyHashProtocols.BucketHash(key, context, span);
+        if (!_buckets.TryGetValue(hash, out var bucket))
+        {
+            bucket = new List<Entry>();
+            _buckets[hash] = bucket;
+        }
+
+        var added = new Entry(key, value);
+        bucket.Add(added);
+        _entries.Add(added);
+    }
+
+    public bool Remove(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var hash = PyHashProtocols.BucketHash(key, context, span);
+        if (!_buckets.TryGetValue(hash, out var bucket))
+        {
+            return false;
+        }
+
+        for (var i = 0; i < bucket.Count; i++)
+        {
+            if (PyHashProtocols.ProtocolKeysEqual(bucket[i].Key, key, context, span))
+            {
+                var stored = bucket[i];
+                bucket.RemoveAt(i);
+                _entries.Remove(stored);
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
+internal sealed class ContextualKeySet
+{
+    private readonly ContextualKeyTable<object?> _table = new();
+
+    public int Count => _table.Count;
+
+    public IEnumerable<object> Keys
+    {
+        get
+        {
+            foreach (var entry in _table.EntriesInOrder)
+            {
+                yield return entry.Key;
+            }
+        }
+    }
+
+    public bool Contains(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => _table.TryGetValue(key, context, span, out _);
+
+    public void Add(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        if (!Contains(key, context, span))
+        {
+            _table.Add(key, null, context, span);
+        }
+    }
+
+    public bool Remove(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => _table.Remove(key, context, span);
 }

@@ -180,7 +180,7 @@ __lython_file.close()
     [InlineData("import difflib\ndifflib.HtmlDiff().make_table([1], [])\n", "expects iterables of strings")]
     [InlineData("import difflib\ndifflib.SequenceMatcher().find_longest_match(\"x\")\n", "expects an integer or None")]
     [InlineData("import difflib\ndifflib.SequenceMatcher().missing()\n", "has no member 'missing'")]
-    [InlineData("import difflib\nmatcher = difflib.SequenceMatcher(None, [[1]], [[2]])\nmatcher.ratio()\n", "sequence elements must be hashable")]
+    [InlineData("import difflib\nmatcher = difflib.SequenceMatcher(None, [[1]], [[2]])\nmatcher.ratio()\n", "unhashable type")]
     public void DifflibModule_NearMisses_FailPrecisely(string source, string messageFragment)
     {
         var result = new LythonEngine().Run(source, new MockLythonHost());

@@ -109,14 +109,14 @@ internal sealed partial class LythonRuntime
         {
             using var modeLease = GetModeValues(arguments, "statistics.mode", allowEmpty: false, span, context);
             var values = modeLease.Items;
-            return GetModeCounts(values, context.MemoryGovernor, span).First().Key;
+            return GetModeCounts(values, context.MemoryGovernor, span, context).First().Key;
         }
 
         private static object MultiMode(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             using var modeLease = GetModeValues(arguments, "statistics.multimode", allowEmpty: true, span, context);
             var values = modeLease.Items;
-            var counts = GetModeCounts(values, context.MemoryGovernor, span);
+            var counts = GetModeCounts(values, context.MemoryGovernor, span, context);
             var modes = new object[counts.Count];
             for (var i = 0; i < counts.Count; i++)
             {
@@ -400,54 +400,47 @@ internal sealed partial class LythonRuntime
                 RuntimeArgumentValidation.ExpectReal(arguments[1], "statistics.LinearRegression(..., intercept=...)", span));
         }
 
-        private static List<KeyValuePair<object, int>> GetModeCounts(IReadOnlyList<object> values, MemoryGovernor governor, LythonSourceSpan span)
+        private static List<KeyValuePair<object, int>> GetModeCounts(IReadOnlyList<object> values, MemoryGovernor governor, LythonSourceSpan span, ExecutionContext context)
         {
             if (values.Count == 0)
             {
                 return [];
             }
 
-            // The frequency table, order list and result list are caller-lifetime
-            // scratch with no surviving governed adopter (multimode adopts only the
-            // extracted modes array), so all three ride a temporary reservation
-            // released on return instead of committing durably. Distinct keys never
-            // exceed the input count, so pre-sizing bounds every structure exactly
-            // with no growth.
+            // N12: contextual frequency table (guest __hash__/__eq__, first-seen order
+            // decides ties). Same caller-lifetime scratch bound as before, plus work checks.
             using var scratch = governor.ReserveTemporary(144L + (56L * values.Count), span);
-            var counts = new Dictionary<object, int>(values.Count, PyValueComparer.Instance);
-            var order = new List<object>(values.Count);
+            var counts = new ContextualKeyTable<int>();
+            var work = 0;
             foreach (var value in values)
             {
                 try
                 {
-                    if (counts.TryGetValue(value, out var count))
-                    {
-                        counts[value] = count + 1;
-                        continue;
-                    }
-
-                    counts[value] = 1;
-                    order.Add(value);
+                    counts.GetOrAdd(value, 0, context, span).Value++;
                 }
                 catch (InvalidOperationException)
                 {
                     throw RuntimeErrors.UnhashableType(value, span);
                 }
+
+                if ((++work & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
             }
 
             var maxCount = 0;
-            foreach (var count in counts.Values)
+            foreach (var entry in counts.EntriesInOrder)
             {
-                maxCount = Math.Max(maxCount, count);
+                maxCount = Math.Max(maxCount, entry.Value);
             }
 
-            var result = new List<KeyValuePair<object, int>>(values.Count);
-            foreach (var value in order)
+            var result = new List<KeyValuePair<object, int>>(counts.Count);
+            foreach (var entry in counts.EntriesInOrder)
             {
-                var count = counts[value];
-                if (count == maxCount)
+                if (entry.Value == maxCount)
                 {
-                    result.Add(new KeyValuePair<object, int>(value, count));
+                    result.Add(new KeyValuePair<object, int>(entry.Key, entry.Value));
                 }
             }
 
