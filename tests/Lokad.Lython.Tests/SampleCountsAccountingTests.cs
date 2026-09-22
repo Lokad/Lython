@@ -16,9 +16,10 @@ public sealed class SampleCountsAccountingTests
     [Fact]
     public void CountedSamplingCommitsExactBacking()
     {
-        // Three pools, two picks: counts slots plus cumulative bounds plus
-        // the distinct-position table commit exactly once; the result array
-        // adopts its own charge at the PyList boundary.
+        // Three pools, two picks: counts slots, cumulative bounds and the
+        // distinct-position table reserve as caller-scoped scratch and release
+        // on return, so only the result array stays committed, adopted at the
+        // PyList boundary. Pools arrive by index with no drain.
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
@@ -34,18 +35,19 @@ public sealed class SampleCountsAccountingTests
             PyString.FromString("c"),
         };
         var counts = new List<object> { new BigInteger(0), new BigInteger(5), new BigInteger(0) };
+        Func<int, object> getAt = i => population[i];
 
         var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;
         var result = Assert.IsType<PyList>(
-            sample.Invoke(null, [population, counts, 2, state, span, context]));
+            sample.Invoke(null, [getAt, population.Count, counts, 2, state, span, context]));
 
         Assert.Equal(2, result.Count);
         Assert.Equal("b", Assert.IsType<PyString>(result[0]).AsString());
         Assert.Equal("b", Assert.IsType<PyString>(result[1]).AsString());
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        // Counts slots plus cumulative bounds plus the position table, plus
-        // the small-list backing adopted by the result PyList.
-        Assert.Equal(8 * 3 + (24 + (8 * 3)) + (80 + (24 * 2)) + 192, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
+        // Only the small-list backing adopted by the result PyList stays
+        // committed; the counts, cumulative and position-table scratch released.
+        Assert.Equal(192, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
     }
     [Fact]
     public void PopulationDrainCommitsExactBackingOnce()

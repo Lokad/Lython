@@ -162,8 +162,11 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("IndexError", "Cannot choose from an empty sequence", span);
             }
 
-            var weights = arguments.Length >= 2 && arguments[1] is not PyNone ? ReadWeights(arguments[1], populationLength, "random.choices(..., weights=...)", span, context) : null;
-            var cumulative = arguments.Length >= 3 && arguments[2] is not PyNone ? ReadCumulativeWeights(arguments[2], populationLength, "random.choices(..., cum_weights=...)", span, context) : null;
+            // N07: converted weight copies are caller-scoped scratch; they
+            // live for the selection and release on every exit path.
+            using var weightScratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var weights = arguments.Length >= 2 && arguments[1] is not PyNone ? ReadWeights(arguments[1], populationLength, "random.choices(..., weights=...)", span, context, weightScratch) : null;
+            var cumulative = arguments.Length >= 3 && arguments[2] is not PyNone ? ReadCumulativeWeights(arguments[2], populationLength, "random.choices(..., cum_weights=...)", span, context, weightScratch) : null;
             if (weights is not null && cumulative is not null)
             {
                 throw new LythonRuntimeException("TypeError", "random.choices(...) does not accept both weights and cum_weights.", span);
@@ -234,8 +237,16 @@ internal sealed partial class LythonRuntime
 
             if (arguments.Length >= 3 && arguments[2] is not PyNone)
             {
+                // N07: sized populations serve counted picks by index with
+                // no drain, mirroring the direct choice and small-k sample
+                // paths; only genuinely lazy populations materialize.
+                if (directSample is { } directCounted)
+                {
+                    return SampleCountedPositions(directCounted.GetAt, directCounted.Length, arguments[2], rawCount, state, span, context);
+                }
+
                 var counted = population ?? MaterializePopulation(arguments[0], "random.sample", span, context);
-                return SampleCountedPositions(counted, arguments[2], rawCount, state, span, context);
+                return SampleCountedPositions(i => counted[i], counted.Count, arguments[2], rawCount, state, span, context);
             }
 
             if (!IsTruthy(EvaluateBinaryOperator(BinaryOperatorSyntax.LessEqual, rawCount, new BigInteger(populationLength), context, span), context, span))

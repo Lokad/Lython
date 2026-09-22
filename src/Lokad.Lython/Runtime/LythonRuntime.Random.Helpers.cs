@@ -91,7 +91,7 @@ internal sealed partial class LythonRuntime
             return real;
         }
 
-        private static double[] ReadWeights(object value, int expectedCount, string owner, LythonSourceSpan span, ExecutionContext context)
+        private static double[] ReadWeights(object value, int expectedCount, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
         {
             var values = MaterializeSequence(value, span, context);
             if (values.Count != expectedCount)
@@ -100,12 +100,12 @@ internal sealed partial class LythonRuntime
             }
 
             // The converted copy coexists with the drained values, so it
-            // commits its own exact backing like the median converted copy.
+            // reserves its exact backing as caller-scoped scratch: it lives
+            // for the selection and releases on every exit path.
             var result = new double[values.Count];
             if (values.Count > 0)
             {
-                context.MemoryGovernor.Reserve(32L + (8L * values.Count), span);
-                context.MemoryGovernor.Commit(32L + (8L * values.Count));
+                scratch.Grow(32L + (8L * values.Count), span);
             }
             for (var i = 0; i < values.Count; i++)
             {
@@ -121,9 +121,9 @@ internal sealed partial class LythonRuntime
             return result;
         }
 
-        private static double[] ReadCumulativeWeights(object value, int expectedCount, string owner, LythonSourceSpan span, ExecutionContext context)
+        private static double[] ReadCumulativeWeights(object value, int expectedCount, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
         {
-            var values = ReadWeights(value, expectedCount, owner, span, context);
+            var values = ReadWeights(value, expectedCount, owner, span, context, scratch);
             for (var i = 1; i < values.Length; i++)
             {
                 if (values[i] < values[i - 1])
@@ -136,7 +136,8 @@ internal sealed partial class LythonRuntime
         }
 
         private static object SampleCountedPositions(
-            List<object> population,
+            Func<int, object> getAt,
+            int poolCount,
             object countsValue,
             object rawCount,
             PyRandomState state,
@@ -146,7 +147,9 @@ internal sealed partial class LythonRuntime
             // Counted sampling without expanding: drain the counts once, map
             // them to cumulative bounds, draw k distinct expanded positions
             // with Floyd's algorithm (exactly k draws, O(k) state), and map
-            // each position back to its pool. Uniform over the expanded
+            // each position back to its pool by index. Sized populations
+            // serve picks with no drain; only lazy ones arrive materialized.
+            // Uniform over the expanded
             // multiset like shuffling the expansion, but the live structures
             // scale with pools plus picks instead of the expanded total.
             var governor = context.MemoryGovernor;
@@ -158,17 +161,20 @@ internal sealed partial class LythonRuntime
                 ICollection<object> collection => collection.Count,
                 _ => (int?)null,
             };
-            if (sizedCount.HasValue && sizedCount.Value != population.Count)
+            if (sizedCount.HasValue && sizedCount.Value != poolCount)
             {
                 throw new LythonRuntimeException("ValueError", "random.sample(..., counts=...) expects one count per population item.", span);
             }
 
+            // N07: the drained counts are call-scoped scratch: growth
+            // reserves exactly like the durable path did, then releases on
+            // every exit path instead of stranding.
+            using var countsScratch = governor.ReserveTemporary(0, span);
             var counts = sizedCount.HasValue ? new List<object>(sizedCount.Value) : new List<object>();
             var chargedCapacity = counts.Capacity;
             if (chargedCapacity > 0)
             {
-                governor.Reserve(8L * chargedCapacity, span);
-                governor.Commit(8L * chargedCapacity);
+                countsScratch.Grow(8L * chargedCapacity, span);
             }
 
             foreach (var item in ToSequence(countsValue, span, context))
@@ -177,8 +183,7 @@ internal sealed partial class LythonRuntime
                 {
                     var predicted = counts.Capacity == 0 ? 4L : (long)counts.Capacity * 2L;
                     var delta = checked(8L * (predicted - chargedCapacity));
-                    governor.Reserve(delta, span);
-                    governor.Commit(delta);
+                    countsScratch.Grow(delta, span);
                     chargedCapacity = (int)predicted;
                 }
 
@@ -186,8 +191,7 @@ internal sealed partial class LythonRuntime
                 if (counts.Capacity > chargedCapacity)
                 {
                     var delta = checked(8L * (counts.Capacity - chargedCapacity));
-                    governor.Reserve(delta, span);
-                    governor.Commit(delta);
+                    countsScratch.Grow(delta, span);
                     chargedCapacity = counts.Capacity;
                 }
 
@@ -198,17 +202,15 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            if (counts.Count != population.Count)
+            if (counts.Count != poolCount)
             {
                 throw new LythonRuntimeException("ValueError", "random.sample(..., counts=...) expects one count per population item.", span);
             }
 
+            using var cumulativeScratch = counts.Count == 0
+                ? governor.ReserveTemporary(0, span)
+                : governor.ReserveTemporary(24L + (8L * counts.Count), span);
             var cumulative = counts.Count == 0 ? [] : new long[counts.Count];
-            if (counts.Count > 0)
-            {
-                governor.Reserve(24L + (8L * counts.Count), span);
-                governor.Commit(24L + (8L * counts.Count));
-            }
 
             var total = 0L;
             for (var i = 0; i < counts.Count; i++)
@@ -239,12 +241,10 @@ internal sealed partial class LythonRuntime
             }
 
             var count = CoerceSampleCount(rawCount, span);
+            using var selectedScratch = count == 0
+                ? governor.ReserveTemporary(0, span)
+                : governor.ReserveTemporary(80L + (24L * count), span);
             var selected = count == 0 ? new HashSet<int>() : new HashSet<int>(count);
-            if (count > 0)
-            {
-                governor.Reserve(80L + (24L * count), span);
-                governor.Commit(80L + (24L * count));
-            }
 
             var result = new object[count];
             for (var drawn = 0; drawn < count; drawn++)
@@ -261,7 +261,7 @@ internal sealed partial class LythonRuntime
                     selected.Add(picked);
                 }
 
-                result[drawn] = population[MapCountedPosition(cumulative, picked)];
+                result[drawn] = RuntimeValue(getAt(MapCountedPosition(cumulative, picked)));
                 if (((drawn + 1) & 63) == 0)
                 {
                     context.CheckExecutionBudget(span);
@@ -444,13 +444,10 @@ internal sealed partial class LythonRuntime
         // larger takes keep the legacy shuffle path and its exact draws.
         private static object SampleDirectPositions(PyRandomState state, Func<int, object> getAt, int length, int count, MemoryGovernor governor, LythonSourceSpan span, ExecutionContext context)
         {
+            using var selectedScratch = count == 0
+                ? governor.ReserveTemporary(0, span)
+                : governor.ReserveTemporary(80L + (24L * count), span);
             var selected = count == 0 ? new HashSet<int>() : new HashSet<int>(count);
-            if (count > 0)
-            {
-                governor.Reserve(80L + (24L * count), span);
-                governor.Commit(80L + (24L * count));
-            }
-
             var result = new object[count];
             for (var drawn = 0; drawn < count; drawn++)
             {
