@@ -107,13 +107,15 @@ internal sealed partial class LythonRuntime
 
         private static object Mode(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var values = GetModeValues(arguments, "statistics.mode", allowEmpty: false, span, context);
+            using var modeLease = GetModeValues(arguments, "statistics.mode", allowEmpty: false, span, context);
+            var values = modeLease.Items;
             return GetModeCounts(values, context.MemoryGovernor, span).First().Key;
         }
 
         private static object MultiMode(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            var values = GetModeValues(arguments, "statistics.multimode", allowEmpty: true, span, context);
+            using var modeLease = GetModeValues(arguments, "statistics.multimode", allowEmpty: true, span, context);
+            var values = modeLease.Items;
             var counts = GetModeCounts(values, context.MemoryGovernor, span);
             var modes = new object[counts.Count];
             for (var i = 0; i < counts.Count; i++)
@@ -452,7 +454,7 @@ internal sealed partial class LythonRuntime
             return result;
         }
 
-        private static List<object> GetModeValues(
+        private static PyIteration.DrainLease GetModeValues(
             object[] arguments,
             string owner,
             bool allowEmpty,
@@ -464,18 +466,14 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", $"{owner}(data) expects one iterable argument.", span);
             }
 
-            var values = new List<object>();
-            foreach (var value in ToSequence(arguments[0], span, context))
+            // N03: leased drain keeps input scratch charged beside the frequency table.
+            var lease = PyIteration.DrainLeased(ToSequence(arguments[0], span, context), span, context);
+            if (!allowEmpty && lease.Items.Count == 0)
             {
-                values.Add(value);
-            }
-
-            if (!allowEmpty && values.Count == 0)
-            {
+                lease.Dispose();
                 throw StatisticsError($"{owner}(data) requires at least one data point.", span);
             }
-
-            return values;
+            return lease;
         }
 
         private static PairedNumericValues GetPairedNumericValues(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context)

@@ -357,13 +357,50 @@ internal sealed partial class LythonRuntime
 
         internal static IReadOnlyList<PyString> RequireStringSequence(object value, string owner, LythonSourceSpan span, ExecutionContext context)
         {
+            // N03: governed streaming acquisition (no LINQ drain); growth charged
+            // before backing arrays allocate, with count/work checks per pull.
             try
             {
-                return ToSequence(value, span, context)
-                    .Select(item => PyStringOps.TryAsString(item, out var text)
-                        ? text
-                        : throw new LythonRuntimeException("TypeError", $"{owner} expects an iterable of strings.", span))
-                    .ToArray();
+                using var reservation = context.MemoryGovernor.ReserveTemporary(0, span);
+                var items = new List<PyString>();
+                long fundedCapacity = 0;
+                foreach (var item in ToSequence(value, span, context))
+                {
+                    var text = PyStringOps.TryAsString(item, out var parsed)
+                        ? parsed
+                        : throw new LythonRuntimeException("TypeError", $"{owner} expects an iterable of strings.", span);
+
+                    if (items.Count == items.Capacity)
+                    {
+                        var predicted = items.Capacity == 0 ? 4L : (long)items.Capacity * 2L;
+                        if (predicted > fundedCapacity)
+                        {
+                            reservation.Grow(checked(16L * (predicted - fundedCapacity)), span);
+                            fundedCapacity = predicted;
+                        }
+                    }
+
+                    items.Add(text);
+                    if (items.Capacity > fundedCapacity)
+                    {
+                        reservation.Grow(16L * (items.Capacity - fundedCapacity), span);
+                        fundedCapacity = items.Capacity;
+                    }
+
+                    context.ObserveCollectionCount(items.Count, span);
+                    if ((items.Count & 63) == 0)
+                    {
+                        context.CheckExecutionBudget(span);
+                    }
+                }
+
+                var result = items.ToArray();
+                reservation.Grow(16L * result.Length, span);
+                var charge = checked(32L + (16L * result.Length));
+                context.MemoryGovernor.Reserve(charge, span);
+                context.MemoryGovernor.Commit(charge);
+                context.Services.State.CallTemporaries.TrackFreshMutable(result, charge, span);
+                return result;
             }
             catch (PyNotIterableException)
             {
@@ -373,13 +410,56 @@ internal sealed partial class LythonRuntime
 
         private static IReadOnlyList<byte[]> RequireBytesSequence(object value, string owner, LythonSourceSpan span, ExecutionContext context)
         {
+            // N03: governed streaming acquisition; each payload copy is ensured
+            // before it can allocate, with count/work checks per pull.
             try
             {
-                return ToSequence(value, span, context)
-                    .Select(item => item is PyBytes bytes
-                        ? bytes.ToArray()
-                        : throw new LythonRuntimeException("TypeError", $"{owner} expects an iterable of bytes.", span))
-                    .ToArray();
+                using var reservation = context.MemoryGovernor.ReserveTemporary(0, span);
+                var items = new List<byte[]>();
+                long fundedCapacity = 0;
+                long payloadBytes = 0;
+                foreach (var item in ToSequence(value, span, context))
+                {
+                    if (item is not PyBytes bytes)
+                    {
+                        throw new LythonRuntimeException("TypeError", $"{owner} expects an iterable of bytes.", span);
+                    }
+
+                    reservation.Grow(bytes.Length, span);
+                    var payload = bytes.ToArray();
+                    payloadBytes = checked(payloadBytes + payload.Length);
+
+                    if (items.Count == items.Capacity)
+                    {
+                        var predicted = items.Capacity == 0 ? 4L : (long)items.Capacity * 2L;
+                        if (predicted > fundedCapacity)
+                        {
+                            reservation.Grow(checked(16L * (predicted - fundedCapacity)), span);
+                            fundedCapacity = predicted;
+                        }
+                    }
+
+                    items.Add(payload);
+                    if (items.Capacity > fundedCapacity)
+                    {
+                        reservation.Grow(16L * (items.Capacity - fundedCapacity), span);
+                        fundedCapacity = items.Capacity;
+                    }
+
+                    context.ObserveCollectionCount(items.Count, span);
+                    if ((items.Count & 63) == 0)
+                    {
+                        context.CheckExecutionBudget(span);
+                    }
+                }
+
+                var result = items.ToArray();
+                reservation.Grow(16L * result.Length, span);
+                var charge = checked(32L + (16L * result.Length) + payloadBytes);
+                context.MemoryGovernor.Reserve(charge, span);
+                context.MemoryGovernor.Commit(charge);
+                context.Services.State.CallTemporaries.TrackFreshMutable(result, charge, span);
+                return result;
             }
             catch (PyNotIterableException)
             {
