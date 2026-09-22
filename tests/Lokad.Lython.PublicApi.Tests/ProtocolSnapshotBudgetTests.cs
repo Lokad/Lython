@@ -11,8 +11,13 @@ public sealed class ProtocolSnapshotBudgetTests
     // The asymmetric scripts below hold 100000 ordinary entries when the
     // first protocol insert arrives, so the store snapshot dwarfs every
     // population transient: dict 32 + 16 per entry, set 24 + 8 per entry.
+    // N06: set populations also adopt one 64 B coupon per distinct small int
+    // (~6.4 MB for 100000), so the set scripts moved to their own budgets:
+    // asymmetric 9.5 MB (adds peak ~9.01 MB, snapshot 800024 still binds),
+    // ordinary 10 MiB (peak ~9.01 MB, lookups add nothing).
     private const long DictBudgetBytes = 4_000_000;
-    private const long SetBudgetBytes = 2_950_000;
+    private const long SetAsymmetricBudgetBytes = 9_500_000;
+    private const long SetOrdinaryBudgetBytes = 10_485_760;
     private const long DictStoreSnapshotBytes = 1600032;
     private const long SetStoreSnapshotBytes = 800024;
 
@@ -185,7 +190,7 @@ public sealed class ProtocolSnapshotBudgetTests
     public void SetStoreSnapshotDeniesBeforeCopying()
     {
         var script = Compile(SetAsymmetricSource);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = SetBudgetBytes };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = SetAsymmetricBudgetBytes };
         var result = script.Run(new MockLythonHost(), options);
         AssertError(result, "MemoryError", "execution memory budget exceeded");
         Assert.Equal(SetStoreSnapshotBytes, result.DeniedReservationBytes);
@@ -195,7 +200,7 @@ public sealed class ProtocolSnapshotBudgetTests
     public async Task SetStoreSnapshotDeniesBeforeCopyingAsync()
     {
         var script = Compile(SetAsymmetricSource);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = SetBudgetBytes };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = SetAsymmetricBudgetBytes };
         var result = await script.RunAsync(new MockLythonHost(), options);
         AssertError(result, "MemoryError", "execution memory budget exceeded");
         Assert.Equal(SetStoreSnapshotBytes, result.DeniedReservationBytes);
@@ -247,7 +252,7 @@ public sealed class ProtocolSnapshotBudgetTests
     public void SetOrdinaryPathsStayUncharged()
     {
         var script = Compile(SetOrdinarySource);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = SetBudgetBytes };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = SetOrdinaryBudgetBytes };
         var result = script.Run(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
@@ -259,7 +264,7 @@ public sealed class ProtocolSnapshotBudgetTests
     public async Task SetOrdinaryPathsStayUnchargedAsync()
     {
         var script = Compile(SetOrdinarySource);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = SetBudgetBytes };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = SetOrdinaryBudgetBytes };
         var result = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(

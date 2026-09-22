@@ -169,6 +169,115 @@ public sealed class AdoptedScalarCouponTests
     }
 
     [Fact]
+    public void SetDuplicateAddAdoptsOnce()
+    {
+        // Sets deduplicate: re-adding a held identity (or a structural twin)
+        // retains nothing new, so no second coupon commits.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var governor = context.MemoryGovernor;
+        var pool = new ChargeReclamationPool(governor);
+        var set = new PySet(governor, span);
+        pool.TrackFreshMutable(set, set.CommittedStorageBytes, span);
+        object box = new BigInteger(7);
+        Assert.True(set.Add(box));
+        var trackedAfterFirst = PooledCharge(pool, set);
+        Assert.False(set.Add(box));
+        Assert.Equal(trackedAfterFirst, PooledCharge(pool, set));
+        Assert.False(set.Add(new BigInteger(7)));
+        Assert.Equal(trackedAfterFirst, PooledCharge(pool, set));
+    }
+
+    [Fact]
+    public void SetRemovalRefreshesThePoolSnapshot()
+    {
+        // Like lists: released coupons must refresh the tracked snapshot, or a
+        // later drop sweep would over-release.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var governor = context.MemoryGovernor;
+        var pool = new ChargeReclamationPool(governor);
+        var before = governor.CurrentCommittedBytes;
+        var set = new PySet(new object[] { new BigInteger(1), new BigInteger(2) }, governor, span);
+        var coupons = 2 * AdoptedScalarCoupons.CouponBytes;
+        pool.TrackFreshMutable(set, set.CommittedStorageBytes, span);
+        Assert.Equal(set.CommittedStorageBytes, PooledCharge(pool, set));
+        var trackedBefore = PooledCharge(pool, set);
+        Assert.True(set.Remove(new BigInteger(1)));
+        Assert.True(set.Remove(new BigInteger(2)));
+        Assert.Equal(trackedBefore - coupons, PooledCharge(pool, set));
+        Assert.Equal(set.CommittedStorageBytes, PooledCharge(pool, set));
+        Assert.Equal(
+            set.CommittedStorageBytes + ChargeReclamationPool.EntryChargeBytes + pool.CommittedBackingBytes,
+            governor.CurrentCommittedBytes - before);
+    }
+
+    [Fact]
+    public void SetStructuralTwinRemovesHeldBox()
+    {
+        // Removal resolves the stored identity: discarding via an equal-but-
+        // distinct box evicts the held box and releases exactly its coupon.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var governor = context.MemoryGovernor;
+        var pool = new ChargeReclamationPool(governor);
+        var set = new PySet(governor, span);
+        object held = new BigInteger(7);
+        Assert.True(set.Add(held));
+        pool.TrackFreshMutable(set, set.CommittedStorageBytes, span);
+        var trackedBefore = PooledCharge(pool, set);
+        Assert.False(set.Add(new BigInteger(7)));
+        Assert.True(set.Remove(new BigInteger(7)));
+        Assert.Equal(trackedBefore - AdoptedScalarCoupons.CouponBytes, PooledCharge(pool, set));
+        Assert.Equal(0, set.Count);
+    }
+
+    [Fact]
+    public void FailedGrowthLeavesTableUnchanged()
+    {
+        // MG05: a denied coupon rolls the table insertion back, so failed growth
+        // leaves no enlarged uncharged capacity: count and charges are exactly as
+        // before, and a funded retry succeeds. Nothing is pool-tracked here, so
+        // exhaustion relief short-circuits deterministically instead of pausing
+        // for a collection.
+        var host = new MockLythonHost();
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        static PySet BuildSet(LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        {
+            var set = new PySet(context.MemoryGovernor, span);
+            for (var i = 0; i < 10; i++)
+            {
+                Assert.True(set.Add(new BigInteger(1000 + i)));
+            }
+
+            return set;
+        }
+
+        var measureContext = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var measured = BuildSet(measureContext, span);
+        var baseline = measureContext.MemoryGovernor.CurrentCommittedBytes;
+        var denyContext = new LythonRuntime.ExecutionContext(
+            host, new LythonRunOptions { MaxExecutionMemoryBytes = baseline + AdoptedScalarCoupons.CouponBytes - 1 });
+        var denied = BuildSet(denyContext, span);
+        Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(10, denied.Count);
+        var storedBefore = denied.CommittedStorageBytes;
+        Assert.Throws<LythonRuntimeException>(() => denied.Add(new BigInteger(99999)));
+        Assert.Equal(10, denied.Count);
+        Assert.Equal(storedBefore, denied.CommittedStorageBytes);
+        Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
+        var retryContext = new LythonRuntime.ExecutionContext(
+            host, new LythonRunOptions { MaxExecutionMemoryBytes = baseline + 65536 });
+        var retried = BuildSet(retryContext, span);
+        Assert.True(retried.Add(new BigInteger(99999)));
+        Assert.Equal(11, retried.Count);
+        Assert.Equal(measured.Count, retried.Count - 1);
+    }
+
+    [Fact]
     public void ReleaseAllDropsEveryCoupon()
     {
         var (context, span) = Budgeted(65536);

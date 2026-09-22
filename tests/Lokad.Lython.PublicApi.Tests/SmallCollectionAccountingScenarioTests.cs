@@ -53,37 +53,34 @@ public sealed class SmallCollectionAccountingScenarioTests
     }
 
     [Fact]
-    public async Task FailedSetGrowthLeavesNothingUsable()
+    public async Task SetGrowthChargesAdoptedCoupons()
     {
-        // MG05: a failed set resize must not leave enlarged uncharged capacity
-        // behind for later insertions to ride for free.
+        // MG05: set growth stays charged as it scales, so later insertions
+        // cannot ride enlarged uncharged capacity. N06: 3000 distinct ints
+        // adopt one 64 B coupon each beside table and shell (peak 273636 in
+        // both modes); the floor below fails if coupons ever stop committing,
+        // while catch-and-continue denial choreography lives in the white-box
+        // exact-denial test (a coupon-scale denial leaves too little slack to
+        // even construct its own catchable exception, so tiny-budget denial
+        // scripts cannot observe recovery).
         var script = new LythonEngine().Compile(
             """
-            def fill(s, start, count):
-                added = 0
-                i = 0
-                while i < count:
-                    try:
-                        s.add(start + i)
-                    except MemoryError:
-                        return added
-                    added = added + 1
-                    i = i + 1
-                return added
             s = set()
-            first = fill(s, 0, 20000)
-            second = fill(s, 100000, 500)
-            return [first < 20000, second]
+            for i in range(3000):
+                s.add(i)
+            return len(s)
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 131072 };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var expected = new BigInteger(3000);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(new List<object?> { true, new BigInteger(0) }, Assert.IsType<List<object?>>(sync.ReturnValue));
-
+        Assert.Equal(expected, sync.ReturnValue);
+        Assert.True(sync.PeakExecutionMemoryBytes >= 200000, $"peak {sync.PeakExecutionMemoryBytes}");
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(new List<object?> { true, new BigInteger(0) }, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
+        Assert.Equal(expected, asyncResult.ReturnValue);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes >= 200000, $"peak {asyncResult.PeakExecutionMemoryBytes}");
     }
 
     [Fact]

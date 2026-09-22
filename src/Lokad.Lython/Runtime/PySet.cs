@@ -8,6 +8,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     private MemoryGovernor? _memoryGovernor;
     private LythonSourceSpan? _allocationSpan;
     private long _committedBytes;
+    private AdoptedScalarCoupons? _scalarCoupons;
 
     // Protocol-item side index (R13b): items needing __hash__/__eq__ dispatch
     // bypass HashSet probing (which cannot run guest code) and scan with
@@ -78,6 +79,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
                 _items.Add(item);
             }
 
+            AdoptInitialItems();
             return;
         }
 
@@ -96,6 +98,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
                 _items.Add(item);
             }
 
+            AdoptInitialItems();
             return;
         }
 
@@ -115,12 +118,14 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
                 _items.Add(item);
             }
 
+            AdoptInitialItems();
             return;
         }
 
         // Lazy source: no count exists to pre-size from, so Add governs each
         // growth step with the committed-capacity atomicity above instead of
-        // draining the whole source into an uncharged array first.
+        // draining the whole source into an uncharged array first. Add adopts
+        // each insertion, so no bulk pass is needed here.
         foreach (var item in items)
         {
             _ = Add(item);
@@ -160,6 +165,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         if (_memoryGovernor is not null)
         {
             EnsureCapacity(other.Count);
+            AdoptInitialItems();
         }
 
         ChargeShell();
@@ -190,8 +196,9 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     // Current committed shell-plus-backing charges, for pooled owners that
     // release them if this set is dropped. Incremental growth after the
     // snapshot only ever leaves a safe residual behind; wholesale
-    // replacement re-snapshots through Clear below.
-    internal long CommittedStorageBytes => (_shellCharged ? SetShellBytes + _committedBytes : _committedBytes) + _protocolBytes;
+    // replacement re-snapshots through Clear below. Adopted scalar coupons
+    // fold in, so snapshots and drop sweeps carry them.
+    internal long CommittedStorageBytes => (_shellCharged ? SetShellBytes + _committedBytes : _committedBytes) + _protocolBytes + (_scalarCoupons?.CommittedBytes ?? 0);
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
 
@@ -216,25 +223,32 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             return false;
         }
 
-        if (Count < _capacity)
-        {
-            return _items.Add(item);
-        }
-
-        if (_items.Contains(item))
+        var committedBefore = CommittedStorageBytes;
+        if (Count >= _capacity && _items.Contains(item))
         {
             return false;
         }
 
-        var committedBefore = _committedBytes;
         EnsureCapacity(Count + 1);
-        var added = _items.Add(item);
-        if (added && _committedBytes != committedBefore)
+        if (!_items.Add(item))
         {
-            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
+            return false;
         }
 
-        return added;
+        // Newly held: adopt, rolling the table insertion back when the coupon
+        // denies so contents and coupons stay in sync.
+        try
+        {
+            AdoptIncoming(item);
+        }
+        catch (Exception)
+        {
+            _ = _items.Remove(item);
+            throw;
+        }
+
+        NoteGrowth(committedBefore);
+        return true;
     }
 
     public void AttachMemoryGovernor(MemoryGovernor governor)
@@ -255,9 +269,24 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
     public bool Remove(object item)
     {
-        if (_items.Remove(item))
+        if (_memoryGovernor is null || !AdoptedScalarCoupons.IsAdoptableScalar(item))
         {
-            RemoveProtocolShadow(item);
+            if (_items.Remove(item))
+            {
+                RemoveProtocolShadow(item);
+                return true;
+            }
+
+            return RemoveProtocolItem(item);
+        }
+
+        // Governed and possibly adopted: resolve the stored identity first so the
+        // coupon released is the held box, not a structural-twin argument.
+        if (_items.TryGetValue(item, out var stored))
+        {
+            _ = _items.Remove(item);
+            RemoveProtocolShadow(stored);
+            ReleaseOutgoing(stored);
             return true;
         }
 
@@ -311,6 +340,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
                 _protocolBytes = 0;
             }
 
+            ReleaseAllCoupons();
             _items = new HashSet<object>(PyValueComparer.Instance);
             _protocol = null;
             ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
@@ -442,7 +472,21 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     private void AppendProtocolItem(object item, int hash, int structuralHash)
     {
         var committedBefore = CommittedStorageBytes;
-        EnsureCapacity(Count + 1);
+        // The side entry retains the argument even when the fast table already
+        // holds a structural twin, so the coupon commits before any denial point.
+        // A denied protocol charge needs no extra rollback: the stranded entry
+        // stays retained, exactly what the coupon covers.
+        AdoptIncoming(item);
+        try
+        {
+            EnsureCapacity(Count + 1);
+        }
+        catch (Exception)
+        {
+            UnadoptIncoming(item);
+            throw;
+        }
+
         _ = _items.Add(item);
         _protocol ??= new List<ProtocolEntry>();
         _protocol.Add(new ProtocolEntry(_protocolSeq++, hash, structuralHash, item));
@@ -453,10 +497,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             _protocolBytes += ProtocolEntryBytes;
         }
 
-        if (CommittedStorageBytes != committedBefore)
-        {
-            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
-        }
+        NoteGrowth(committedBefore);
     }
 
     private bool ContainsProtocolItem(object item)
@@ -692,6 +733,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
                 {
                     _ = _items.Remove(existing);
                     RemoveProtocolShadow(existing);
+                    ReleaseOutgoing(existing);
                     return true;
                 }
             }
@@ -737,12 +779,15 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
     private void RemoveSideEntry(object item)
     {
+        // Callers always pass the stored entry item (side-scan and structural
+        // matches resolve it first), so the released coupon is the evicted box.
         if (_protocol is not null)
         {
             for (var i = 0; i < _protocol.Count; i++)
             {
                 if (ReferenceEquals(_protocol[i].Item, item))
                 {
+                    ReleaseOutgoing(_protocol[i].Item);
                     _protocol.RemoveAt(i);
                     break;
                 }
@@ -952,6 +997,116 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     private static long EstimateSlots(int previousCapacity, int newCapacity)
         => (24L * (newCapacity - previousCapacity)) + (previousCapacity == 0 ? 80L : 0L);
 
+    // Refreshes the tracked snapshot when the owned total moved (storage or
+    // coupons): a stale snapshot would over-release on a later drop sweep.
+    private void NoteGrowth(long committedBefore)
+    {
+        if (CommittedStorageBytes != committedBefore)
+        {
+            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
+        }
+    }
+
+    // Adopts construction contents with a refund of the orphaned charges when
+    // a coupon denies: callers publish nothing on failure. AdoptAll rolls its
+    // own coupons back, so only shell, backing and protocol refund here.
+    private void AdoptInitialItems()
+    {
+        var incoming = new AdoptedScalarCoupons();
+        try
+        {
+            incoming.AdoptAll(_items, _memoryGovernor!, _allocationSpan);
+        }
+        catch
+        {
+            RefundAbortedConstruction();
+            throw;
+        }
+
+        _scalarCoupons = incoming.CommittedBytes > 0 ? incoming : null;
+    }
+
+    private void RefundAbortedConstruction()
+    {
+        if (_memoryGovernor is not null)
+        {
+            var release = CommittedStorageBytes;
+            if (release > 0)
+            {
+                _memoryGovernor.Release(release);
+            }
+        }
+
+        _committedBytes = 0;
+        _protocolBytes = 0;
+        _capacity = 0;
+        _shellCharged = false;
+        _scalarCoupons = null;
+    }
+
+    // Adopts one incoming value when governed; denies before the caller mutates.
+    private void AdoptIncoming(object value)
+    {
+        if (_memoryGovernor is null || !AdoptedScalarCoupons.IsAdoptableScalar(value))
+        {
+            return;
+        }
+
+        _scalarCoupons ??= new AdoptedScalarCoupons();
+        _scalarCoupons.Adopt(value, _memoryGovernor, _allocationSpan);
+        if (_scalarCoupons.CommittedBytes == 0)
+        {
+            _scalarCoupons = null;
+        }
+    }
+
+    private void UnadoptIncoming(object value)
+    {
+        if (_scalarCoupons is null || _memoryGovernor is null)
+        {
+            return;
+        }
+
+        _scalarCoupons.Release(value, _memoryGovernor);
+        if (_scalarCoupons.CommittedBytes == 0)
+        {
+            _scalarCoupons = null;
+        }
+    }
+
+    // Releases one outgoing reference and refreshes the snapshot when the owned
+    // total moved, so drops never sweep a stale charge.
+    private void ReleaseOutgoing(object? value)
+    {
+        if (_scalarCoupons is null || _memoryGovernor is null)
+        {
+            return;
+        }
+
+        var committedBefore = CommittedStorageBytes;
+        _scalarCoupons.Release(value, _memoryGovernor);
+        if (_scalarCoupons.CommittedBytes == 0)
+        {
+            _scalarCoupons = null;
+        }
+
+        NoteGrowth(committedBefore);
+    }
+
+    private void ReleaseAllCoupons()
+    {
+        if (_scalarCoupons is null || _memoryGovernor is null)
+        {
+            _scalarCoupons = null;
+            return;
+        }
+
+        var committedBefore = CommittedStorageBytes;
+        _scalarCoupons.ReleaseAll(_memoryGovernor);
+        _scalarCoupons = null;
+        NoteGrowth(committedBefore);
+    }
+
     private List<object> FilterContained(PySet other, bool keepContained)
     {
         var result = new List<object>(Count);
@@ -968,9 +1123,10 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
     private void RebuildFrom(List<object> items)
     {
+        var committedBefore = CommittedStorageBytes;
         _items.Clear();
-        var hadProtocol = _protocol is not null;
-        if (hadProtocol)
+        ReleaseAllCoupons();
+        if (_protocol is not null)
         {
             if (_memoryGovernor is not null && _protocolBytes > 0)
             {
@@ -987,9 +1143,6 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             Add(item);
         }
 
-        if (hadProtocol)
-        {
-            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
-        }
+        NoteGrowth(committedBefore);
     }
 }
