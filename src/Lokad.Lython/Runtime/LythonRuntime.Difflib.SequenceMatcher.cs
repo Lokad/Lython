@@ -43,11 +43,12 @@ internal sealed partial class LythonRuntime
         private long _bCharge;
         private long _chainCharge;
         private PyDict? _b2jView;
-        private long _b2jViewCharge;
         private PySet? _bjunkView;
-        private long _bjunkViewCharge;
         private PySet? _bpopularView;
-        private long _bpopularViewCharge;
+        // N05: escaped views own their lifetime via the run pool (view as owner),
+        // never tied to the matcher coupon. The matcher caches references without owning charges.
+        private readonly ChargeReclamationPool _pool;
+        private readonly LythonRuntime.ExecutionContext _creationContext;
         private long _fullBCountCharge;
         private long _matchingBlocksCharge;
         private long _opcodesCharge;
@@ -57,6 +58,8 @@ internal sealed partial class LythonRuntime
             _isjunk = isjunk;
             _autojunk = autojunk;
             _governor = context.MemoryGovernor;
+            _pool = context.Services.State.CallTemporaries;
+            _creationContext = context;
             _aOriginal = aOriginal;
             _bOriginal = bOriginal;
             _a = DifflibModule.MaterializeGovernedSequence(aOriginal, span, context, out _aCharge);
@@ -64,18 +67,25 @@ internal sealed partial class LythonRuntime
             _b2j = new Dictionary<object, List<int>>(PyValueComparer.Instance);
             _bjunk = new HashSet<object>(PyValueComparer.Instance);
             _bpopular = new HashSet<object>(PyValueComparer.Instance);
-            SetSeq2(bOriginal, span, context);
+            try
+            {
+                SetSeq2(bOriginal, span, context);
+            }
+            catch
+            {
+                _governor.Release(_aCharge);
+                throw;
+            }
             // Fresh matchers reclaim through the pool once dropped; later caches re-snapshot
             // below while the member-call funnel has no matcher branch.
             context.Services.State.CallTemporaries.TrackFreshMutable(this, CommittedStorageBytes, span);
         }
 
-        // Current committed backing charges across chains, views and caches, for pooled
+        // Current committed backing charges across chains and caches (escaped views own themselves), for pooled
         // owners that release them if this matcher is dropped. Mutations re-snapshot
         // through NoteGrowth below; untracked matchers no-op inside the notification.
         internal long CommittedStorageBytes =>
             _aCharge + _bCharge + _chainCharge +
-            _b2jViewCharge + _bjunkViewCharge + _bpopularViewCharge +
             _fullBCountCharge + _matchingBlocksCharge + _opcodesCharge;
 
         // Refreshes the pool coupon after charge mutations; change-detected over field
@@ -224,17 +234,33 @@ internal sealed partial class LythonRuntime
 
         public void SetSeq2(object bOriginal, LythonSourceSpan span, ExecutionContext context)
         {
+            // N05: strong guarantee - swap sequence only after the new index builds;
+            // failure restores the previous array with exact charges.
             var beforeCharges = CommittedStorageBytes;
-            var array = DifflibModule.MaterializeGovernedSequence(bOriginal, span, context, out var charge);
+            var newArray = DifflibModule.MaterializeGovernedSequence(bOriginal, span, context, out var newCharge);
+            var oldB = _b;
+            var oldBCharge = _bCharge;
+            var oldBOriginal = _bOriginal;
             _bOriginal = bOriginal;
-            _governor.Release(_bCharge);
-            _b = array;
-            _bCharge = charge;
-            ReleaseMatchingBlocks();
-            ReleaseOpcodes();
-            ReleaseFullBCount();
-            ChainB(span, context);
-            NoteGrowth(beforeCharges);
+            _b = newArray;
+            try
+            {
+                ChainB(span, context);
+                _governor.Release(oldBCharge);
+                _bCharge = newCharge;
+                ReleaseMatchingBlocks();
+                ReleaseOpcodes();
+                ReleaseFullBCount();
+                ReleaseViews();
+                NoteGrowth(beforeCharges);
+            }
+            catch
+            {
+                _b = oldB;
+                _bOriginal = oldBOriginal;
+                _governor.Release(newCharge);
+                throw;
+            }
         }
 
         private void ReleaseMatchingBlocks()
@@ -573,14 +599,10 @@ internal sealed partial class LythonRuntime
 
         private void ReleaseViews()
         {
-            _governor.Release(_b2jViewCharge);
-            _b2jViewCharge = 0;
+            // N05: cached views own their charges via the pool (view as owner);
+            // dropping the cache must not refund aliases still holding old graphs.
             _b2jView = null;
-            _governor.Release(_bjunkViewCharge);
-            _bjunkViewCharge = 0;
             _bjunkView = null;
-            _governor.Release(_bpopularViewCharge);
-            _bpopularViewCharge = 0;
             _bpopularView = null;
         }
 
@@ -591,64 +613,96 @@ internal sealed partial class LythonRuntime
         // view charges carry no allocation site.
         private PyDict GetB2JView()
         {
-            var beforeCharges = CommittedStorageBytes;
             if (_b2jView is not null)
             {
                 return _b2jView;
             }
 
-            var dict = new PyDict();
+            // N05: preflight before the CLR graph can allocate; the graph (dict +
+            // nested index lists/boxes) is covered by one coupon owned by the view itself.
             var charge = ChainBaseBytes;
             foreach (var pair in _b2j)
             {
-                dict.SetItem(pair.Key, new PyList(pair.Value.Select(index => (object)new BigInteger(index))));
                 charge = checked(charge + ChainKeyBytesPerElement + ViewListBaseBytes + (ChainIndexBytesPerElement * pair.Value.Count));
             }
 
-            _governor.Reserve(charge, null);
-            _governor.Commit(charge);
-            _b2jViewCharge = charge;
+            _governor.EnsureCanReserve(charge, null);
+            var dict = new PyDict();
+            var work = 0;
+            foreach (var pair in _b2j)
+            {
+                dict.SetItem(pair.Key, new PyList(pair.Value.Select(index => (object)new BigInteger(index))));
+                if ((++work & 63) == 0)
+                {
+                    _creationContext.CheckExecutionBudget(null);
+                }
+            }
+
+            try
+            {
+                _governor.Reserve(charge, null);
+                _governor.Commit(charge);
+                _pool.TrackFreshMutable(dict, charge, null);
+            }
+            catch
+            {
+                _governor.Release(charge);
+                throw;
+            }
+
             _b2jView = dict;
-            NoteGrowth(beforeCharges);
             return dict;
         }
-
         private PySet GetBjunkView()
         {
-            var beforeCharges = CommittedStorageBytes;
             if (_bjunkView is not null)
             {
                 return _bjunkView;
             }
 
-            var view = new PySet(_bjunk);
             var charge = checked(SetBaseBytes + (SetBytesPerItem * _bjunk.Count));
-            _governor.Reserve(charge, null);
-            _governor.Commit(charge);
-            _bjunkViewCharge = charge;
+            _governor.EnsureCanReserve(charge, null);
+            var view = new PySet(_bjunk);
+            try
+            {
+                _governor.Reserve(charge, null);
+                _governor.Commit(charge);
+                _pool.TrackFreshMutable(view, charge, null);
+            }
+            catch
+            {
+                _governor.Release(charge);
+                throw;
+            }
+
             _bjunkView = view;
-            NoteGrowth(beforeCharges);
             return view;
         }
-
         private PySet GetBpopularView()
         {
-            var beforeCharges = CommittedStorageBytes;
             if (_bpopularView is not null)
             {
                 return _bpopularView;
             }
 
-            var view = new PySet(_bpopular);
             var charge = checked(SetBaseBytes + (SetBytesPerItem * _bpopular.Count));
-            _governor.Reserve(charge, null);
-            _governor.Commit(charge);
-            _bpopularViewCharge = charge;
+            _governor.EnsureCanReserve(charge, null);
+            var view = new PySet(_bpopular);
+            try
+            {
+                _governor.Reserve(charge, null);
+                _governor.Commit(charge);
+                _pool.TrackFreshMutable(view, charge, null);
+            }
+            catch
+            {
+                _governor.Release(charge);
+                throw;
+            }
+
             _bpopularView = view;
-            NoteGrowth(beforeCharges);
             return view;
         }
-
         private List<MatchingBlock> GetMatchingBlocks(LythonSourceSpan span, ExecutionContext context)
         {
             var beforeCharges = CommittedStorageBytes;
