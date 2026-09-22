@@ -20,7 +20,9 @@ public sealed class CacheKeyAccountingTests
             ?? throw new InvalidOperationException("CacheKeyMode not found.");
         var method = typeof(LythonRuntime).GetMethod("BuildCacheKey", BindingFlags.Static | BindingFlags.NonPublic)
             ?? throw new InvalidOperationException("BuildCacheKey not found.");
-        return Assert.IsType<PyTuple>(method.Invoke(null, [arguments, Enum.ToObject(keyModeType, mode), context, span]));
+        // N08: BuildCacheKey reports the explicit key charge alongside the tuple.
+        var invokeArgs = new object?[] { arguments, Enum.ToObject(keyModeType, mode), context, span, 0L };
+        return Assert.IsType<PyTuple>(method.Invoke(null, invokeArgs));
     }
 
     [Fact]

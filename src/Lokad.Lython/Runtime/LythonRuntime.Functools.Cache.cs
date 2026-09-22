@@ -1,6 +1,7 @@
 using System.Numerics;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
+using System.Runtime.CompilerServices;
 
 namespace Lokad.Lython.Runtime;
 
@@ -17,55 +18,96 @@ internal sealed partial class LythonRuntime
         private readonly ICallable _callable;
         private readonly int? _maxSize;
         private readonly CacheKeyMode _keyMode;
-        private readonly Dictionary<object, CacheEntry> _cache = new(PyValueComparer.Instance);
+        // N08/N12: contextual key storage (guest __hash__/__eq__) instead of the
+        // structural comparer, so equal-but-distinct keys hit like CPython.
+        private ContextualKeyTable<CacheEntry> _cache = new();
         private readonly LinkedList<object> _recency = [];
         private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
         private readonly MemoryGovernor _memoryGovernor;
+        private readonly ChargeReclamationPool _pool;
         private long _committedEntryBytes;
+        private long _committedKeyBytes;
+        private long _committedMetadataBytes;
         private BigInteger _hits;
         private BigInteger _misses;
 
-        // Per-entry infrastructure (dictionary slot, recency node and entry
-        // record) is charged here; keys and results arrive with their own
-        // ownership from construction and invocation.
+        // Per-entry infrastructure (table slot, recency node and entry
+        // record) is charged here; retained key graphs join the wrapper
+        // coupon below, while results arrive with their own ownership from
+        // invocation.
         private const long EntryInfrastructureBytes = 128;
 
         // Wrapper attribute slots ride the instance-attribute rate.
         private const long MetadataSlotBytes = 64;
 
-        public PyLruCacheWrapper(ICallable callable, int? maxSize, CacheKeyMode keyMode, MemoryGovernor memoryGovernor)
+        public PyLruCacheWrapper(ICallable callable, int? maxSize, CacheKeyMode keyMode, MemoryGovernor memoryGovernor, ChargeReclamationPool pool)
         {
             _callable = callable;
             _maxSize = maxSize;
             _keyMode = keyMode;
             _memoryGovernor = memoryGovernor;
+            _pool = pool;
+        }
+
+        // Wrapper coupon for drop reclamation: infrastructure plus retained key
+        // graphs plus metadata slots. Keys commit at construction and transfer
+        // here; eviction/clear release exactly, and abandoned wrappers sweep.
+        internal long CommittedStorageBytes =>
+            _committedEntryBytes + _committedKeyBytes + _committedMetadataBytes;
+
+        private void NoteGrowth(long beforeCharges)
+        {
+            var current = CommittedStorageBytes;
+            if (current != beforeCharges)
+            {
+                // N08: first growth registers the wrapper (creation coupons are
+                // zero, hence untracked); later moves re-snapshot like other pools.
+                if (current > 0 && !_pool.IsTracked(this))
+                {
+                    _pool.TrackFreshMutable(this, current, null);
+                }
+                else
+                {
+                    ChargeReclamationPool.NotifyStorageReplaced(this, current);
+                }
+            }
         }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            // The key is scratch until a miss retains it: measure exactly what
-            // its construction commits so dropped keys release nothing net.
-            var keyBytesBefore = context.MemoryGovernor.CurrentCommittedBytes;
-            var key = BuildCacheKey(arguments, _keyMode, context, span);
-            var keyBytes = context.MemoryGovernor.CurrentCommittedBytes - keyBytesBefore;
-            if (_maxSize != 0 && _cache.TryGetValue(key, out var cached))
+            // N08: explicit key ownership (no global-delta inference, which an
+            // exhaustion sweep can perturb through unrelated commitments). The
+            // tuple commits at construction; hits and disabled caches release
+            // it, misses transfer it into the wrapper coupon.
+            var key = BuildCacheKey(arguments, _keyMode, context, span, out var keyCharge);
+            if (_maxSize != 0 && _cache.TryGetValue(key, context, span, out var cached))
             {
                 _hits++;
                 Touch(cached);
-                context.MemoryGovernor.Release(keyBytes);
+                context.MemoryGovernor.Release(keyCharge);
                 return cached.Value;
             }
 
             _misses++;
-            var result = _callable.Invoke(arguments, span, context);
+            object result;
+            try
+            {
+                result = _callable.Invoke(arguments, span, context);
+            }
+            catch
+            {
+                context.MemoryGovernor.Release(keyCharge);
+                throw;
+            }
+
             if (_maxSize != 0)
             {
-                Store(key, result, span);
+                Store(key, keyCharge, result, span, context);
             }
             else
             {
-                context.MemoryGovernor.Release(keyBytes);
+                context.MemoryGovernor.Release(keyCharge);
             }
 
             return result;
@@ -83,7 +125,6 @@ internal sealed partial class LythonRuntime
                 owned.BindOwner(owner);
             }
         }
-
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             if (_metadata.TryGetValue(name, out value))
@@ -130,10 +171,13 @@ internal sealed partial class LythonRuntime
         {
             // Wrapper attribute slots ride the instance-attribute rate; the
             // creation-time update_wrapper pass routes through here as well.
+            // Slots join the wrapper coupon so abandoned wrappers sweep them.
             if (!_metadata.ContainsKey(name))
             {
                 _memoryGovernor.Reserve(MetadataSlotBytes, null);
                 _memoryGovernor.Commit(MetadataSlotBytes);
+                _committedMetadataBytes += MetadataSlotBytes;
+                ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
             }
 
             _metadata[name] = value;
@@ -151,37 +195,65 @@ internal sealed partial class LythonRuntime
 
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
-        private void Store(object key, object value, LythonSourceSpan span)
+        private void Store(object key, long keyCharge, object value, LythonSourceSpan span, ExecutionContext context)
         {
-            if (_cache.TryGetValue(key, out var existing))
+            // Equal-but-distinct keys hit the stored entry (N12) instead of
+            // duplicating it; the fresh duplicate's charge releases.
+            if (_cache.TryGetValue(key, context, span, out var existing))
             {
                 existing.Value = value;
                 Touch(existing);
+                _memoryGovernor.Release(keyCharge);
                 return;
             }
 
-            _memoryGovernor.Reserve(EntryInfrastructureBytes, span);
-            _memoryGovernor.Commit(EntryInfrastructureBytes);
+            var beforeCharges = CommittedStorageBytes;
+            // Preflight infrastructure before mutating, so denial leaves exact
+            // charges; the fresh key releases on the way out.
+            try
+            {
+                _memoryGovernor.Reserve(EntryInfrastructureBytes, span);
+                _memoryGovernor.Commit(EntryInfrastructureBytes);
+            }
+            catch
+            {
+                _memoryGovernor.Release(keyCharge);
+                throw;
+            }
+
             _committedEntryBytes += EntryInfrastructureBytes;
+            _committedKeyBytes += keyCharge;
 
             if (_maxSize is null)
             {
-                _cache.Add(key, new CacheEntry(value, node: null));
+                _cache.Add(key, new CacheEntry(value, keyCharge, node: null), context, span);
+                NoteGrowth(beforeCharges);
                 return;
             }
 
             var node = _recency.AddLast(key);
-            _cache.Add(key, new CacheEntry(value, node));
+            _cache.Add(key, new CacheEntry(value, keyCharge, node), context, span);
+            NoteGrowth(beforeCharges);
             if (_cache.Count > _maxSize.Value)
             {
                 var oldest = _recency.First.RequireNotNull();
                 _recency.RemoveFirst();
-                _cache.Remove(oldest.Value);
+                // The stored key object rides the recency node, so the lookup
+                // below hits by identity without guest dispatch.
+                long evictedKeyCharge = 0;
+                if (_cache.TryGetValue(oldest.Value, context, span, out var evicted))
+                {
+                    evictedKeyCharge = evicted.KeyCharge;
+                    _cache.Remove(oldest.Value, context, span);
+                }
+
                 _memoryGovernor.Release(EntryInfrastructureBytes);
                 _committedEntryBytes -= EntryInfrastructureBytes;
+                _memoryGovernor.Release(evictedKeyCharge);
+                _committedKeyBytes -= evictedKeyCharge;
+                NoteGrowth(beforeCharges);
             }
         }
-
         private void Touch(CacheEntry entry)
         {
             if (entry.Node is not { } node || ReferenceEquals(node, _recency.Last))
@@ -211,23 +283,38 @@ internal sealed partial class LythonRuntime
 
         private void Clear()
         {
-            _cache.Clear();
-            _recency.Clear();
+            // N08: release retained entry infrastructure plus every retained key
+            // graph (guest aliases never outlive entries: equal-key stores reuse
+            // them), then drop CLR dictionary capacity by rebuilding (it was
+            // never separately charged). Hits/misses reset like CPython.
+            var beforeCharges = CommittedStorageBytes;
+            foreach (var entry in _cache.EntriesInOrder)
+            {
+                _memoryGovernor.Release(entry.Value.KeyCharge);
+            }
+
             _memoryGovernor.Release(_committedEntryBytes);
+            _cache = new();
+            _recency.Clear();
             _committedEntryBytes = 0;
+            _committedKeyBytes = 0;
             _hits = BigInteger.Zero;
             _misses = BigInteger.Zero;
+            NoteGrowth(beforeCharges);
         }
 
         private sealed class CacheEntry
         {
-            public CacheEntry(object value, LinkedListNode<object>? node)
+            public CacheEntry(object value, long keyCharge, LinkedListNode<object>? node)
             {
                 Value = value;
+                KeyCharge = keyCharge;
                 Node = node;
             }
 
             public object Value { get; set; }
+
+            public long KeyCharge { get; }
 
             public LinkedListNode<object>? Node { get; }
         }
@@ -460,8 +547,11 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
-        var wrapper = new PyLruCacheWrapper(callable, maxSize, keyMode, context.MemoryGovernor);
+        // N08: the wrapper joins the run pool so abandoned wrappers sweep the
+        // coupon below instead of stranding infrastructure, keys and metadata.
+        var wrapper = new PyLruCacheWrapper(callable, maxSize, keyMode, context.MemoryGovernor, context.Services.State.CallTemporaries);
         ApplyUpdateWrapper(wrapper, wrapper, callable, FunctoolsWrapperAssignmentNames, FunctoolsWrapperUpdateNames, context, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(wrapper, wrapper.CommittedStorageBytes, span);
         return wrapper;
     }
 
@@ -601,11 +691,18 @@ internal sealed partial class LythonRuntime
         CallArgumentValue[] arguments,
         CacheKeyMode keyMode,
         ExecutionContext context,
-        LythonSourceSpan span)
+        LythonSourceSpan span,
+        out long keyCharge)
     {
+        // N08: explicit key ownership. Arity-bounded parts scratch needs no
+        // temp; the tuple commits its storage and reports it with every fresh
+        // payload (keyword/type strings, identity tokens) summed alongside, so
+        // hits, disabled caches and insertion failures release exactly and
+        // misses transfer exactly into the wrapper coupon.
         try
         {
             var parts = new List<object>();
+            long payloadCharge = 0;
             foreach (var argument in arguments)
             {
                 if (argument.IsPositional)
@@ -615,7 +712,9 @@ internal sealed partial class LythonRuntime
                 }
 
                 parts.Add(CacheKeyMarker.Keyword);
-                parts.Add(PyString.FromString(argument.KeywordName, context.MemoryGovernor, span));
+                var keywordName = PyString.FromString(argument.KeywordName, context.MemoryGovernor, span);
+                payloadCharge += keywordName.CommittedOwnedBytes;
+                parts.Add(keywordName);
                 parts.Add(ValidateDictionaryKey(argument.Value, span));
             }
 
@@ -624,38 +723,95 @@ internal sealed partial class LythonRuntime
                 parts.Add(CacheKeyMarker.Typed);
                 foreach (var argument in arguments)
                 {
-                    parts.Add(PyString.FromString(GetCacheTypeToken(argument.Value, context, span), context.MemoryGovernor, span));
+                    var part = BuildCacheTypePart(argument.Value, context, span, ref payloadCharge);
+                    parts.Add(part);
                 }
             }
 
-            return new PyTuple(parts, context.MemoryGovernor, span);
+            var key = new PyTuple(parts, context.MemoryGovernor, span);
+            keyCharge = checked(key.CommittedStorageBytes + payloadCharge);
+            return key;
         }
         catch (InvalidOperationException ex)
         {
             throw new LythonRuntimeException("TypeError", ex.Message, span);
         }
     }
-
-    private static string GetCacheTypeToken(object value, ExecutionContext context, LythonSourceSpan span)
+    // N16: typed-key identity uses runtime type references instead of display
+    // names (distinct classes may share a name). Strings stay structural for
+    // builtin kinds; identity tokens keep their own hash/equality pair below.
+    private static object BuildCacheTypePart(object value, ExecutionContext context, LythonSourceSpan span, ref long payloadCharge)
     {
-        return value switch
+        PyString text;
+        switch (value)
         {
-            PyNone => "NoneType",
-            bool => "bool",
-            BigInteger or int => "int",
-            double => "float",
-            PyString => "str",
-            PyBytes => "bytes",
-            PyList => "list",
-            PyTuple => "tuple",
-            PyDict => "dict",
-            PySet => "set",
-            PyInstance instance => instance.Type.Name,
-            PyType type => type.Name,
-            _ => value.GetType().Name
-        };
+            case PyNone:
+                text = PyString.FromString("NoneType", context.MemoryGovernor, span);
+                break;
+            case bool:
+                text = PyString.FromString("bool", context.MemoryGovernor, span);
+                break;
+            case BigInteger or int:
+                text = PyString.FromString("int", context.MemoryGovernor, span);
+                break;
+            case double:
+                text = PyString.FromString("float", context.MemoryGovernor, span);
+                break;
+            case PyString:
+                text = PyString.FromString("str", context.MemoryGovernor, span);
+                break;
+            case PyBytes:
+                text = PyString.FromString("bytes", context.MemoryGovernor, span);
+                break;
+            case PyList:
+                text = PyString.FromString("list", context.MemoryGovernor, span);
+                break;
+            case PyTuple:
+                text = PyString.FromString("tuple", context.MemoryGovernor, span);
+                break;
+            case PyDict:
+                text = PyString.FromString("dict", context.MemoryGovernor, span);
+                break;
+            case PySet:
+                text = PyString.FromString("set", context.MemoryGovernor, span);
+                break;
+            case PyInstance instance:
+                return OwnCacheTypeToken(instance.Type, context, span, ref payloadCharge);
+            case PyType type:
+                return OwnCacheTypeToken(type, context, span, ref payloadCharge);
+            default:
+                text = PyString.FromString(value.GetType().Name, context.MemoryGovernor, span);
+                break;
+        }
+
+        payloadCharge = checked(payloadCharge + text.CommittedOwnedBytes);
+        return text;
     }
 
+    private static CacheTypeToken OwnCacheTypeToken(object identity, ExecutionContext context, LythonSourceSpan span, ref long payloadCharge)
+    {
+        const long TokenBytes = 64;
+        context.MemoryGovernor.Reserve(TokenBytes, span);
+        context.MemoryGovernor.Commit(TokenBytes);
+        payloadCharge = checked(payloadCharge + TokenBytes);
+        return new CacheTypeToken(identity);
+    }
+
+    // N16: typed-cache identity token (see BuildCacheTypePart). structural
+    // CLR equality/hash by runtime reference, plus the governed hash hook.
+    private sealed class CacheTypeToken : IPyHashableValue
+    {
+        public CacheTypeToken(object identity) => Identity = identity;
+
+        public object Identity { get; }
+
+        public int GetPyHashCode() => RuntimeHelpers.GetHashCode(Identity);
+
+        public override bool Equals(object? obj)
+            => obj is CacheTypeToken other && ReferenceEquals(Identity, other.Identity);
+
+        public override int GetHashCode() => RuntimeHelpers.GetHashCode(Identity);
+    }
 
     private sealed class CacheKeyMarker : IPyHashableValue
     {

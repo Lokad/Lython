@@ -233,7 +233,8 @@ internal sealed class ContextualKeyTable<TValue>
         var hash = PyHashProtocols.BucketHash(key, context, span);
         if (_buckets.TryGetValue(hash, out var bucket))
         {
-            foreach (var entry in bucket)
+            // Snapshot: guest == may reenter this table (recursive cached calls).
+            foreach (var entry in bucket.ToArray())
             {
                 if (PyHashProtocols.ProtocolKeysEqual(entry.Key, key, context, span))
                 {
@@ -258,7 +259,8 @@ internal sealed class ContextualKeyTable<TValue>
         }
         else
         {
-            foreach (var entry in bucket)
+            // Snapshot: guest == may reenter this table (recursive cached calls).
+            foreach (var entry in bucket.ToArray())
             {
                 if (PyHashProtocols.ProtocolKeysEqual(entry.Key, key, context, span))
                 {
@@ -285,7 +287,8 @@ internal sealed class ContextualKeyTable<TValue>
         }
         else
         {
-            foreach (var entry in bucket)
+            // Snapshot: guest == may reenter this table (recursive cached calls).
+            foreach (var entry in bucket.ToArray())
             {
                 if (PyHashProtocols.ProtocolKeysEqual(entry.Key, key, context, span))
                 {
@@ -306,7 +309,8 @@ internal sealed class ContextualKeyTable<TValue>
         var hash = PyHashProtocols.BucketHash(key, context, span);
         if (_buckets.TryGetValue(hash, out var bucket))
         {
-            foreach (var entry in bucket)
+            // Snapshot: guest == may reenter this table (recursive cached calls).
+            foreach (var entry in bucket.ToArray())
             {
                 if (PyHashProtocols.ProtocolKeysEqual(entry.Key, key, context, span))
                 {
@@ -341,12 +345,12 @@ internal sealed class ContextualKeyTable<TValue>
             return false;
         }
 
-        for (var i = 0; i < bucket.Count; i++)
+        // Snapshot scan, removal by reference: guest == may reenter (see above).
+        foreach (var stored in bucket.ToArray())
         {
-            if (PyHashProtocols.ProtocolKeysEqual(bucket[i].Key, key, context, span))
+            if (PyHashProtocols.ProtocolKeysEqual(stored.Key, key, context, span))
             {
-                var stored = bucket[i];
-                bucket.RemoveAt(i);
+                bucket.Remove(stored);
                 _entries.Remove(stored);
                 return true;
             }
