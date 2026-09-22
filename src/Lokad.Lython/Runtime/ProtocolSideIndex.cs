@@ -15,6 +15,18 @@ namespace Lokad.Lython.Runtime;
 // snapshot) and denial rollback. Steady-state removals keep their share
 // (capacity retained, like tier backing and shrink-kept storage: safe
 // direction); wholesale clear and rollback release exactly.
+// Shared side-entry contract (N10): dict keys and set items carry the same frozen
+// hashes, so candidate selection and snapshot discipline live in one generic helper
+// instead of duplicated per container. Mutation and iteration-version rules stay
+// per container by design: dicts bump their own version on size change while sets
+// ride HashSet invalidation; both funnel every side-list mutation through the index.
+internal interface IProtocolSideEntry
+{
+    int Hash { get; }
+
+    int StructuralHash { get; }
+}
+
 internal sealed class ProtocolSideIndex
 {
     // Two hash-table nodes plus bucket slots plus amortized capacity, safe
@@ -29,6 +41,68 @@ internal sealed class ProtocolSideIndex
     public long CommittedBytes => _committedBytes;
 
     public int LiveCount => _liveCount;
+
+    // Shared candidate snapshot (N10): collects both hash buckets (either key can
+    // match, like the dual-key linear scans this replaces), sorts positions to
+    // reproduce insertion order, filters the exact dispatch set (builtinOnly keeps
+    // entry-protocol-hash matches only) so no extra guest == runs, and preflights
+    // only the copied candidates. The transient position set is scratch bounded by
+    // the charged population; the retained copy is governed. With no index (which
+    // never happens when the side list is created through its container, but kept
+    // as a defensive fallback), filters the whole list like the old scans.
+    internal static TEntry[] SnapshotCandidates<TEntry>(
+        List<TEntry>? entries,
+        ProtocolSideIndex? index,
+        int hash,
+        int structuralHash,
+        bool builtinOnly,
+        MemoryGovernor? governor,
+        LythonSourceSpan? span,
+        long entryBytes)
+        where TEntry : struct, IProtocolSideEntry
+    {
+        if (entries is null)
+        {
+            return [];
+        }
+
+        if (index is null)
+        {
+            governor?.EnsureCanReserve(checked(entryBytes * (long)entries.Count), span);
+            var fallback = new List<TEntry>(entries.Count);
+            foreach (var entry in entries)
+            {
+                if (builtinOnly ? entry.Hash == hash : entry.Hash == hash || entry.StructuralHash == structuralHash)
+                {
+                    fallback.Add(entry);
+                }
+            }
+
+            return fallback.ToArray();
+        }
+
+        var positions = new HashSet<int>();
+        index.CollectCandidates(hash, structuralHash, positions);
+        if (positions.Count == 0)
+        {
+            return [];
+        }
+
+        governor?.EnsureCanReserve(checked(entryBytes * (long)positions.Count), span);
+        var ordered = new List<int>(positions);
+        ordered.Sort();
+        var snapshot = new List<TEntry>(ordered.Count);
+        foreach (var position in ordered)
+        {
+            var entry = entries[position];
+            if (builtinOnly ? entry.Hash == hash : entry.Hash == hash || entry.StructuralHash == structuralHash)
+            {
+                snapshot.Add(entry);
+            }
+        }
+
+        return snapshot.ToArray();
+    }
 
     // Indexes the side-list position about to be appended. Denies before the
     // caller mutates: a denied coupon leaves the map exactly as it was.
