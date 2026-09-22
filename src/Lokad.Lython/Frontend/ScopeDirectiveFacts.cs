@@ -259,6 +259,9 @@ internal static class ScopeDirectiveFactsCollector
             case LoopNameTargetSyntax name:
                 names.Add(name.Name);
                 break;
+            case LoopStarredTargetSyntax starred:
+                names.Add(starred.Name);
+                break;
             case LoopTupleTargetSyntax tuple:
                 foreach (var item in tuple.Items) CollectLoopTargetBindings(item, names);
                 break;

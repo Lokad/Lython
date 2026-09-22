@@ -547,7 +547,11 @@ internal static partial class StaticBindingEngine
                 break;
 
             case LoopTupleTargetSyntax tupleTarget:
-                if (TryGetFixedSequenceItems(value, out var items) &&
+                if (tupleTarget.Items.Any(static item => item is LoopStarredTargetSyntax))
+                {
+                    BindLoopTargetUnknown(target, bindings);
+                }
+                else if (TryGetFixedSequenceItems(value, out var items) &&
                     items.Count == tupleTarget.Items.Count)
                 {
                     for (var i = 0; i < tupleTarget.Items.Count; i++)
@@ -569,6 +573,9 @@ internal static partial class StaticBindingEngine
         {
             case LoopNameTargetSyntax nameTarget:
                 bindings.Set(nameTarget.Name, AbstractValue.Unknown());
+                break;
+            case LoopStarredTargetSyntax starredTarget:
+                bindings.Set(starredTarget.Name, AbstractValue.Unknown());
                 break;
             case LoopTupleTargetSyntax tupleTarget:
                 foreach (var item in tupleTarget.Items)

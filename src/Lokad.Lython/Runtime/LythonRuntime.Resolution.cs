@@ -466,14 +466,57 @@ internal sealed partial class LythonRuntime
                 return;
             case LoopTupleTargetSyntax tuple:
                 var values = MaterializeUnpackingSequence(value, span, context);
-                if (values.Length != tuple.Items.Count)
-                {
-                    throw new LythonRuntimeException("ValueError", DescribeLoopArityMismatch(tuple.Items.Count, values.Length), span);
-                }
-
+                var starIndex = -1;
                 for (var i = 0; i < tuple.Items.Count; i++)
                 {
+                    if (tuple.Items[i] is LoopStarredTargetSyntax)
+                    {
+                        if (starIndex >= 0)
+                        {
+                            throw new InvalidOperationException("Multiple starred loop targets.");
+                        }
+
+                        starIndex = i;
+                    }
+                }
+
+                if (starIndex < 0)
+                {
+                    if (values.Length != tuple.Items.Count)
+                    {
+                        throw new LythonRuntimeException("ValueError", DescribeLoopArityMismatch(tuple.Items.Count, values.Length), span);
+                    }
+
+                    for (var i = 0; i < tuple.Items.Count; i++)
+                    {
+                        AssignLoopTarget(tuple.Items[i], values[i], span, context);
+                    }
+
+                    return;
+                }
+
+                var required = tuple.Items.Count - 1;
+                if (values.Length < required)
+                {
+                    throw new LythonRuntimeException("ValueError", $"not enough values to unpack (expected at least {required}, got {values.Length})", span);
+                }
+
+                for (var i = 0; i < starIndex; i++)
+                {
                     AssignLoopTarget(tuple.Items[i], values[i], span, context);
+                }
+
+                var starredCount = values.Length - required;
+                var starredItems = new object[starredCount];
+                Array.Copy(values, starIndex, starredItems, 0, starredCount);
+                if (tuple.Items[starIndex] is LoopStarredTargetSyntax starred)
+                {
+                    StoreName(starred.Name, new PyList(starredItems, context.MemoryGovernor, span), context, span);
+                }
+
+                for (var i = starIndex + 1; i < tuple.Items.Count; i++)
+                {
+                    AssignLoopTarget(tuple.Items[i], values[values.Length - (tuple.Items.Count - i)], span, context);
                 }
 
                 return;
@@ -509,6 +552,9 @@ internal sealed partial class LythonRuntime
         {
             case LoopNameTargetSyntax name:
                 names.Add(name.Name);
+                break;
+            case LoopStarredTargetSyntax starred:
+                names.Add(starred.Name);
                 break;
             case LoopTupleTargetSyntax tuple:
                 foreach (var item in tuple.Items)

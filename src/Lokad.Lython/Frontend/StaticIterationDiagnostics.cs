@@ -62,6 +62,26 @@ internal static class StaticIterationDiagnostics
                 continue;
             }
 
+            var required = target.Items.Count;
+            foreach (var targetItem in target.Items)
+            {
+                if (targetItem is LoopStarredTargetSyntax)
+                {
+                    required--;
+                }
+            }
+
+            if (required != target.Items.Count)
+            {
+                if (count < required)
+                {
+                    AddDiagnostic(diagnostics, "LA3030", $"not enough values to unpack (expected at least {required}, got {count})", span);
+                    return;
+                }
+
+                continue;
+            }
+
             if (count != target.Items.Count)
             {
                 var message = count > target.Items.Count

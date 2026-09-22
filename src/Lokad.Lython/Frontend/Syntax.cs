@@ -515,6 +515,9 @@ internal sealed record LoopNameTargetSyntax(
 internal sealed record LoopTupleTargetSyntax(
     IReadOnlyList<LoopTargetSyntax> Items) : LoopTargetSyntax;
 
+internal sealed record LoopStarredTargetSyntax(
+    string Name) : LoopTargetSyntax;
+
 internal abstract record DictionaryDisplayItemSyntax(
     ExpressionSyntax Key,
     ExpressionSyntax Value,

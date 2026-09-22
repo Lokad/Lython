@@ -384,6 +384,9 @@ internal static class StaticScopeDirectiveDiagnostics
             case LoopNameTargetSyntax name:
                 names.Add(name.Name);
                 break;
+            case LoopStarredTargetSyntax starred:
+                names.Add(starred.Name);
+                break;
             case LoopTupleTargetSyntax tuple:
                 foreach (var item in tuple.Items) CollectSeenNames(item, names);
                 break;

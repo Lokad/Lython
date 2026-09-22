@@ -84,18 +84,36 @@ internal sealed partial class Parser
 
         if (CurrentToken != Token.Comma)
         {
+            if (first is LoopStarredTargetSyntax)
+            {
+                AddDiagnostic("LA1015", "Starred assignment target must be in a list or tuple.", tokenIndex);
+                return false;
+            }
+
             target = first;
             return true;
         }
 
         var items = new List<LoopTargetSyntax> { first };
+        var hasStarred = first is LoopStarredTargetSyntax;
         while (CurrentToken == Token.Comma)
         {
             ReadToken();
-            if (!TryParseLoopTargetAtom(out var item, out _))
+            if (!TryParseLoopTargetAtom(out var item, out var itemToken))
             {
                 AddDiagnostic("LA1015", "Expected loop variable after ','.", _position);
                 return false;
+            }
+
+            if (item is LoopStarredTargetSyntax)
+            {
+                if (hasStarred)
+                {
+                    AddDiagnostic("LA1015", "Multiple starred expressions in assignment.", itemToken);
+                    return false;
+                }
+
+                hasStarred = true;
             }
 
             items.Add(item);
@@ -110,6 +128,21 @@ internal sealed partial class Parser
         if (TryReadNameToken(out tokenIndex))
         {
             target = new LoopNameTargetSyntax(IdentifierText(tokenIndex));
+            return true;
+        }
+
+        if (CurrentToken == Token.Star)
+        {
+            var starToken = ReadToken();
+            if (!TryReadNameToken(out var nameToken))
+            {
+                AddDiagnostic("LA1015", "Expected loop variable after '*'.", starToken);
+                target = new LoopTupleTargetSyntax(Array.Empty<LoopTargetSyntax>());
+                return false;
+            }
+
+            target = new LoopStarredTargetSyntax(IdentifierText(nameToken));
+            tokenIndex = starToken;
             return true;
         }
 

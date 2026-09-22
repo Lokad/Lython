@@ -462,6 +462,9 @@ internal static class StaticNameBindingDiagnostics
             case LoopNameTargetSyntax nameTarget:
                 maybeAssigned.Add(nameTarget.Name);
                 break;
+            case LoopStarredTargetSyntax starredTarget:
+                maybeAssigned.Add(starredTarget.Name);
+                break;
             case LoopTupleTargetSyntax tupleTarget:
                 foreach (var item in tupleTarget.Items) AddLoopTarget(item, maybeAssigned);
                 break;
