@@ -77,6 +77,94 @@ public sealed class SampleCountsScenarioTests
     }
 
     [Fact]
+    public async Task CountedSampling_MapsSelectedPositionOnCollision()
+    {
+        // N14: on a Floyd-selection collision the resume slot is the fresh
+        // position, so a full draw over [x, y] x [2, 2] holds exact counts.
+        var script = new LythonEngine().Compile("""
+            import random
+            return random.sample(["x", "y"], k=4, counts=[2, 2]).count("x")
+            """);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(new BigInteger(2), sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(new BigInteger(2), asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task CountedSampling_FullDrawHoldsMultiplicitiesAcrossSeeds()
+    {
+        // Invariant over many seeds rather than one pinned sequence: every
+        // full draw must reproduce the pool multiplicities exactly.
+        var script = new LythonEngine().Compile("""
+            import random
+            bad = 0
+            for seed in range(50):
+                random.seed(seed)
+                if sorted(random.sample(["x", "y"], k=4, counts=[2, 2])) != ["x", "x", "y", "y"]:
+                    bad = bad + 1
+            return bad
+            """);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(new BigInteger(0), sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(new BigInteger(0), asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task CountedSampling_ZeroSkewedAndEmptyCounts()
+    {
+        var script = new LythonEngine().Compile("""
+            import random
+            random.seed(7)
+            partial = random.sample(["a", "b", "c"], k=2, counts=[3, 0, 2])
+            empty = random.sample(["a"], k=0, counts=[5])
+            random.seed(3)
+            skewed = random.sample(["p", "q"], k=6, counts=[5, 1]).count("p")
+            return [len(partial), "b" in partial, empty, skewed]
+            """);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
+        var expected = new List<object?>
+        {
+            new BigInteger(2),
+            false,
+            new List<object?>(),
+            new BigInteger(5),
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task CountedSampling_PartialDrawStaysWithinCounts()
+    {
+        var script = new LythonEngine().Compile("""
+            import random
+            random.seed(11)
+            r = random.sample(["x", "y"], k=2, counts=[2, 2])
+            return [len(r), r.count("x") <= 2, r.count("y") <= 2]
+            """);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Code + ": " + d.Message)));
+        var expected = new List<object?> { new BigInteger(2), true, true };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public async Task CountedSamplingKeepsValueAndErrorContracts()
     {
         // MG15: position mapping must resolve pools exactly (degenerate

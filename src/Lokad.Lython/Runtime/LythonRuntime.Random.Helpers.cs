@@ -251,12 +251,17 @@ internal sealed partial class LythonRuntime
             {
                 var resume = total - count + drawn;
                 var draw = (int)state.NextBelow((ulong)(resume + 1));
+                var picked = draw;
                 if (!selected.Add(draw))
                 {
-                    selected.Add((int)resume);
+                    // Floyd collision: the resume slot is the fresh position,
+                    // so it joins the set and maps to the output. Mapping the
+                    // original draw instead could repeat an expanded position.
+                    picked = (int)resume;
+                    selected.Add(picked);
                 }
 
-                result[drawn] = population[MapCountedPosition(cumulative, draw)];
+                result[drawn] = population[MapCountedPosition(cumulative, picked)];
                 if (((drawn + 1) & 63) == 0)
                 {
                     context.CheckExecutionBudget(span);
