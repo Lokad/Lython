@@ -739,7 +739,9 @@ internal sealed partial class LythonRuntime
     }
     // N16: typed-key identity uses runtime type references instead of display
     // names (distinct classes may share a name). Strings stay structural for
-    // builtin kinds; identity tokens keep their own hash/equality pair below.
+    // builtin kinds, which are pinned by exact-charge tests; every other host kind
+    // keys by its runtime type with the same ownership. Identity tokens keep their
+    // own hash/equality pair below.
     private static object BuildCacheTypePart(object value, ExecutionContext context, LythonSourceSpan span, ref long payloadCharge)
     {
         PyString text;
@@ -780,8 +782,7 @@ internal sealed partial class LythonRuntime
             case PyType type:
                 return OwnCacheTypeToken(type, context, span, ref payloadCharge);
             default:
-                text = PyString.FromString(value.GetType().Name, context.MemoryGovernor, span);
-                break;
+                return OwnCacheTypeToken(value.GetType(), context, span, ref payloadCharge);
         }
 
         payloadCharge = checked(payloadCharge + text.CommittedOwnedBytes);

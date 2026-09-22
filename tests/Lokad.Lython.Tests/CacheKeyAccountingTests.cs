@@ -60,4 +60,55 @@ public sealed class CacheKeyAccountingTests
         Assert.Equal(211L + 64L, context.MemoryGovernor.CurrentCommittedBytes - before);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
+
+    // Two kennels homing a nested Widget each: both CLR kinds share the Name
+    // "Widget" while staying distinct runtime types.
+    private sealed class WidgetKennelA
+    {
+        public sealed class Widget : IPyHashableValue
+        {
+            public int GetPyHashCode() => 42;
+
+            public override bool Equals(object? obj)
+                => obj is Widget || obj is WidgetKennelB.Widget;
+
+            public override int GetHashCode() => 42;
+        }
+    }
+
+    private sealed class WidgetKennelB
+    {
+        public sealed class Widget : IPyHashableValue
+        {
+            public int GetPyHashCode() => 42;
+
+            public override bool Equals(object? obj)
+                => obj is Widget || obj is WidgetKennelA.Widget;
+
+            public override int GetHashCode() => 42;
+        }
+    }
+
+    [Fact]
+    public void DistinctHostKindsWithSharedNameStayDistinct()
+    {
+        // N16: typed-key identity uses runtime type references, never display
+        // names. The widgets compare equal by value on purpose, so only the type
+        // part can tell the keys apart: display-name tags would collide.
+        var host = new MockLythonHost();
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        Assert.Equal("Widget", typeof(WidgetKennelA.Widget).Name);
+        Assert.Equal(typeof(WidgetKennelA.Widget).Name, typeof(WidgetKennelB.Widget).Name);
+        var before = context.MemoryGovernor.CurrentCommittedBytes;
+        var keyA = BuildKey(context, span, 1, CallArgumentValue.Positional(new WidgetKennelA.Widget()));
+        var keyB = BuildKey(context, span, 1, CallArgumentValue.Positional(new WidgetKennelB.Widget()));
+        Assert.Equal(3, keyA.Count);
+        Assert.Equal(3, keyB.Count);
+        Assert.NotEqual(keyA[2], keyB[2]);
+        // Tuple backing (80) plus one 64B identity token per key; the widgets are
+        // not adoptable scalars, so no coupons ride along.
+        Assert.Equal(2 * 144L, context.MemoryGovernor.CurrentCommittedBytes - before);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
 }
