@@ -43,7 +43,10 @@ public sealed class GlobalsNormalizationAccountingScenarioTests
     {
         var script = new LythonEngine().Compile("return len(big)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 33554432, Globals = BigGlobals(500000) };
+        // N06: the 500k distinct host longs adopt one 64 B coupon each beside the
+        // content and drain copy (~48 MB total), so the roomy budget moved
+        // 32 MiB -> 64 MiB.
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 67108864, Globals = BigGlobals(500000) };
         var expected = new BigInteger(500000);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);

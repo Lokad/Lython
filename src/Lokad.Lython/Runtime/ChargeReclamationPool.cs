@@ -68,7 +68,13 @@ internal sealed class ChargeReclamationPool
     // Reports whether a value already owns a reclamation entry, so fresh-value
     // helpers can alias-dedup before committing instead of double-charging a
     // shared box (whose sweep would then release only once).
-    public bool IsTracked(object value) => TrackedStorage.TryGetValue(value, out _);
+    public bool IsTracked(object value) => IsTrackedValue(value);
+
+    // Reference-identity ownership probe for container adoption (N06):
+    // containers cannot thread a pool reference through every mutation path,
+    // so they ask the shared table directly. Tracked values stay under their
+    // existing owner; only untracked scalars earn container coupons.
+    internal static bool IsTrackedValue(object value) => TrackedStorage.TryGetValue(value, out _);
 
     // Re-snapshots a pooled value whose backing charges were released and
     // recommitted through the value itself, so a later sweep releases exactly

@@ -32,7 +32,10 @@ public sealed class GlobalsSharingAccountingScenarioTests
     {
         var script = new LythonEngine().Compile("return len(v0)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144, Globals = SharedGlobals() };
+        // N06: the 5000 distinct host longs adopt one 64 B coupon each (~320 KiB
+        // beside content and copy), so the fit-once budget moved 256 KiB -> 1 MiB.
+        // Sharing still charges once, not once per aliasing global.
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576, Globals = SharedGlobals() };
         var expected = new BigInteger(5000);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
