@@ -33,6 +33,10 @@ public sealed class ProtocolSnapshotBudgetTests
     // scan workload keeps its exhaustion margin in both modes (at 6000 probes the indexed
     // total straddled the budget: sync exhausted, async fit).
     private const int DictScanProbeCount = 18000;
+    // N10 index: set membership scans only hash-bucketed side candidates with no store
+    // phase, so each distinct-hash probe skips the whole 3000-entry scan. Probes tripled
+    // so the scan workload keeps its exhaustion margin in both modes.
+    private const int SetScanProbeCount = 18000;
     private const int DictScanStepBudget = 600_000;
     private const int SetScanStepBudget = 400_000;
 
@@ -137,7 +141,7 @@ public sealed class ProtocolSnapshotBudgetTests
         for i in range(3000):
             s.add(K(i))
         hits = 0
-        for i in range(6000):
+        for i in range(18000):
             if K(1000000 + i) in s:
                 hits += 1
         return [len(s), hits]

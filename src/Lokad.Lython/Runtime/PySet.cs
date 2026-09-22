@@ -15,7 +15,10 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     // precomputed hashes plus element ==. Dual-homed like PyDict: every
     // entry lives in the fast table (iteration, Count, copies untouched)
     // with a shadow here carrying its contextual hash for dispatch scans.
+    // (N10: snapshots preflighted, scans budgeted, side candidates indexed
+    // by protocol hash through the shared ProtocolSideIndex.)
     private List<ProtocolEntry>? _protocol;
+    private ProtocolSideIndex? _sideIndex;
     private long _protocolBytes;
     private long _protocolSeq;
 
@@ -160,6 +163,11 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         _protocol = other._protocol is null ? null : new List<ProtocolEntry>(other._protocol);
         _protocolBytes = 0;
         _protocolSeq = other._protocolSeq;
+        if (other._sideIndex is not null)
+        {
+            _sideIndex = new ProtocolSideIndex();
+            _sideIndex.CloneFrom(other._sideIndex, null, null);
+        }
         _memoryGovernor = other._memoryGovernor;
         _allocationSpan = other._allocationSpan;
         if (_memoryGovernor is not null)
@@ -187,6 +195,12 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             governor.Commit(bytes);
             _protocolBytes = bytes;
         }
+
+        if (other._sideIndex is not null)
+        {
+            _sideIndex = new ProtocolSideIndex();
+            _sideIndex.CloneFrom(other._sideIndex, governor, allocationSpan);
+        }
     }
 
     public int Count => _items.Count;
@@ -198,7 +212,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     // snapshot only ever leaves a safe residual behind; wholesale
     // replacement re-snapshots through Clear below. Adopted scalar coupons
     // fold in, so snapshots and drop sweeps carry them.
-    internal long CommittedStorageBytes => (_shellCharged ? SetShellBytes + _committedBytes : _committedBytes) + _protocolBytes + (_scalarCoupons?.CommittedBytes ?? 0);
+    internal long CommittedStorageBytes => (_shellCharged ? SetShellBytes + _committedBytes : _committedBytes) + _protocolBytes + (_sideIndex?.CommittedBytes ?? 0) + (_scalarCoupons?.CommittedBytes ?? 0);
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
 
@@ -340,6 +354,8 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
                 _protocolBytes = 0;
             }
 
+            _sideIndex?.ReleaseAll(_memoryGovernor);
+            _sideIndex = null;
             ReleaseAllCoupons();
             _items = new HashSet<object>(PyValueComparer.Instance);
             _protocol = null;
@@ -349,6 +365,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
         _items.Clear();
         _protocol = null;
+        _sideIndex = null;
         _protocolBytes = 0;
     }
 
@@ -368,44 +385,23 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
         var hash = PyHashProtocols.GetProtocolHash(item, context, useSpan);
         var structuralHash = PyValueComparer.Instance.GetHashCode(item);
-        // N10 part 1: bound collision and non-collision scans alike.
-        // N10 part 2: the snapshots below are lazy (denial points and check
-        // cadence unchanged; only the copies wait for the first candidate).
+        // N10 index: duplicate checks scan only hash-bucketed candidates (same dispatch
+        // set and order); the store phase below is untouched.
         var work = 0;
         if (_protocol is not null)
         {
-            EnsureSideSnapshot(_protocol.Count, useSpan);
-            var sideHit = -1;
-            for (var i = 0; i < _protocol.Count; i++)
+            var candidates = SnapshotProtocolCandidates(hash, structuralHash, useSpan);
+            for (var i = 0; i < candidates.Length; i++)
             {
                 if ((++work & 63) == 0)
                 {
                     context.CheckExecutionBudget(useSpan);
                 }
 
-                var entry = _protocol[i];
-                if (entry.Hash == hash || entry.StructuralHash == structuralHash)
+                var entry = candidates[i];
+                if (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan))
                 {
-                    sideHit = i;
-                    break;
-                }
-            }
-
-            if (sideHit >= 0)
-            {
-                var snapshot = _protocol.ToArray();
-                for (var i = sideHit; i < snapshot.Length; i++)
-                {
-                    if (i > sideHit && (++work & 63) == 0)
-                    {
-                        context.CheckExecutionBudget(useSpan);
-                    }
-
-                    var entry = snapshot[i];
-                    if ((entry.Hash == hash || entry.StructuralHash == structuralHash) && (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan)))
-                    {
-                        return false;
-                    }
+                    return false;
                 }
             }
         }
@@ -475,11 +471,14 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         // The side entry retains the argument even when the fast table already
         // holds a structural twin, so the coupon commits before any denial point.
         // A denied protocol charge needs no extra rollback: the stranded entry
-        // stays retained, exactly what the coupon covers.
+        // stays retained (side list and index alike), exactly what the coupons cover.
         AdoptIncoming(item);
+        _protocol ??= new List<ProtocolEntry>();
+        _sideIndex ??= new ProtocolSideIndex();
+        var position = _protocol.Count;
         try
         {
-            EnsureCapacity(Count + 1);
+            _sideIndex.Add(position, hash, structuralHash, _memoryGovernor, _allocationSpan);
         }
         catch (Exception)
         {
@@ -487,8 +486,18 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             throw;
         }
 
+        try
+        {
+            EnsureCapacity(Count + 1);
+        }
+        catch (Exception)
+        {
+            _sideIndex.RemoveForRollback(position, hash, structuralHash, _memoryGovernor);
+            UnadoptIncoming(item);
+            throw;
+        }
+
         _ = _items.Add(item);
-        _protocol ??= new List<ProtocolEntry>();
         _protocol.Add(new ProtocolEntry(_protocolSeq++, hash, structuralHash, item));
         if (_memoryGovernor is not null)
         {
@@ -524,42 +533,22 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
         var hash = PyHashProtocols.GetProtocolHash(item, context, useSpan);
         var structuralHash = PyValueComparer.Instance.GetHashCode(item);
-        // N10 part 1: bound collision and non-collision scans alike.
-        // N10 part 2: the snapshot below is lazy (denial point and check
-        // cadence unchanged; only the copy waits for the first candidate).
+        // N10 index: membership scans only hash-bucketed candidates in insertion order
+        // (same dispatch set and order as the linear scan). There is no store phase here.
+        // Candidate copies preflight only candidates; work checks run where dispatch happens.
         var work = 0;
-        EnsureSideSnapshot(_protocol.Count, useSpan);
-        var sideHit = -1;
-        for (var i = 0; i < _protocol.Count; i++)
+        var candidates = SnapshotProtocolCandidates(hash, structuralHash, useSpan);
+        for (var i = 0; i < candidates.Length; i++)
         {
             if ((++work & 63) == 0)
             {
                 context.CheckExecutionBudget(useSpan);
             }
 
-            var entry = _protocol[i];
-            if (entry.Hash == hash || entry.StructuralHash == structuralHash)
+            var entry = candidates[i];
+            if (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan))
             {
-                sideHit = i;
-                break;
-            }
-        }
-
-        if (sideHit >= 0)
-        {
-            var snapshot = _protocol.ToArray();
-            for (var i = sideHit; i < snapshot.Length; i++)
-            {
-                if (i > sideHit && (++work & 63) == 0)
-                {
-                    context.CheckExecutionBudget(useSpan);
-                }
-
-                var entry = snapshot[i];
-                if ((entry.Hash == hash || entry.StructuralHash == structuralHash) && (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan)))
-                {
-                    return true;
-                }
+                return true;
             }
         }
 
@@ -582,12 +571,12 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         var context = ActiveProtocolContext();
         var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
         var hash = PyValueComparer.Instance.GetHashCode(item);
-        // N10 part 2: the side list snapshots lazily like every other scan.
-        // Dispatching guest == over the live list crashes when the callback
-        // mutates the table mid-scan.
+        // N10 index: builtin probes scan only hash-bucketed candidates in insertion order
+        // (same dispatch set: entry protocol hash only). Snapshotting the candidates keeps
+        // mutating guest == safe like every other scan.
         var work = 0;
-        var hit = -1;
-        for (var i = 0; i < _protocol!.Count; i++)
+        var candidates = SnapshotBuiltinCandidates(hash, useSpan);
+        for (var i = 0; i < candidates.Length; i++)
         {
             // N10 part 1: budget non-collision scans too; the context may be
             // null on context-free paths (identity fast path only then).
@@ -596,39 +585,15 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
                 context.CheckExecutionBudget(useSpan);
             }
 
-            if (_protocol[i].Hash == hash)
+            var entry = candidates[i];
+            if (ReferenceEquals(entry.Item, item))
             {
-                hit = i;
-                break;
+                return true;
             }
-        }
 
-        if (hit >= 0)
-        {
-            EnsureSideSnapshot(_protocol.Count, useSpan);
-            var snapshot = _protocol.ToArray();
-            for (var i = hit; i < snapshot.Length; i++)
+            if (context is not null && useSpan is not null && LythonRuntime.ElementEquals(entry.Item, item, context, useSpan))
             {
-                if (i > hit && (++work & 63) == 0 && context is not null && useSpan is not null)
-                {
-                    context.CheckExecutionBudget(useSpan);
-                }
-
-                var entry = snapshot[i];
-                if (entry.Hash != hash)
-                {
-                    continue;
-                }
-
-                if (ReferenceEquals(entry.Item, item))
-                {
-                    return true;
-                }
-
-                if (context is not null && useSpan is not null && LythonRuntime.ElementEquals(entry.Item, item, context, useSpan))
-                {
-                    return true;
-                }
+                return true;
             }
         }
 
@@ -656,45 +621,24 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
         var hash = PyHashProtocols.GetProtocolHash(item, context, useSpan);
         var structuralHash = PyValueComparer.Instance.GetHashCode(item);
-        // N10 part 1: bound collision and non-collision scans alike.
-        // N10 part 2: the snapshots below are lazy (denial points and check
-        // cadence unchanged; only the copies wait for the first candidate).
+        // N10 index: removal scans only hash-bucketed candidates (same dispatch set and
+        // order); the store phase below is untouched. Position fixup rides RemoveSideEntry.
         var work = 0;
         if (_protocol is not null)
         {
-            EnsureSideSnapshot(_protocol.Count, useSpan);
-            var sideHit = -1;
-            for (var i = 0; i < _protocol.Count; i++)
+            var candidates = SnapshotProtocolCandidates(hash, structuralHash, useSpan);
+            for (var i = 0; i < candidates.Length; i++)
             {
                 if ((++work & 63) == 0)
                 {
                     context.CheckExecutionBudget(useSpan);
                 }
 
-                var entry = _protocol[i];
-                if (entry.Hash == hash || entry.StructuralHash == structuralHash)
+                var entry = candidates[i];
+                if (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan))
                 {
-                    sideHit = i;
-                    break;
-                }
-            }
-
-            if (sideHit >= 0)
-            {
-                var snapshot = _protocol.ToArray();
-                for (var i = sideHit; i < snapshot.Length; i++)
-                {
-                    if (i > sideHit && (++work & 63) == 0)
-                    {
-                        context.CheckExecutionBudget(useSpan);
-                    }
-
-                    var entry = snapshot[i];
-                    if ((entry.Hash == hash || entry.StructuralHash == structuralHash) && (ReferenceEquals(entry.Item, item) || LythonRuntime.ElementEquals(entry.Item, item, context, useSpan)))
-                    {
-                        RemoveSideEntry(entry.Item);
-                        return true;
-                    }
+                    RemoveSideEntry(entry.Item);
+                    return true;
                 }
             }
         }
@@ -770,7 +714,9 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         {
             if (ReferenceEquals(_protocol[i].Item, item))
             {
+                var shadow = _protocol[i];
                 _protocol.RemoveAt(i);
+                _sideIndex?.RemoveAt(i, shadow.Hash, shadow.StructuralHash);
                 ReleaseSideBytes(ProtocolEntryBytes);
                 return;
             }
@@ -787,8 +733,10 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             {
                 if (ReferenceEquals(_protocol[i].Item, item))
                 {
-                    ReleaseOutgoing(_protocol[i].Item);
+                    var evicted = _protocol[i];
+                    ReleaseOutgoing(evicted.Item);
                     _protocol.RemoveAt(i);
+                    _sideIndex?.RemoveAt(i, evicted.Hash, evicted.StructuralHash);
                     break;
                 }
             }
@@ -796,6 +744,105 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
         _ = _items.Remove(item);
         ReleaseSideBytes(ProtocolEntryBytes);
+    }
+
+    // N10 index: snapshot only the side-list candidates for a lookup, in insertion order.
+    // CollectCandidates merges both hash buckets (either key can match, like the dual-key
+    // linear scans this replaces); the filter below restores the exact dispatch set so no
+    // extra guest == runs. The copy preflights only candidates, never the whole list.
+    // The transient position set is scratch bounded by the charged population; the retained
+    // copy is governed. Sorted positions reproduce the old linear dispatch order (every
+    // match at or after the first hit, ascending). Store scans stay untouched.
+    private ProtocolEntry[] SnapshotProtocolCandidates(int hash, int structuralHash, LythonSourceSpan? span)
+    {
+        if (_protocol is null)
+        {
+            return [];
+        }
+
+        if (_sideIndex is null)
+        {
+            _memoryGovernor?.EnsureCanReserve(checked(ProtocolEntryBytes * (long)_protocol.Count), span ?? _allocationSpan);
+            var fallback = new List<ProtocolEntry>(_protocol.Count);
+            foreach (var entry in _protocol)
+            {
+                if (entry.Hash == hash || entry.StructuralHash == structuralHash)
+                {
+                    fallback.Add(entry);
+                }
+            }
+
+            return fallback.ToArray();
+        }
+
+        var positions = new HashSet<int>();
+        _sideIndex.CollectCandidates(hash, structuralHash, positions);
+        if (positions.Count == 0)
+        {
+            return [];
+        }
+
+        _memoryGovernor?.EnsureCanReserve(checked(ProtocolEntryBytes * (long)positions.Count), span ?? _allocationSpan);
+        var ordered = new List<int>(positions);
+        ordered.Sort();
+        var snapshot = new List<ProtocolEntry>(ordered.Count);
+        foreach (var position in ordered)
+        {
+            var entry = _protocol[position];
+            if (entry.Hash == hash || entry.StructuralHash == structuralHash)
+            {
+                snapshot.Add(entry);
+            }
+        }
+
+        return snapshot.ToArray();
+    }
+
+    // Builtin-item variant: dispatch runs only where the entry protocol hash matches,
+    // like the linear scan. Buckets merge both keys, so the same filter applies.
+    private ProtocolEntry[] SnapshotBuiltinCandidates(int hash, LythonSourceSpan? span)
+    {
+        if (_protocol is null)
+        {
+            return [];
+        }
+
+        if (_sideIndex is null)
+        {
+            _memoryGovernor?.EnsureCanReserve(checked(ProtocolEntryBytes * (long)_protocol.Count), span ?? _allocationSpan);
+            var fallback = new List<ProtocolEntry>(_protocol.Count);
+            foreach (var entry in _protocol)
+            {
+                if (entry.Hash == hash)
+                {
+                    fallback.Add(entry);
+                }
+            }
+
+            return fallback.ToArray();
+        }
+
+        var positions = new HashSet<int>();
+        _sideIndex.CollectCandidates(hash, hash, positions);
+        if (positions.Count == 0)
+        {
+            return [];
+        }
+
+        _memoryGovernor?.EnsureCanReserve(checked(ProtocolEntryBytes * (long)positions.Count), span ?? _allocationSpan);
+        var ordered = new List<int>(positions);
+        ordered.Sort();
+        var snapshot = new List<ProtocolEntry>(ordered.Count);
+        foreach (var position in ordered)
+        {
+            var entry = _protocol[position];
+            if (entry.Hash == hash)
+            {
+                snapshot.Add(entry);
+            }
+        }
+
+        return snapshot.ToArray();
     }
 
     // N10 part 1: side-table and store snapshots deny before they can
@@ -1039,6 +1086,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
         _committedBytes = 0;
         _protocolBytes = 0;
+        _sideIndex = null;
         _capacity = 0;
         _shellCharged = false;
         _scalarCoupons = null;
@@ -1135,6 +1183,12 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
             _protocol = null;
             _protocolBytes = 0;
+        }
+
+        if (_sideIndex is not null)
+        {
+            _sideIndex.ReleaseAll(_memoryGovernor);
+            _sideIndex = null;
         }
 
         EnsureCapacity(items.Count);
