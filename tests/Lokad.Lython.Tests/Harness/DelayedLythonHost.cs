@@ -4,6 +4,7 @@ internal sealed class DelayedLythonHost : ILythonHost
 {
     private readonly MockLythonHost _inner;
     private readonly Dictionary<string, TaskCompletionSource> _writePauses = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, TaskCompletionSource> _readPauses = new(StringComparer.Ordinal);
 
     public DelayedLythonHost()
         : this("/")
@@ -41,6 +42,12 @@ internal sealed class DelayedLythonHost : ILythonHost
 
     public async ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
     {
+        if (_readPauses.TryGetValue(path, out var paused))
+        {
+            paused.TrySetResult();
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+        }
+
         await Delay(cancellationToken).ConfigureAwait(false);
         return await _inner.ReadTextUtf8Async(path, cancellationToken).ConfigureAwait(false);
     }
@@ -72,6 +79,20 @@ internal sealed class DelayedLythonHost : ILythonHost
     {
         var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         _writePauses[path] = started;
+        return started.Task;
+    }
+
+    /// <summary>
+    /// Parks the next read of <paramref name="path"/> until the caller cancels,
+    /// returning a task that completes when the parked read starts. Read-side
+    /// mirror of PauseWriteUntilCancellation: chunked file iteration composes
+    /// ranged reads over ReadTextUtf8Async, so parking here also parks drains,
+    /// constructors and callbacks reached through lazy iteration.
+    /// </summary>
+    public Task PauseReadUntilCancellation(string path)
+    {
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _readPauses[path] = started;
         return started.Task;
     }
 
