@@ -8,6 +8,13 @@ internal sealed partial class LythonRuntime
     {
         private sealed class StringSegmentationMemberProvider : IStringMemberProvider
         {
+            // N17: hot fixed signatures hoisted per family.
+        private static readonly LythonCallableSignature StrStripSignature = LythonCallableSignature.Create("str.strip", ["chars"], 0);
+        private static readonly LythonCallableSignature StrLstripSignature = LythonCallableSignature.Create("str.lstrip", ["chars"], 0);
+        private static readonly LythonCallableSignature StrRstripSignature = LythonCallableSignature.Create("str.rstrip", ["chars"], 0);
+            private static readonly LythonCallableSignature StrSplitSignature = LythonCallableSignature.Create("str.split", ["sep", "maxsplit"], 0);
+            private static readonly LythonCallableSignature StrRSplitSignature = LythonCallableSignature.Create("str.rsplit", ["sep", "maxsplit"], 0);
+            private static readonly LythonCallableSignature StrExpandTabsSignature = LythonCallableSignature.Create("str.expandtabs", ["tabsize"], 0);
             public static readonly StringSegmentationMemberProvider Instance = new();
 
             public bool TryGetMember(PyString text, string name, [MaybeNullWhen(false)] out object value)
@@ -47,7 +54,7 @@ internal sealed partial class LythonRuntime
                         {
                             throw new LythonRuntimeException("ValueError", ex.Message, span);
                         }
-                    }, "str.split", ["sep", "maxsplit"], 0),
+                    }, StrSplitSignature),
                     "rsplit" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length == 0)
@@ -81,7 +88,7 @@ internal sealed partial class LythonRuntime
                         {
                             throw new LythonRuntimeException("ValueError", ex.Message, span);
                         }
-                    }, "str.rsplit", ["sep", "maxsplit"], 0),
+                    }, StrRSplitSignature),
                     "splitlines" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length > 1)
@@ -101,16 +108,16 @@ internal sealed partial class LythonRuntime
 
                         var tabSize = arguments.Length == 1 ? ParseStringOptionalInt(arguments[0], "tabsize", "str.expandtabs([tabsize])", span, context) : 8;
                         return OwnMethodResult(PyStringOps.ExpandTabs(text, tabSize), text, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
-                    }, "str.expandtabs", ["tabsize"], 0),
-                    "strip" => CreateStripMethod(text, name, PyStringOps.Strip),
-                    "lstrip" => CreateStripMethod(text, name, PyStringOps.LStrip),
-                    "rstrip" => CreateStripMethod(text, name, PyStringOps.RStrip),
+                    }, StrExpandTabsSignature),
+                    "strip" => CreateStripMethod(text, name, PyStringOps.Strip, StrStripSignature),
+                    "lstrip" => CreateStripMethod(text, name, PyStringOps.LStrip, StrLstripSignature),
+                    "rstrip" => CreateStripMethod(text, name, PyStringOps.RStrip, StrRstripSignature),
                     _ => MissingMemberValue.Instance,
                 };
 
                 return !ReferenceEquals(value, MissingMemberValue.Instance);
 
-                static BoundCallable CreateStripMethod(PyString target, string methodName, Func<PyString, PyString> whitespaceOperation)
+                static BoundCallable CreateStripMethod(PyString target, string methodName, Func<PyString, PyString> whitespaceOperation, LythonCallableSignature signature)
                     => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length > 1)
@@ -138,7 +145,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         return OwnMethodResult(result, target, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
-                    }, $"str.{methodName}", ["chars"], 0);
+                    }, signature);
             }
         }
     }

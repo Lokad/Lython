@@ -9,6 +9,17 @@ internal sealed partial class LythonRuntime
     {
         private sealed class StringLayoutSearchMemberProvider : IStringMemberProvider
         {
+            // N17: hot fixed signatures hoisted per family.
+            private static readonly LythonCallableSignature StrJoinSignature = LythonCallableSignature.Create("str.join", ["iterable"]);
+            private static readonly LythonCallableSignature StrZfillSignature = LythonCallableSignature.Create("str.zfill", ["width"]);
+        private static readonly LythonCallableSignature StrCenterSignature = LythonCallableSignature.Create("str.center", ["width", "fillchar"], 1);
+        private static readonly LythonCallableSignature StrLjustSignature = LythonCallableSignature.Create("str.ljust", ["width", "fillchar"], 1);
+        private static readonly LythonCallableSignature StrRjustSignature = LythonCallableSignature.Create("str.rjust", ["width", "fillchar"], 1);
+        private static readonly LythonCallableSignature StrFindSignature = LythonCallableSignature.Create("str.find", ["sub", "start", "end"], 1);
+        private static readonly LythonCallableSignature StrIndexSignature = LythonCallableSignature.Create("str.index", ["sub", "start", "end"], 1);
+        private static readonly LythonCallableSignature StrRfindSignature = LythonCallableSignature.Create("str.rfind", ["sub", "start", "end"], 1);
+        private static readonly LythonCallableSignature StrRindexSignature = LythonCallableSignature.Create("str.rindex", ["sub", "start", "end"], 1);
+        private static readonly LythonCallableSignature StrCountSignature = LythonCallableSignature.Create("str.count", ["sub", "start", "end"], 1);
             public static readonly StringLayoutSearchMemberProvider Instance = new();
 
             public bool TryGetMember(PyString text, string name, [MaybeNullWhen(false)] out object value)
@@ -38,7 +49,7 @@ internal sealed partial class LythonRuntime
                                 index++;
                             }
                         }
-                    }, async (arguments, span, context) =>
+                    }, StrJoinSignature, async (arguments, span, context) =>
                     {
                         if (arguments.Length != 1)
                         {
@@ -64,10 +75,10 @@ internal sealed partial class LythonRuntime
                                 index++;
                             }
                         }
-                    }, "str.join", ["iterable"]),
-                    "center" => CreatePaddingMethod("center", PyStringOps.Center),
-                    "ljust" => CreatePaddingMethod("ljust", PyStringOps.LJust),
-                    "rjust" => CreatePaddingMethod("rjust", PyStringOps.RJust),
+                    }),
+                    "center" => CreatePaddingMethod("center", PyStringOps.Center, StrCenterSignature),
+                    "ljust" => CreatePaddingMethod("ljust", PyStringOps.LJust, StrLjustSignature),
+                    "rjust" => CreatePaddingMethod("rjust", PyStringOps.RJust, StrRjustSignature),
                     "zfill" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 1)
@@ -77,18 +88,18 @@ internal sealed partial class LythonRuntime
 
                         var width = ParseStringOptionalInt(arguments[0], "width", "str.zfill(width)", span, context);
                         return OwnMethodResult(PyStringOps.ZFill(text, width), text, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
-                    }, "str.zfill", ["width"]),
-                    "find" => CreateSearchMethod("find", PyStringOps.Find, throwWhenMissing: false),
-                    "index" => CreateSearchMethod("index", PyStringOps.Find, throwWhenMissing: true),
-                    "rfind" => CreateSearchMethod("rfind", PyStringOps.RFind, throwWhenMissing: false),
-                    "rindex" => CreateSearchMethod("rindex", PyStringOps.RFind, throwWhenMissing: true),
-                    "count" => CreateSearchMethod("count", PyStringOps.Count, throwWhenMissing: false),
+                    }, StrZfillSignature),
+                    "find" => CreateSearchMethod("find", PyStringOps.Find, throwWhenMissing: false, StrFindSignature),
+                    "index" => CreateSearchMethod("index", PyStringOps.Find, throwWhenMissing: true, StrIndexSignature),
+                    "rfind" => CreateSearchMethod("rfind", PyStringOps.RFind, throwWhenMissing: false, StrRfindSignature),
+                    "rindex" => CreateSearchMethod("rindex", PyStringOps.RFind, throwWhenMissing: true, StrRindexSignature),
+                    "count" => CreateSearchMethod("count", PyStringOps.Count, throwWhenMissing: false, StrCountSignature),
                     _ => MissingMemberValue.Instance,
                 };
 
                 return !ReferenceEquals(value, MissingMemberValue.Instance);
 
-                BoundCallable CreatePaddingMethod(string methodName, Func<PyString, int, PyString?, PyString> operation)
+                BoundCallable CreatePaddingMethod(string methodName, Func<PyString, int, PyString?, PyString> operation, LythonCallableSignature signature)
                     => BoundCallable.Create((arguments, span, context) =>
                     {
                         var signature = $"str.{methodName}(width[, fillchar])";
@@ -107,12 +118,13 @@ internal sealed partial class LythonRuntime
                         {
                             throw new LythonRuntimeException("TypeError", ex.Message, span);
                         }
-                    }, $"str.{methodName}", ["width", "fillchar"], 1);
+                    }, signature);
 
                 BoundCallable CreateSearchMethod(
                     string methodName,
                     Func<PyString, PyString, int, int, BigInteger> operation,
-                    bool throwWhenMissing)
+                    bool throwWhenMissing,
+                    LythonCallableSignature signature)
                     => BoundCallable.Create((arguments, span, context) =>
                     {
                         var signature = $"str.{methodName}(sub[, start[, end]])";
@@ -151,7 +163,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         return result;
-                    }, $"str.{methodName}", ["sub", "start", "end"], 1);
+                    }, signature);
             }
         }
     }

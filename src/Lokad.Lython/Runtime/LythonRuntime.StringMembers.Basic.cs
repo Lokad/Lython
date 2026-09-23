@@ -8,6 +8,11 @@ internal sealed partial class LythonRuntime
     {
         private sealed class TextSemanticsMemberProvider : IStringMemberProvider
         {
+            // N17: hot fixed signatures hoisted per family.
+            private static readonly LythonCallableSignature StrEncodeSignature = LythonCallableSignature.Create("str.encode", ["encoding", "errors"], 0);
+            private static readonly LythonCallableSignature StrReplaceSignature = LythonCallableSignature.Create("str.replace", ["old", "new", "count"], 2);
+            private static readonly LythonCallableSignature StrStartsWithSignature = LythonCallableSignature.Create("str.startswith", ["prefix", "start", "end"], 1);
+            private static readonly LythonCallableSignature StrEndsWithSignature = LythonCallableSignature.Create("str.endswith", ["suffix", "start", "end"], 1);
             public static readonly TextSemanticsMemberProvider Instance = new();
 
             public bool TryGetMember(PyString text, string name, [MaybeNullWhen(false)] out object value)
@@ -31,7 +36,7 @@ internal sealed partial class LythonRuntime
                             EncodeText(text, encoding, errors, TextNewlineMode.PreserveUniversal, context, span),
                             context,
                             span);
-                    }, "str.encode", ["encoding", "errors"], 0),
+                    }, StrEncodeSignature),
                     "replace" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length is < 2 or > 3)
@@ -54,7 +59,7 @@ internal sealed partial class LythonRuntime
 
                         var count = arguments.Length == 3 ? ParseStringOptionalInt(arguments[2], "count", "str.replace(old, new[, count])", span, context) : -1;
                         return OwnMethodResult(PyStringOps.Replace(text, oldValue, newValue, count), text, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
-                    }, "str.replace", ["old", "new", "count"], 2),
+                    }, StrReplaceSignature),
                     "startswith" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length is < 1 or > 3)
@@ -64,7 +69,7 @@ internal sealed partial class LythonRuntime
 
                         var (start, end, startBeyondLength) = ParseStringBounds(text.Length, arguments, span, context, "str.startswith(prefix[, start[, end]])");
                         return StartsOrEndsWith(text, arguments[0], start, end, startBeyondLength, isStart: true, span);
-                    }, "str.startswith", ["prefix", "start", "end"], 1),
+                    }, StrStartsWithSignature),
                     "endswith" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length is < 1 or > 3)
@@ -74,7 +79,7 @@ internal sealed partial class LythonRuntime
 
                         var (start, end, startBeyondLength) = ParseStringBounds(text.Length, arguments, span, context, "str.endswith(suffix[, start[, end]])");
                         return StartsOrEndsWith(text, arguments[0], start, end, startBeyondLength, isStart: false, span);
-                    }, "str.endswith", ["suffix", "start", "end"], 1),
+                    }, StrEndsWithSignature),
                     "lower" => BoundCallable.CreateNoArguments(text, "str.lower", static (receiver, span, context) => OwnMethodResult(receiver.ToLowerInvariant(), receiver, context.MemoryGovernor, span, context.Services.State.CallTemporaries)),
                     "capitalize" => BoundCallable.CreateNoArguments(text, "str.capitalize", static (receiver, span, context) => OwnMethodResult(PyStringOps.Capitalize(receiver), receiver, context.MemoryGovernor, span, context.Services.State.CallTemporaries)),
                     "islower" => BoundCallable.CreateNoArguments(text, "str.islower", static (receiver, _, _) => PyStringOps.IsLower(receiver)),

@@ -1133,6 +1133,87 @@ public sealed class LythonCallableSignatureTests
     }
 
     [Fact]
+    public void Create_ReusesHoistedStrSignatures()
+    {
+        // N17: companion pin for the hoisted string-provider statics.
+        Assert.Same(
+            LythonCallableSignature.Create("str.encode", ["encoding", "errors"], 0),
+            LythonCallableSignature.Create("str.encode", ["encoding", "errors"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("str.replace", ["old", "new", "count"], 2),
+            LythonCallableSignature.Create("str.replace", ["old", "new", "count"], 2));
+        Assert.Same(
+            LythonCallableSignature.Create("str.startswith", ["prefix", "start", "end"], 1),
+            LythonCallableSignature.Create("str.startswith", ["prefix", "start", "end"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("str.endswith", ["suffix", "start", "end"], 1),
+            LythonCallableSignature.Create("str.endswith", ["suffix", "start", "end"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("str.join", ["iterable"]),
+            LythonCallableSignature.Create("str.join", ["iterable"]));
+        Assert.Same(
+            LythonCallableSignature.Create("str.zfill", ["width"]),
+            LythonCallableSignature.Create("str.zfill", ["width"]));
+        Assert.Same(
+            LythonCallableSignature.Create("str.center", ["width", "fillchar"], 1),
+            LythonCallableSignature.Create("str.center", ["width", "fillchar"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("str.ljust", ["width", "fillchar"], 1),
+            LythonCallableSignature.Create("str.ljust", ["width", "fillchar"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("str.rjust", ["width", "fillchar"], 1),
+            LythonCallableSignature.Create("str.rjust", ["width", "fillchar"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("str.find", ["sub", "start", "end"], 1),
+            LythonCallableSignature.Create("str.find", ["sub", "start", "end"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("str.index", ["sub", "start", "end"], 1),
+            LythonCallableSignature.Create("str.index", ["sub", "start", "end"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("str.rfind", ["sub", "start", "end"], 1),
+            LythonCallableSignature.Create("str.rfind", ["sub", "start", "end"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("str.rindex", ["sub", "start", "end"], 1),
+            LythonCallableSignature.Create("str.rindex", ["sub", "start", "end"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("str.count", ["sub", "start", "end"], 1),
+            LythonCallableSignature.Create("str.count", ["sub", "start", "end"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("str.partition", ["sep"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1),
+            LythonCallableSignature.Create("str.partition", ["sep"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1));
+        Assert.Same(
+            LythonCallableSignature.Create("str.rpartition", ["sep"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1),
+            LythonCallableSignature.Create("str.rpartition", ["sep"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1));
+        Assert.Same(
+            LythonCallableSignature.Create("str.removeprefix", ["prefix"]),
+            LythonCallableSignature.Create("str.removeprefix", ["prefix"]));
+        Assert.Same(
+            LythonCallableSignature.Create("str.removesuffix", ["suffix"]),
+            LythonCallableSignature.Create("str.removesuffix", ["suffix"]));
+        Assert.Same(
+            LythonCallableSignature.Create("str.format_map", ["mapping"]),
+            LythonCallableSignature.Create("str.format_map", ["mapping"]));
+        Assert.Same(
+            LythonCallableSignature.Create("str.strip", ["chars"], 0),
+            LythonCallableSignature.Create("str.strip", ["chars"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("str.lstrip", ["chars"], 0),
+            LythonCallableSignature.Create("str.lstrip", ["chars"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("str.rstrip", ["chars"], 0),
+            LythonCallableSignature.Create("str.rstrip", ["chars"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("str.split", ["sep", "maxsplit"], 0),
+            LythonCallableSignature.Create("str.split", ["sep", "maxsplit"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("str.rsplit", ["sep", "maxsplit"], 0),
+            LythonCallableSignature.Create("str.rsplit", ["sep", "maxsplit"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("str.expandtabs", ["tabsize"], 0),
+            LythonCallableSignature.Create("str.expandtabs", ["tabsize"], 0));
+    }
+
+    [Fact]
     public void Create_RejectsInvalidParameterMetadata()
     {
         Assert.Throws<ArgumentException>(() =>

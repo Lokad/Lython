@@ -11,6 +11,12 @@ internal sealed partial class LythonRuntime
     {
         private sealed class StringAffixFormatMemberProvider : IStringMemberProvider
         {
+            // N17: hot fixed signatures hoisted per family.
+        private static readonly LythonCallableSignature StrPartitionSignature = LythonCallableSignature.Create("str.partition", ["sep"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+        private static readonly LythonCallableSignature StrRpartitionSignature = LythonCallableSignature.Create("str.rpartition", ["sep"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+            private static readonly LythonCallableSignature StrRemovePrefixSignature = LythonCallableSignature.Create("str.removeprefix", ["prefix"]);
+            private static readonly LythonCallableSignature StrRemoveSuffixSignature = LythonCallableSignature.Create("str.removesuffix", ["suffix"]);
+            private static readonly LythonCallableSignature StrFormatMapSignature = LythonCallableSignature.Create("str.format_map", ["mapping"]);
             public static readonly StringAffixFormatMemberProvider Instance = new();
 
             public bool TryGetMember(PyString text, string name, [MaybeNullWhen(false)] out object value)
@@ -34,7 +40,7 @@ internal sealed partial class LythonRuntime
                         return prefix.Length != 0 && text.StartsWith(prefix)
                             ? OwnMethodResult(SliceByByteCount(text, prefix.Utf8Bytes.Length, text.Utf8Bytes.Length - prefix.Utf8Bytes.Length), text, context.MemoryGovernor, span, context.Services.State.CallTemporaries)
                             : text;
-                    }, "str.removeprefix", ["prefix"]),
+                    }, StrRemovePrefixSignature),
                     "removesuffix" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 1)
@@ -51,9 +57,9 @@ internal sealed partial class LythonRuntime
                         return suffix.Length != 0 && text.EndsWith(suffix)
                             ? OwnMethodResult(SliceByByteCount(text, 0, text.Utf8Bytes.Length - suffix.Utf8Bytes.Length), text, context.MemoryGovernor, span, context.Services.State.CallTemporaries)
                             : text;
-                    }, "str.removesuffix", ["suffix"]),
-                    "partition" => CreatePartitionMethod("partition", PyStringOps.Partition),
-                    "rpartition" => CreatePartitionMethod("rpartition", PyStringOps.RPartition),
+                    }, StrRemoveSuffixSignature),
+                    "partition" => CreatePartitionMethod("partition", PyStringOps.Partition, StrPartitionSignature),
+                    "rpartition" => CreatePartitionMethod("rpartition", PyStringOps.RPartition, StrRpartitionSignature),
                     "format" => new CustomMethodCallable("str.format", (arguments, span, context) =>
                     {
                         try
@@ -147,7 +153,7 @@ internal sealed partial class LythonRuntime
                         {
                             throw new LythonRuntimeException("KeyError", ex.Message, span, null, PyString.FromString(ex.Message, context.MemoryGovernor, span));
                         }
-                    }, "str.format_map", ["mapping"]),
+                    }, StrFormatMapSignature),
                     _ => MissingMemberValue.Instance,
                 };
 
@@ -155,7 +161,8 @@ internal sealed partial class LythonRuntime
 
                 BoundCallable CreatePartitionMethod(
                     string methodName,
-                    Func<PyString, PyString, MemoryGovernor, LythonSourceSpan?, PyTuple> operation)
+                    Func<PyString, PyString, MemoryGovernor, LythonSourceSpan?, PyTuple> operation,
+                    LythonCallableSignature signature)
                     => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 1)
@@ -176,7 +183,7 @@ internal sealed partial class LythonRuntime
                         {
                             throw new LythonRuntimeException("ValueError", ex.Message, span);
                         }
-                    }, LythonCallableSignature.Create("str." + methodName, ["sep"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1));
+                    }, signature);
             }
         }
 
