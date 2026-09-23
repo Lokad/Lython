@@ -1152,6 +1152,29 @@ internal sealed partial class LythonRuntime
             var mean = arguments.Length >= 2 && arguments[1] is not PyNone
                 ? ExpectRealForStatistics(arguments[1], owner, span)
                 : doubles.Average();
+            // CPython _ss ignores finite values once any input is non-finite:
+            // the result is the special-only sum (in encounter order) over the divisor.
+            // With an explicit mu both engines already use naive doubles, so this
+            // applies to the computed-mean path only.
+            if (arguments.Length < 2 || arguments[1] is PyNone)
+            {
+                var special = 0.0;
+                var hasSpecial = false;
+                foreach (var value in doubles)
+                {
+                    if (double.IsNaN(value) || double.IsInfinity(value))
+                    {
+                        special += value;
+                        hasSpecial = true;
+                    }
+                }
+
+                if (hasSpecial)
+                {
+                    return special / (sample ? doubles.Count - 1 : doubles.Count);
+                }
+            }
+
             var sum = doubles.Sum(value => Math.Pow(value - mean, 2));
             return sum / (sample ? doubles.Count - 1 : doubles.Count);
         }
@@ -1201,6 +1224,29 @@ internal sealed partial class LythonRuntime
             var mean = arguments.Length >= 2 && arguments[1] is not PyNone
                 ? ExpectRealForStatistics(arguments[1], owner, span)
                 : doubles.Average();
+            // CPython _ss ignores finite values once any input is non-finite:
+            // the result is the special-only sum (in encounter order) over the divisor.
+            // With an explicit mu both engines already use naive doubles, so this
+            // applies to the computed-mean path only.
+            if (arguments.Length < 2 || arguments[1] is PyNone)
+            {
+                var special = 0.0;
+                var hasSpecial = false;
+                foreach (var value in doubles)
+                {
+                    if (double.IsNaN(value) || double.IsInfinity(value))
+                    {
+                        special += value;
+                        hasSpecial = true;
+                    }
+                }
+
+                if (hasSpecial)
+                {
+                    return special / (sample ? doubles.Count - 1 : doubles.Count);
+                }
+            }
+
             var sum = doubles.Sum(value => Math.Pow(value - mean, 2));
             return sum / (sample ? doubles.Count - 1 : doubles.Count);
         }

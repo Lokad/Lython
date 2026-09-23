@@ -317,4 +317,42 @@ public sealed class StatisticsPrecisionScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task NonFiniteVarianceFollowsSpecialSumRule()
+    {
+        // N29: CPython _ss ignores finite values once any input is non-finite
+        // (special-only sum over the divisor, verified against 3.13.2).
+        // stdev/pstdev return the coherent square root where CPython 3.13
+        // itself raises AttributeError from _float_sqrt_of_frac internals;
+        // Lython does not replicate that crash.
+        var script = Compile(
+            """
+            import math
+            import statistics
+            return [statistics.variance([1.0, float("inf")]),
+                    statistics.pvariance([1.0, float("inf"), 2.0]),
+                    math.isnan(statistics.variance([float("inf"), float("-inf")])),
+                    math.isnan(statistics.pvariance([float("nan"), float("nan")])),
+                    statistics.stdev([1.0, float("inf")]),
+                    math.isnan(statistics.pstdev([float("-inf"), 5.0])),
+                    statistics.variance([1.0, float("inf")], 0.0)]
+            """);
+        var expected = new List<object?>
+        {
+            double.PositiveInfinity,
+            double.PositiveInfinity,
+            true,
+            true,
+            double.PositiveInfinity,
+            true,
+            double.PositiveInfinity,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }
