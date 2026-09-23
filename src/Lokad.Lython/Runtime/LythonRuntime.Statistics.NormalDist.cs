@@ -57,6 +57,20 @@ internal sealed partial class LythonRuntime
             return OwnNormalDist(new PyNormalDist(mean, Math.Sqrt(sum / (values.Count - 1))), context, span);
         }
 
+        private static async ValueTask<object> NormalDistFromSamplesAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var values = await GetNumericValuesFromDataAsync(arguments, "statistics.NormalDist.from_samples", span, context, scratch).ConfigureAwait(false);
+            if (values.Count < 2)
+            {
+                throw StatisticsError("statistics.NormalDist.from_samples(data) requires at least two data points.", span);
+            }
+
+            var mean = values.Average();
+            var sum = values.Sum(value => Math.Pow(value - mean, 2));
+            return OwnNormalDist(new PyNormalDist(mean, Math.Sqrt(sum / (values.Count - 1))), context, span);
+        }
+
         public static bool TryAddNormalDist(object left, object right, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         {
             value = (left, right) switch

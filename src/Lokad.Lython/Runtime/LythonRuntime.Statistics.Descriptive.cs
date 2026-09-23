@@ -365,6 +365,99 @@ internal sealed partial class LythonRuntime
         // partial can round to infinity (2**1000 is exactly representable).
         private const double HugeMagnitudeThreshold = 1.0715086071862673e301;
 
+        // Shared mean accumulation (N15): the exact N13 bookkeeping (int/bool exact
+        // sum, exact binary float summer, exact decimal sum, CPython _convert type
+        // rules, Decimal/float mixing rejection, arity/emptiness/validation precedence)
+        // used identically by the sync and async loops, so only iteration differs.
+        // Streaming stays O(1) scratch however large the input.
+        private struct MeanAccumulator
+        {
+            private BigInteger _intTotal;
+            private decimal _decimalTotal;
+            private bool _seenFloat;
+            private bool _seenDecimal;
+            private ExactDoubleSum _summer;
+            private int _count;
+
+            public void Add(object value, LythonSourceSpan span, ExecutionContext context)
+            {
+                if (value is bool boolean)
+                {
+                    _intTotal += boolean ? BigInteger.One : BigInteger.Zero;
+                }
+                else if (value is BigInteger integer)
+                {
+                    _intTotal += integer;
+                }
+                else if (value is double floating)
+                {
+                    if (_seenDecimal)
+                    {
+                        throw new LythonRuntimeException("TypeError", "statistics.mean(data) doesn't support mixing Decimal and float.", span);
+                    }
+
+                    _seenFloat = true;
+                    _summer.AddMean(floating);
+                }
+                else if (value is PyDecimal decimalValue)
+                {
+                    if (_seenFloat)
+                    {
+                        throw new LythonRuntimeException("TypeError", "statistics.mean(data) doesn't support mixing Decimal and float.", span);
+                    }
+
+                    _seenDecimal = true;
+                    try
+                    {
+                        _decimalTotal += decimalValue.Value;
+                    }
+                    catch (OverflowException)
+                    {
+                        throw PyDecimalOps.DecimalOverflow(span);
+                    }
+                }
+                else
+                {
+                    throw new LythonRuntimeException("TypeError", "statistics.mean(data) expects real numbers.", span);
+                }
+
+                _count++;
+                context.ObserveCollectionCount(_count, span);
+                if ((_count & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+            }
+
+            public object Complete(LythonSourceSpan span)
+            {
+                if (_count == 0)
+                {
+                    throw StatisticsError("statistics.mean(data) requires at least one data point.", span);
+                }
+
+                if (_seenDecimal)
+                {
+                    try
+                    {
+                        return new PyDecimal((_decimalTotal + (decimal)_intTotal) / _count);
+                    }
+                    catch (OverflowException)
+                    {
+                        throw PyDecimalOps.DecimalOverflow(span);
+                    }
+                }
+
+                if (!_seenFloat && _intTotal % _count == BigInteger.Zero)
+                {
+                    return _intTotal / _count;
+                }
+
+                _summer.AddMeanInteger(_intTotal);
+                return _summer.TotalMean(_count, span);
+            }
+        }
+
         private static object Mean(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             // Exact streamed accumulation (N13): ints and bools sum exactly in a
@@ -381,86 +474,29 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "statistics.mean(data) expects one iterable argument.", span);
             }
 
-            var intTotal = BigInteger.Zero;
-            var decimalTotal = 0m;
-            var seenFloat = false;
-            var seenDecimal = false;
-            var summer = new ExactDoubleSum();
-            var count = 0;
+            var accumulator = new MeanAccumulator();
             foreach (var value in ToSequence(arguments[0], span, context))
             {
-                if (value is bool boolean)
-                {
-                    intTotal += boolean ? BigInteger.One : BigInteger.Zero;
-                }
-                else if (value is BigInteger integer)
-                {
-                    intTotal += integer;
-                }
-                else if (value is double floating)
-                {
-                    if (seenDecimal)
-                    {
-                        throw new LythonRuntimeException("TypeError", "statistics.mean(data) doesn't support mixing Decimal and float.", span);
-                    }
-
-                    seenFloat = true;
-                    summer.AddMean(floating);
-                }
-                else if (value is PyDecimal decimalValue)
-                {
-                    if (seenFloat)
-                    {
-                        throw new LythonRuntimeException("TypeError", "statistics.mean(data) doesn't support mixing Decimal and float.", span);
-                    }
-
-                    seenDecimal = true;
-                    try
-                    {
-                        decimalTotal += decimalValue.Value;
-                    }
-                    catch (OverflowException)
-                    {
-                        throw PyDecimalOps.DecimalOverflow(span);
-                    }
-                }
-                else
-                {
-                    throw new LythonRuntimeException("TypeError", "statistics.mean(data) expects real numbers.", span);
-                }
-
-                count++;
-                context.ObserveCollectionCount(count, span);
-                if ((count & 63) == 0)
-                {
-                    context.CheckExecutionBudget(span);
-                }
+                accumulator.Add(value, span, context);
             }
 
-            if (count == 0)
+            return accumulator.Complete(span);
+        }
+
+        private static async ValueTask<object> MeanAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length != 1)
             {
-                throw StatisticsError("statistics.mean(data) requires at least one data point.", span);
+                throw new LythonRuntimeException("TypeError", "statistics.mean(data) expects one iterable argument.", span);
             }
 
-            if (seenDecimal)
+            var accumulator = new MeanAccumulator();
+            await foreach (var value in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
             {
-                try
-                {
-                    return new PyDecimal((decimalTotal + (decimal)intTotal) / count);
-                }
-                catch (OverflowException)
-                {
-                    throw PyDecimalOps.DecimalOverflow(span);
-                }
+                accumulator.Add(value, span, context);
             }
 
-            if (!seenFloat && intTotal % count == BigInteger.Zero)
-            {
-                return intTotal / count;
-            }
-
-            summer.AddMeanInteger(intTotal);
-            return summer.TotalMean(count, span);
+            return accumulator.Complete(span);
         }
 
         private static object FMean(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -504,6 +540,44 @@ internal sealed partial class LythonRuntime
             return weightedSum.TotalFSum(span) / weightSum;
         }
 
+        private static async ValueTask<object> FMeanAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var values = await GetNumericValuesFromDataAsync(arguments, "statistics.fmean", span, context, scratch).ConfigureAwait(false);
+            if (arguments.Length < 2 || arguments[1] is PyNone)
+            {
+                var unweighted = new ExactDoubleSum();
+                foreach (var value in values)
+                {
+                    unweighted.AddChecked(value, span);
+                }
+
+                return unweighted.TotalFSum(span) / values.Count;
+            }
+
+            var weights = await GetNumericValuesFromIterableAsync(arguments[1], "statistics.fmean(..., weights=...)", span, context, scratch).ConfigureAwait(false);
+            if (weights.Count != values.Count)
+            {
+                throw StatisticsError("data and weights must be the same length", span);
+            }
+
+            var weightedSum = new ExactDoubleSum();
+            var weightTotal = new ExactDoubleSum();
+            for (var index = 0; index < values.Count; index++)
+            {
+                weightedSum.AddChecked(values[index] * weights[index], span);
+                weightTotal.AddChecked(weights[index], span);
+            }
+
+            var weightSum = weightTotal.TotalFSum(span);
+            if (weightSum == 0.0)
+            {
+                throw StatisticsError("sum of weights must be non-zero", span);
+            }
+
+            return weightedSum.TotalFSum(span) / weightSum;
+        }
+
         private static object Median(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             // N07: the objects drain stays caller-scoped scratch; unlike before, no
@@ -513,6 +587,20 @@ internal sealed partial class LythonRuntime
             // the two middles with (a+b)/2 value semantics per type.
             using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
             var values = GetNumericObjects(arguments, "statistics.median", span, context, scratch);
+            values.Sort((left, right) => Compare(left, right, span));
+            var middle = values.Count / 2;
+            if (values.Count % 2 == 1)
+            {
+                return values[middle];
+            }
+
+            return AverageMedianPair(values[middle - 1], values[middle], span);
+        }
+
+        private static async ValueTask<object> MedianAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var values = await GetNumericObjectsAsync(arguments, "statistics.median", span, context, scratch).ConfigureAwait(false);
             values.Sort((left, right) => Compare(left, right, span));
             var middle = values.Count / 2;
             if (values.Count % 2 == 1)
@@ -597,6 +685,14 @@ internal sealed partial class LythonRuntime
             return values[(values.Count - 1) / 2];
         }
 
+        private static async ValueTask<object> MedianLowAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var values = await GetNumericObjectsAsync(arguments, "statistics.median_low", span, context, scratch).ConfigureAwait(false);
+            values.Sort((left, right) => Compare(left, right, span));
+            return values[(values.Count - 1) / 2];
+        }
+
         private static object MedianHigh(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             // N07: same caller-scoped lifetime as MedianLow.
@@ -606,9 +702,24 @@ internal sealed partial class LythonRuntime
             return values[values.Count / 2];
         }
 
+        private static async ValueTask<object> MedianHighAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var values = await GetNumericObjectsAsync(arguments, "statistics.median_high", span, context, scratch).ConfigureAwait(false);
+            values.Sort((left, right) => Compare(left, right, span));
+            return values[values.Count / 2];
+        }
+
         private static object Mode(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             using var modeLease = GetModeValues(arguments, "statistics.mode", allowEmpty: false, span, context);
+            var values = modeLease.Items;
+            return GetModeCounts(values, context.MemoryGovernor, span, context).First().Key;
+        }
+
+        private static async ValueTask<object> ModeAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            using var modeLease = await GetModeValuesAsync(arguments, "statistics.mode", allowEmpty: false, span, context).ConfigureAwait(false);
             var values = modeLease.Items;
             return GetModeCounts(values, context.MemoryGovernor, span, context).First().Key;
         }
@@ -627,10 +738,56 @@ internal sealed partial class LythonRuntime
             return new PyList(modes, context.MemoryGovernor, span);
         }
 
+        private static async ValueTask<object> MultiModeAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            using var modeLease = await GetModeValuesAsync(arguments, "statistics.multimode", allowEmpty: true, span, context).ConfigureAwait(false);
+            var values = modeLease.Items;
+            var counts = GetModeCounts(values, context.MemoryGovernor, span, context);
+            var modes = new object[counts.Count];
+            for (var i = 0; i < counts.Count; i++)
+            {
+                modes[i] = counts[i].Key;
+            }
+
+            return new PyList(modes, context.MemoryGovernor, span);
+        }
+
         private static object MedianGrouped(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
             var values = GetNumericValuesFromData(arguments, "statistics.median_grouped", span, context, scratch);
+            values.Sort();
+            var interval = arguments.Length >= 2 && arguments[1] is not PyNone
+                ? RuntimeArgumentValidation.ExpectReal(arguments[1], "statistics.median_grouped(..., interval=...)", span)
+                : 1.0;
+            if (interval <= 0)
+            {
+                throw new LythonRuntimeException("ValueError", "statistics.median_grouped(..., interval=...) expects a positive interval.", span);
+            }
+
+            var target = values[values.Count / 2];
+            var below = 0;
+            var equal = 0;
+            foreach (var value in values)
+            {
+                if (value < target)
+                {
+                    below++;
+                }
+                else if (value == target)
+                {
+                    equal++;
+                }
+            }
+
+            var lowerLimit = target - interval / 2.0;
+            return lowerLimit + interval * (values.Count / 2.0 - below) / equal;
+        }
+
+        private static async ValueTask<object> MedianGroupedAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var values = await GetNumericValuesFromDataAsync(arguments, "statistics.median_grouped", span, context, scratch).ConfigureAwait(false);
             values.Sort();
             var interval = arguments.Length >= 2 && arguments[1] is not PyNone
                 ? RuntimeArgumentValidation.ExpectReal(arguments[1], "statistics.median_grouped(..., interval=...)", span)
@@ -721,6 +878,68 @@ internal sealed partial class LythonRuntime
             return weightTotal / reciprocalTotalWeighted;
         }
 
+        private static async ValueTask<object> HarmonicMeanAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var data = await GetNumericValuesFromDataAsync(arguments, "statistics.harmonic_mean", span, context, scratch).ConfigureAwait(false);
+            if (arguments.Length < 2 || arguments[1] is PyNone)
+            {
+                var reciprocalTotal = 0.0;
+                foreach (var value in data)
+                {
+                    if (value < 0)
+                    {
+                        throw StatisticsError("harmonic mean does not support negative values", span);
+                    }
+
+                    if (value == 0.0)
+                    {
+                        return 0.0;
+                    }
+
+                    reciprocalTotal += 1.0 / value;
+                }
+
+                return data.Count / reciprocalTotal;
+            }
+
+            var weights = await GetNumericValuesFromIterableAsync(arguments[1], "statistics.harmonic_mean(..., weights=...)", span, context, scratch).ConfigureAwait(false);
+            if (weights.Count != data.Count)
+            {
+                throw StatisticsError("Number of weights does not match data size", span);
+            }
+
+            var weightTotal = 0.0;
+            var reciprocalTotalWeighted = 0.0;
+            for (var i = 0; i < data.Count; i++)
+            {
+                var value = data[i];
+                var weight = weights[i];
+                if (value < 0 || weight < 0)
+                {
+                    throw StatisticsError("harmonic mean does not support negative values", span);
+                }
+
+                if (value == 0.0 && weight > 0.0)
+                {
+                    return 0.0;
+                }
+
+                weightTotal += weight;
+                if (weight != 0.0)
+                {
+                    reciprocalTotalWeighted += weight / value;
+                }
+            }
+
+            if (weightTotal <= 0.0)
+            {
+                throw StatisticsError("Weighted sum must be positive", span);
+            }
+
+            return weightTotal / reciprocalTotalWeighted;
+        }
+
         private static object GeometricMean(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
@@ -744,22 +963,73 @@ internal sealed partial class LythonRuntime
             return Math.Exp(logTotal / values.Count);
         }
 
+        private static async ValueTask<object> GeometricMeanAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var values = await GetNumericValuesFromDataAsync(arguments, "statistics.geometric_mean", span, context, scratch).ConfigureAwait(false);
+            var logTotal = 0.0;
+            foreach (var value in values)
+            {
+                if (value < 0)
+                {
+                    throw StatisticsError("geometric mean does not support negative values", span);
+                }
+
+                if (value == 0.0)
+                {
+                    return 0.0;
+                }
+
+                logTotal += Math.Log(value);
+            }
+
+            return Math.Exp(logTotal / values.Count);
+        }
+
         private static object PopulationStdev(object[] arguments, LythonSourceSpan span, ExecutionContext context)
             => Math.Sqrt(ComputeVariance(arguments, "statistics.pstdev", span, context, sample: false));
+
+        private static async ValueTask<object> PopulationStdevAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => Math.Sqrt(await ComputeVarianceAsync(arguments, "statistics.pstdev", span, context, sample: false).ConfigureAwait(false));
 
         private static object SampleStdev(object[] arguments, LythonSourceSpan span, ExecutionContext context)
             => Math.Sqrt(ComputeVariance(arguments, "statistics.stdev", span, context, sample: true));
 
+        private static async ValueTask<object> SampleStdevAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => Math.Sqrt(await ComputeVarianceAsync(arguments, "statistics.stdev", span, context, sample: true).ConfigureAwait(false));
+
         private static object PopulationVariance(object[] arguments, LythonSourceSpan span, ExecutionContext context)
             => ComputeVariance(arguments, "statistics.pvariance", span, context, sample: false);
 
+        private static async ValueTask<object> PopulationVarianceAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => await ComputeVarianceAsync(arguments, "statistics.pvariance", span, context, sample: false).ConfigureAwait(false);
+
         private static object SampleVariance(object[] arguments, LythonSourceSpan span, ExecutionContext context)
             => ComputeVariance(arguments, "statistics.variance", span, context, sample: true);
+
+        private static async ValueTask<object> SampleVarianceAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => await ComputeVarianceAsync(arguments, "statistics.variance", span, context, sample: true).ConfigureAwait(false);
 
         private static double ComputeVariance(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, bool sample)
         {
             using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
             var values = GetNumericValuesFromData(arguments, owner, span, context, scratch);
+            if (sample && values.Count < 2)
+            {
+                throw StatisticsError($"{owner}(data) requires at least two data points.", span);
+            }
+
+            var mean = arguments.Length >= 2 && arguments[1] is not PyNone
+                ? ExpectRealForStatistics(arguments[1], owner, span)
+                : values.Average();
+            var sum = values.Sum(value => Math.Pow(value - mean, 2));
+            return sum / (sample ? values.Count - 1 : values.Count);
+        }
+
+        private static async ValueTask<double> ComputeVarianceAsync(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, bool sample)
+        {
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var values = await GetNumericValuesFromDataAsync(arguments, owner, span, context, scratch).ConfigureAwait(false);
             if (sample && values.Count < 2)
             {
                 throw StatisticsError($"{owner}(data) requires at least two data points.", span);
@@ -815,9 +1085,68 @@ internal sealed partial class LythonRuntime
             return new PyList(cutPoints, context.MemoryGovernor, span);
         }
 
+        private static async ValueTask<object> QuantilesAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var values = await GetNumericValuesFromDataAsync(arguments, "statistics.quantiles", span, context, scratch).ConfigureAwait(false);
+            values.Sort();
+            var n = arguments.Length >= 2 && arguments[1] is not PyNone
+                ? ExpectPositivePartitionCount(arguments[1], "statistics.quantiles(..., n=...)", span)
+                : 4;
+            var method = arguments.Length >= 3 && arguments[2] is not PyNone
+                ? RuntimeArgumentValidation.ExpectString(arguments[2], "statistics.quantiles(..., method=...)", span)
+                : "exclusive";
+            if (method != "exclusive" && method != "inclusive")
+            {
+                throw new LythonRuntimeException("ValueError", $"Unknown method: '{method}'", span);
+            }
+
+            if (n == 1)
+            {
+                return new PyList([], context.MemoryGovernor, span);
+            }
+
+            var outputCount = n - 1;
+            context.ObserveCollectionCount(outputCount, span);
+            using var cutScratch = context.MemoryGovernor.ReserveTemporary(checked(8L * outputCount), span);
+            var cutPoints = new List<object>(outputCount);
+            var count = values.Count;
+            for (var i = 1; i < n; i++)
+            {
+                var value = method == "inclusive"
+                    ? InterpolateInclusiveQuantile(values, i, n)
+                    : InterpolateExclusiveQuantile(values, i, n);
+                cutPoints.Add(IsWholeInteger(value) ? new BigInteger(value) : value);
+                if ((i & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+            }
+
+            return new PyList(cutPoints, context.MemoryGovernor, span);
+        }
+
         private static object Covariance(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var (x, y) = GetPairedNumericValues(arguments, "statistics.covariance", span, context);
+            if (x.Count < 2)
+            {
+                throw StatisticsError("covariance requires at least two data points", span);
+            }
+
+            var (xMean, yMean) = (x.Average(), y.Average());
+            var sum = 0.0;
+            for (var i = 0; i < x.Count; i++)
+            {
+                sum += (x[i] - xMean) * (y[i] - yMean);
+            }
+
+            return sum / (x.Count - 1);
+        }
+
+        private static async ValueTask<object> CovarianceAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            var (x, y) = await GetPairedNumericValuesAsync(arguments, "statistics.covariance", span, context).ConfigureAwait(false);
             if (x.Count < 2)
             {
                 throw StatisticsError("covariance requires at least two data points", span);
@@ -850,6 +1179,23 @@ internal sealed partial class LythonRuntime
             return sums.SumXY / Math.Sqrt(sums.SumXX * sums.SumYY);
         }
 
+        private static async ValueTask<object> CorrelationAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            var (x, y) = await GetPairedNumericValuesAsync(arguments, "statistics.correlation", span, context).ConfigureAwait(false);
+            if (x.Count < 2)
+            {
+                throw StatisticsError("correlation requires at least two data points", span);
+            }
+
+            var sums = ComputeCenteredSums(x, y);
+            if (sums.SumXX == 0.0 || sums.SumYY == 0.0)
+            {
+                throw StatisticsError("at least one of the inputs is constant", span);
+            }
+
+            return sums.SumXY / Math.Sqrt(sums.SumXX * sums.SumYY);
+        }
+
         private static object LinearRegression(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length is < 2 or > 3)
@@ -858,6 +1204,49 @@ internal sealed partial class LythonRuntime
             }
 
             var (x, y) = GetPairedNumericValues([arguments[0], arguments[1]], "statistics.linear_regression", span, context);
+            if (x.Count < 2)
+            {
+                throw StatisticsError("linear_regression requires at least two data points", span);
+            }
+
+            var proportional = arguments.Length >= 3 && arguments[2] is not PyNone && IsTruthy(arguments[2]);
+            if (proportional)
+            {
+                var sumXX = 0.0;
+                var sumXY = 0.0;
+                for (var i = 0; i < x.Count; i++)
+                {
+                    sumXX += x[i] * x[i];
+                    sumXY += x[i] * y[i];
+                }
+
+                if (sumXX == 0.0)
+                {
+                    throw StatisticsError("x is constant", span);
+                }
+
+                return new StatisticsLinearRegressionResult(sumXY / sumXX, 0.0);
+            }
+
+            var sums = ComputeCenteredSums(x, y);
+            if (sums.SumXX == 0.0)
+            {
+                throw StatisticsError("x is constant", span);
+            }
+
+            var slope = sums.SumXY / sums.SumXX;
+            var intercept = y.Average() - slope * x.Average();
+            return new StatisticsLinearRegressionResult(slope, intercept);
+        }
+
+        private static async ValueTask<object> LinearRegressionAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length is < 2 or > 3)
+            {
+                throw new LythonRuntimeException("TypeError", "statistics.linear_regression(x, y) expects two iterable arguments.", span);
+            }
+
+            var (x, y) = await GetPairedNumericValuesAsync([arguments[0], arguments[1]], "statistics.linear_regression", span, context).ConfigureAwait(false);
             if (x.Count < 2)
             {
                 throw StatisticsError("linear_regression requires at least two data points", span);
@@ -975,6 +1364,27 @@ internal sealed partial class LythonRuntime
             return lease;
         }
 
+        private static async ValueTask<PyIteration.DrainLease> GetModeValuesAsync(
+            object[] arguments,
+            string owner,
+            bool allowEmpty,
+            LythonSourceSpan span,
+            ExecutionContext context)
+        {
+            if (arguments.Length != 1)
+            {
+                throw new LythonRuntimeException("TypeError", $"{owner}(data) expects one iterable argument.", span);
+            }
+
+            var lease = await PyIteration.DrainLeasedAsync(ToSequenceAsync(arguments[0], span, context), span, context).ConfigureAwait(false);
+            if (!allowEmpty && lease.Items.Count == 0)
+            {
+                lease.Dispose();
+                throw StatisticsError($"{owner}(data) requires at least one data point.", span);
+            }
+            return lease;
+        }
+
         private static PairedNumericValues GetPairedNumericValues(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length != 2)
@@ -986,6 +1396,24 @@ internal sealed partial class LythonRuntime
             using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
             var x = GetNumericValuesFromIterable(arguments[0], owner + "(x, y)", span, context, scratch);
             var y = GetNumericValuesFromIterable(arguments[1], owner + "(x, y)", span, context, scratch);
+            if (x.Count != y.Count)
+            {
+                throw StatisticsError($"{owner.Split('.').Last()} requires that both inputs have same number of data points", span);
+            }
+
+            return new PairedNumericValues(x, y);
+        }
+
+        private static async ValueTask<PairedNumericValues> GetPairedNumericValuesAsync(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length != 2)
+            {
+                throw new LythonRuntimeException("TypeError", $"{owner}(x, y) expects two iterable arguments.", span);
+            }
+
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var x = await GetNumericValuesFromIterableAsync(arguments[0], owner + "(x, y)", span, context, scratch).ConfigureAwait(false);
+            var y = await GetNumericValuesFromIterableAsync(arguments[1], owner + "(x, y)", span, context, scratch).ConfigureAwait(false);
             if (x.Count != y.Count)
             {
                 throw StatisticsError($"{owner.Split('.').Last()} requires that both inputs have same number of data points", span);
@@ -1123,6 +1551,60 @@ internal sealed partial class LythonRuntime
             return values;
         }
 
+        private static async ValueTask<List<object>> GetNumericObjectsAsync(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
+        {
+            if (arguments.Length != 1)
+            {
+                throw new LythonRuntimeException("TypeError", $"{owner}(data) expects one iterable argument.", span);
+            }
+
+            var values = arguments[0] is IReadOnlyCollection<object> sized
+                ? new List<object>(sized.Count)
+                : new List<object>();
+            var chargedCapacity = values.Capacity;
+            if (chargedCapacity > 0)
+            {
+                scratch.Grow(8L * chargedCapacity, span);
+            }
+
+            await foreach (var value in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
+            {
+                if (values.Count == values.Capacity)
+                {
+                    var predicted = values.Capacity == 0 ? 4L : (long)values.Capacity * 2L;
+                    var delta = checked(8L * (predicted - chargedCapacity));
+                    scratch.Grow(delta, span);
+                    chargedCapacity = (int)predicted;
+                }
+
+                values.Add(value);
+                if (values.Capacity > chargedCapacity)
+                {
+                    var delta = checked(8L * (values.Capacity - chargedCapacity));
+                    scratch.Grow(delta, span);
+                    chargedCapacity = values.Capacity;
+                }
+
+                context.ObserveCollectionCount(values.Count, span);
+                if ((values.Count & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+            }
+
+            if (values.Count == 0)
+            {
+                throw StatisticsError($"{owner}(data) requires at least one data point.", span);
+            }
+
+            foreach (var value in values)
+            {
+                _ = ExpectRealForStatistics(value, owner, span);
+            }
+
+            return values;
+        }
+
         private static List<double> GetNumericValuesFromData(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
         {
             if (arguments.Length < 1)
@@ -1135,6 +1617,20 @@ internal sealed partial class LythonRuntime
             }
 
             return GetNumericValuesFromIterable(arguments[0], owner, span, context, scratch);
+        }
+
+        private static async ValueTask<List<double>> GetNumericValuesFromDataAsync(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
+        {
+            if (arguments.Length < 1)
+            {
+                throw new LythonRuntimeException("TypeError", $"{owner}(data) expects one iterable argument.", span);
+            }
+
+            if (arguments.Length > 1)
+            {
+            }
+
+            return await GetNumericValuesFromIterableAsync(arguments[0], owner, span, context, scratch).ConfigureAwait(false);
         }
 
         private static List<double> GetNumericValuesFromIterable(object data, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
@@ -1155,6 +1651,51 @@ internal sealed partial class LythonRuntime
             }
 
             foreach (var value in ToSequence(data, span, context))
+            {
+                var real = ExpectRealForStatistics(value, owner, span);
+                if (values.Count == values.Capacity)
+                {
+                    var predicted = values.Capacity == 0 ? 4L : (long)values.Capacity * 2L;
+                    var delta = checked(8L * (predicted - chargedCapacity));
+                    scratch.Grow(delta, span);
+                    chargedCapacity = (int)predicted;
+                }
+
+                values.Add(real);
+                if (values.Capacity > chargedCapacity)
+                {
+                    var delta = checked(8L * (values.Capacity - chargedCapacity));
+                    scratch.Grow(delta, span);
+                    chargedCapacity = values.Capacity;
+                }
+
+                context.ObserveCollectionCount(values.Count, span);
+                if ((values.Count & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+            }
+
+            if (values.Count == 0)
+            {
+                throw StatisticsError($"{owner} requires at least one data point.", span);
+            }
+
+            return values;
+        }
+
+        private static async ValueTask<List<double>> GetNumericValuesFromIterableAsync(object data, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
+        {
+            var values = data is IReadOnlyCollection<object> sized
+                ? new List<double>(sized.Count)
+                : new List<double>();
+            var chargedCapacity = values.Capacity;
+            if (chargedCapacity > 0)
+            {
+                scratch.Grow(8L * chargedCapacity, span);
+            }
+
+            await foreach (var value in ToSequenceAsync(data, span, context).ConfigureAwait(false))
             {
                 var real = ExpectRealForStatistics(value, owner, span);
                 if (values.Count == values.Capacity)
