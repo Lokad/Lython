@@ -83,6 +83,17 @@ internal sealed partial class LythonRuntime
 
         public bool HasFormulaCells => _worksheets.Any(worksheet => worksheet.Cells.Values.Any(IsFormulaValue));
 
+        // N17: hot fixed signatures hoisted per family.
+        private static readonly LythonCallableSignature WorkbookAddNamedStyleSignature = LythonCallableSignature.Create("Workbook.add_named_style", ["style"]);
+        private static readonly LythonCallableSignature WorkbookCreateSheetSignature = LythonCallableSignature.Create("Workbook.create_sheet", ["title", "index"], requiredCount: 0);
+        private static readonly LythonCallableSignature WorkbookRemoveSignature = LythonCallableSignature.Create("Workbook.remove", ["worksheet"]);
+        private static readonly LythonCallableSignature WorkbookRemoveSheetSignature = LythonCallableSignature.Create("Workbook.remove_sheet", ["worksheet"]);
+        private static readonly LythonCallableSignature WorkbookCopyWorksheetSignature = LythonCallableSignature.Create("Workbook.copy_worksheet", ["from_worksheet"]);
+        private static readonly LythonCallableSignature WorkbookIndexSignature = LythonCallableSignature.Create("Workbook.index", ["worksheet"]);
+        private static readonly LythonCallableSignature WorkbookMoveSheetSignature = LythonCallableSignature.Create("Workbook.move_sheet", ["sheet", "offset"], requiredCount: 1);
+        private static readonly LythonCallableSignature WorkbookGetSheetNamesSignature = LythonCallableSignature.Create("Workbook.get_sheet_names", []);
+        private static readonly LythonCallableSignature WorkbookSaveSignature = LythonCallableSignature.Create("Workbook.save", ["filename"]);
+        private static readonly LythonCallableSignature WorkbookCloseSignature = LythonCallableSignature.Create("Workbook.close", []);
         public static OpenPyxlWorkbook CreateNew(bool writeOnly, bool isoDates)
             => new(
                 [new OpenPyxlWorksheet("Sheet")],
@@ -123,16 +134,16 @@ internal sealed partial class LythonRuntime
                 "_named_styles" => new PyList(_namedStyles.Cast<object>()),
                 "style_names" => CreateNamedStyleNames(),
                 "security" => _security,
-                "add_named_style" => BoundCallable.Create(AddNamedStyle, "Workbook.add_named_style", ["style"]),
-                "create_sheet" => BoundCallable.Create(CreateSheet, "Workbook.create_sheet", ["title", "index"], requiredCount: 0),
-                "remove" => BoundCallable.Create(Remove, "Workbook.remove", ["worksheet"]),
-                "remove_sheet" => BoundCallable.Create(Remove, "Workbook.remove_sheet", ["worksheet"]),
-                "copy_worksheet" => BoundCallable.Create(CopyWorksheet, "Workbook.copy_worksheet", ["from_worksheet"]),
-                "index" => BoundCallable.Create(Index, "Workbook.index", ["worksheet"]),
-                "move_sheet" => BoundCallable.Create(MoveSheet, "Workbook.move_sheet", ["sheet", "offset"], requiredCount: 1),
-                "get_sheet_names" => BoundCallable.Create(GetSheetNames, "Workbook.get_sheet_names", []),
-                "save" => BoundCallable.Create(Save, SaveAsync, "Workbook.save", ["filename"]),
-                "close" => BoundCallable.Create(Close, "Workbook.close", []),
+                "add_named_style" => BoundCallable.Create(AddNamedStyle, WorkbookAddNamedStyleSignature),
+                "create_sheet" => BoundCallable.Create(CreateSheet, WorkbookCreateSheetSignature),
+                "remove" => BoundCallable.Create(Remove, WorkbookRemoveSignature),
+                "remove_sheet" => BoundCallable.Create(Remove, WorkbookRemoveSheetSignature),
+                "copy_worksheet" => BoundCallable.Create(CopyWorksheet, WorkbookCopyWorksheetSignature),
+                "index" => BoundCallable.Create(Index, WorkbookIndexSignature),
+                "move_sheet" => BoundCallable.Create(MoveSheet, WorkbookMoveSheetSignature),
+                "get_sheet_names" => BoundCallable.Create(GetSheetNames, WorkbookGetSheetNamesSignature),
+                "save" => BoundCallable.Create(Save, WorkbookSaveSignature, SaveAsync),
+                "close" => BoundCallable.Create(Close, WorkbookCloseSignature),
                 _ => MissingMemberValue.Instance,
             };
 

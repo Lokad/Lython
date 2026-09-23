@@ -1382,6 +1382,42 @@ public sealed class LythonCallableSignatureTests
     }
 
     [Fact]
+    public void Create_ReusesHoistedWorkbookSignatures()
+    {
+        // N17: companion pin for the hoisted OpenPyxlWorkbook statics.
+        Assert.Same(
+            LythonCallableSignature.Create("Workbook.add_named_style", ["style"]),
+            LythonCallableSignature.Create("Workbook.add_named_style", ["style"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Workbook.create_sheet", ["title", "index"], requiredCount: 0),
+            LythonCallableSignature.Create("Workbook.create_sheet", ["title", "index"], requiredCount: 0));
+        Assert.Same(
+            LythonCallableSignature.Create("Workbook.remove", ["worksheet"]),
+            LythonCallableSignature.Create("Workbook.remove", ["worksheet"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Workbook.remove_sheet", ["worksheet"]),
+            LythonCallableSignature.Create("Workbook.remove_sheet", ["worksheet"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Workbook.copy_worksheet", ["from_worksheet"]),
+            LythonCallableSignature.Create("Workbook.copy_worksheet", ["from_worksheet"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Workbook.index", ["worksheet"]),
+            LythonCallableSignature.Create("Workbook.index", ["worksheet"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Workbook.move_sheet", ["sheet", "offset"], requiredCount: 1),
+            LythonCallableSignature.Create("Workbook.move_sheet", ["sheet", "offset"], requiredCount: 1));
+        Assert.Same(
+            LythonCallableSignature.Create("Workbook.get_sheet_names", []),
+            LythonCallableSignature.Create("Workbook.get_sheet_names", []));
+        Assert.Same(
+            LythonCallableSignature.Create("Workbook.save", ["filename"]),
+            LythonCallableSignature.Create("Workbook.save", ["filename"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Workbook.close", []),
+            LythonCallableSignature.Create("Workbook.close", []));
+    }
+
+    [Fact]
     public void Create_RejectsInvalidParameterMetadata()
     {
         Assert.Throws<ArgumentException>(() =>
