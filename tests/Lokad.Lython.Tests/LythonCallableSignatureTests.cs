@@ -848,6 +848,192 @@ public sealed class LythonCallableSignatureTests
     }
 
     [Fact]
+    public void Create_ReusesHoistedDecimalSignatures()
+    {
+        // N17: companion pin for the hoisted DecimalMembers statics.
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.quantize", ["exp", "rounding", "context"], requiredCount: 1),
+            LythonCallableSignature.Create("Decimal.quantize", ["exp", "rounding", "context"], requiredCount: 1));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.normalize", ["context"], requiredCount: 0),
+            LythonCallableSignature.Create("Decimal.normalize", ["context"], requiredCount: 0));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.sqrt", ["context"], requiredCount: 0),
+            LythonCallableSignature.Create("Decimal.sqrt", ["context"], requiredCount: 0));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.exp", ["context"], requiredCount: 0),
+            LythonCallableSignature.Create("Decimal.exp", ["context"], requiredCount: 0));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.ln", ["context"], requiredCount: 0),
+            LythonCallableSignature.Create("Decimal.ln", ["context"], requiredCount: 0));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.log10", ["context"], requiredCount: 0),
+            LythonCallableSignature.Create("Decimal.log10", ["context"], requiredCount: 0));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.to_integral_value", ["rounding", "context"], requiredCount: 0),
+            LythonCallableSignature.Create("Decimal.to_integral_value", ["rounding", "context"], requiredCount: 0));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.to_integral_exact", ["rounding", "context"], requiredCount: 0),
+            LythonCallableSignature.Create("Decimal.to_integral_exact", ["rounding", "context"], requiredCount: 0));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.to_integral", ["rounding", "context"], requiredCount: 0),
+            LythonCallableSignature.Create("Decimal.to_integral", ["rounding", "context"], requiredCount: 0));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.compare", ["other", "context"], requiredCount: 1),
+            LythonCallableSignature.Create("Decimal.compare", ["other", "context"], requiredCount: 1));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.scaleb", ["other", "context"], requiredCount: 1),
+            LythonCallableSignature.Create("Decimal.scaleb", ["other", "context"], requiredCount: 1));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.fma", ["other", "third", "context"], requiredCount: 2),
+            LythonCallableSignature.Create("Decimal.fma", ["other", "third", "context"], requiredCount: 2));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.logb", ["context"], requiredCount: 0),
+            LythonCallableSignature.Create("Decimal.logb", ["context"], requiredCount: 0));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.compare_signal", ["other", "context"], requiredCount: 1),
+            LythonCallableSignature.Create("Decimal.compare_signal", ["other", "context"], requiredCount: 1));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.remainder_near", ["other", "context"], requiredCount: 1),
+            LythonCallableSignature.Create("Decimal.remainder_near", ["other", "context"], requiredCount: 1));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.min", ["other", "context"], requiredCount: 1),
+            LythonCallableSignature.Create("Decimal.min", ["other", "context"], requiredCount: 1));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.max", ["other", "context"], requiredCount: 1),
+            LythonCallableSignature.Create("Decimal.max", ["other", "context"], requiredCount: 1));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.min_mag", ["other", "context"], requiredCount: 1),
+            LythonCallableSignature.Create("Decimal.min_mag", ["other", "context"], requiredCount: 1));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.max_mag", ["other", "context"], requiredCount: 1),
+            LythonCallableSignature.Create("Decimal.max_mag", ["other", "context"], requiredCount: 1));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.as_tuple", []),
+            LythonCallableSignature.Create("Decimal.as_tuple", []));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.adjusted", []),
+            LythonCallableSignature.Create("Decimal.adjusted", []));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.to_eng_string", []),
+            LythonCallableSignature.Create("Decimal.to_eng_string", []));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.radix", []),
+            LythonCallableSignature.Create("Decimal.radix", []));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.canonical", []),
+            LythonCallableSignature.Create("Decimal.canonical", []));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.conjugate", []),
+            LythonCallableSignature.Create("Decimal.conjugate", []));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.__eq__", ["value"]),
+            LythonCallableSignature.Create("Decimal.__eq__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.__ne__", ["value"]),
+            LythonCallableSignature.Create("Decimal.__ne__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.__lt__", ["value"]),
+            LythonCallableSignature.Create("Decimal.__lt__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.__le__", ["value"]),
+            LythonCallableSignature.Create("Decimal.__le__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.__gt__", ["value"]),
+            LythonCallableSignature.Create("Decimal.__gt__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.__ge__", ["value"]),
+            LythonCallableSignature.Create("Decimal.__ge__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.__bool__"),
+            LythonCallableSignature.Create("Decimal.__bool__"));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.__hash__"),
+            LythonCallableSignature.Create("Decimal.__hash__"));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.__int__"),
+            LythonCallableSignature.Create("Decimal.__int__"));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.__float__"),
+            LythonCallableSignature.Create("Decimal.__float__"));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.__trunc__"),
+            LythonCallableSignature.Create("Decimal.__trunc__"));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.__floor__"),
+            LythonCallableSignature.Create("Decimal.__floor__"));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.__ceil__"),
+            LythonCallableSignature.Create("Decimal.__ceil__"));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.__round__"),
+            LythonCallableSignature.Create("Decimal.__round__"));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.copy_sign", ["other"]),
+            LythonCallableSignature.Create("Decimal.copy_sign", ["other"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.compare_total", ["other"]),
+            LythonCallableSignature.Create("Decimal.compare_total", ["other"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.is_nan", []),
+            LythonCallableSignature.Create("Decimal.is_nan", []));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.is_infinite", []),
+            LythonCallableSignature.Create("Decimal.is_infinite", []));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.is_finite", []),
+            LythonCallableSignature.Create("Decimal.is_finite", []));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.is_zero", []),
+            LythonCallableSignature.Create("Decimal.is_zero", []));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.is_signed", []),
+            LythonCallableSignature.Create("Decimal.is_signed", []));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.shift", ["other"]),
+            LythonCallableSignature.Create("Decimal.shift", ["other"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.rotate", ["other"]),
+            LythonCallableSignature.Create("Decimal.rotate", ["other"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.same_quantum", ["other"]),
+            LythonCallableSignature.Create("Decimal.same_quantum", ["other"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.as_integer_ratio", []),
+            LythonCallableSignature.Create("Decimal.as_integer_ratio", []));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.is_qnan", []),
+            LythonCallableSignature.Create("Decimal.is_qnan", []));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.is_snan", []),
+            LythonCallableSignature.Create("Decimal.is_snan", []));
+        Assert.Same(
+            LythonCallableSignature.Create("Decimal.is_canonical", []),
+            LythonCallableSignature.Create("Decimal.is_canonical", []));
+    }
+
+    [Fact]
+    public void Create_ReusesHoistedDualSignatures()
+    {
+        // N17: dual async twins whose names sit after the async lambda.
+        Assert.Same(
+            LythonCallableSignature.Create("tuple.index", ["value", "start", "stop"], 1),
+            LythonCallableSignature.Create("tuple.index", ["value", "start", "stop"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("tuple.count", ["value"]),
+            LythonCallableSignature.Create("tuple.count", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("deque.count", ["value"]),
+            LythonCallableSignature.Create("deque.count", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("deque.index", ["value", "start", "stop"], 1),
+            LythonCallableSignature.Create("deque.index", ["value", "start", "stop"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("deque.remove", ["value"]),
+            LythonCallableSignature.Create("deque.remove", ["value"]));
+    }
+
+    [Fact]
     public void Create_RejectsInvalidParameterMetadata()
     {
         Assert.Throws<ArgumentException>(() =>

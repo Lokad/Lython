@@ -576,6 +576,8 @@ internal sealed partial class LythonRuntime
         private static readonly LythonCallableSignature TupleLeSignature = LythonCallableSignature.Create("tuple.__le__", ["value"]);
         private static readonly LythonCallableSignature TupleGtSignature = LythonCallableSignature.Create("tuple.__gt__", ["value"]);
         private static readonly LythonCallableSignature TupleGeSignature = LythonCallableSignature.Create("tuple.__ge__", ["value"]);
+        private static readonly LythonCallableSignature TupleIndexSignature = LythonCallableSignature.Create("tuple.index", ["value", "start", "stop"], 1);
+        private static readonly LythonCallableSignature TupleCountSignature = LythonCallableSignature.Create("tuple.count", ["value"]);
         // N17: hot fixed signatures hoisted per family (see ListMembers).
         private static readonly LythonCallableSignature TupleHashSignature = LythonCallableSignature.Create("tuple.__hash__");
         private static async ValueTask<object> CountAsync(int count, Func<int, object> getItem, object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -648,7 +650,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     throw new LythonRuntimeException("ValueError", "tuple.index(x): x not in tuple", span);
-                }, (arguments, span, context) => IndexAsync(count, getItem, arguments, span, context), "tuple.index", ["value", "start", "stop"], 1),
+                }, TupleIndexSignature, (arguments, span, context) => IndexAsync(count, getItem, arguments, span, context)),
                 "count" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -666,7 +668,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return new BigInteger(itemCount);
-                }, (arguments, span, context) => CountAsync(count, getItem, arguments, span, context), "tuple.count", ["value"]),
+                }, TupleCountSignature, (arguments, span, context) => CountAsync(count, getItem, arguments, span, context)),
                 "__iter__" => BoundCallable.CreateNoArguments(source, "tuple.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);

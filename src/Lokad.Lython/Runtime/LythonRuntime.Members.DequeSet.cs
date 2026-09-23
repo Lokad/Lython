@@ -19,6 +19,9 @@ internal sealed partial class LythonRuntime
         private static readonly LythonCallableSignature DequeMulSignature = LythonCallableSignature.Create("deque.__mul__", ["value"]);
         private static readonly LythonCallableSignature DequeRMulSignature = LythonCallableSignature.Create("deque.__rmul__", ["value"]);
         private static readonly LythonCallableSignature DequeReversedSignature = LythonCallableSignature.Create("deque.__reversed__");
+        private static readonly LythonCallableSignature DequeCountSignature = LythonCallableSignature.Create("deque.count", ["value"]);
+        private static readonly LythonCallableSignature DequeIndexSignature = LythonCallableSignature.Create("deque.index", ["value", "start", "stop"], 1);
+        private static readonly LythonCallableSignature DequeRemoveSignature = LythonCallableSignature.Create("deque.remove", ["value"]);
         private static async ValueTask<object> CountAsync(PyDeque deque, object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length != 1)
@@ -186,7 +189,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return new BigInteger(deque.CountValue(arguments[0], context, span));
-                }, (arguments, span, context) => CountAsync(deque, arguments, span, context), "deque.count", ["value"]),
+                }, DequeCountSignature, (arguments, span, context) => CountAsync(deque, arguments, span, context)),
                 "index" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length is < 1 or > 3)
@@ -203,7 +206,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return new BigInteger(index);
-                }, (arguments, span, context) => IndexAsync(deque, arguments, span, context), "deque.index", ["value", "start", "stop"], 1),
+                }, DequeIndexSignature, (arguments, span, context) => IndexAsync(deque, arguments, span, context)),
                 "insert" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 2)
@@ -238,7 +241,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNone.Instance;
-                }, (arguments, span, context) => RemoveAsync(deque, arguments, span, context), "deque.remove", ["value"]),
+                }, DequeRemoveSignature, (arguments, span, context) => RemoveAsync(deque, arguments, span, context)),
                 "reverse" => BoundCallable.CreateNoArguments(deque, "deque.reverse", static (receiver, _, _) =>
                 {
                     receiver.Reverse();
