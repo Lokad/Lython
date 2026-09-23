@@ -113,7 +113,7 @@ internal sealed partial class LythonRuntime
                 ["SystemExit"] = new ExceptionTypeValue("SystemExit"),
                 ["GeneratorExit"] = new ExceptionTypeValue("GeneratorExit"),
                 ["KeyboardInterrupt"] = new ExceptionTypeValue("KeyboardInterrupt"),
-                ["bool"] = BuiltinCallable.Create(LythonCallableSignature.Create("bool", ["value"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Bool),
+                ["bool"] = BuiltinCallable.Create(LythonCallableSignature.Create("bool", ["value"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Bool, BoolAsync),
                 ["int"] = BuiltinCallable.Create(LythonCallableSignature.Create("int", ["x", "base"], requiredCount: 0, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Int),
                 ["float"] = BuiltinCallable.Create(LythonCallableSignature.Create("float", ["value"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Float),
                 ["bytes"] = BuiltinCallable.Create(LythonCallableSignature.Create("bytes", ["source", "encoding", "errors"], requiredCount: 0, maximumPositionalArgumentCount: 3, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Bytes, BytesAsync),

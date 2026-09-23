@@ -272,6 +272,16 @@ internal sealed partial class LythonRuntime
         return arguments.Length == 1 && IsTruthy(arguments[0], context, span);
     }
 
+    private static async ValueTask<object> BoolAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length > 1)
+        {
+            throw new LythonRuntimeException("TypeError", "bool([value]) expects at most one argument.", span);
+        }
+
+        return arguments.Length == 1 && await IsTruthyAsync(arguments[0], context, span).ConfigureAwait(false);
+    }
+
     private static object Int(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length > 2)

@@ -19,7 +19,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var item in ToSequence(arguments[0], span, context))
         {
-            if (IsTruthy(item))
+            if (IsTruthy(item, context, span))
             {
                 return true;
             }
@@ -37,7 +37,7 @@ internal sealed partial class LythonRuntime
 
         await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
         {
-            if (IsTruthy(item))
+            if (await IsTruthyAsync(item, context, span).ConfigureAwait(false))
             {
                 return true;
             }
@@ -55,7 +55,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var item in ToSequence(arguments[0], span, context))
         {
-            if (!IsTruthy(item))
+            if (!IsTruthy(item, context, span))
             {
                 return false;
             }
@@ -73,7 +73,7 @@ internal sealed partial class LythonRuntime
 
         await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
         {
-            if (!IsTruthy(item))
+            if (!await IsTruthyAsync(item, context, span).ConfigureAwait(false))
             {
                 return false;
             }
