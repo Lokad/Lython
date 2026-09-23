@@ -35,7 +35,7 @@ internal sealed partial class LythonRuntime
                 "defaultdict" => new CollectionsCallable("collections.defaultdict", DefaultDict, DefaultDictAsync),
                 "Counter" => new CollectionsCallable("collections.Counter", Counter, CounterAsync),
                 "deque" => new CollectionsCallable("collections.deque", Deque, DequeAsync),
-                "namedtuple" => new CollectionsCallable("collections.namedtuple", NamedTuple),
+                "namedtuple" => new CollectionsCallable("collections.namedtuple", NamedTuple, NamedTupleAsync),
                 "OrderedDict" => new CollectionsCallable("collections.OrderedDict", OrderedDict),
                 "ChainMap" => new CollectionsCallable("collections.ChainMap", ChainMap),
                 "UserDict" => new UnsupportedCollectionsCallable("collections.UserDict"),
@@ -682,7 +682,11 @@ internal sealed partial class LythonRuntime
         return result;
     }
 
-    private static object NamedTuple(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    // Pure call-shape facts shared by both namedtuple twins so arity, naming
+    // and validation order cannot drift between sync and async composition.
+    private sealed record NamedTupleCallShape(string TypeName, object FieldNamesValue);
+
+    private static NamedTupleCallShape GetNamedTupleCallShape(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Count(static argument => argument.IsPositional) > 2)
         {
@@ -700,7 +704,13 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "collections.namedtuple(typename, field_names, ...) missing field_names.", span);
         }
 
-        var fieldNames = ParseNamedTupleFieldNames(fieldNamesValue, span, context);
+        return new NamedTupleCallShape(typeName.AsString(), fieldNamesValue);
+    }
+
+    private static object NamedTuple(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var shape = GetNamedTupleCallShape(arguments, span, context);
+        var fieldNames = ParseNamedTupleFieldNames(shape.FieldNamesValue, span, context);
         var rename = TryGetArgument(arguments, 2, "rename", span, out var renameValue) && IsTruthy(renameValue);
         // Drain at most one past the field count: longer inputs fail with the
         // same TypeError below without a proportional transient. Parsing the
@@ -721,6 +731,37 @@ internal sealed partial class LythonRuntime
             defaults = collected.ToArray();
         }
 
+        return BuildNamedTupleType(shape, fieldNames, rename, defaults, arguments, span, context);
+    }
+
+    private static async ValueTask<object> NamedTupleAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        // Async twin of the factory above: only field-name and default
+        // acquisition awaits; shaping and validation stay on the shared paths.
+        var shape = GetNamedTupleCallShape(arguments, span, context);
+        var fieldNames = await ParseNamedTupleFieldNamesAsync(shape.FieldNamesValue, span, context).ConfigureAwait(false);
+        var rename = TryGetArgument(arguments, 2, "rename", span, out var renameValue) && IsTruthy(renameValue);
+        object[] defaults = [];
+        if (TryGetArgument(arguments, 3, "defaults", span, out var defaultsValue) && defaultsValue is not PyNone)
+        {
+            var collected = new List<object>();
+            await foreach (var item in ToSequenceAsync(defaultsValue, span, context).ConfigureAwait(false))
+            {
+                collected.Add(item);
+                if (collected.Count > fieldNames.Count)
+                {
+                    throw new LythonRuntimeException("TypeError", "collections.namedtuple(..., defaults=...) has more defaults than fields.", span);
+                }
+            }
+
+            defaults = collected.ToArray();
+        }
+
+        return BuildNamedTupleType(shape, fieldNames, rename, defaults, arguments, span, context);
+    }
+
+    private static object BuildNamedTupleType(NamedTupleCallShape shape, IReadOnlyList<string> fieldNames, bool rename, object[] defaults, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
         if (defaults.Length > 0 && defaults.Length > fieldNames.Count)
         {
             throw new LythonRuntimeException("TypeError", "collections.namedtuple(..., defaults=...) has more defaults than fields.", span);
@@ -758,7 +799,7 @@ internal sealed partial class LythonRuntime
             moduleName = PyNone.Instance;
         }
 
-        var created = new PyNamedTupleType(typeName.AsString(), fields, defaults, context.MemoryGovernor, span);
+        var created = new PyNamedTupleType(shape.TypeName, fields, defaults, context.MemoryGovernor, span);
         created.ModuleName = moduleName;
         return PyNamedTupleType.TrackFreshNamedTupleType(created, span, context);
     }
@@ -1146,6 +1187,31 @@ internal sealed partial class LythonRuntime
 
         var names = new List<string>();
         foreach (var item in ToSequence(value, span, context))
+        {
+            if (!PyStringOps.TryAsString(item, out var name))
+            {
+                throw new LythonRuntimeException("TypeError", "collections.namedtuple(..., field_names) expects strings.", span);
+            }
+
+            names.Add(name.AsString());
+        }
+
+        return names;
+    }
+
+    private static async ValueTask<IReadOnlyList<string>> ParseNamedTupleFieldNamesAsync(object value, LythonSourceSpan span, ExecutionContext context)
+    {
+        // Async twin of the parser above: comma/whitespace splitting stays
+        // pure while iterable field names await each pull.
+        if (PyStringOps.TryAsString(value, out var text))
+        {
+            return text.AsString()
+                .Split([',', ' ', '\t', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+                .ToArray();
+        }
+
+        var names = new List<string>();
+        await foreach (var item in ToSequenceAsync(value, span, context).ConfigureAwait(false))
         {
             if (!PyStringOps.TryAsString(item, out var name))
             {

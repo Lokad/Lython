@@ -123,6 +123,17 @@ internal sealed partial class LythonRuntime
                     deque.Extend(ToSequence(arguments[0], span, context));
                     context.ObserveCollectionCount(deque.Count, span);
                     return PyNone.Instance;
+                }, async (arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "deque.extend(iterable) expects one argument.", span);
+                    }
+
+                    deque.AttachMemoryGovernor(context.MemoryGovernor, span);
+                    deque.Extend(await PyIteration.MaterializeAsync(arguments[0], span, context).ConfigureAwait(false));
+                    context.ObserveCollectionCount(deque.Count, span);
+                    return PyNone.Instance;
                 }),
                 "extendleft" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -133,6 +144,17 @@ internal sealed partial class LythonRuntime
 
                     deque.AttachMemoryGovernor(context.MemoryGovernor, span);
                     deque.ExtendLeft(ToSequence(arguments[0], span, context));
+                    context.ObserveCollectionCount(deque.Count, span);
+                    return PyNone.Instance;
+                }, async (arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "deque.extendleft(iterable) expects one argument.", span);
+                    }
+
+                    deque.AttachMemoryGovernor(context.MemoryGovernor, span);
+                    deque.ExtendLeft(await PyIteration.MaterializeAsync(arguments[0], span, context).ConfigureAwait(false));
                     context.ObserveCollectionCount(deque.Count, span);
                     return PyNone.Instance;
                 }),
@@ -498,7 +520,13 @@ internal sealed partial class LythonRuntime
                     set.AttachMemoryGovernor(context.MemoryGovernor, span);
                     Update(set, arguments, span, context);
                     return PyNone.Instance;
-                }, SetUpdateSignature),
+                }, SetUpdateSignature, async (arguments, span, context) =>
+                {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
+                    set.AttachMemoryGovernor(context.MemoryGovernor, span);
+                    await UpdateAsync(set, arguments, span, context).ConfigureAwait(false);
+                    return PyNone.Instance;
+                }),
                 "intersection_update" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -509,7 +537,17 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNone.Instance;
-                }, SetIntersectionUpdateSignature),
+                }, SetIntersectionUpdateSignature, async (arguments, span, context) =>
+                {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
+                    set.AttachMemoryGovernor(context.MemoryGovernor, span);
+                    foreach (var argument in arguments)
+                    {
+                        await IntersectWithIterableAsync(set, argument, span, context).ConfigureAwait(false);
+                    }
+
+                    return PyNone.Instance;
+                }),
                 "difference_update" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -520,7 +558,17 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNone.Instance;
-                }, SetDifferenceUpdateSignature),
+                }, SetDifferenceUpdateSignature, async (arguments, span, context) =>
+                {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
+                    set.AttachMemoryGovernor(context.MemoryGovernor, span);
+                    foreach (var argument in arguments)
+                    {
+                        set.ExceptWith(await MaterializeSetAsync(argument, span, context).ConfigureAwait(false));
+                    }
+
+                    return PyNone.Instance;
+                }),
                 "symmetric_difference_update" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -528,7 +576,14 @@ internal sealed partial class LythonRuntime
                     set.SymmetricExceptWith(MaterializeSet(arguments[0], span, context));
                     context.ObserveCollectionCount(set.Count, span);
                     return PyNone.Instance;
-                }, SetSymmetricDifferenceUpdateSignature),
+                }, SetSymmetricDifferenceUpdateSignature, async (arguments, span, context) =>
+                {
+                    using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
+                    set.AttachMemoryGovernor(context.MemoryGovernor, span);
+                    set.SymmetricExceptWith(await MaterializeSetAsync(arguments[0], span, context).ConfigureAwait(false));
+                    context.ObserveCollectionCount(set.Count, span);
+                    return PyNone.Instance;
+                }),
                 "__iter__" => BoundCallable.CreateNoArguments(set, "set.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
@@ -857,6 +912,50 @@ internal sealed partial class LythonRuntime
             return result;
         }
 
+        private static async ValueTask<PySet> MaterializeSetAsync(object value, LythonSourceSpan span, ExecutionContext context)
+        {
+            // Async twin of the materializer above: validation and accounting
+            // stay identical while each pull can suspend.
+            var result = new PySet(context.MemoryGovernor, span);
+            await foreach (var item in ToSequenceAsync(value, span, context).ConfigureAwait(false))
+            {
+                result.Add(ValidateSetItem(item, span));
+                context.ObserveCollectionCount(result.Count, span);
+            }
+
+            context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
+            return result;
+        }
+
+        private static async ValueTask IntersectWithIterableAsync(PySet target, object value, LythonSourceSpan span, ExecutionContext context)
+        {
+            // Async twin of the streaming intersection above: PySet operands
+            // stay on the shared pure-memory path while other iterables await
+            // each pull, preserving the early-exit once nothing more can drop.
+            if (value is PySet other)
+            {
+                target.IntersectWith(other);
+                return;
+            }
+
+            var retained = new PySet(context.MemoryGovernor, span);
+            await foreach (var item in ToSequenceAsync(value, span, context).ConfigureAwait(false))
+            {
+                var candidate = ValidateSetItem(item, span);
+                if (target.Contains(candidate))
+                {
+                    retained.Add(candidate);
+                    context.ObserveCollectionCount(retained.Count, span);
+                    if (target.Count > 0 && retained.Count == target.Count)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            target.IntersectWith(retained);
+        }
+
         private static void IntersectWithIterable(PySet target, object value, LythonSourceSpan span, ExecutionContext context)
         {
             if (value is PySet other)
@@ -913,6 +1012,18 @@ internal sealed partial class LythonRuntime
             foreach (var iterable in iterables)
             {
                 foreach (var item in ToSequence(iterable, span, context))
+                {
+                    target.Add(ValidateSetItem(item, span));
+                    context.ObserveCollectionCount(target.Count, span);
+                }
+            }
+        }
+
+        private static async ValueTask UpdateAsync(PySet target, object[] iterables, LythonSourceSpan span, ExecutionContext context)
+        {
+            foreach (var iterable in iterables)
+            {
+                await foreach (var item in ToSequenceAsync(iterable, span, context).ConfigureAwait(false))
                 {
                     target.Add(ValidateSetItem(item, span));
                     context.ObserveCollectionCount(target.Count, span);

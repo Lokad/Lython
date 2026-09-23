@@ -134,6 +134,14 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
         return result;
     }
 
+    public async ValueTask<object> UpdateFromAsync(CallArgumentValue[] arguments, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var innerBefore = _items.CommittedStorageBytes;
+        var result = await LythonRuntime.UpdateDictionaryAsync(_items, arguments, span, context).ConfigureAwait(false);
+        NoteGrowth(innerBefore);
+        return result;
+    }
+
     public void Clear()
     {
         var innerBefore = _items.CommittedStorageBytes;

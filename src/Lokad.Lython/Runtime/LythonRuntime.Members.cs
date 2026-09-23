@@ -117,6 +117,17 @@ internal sealed partial class LythonRuntime
                     list.AddRange(ToSequence(arguments[0], span, context), context, span);
                     context.ObserveCollectionCount(list.Count, span);
                     return PyNone.Instance;
+                }, async (arguments, span, context) =>
+                {
+                    if (arguments.Length != 1)
+                    {
+                        throw new LythonRuntimeException("TypeError", "list.extend(iterable) expects one argument.", span);
+                    }
+
+                    list.AttachMemoryGovernor(context.MemoryGovernor, span);
+                    await list.AddRangeAsync(arguments[0], context, span).ConfigureAwait(false);
+                    context.ObserveCollectionCount(list.Count, span);
+                    return PyNone.Instance;
                 }, "list.extend", ["iterable"]),
                 "index" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -1896,7 +1907,7 @@ internal sealed partial class LythonRuntime
                     context.MemoryGovernor.Commit(64L);
                     return new DictItemsView(receiver);
                 }),
-                "update" => new RawBoundCallable((arguments, span, context) => UpdateDictionary(dict, arguments, span, context)) { BoundName = "dict.update", BoundReceiver = dict },
+                "update" => new RawBoundCallable((arguments, span, context) => UpdateDictionary(dict, arguments, span, context), async (arguments, span, context) => await UpdateDictionaryAsync(dict, arguments, span, context).ConfigureAwait(false)) { BoundName = "dict.update", BoundReceiver = dict },
                 "pop" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -3205,7 +3216,7 @@ internal sealed partial class LythonRuntime
                     context.MemoryGovernor.Commit(64L);
                     return new DictItemsView(receiver.InnerDict);
                 }),
-                "update" => new RawBoundCallable((arguments, span, context) => dict.UpdateFrom(arguments, context, span)) { BoundName = "defaultdict.update", BoundReceiver = dict },
+                "update" => new RawBoundCallable((arguments, span, context) => dict.UpdateFrom(arguments, context, span), async (arguments, span, context) => await dict.UpdateFromAsync(arguments, context, span).ConfigureAwait(false)) { BoundName = "defaultdict.update", BoundReceiver = dict },
                 "pop" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -3989,10 +4000,53 @@ internal sealed partial class LythonRuntime
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecutionBudget(span);
-                object? source = null;
-                var hasSource = false;
+                SplitUpdateArguments(arguments, span, out var source, out var hasSource, out var keywordItems);
+
+                if (hasSource)
+                {
+                    try
+                    {
+                        PopulateCounter(_counter, source.RequireNotNull(), span, context, _subtract);
+                    }
+                    catch (PyNotIterableException)
+                    {
+                        throw new LythonRuntimeException("TypeError", $"Counter.{Name}(iterable) expects one iterable or mapping argument.", span);
+                    }
+                }
+
+                PopulateCounterKeywords(_counter, keywordItems, span, context, _subtract);
+                return PyNone.Instance;
+            }
+
+            public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            {
+                context.CheckExecutionBudget(span);
+                SplitUpdateArguments(arguments, span, out var source, out var hasSource, out var keywordItems);
+
+                if (hasSource)
+                {
+                    try
+                    {
+                        await PopulateCounterAsync(_counter, source.RequireNotNull(), span, context, _subtract).ConfigureAwait(false);
+                    }
+                    catch (PyNotIterableException)
+                    {
+                        throw new LythonRuntimeException("TypeError", $"Counter.{Name}(iterable) expects one iterable or mapping argument.", span);
+                    }
+                }
+
+                PopulateCounterKeywords(_counter, keywordItems, span, context, _subtract);
+                return PyNone.Instance;
+            }
+
+            private void SplitUpdateArguments(CallArgumentValue[] arguments, LythonSourceSpan span, out object? source, out bool hasSource, out List<KeyValuePair<string, object>> keywordItems)
+            {
+                // Positional/keyword shaping shared by both invocation paths so the
+                // arity facts cannot drift between sync and async composition.
+                source = null;
+                hasSource = false;
+                keywordItems = new List<KeyValuePair<string, object>>();
                 var positionalCount = 0;
-                var keywordItems = new List<KeyValuePair<string, object>>();
 
                 foreach (var argument in arguments)
                 {
@@ -4023,21 +4077,6 @@ internal sealed partial class LythonRuntime
 
                     keywordItems.Add(new(argument.KeywordName, argument.Value));
                 }
-
-                if (hasSource)
-                {
-                    try
-                    {
-                        PopulateCounter(_counter, source.RequireNotNull(), span, context, _subtract);
-                    }
-                    catch (PyNotIterableException)
-                    {
-                        throw new LythonRuntimeException("TypeError", $"Counter.{Name}(iterable) expects one iterable or mapping argument.", span);
-                    }
-                }
-
-                PopulateCounterKeywords(_counter, keywordItems, span, context, _subtract);
-                return PyNone.Instance;
             }
 
             public PyString RenderPython(PyRenderingContext context)

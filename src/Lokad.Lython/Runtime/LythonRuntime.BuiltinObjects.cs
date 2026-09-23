@@ -607,19 +607,51 @@ internal sealed partial class LythonRuntime
             UpdateDictionaryFromSource(target, positional[0].Value, context, span);
         }
 
+        ApplyUpdateKeywords(target, arguments, context, span);
+        context.ObserveCollectionCount(target.Count, span);
+        return PyNone.Instance;
+    }
+
+    internal static async ValueTask<object> UpdateDictionaryAsync(
+        PyDict target,
+        CallArgumentValue[] arguments,
+        LythonSourceSpan span,
+        ExecutionContext context)
+    {
+        var positional = arguments.Where(argument => argument.IsPositional).ToArray();
+        if (positional.Length > 1)
+        {
+            throw new LythonRuntimeException("TypeError", "dict.update expected at most 1 positional argument", span);
+        }
+
+        target.AttachMemoryGovernor(context.MemoryGovernor, span);
+        if (positional.Length == 1)
+        {
+            await UpdateDictionaryFromSourceAsync(target, positional[0].Value, context, span).ConfigureAwait(false);
+        }
+
+        ApplyUpdateKeywords(target, arguments, context, span);
+        context.ObserveCollectionCount(target.Count, span);
+        return PyNone.Instance;
+    }
+
+    // Keyword application shared by both update paths: fresh names reclaim through
+    // the pool once the dict drops (dict-ctor kwargs-key pattern).
+    private static void ApplyUpdateKeywords(
+        PyDict target,
+        CallArgumentValue[] arguments,
+        ExecutionContext context,
+        LythonSourceSpan span)
+    {
         foreach (var argument in arguments)
         {
             if (argument.IsKeyword)
             {
-                // Fresh names reclaim through the pool once the dict drops (dict-ctor kwargs-key pattern).
                 var keyword = PyString.FromString(argument.KeywordName, context.MemoryGovernor, span);
                 context.Services.State.CallTemporaries.TrackFreshString(keyword);
                 target.SetItem(keyword, argument.Value);
             }
         }
-
-        context.ObserveCollectionCount(target.Count, span);
-        return PyNone.Instance;
     }
 
     private static string? GetBuiltinTypeName(object value) => value switch

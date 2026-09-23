@@ -1878,7 +1878,8 @@ internal sealed partial class LythonRuntime
         return CreateBytes(builder.ToArrayAndRelease(), context, span);
     }
     private sealed class RawBoundCallable(
-        Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation) : ICallable, IPyDynamicAttributes, IPyRenderableValue, IPyHashableValue, IPyRawBoundCallable
+        Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, object> implementation,
+        Func<CallArgumentValue[], LythonSourceSpan, ExecutionContext, ValueTask<object>>? asyncImplementation = null) : ICallable, IPyDynamicAttributes, IPyRenderableValue, IPyHashableValue, IPyRawBoundCallable
     {
         public string? BoundName { get; init; }
 
@@ -1898,6 +1899,17 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecutionBudget(span);
             return implementation(arguments, span, context);
+        }
+
+        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            if (asyncImplementation is null)
+            {
+                return implementation(arguments, span, context);
+            }
+
+            return await asyncImplementation(arguments, span, context).ConfigureAwait(false);
         }
 
         // Named shapes expose CPython-style identity like bound builtins:

@@ -312,6 +312,35 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
         }
     }
 
+    internal async ValueTask AddRangeAsync(object source, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        // In-memory fast paths ride the sync bulk path unchanged (no suspension
+        // possible, self-extension stays snapshotted); only lazy sources await.
+        if (source is PyList || source is IPyListStorage || source is IReadOnlyCollection<object>)
+        {
+            AddRange(LythonRuntime.ToSequence(source, span, context), context, span);
+            return;
+        }
+
+        try
+        {
+            var added = 0;
+            await foreach (var value in LythonRuntime.ToSequenceAsync(source, span, context).ConfigureAwait(false))
+            {
+                Add(value);
+                context.ObserveCollectionCount(Count, span);
+                if ((++added & 63) == 0)
+                {
+                    context.CheckExecutionBudget(span);
+                }
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            throw RuntimeErrors.Runtime("list modified during extension.", span);
+        }
+    }
+
     public void Insert(int index, object value)
     {
         var normalized = index < 0 ? index + Count : index;

@@ -843,4 +843,82 @@ internal sealed partial class LythonRuntime
             _ => throw new InvalidOperationException($"Unsupported augmented assignment operator: {op}")
         };
     }
+
+    private static async ValueTask<object> EvaluateAugmentedAssignmentAsync(
+        object currentValue,
+        object right,
+        AugmentedAssignmentOperatorSyntax op,
+        ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        // Async twin covering the in-place drains whose sources can suspend
+        // (list/deque extension, dict-family staged merges). Every other shape
+        // rides the sync path unchanged, preserving its fail-fast behavior and
+        // exact error precedence (special-method attempts, repeats, set
+        // algebra over PySet operands, Counter merges, generic operators).
+        if (op == AugmentedAssignmentOperatorSyntax.Add &&
+            currentValue is PyList currentList)
+        {
+            await currentList.AddRangeAsync(right, context, span).ConfigureAwait(false);
+            return currentList;
+        }
+
+        if (op == AugmentedAssignmentOperatorSyntax.Add &&
+            currentValue is PyDeque currentDeque)
+        {
+            if (right is PyDeque sourceDeque)
+            {
+                // Snapshot deque sources (which may be this deque) so extending
+                // appends the original elements, mirroring the sync path.
+                currentDeque.Extend(sourceDeque.Iterate().ToArray());
+                return currentDeque;
+            }
+
+            currentDeque.Extend(await PyIteration.MaterializeAsync(right, span, context).ConfigureAwait(false));
+            return currentDeque;
+        }
+
+        if (op == AugmentedAssignmentOperatorSyntax.BitwiseOr &&
+            currentValue is PyDict currentDict)
+        {
+            // Stage through a temporary like dict.update so pair
+            // iterables merge exactly like mappings.
+            var stagedDict = new PyDict(context.MemoryGovernor, span);
+            await UpdateDictionaryFromSourceAsync(stagedDict, right, context, span).ConfigureAwait(false);
+            foreach (var pair in stagedDict)
+            {
+                currentDict.SetItem(pair.Key, pair.Value);
+            }
+
+            return currentDict;
+        }
+
+        if (op == AugmentedAssignmentOperatorSyntax.BitwiseOr &&
+            currentValue is PyDefaultDict currentDefault)
+        {
+            var stagedDefault = new PyDict(context.MemoryGovernor, span);
+            await UpdateDictionaryFromSourceAsync(stagedDefault, right, context, span).ConfigureAwait(false);
+            foreach (var pair in stagedDefault)
+            {
+                currentDefault.SetItem(pair.Key, pair.Value);
+            }
+
+            return currentDefault;
+        }
+
+        if (op == AugmentedAssignmentOperatorSyntax.BitwiseOr &&
+            currentValue is PyChainMap currentChain)
+        {
+            var staged = new PyDict(context.MemoryGovernor, span);
+            await UpdateDictionaryFromSourceAsync(staged, right, context, span).ConfigureAwait(false);
+            foreach (var pair in staged)
+            {
+                currentChain.SetSubscript(pair.Key, pair.Value, span);
+            }
+
+            return currentChain;
+        }
+
+        return EvaluateAugmentedAssignment(currentValue, right, op, context, span);
+    }
 }

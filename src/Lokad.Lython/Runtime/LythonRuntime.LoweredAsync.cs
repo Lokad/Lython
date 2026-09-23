@@ -326,12 +326,12 @@ internal sealed partial class LythonRuntime
                     return;
                 case LoweredAugmentedAssignmentStatement augmented:
                     var augmentedTarget = await ResolveLoweredAugmentedAssignmentTargetAsync(augmented.Target, context).ConfigureAwait(false);
-                    augmentedTarget.Store(EvaluateAugmentedAssignment(
+                    augmentedTarget.Store(await EvaluateAugmentedAssignmentAsync(
                         augmentedTarget.CurrentValue,
                         await EvaluateLoweredExpressionAsync(augmented.Expression, context).ConfigureAwait(false),
                         augmented.Assignment.Operator,
                         context,
-                        augmented.Span));
+                        augmented.Span).ConfigureAwait(false));
                     return;
                 case LoweredUnpackingAssignmentStatement unpacking:
                     AssignTargets(
