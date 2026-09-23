@@ -593,6 +593,63 @@ public sealed class LythonCallableSignatureTests
     }
 
     [Fact]
+    public void Create_ReusesHoistedDefaultDictSignatures()
+    {
+        // N17: companion pin for the hoisted DefaultDictMembers statics.
+        Assert.Same(
+            LythonCallableSignature.Create("defaultdict.get", ["key", "default"], 1),
+            LythonCallableSignature.Create("defaultdict.get", ["key", "default"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("defaultdict.pop", ["key", "default"], 1),
+            LythonCallableSignature.Create("defaultdict.pop", ["key", "default"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("defaultdict.setdefault", ["key", "default"], 1),
+            LythonCallableSignature.Create("defaultdict.setdefault", ["key", "default"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("defaultdict.__contains__", ["item"]),
+            LythonCallableSignature.Create("defaultdict.__contains__", ["item"]));
+        Assert.Same(
+            LythonCallableSignature.Create("defaultdict.__getitem__", ["index"]),
+            LythonCallableSignature.Create("defaultdict.__getitem__", ["index"]));
+        Assert.Same(
+            LythonCallableSignature.Create("defaultdict.__setitem__", ["index", "value"]),
+            LythonCallableSignature.Create("defaultdict.__setitem__", ["index", "value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("defaultdict.__delitem__", ["index"]),
+            LythonCallableSignature.Create("defaultdict.__delitem__", ["index"]));
+        Assert.Same(
+            LythonCallableSignature.Create("defaultdict.__or__", ["value"]),
+            LythonCallableSignature.Create("defaultdict.__or__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("defaultdict.__ror__", ["value"]),
+            LythonCallableSignature.Create("defaultdict.__ror__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("defaultdict.__ior__", ["value"]),
+            LythonCallableSignature.Create("defaultdict.__ior__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("defaultdict.__eq__", ["value"]),
+            LythonCallableSignature.Create("defaultdict.__eq__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("defaultdict.__ne__", ["value"]),
+            LythonCallableSignature.Create("defaultdict.__ne__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("defaultdict.__lt__", ["value"]),
+            LythonCallableSignature.Create("defaultdict.__lt__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("defaultdict.__le__", ["value"]),
+            LythonCallableSignature.Create("defaultdict.__le__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("defaultdict.__gt__", ["value"]),
+            LythonCallableSignature.Create("defaultdict.__gt__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("defaultdict.__ge__", ["value"]),
+            LythonCallableSignature.Create("defaultdict.__ge__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("defaultdict.__reversed__"),
+            LythonCallableSignature.Create("defaultdict.__reversed__"));
+    }
+
+    [Fact]
     public void Create_RejectsInvalidParameterMetadata()
     {
         Assert.Throws<ArgumentException>(() =>
