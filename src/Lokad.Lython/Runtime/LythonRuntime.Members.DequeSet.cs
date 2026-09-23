@@ -8,6 +8,17 @@ internal sealed partial class LythonRuntime
 {
     internal static class DequeMembers
     {
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature DequeInsertSignature = LythonCallableSignature.Create("deque.insert", ["index", "value"]);
+        private static readonly LythonCallableSignature DequeRotateSignature = LythonCallableSignature.Create("deque.rotate", ["n"], 0);
+        private static readonly LythonCallableSignature DequeContainsSignature = LythonCallableSignature.Create("deque.__contains__", ["item"]);
+        private static readonly LythonCallableSignature DequeGetItemSignature = LythonCallableSignature.Create("deque.__getitem__", ["index"]);
+        private static readonly LythonCallableSignature DequeSetItemSignature = LythonCallableSignature.Create("deque.__setitem__", ["index", "value"]);
+        private static readonly LythonCallableSignature DequeDelItemSignature = LythonCallableSignature.Create("deque.__delitem__", ["index"]);
+        private static readonly LythonCallableSignature DequeAddSignature = LythonCallableSignature.Create("deque.__add__", ["value"]);
+        private static readonly LythonCallableSignature DequeMulSignature = LythonCallableSignature.Create("deque.__mul__", ["value"]);
+        private static readonly LythonCallableSignature DequeRMulSignature = LythonCallableSignature.Create("deque.__rmul__", ["value"]);
+        private static readonly LythonCallableSignature DequeReversedSignature = LythonCallableSignature.Create("deque.__reversed__");
         private static async ValueTask<object> CountAsync(PyDeque deque, object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length != 1)
@@ -213,7 +224,7 @@ internal sealed partial class LythonRuntime
 
                     context.ObserveCollectionCount(deque.Count, span);
                     return PyNone.Instance;
-                }, "deque.insert", ["index", "value"]),
+                }, DequeInsertSignature),
                 "remove" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -243,7 +254,7 @@ internal sealed partial class LythonRuntime
                     var offset = CoerceRotateOffset(arguments, context, span);
                     deque.Rotate(offset);
                     return PyNone.Instance;
-                }, "deque.rotate", ["n"], 0),
+                }, DequeRotateSignature),
                 "__iter__" => BoundCallable.CreateNoArguments(deque, "deque.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
@@ -260,7 +271,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyContainment.Contains(deque, arguments[0], span);
-                }, "deque.__contains__", ["item"]),
+                }, DequeContainsSignature),
                 "__getitem__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -269,7 +280,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return ReadSubscriptValue(deque, arguments[0], span, context);
-                }, "deque.__getitem__", ["index"]),
+                }, DequeGetItemSignature),
                 "__setitem__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 2)
@@ -279,7 +290,7 @@ internal sealed partial class LythonRuntime
 
                     SetSubscriptValue(deque, arguments[0], arguments[1], span, context);
                     return PyNone.Instance;
-                }, "deque.__setitem__", ["index", "value"]),
+                }, DequeSetItemSignature),
                 "__delitem__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -289,7 +300,7 @@ internal sealed partial class LythonRuntime
 
                     DeleteSubscriptValue(deque, arguments[0], span, context);
                     return PyNone.Instance;
-                }, "deque.__delitem__", ["index"]),
+                }, DequeDelItemSignature),
                 "__add__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -298,7 +309,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateAdd(deque, arguments[0], context, span);
-                }, "deque.__add__", ["value"]),
+                }, DequeAddSignature),
                 "__mul__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -309,7 +320,7 @@ internal sealed partial class LythonRuntime
                     RequireRepeatCount(arguments[0], context, span);
 
                     return EvaluateMultiply(deque, arguments[0], context, span);
-                }, "deque.__mul__", ["value"]),
+                }, DequeMulSignature),
                 "__rmul__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -320,7 +331,7 @@ internal sealed partial class LythonRuntime
                     RequireRepeatCount(arguments[0], context, span);
 
                     return EvaluateMultiply(arguments[0], deque, context, span);
-                }, "deque.__rmul__", ["value"]),
+                }, DequeRMulSignature),
                 "__hash__" => PyNone.Instance,
                 "__reversed__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -333,7 +344,7 @@ internal sealed partial class LythonRuntime
                     var dequeReversedResult = new PyReversedIterator(deque.Length, deque.GetIndex);
                     context.Services.State.CallTemporaries.TrackFreshMutable(dequeReversedResult, PyIteratorBase.IteratorValueBytes);
                     return dequeReversedResult;
-                }, "deque.__reversed__"),
+                }, DequeReversedSignature),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -393,6 +404,26 @@ internal sealed partial class LythonRuntime
 
     internal static class SetMembers
     {
+        // N17: remaining fixed signatures hoisted per family (update kin already static).
+        private static readonly LythonCallableSignature SetContainsSignature = LythonCallableSignature.Create("set.__contains__", ["item"]);
+        private static readonly LythonCallableSignature SetOrSignature = LythonCallableSignature.Create("set.__or__", ["value"]);
+        private static readonly LythonCallableSignature SetAndSignature = LythonCallableSignature.Create("set.__and__", ["value"]);
+        private static readonly LythonCallableSignature SetSubSignature = LythonCallableSignature.Create("set.__sub__", ["value"]);
+        private static readonly LythonCallableSignature SetXorSignature = LythonCallableSignature.Create("set.__xor__", ["value"]);
+        private static readonly LythonCallableSignature SetROrSignature = LythonCallableSignature.Create("set.__ror__", ["value"]);
+        private static readonly LythonCallableSignature SetRAndSignature = LythonCallableSignature.Create("set.__rand__", ["value"]);
+        private static readonly LythonCallableSignature SetRSubSignature = LythonCallableSignature.Create("set.__rsub__", ["value"]);
+        private static readonly LythonCallableSignature SetRXorSignature = LythonCallableSignature.Create("set.__rxor__", ["value"]);
+        private static readonly LythonCallableSignature SetIOrSignature = LythonCallableSignature.Create("set.__ior__", ["value"]);
+        private static readonly LythonCallableSignature SetIAndSignature = LythonCallableSignature.Create("set.__iand__", ["value"]);
+        private static readonly LythonCallableSignature SetISubSignature = LythonCallableSignature.Create("set.__isub__", ["value"]);
+        private static readonly LythonCallableSignature SetIXorSignature = LythonCallableSignature.Create("set.__ixor__", ["value"]);
+        private static readonly LythonCallableSignature SetEqSignature = LythonCallableSignature.Create("set.__eq__", ["value"]);
+        private static readonly LythonCallableSignature SetNeSignature = LythonCallableSignature.Create("set.__ne__", ["value"]);
+        private static readonly LythonCallableSignature SetLtSignature = LythonCallableSignature.Create("set.__lt__", ["value"]);
+        private static readonly LythonCallableSignature SetLeSignature = LythonCallableSignature.Create("set.__le__", ["value"]);
+        private static readonly LythonCallableSignature SetGtSignature = LythonCallableSignature.Create("set.__gt__", ["value"]);
+        private static readonly LythonCallableSignature SetGeSignature = LythonCallableSignature.Create("set.__ge__", ["value"]);
         public static bool TryGetMember(PySet set, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -601,7 +632,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyContainment.Contains(set, arguments[0], span);
-                }, "set.__contains__", ["item"]),
+                }, SetContainsSignature),
                 "__or__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -616,7 +647,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateBitwiseOr(set, right, context, span);
-                }, "set.__or__", ["value"]),
+                }, SetOrSignature),
                 "__and__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -631,7 +662,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateBitwiseAnd(set, right, context, span);
-                }, "set.__and__", ["value"]),
+                }, SetAndSignature),
                 "__sub__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -646,7 +677,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateSubtract(set, right, context, span);
-                }, "set.__sub__", ["value"]),
+                }, SetSubSignature),
                 "__xor__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -661,7 +692,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateBitwiseXor(set, right, context, span);
-                }, "set.__xor__", ["value"]),
+                }, SetXorSignature),
                 "__ror__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -675,7 +706,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateBitwiseOr(left, set, context, span);
-                }, "set.__ror__", ["value"]),
+                }, SetROrSignature),
                 "__rand__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -689,7 +720,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateBitwiseAnd(left, set, context, span);
-                }, "set.__rand__", ["value"]),
+                }, SetRAndSignature),
                 "__rsub__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -703,7 +734,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateSubtract(left, set, context, span);
-                }, "set.__rsub__", ["value"]),
+                }, SetRSubSignature),
                 "__rxor__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -717,7 +748,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateBitwiseXor(left, set, context, span);
-                }, "set.__rxor__", ["value"]),
+                }, SetRXorSignature),
                 "__ior__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -733,7 +764,7 @@ internal sealed partial class LythonRuntime
 
                     set.UnionWith(right);
                     return set;
-                }, "set.__ior__", ["value"]),
+                }, SetIOrSignature),
                 "__iand__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -749,7 +780,7 @@ internal sealed partial class LythonRuntime
 
                     set.IntersectWith(right);
                     return set;
-                }, "set.__iand__", ["value"]),
+                }, SetIAndSignature),
                 "__isub__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -765,7 +796,7 @@ internal sealed partial class LythonRuntime
 
                     set.ExceptWith(right);
                     return set;
-                }, "set.__isub__", ["value"]),
+                }, SetISubSignature),
                 "__ixor__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -781,7 +812,7 @@ internal sealed partial class LythonRuntime
 
                     set.SymmetricExceptWith(right);
                     return set;
-                }, "set.__ixor__", ["value"]),
+                }, SetIXorSignature),
                 "__eq__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -796,7 +827,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return set.SetEquals(other);
-                }, "set.__eq__", ["value"]),
+                }, SetEqSignature),
                 "__ne__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -811,7 +842,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return !set.SetEquals(other);
-                }, "set.__ne__", ["value"]),
+                }, SetNeSignature),
                 "__lt__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -825,7 +856,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return set.IsProperSubsetOf(other);
-                }, "set.__lt__", ["value"]),
+                }, SetLtSignature),
                 "__le__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -839,7 +870,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return set.IsSubsetOf(other);
-                }, "set.__le__", ["value"]),
+                }, SetLeSignature),
                 "__gt__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -853,7 +884,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return set.IsProperSupersetOf(other);
-                }, "set.__gt__", ["value"]),
+                }, SetGtSignature),
                 "__ge__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -867,7 +898,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return set.IsSupersetOf(other);
-                }, "set.__ge__", ["value"]),
+                }, SetGeSignature),
                 "__hash__" => PyNone.Instance,
                 _ => MissingMemberValue.Instance,
             };

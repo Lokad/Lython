@@ -500,6 +500,99 @@ public sealed class LythonCallableSignatureTests
     }
 
     [Fact]
+    public void Create_ReusesHoistedDequeSetSignatures()
+    {
+        // N17: companion pin for the hoisted Deque/SetMembers statics.
+        Assert.Same(
+            LythonCallableSignature.Create("deque.insert", ["index", "value"]),
+            LythonCallableSignature.Create("deque.insert", ["index", "value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("deque.rotate", ["n"], 0),
+            LythonCallableSignature.Create("deque.rotate", ["n"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("deque.__contains__", ["item"]),
+            LythonCallableSignature.Create("deque.__contains__", ["item"]));
+        Assert.Same(
+            LythonCallableSignature.Create("deque.__getitem__", ["index"]),
+            LythonCallableSignature.Create("deque.__getitem__", ["index"]));
+        Assert.Same(
+            LythonCallableSignature.Create("deque.__setitem__", ["index", "value"]),
+            LythonCallableSignature.Create("deque.__setitem__", ["index", "value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("deque.__delitem__", ["index"]),
+            LythonCallableSignature.Create("deque.__delitem__", ["index"]));
+        Assert.Same(
+            LythonCallableSignature.Create("deque.__add__", ["value"]),
+            LythonCallableSignature.Create("deque.__add__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("deque.__mul__", ["value"]),
+            LythonCallableSignature.Create("deque.__mul__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("deque.__rmul__", ["value"]),
+            LythonCallableSignature.Create("deque.__rmul__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("deque.__reversed__"),
+            LythonCallableSignature.Create("deque.__reversed__"));
+        Assert.Same(
+            LythonCallableSignature.Create("set.__contains__", ["item"]),
+            LythonCallableSignature.Create("set.__contains__", ["item"]));
+        Assert.Same(
+            LythonCallableSignature.Create("set.__or__", ["value"]),
+            LythonCallableSignature.Create("set.__or__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("set.__and__", ["value"]),
+            LythonCallableSignature.Create("set.__and__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("set.__sub__", ["value"]),
+            LythonCallableSignature.Create("set.__sub__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("set.__xor__", ["value"]),
+            LythonCallableSignature.Create("set.__xor__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("set.__ror__", ["value"]),
+            LythonCallableSignature.Create("set.__ror__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("set.__rand__", ["value"]),
+            LythonCallableSignature.Create("set.__rand__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("set.__rsub__", ["value"]),
+            LythonCallableSignature.Create("set.__rsub__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("set.__rxor__", ["value"]),
+            LythonCallableSignature.Create("set.__rxor__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("set.__ior__", ["value"]),
+            LythonCallableSignature.Create("set.__ior__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("set.__iand__", ["value"]),
+            LythonCallableSignature.Create("set.__iand__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("set.__isub__", ["value"]),
+            LythonCallableSignature.Create("set.__isub__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("set.__ixor__", ["value"]),
+            LythonCallableSignature.Create("set.__ixor__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("set.__eq__", ["value"]),
+            LythonCallableSignature.Create("set.__eq__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("set.__ne__", ["value"]),
+            LythonCallableSignature.Create("set.__ne__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("set.__lt__", ["value"]),
+            LythonCallableSignature.Create("set.__lt__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("set.__le__", ["value"]),
+            LythonCallableSignature.Create("set.__le__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("set.__gt__", ["value"]),
+            LythonCallableSignature.Create("set.__gt__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("set.__ge__", ["value"]),
+            LythonCallableSignature.Create("set.__ge__", ["value"]));
+    }
+
+    [Fact]
     public void Create_RejectsInvalidParameterMetadata()
     {
         Assert.Throws<ArgumentException>(() =>
