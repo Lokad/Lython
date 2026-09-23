@@ -446,6 +446,60 @@ public sealed class LythonCallableSignatureTests
     }
 
     [Fact]
+    public void Create_ReusesHoistedBytesSignatures()
+    {
+        // N17: companion pin for the hoisted BytesMembers statics.
+        Assert.Same(
+            LythonCallableSignature.Create("bytes.decode", ["encoding", "errors"], 0),
+            LythonCallableSignature.Create("bytes.decode", ["encoding", "errors"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("bytes.expandtabs", ["tabsize"], 0),
+            LythonCallableSignature.Create("bytes.expandtabs", ["tabsize"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("bytes.split", ["sep", "maxsplit"], 0),
+            LythonCallableSignature.Create("bytes.split", ["sep", "maxsplit"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("bytes.rsplit", ["sep", "maxsplit"], 0),
+            LythonCallableSignature.Create("bytes.rsplit", ["sep", "maxsplit"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("bytes.__contains__", ["item"]),
+            LythonCallableSignature.Create("bytes.__contains__", ["item"]));
+        Assert.Same(
+            LythonCallableSignature.Create("bytes.__getitem__", ["index"]),
+            LythonCallableSignature.Create("bytes.__getitem__", ["index"]));
+        Assert.Same(
+            LythonCallableSignature.Create("bytes.__add__", ["value"]),
+            LythonCallableSignature.Create("bytes.__add__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("bytes.__mul__", ["value"]),
+            LythonCallableSignature.Create("bytes.__mul__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("bytes.__rmul__", ["value"]),
+            LythonCallableSignature.Create("bytes.__rmul__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("bytes.__eq__", ["value"]),
+            LythonCallableSignature.Create("bytes.__eq__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("bytes.__ne__", ["value"]),
+            LythonCallableSignature.Create("bytes.__ne__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("bytes.__lt__", ["value"]),
+            LythonCallableSignature.Create("bytes.__lt__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("bytes.__le__", ["value"]),
+            LythonCallableSignature.Create("bytes.__le__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("bytes.__gt__", ["value"]),
+            LythonCallableSignature.Create("bytes.__gt__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("bytes.__ge__", ["value"]),
+            LythonCallableSignature.Create("bytes.__ge__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("bytes.__hash__"),
+            LythonCallableSignature.Create("bytes.__hash__"));
+    }
+
+    [Fact]
     public void Create_RejectsInvalidParameterMetadata()
     {
         Assert.Throws<ArgumentException>(() =>

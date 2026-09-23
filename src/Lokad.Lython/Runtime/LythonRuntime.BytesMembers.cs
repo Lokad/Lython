@@ -14,6 +14,23 @@ internal sealed partial class LythonRuntime
 {
     internal static class BytesMembers
     {
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature BytesDecodeSignature = LythonCallableSignature.Create("bytes.decode", ["encoding", "errors"], 0);
+        private static readonly LythonCallableSignature BytesExpandTabsSignature = LythonCallableSignature.Create("bytes.expandtabs", ["tabsize"], 0);
+        private static readonly LythonCallableSignature BytesSplitSignature = LythonCallableSignature.Create("bytes.split", ["sep", "maxsplit"], 0);
+        private static readonly LythonCallableSignature BytesRSplitSignature = LythonCallableSignature.Create("bytes.rsplit", ["sep", "maxsplit"], 0);
+        private static readonly LythonCallableSignature BytesContainsSignature = LythonCallableSignature.Create("bytes.__contains__", ["item"]);
+        private static readonly LythonCallableSignature BytesGetItemSignature = LythonCallableSignature.Create("bytes.__getitem__", ["index"]);
+        private static readonly LythonCallableSignature BytesAddSignature = LythonCallableSignature.Create("bytes.__add__", ["value"]);
+        private static readonly LythonCallableSignature BytesMulSignature = LythonCallableSignature.Create("bytes.__mul__", ["value"]);
+        private static readonly LythonCallableSignature BytesRMulSignature = LythonCallableSignature.Create("bytes.__rmul__", ["value"]);
+        private static readonly LythonCallableSignature BytesEqSignature = LythonCallableSignature.Create("bytes.__eq__", ["value"]);
+        private static readonly LythonCallableSignature BytesNeSignature = LythonCallableSignature.Create("bytes.__ne__", ["value"]);
+        private static readonly LythonCallableSignature BytesLtSignature = LythonCallableSignature.Create("bytes.__lt__", ["value"]);
+        private static readonly LythonCallableSignature BytesLeSignature = LythonCallableSignature.Create("bytes.__le__", ["value"]);
+        private static readonly LythonCallableSignature BytesGtSignature = LythonCallableSignature.Create("bytes.__gt__", ["value"]);
+        private static readonly LythonCallableSignature BytesGeSignature = LythonCallableSignature.Create("bytes.__ge__", ["value"]);
+        private static readonly LythonCallableSignature BytesHashSignature = LythonCallableSignature.Create("bytes.__hash__");
         public static bool TryGetMember(PyBytes bytes, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -35,7 +52,7 @@ internal sealed partial class LythonRuntime
                         ? ParseTextErrors(arguments[1], "bytes.decode()", span)
                         : TextErrorMode.Strict;
                     return DecodeText(bytes.ToArray(), encoding, context, span, errors, TextNewlineMode.PreserveUniversal);
-                }, "bytes.decode", ["encoding", "errors"], 0),
+                }, BytesDecodeSignature),
                 "hex" => new RawBoundCallable((arguments, span, context) => HexEncode(bytes, arguments, span, context)) { BoundName = "bytes.hex", BoundReceiver = bytes },
                 "count" => new RawBoundCallable((arguments, span, context) => SearchBytes(bytes, "count", arguments, span, context)) { BoundName = "bytes.count", BoundReceiver = bytes },
                 "find" => new RawBoundCallable((arguments, span, context) => SearchBytes(bytes, "find", arguments, span, context)) { BoundName = "bytes.find", BoundReceiver = bytes },
@@ -79,7 +96,7 @@ internal sealed partial class LythonRuntime
 
                     var tabSize = arguments.Length == 1 ? RuntimeArgumentValidation.ParseIndexInt32(arguments[0], "tabsize", "bytes.expandtabs([tabsize])", span, context) : 8;
                     return ExpandBytesTabs(bytes, tabSize, context, span);
-                }, "bytes.expandtabs", ["tabsize"], 0),
+                }, BytesExpandTabsSignature),
                 "split" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length == 0)
@@ -113,7 +130,7 @@ internal sealed partial class LythonRuntime
                     {
                         throw new LythonRuntimeException("ValueError", ex.Message, span);
                     }
-                }, "bytes.split", ["sep", "maxsplit"], 0),
+                }, BytesSplitSignature),
                 "rsplit" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length == 0)
@@ -147,7 +164,7 @@ internal sealed partial class LythonRuntime
                     {
                         throw new LythonRuntimeException("ValueError", ex.Message, span);
                     }
-                }, "bytes.rsplit", ["sep", "maxsplit"], 0),
+                }, BytesRSplitSignature),
                 "splitlines" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length > 1)
@@ -174,7 +191,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyContainment.Contains(bytes, arguments[0], span);
-                }, "bytes.__contains__", ["item"]),
+                }, BytesContainsSignature),
                 "__getitem__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -183,7 +200,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return ReadSubscriptValue(bytes, arguments[0], span, context);
-                }, "bytes.__getitem__", ["index"]),
+                }, BytesGetItemSignature),
                 "__add__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -192,7 +209,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateAdd(bytes, arguments[0], context, span);
-                }, "bytes.__add__", ["value"]),
+                }, BytesAddSignature),
                 "__mul__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -203,7 +220,7 @@ internal sealed partial class LythonRuntime
                     RequireRepeatCount(arguments[0], context, span);
 
                     return EvaluateMultiply(bytes, arguments[0], context, span);
-                }, "bytes.__mul__", ["value"]),
+                }, BytesMulSignature),
                 "__rmul__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -214,7 +231,7 @@ internal sealed partial class LythonRuntime
                     RequireRepeatCount(arguments[0], context, span);
 
                     return EvaluateMultiply(arguments[0], bytes, context, span);
-                }, "bytes.__rmul__", ["value"]),
+                }, BytesRMulSignature),
                 "__eq__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -228,7 +245,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return bytes.Equals(other);
-                }, "bytes.__eq__", ["value"]),
+                }, BytesEqSignature),
                 "__ne__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -242,7 +259,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return !bytes.Equals(other);
-                }, "bytes.__ne__", ["value"]),
+                }, BytesNeSignature),
                 "__lt__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -256,7 +273,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return bytes.Memory.Span.SequenceCompareTo(other.Memory.Span) < 0;
-                }, "bytes.__lt__", ["value"]),
+                }, BytesLtSignature),
                 "__le__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -270,7 +287,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return bytes.Memory.Span.SequenceCompareTo(other.Memory.Span) <= 0;
-                }, "bytes.__le__", ["value"]),
+                }, BytesLeSignature),
                 "__gt__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -284,7 +301,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return bytes.Memory.Span.SequenceCompareTo(other.Memory.Span) > 0;
-                }, "bytes.__gt__", ["value"]),
+                }, BytesGtSignature),
                 "__ge__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -298,7 +315,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return bytes.Memory.Span.SequenceCompareTo(other.Memory.Span) >= 0;
-                }, "bytes.__ge__", ["value"]),
+                }, BytesGeSignature),
                 "__hash__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -307,7 +324,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return ComputeBuiltinHash(bytes, span);
-                }, "bytes.__hash__"),
+                }, BytesHashSignature),
                 _ => MissingMemberValue.Instance
             };
 
