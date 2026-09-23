@@ -38,6 +38,70 @@ public sealed class MutationAsyncCompositionTests
     }
 
     [Fact]
+    public async Task ListConstructorOverSuspendingSourceComposes()
+    {
+        await AssertAsyncMatchesSync(
+            "with open(\"/r.txt\") as f:\n    return len(list(f))\n",
+            new BigInteger(3));
+    }
+
+    [Fact]
+    public async Task TupleConstructorOverSuspendingSourceComposes()
+    {
+        await AssertAsyncMatchesSync(
+            "with open(\"/r.txt\") as f:\n    return len(tuple(f))\n",
+            new BigInteger(3));
+    }
+
+    [Fact]
+    public async Task SetConstructorOverSuspendingSourceComposes()
+    {
+        await AssertAsyncMatchesSync(
+            "with open(\"/r.txt\") as f:\n    return len(set(f))\n",
+            new BigInteger(3));
+    }
+
+    [Fact]
+    public async Task DictConstructorOverSuspendingPairsComposes()
+    {
+        await AssertAsyncMatchesSync(
+            "with open(\"/r.txt\") as f:\n    return len(dict((l, 1) for l in f))\n",
+            new BigInteger(3));
+    }
+
+    [Fact]
+    public async Task CounterConstructorOverSuspendingSourceComposes()
+    {
+        await AssertAsyncMatchesSync(
+            "from collections import Counter\nwith open(\"/r.txt\") as f:\n    return sum(Counter(f).values())\n",
+            new BigInteger(3));
+    }
+
+    [Fact]
+    public async Task DefaultdictConstructorOverSuspendingPairsComposes()
+    {
+        await AssertAsyncMatchesSync(
+            "from collections import defaultdict\nwith open(\"/r.txt\") as f:\n    return len(defaultdict(int, ((l, 1) for l in f)))\n",
+            new BigInteger(3));
+    }
+
+    [Fact]
+    public async Task DequeConstructorOverSuspendingSourceComposes()
+    {
+        await AssertAsyncMatchesSync(
+            "from collections import deque\nwith open(\"/r.txt\") as f:\n    return len(deque(f))\n",
+            new BigInteger(3));
+    }
+
+    [Fact]
+    public async Task ListAppendLoopOverSuspendingSourceComposes()
+    {
+        await AssertAsyncMatchesSync(
+            "with open(\"/r.txt\") as f:\n    x = []\n    for l in f:\n        x.append(l)\n    return len(x)\n",
+            new BigInteger(3));
+    }
+
+    [Fact]
     public async Task ListExtendOverSuspendingSourceComposes()
     {
         await AssertAsyncMatchesSync(
