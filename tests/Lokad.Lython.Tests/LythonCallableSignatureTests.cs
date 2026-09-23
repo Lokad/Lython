@@ -1325,6 +1325,45 @@ public sealed class LythonCallableSignatureTests
     }
 
     [Fact]
+    public void Create_ReusesHoistedStatisticsSignatures()
+    {
+        // N17: companion pin for the hoisted statistics value statics.
+        Assert.Same(
+            LythonCallableSignature.Create("LinearRegression._asdict", []),
+            LythonCallableSignature.Create("LinearRegression._asdict", []));
+        Assert.Same(
+            LythonCallableSignature.Create("LinearRegression._replace", ["slope", "intercept"], requiredCount: 0),
+            LythonCallableSignature.Create("LinearRegression._replace", ["slope", "intercept"], requiredCount: 0));
+        Assert.Same(
+            LythonCallableSignature.Create("LinearRegression.count", ["value"]),
+            LythonCallableSignature.Create("LinearRegression.count", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("LinearRegression.index", ["value", "start", "stop"], requiredCount: 1),
+            LythonCallableSignature.Create("LinearRegression.index", ["value", "start", "stop"], requiredCount: 1));
+        Assert.Same(
+            LythonCallableSignature.Create("NormalDist.zscore", ["x"]),
+            LythonCallableSignature.Create("NormalDist.zscore", ["x"]));
+        Assert.Same(
+            LythonCallableSignature.Create("NormalDist.pdf", ["x"]),
+            LythonCallableSignature.Create("NormalDist.pdf", ["x"]));
+        Assert.Same(
+            LythonCallableSignature.Create("NormalDist.cdf", ["x"]),
+            LythonCallableSignature.Create("NormalDist.cdf", ["x"]));
+        Assert.Same(
+            LythonCallableSignature.Create("NormalDist.inv_cdf", ["p"]),
+            LythonCallableSignature.Create("NormalDist.inv_cdf", ["p"]));
+        Assert.Same(
+            LythonCallableSignature.Create("NormalDist.overlap", ["other"]),
+            LythonCallableSignature.Create("NormalDist.overlap", ["other"]));
+        Assert.Same(
+            LythonCallableSignature.Create("NormalDist.quantiles", ["n"], requiredCount: 0),
+            LythonCallableSignature.Create("NormalDist.quantiles", ["n"], requiredCount: 0));
+        Assert.Same(
+            LythonCallableSignature.Create("NormalDist.samples", ["n", "seed"], requiredCount: 1),
+            LythonCallableSignature.Create("NormalDist.samples", ["n", "seed"], requiredCount: 1));
+    }
+
+    [Fact]
     public void Create_RejectsInvalidParameterMetadata()
     {
         Assert.Throws<ArgumentException>(() =>

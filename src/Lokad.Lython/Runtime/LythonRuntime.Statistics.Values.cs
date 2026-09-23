@@ -24,6 +24,12 @@ internal sealed partial class LythonRuntime
                 Intercept = intercept;
             }
 
+            // N17: hot fixed signatures hoisted per family (see ListMembers).
+            private static readonly LythonCallableSignature LinearRegressionAsDictSignature = LythonCallableSignature.Create("LinearRegression._asdict", []);
+            private static readonly LythonCallableSignature LinearRegressionReplaceSignature = LythonCallableSignature.Create("LinearRegression._replace", ["slope", "intercept"], requiredCount: 0);
+            private static readonly LythonCallableSignature LinearRegressionCountSignature = LythonCallableSignature.Create("LinearRegression.count", ["value"]);
+            private static readonly LythonCallableSignature LinearRegressionIndexSignature = LythonCallableSignature.Create("LinearRegression.index", ["value", "start", "stop"], requiredCount: 1);
+
             public double Slope { get; }
 
             public double Intercept { get; }
@@ -79,7 +85,7 @@ internal sealed partial class LythonRuntime
                         dict.SetItem(PyString.FromString("slope"), Slope);
                         dict.SetItem(PyString.FromString("intercept"), Intercept);
                         return dict;
-                    }, "LinearRegression._asdict", []),
+                    }, LinearRegressionAsDictSignature),
                     "_replace" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length > 2)
@@ -90,7 +96,7 @@ internal sealed partial class LythonRuntime
                         return new StatisticsLinearRegressionResult(
                             arguments.Length >= 1 && arguments[0] is not PyNone ? RuntimeArgumentValidation.ExpectReal(arguments[0], "LinearRegression._replace(..., slope=...)", span) : Slope,
                             arguments.Length >= 2 && arguments[1] is not PyNone ? RuntimeArgumentValidation.ExpectReal(arguments[1], "LinearRegression._replace(..., intercept=...)", span) : Intercept);
-                    }, "LinearRegression._replace", ["slope", "intercept"], requiredCount: 0),
+                    }, LinearRegressionReplaceSignature),
                     "count" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1)
@@ -108,7 +114,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         return new BigInteger(count);
-                    }, "LinearRegression.count", ["value"]),
+                    }, LinearRegressionCountSignature),
                     "index" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length is < 1 or > 3)
@@ -127,7 +133,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         throw new LythonRuntimeException("ValueError", "LinearRegression.index(value): value is not in tuple", span);
-                    }, "LinearRegression.index", ["value", "start", "stop"], requiredCount: 1),
+                    }, LinearRegressionIndexSignature),
                     _ => MissingMemberValue.Instance,
                 };
 
@@ -230,6 +236,15 @@ internal sealed partial class LythonRuntime
                 Stdev = stdev;
             }
 
+            // N17: hot fixed signatures hoisted per family (see ListMembers).
+            private static readonly LythonCallableSignature NormalDistZscoreSignature = LythonCallableSignature.Create("NormalDist.zscore", ["x"]);
+            private static readonly LythonCallableSignature NormalDistPdfSignature = LythonCallableSignature.Create("NormalDist.pdf", ["x"]);
+            private static readonly LythonCallableSignature NormalDistCdfSignature = LythonCallableSignature.Create("NormalDist.cdf", ["x"]);
+            private static readonly LythonCallableSignature NormalDistInvCdfSignature = LythonCallableSignature.Create("NormalDist.inv_cdf", ["p"]);
+            private static readonly LythonCallableSignature NormalDistOverlapSignature = LythonCallableSignature.Create("NormalDist.overlap", ["other"]);
+            private static readonly LythonCallableSignature NormalDistQuantilesSignature = LythonCallableSignature.Create("NormalDist.quantiles", ["n"], requiredCount: 0);
+            private static readonly LythonCallableSignature NormalDistSamplesSignature = LythonCallableSignature.Create("NormalDist.samples", ["n", "seed"], requiredCount: 1);
+
             public double Mean { get; }
 
             public double Stdev { get; }
@@ -256,7 +271,7 @@ internal sealed partial class LythonRuntime
                         RequirePositiveStdev("zscore()", span);
                         var x = RuntimeArgumentValidation.ExpectReal(arguments[0], "NormalDist.zscore(x)", span);
                         return (x - Mean) / Stdev;
-                    }, "NormalDist.zscore", ["x"]),
+                    }, NormalDistZscoreSignature),
                     "pdf" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1)
@@ -268,7 +283,7 @@ internal sealed partial class LythonRuntime
                         var x = RuntimeArgumentValidation.ExpectReal(arguments[0], "NormalDist.pdf(x)", span);
                         var z = (x - Mean) / Stdev;
                         return Math.Exp(-0.5 * z * z) * InvSqrtTau / Stdev;
-                    }, "NormalDist.pdf", ["x"]),
+                    }, NormalDistPdfSignature),
                     "cdf" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1)
@@ -279,7 +294,7 @@ internal sealed partial class LythonRuntime
                         RequirePositiveStdev("cdf()", span);
                         var x = RuntimeArgumentValidation.ExpectReal(arguments[0], "NormalDist.cdf(x)", span);
                         return 0.5 * (1.0 + FloatingPointSpecialFunctions.Erf((x - Mean) / (Stdev * SqrtTwo)));
-                    }, "NormalDist.cdf", ["x"]),
+                    }, NormalDistCdfSignature),
                     "inv_cdf" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1)
@@ -289,7 +304,7 @@ internal sealed partial class LythonRuntime
 
                         var p = RuntimeArgumentValidation.ExpectReal(arguments[0], "NormalDist.inv_cdf(p)", span);
                         return InvCdf(p, span);
-                    }, "NormalDist.inv_cdf", ["p"]),
+                    }, NormalDistInvCdfSignature),
                     "overlap" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1 || arguments[0] is not PyNormalDist other)
@@ -298,7 +313,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         return Overlap(other, span);
-                    }, "NormalDist.overlap", ["other"]),
+                    }, NormalDistOverlapSignature),
                     "quantiles" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length > 1)
@@ -324,7 +339,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         return new PyList(results, context.MemoryGovernor, span);
-                    }, "NormalDist.quantiles", ["n"], requiredCount: 0),
+                    }, NormalDistQuantilesSignature),
                     "samples" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length is < 1 or > 2)
@@ -357,7 +372,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         return new PyList(samples, context.MemoryGovernor, span);
-                    }, "NormalDist.samples", ["n", "seed"], requiredCount: 1),
+                    }, NormalDistSamplesSignature),
                     _ => MissingMemberValue.Instance,
                 };
 
