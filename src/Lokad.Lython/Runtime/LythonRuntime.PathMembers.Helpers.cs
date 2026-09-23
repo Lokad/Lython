@@ -25,13 +25,13 @@ internal sealed partial class LythonRuntime
             TextErrorMode Errors,
             TextNewlineMode Newline);
 
-        private static BoundCallable UnsupportedPathMember(string name, string message)
+        private static BoundCallable UnsupportedPathMember(LythonCallableSignature signature, string message)
             => BoundCallable.Create((object[] arguments, LythonSourceSpan span, ExecutionContext context) =>
             {
                 _ = arguments;
                 _ = context;
                 throw new LythonRuntimeException("NotImplementedError", message, span);
-            }, name: name);
+            }, signature);
 
         private static PyString ParsePathGlobArguments(object[] arguments, string owner, LythonSourceSpan span)
         {

@@ -1241,6 +1241,90 @@ public sealed class LythonCallableSignatureTests
     }
 
     [Fact]
+    public void Create_ReusesHoistedPathSignatures()
+    {
+        // N17: companion pin for the hoisted Path provider statics.
+        Assert.Same(
+            LythonCallableSignature.Create("Path.lstat", []),
+            LythonCallableSignature.Create("Path.lstat", []));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.unlink", ["missing_ok"], 0),
+            LythonCallableSignature.Create("Path.unlink", ["missing_ok"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.rename", ["target"]),
+            LythonCallableSignature.Create("Path.rename", ["target"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.replace", ["target"]),
+            LythonCallableSignature.Create("Path.replace", ["target"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.mkdir", ["mode", "parents", "exist_ok"], 0),
+            LythonCallableSignature.Create("Path.mkdir", ["mode", "parents", "exist_ok"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.touch", ["mode", "exist_ok"], 0),
+            LythonCallableSignature.Create("Path.touch", ["mode", "exist_ok"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.read_bytes"),
+            LythonCallableSignature.Create("Path.read_bytes"));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.write_bytes"),
+            LythonCallableSignature.Create("Path.write_bytes"));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.readlink"),
+            LythonCallableSignature.Create("Path.readlink"));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.symlink_to"),
+            LythonCallableSignature.Create("Path.symlink_to"));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.hardlink_to"),
+            LythonCallableSignature.Create("Path.hardlink_to"));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.chmod"),
+            LythonCallableSignature.Create("Path.chmod"));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.owner"),
+            LythonCallableSignature.Create("Path.owner"));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.group"),
+            LythonCallableSignature.Create("Path.group"));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.glob", ["pattern", "case_sensitive", "recurse_symlinks"], 1),
+            LythonCallableSignature.Create("Path.glob", ["pattern", "case_sensitive", "recurse_symlinks"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.read_text", ["encoding", "errors", "newline"], 0),
+            LythonCallableSignature.Create("Path.read_text", ["encoding", "errors", "newline"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.write_text", ["text", "encoding", "errors", "newline"], 1),
+            LythonCallableSignature.Create("Path.write_text", ["text", "encoding", "errors", "newline"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.rglob", ["pattern", "case_sensitive", "recurse_symlinks"], 1),
+            LythonCallableSignature.Create("Path.rglob", ["pattern", "case_sensitive", "recurse_symlinks"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.samefile", ["other_path"]),
+            LythonCallableSignature.Create("Path.samefile", ["other_path"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.match", ["pattern"]),
+            LythonCallableSignature.Create("Path.match", ["pattern"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.is_relative_to", ["other"]),
+            LythonCallableSignature.Create("Path.is_relative_to", ["other"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.relative_to", ["other"]),
+            LythonCallableSignature.Create("Path.relative_to", ["other"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.with_suffix", ["suffix"]),
+            LythonCallableSignature.Create("Path.with_suffix", ["suffix"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.with_name", ["name"]),
+            LythonCallableSignature.Create("Path.with_name", ["name"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.with_stem", ["stem"]),
+            LythonCallableSignature.Create("Path.with_stem", ["stem"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Path.expanduser"),
+            LythonCallableSignature.Create("Path.expanduser"));
+    }
+
+    [Fact]
     public void Create_RejectsInvalidParameterMetadata()
     {
         Assert.Throws<ArgumentException>(() =>

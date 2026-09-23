@@ -10,6 +10,14 @@ internal sealed partial class LythonRuntime
     {
         private sealed class LexicalPathMemberProvider : IPathMemberProvider
         {
+            // N17: hot fixed signatures hoisted per family.
+            private static readonly LythonCallableSignature PathMatchSignature = LythonCallableSignature.Create("Path.match", ["pattern"]);
+            private static readonly LythonCallableSignature PathIsRelativeToSignature = LythonCallableSignature.Create("Path.is_relative_to", ["other"]);
+            private static readonly LythonCallableSignature PathRelativeToSignature = LythonCallableSignature.Create("Path.relative_to", ["other"]);
+            private static readonly LythonCallableSignature PathWithSuffixSignature = LythonCallableSignature.Create("Path.with_suffix", ["suffix"]);
+            private static readonly LythonCallableSignature PathWithNameSignature = LythonCallableSignature.Create("Path.with_name", ["name"]);
+            private static readonly LythonCallableSignature PathWithStemSignature = LythonCallableSignature.Create("Path.with_stem", ["stem"]);
+            private static readonly LythonCallableSignature PathExpanduserSignature = LythonCallableSignature.Create("Path.expanduser");
             public static readonly LexicalPathMemberProvider Instance = new();
 
             public bool TryGetMember(PyPath path, string name, [MaybeNullWhen(false)] out object value)
@@ -63,7 +71,7 @@ internal sealed partial class LythonRuntime
 
                         return OwnPathResult(current, path.Value, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
                     }),
-                    "expanduser" => UnsupportedPathMember("Path.expanduser", "Path.expanduser() is not supported by Lython; the host does not expose an ambient user home directory."),
+                    "expanduser" => UnsupportedPathMember(PathExpanduserSignature, "Path.expanduser() is not supported by Lython; the host does not expose an ambient user home directory."),
                     "match" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var pattern))
@@ -72,7 +80,7 @@ internal sealed partial class LythonRuntime
                         }
 
                         return PathOps.Match(path.Value.AsString(), pattern.AsString());
-                    }, "Path.match", ["pattern"]),
+                    }, PathMatchSignature),
                     "is_relative_to" => BoundCallable.Create((arguments, span, _) =>
                     {
                         if (arguments.Length != 1)
@@ -90,7 +98,7 @@ internal sealed partial class LythonRuntime
                         {
                             return false;
                         }
-                    }, "Path.is_relative_to", ["other"]),
+                    }, PathIsRelativeToSignature),
                     "as_posix" => BoundCallable.CreateNoArguments(path, "Path.as_posix", static (receiver, _, _) => receiver.Value),
                     "resolve" => BoundCallable.CreateNoArguments(
                         path,
@@ -116,7 +124,7 @@ internal sealed partial class LythonRuntime
                         {
                             throw new LythonRuntimeException("ValueError", ex.Message, span);
                         }
-                    }, "Path.relative_to", ["other"]),
+                    }, PathRelativeToSignature),
                     "with_suffix" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var suffix))
@@ -132,7 +140,7 @@ internal sealed partial class LythonRuntime
                         {
                             throw new LythonRuntimeException("ValueError", ex.Message, span);
                         }
-                    }, "Path.with_suffix", ["suffix"]),
+                    }, PathWithSuffixSignature),
                     "with_name" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var name))
@@ -148,7 +156,7 @@ internal sealed partial class LythonRuntime
                         {
                             throw new LythonRuntimeException("ValueError", ex.Message, span);
                         }
-                    }, "Path.with_name", ["name"]),
+                    }, PathWithNameSignature),
                     "with_stem" => BoundCallable.Create((arguments, span, context) =>
                     {
                         if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var stem))
@@ -164,7 +172,7 @@ internal sealed partial class LythonRuntime
                         {
                             throw new LythonRuntimeException("ValueError", ex.Message, span);
                         }
-                    }, "Path.with_stem", ["stem"]),
+                    }, PathWithStemSignature),
                     _ => MissingMemberValue.Instance,
                 };
 
