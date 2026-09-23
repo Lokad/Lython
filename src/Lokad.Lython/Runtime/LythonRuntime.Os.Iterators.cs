@@ -14,8 +14,13 @@ internal sealed partial class LythonRuntime
         private int _index;
         private bool _closed;
 
+        // N17: hot fixed signatures hoisted per family.
+        private static readonly LythonCallableSignature ScandirCloseSignature = LythonCallableSignature.Create("ScandirIterator.close", []);
+        private static readonly LythonCallableSignature ScandirEnterSignature = LythonCallableSignature.Create("ScandirIterator.__enter__", []);
+        private static readonly LythonCallableSignature ScandirExitSignature = LythonCallableSignature.Create("ScandirIterator.__exit__", ["exc_type", "exc", "tb"]);
         public PyScandirIterator(PyDirEntryObject[] entries)
         {
+
             _entries = entries;
         }
 
@@ -55,7 +60,7 @@ internal sealed partial class LythonRuntime
 
                     _closed = true;
                     return PyNone.Instance;
-                }, "ScandirIterator.close", []),
+                }, ScandirCloseSignature),
                 "__enter__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -64,7 +69,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return this;
-                }, "ScandirIterator.__enter__", []),
+                }, ScandirEnterSignature),
                 "__exit__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 3)
@@ -74,7 +79,7 @@ internal sealed partial class LythonRuntime
 
                     _closed = true;
                     return false;
-                }, "ScandirIterator.__exit__", ["exc_type", "exc", "tb"]),
+                }, ScandirExitSignature),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -102,6 +107,13 @@ internal sealed partial class LythonRuntime
         private PyString? _nameValue;
         private PyString? _pathValue;
 
+        // N17: hot fixed signatures hoisted per family.
+        private static readonly LythonCallableSignature DirEntryFspathSignature = LythonCallableSignature.Create("DirEntry.__fspath__", []);
+        private static readonly LythonCallableSignature DirEntryIsFileSignature = LythonCallableSignature.Create("DirEntry.is_file", []);
+        private static readonly LythonCallableSignature DirEntryIsDirSignature = LythonCallableSignature.Create("DirEntry.is_dir", []);
+        private static readonly LythonCallableSignature DirEntryStatSignature = LythonCallableSignature.Create("DirEntry.stat", []);
+        private static readonly LythonCallableSignature DirEntryInodeSignature = LythonCallableSignature.Create("DirEntry.inode", []);
+        private static readonly LythonCallableSignature DirEntryIsSymlinkSignature = LythonCallableSignature.Create("DirEntry.is_symlink", []);
         public PyDirEntryObject(string name, string path, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
         {
             _name = name;
@@ -126,7 +138,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return _pathValue ??= PyString.FromString(_path, _governor, _allocationSpan);
-                }, "DirEntry.__fspath__", []),
+                }, DirEntryFspathSignature),
                 "is_file" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -136,7 +148,7 @@ internal sealed partial class LythonRuntime
 
                     return GetCachedStat(context, span).IsFile;
                 },
-                async (arguments, span, context) =>
+                DirEntryIsFileSignature, async (arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -144,9 +156,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return (await GetCachedStatAsync(context, span).ConfigureAwait(false)).IsFile;
-                },
-                "DirEntry.is_file",
-                []),
+                }),
                 "is_dir" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -156,7 +166,7 @@ internal sealed partial class LythonRuntime
 
                     return GetCachedStat(context, span).IsDir;
                 },
-                async (arguments, span, context) =>
+                DirEntryIsDirSignature, async (arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -164,9 +174,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return (await GetCachedStatAsync(context, span).ConfigureAwait(false)).IsDir;
-                },
-                "DirEntry.is_dir",
-                []),
+                }),
                 "stat" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -176,7 +184,7 @@ internal sealed partial class LythonRuntime
 
                     return GetCachedStat(context, span);
                 },
-                async (arguments, span, context) =>
+                DirEntryStatSignature, async (arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
                     {
@@ -184,9 +192,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return await GetCachedStatAsync(context, span).ConfigureAwait(false);
-                },
-                "DirEntry.stat",
-                []),
+                }),
                 "inode" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -195,7 +201,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     throw new LythonRuntimeException("NotImplementedError", "DirEntry.inode() is not supported because Lython's host path model does not expose inode metadata.", span);
-                }, "DirEntry.inode", []),
+                }, DirEntryInodeSignature),
                 "is_symlink" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -204,7 +210,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     throw new LythonRuntimeException("NotImplementedError", "DirEntry.is_symlink() is not supported because Lython's host path model does not expose symlinks.", span);
-                }, "DirEntry.is_symlink", []),
+                }, DirEntryIsSymlinkSignature),
                 _ => MissingMemberValue.Instance,
             };
 

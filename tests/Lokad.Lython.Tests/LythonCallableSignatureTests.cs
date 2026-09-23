@@ -1583,6 +1583,39 @@ public sealed class LythonCallableSignatureTests
     }
 
     [Fact]
+    public void Create_ReusesHoistedOsIteratorSignatures()
+    {
+        // N17: companion pin for the hoisted Scandir/DirEntry statics.
+        Assert.Same(
+            LythonCallableSignature.Create("ScandirIterator.close", []),
+            LythonCallableSignature.Create("ScandirIterator.close", []));
+        Assert.Same(
+            LythonCallableSignature.Create("ScandirIterator.__enter__", []),
+            LythonCallableSignature.Create("ScandirIterator.__enter__", []));
+        Assert.Same(
+            LythonCallableSignature.Create("ScandirIterator.__exit__", ["exc_type", "exc", "tb"]),
+            LythonCallableSignature.Create("ScandirIterator.__exit__", ["exc_type", "exc", "tb"]));
+        Assert.Same(
+            LythonCallableSignature.Create("DirEntry.__fspath__", []),
+            LythonCallableSignature.Create("DirEntry.__fspath__", []));
+        Assert.Same(
+            LythonCallableSignature.Create("DirEntry.is_file", []),
+            LythonCallableSignature.Create("DirEntry.is_file", []));
+        Assert.Same(
+            LythonCallableSignature.Create("DirEntry.is_dir", []),
+            LythonCallableSignature.Create("DirEntry.is_dir", []));
+        Assert.Same(
+            LythonCallableSignature.Create("DirEntry.stat", []),
+            LythonCallableSignature.Create("DirEntry.stat", []));
+        Assert.Same(
+            LythonCallableSignature.Create("DirEntry.inode", []),
+            LythonCallableSignature.Create("DirEntry.inode", []));
+        Assert.Same(
+            LythonCallableSignature.Create("DirEntry.is_symlink", []),
+            LythonCallableSignature.Create("DirEntry.is_symlink", []));
+    }
+
+    [Fact]
     public void Create_RejectsInvalidParameterMetadata()
     {
         Assert.Throws<ArgumentException>(() =>
