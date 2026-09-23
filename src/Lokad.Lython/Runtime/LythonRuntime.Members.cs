@@ -3621,6 +3621,27 @@ internal sealed partial class LythonRuntime
 
     internal static class CounterMembers
     {
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature CounterGetSignature = LythonCallableSignature.Create("Counter.get", ["key", "default"], 1);
+        private static readonly LythonCallableSignature CounterMostCommonSignature = LythonCallableSignature.Create("Counter.most_common", ["n"], 0);
+        private static readonly LythonCallableSignature CounterPopSignature = LythonCallableSignature.Create("Counter.pop", ["key", "default"], 1);
+        private static readonly LythonCallableSignature CounterContainsSignature = LythonCallableSignature.Create("Counter.__contains__", ["item"]);
+        private static readonly LythonCallableSignature CounterGetItemSignature = LythonCallableSignature.Create("Counter.__getitem__", ["index"]);
+        private static readonly LythonCallableSignature CounterSetItemSignature = LythonCallableSignature.Create("Counter.__setitem__", ["index", "value"]);
+        private static readonly LythonCallableSignature CounterDelItemSignature = LythonCallableSignature.Create("Counter.__delitem__", ["index"]);
+        private static readonly LythonCallableSignature CounterOrSignature = LythonCallableSignature.Create("Counter.__or__", ["value"]);
+        private static readonly LythonCallableSignature CounterAndSignature = LythonCallableSignature.Create("Counter.__and__", ["value"]);
+        private static readonly LythonCallableSignature CounterSubSignature = LythonCallableSignature.Create("Counter.__sub__", ["value"]);
+        private static readonly LythonCallableSignature CounterROrSignature = LythonCallableSignature.Create("Counter.__ror__", ["value"]);
+        private static readonly LythonCallableSignature CounterIOrSignature = LythonCallableSignature.Create("Counter.__ior__", ["value"]);
+        private static readonly LythonCallableSignature CounterIAndSignature = LythonCallableSignature.Create("Counter.__iand__", ["value"]);
+        private static readonly LythonCallableSignature CounterEqSignature = LythonCallableSignature.Create("Counter.__eq__", ["value"]);
+        private static readonly LythonCallableSignature CounterNeSignature = LythonCallableSignature.Create("Counter.__ne__", ["value"]);
+        private static readonly LythonCallableSignature CounterLtSignature = LythonCallableSignature.Create("Counter.__lt__", ["value"]);
+        private static readonly LythonCallableSignature CounterLeSignature = LythonCallableSignature.Create("Counter.__le__", ["value"]);
+        private static readonly LythonCallableSignature CounterGtSignature = LythonCallableSignature.Create("Counter.__gt__", ["value"]);
+        private static readonly LythonCallableSignature CounterGeSignature = LythonCallableSignature.Create("Counter.__ge__", ["value"]);
+        private static readonly LythonCallableSignature CounterReversedSignature = LythonCallableSignature.Create("Counter.__reversed__");
         // Fresh copies reclaim through the pool once dropped; the later funnel
         // no-ops on the already-tracked value through reference-identity dedup.
         private static PyCounter TrackCounterCopy(PyCounter receiver, ExecutionContext context, LythonSourceSpan span)
@@ -3647,7 +3668,7 @@ internal sealed partial class LythonRuntime
                     return counter.TryGetValue(key, out var found)
                         ? found
                         : arguments.Length == 2 ? arguments[1] : BigInteger.Zero;
-                }, "Counter.get", ["key", "default"], 1),
+                }, CounterGetSignature),
                 "update" => new CounterUpdateCallable(counter, subtract: false),
                 "subtract" => new CounterUpdateCallable(counter, subtract: true),
                 "total" => BoundCallable.CreateNoArguments(counter, "Counter.total", static (receiver, span, context) =>
@@ -3701,7 +3722,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return new PyList(items, context.MemoryGovernor, span);
-                }, "Counter.most_common", ["n"], 0),
+                }, CounterMostCommonSignature),
                 "elements" => BoundCallable.CreateNoArguments(counter, "Counter.elements", static (receiver, span, context) =>
                 {
                     var items = new List<object>();
@@ -3782,7 +3803,7 @@ internal sealed partial class LythonRuntime
 
                     counter.Remove(key);
                     return found;
-                }, "Counter.pop", ["key", "default"], 1),
+                }, CounterPopSignature),
                 "__iter__" => BoundCallable.CreateNoArguments(counter, "Counter.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
@@ -3800,7 +3821,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyContainment.Contains(counter, arguments[0], span);
-                }, "Counter.__contains__", ["item"]),
+                }, CounterContainsSignature),
                 "__getitem__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3809,7 +3830,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return ReadSubscriptValue(counter, arguments[0], span, context);
-                }, "Counter.__getitem__", ["index"]),
+                }, CounterGetItemSignature),
                 "__setitem__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 2)
@@ -3819,7 +3840,7 @@ internal sealed partial class LythonRuntime
 
                     SetSubscriptValue(counter, arguments[0], arguments[1], span, context);
                     return PyNone.Instance;
-                }, "Counter.__setitem__", ["index", "value"]),
+                }, CounterSetItemSignature),
                 "__delitem__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3829,7 +3850,7 @@ internal sealed partial class LythonRuntime
 
                     DeleteSubscriptValue(counter, arguments[0], span, context);
                     return PyNone.Instance;
-                }, "Counter.__delitem__", ["index"]),
+                }, CounterDelItemSignature),
                 "__or__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3844,7 +3865,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return BuildCounterBinaryResult(counter, right, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) >= 0 ? lhs : rhs, keepPositiveOnly: true, span, context);
-                }, "Counter.__or__", ["value"]),
+                }, CounterOrSignature),
                 "__and__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3858,7 +3879,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return BuildCounterBinaryResult(counter, right, (lhs, rhs) => CompareCounterCounts(lhs, rhs, span) < 0 ? lhs : rhs, keepPositiveOnly: true, span, context);
-                }, "Counter.__and__", ["value"]),
+                }, CounterAndSignature),
                 "__sub__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3872,7 +3893,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return BuildCounterBinaryResult(counter, right, (lhs, rhs) => SubtractCounterCounts(lhs, rhs, span, counter.OwnerMemoryGovernor ?? right.OwnerMemoryGovernor, context.Services.State.CallTemporaries), keepPositiveOnly: true, span, context);
-                }, "Counter.__sub__", ["value"]),
+                }, CounterSubSignature),
                 "__ror__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3898,7 +3919,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return merged;
-                }, "Counter.__ror__", ["value"]),
+                }, CounterROrSignature),
                 "__ior__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3941,7 +3962,7 @@ internal sealed partial class LythonRuntime
 
                     PurgeCounterNonPositive(counter, span);
                     return counter;
-                }, "Counter.__ior__", ["value"]),
+                }, CounterIOrSignature),
                 "__iand__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -3972,7 +3993,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return counter;
-                }, "Counter.__iand__", ["value"]),
+                }, CounterIAndSignature),
                 "__eq__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -3986,7 +4007,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyEquality.CountersEqual(counter, other);
-                }, "Counter.__eq__", ["value"]),
+                }, CounterEqSignature),
                 "__ne__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -4000,7 +4021,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return !PyEquality.CountersEqual(counter, other);
-                }, "Counter.__ne__", ["value"]),
+                }, CounterNeSignature),
                 "__lt__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -4014,7 +4035,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return MultisetLessEqual(counter, other, context, span) && !PyEquality.CountersEqual(counter, other);
-                }, "Counter.__lt__", ["value"]),
+                }, CounterLtSignature),
                 "__le__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -4028,7 +4049,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return MultisetLessEqual(counter, other, context, span);
-                }, "Counter.__le__", ["value"]),
+                }, CounterLeSignature),
                 "__gt__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -4042,7 +4063,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return MultisetLessEqual(other, counter, context, span) && !PyEquality.CountersEqual(counter, other);
-                }, "Counter.__gt__", ["value"]),
+                }, CounterGtSignature),
                 "__ge__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -4056,7 +4077,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return MultisetLessEqual(other, counter, context, span);
-                }, "Counter.__ge__", ["value"]),
+                }, CounterGeSignature),
                 "__hash__" => PyNone.Instance,
                 "__reversed__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -4069,7 +4090,7 @@ internal sealed partial class LythonRuntime
                     var memberCounterReversedResult = counter.InnerDict.CreateReversedKeysIterator(context.MemoryGovernor, span);
                     context.Services.State.CallTemporaries.TrackFreshMutable(memberCounterReversedResult, PyIteratorBase.IteratorValueBytes);
                     return memberCounterReversedResult;
-                }, "Counter.__reversed__"),
+                }, CounterReversedSignature),
                 _ => MissingMemberValue.Instance,
             };
 
