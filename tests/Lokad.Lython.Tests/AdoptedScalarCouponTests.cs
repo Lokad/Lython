@@ -338,6 +338,50 @@ public sealed class AdoptedScalarCouponTests
     }
 
     [Fact]
+    public void DictGrowThenShrinkToOneRetainsSingleCoupon()
+    {
+        // N27: the helper survives a grow/shrink cycle retaining one adopted identity (it is
+        // discarded only when its committed total reaches zero). Six pairs stay on the small
+        // store so the only moving charges are coupons; promotion replace-and-release has its
+        // own coverage. Same-reference removals release exactly, leaving two coupons; dropping
+        // the last identity refunds everything with no stranding.
+        var (context, span) = Budgeted(1L << 20);
+        var governor = context.MemoryGovernor;
+        var dict = new PyDict(governor, span);
+        var baseline = governor.CurrentCommittedBytes;
+        var emptySnapshot = dict.CommittedStorageBytes;
+        var keys = new object[6];
+        var values = new object[6];
+        for (var i = 0; i < 6; i++)
+        {
+            keys[i] = new BigInteger(i);
+            values[i] = new BigInteger(1000 + i);
+            dict.SetItem(keys[i], values[i]);
+        }
+
+        for (var i = 0; i < 5; i++)
+        {
+            Assert.True(dict.Remove(keys[i]));
+        }
+
+        Assert.Equal(1, dict.Length);
+        var coupons = ReadScalarCoupons(dict);
+        Assert.NotNull(coupons);
+        Assert.Equal(2 * AdoptedScalarCoupons.CouponBytes, coupons!.CommittedBytes);
+        Assert.Equal(baseline + (dict.CommittedStorageBytes - emptySnapshot), governor.CurrentCommittedBytes);
+        Assert.True(dict.Remove(keys[5]));
+        Assert.Null(ReadScalarCoupons(dict));
+        Assert.Equal(baseline, governor.CurrentCommittedBytes);
+        dict.SetItem(keys[2], values[2]);
+        Assert.Equal(2 * AdoptedScalarCoupons.CouponBytes, ReadScalarCoupons(dict)!.CommittedBytes);
+    }
+
+    private static AdoptedScalarCoupons? ReadScalarCoupons(PyDict dict)
+        => (AdoptedScalarCoupons?)typeof(PyDict)
+            .GetField("_scalarCoupons", BindingFlags.NonPublic | BindingFlags.Instance)!
+            .GetValue(dict);
+
+    [Fact]
     public void DictCopyAdoptsSharedPairs()
     {
         // Copies adopt shared identities again (bounded double charge), so each
