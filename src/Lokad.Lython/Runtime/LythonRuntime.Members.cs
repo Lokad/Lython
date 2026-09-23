@@ -2042,7 +2042,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     var key = ValidateDictionaryKey(arguments[0], span);
-                    if (!dict.TryGetValue(key, out var found))
+                    if (!dict.TryRemove(key, out var found))
                     {
                         if (arguments.Length == 2)
                         {
@@ -2062,7 +2062,6 @@ internal sealed partial class LythonRuntime
                             arguments[0]);
                     }
 
-                    dict.Remove(key);
                     return found;
                 }, DictPopSignature),
                 "popitem" => BoundCallable.CreateNoArguments(dict, "dict.popitem", static (receiver, span, context) =>
@@ -3434,7 +3433,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     var key = ValidateDictionaryKey(arguments[0], span);
-                    if (!dict.TryGetValue(key, out var found))
+                    if (!dict.TryRemove(key, out var found))
                     {
                         if (arguments.Length == 2)
                         {
@@ -3454,7 +3453,6 @@ internal sealed partial class LythonRuntime
                             arguments[0]);
                     }
 
-                    dict.Remove(key);
                     return found;
                 }, DefaultDictPopSignature),
                 "popitem" => BoundCallable.CreateNoArguments(dict, "defaultdict.popitem", static (receiver, span, context) =>
@@ -3899,7 +3897,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     var key = ValidateDictionaryKey(arguments[0], span);
-                    if (!counter.TryGetValue(key, out var found))
+                    if (!counter.TryRemove(key, out var found))
                     {
                         if (arguments.Length == 2)
                         {
@@ -3919,7 +3917,6 @@ internal sealed partial class LythonRuntime
                             arguments[0]);
                     }
 
-                    counter.Remove(key);
                     return found;
                 }, CounterPopSignature),
                 "__iter__" => BoundCallable.CreateNoArguments(counter, "Counter.__iter__", static (receiver, span, context) =>

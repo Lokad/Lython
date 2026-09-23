@@ -123,6 +123,8 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
 
     public bool Remove(object key) => _items.Remove(key);
 
+    public bool TryRemove(object key, [MaybeNullWhen(false)] out object value) => _items.TryRemove(key, out value);
+
     public bool TryRemoveLast([MaybeNullWhen(false)] out object key, [MaybeNullWhen(false)] out object value)
         => _items.TryRemoveLast(out key, out value);
 
@@ -302,6 +304,8 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
     }
 
     public bool Remove(object key) => _items.Remove(key);
+
+    public bool TryRemove(object key, [MaybeNullWhen(false)] out object value) => _items.TryRemove(key, out value);
 
     public void Clear()
     {

@@ -291,6 +291,208 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         return false;
     }
 
+    // Single lookup-and-remove for pop: resolves the stored entry once and
+    // deletes it without re-dispatching guest code. A lookup followed by a
+    // separate Remove would run __eq__/__hash__ a second time, so a mutation
+    // inside the first dispatch could fail spuriously or double-apply.
+    public bool TryRemove(object key, [MaybeNullWhen(false)] out object value)
+    {
+        // Fast store probe first, like TryGetValue: same-object hits never
+        // dispatch guest code.
+        if (_items.TryGetValue(ToStorageKey(key), out var stored))
+        {
+            value = FromStorageValue(stored);
+            RemoveResolvedEntry(ToStorageKey(key), key, value);
+            return true;
+        }
+
+        if (PyHashProtocols.NeedsProtocolKey(key))
+        {
+            return TryRemoveProtocolValue(key, out value);
+        }
+
+        if (_protocol is not null && TryRemoveProtocolBuiltin(key, out value))
+        {
+            return true;
+        }
+
+        value = PyNone.Instance;
+        return false;
+    }
+
+    // Deletes an already-resolved stored entry: no guest dispatch, version
+    // bumped exactly once, pool snapshots refreshed. The twin-argument rule
+    // matches Remove: exact for same-reference removals, a safe no-op for
+    // structural twins while the stored value always releases.
+    private void RemoveResolvedEntry(object storageKey, object releaseKey, object storedValue)
+    {
+        var committedBefore = CommittedStorageBytes;
+        _ = _items.Remove(storageKey);
+        RemoveProtocolShadow(releaseKey);
+        ReleaseOutgoing(releaseKey);
+        ReleaseOutgoing(FromStorageValue(storedValue));
+        _version++;
+        NoteGrowth(committedBefore);
+    }
+
+    private bool TryRemoveProtocolValue(object key, [MaybeNullWhen(false)] out object value)
+    {
+        var context = ActiveProtocolContext();
+        if (context is null)
+        {
+            return TryRemoveProtocolStructural(key, out value);
+        }
+
+        return TryRemoveProtocolValueExplicit(key, context, PyStructuralGuard.AmbientSpan ?? _allocationSpan, out value);
+    }
+
+    private bool TryRemoveProtocolValueExplicit(object key, LythonRuntime.ExecutionContext context, LythonSourceSpan? span, [MaybeNullWhen(false)] out object value)
+    {
+        var useSpan = span ?? _allocationSpan;
+        if (useSpan is null)
+        {
+            return TryRemoveProtocolStructural(key, out value);
+        }
+
+        var hash = PyHashProtocols.GetProtocolHash(key, context, useSpan);
+        var structuralHash = PyValueComparer.Instance.GetHashCode(key);
+        // Same dispatch set and order as the lookup twin (N10 index): the side
+        // phase scans hash-bucketed candidates, then the store phase below.
+        var work = 0;
+        if (_protocol is not null)
+        {
+            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, _memoryGovernor, useSpan, ProtocolEntryBytes);
+            for (var i = 0; i < candidates.Length; i++)
+            {
+                if ((++work & 63) == 0)
+                {
+                    context.CheckExecutionBudget(useSpan);
+                }
+
+                var entry = candidates[i];
+                if (ReferenceEquals(entry.Key, key) || LythonRuntime.ElementEquals(entry.Key, key, context, useSpan))
+                {
+                    // The match may have been deleted by an earlier callback in
+                    // this same scan (CPython then reports the key missing, so
+                    // the scan continues instead of failing).
+                    if (_items.TryGetValue(ToStorageKey(entry.Key), out var stored))
+                    {
+                        value = FromStorageValue(stored);
+                        RemoveResolvedEntry(ToStorageKey(entry.Key), entry.Key, value);
+                        return true;
+                    }
+                }
+            }
+        }
+
+        EnsureStoreSnapshot(_items.Count, useSpan);
+        var storeHit = -1;
+        var probe = 0;
+        foreach (var pair in _items)
+        {
+            if ((++work & 63) == 0)
+            {
+                context.CheckExecutionBudget(useSpan);
+            }
+
+            if (PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash)
+            {
+                storeHit = probe;
+                break;
+            }
+
+            probe++;
+        }
+
+        if (storeHit >= 0)
+        {
+            var storeSnapshot = _items.ToArray();
+            for (var i = storeHit; i < storeSnapshot.Length; i++)
+            {
+                // The hit entry already consumed its budget check above.
+                if (i > storeHit && (++work & 63) == 0)
+                {
+                    context.CheckExecutionBudget(useSpan);
+                }
+
+                var pair = storeSnapshot[i];
+                if ((PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash) && (ReferenceEquals(pair.Key, key) || LythonRuntime.ElementEquals(FromStorageKey(pair.Key), key, context, useSpan)))
+                {
+                    if (_items.TryGetValue(ToStorageKey(pair.Key), out var stored))
+                    {
+                        value = FromStorageValue(stored);
+                        RemoveResolvedEntry(ToStorageKey(pair.Key), pair.Key, value);
+                        return true;
+                    }
+                }
+            }
+        }
+
+        value = PyNone.Instance;
+        return false;
+    }
+
+    private bool TryRemoveProtocolBuiltin(object key, [MaybeNullWhen(false)] out object value)
+    {
+        if (_protocol is null)
+        {
+            value = PyNone.Instance;
+            return false;
+        }
+
+        var context = ActiveProtocolContext();
+        var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
+        var hash = PyValueComparer.Instance.GetHashCode(key);
+        var work = 0;
+        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, hash, builtinOnly: true, _memoryGovernor, useSpan, ProtocolEntryBytes);
+        for (var i = 0; i < candidates.Length; i++)
+        {
+            // N10 part 1: budget non-collision scans too; the context may be
+            // null on context-free paths (identity fast path only then).
+            if ((++work & 63) == 0 && context is not null && useSpan is not null)
+            {
+                context.CheckExecutionBudget(useSpan);
+            }
+
+            var entry = candidates[i];
+            var match = ReferenceEquals(entry.Key, key);
+            if (!match && context is not null && useSpan is not null)
+            {
+                match = LythonRuntime.ElementEquals(entry.Key, key, context, useSpan);
+            }
+
+            if (match && _items.TryGetValue(ToStorageKey(entry.Key), out var stored))
+            {
+                value = FromStorageValue(stored);
+                RemoveResolvedEntry(ToStorageKey(entry.Key), entry.Key, value);
+                return true;
+            }
+        }
+
+        value = PyNone.Instance;
+        return false;
+    }
+
+    private bool TryRemoveProtocolStructural(object key, [MaybeNullWhen(false)] out object value)
+    {
+        if (_protocol is not null)
+        {
+            for (var i = 0; i < _protocol.Count; i++)
+            {
+                var entry = _protocol[i];
+                if (ReferenceEquals(entry.Key, key) && _items.TryGetValue(ToStorageKey(entry.Key), out var stored))
+                {
+                    value = FromStorageValue(stored);
+                    RemoveResolvedEntry(ToStorageKey(entry.Key), entry.Key, value);
+                    return true;
+                }
+            }
+        }
+
+        value = PyNone.Instance;
+        return false;
+    }
+
     // Active protocol context for side-table dispatch: ambient provenance
     // when present and unsuppressed, otherwise null for the structural
     // identity fallback. Callers on async paths use the explicit overloads
