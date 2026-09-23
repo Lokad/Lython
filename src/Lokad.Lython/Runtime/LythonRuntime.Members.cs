@@ -565,6 +565,18 @@ internal sealed partial class LythonRuntime
     internal static class TupleMembers
     {
         // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature TupleContainsSignature = LythonCallableSignature.Create("tuple.__contains__", ["item"]);
+        private static readonly LythonCallableSignature TupleGetItemSignature = LythonCallableSignature.Create("tuple.__getitem__", ["index"]);
+        private static readonly LythonCallableSignature TupleAddSignature = LythonCallableSignature.Create("tuple.__add__", ["value"]);
+        private static readonly LythonCallableSignature TupleMulSignature = LythonCallableSignature.Create("tuple.__mul__", ["value"]);
+        private static readonly LythonCallableSignature TupleRMulSignature = LythonCallableSignature.Create("tuple.__rmul__", ["value"]);
+        private static readonly LythonCallableSignature TupleEqSignature = LythonCallableSignature.Create("tuple.__eq__", ["value"]);
+        private static readonly LythonCallableSignature TupleNeSignature = LythonCallableSignature.Create("tuple.__ne__", ["value"]);
+        private static readonly LythonCallableSignature TupleLtSignature = LythonCallableSignature.Create("tuple.__lt__", ["value"]);
+        private static readonly LythonCallableSignature TupleLeSignature = LythonCallableSignature.Create("tuple.__le__", ["value"]);
+        private static readonly LythonCallableSignature TupleGtSignature = LythonCallableSignature.Create("tuple.__gt__", ["value"]);
+        private static readonly LythonCallableSignature TupleGeSignature = LythonCallableSignature.Create("tuple.__ge__", ["value"]);
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
         private static readonly LythonCallableSignature TupleHashSignature = LythonCallableSignature.Create("tuple.__hash__");
         private static async ValueTask<object> CountAsync(int count, Func<int, object> getItem, object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
@@ -671,7 +683,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyContainment.ContainsWithProtocols(source, arguments[0], context, span);
-                }, "tuple.__contains__", ["item"]),
+                }, TupleContainsSignature),
                 "__getitem__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -680,7 +692,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return ReadSubscriptValue(source, arguments[0], span, context);
-                }, "tuple.__getitem__", ["index"]),
+                }, TupleGetItemSignature),
                 "__add__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -689,7 +701,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateAdd(source, arguments[0], context, span);
-                }, "tuple.__add__", ["value"]),
+                }, TupleAddSignature),
                 "__mul__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -700,7 +712,7 @@ internal sealed partial class LythonRuntime
                     RequireRepeatCount(arguments[0], context, span);
 
                     return EvaluateMultiply(source, arguments[0], context, span);
-                }, "tuple.__mul__", ["value"]),
+                }, TupleMulSignature),
                 "__rmul__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -711,7 +723,7 @@ internal sealed partial class LythonRuntime
                     RequireRepeatCount(arguments[0], context, span);
 
                     return EvaluateMultiply(arguments[0], source, context, span);
-                }, "tuple.__rmul__", ["value"]),
+                }, TupleRMulSignature),
                 "__eq__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -726,7 +738,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyEquality.AreEqual(source, arguments[0]);
-                }, "tuple.__eq__", ["value"]),
+                }, TupleEqSignature),
                 "__ne__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -741,7 +753,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return !PyEquality.AreEqual(source, arguments[0]);
-                }, "tuple.__ne__", ["value"]),
+                }, TupleNeSignature),
                 "__lt__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -756,7 +768,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return IsTruthy(EvaluateRichComparison(source, arguments[0], "__lt__", "__gt__", context, span, static value => value < 0), context, span);
-                }, "tuple.__lt__", ["value"]),
+                }, TupleLtSignature),
                 "__le__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -771,7 +783,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return IsTruthy(EvaluateRichComparison(source, arguments[0], "__le__", "__ge__", context, span, static value => value <= 0), context, span);
-                }, "tuple.__le__", ["value"]),
+                }, TupleLeSignature),
                 "__gt__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -786,7 +798,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return IsTruthy(EvaluateRichComparison(source, arguments[0], "__gt__", "__lt__", context, span, static value => value > 0), context, span);
-                }, "tuple.__gt__", ["value"]),
+                }, TupleGtSignature),
                 "__ge__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -801,7 +813,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return IsTruthy(EvaluateRichComparison(source, arguments[0], "__ge__", "__le__", context, span, static value => value >= 0), context, span);
-                }, "tuple.__ge__", ["value"]),
+                }, TupleGeSignature),
                 "__hash__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -857,6 +869,14 @@ internal sealed partial class LythonRuntime
     internal static class NoneMembers
     {
         // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature NoneEqSignature = LythonCallableSignature.Create("None.__eq__", ["value"]);
+        private static readonly LythonCallableSignature NoneNeSignature = LythonCallableSignature.Create("None.__ne__", ["value"]);
+        private static readonly LythonCallableSignature NoneLtSignature = LythonCallableSignature.Create("None.__lt__", ["value"]);
+        private static readonly LythonCallableSignature NoneLeSignature = LythonCallableSignature.Create("None.__le__", ["value"]);
+        private static readonly LythonCallableSignature NoneGtSignature = LythonCallableSignature.Create("None.__gt__", ["value"]);
+        private static readonly LythonCallableSignature NoneGeSignature = LythonCallableSignature.Create("None.__ge__", ["value"]);
+        private static readonly LythonCallableSignature NoneBoolSignature = LythonCallableSignature.Create("None.__bool__");
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
         private static readonly LythonCallableSignature NoneHashSignature = LythonCallableSignature.Create("None.__hash__");
         public static bool TryGetMember(PyNone none, string name, [MaybeNullWhen(false)] out object value)
         {
@@ -875,7 +895,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return true;
-                }, "None.__eq__", ["value"]),
+                }, NoneEqSignature),
                 "__ne__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -889,7 +909,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return false;
-                }, "None.__ne__", ["value"]),
+                }, NoneNeSignature),
                 "__lt__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -898,7 +918,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNotImplemented.Instance;
-                }, "None.__lt__", ["value"]),
+                }, NoneLtSignature),
                 "__le__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -907,7 +927,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNotImplemented.Instance;
-                }, "None.__le__", ["value"]),
+                }, NoneLeSignature),
                 "__gt__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -916,7 +936,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNotImplemented.Instance;
-                }, "None.__gt__", ["value"]),
+                }, NoneGtSignature),
                 "__ge__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -925,7 +945,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNotImplemented.Instance;
-                }, "None.__ge__", ["value"]),
+                }, NoneGeSignature),
                 "__bool__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -934,7 +954,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return false;
-                }, "None.__bool__"),
+                }, NoneBoolSignature),
                 "__hash__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -1769,6 +1789,19 @@ internal sealed partial class LythonRuntime
     internal static class RangeMembers
     {
         // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature RangeIndexSignature = LythonCallableSignature.Create("range.index", ["value"]);
+        private static readonly LythonCallableSignature RangeCountSignature = LythonCallableSignature.Create("range.count", ["value"]);
+        private static readonly LythonCallableSignature RangeContainsSignature = LythonCallableSignature.Create("range.__contains__", ["item"]);
+        private static readonly LythonCallableSignature RangeGetItemSignature = LythonCallableSignature.Create("range.__getitem__", ["index"]);
+        private static readonly LythonCallableSignature RangeEqSignature = LythonCallableSignature.Create("range.__eq__", ["value"]);
+        private static readonly LythonCallableSignature RangeNeSignature = LythonCallableSignature.Create("range.__ne__", ["value"]);
+        private static readonly LythonCallableSignature RangeLtSignature = LythonCallableSignature.Create("range.__lt__", ["value"]);
+        private static readonly LythonCallableSignature RangeLeSignature = LythonCallableSignature.Create("range.__le__", ["value"]);
+        private static readonly LythonCallableSignature RangeGtSignature = LythonCallableSignature.Create("range.__gt__", ["value"]);
+        private static readonly LythonCallableSignature RangeGeSignature = LythonCallableSignature.Create("range.__ge__", ["value"]);
+        private static readonly LythonCallableSignature RangeBoolSignature = LythonCallableSignature.Create("range.__bool__");
+        private static readonly LythonCallableSignature RangeReversedSignature = LythonCallableSignature.Create("range.__reversed__");
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
         private static readonly LythonCallableSignature RangeHashSignature = LythonCallableSignature.Create("range.__hash__");
         public static bool TryGetMember(PyRange range, string name, [MaybeNullWhen(false)] out object value)
         {
@@ -1803,7 +1836,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return position;
-                }, "range.index", ["value"]),
+                }, RangeIndexSignature),
                 "count" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -1812,7 +1845,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return RangeContains(range, arguments[0]) ? BigInteger.One : BigInteger.Zero;
-                }, "range.count", ["value"]),
+                }, RangeCountSignature),
                 "__iter__" => BoundCallable.CreateNoArguments(range, "range.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
@@ -1829,7 +1862,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyContainment.Contains(range, arguments[0], span);
-                }, "range.__contains__", ["item"]),
+                }, RangeContainsSignature),
                 "__getitem__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -1838,7 +1871,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return ReadSubscriptValue(range, arguments[0], span, context);
-                }, "range.__getitem__", ["index"]),
+                }, RangeGetItemSignature),
                 "__eq__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -1853,7 +1886,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyEquality.AreEqual(range, other);
-                }, "range.__eq__", ["value"]),
+                }, RangeEqSignature),
                 "__ne__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -1868,7 +1901,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return !PyEquality.AreEqual(range, other);
-                }, "range.__ne__", ["value"]),
+                }, RangeNeSignature),
                 "__lt__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -1877,7 +1910,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNotImplemented.Instance;
-                }, "range.__lt__", ["value"]),
+                }, RangeLtSignature),
                 "__le__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -1886,7 +1919,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNotImplemented.Instance;
-                }, "range.__le__", ["value"]),
+                }, RangeLeSignature),
                 "__gt__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -1895,7 +1928,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNotImplemented.Instance;
-                }, "range.__gt__", ["value"]),
+                }, RangeGtSignature),
                 "__ge__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -1904,7 +1937,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNotImplemented.Instance;
-                }, "range.__ge__", ["value"]),
+                }, RangeGeSignature),
                 "__bool__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -1913,7 +1946,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return range.IsTruthy();
-                }, "range.__bool__"),
+                }, RangeBoolSignature),
                 "__hash__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -1934,7 +1967,7 @@ internal sealed partial class LythonRuntime
                     var memberRangeReversedResult = new PyEnumerableIterator(range.GetSlice(PyNone.Instance, PyNone.Instance, BigInteger.MinusOne, span), span, context, "range_iterator");
                     context.Services.State.CallTemporaries.TrackFreshMutable(memberRangeReversedResult, PyIteratorBase.IteratorValueBytes);
                     return memberRangeReversedResult;
-                }, "range.__reversed__"),
+                }, RangeReversedSignature),
                 _ => MissingMemberValue.Instance,
             };
 
