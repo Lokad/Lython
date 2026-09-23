@@ -1214,6 +1214,33 @@ public sealed class LythonCallableSignatureTests
     }
 
     [Fact]
+    public void Create_ReusesHoistedEnvironSignatures()
+    {
+        // N17: companion pin for the hoisted PyEnvironmentMapping statics.
+        Assert.Same(
+            LythonCallableSignature.Create("os.environ.get", ["key", "default"], 1),
+            LythonCallableSignature.Create("os.environ.get", ["key", "default"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("os.environ.keys", []),
+            LythonCallableSignature.Create("os.environ.keys", []));
+        Assert.Same(
+            LythonCallableSignature.Create("os.environ.values", []),
+            LythonCallableSignature.Create("os.environ.values", []));
+        Assert.Same(
+            LythonCallableSignature.Create("os.environ.items", []),
+            LythonCallableSignature.Create("os.environ.items", []));
+        Assert.Same(
+            LythonCallableSignature.Create("os.environ.copy", []),
+            LythonCallableSignature.Create("os.environ.copy", []));
+        Assert.Same(
+            LythonCallableSignature.Create("os.environ.clear", []),
+            LythonCallableSignature.Create("os.environ.clear", []));
+        Assert.Same(
+            LythonCallableSignature.Create("os.environ.update", ["mapping"]),
+            LythonCallableSignature.Create("os.environ.update", ["mapping"]));
+    }
+
+    [Fact]
     public void Create_RejectsInvalidParameterMetadata()
     {
         Assert.Throws<ArgumentException>(() =>

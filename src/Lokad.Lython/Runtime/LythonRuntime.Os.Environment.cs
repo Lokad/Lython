@@ -135,6 +135,15 @@ internal sealed partial class LythonRuntime
         private readonly MemoryGovernor _governor;
         private readonly LythonSourceSpan? _allocationSpan;
 
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature EnvironGetSignature = LythonCallableSignature.Create("os.environ.get", ["key", "default"], 1);
+        private static readonly LythonCallableSignature EnvironKeysSignature = LythonCallableSignature.Create("os.environ.keys", []);
+        private static readonly LythonCallableSignature EnvironValuesSignature = LythonCallableSignature.Create("os.environ.values", []);
+        private static readonly LythonCallableSignature EnvironItemsSignature = LythonCallableSignature.Create("os.environ.items", []);
+        private static readonly LythonCallableSignature EnvironCopySignature = LythonCallableSignature.Create("os.environ.copy", []);
+        private static readonly LythonCallableSignature EnvironClearSignature = LythonCallableSignature.Create("os.environ.clear", []);
+        private static readonly LythonCallableSignature EnvironUpdateSignature = LythonCallableSignature.Create("os.environ.update", ["mapping"]);
+
         public PyEnvironmentMapping(Dictionary<string, string> items, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
         {
             _items = items;
@@ -197,7 +206,7 @@ internal sealed partial class LythonRuntime
                     return _items.TryGetValue(key, out var found)
                         ? EnvString(found)
                         : arguments.Length == 2 ? arguments[1] : PyNone.Instance;
-                }, "os.environ.get", ["key", "default"], 1),
+                }, EnvironGetSignature),
                 "keys" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -208,7 +217,7 @@ internal sealed partial class LythonRuntime
                     var result = new PyList(_items.Keys.Select<string, object>(EnvString), context.MemoryGovernor, span);
                     context.ObserveCollectionCount(result.Count, span);
                     return result;
-                }, "os.environ.keys", []),
+                }, EnvironKeysSignature),
                 "values" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -219,7 +228,7 @@ internal sealed partial class LythonRuntime
                     var result = new PyList(_items.Values.Select<string, object>(EnvString), context.MemoryGovernor, span);
                     context.ObserveCollectionCount(result.Count, span);
                     return result;
-                }, "os.environ.values", []),
+                }, EnvironValuesSignature),
                 "items" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -236,7 +245,7 @@ internal sealed partial class LythonRuntime
                         span);
                     context.ObserveCollectionCount(result.Count, span);
                     return result;
-                }, "os.environ.items", []),
+                }, EnvironItemsSignature),
                 "copy" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -247,7 +256,7 @@ internal sealed partial class LythonRuntime
                     var result = ToPyDict(context, span);
                     context.ObserveCollectionCount(result.Count, span);
                     return result;
-                }, "os.environ.copy", []),
+                }, EnvironCopySignature),
                 "clear" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -257,7 +266,7 @@ internal sealed partial class LythonRuntime
 
                     _items.Clear();
                     return PyNone.Instance;
-                }, "os.environ.clear", []),
+                }, EnvironClearSignature),
                 "update" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1 || arguments[0] is not PyDict source)
@@ -272,7 +281,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNone.Instance;
-                }, "os.environ.update", ["mapping"]),
+                }, EnvironUpdateSignature),
                 _ => MissingMemberValue.Instance,
             };
 
