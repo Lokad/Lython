@@ -362,6 +362,9 @@ internal sealed partial class LythonRuntime
 
     internal static class CsvWriterMembers
     {
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature CsvWriterowSignature = LythonCallableSignature.Create("csv.writerow", ["row"]);
+        private static readonly LythonCallableSignature CsvWriterowsSignature = LythonCallableSignature.Create("csv.writerows", ["rows"]);
         public static bool TryGetMember(CsvWriterObject writer, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -375,7 +378,7 @@ internal sealed partial class LythonRuntime
 
                     var cells = ToCsvRow(arguments[0], span, context, out var convertedBytes);
                     return WriteRow(writer, cells, span, context, convertedBytes);
-                }, "csv.writerow", ["row"]),
+                }, CsvWriterowSignature),
                 "writerows" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -394,7 +397,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNone.Instance;
-                }, "csv.writerows", ["rows"]),
+                }, CsvWriterowsSignature),
                 "getvalue" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -668,6 +671,9 @@ internal sealed partial class LythonRuntime
 
     internal static class CsvDictWriterMembers
     {
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature CsvDictWriterowSignature = LythonCallableSignature.Create("csv.DictWriter.writerow", ["rowdict"]);
+        private static readonly LythonCallableSignature CsvDictWriterowsSignature = LythonCallableSignature.Create("csv.DictWriter.writerows", ["rowdicts"]);
         public static bool TryGetMember(CsvDictWriterObject writer, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -695,7 +701,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, BuildKnownFields(writer), arguments[0], span, context, out var convertedBytes), span, context, convertedBytes);
-                }, "csv.DictWriter.writerow", ["rowdict"]),
+                }, CsvDictWriterowSignature),
                 "writerows" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -715,7 +721,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNone.Instance;
-                }, "csv.DictWriter.writerows", ["rowdicts"]),
+                }, CsvDictWriterowsSignature),
                 _ => MissingMemberValue.Instance
             };
 

@@ -1418,6 +1418,24 @@ public sealed class LythonCallableSignatureTests
     }
 
     [Fact]
+    public void Create_ReusesHoistedCsvSignatures()
+    {
+        // N17: companion pin for the hoisted CsvWriter/DictWriter statics.
+        Assert.Same(
+            LythonCallableSignature.Create("csv.writerow", ["row"]),
+            LythonCallableSignature.Create("csv.writerow", ["row"]));
+        Assert.Same(
+            LythonCallableSignature.Create("csv.writerows", ["rows"]),
+            LythonCallableSignature.Create("csv.writerows", ["rows"]));
+        Assert.Same(
+            LythonCallableSignature.Create("csv.DictWriter.writerow", ["rowdict"]),
+            LythonCallableSignature.Create("csv.DictWriter.writerow", ["rowdict"]));
+        Assert.Same(
+            LythonCallableSignature.Create("csv.DictWriter.writerows", ["rowdicts"]),
+            LythonCallableSignature.Create("csv.DictWriter.writerows", ["rowdicts"]));
+    }
+
+    [Fact]
     public void Create_RejectsInvalidParameterMetadata()
     {
         Assert.Throws<ArgumentException>(() =>
