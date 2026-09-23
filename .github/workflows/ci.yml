@@ -44,14 +44,17 @@ jobs:
           DOTNET_DbgMiniDumpType: Mini
           DOTNET_DbgMiniDumpName: ${{ github.workspace }}/crash-%p.dmp
         run: |
-          try { dotnet test Lokad.Lython.slnx -c Release 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }
+          try { dotnet test Lokad.Lython.slnx -c Release --blame-crash --blame-crash-dump-type mini 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }
           if ($LASTEXITCODE -ne 0) { exit 1 }
       - name: Publish crash dumps
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: crash-dumps-${{ matrix.os }}
-          path: ${{ github.workspace }}/crash-*.dmp
+          path: |
+            ${{ github.workspace }}/crash-*.dmp
+            ${{ github.workspace }}/**/TestResults/**/Sequence_*.xml
+            ${{ github.workspace }}/**/TestResults/**/*.dmp
           if-no-files-found: ignore
       - name: Publish test log
         if: always()
