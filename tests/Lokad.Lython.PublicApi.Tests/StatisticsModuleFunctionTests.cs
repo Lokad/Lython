@@ -87,7 +87,7 @@ with open("/out.txt", "w") as output:
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         Assert.Null(result.Failure);
-        Assert.Equal("2.25|0.6666666666666666|1.0|1290|1581", host.ReadText("/out.txt"));
+        Assert.Equal("2.25|0.6666666666666666|1|1290|1581", host.ReadText("/out.txt"));
     }
 
     [Fact]

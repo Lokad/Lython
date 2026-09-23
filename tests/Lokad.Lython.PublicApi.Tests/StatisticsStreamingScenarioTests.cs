@@ -112,7 +112,7 @@ public sealed class StatisticsStreamingScenarioTests
             """);
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
-        var expected = new List<object?> { 4.0, "empty", "nonreal" };
+        var expected = new List<object?> { new BigInteger(4), "empty", "nonreal" };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(sync.ReturnValue));

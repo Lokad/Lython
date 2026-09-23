@@ -986,17 +986,113 @@ internal sealed partial class LythonRuntime
             return Math.Exp(logTotal / values.Count);
         }
 
+        private static double VarianceToDouble(object variance)
+            => variance is BigInteger integral ? (double)integral : (double)variance;
+
+        private static bool TryAsIntegralStatistic(object value, out BigInteger integer)
+        {
+            switch (value)
+            {
+                case BigInteger integral:
+                    integer = integral;
+                    return true;
+                case int small:
+                    integer = new BigInteger(small);
+                    return true;
+                case long large:
+                    integer = new BigInteger(large);
+                    return true;
+                case bool boolean:
+                    integer = boolean ? BigInteger.One : BigInteger.Zero;
+                    return true;
+                default:
+                    integer = default;
+                    return false;
+            }
+        }
+
+        // Exact-eligibility: every drained value is int-like. Anything else
+        // (floats, Decimals, and anything the drain already rejected) takes
+        // the historical doubles below.
+        private static List<BigInteger>? TryGetIntegralList(List<object> values)
+        {
+            var integers = new List<BigInteger>(values.Count);
+            foreach (var value in values)
+            {
+                if (!TryAsIntegralStatistic(value, out var integer))
+                {
+                    return null;
+                }
+
+                integers.Add(integer);
+            }
+
+            return integers;
+        }
+
+        // Exact sum-of-squares (CPython _ss over ints): integral results keep
+        // int type, fractional ones convert once at the end. Budget checks ride
+        // the accumulation at the drain cadence.
+        private static object ComputeIntegralVariance(
+            List<BigInteger> integers,
+            BigInteger? mu,
+            bool sample,
+            LythonSourceSpan span,
+            ExecutionContext context)
+        {
+            var count = integers.Count;
+            var divisor = sample ? count - 1 : count;
+            BigInteger numerator;
+            BigInteger denominator;
+            if (mu is { } center)
+            {
+                numerator = BigInteger.Zero;
+                denominator = divisor;
+                var i = 0;
+                foreach (var value in integers)
+                {
+                    var diff = value - center;
+                    numerator += diff * diff;
+                    if ((++i & 63) == 0)
+                    {
+                        context.CheckExecutionBudget(span);
+                    }
+                }
+            }
+            else
+            {
+                BigInteger sum = BigInteger.Zero;
+                BigInteger sumSquares = BigInteger.Zero;
+                var i = 0;
+                foreach (var value in integers)
+                {
+                    sum += value;
+                    sumSquares += value * value;
+                    if ((++i & 63) == 0)
+                    {
+                        context.CheckExecutionBudget(span);
+                    }
+                }
+
+                numerator = (BigInteger)count * sumSquares - sum * sum;
+                denominator = (BigInteger)count * divisor;
+            }
+
+            var quotient = BigInteger.DivRem(numerator, denominator, out var remainder);
+            return remainder.IsZero ? (object)quotient : (double)numerator / (double)denominator;
+        }
+
         private static object PopulationStdev(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => Math.Sqrt(ComputeVariance(arguments, "statistics.pstdev", span, context, sample: false));
+            => Math.Sqrt(VarianceToDouble(ComputeVariance(arguments, "statistics.pstdev", span, context, sample: false)));
 
         private static async ValueTask<object> PopulationStdevAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => Math.Sqrt(await ComputeVarianceAsync(arguments, "statistics.pstdev", span, context, sample: false).ConfigureAwait(false));
+            => Math.Sqrt(VarianceToDouble(await ComputeVarianceAsync(arguments, "statistics.pstdev", span, context, sample: false).ConfigureAwait(false)));
 
         private static object SampleStdev(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => Math.Sqrt(ComputeVariance(arguments, "statistics.stdev", span, context, sample: true));
+            => Math.Sqrt(VarianceToDouble(ComputeVariance(arguments, "statistics.stdev", span, context, sample: true)));
 
         private static async ValueTask<object> SampleStdevAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => Math.Sqrt(await ComputeVarianceAsync(arguments, "statistics.stdev", span, context, sample: true).ConfigureAwait(false));
+            => Math.Sqrt(VarianceToDouble(await ComputeVarianceAsync(arguments, "statistics.stdev", span, context, sample: true).ConfigureAwait(false)));
 
         private static object PopulationVariance(object[] arguments, LythonSourceSpan span, ExecutionContext context)
             => ComputeVariance(arguments, "statistics.pvariance", span, context, sample: false);
@@ -1010,36 +1106,103 @@ internal sealed partial class LythonRuntime
         private static async ValueTask<object> SampleVarianceAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
             => await ComputeVarianceAsync(arguments, "statistics.variance", span, context, sample: true).ConfigureAwait(false);
 
-        private static double ComputeVariance(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, bool sample)
+        private static object ComputeVariance(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, bool sample)
         {
             using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            var values = GetNumericValuesFromData(arguments, owner, span, context, scratch);
+            // CPython reports two points for an empty sample and one for an empty
+            // population before draining; the shared drain reports one for both.
+            if (arguments.Length > 0 && arguments[0] is IReadOnlyCollection<object> sized && sized.Count == 0)
+            {
+                throw StatisticsError(sample
+                    ? $"{owner}(data) requires at least two data points."
+                    : $"{owner} requires at least one data point.", span);
+            }
+
+            var source = arguments.Length <= 1 ? arguments : new[] { arguments[0] };
+            var values = GetNumericObjects(source, owner, span, context, scratch);
             if (sample && values.Count < 2)
             {
                 throw StatisticsError($"{owner}(data) requires at least two data points.", span);
             }
 
+            // All-integral inputs (with an int-like mu) take the exact path below;
+            // the rest convert to historical doubles.
+            if (TryGetIntegralList(values) is { } integers)
+            {
+                BigInteger? mu = null;
+                var exactMu = true;
+                if (arguments.Length >= 2 && arguments[1] is not PyNone)
+                {
+                    exactMu = TryAsIntegralStatistic(arguments[1], out var center);
+                    mu = center;
+                }
+
+                if (exactMu)
+                {
+                    return ComputeIntegralVariance(integers, mu, sample, span, context);
+                }
+            }
+
+            var doubles = new List<double>(values.Count);
+            foreach (var value in values)
+            {
+                doubles.Add(ExpectRealForStatistics(value, owner, span));
+            }
+
             var mean = arguments.Length >= 2 && arguments[1] is not PyNone
                 ? ExpectRealForStatistics(arguments[1], owner, span)
-                : values.Average();
-            var sum = values.Sum(value => Math.Pow(value - mean, 2));
-            return sum / (sample ? values.Count - 1 : values.Count);
+                : doubles.Average();
+            var sum = doubles.Sum(value => Math.Pow(value - mean, 2));
+            return sum / (sample ? doubles.Count - 1 : doubles.Count);
         }
 
-        private static async ValueTask<double> ComputeVarianceAsync(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, bool sample)
+        private static async ValueTask<object> ComputeVarianceAsync(object[] arguments, string owner, LythonSourceSpan span, ExecutionContext context, bool sample)
         {
             using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            var values = await GetNumericValuesFromDataAsync(arguments, owner, span, context, scratch).ConfigureAwait(false);
+            // Same empty checks as the synchronous twin above.
+            if (arguments.Length > 0 && arguments[0] is IReadOnlyCollection<object> sized && sized.Count == 0)
+            {
+                throw StatisticsError(sample
+                    ? $"{owner}(data) requires at least two data points."
+                    : $"{owner} requires at least one data point.", span);
+            }
+
+            var source = arguments.Length <= 1 ? arguments : new[] { arguments[0] };
+            var values = await GetNumericObjectsAsync(source, owner, span, context, scratch).ConfigureAwait(false);
             if (sample && values.Count < 2)
             {
                 throw StatisticsError($"{owner}(data) requires at least two data points.", span);
             }
 
+            // All-integral inputs (with an int-like mu) take the exact path below;
+            // the rest convert to historical doubles.
+            if (TryGetIntegralList(values) is { } integers)
+            {
+                BigInteger? mu = null;
+                var exactMu = true;
+                if (arguments.Length >= 2 && arguments[1] is not PyNone)
+                {
+                    exactMu = TryAsIntegralStatistic(arguments[1], out var center);
+                    mu = center;
+                }
+
+                if (exactMu)
+                {
+                    return ComputeIntegralVariance(integers, mu, sample, span, context);
+                }
+            }
+
+            var doubles = new List<double>(values.Count);
+            foreach (var value in values)
+            {
+                doubles.Add(ExpectRealForStatistics(value, owner, span));
+            }
+
             var mean = arguments.Length >= 2 && arguments[1] is not PyNone
                 ? ExpectRealForStatistics(arguments[1], owner, span)
-                : values.Average();
-            var sum = values.Sum(value => Math.Pow(value - mean, 2));
-            return sum / (sample ? values.Count - 1 : values.Count);
+                : doubles.Average();
+            var sum = doubles.Sum(value => Math.Pow(value - mean, 2));
+            return sum / (sample ? doubles.Count - 1 : doubles.Count);
         }
 
         private static object Quantiles(object[] arguments, LythonSourceSpan span, ExecutionContext context)

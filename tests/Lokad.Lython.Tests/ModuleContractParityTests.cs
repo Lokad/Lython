@@ -83,7 +83,7 @@ public sealed class ModuleContractParityTests
     [InlineData("operator.length_hint", "import operator\nreturn operator.length_hint([1, 2])", "Integer")]
     [InlineData("operator.ge", "import operator\nreturn operator.ge(1, 2)", "Boolean")]
     [InlineData("math.fabs", "import math\nreturn math.fabs(1)", "Float")]
-    [InlineData("statistics.variance", "import statistics\nreturn statistics.variance([1, 2, 3])", "Float")]
+    [InlineData("statistics.variance", "import statistics\nreturn statistics.variance([1, 2, 3, 4])", "Float")] // N29: integral inputs may return int (exact _ss); the Float contract shape stays coarse like median.
     [InlineData("statistics.harmonic_mean", "import statistics\nreturn statistics.harmonic_mean([1, 2, 4])", "Float")]
     [InlineData("random.randrange", "import random\nreturn random.randrange(0, 5)", "Integer")]
     [InlineData("os.path.normpath", "import os.path\nreturn os.path.normpath(\"a/./b\")", "String")]

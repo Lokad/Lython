@@ -77,10 +77,10 @@ public sealed class StatisticsAsyncCompositionTests
     {
         await AssertAsyncMatchesSync(
             "import statistics\nwith open(\"/m.txt\") as f:\n    return [statistics.variance(int(s) for s in f), statistics.pvariance(int(s) for s in open(\"/m.txt\"))]\n",
-            // Binary-exact data: naive doubles agree with exact statistics here, so the
-            // test pins composition and exact values rather than the deferred 1-ulp
-            // variance-exactness gap (see N13 notes).
-            new List<object?> { 1.0, 0.6666666666666666 });
+            // Integral inputs accumulate exactly (CPython _ss), so integral results
+            // are ints; the test pins composition and exact values in both modes.
+
+            new List<object?> { new BigInteger(1), 0.6666666666666666 });
     }
 
     [Fact]

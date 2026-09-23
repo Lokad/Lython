@@ -246,4 +246,48 @@ public sealed class StatisticsPrecisionScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task IntegralVarianceKeepsIntType()
+    {
+        // N29: exact integral accumulation (CPython _ss): huge magnitudes stay
+        // exact and integral results keep int type in both execution modes.
+        var script = Compile(
+            """
+            import statistics
+            return [statistics.pvariance([10**30, 10**30 + 2, 10**30 + 4]),
+                    statistics.variance([10**30, 10**30 + 2, 10**30 + 4]),
+                    statistics.pvariance([5]),
+                    statistics.variance([1, 2, 3], 2),
+                    statistics.variance([1, 2, 3], 2.0)]
+            """);
+        var expected = new List<object?>
+        {
+            2.6666666666666665,
+            new BigInteger(4),
+            new BigInteger(0),
+            new BigInteger(1),
+            1.0,
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task EmptyVarianceReportsTwoPoints()
+    {
+        var script = Compile("import statistics\nstatistics.variance([])\n");
+        var sync = script.Run(new MockLythonHost());
+        Assert.False(sync.Success);
+        Assert.Equal("StatisticsError", sync.Failure?.ExceptionType);
+        Assert.Contains("at least two data points", sync.Failure?.Message, StringComparison.Ordinal);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.False(asyncResult.Success);
+        Assert.Equal("StatisticsError", asyncResult.Failure?.ExceptionType);
+        Assert.Contains("at least two data points", asyncResult.Failure?.Message, StringComparison.Ordinal);
+    }
 }
