@@ -51,6 +51,13 @@ internal sealed partial class LythonRuntime
 
     internal static class ReMatchMembers
     {
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature MatchGroupsSignature = LythonCallableSignature.Create("match.groups", ["default"], 0);
+        private static readonly LythonCallableSignature MatchGroupDictSignature = LythonCallableSignature.Create("match.groupdict", ["default"], 0);
+        private static readonly LythonCallableSignature MatchExpandSignature = LythonCallableSignature.Create("match.expand", ["template"]);
+        private static readonly LythonCallableSignature MatchStartSignature = LythonCallableSignature.Create("match.start", ["group"], 0);
+        private static readonly LythonCallableSignature MatchEndSignature = LythonCallableSignature.Create("match.end", ["group"], 0);
+        private static readonly LythonCallableSignature MatchSpanSignature = LythonCallableSignature.Create("match.span", ["group"], 0);
         private readonly record struct RegexGroupBounds(BigInteger Start, BigInteger End);
 
         public static bool TryGetMember(ReMatchObject match, string name, [MaybeNullWhen(false)] out object value)
@@ -112,7 +119,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return new PyTuple(groups, context.MemoryGovernor, span);
-                }, "match.groups", ["default"], 0),
+                }, MatchGroupsSignature),
                 "groupdict" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length > 1)
@@ -132,7 +139,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return dict;
-                }, "match.groupdict", ["default"], 0),
+                }, MatchGroupDictSignature),
                 "expand" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var template))
@@ -141,7 +148,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return ExpandReplacementTemplate(match, template, context, span);
-                }, "match.expand", ["template"]),
+                }, MatchExpandSignature),
                 "start" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length > 1)
@@ -150,7 +157,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return ResolveGroupBounds(match, arguments.Length == 0 ? BigInteger.Zero : arguments[0], span).Start;
-                }, "match.start", ["group"], 0),
+                }, MatchStartSignature),
                 "end" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length > 1)
@@ -159,7 +166,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return ResolveGroupBounds(match, arguments.Length == 0 ? BigInteger.Zero : arguments[0], span).End;
-                }, "match.end", ["group"], 0),
+                }, MatchEndSignature),
                 "span" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length > 1)
@@ -169,7 +176,7 @@ internal sealed partial class LythonRuntime
 
                     var bounds = ResolveGroupBounds(match, arguments.Length == 0 ? BigInteger.Zero : arguments[0], span);
                     return CreateTuple(2, i => i == 0 ? bounds.Start : bounds.End, context, span);
-                }, "match.span", ["group"], 0),
+                }, MatchSpanSignature),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -363,6 +370,15 @@ internal sealed partial class LythonRuntime
 
     internal static class RePatternMembers
     {
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature PatternSearchSignature = LythonCallableSignature.Create("pattern.search", ["string", "pos", "endpos"], 1);
+        private static readonly LythonCallableSignature PatternMatchSignature = LythonCallableSignature.Create("pattern.match", ["string", "pos", "endpos"], 1);
+        private static readonly LythonCallableSignature PatternFullMatchSignature = LythonCallableSignature.Create("pattern.fullmatch", ["string", "pos", "endpos"], 1);
+        private static readonly LythonCallableSignature PatternFindAllSignature = LythonCallableSignature.Create("pattern.findall", ["string", "pos", "endpos"], 1);
+        private static readonly LythonCallableSignature PatternFindIterSignature = LythonCallableSignature.Create("pattern.finditer", ["string", "pos", "endpos"], 1);
+        private static readonly LythonCallableSignature PatternSubSignature = LythonCallableSignature.Create("pattern.sub", ["repl", "string", "count", "pos", "endpos"], 2);
+        private static readonly LythonCallableSignature PatternSubnSignature = LythonCallableSignature.Create("pattern.subn", ["repl", "string", "count", "pos", "endpos"], 2);
+        private static readonly LythonCallableSignature PatternSplitSignature = LythonCallableSignature.Create("pattern.split", ["string", "maxsplit", "pos", "endpos"], 1);
         public static bool TryGetMember(RePatternObject pattern, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -371,14 +387,14 @@ internal sealed partial class LythonRuntime
                 "flags" => new BigInteger(pattern.Flags),
                 "groups" => new BigInteger(Math.Max(0, pattern.CaptureSlotCount - 1)),
                 "groupindex" => CreateGroupIndex(pattern),
-                "search" => BoundCallable.Create((arguments, span, context) => ExecuteMatch(pattern, arguments, span, context, static (regex, input) => regex.SearchDetailedData(input)), "pattern.search", ["string", "pos", "endpos"], 1),
-                "match" => BoundCallable.Create((arguments, span, context) => ExecuteMatch(pattern, arguments, span, context, static (regex, input) => regex.MatchDetailedData(input)), "pattern.match", ["string", "pos", "endpos"], 1),
-                "fullmatch" => BoundCallable.Create((arguments, span, context) => ExecuteMatch(pattern, arguments, span, context, static (regex, input) => regex.FullMatchDetailedData(input)), "pattern.fullmatch", ["string", "pos", "endpos"], 1),
-                "findall" => BoundCallable.Create((arguments, span, context) => ExecuteFindAll(pattern, arguments, span, context), "pattern.findall", ["string", "pos", "endpos"], 1),
-                "finditer" => BoundCallable.Create((arguments, span, context) => ExecuteFindIter(pattern, arguments, span, context), "pattern.finditer", ["string", "pos", "endpos"], 1),
-                "sub" => BoundCallable.Create((arguments, span, context) => ExecuteSub(pattern, arguments, span, context, RegexSubstitutionMode.TextOnly), "pattern.sub", ["repl", "string", "count", "pos", "endpos"], 2),
-                "subn" => BoundCallable.Create((arguments, span, context) => ExecuteSub(pattern, arguments, span, context, RegexSubstitutionMode.TextAndCount), "pattern.subn", ["repl", "string", "count", "pos", "endpos"], 2),
-                "split" => BoundCallable.Create((arguments, span, context) => ExecuteSplit(pattern, arguments, span, context), "pattern.split", ["string", "maxsplit", "pos", "endpos"], 1),
+                "search" => BoundCallable.Create((arguments, span, context) => ExecuteMatch(pattern, arguments, span, context, static (regex, input) => regex.SearchDetailedData(input)), PatternSearchSignature),
+                "match" => BoundCallable.Create((arguments, span, context) => ExecuteMatch(pattern, arguments, span, context, static (regex, input) => regex.MatchDetailedData(input)), PatternMatchSignature),
+                "fullmatch" => BoundCallable.Create((arguments, span, context) => ExecuteMatch(pattern, arguments, span, context, static (regex, input) => regex.FullMatchDetailedData(input)), PatternFullMatchSignature),
+                "findall" => BoundCallable.Create((arguments, span, context) => ExecuteFindAll(pattern, arguments, span, context), PatternFindAllSignature),
+                "finditer" => BoundCallable.Create((arguments, span, context) => ExecuteFindIter(pattern, arguments, span, context), PatternFindIterSignature),
+                "sub" => BoundCallable.Create((arguments, span, context) => ExecuteSub(pattern, arguments, span, context, RegexSubstitutionMode.TextOnly), PatternSubSignature),
+                "subn" => BoundCallable.Create((arguments, span, context) => ExecuteSub(pattern, arguments, span, context, RegexSubstitutionMode.TextAndCount), PatternSubnSignature),
+                "split" => BoundCallable.Create((arguments, span, context) => ExecuteSplit(pattern, arguments, span, context), PatternSplitSignature),
                 _ => MissingMemberValue.Instance,
             };
 

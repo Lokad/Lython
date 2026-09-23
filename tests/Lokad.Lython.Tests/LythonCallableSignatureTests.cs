@@ -1034,6 +1034,54 @@ public sealed class LythonCallableSignatureTests
     }
 
     [Fact]
+    public void Create_ReusesHoistedRegexSignatures()
+    {
+        // N17: companion pin for the hoisted ReMatch/RePatternMembers statics.
+        Assert.Same(
+            LythonCallableSignature.Create("match.groups", ["default"], 0),
+            LythonCallableSignature.Create("match.groups", ["default"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("match.groupdict", ["default"], 0),
+            LythonCallableSignature.Create("match.groupdict", ["default"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("match.expand", ["template"]),
+            LythonCallableSignature.Create("match.expand", ["template"]));
+        Assert.Same(
+            LythonCallableSignature.Create("match.start", ["group"], 0),
+            LythonCallableSignature.Create("match.start", ["group"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("match.end", ["group"], 0),
+            LythonCallableSignature.Create("match.end", ["group"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("match.span", ["group"], 0),
+            LythonCallableSignature.Create("match.span", ["group"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("pattern.search", ["string", "pos", "endpos"], 1),
+            LythonCallableSignature.Create("pattern.search", ["string", "pos", "endpos"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("pattern.match", ["string", "pos", "endpos"], 1),
+            LythonCallableSignature.Create("pattern.match", ["string", "pos", "endpos"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("pattern.fullmatch", ["string", "pos", "endpos"], 1),
+            LythonCallableSignature.Create("pattern.fullmatch", ["string", "pos", "endpos"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("pattern.findall", ["string", "pos", "endpos"], 1),
+            LythonCallableSignature.Create("pattern.findall", ["string", "pos", "endpos"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("pattern.finditer", ["string", "pos", "endpos"], 1),
+            LythonCallableSignature.Create("pattern.finditer", ["string", "pos", "endpos"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("pattern.sub", ["repl", "string", "count", "pos", "endpos"], 2),
+            LythonCallableSignature.Create("pattern.sub", ["repl", "string", "count", "pos", "endpos"], 2));
+        Assert.Same(
+            LythonCallableSignature.Create("pattern.subn", ["repl", "string", "count", "pos", "endpos"], 2),
+            LythonCallableSignature.Create("pattern.subn", ["repl", "string", "count", "pos", "endpos"], 2));
+        Assert.Same(
+            LythonCallableSignature.Create("pattern.split", ["string", "maxsplit", "pos", "endpos"], 1),
+            LythonCallableSignature.Create("pattern.split", ["string", "maxsplit", "pos", "endpos"], 1));
+    }
+
+    [Fact]
     public void Create_RejectsInvalidParameterMetadata()
     {
         Assert.Throws<ArgumentException>(() =>
