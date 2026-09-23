@@ -1436,6 +1436,63 @@ public sealed class LythonCallableSignatureTests
     }
 
     [Fact]
+    public void Create_ReusesHoistedWorksheetSignatures()
+    {
+        // N17: companion pin for the hoisted OpenPyxlWorksheet statics.
+        Assert.Same(
+            LythonCallableSignature.Create("Worksheet.set_printer_settings", ["paper_size", "orientation"], requiredCount: 2),
+            LythonCallableSignature.Create("Worksheet.set_printer_settings", ["paper_size", "orientation"], requiredCount: 2));
+        Assert.Same(
+            LythonCallableSignature.Create("Worksheet.add_table", ["table"]),
+            LythonCallableSignature.Create("Worksheet.add_table", ["table"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Worksheet.add_data_validation", ["data_validation"]),
+            LythonCallableSignature.Create("Worksheet.add_data_validation", ["data_validation"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Worksheet.add_chart", ["chart", "anchor"], requiredCount: 1),
+            LythonCallableSignature.Create("Worksheet.add_chart", ["chart", "anchor"], requiredCount: 1));
+        Assert.Same(
+            LythonCallableSignature.Create("Worksheet.add_image", ["img", "anchor"], requiredCount: 1),
+            LythonCallableSignature.Create("Worksheet.add_image", ["img", "anchor"], requiredCount: 1));
+        Assert.Same(
+            LythonCallableSignature.Create("Worksheet.cell", ["row", "column", "value"], requiredCount: 2),
+            LythonCallableSignature.Create("Worksheet.cell", ["row", "column", "value"], requiredCount: 2));
+        Assert.Same(
+            LythonCallableSignature.Create("Worksheet.append", ["iterable"]),
+            LythonCallableSignature.Create("Worksheet.append", ["iterable"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Worksheet.iter_rows", ["min_row", "max_row", "min_col", "max_col", "values_only"], requiredCount: 0),
+            LythonCallableSignature.Create("Worksheet.iter_rows", ["min_row", "max_row", "min_col", "max_col", "values_only"], requiredCount: 0));
+        Assert.Same(
+            LythonCallableSignature.Create("Worksheet.iter_cols", ["min_row", "max_row", "min_col", "max_col", "values_only"], requiredCount: 0),
+            LythonCallableSignature.Create("Worksheet.iter_cols", ["min_row", "max_row", "min_col", "max_col", "values_only"], requiredCount: 0));
+        Assert.Same(
+            LythonCallableSignature.Create("Worksheet.calculate_dimension", []),
+            LythonCallableSignature.Create("Worksheet.calculate_dimension", []));
+        Assert.Same(
+            LythonCallableSignature.Create("Worksheet.merge_cells", ["range_string", "start_row", "start_column", "end_row", "end_column"], requiredCount: 0),
+            LythonCallableSignature.Create("Worksheet.merge_cells", ["range_string", "start_row", "start_column", "end_row", "end_column"], requiredCount: 0));
+        Assert.Same(
+            LythonCallableSignature.Create("Worksheet.unmerge_cells", ["range_string", "start_row", "start_column", "end_row", "end_column"], requiredCount: 0),
+            LythonCallableSignature.Create("Worksheet.unmerge_cells", ["range_string", "start_row", "start_column", "end_row", "end_column"], requiredCount: 0));
+        Assert.Same(
+            LythonCallableSignature.Create("Worksheet.insert_rows", ["idx", "amount"], requiredCount: 1),
+            LythonCallableSignature.Create("Worksheet.insert_rows", ["idx", "amount"], requiredCount: 1));
+        Assert.Same(
+            LythonCallableSignature.Create("Worksheet.delete_rows", ["idx", "amount"], requiredCount: 1),
+            LythonCallableSignature.Create("Worksheet.delete_rows", ["idx", "amount"], requiredCount: 1));
+        Assert.Same(
+            LythonCallableSignature.Create("Worksheet.insert_cols", ["idx", "amount"], requiredCount: 1),
+            LythonCallableSignature.Create("Worksheet.insert_cols", ["idx", "amount"], requiredCount: 1));
+        Assert.Same(
+            LythonCallableSignature.Create("Worksheet.delete_cols", ["idx", "amount"], requiredCount: 1),
+            LythonCallableSignature.Create("Worksheet.delete_cols", ["idx", "amount"], requiredCount: 1));
+        Assert.Same(
+            LythonCallableSignature.Create("Worksheet.move_range", ["cell_range", "rows", "cols", "translate"], requiredCount: 1),
+            LythonCallableSignature.Create("Worksheet.move_range", ["cell_range", "rows", "cols", "translate"], requiredCount: 1));
+    }
+
+    [Fact]
     public void Create_RejectsInvalidParameterMetadata()
     {
         Assert.Throws<ArgumentException>(() =>

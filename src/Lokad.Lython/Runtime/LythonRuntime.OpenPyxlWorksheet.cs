@@ -211,6 +211,24 @@ internal sealed partial class LythonRuntime
 
         public bool HasPageMargins => _hasPageMargins;
 
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature WorksheetSetPrinterSettingsSignature = LythonCallableSignature.Create("Worksheet.set_printer_settings", ["paper_size", "orientation"], requiredCount: 2);
+        private static readonly LythonCallableSignature WorksheetAddTableSignature = LythonCallableSignature.Create("Worksheet.add_table", ["table"]);
+        private static readonly LythonCallableSignature WorksheetAddDataValidationSignature = LythonCallableSignature.Create("Worksheet.add_data_validation", ["data_validation"]);
+        private static readonly LythonCallableSignature WorksheetAddChartSignature = LythonCallableSignature.Create("Worksheet.add_chart", ["chart", "anchor"], requiredCount: 1);
+        private static readonly LythonCallableSignature WorksheetAddImageSignature = LythonCallableSignature.Create("Worksheet.add_image", ["img", "anchor"], requiredCount: 1);
+        private static readonly LythonCallableSignature WorksheetCellSignature = LythonCallableSignature.Create("Worksheet.cell", ["row", "column", "value"], requiredCount: 2);
+        private static readonly LythonCallableSignature WorksheetAppendSignature = LythonCallableSignature.Create("Worksheet.append", ["iterable"]);
+        private static readonly LythonCallableSignature WorksheetIterRowsSignature = LythonCallableSignature.Create("Worksheet.iter_rows", ["min_row", "max_row", "min_col", "max_col", "values_only"], requiredCount: 0);
+        private static readonly LythonCallableSignature WorksheetIterColsSignature = LythonCallableSignature.Create("Worksheet.iter_cols", ["min_row", "max_row", "min_col", "max_col", "values_only"], requiredCount: 0);
+        private static readonly LythonCallableSignature WorksheetCalculateDimensionSignature = LythonCallableSignature.Create("Worksheet.calculate_dimension", []);
+        private static readonly LythonCallableSignature WorksheetMergeCellsSignature = LythonCallableSignature.Create("Worksheet.merge_cells", ["range_string", "start_row", "start_column", "end_row", "end_column"], requiredCount: 0);
+        private static readonly LythonCallableSignature WorksheetUnmergeCellsSignature = LythonCallableSignature.Create("Worksheet.unmerge_cells", ["range_string", "start_row", "start_column", "end_row", "end_column"], requiredCount: 0);
+        private static readonly LythonCallableSignature WorksheetInsertRowsSignature = LythonCallableSignature.Create("Worksheet.insert_rows", ["idx", "amount"], requiredCount: 1);
+        private static readonly LythonCallableSignature WorksheetDeleteRowsSignature = LythonCallableSignature.Create("Worksheet.delete_rows", ["idx", "amount"], requiredCount: 1);
+        private static readonly LythonCallableSignature WorksheetInsertColsSignature = LythonCallableSignature.Create("Worksheet.insert_cols", ["idx", "amount"], requiredCount: 1);
+        private static readonly LythonCallableSignature WorksheetDeleteColsSignature = LythonCallableSignature.Create("Worksheet.delete_cols", ["idx", "amount"], requiredCount: 1);
+        private static readonly LythonCallableSignature WorksheetMoveRangeSignature = LythonCallableSignature.Create("Worksheet.move_range", ["cell_range", "rows", "cols", "translate"], requiredCount: 1);
         public bool TryGetMember(
             string name,
             ExecutionContext context,
@@ -259,7 +277,7 @@ internal sealed partial class LythonRuntime
                 "page_margins" => _pageMargins,
                 "page_setup" => _pageSetup,
                 "protection" => _protection,
-                "set_printer_settings" => BoundCallable.Create(SetPrinterSettings, "Worksheet.set_printer_settings", ["paper_size", "orientation"], requiredCount: 2),
+                "set_printer_settings" => BoundCallable.Create(SetPrinterSettings, WorksheetSetPrinterSettingsSignature),
                 "auto_filter" => new OpenPyxlAutoFilter(this),
                 "tables" => new OpenPyxlTableCollection(this),
                 "data_validations" => new OpenPyxlDataValidationList(this),
@@ -269,27 +287,27 @@ internal sealed partial class LythonRuntime
                 "_drawings" => new PyList(_drawings.Cast<object>()),
                 "drawings" => new PyList(_drawings.Cast<object>()),
                 "_drawing" => _drawings.Count == 0 ? PyNone.Instance : _drawings[0],
-                "add_table" => BoundCallable.Create(AddTable, "Worksheet.add_table", ["table"]),
-                "add_data_validation" => BoundCallable.Create(AddDataValidation, "Worksheet.add_data_validation", ["data_validation"]),
-                "add_chart" => BoundCallable.Create(AddChart, "Worksheet.add_chart", ["chart", "anchor"], requiredCount: 1),
-                "add_image" => BoundCallable.Create(AddImage, "Worksheet.add_image", ["img", "anchor"], requiredCount: 1),
+                "add_table" => BoundCallable.Create(AddTable, WorksheetAddTableSignature),
+                "add_data_validation" => BoundCallable.Create(AddDataValidation, WorksheetAddDataValidationSignature),
+                "add_chart" => BoundCallable.Create(AddChart, WorksheetAddChartSignature),
+                "add_image" => BoundCallable.Create(AddImage, WorksheetAddImageSignature),
                 "column_dimensions" => new OpenPyxlColumnDimensionCollection(this),
                 "row_dimensions" => new OpenPyxlRowDimensionCollection(this),
                 "rows" => RowsTuple(1, MaxRow, 1, MaxColumn, valuesOnly: false, null, null),
                 "columns" => ColumnsTuple(1, MaxRow, 1, MaxColumn, valuesOnly: false, null, null),
                 "values" => RowsTuple(1, MaxRow, 1, MaxColumn, valuesOnly: true, null, null),
-                "cell" => BoundCallable.Create(Cell, "Worksheet.cell", ["row", "column", "value"], requiredCount: 2),
-                "append" => BoundCallable.Create(Append, "Worksheet.append", ["iterable"]),
-                "iter_rows" => BoundCallable.Create(IterRows, "Worksheet.iter_rows", ["min_row", "max_row", "min_col", "max_col", "values_only"], requiredCount: 0),
-                "iter_cols" => BoundCallable.Create(IterCols, "Worksheet.iter_cols", ["min_row", "max_row", "min_col", "max_col", "values_only"], requiredCount: 0),
-                "calculate_dimension" => BoundCallable.Create(CalculateDimension, "Worksheet.calculate_dimension", []),
-                "merge_cells" => BoundCallable.Create(MergeCells, "Worksheet.merge_cells", ["range_string", "start_row", "start_column", "end_row", "end_column"], requiredCount: 0),
-                "unmerge_cells" => BoundCallable.Create(UnmergeCells, "Worksheet.unmerge_cells", ["range_string", "start_row", "start_column", "end_row", "end_column"], requiredCount: 0),
-                "insert_rows" => BoundCallable.Create(InsertRows, "Worksheet.insert_rows", ["idx", "amount"], requiredCount: 1),
-                "delete_rows" => BoundCallable.Create(DeleteRows, "Worksheet.delete_rows", ["idx", "amount"], requiredCount: 1),
-                "insert_cols" => BoundCallable.Create(InsertCols, "Worksheet.insert_cols", ["idx", "amount"], requiredCount: 1),
-                "delete_cols" => BoundCallable.Create(DeleteCols, "Worksheet.delete_cols", ["idx", "amount"], requiredCount: 1),
-                "move_range" => BoundCallable.Create(MoveRange, "Worksheet.move_range", ["cell_range", "rows", "cols", "translate"], requiredCount: 1),
+                "cell" => BoundCallable.Create(Cell, WorksheetCellSignature),
+                "append" => BoundCallable.Create(Append, WorksheetAppendSignature),
+                "iter_rows" => BoundCallable.Create(IterRows, WorksheetIterRowsSignature),
+                "iter_cols" => BoundCallable.Create(IterCols, WorksheetIterColsSignature),
+                "calculate_dimension" => BoundCallable.Create(CalculateDimension, WorksheetCalculateDimensionSignature),
+                "merge_cells" => BoundCallable.Create(MergeCells, WorksheetMergeCellsSignature),
+                "unmerge_cells" => BoundCallable.Create(UnmergeCells, WorksheetUnmergeCellsSignature),
+                "insert_rows" => BoundCallable.Create(InsertRows, WorksheetInsertRowsSignature),
+                "delete_rows" => BoundCallable.Create(DeleteRows, WorksheetDeleteRowsSignature),
+                "insert_cols" => BoundCallable.Create(InsertCols, WorksheetInsertColsSignature),
+                "delete_cols" => BoundCallable.Create(DeleteCols, WorksheetDeleteColsSignature),
+                "move_range" => BoundCallable.Create(MoveRange, WorksheetMoveRangeSignature),
                 "merged_cells" => new OpenPyxlMergedCellSet(_mergedRanges),
                 "merged_cell_ranges" => MergedRangeList(),
                 _ => MissingMemberValue.Instance,
