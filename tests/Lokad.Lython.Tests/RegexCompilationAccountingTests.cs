@@ -61,6 +61,25 @@ public sealed class RegexCompilationAccountingTests
     }
 
     [Fact]
+    public void CacheSlotDenial_SkipsCachingWithoutFailure()
+    {
+        // Coverage item: denial rollback in regex compilation caching. A denied
+        // 64 B slot charge skips caching silently; the compiled result stays usable
+        // and a funded twin caches the same key facts normally.
+        var host = new MockLythonHost();
+        var funded = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
+        var span = new LythonSourceSpan(0, 0, 0, 0);
+        var pattern = Assert.IsType<LythonRuntime.RePatternObject>(CreatePattern(PyString.FromString("a"), funded, span));
+        var cache = new RegexPatternCache();
+        cache.Add("a", 32, pattern, new MemoryGovernor(0), span);
+        Assert.Equal(0, cache.Count);
+        cache.Add("a", 32, pattern, funded.MemoryGovernor, span);
+        Assert.Equal(1, cache.Count);
+        Assert.True(cache.TryGet("a", 32, out var cached));
+        Assert.Same(pattern, cached);
+    }
+
+    [Fact]
     public void FailedCompilationReleasesScratch()
     {
         var host = new MockLythonHost();
