@@ -13,6 +13,19 @@ internal sealed partial class LythonRuntime
 {
     internal static partial class StringMembers
     {
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature StrContainsSignature = LythonCallableSignature.Create("str.__contains__", ["item"]);
+        private static readonly LythonCallableSignature StrEqSignature = LythonCallableSignature.Create("str.__eq__", ["value"]);
+        private static readonly LythonCallableSignature StrNeSignature = LythonCallableSignature.Create("str.__ne__", ["value"]);
+        private static readonly LythonCallableSignature StrLtSignature = LythonCallableSignature.Create("str.__lt__", ["value"]);
+        private static readonly LythonCallableSignature StrLeSignature = LythonCallableSignature.Create("str.__le__", ["value"]);
+        private static readonly LythonCallableSignature StrGtSignature = LythonCallableSignature.Create("str.__gt__", ["value"]);
+        private static readonly LythonCallableSignature StrGeSignature = LythonCallableSignature.Create("str.__ge__", ["value"]);
+        private static readonly LythonCallableSignature StrHashSignature = LythonCallableSignature.Create("str.__hash__");
+        private static readonly LythonCallableSignature StrGetItemSignature = LythonCallableSignature.Create("str.__getitem__", ["index"]);
+        private static readonly LythonCallableSignature StrAddSignature = LythonCallableSignature.Create("str.__add__", ["value"]);
+        private static readonly LythonCallableSignature StrMulSignature = LythonCallableSignature.Create("str.__mul__", ["value"]);
+        private static readonly LythonCallableSignature StrRMulSignature = LythonCallableSignature.Create("str.__rmul__", ["value"]);
         private readonly record struct StringSearchBounds(int Start, int End, bool StartBeyondLength);
 
         private static readonly IStringMemberProvider[] Providers =
@@ -62,7 +75,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyContainment.Contains(text, arguments[0], span);
-                }, "str.__contains__", ["item"]);
+                }, StrContainsSignature);
                 return true;
             }
             if (name == "__eq__")
@@ -80,7 +93,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return text.Equals(other);
-                }, "str.__eq__", ["value"]);
+                }, StrEqSignature);
                 return true;
             }
 
@@ -99,7 +112,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return !text.Equals(other);
-                }, "str.__ne__", ["value"]);
+                }, StrNeSignature);
                 return true;
             }
 
@@ -118,7 +131,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyString.CompareOrdinal(text, other) < 0;
-                }, "str.__lt__", ["value"]);
+                }, StrLtSignature);
                 return true;
             }
 
@@ -137,7 +150,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyString.CompareOrdinal(text, other) <= 0;
-                }, "str.__le__", ["value"]);
+                }, StrLeSignature);
                 return true;
             }
 
@@ -156,7 +169,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyString.CompareOrdinal(text, other) > 0;
-                }, "str.__gt__", ["value"]);
+                }, StrGtSignature);
                 return true;
             }
 
@@ -175,7 +188,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyString.CompareOrdinal(text, other) >= 0;
-                }, "str.__ge__", ["value"]);
+                }, StrGeSignature);
                 return true;
             }
 
@@ -189,7 +202,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return ComputeBuiltinHash(text, span);
-                }, "str.__hash__");
+                }, StrHashSignature);
                 return true;
             }
 
@@ -203,7 +216,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return ReadSubscriptValue(text, arguments[0], span, context);
-                }, "str.__getitem__", ["index"]);
+                }, StrGetItemSignature);
                 return true;
             }
 
@@ -217,7 +230,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateAdd(text, arguments[0], context, span);
-                }, "str.__add__", ["value"]);
+                }, StrAddSignature);
                 return true;
             }
 
@@ -233,7 +246,7 @@ internal sealed partial class LythonRuntime
                     RequireRepeatCount(arguments[0], context, span);
 
                     return EvaluateMultiply(text, arguments[0], context, span);
-                }, "str.__mul__", ["value"]);
+                }, StrMulSignature);
                 return true;
             }
 
@@ -249,7 +262,7 @@ internal sealed partial class LythonRuntime
                     RequireRepeatCount(arguments[0], context, span);
 
                     return EvaluateMultiply(arguments[0], text, context, span);
-                }, "str.__rmul__", ["value"]);
+                }, StrRMulSignature);
                 return true;
             }
 

@@ -1541,6 +1541,48 @@ public sealed class LythonCallableSignatureTests
     }
 
     [Fact]
+    public void Create_ReusesHoistedStrCoreSignatures()
+    {
+        // N17: companion pin for the hoisted StringMembers core statics.
+        Assert.Same(
+            LythonCallableSignature.Create("str.__contains__", ["item"]),
+            LythonCallableSignature.Create("str.__contains__", ["item"]));
+        Assert.Same(
+            LythonCallableSignature.Create("str.__eq__", ["value"]),
+            LythonCallableSignature.Create("str.__eq__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("str.__ne__", ["value"]),
+            LythonCallableSignature.Create("str.__ne__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("str.__lt__", ["value"]),
+            LythonCallableSignature.Create("str.__lt__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("str.__le__", ["value"]),
+            LythonCallableSignature.Create("str.__le__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("str.__gt__", ["value"]),
+            LythonCallableSignature.Create("str.__gt__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("str.__ge__", ["value"]),
+            LythonCallableSignature.Create("str.__ge__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("str.__hash__"),
+            LythonCallableSignature.Create("str.__hash__"));
+        Assert.Same(
+            LythonCallableSignature.Create("str.__getitem__", ["index"]),
+            LythonCallableSignature.Create("str.__getitem__", ["index"]));
+        Assert.Same(
+            LythonCallableSignature.Create("str.__add__", ["value"]),
+            LythonCallableSignature.Create("str.__add__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("str.__mul__", ["value"]),
+            LythonCallableSignature.Create("str.__mul__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("str.__rmul__", ["value"]),
+            LythonCallableSignature.Create("str.__rmul__", ["value"]));
+    }
+
+    [Fact]
     public void Create_RejectsInvalidParameterMetadata()
     {
         Assert.Throws<ArgumentException>(() =>
