@@ -1944,6 +1944,24 @@ internal sealed partial class LythonRuntime
 
     internal static class DictMembers
     {
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature DictGetSignature = LythonCallableSignature.Create("dict.get", ["key", "default"], 1);
+        private static readonly LythonCallableSignature DictPopSignature = LythonCallableSignature.Create("dict.pop", ["key", "default"], 1);
+        private static readonly LythonCallableSignature DictSetDefaultSignature = LythonCallableSignature.Create("dict.setdefault", ["key", "default"], 1);
+        private static readonly LythonCallableSignature DictContainsSignature = LythonCallableSignature.Create("dict.__contains__", ["item"]);
+        private static readonly LythonCallableSignature DictGetItemSignature = LythonCallableSignature.Create("dict.__getitem__", ["index"]);
+        private static readonly LythonCallableSignature DictSetItemSignature = LythonCallableSignature.Create("dict.__setitem__", ["index", "value"]);
+        private static readonly LythonCallableSignature DictDelItemSignature = LythonCallableSignature.Create("dict.__delitem__", ["index"]);
+        private static readonly LythonCallableSignature DictOrSignature = LythonCallableSignature.Create("dict.__or__", ["value"]);
+        private static readonly LythonCallableSignature DictROrSignature = LythonCallableSignature.Create("dict.__ror__", ["value"]);
+        private static readonly LythonCallableSignature DictIOrSignature = LythonCallableSignature.Create("dict.__ior__", ["value"]);
+        private static readonly LythonCallableSignature DictEqSignature = LythonCallableSignature.Create("dict.__eq__", ["value"]);
+        private static readonly LythonCallableSignature DictNeSignature = LythonCallableSignature.Create("dict.__ne__", ["value"]);
+        private static readonly LythonCallableSignature DictLtSignature = LythonCallableSignature.Create("dict.__lt__", ["value"]);
+        private static readonly LythonCallableSignature DictLeSignature = LythonCallableSignature.Create("dict.__le__", ["value"]);
+        private static readonly LythonCallableSignature DictGtSignature = LythonCallableSignature.Create("dict.__gt__", ["value"]);
+        private static readonly LythonCallableSignature DictGeSignature = LythonCallableSignature.Create("dict.__ge__", ["value"]);
+        private static readonly LythonCallableSignature DictReversedSignature = LythonCallableSignature.Create("dict.__reversed__");
         public static bool TryGetMember(PyDict dict, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -1960,7 +1978,7 @@ internal sealed partial class LythonRuntime
                     return dict.TryGetValue(key, out var found)
                         ? found
                         : arguments.Length == 2 ? arguments[1] : PyNone.Instance;
-                }, "dict.get", ["key", "default"], 1),
+                }, DictGetSignature),
                 "keys" => BoundCallable.CreateNoArguments(dict, "dict.keys", static (receiver, span, context) =>
                 {
                     context.MemoryGovernor.Reserve(64L, span);
@@ -2011,7 +2029,7 @@ internal sealed partial class LythonRuntime
 
                     dict.Remove(key);
                     return found;
-                }, "dict.pop", ["key", "default"], 1),
+                }, DictPopSignature),
                 "popitem" => BoundCallable.CreateNoArguments(dict, "dict.popitem", static (receiver, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -2050,7 +2068,7 @@ internal sealed partial class LythonRuntime
                     dict.AttachMemoryGovernor(context.MemoryGovernor, span);
                     dict.SetItem(key, defaultValue);
                     return defaultValue;
-                }, "dict.setdefault", ["key", "default"], 1),
+                }, DictSetDefaultSignature),
                 "__iter__" => BoundCallable.CreateNoArguments(dict, "dict.__iter__", static (receiver, span, context) =>
                 {
                     PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
@@ -2068,7 +2086,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyContainment.Contains(dict, arguments[0], span);
-                }, "dict.__contains__", ["item"]),
+                }, DictContainsSignature),
                 "__getitem__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2077,7 +2095,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return ReadSubscriptValue(dict, arguments[0], span, context);
-                }, "dict.__getitem__", ["index"]),
+                }, DictGetItemSignature),
                 "__setitem__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 2)
@@ -2087,7 +2105,7 @@ internal sealed partial class LythonRuntime
 
                     SetSubscriptValue(dict, arguments[0], arguments[1], span, context);
                     return PyNone.Instance;
-                }, "dict.__setitem__", ["index", "value"]),
+                }, DictSetItemSignature),
                 "__delitem__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2097,7 +2115,7 @@ internal sealed partial class LythonRuntime
 
                     DeleteSubscriptValue(dict, arguments[0], span, context);
                     return PyNone.Instance;
-                }, "dict.__delitem__", ["index"]),
+                }, DictDelItemSignature),
                 "__or__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2122,7 +2140,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return merged;
-                }, "dict.__or__", ["value"]),
+                }, DictOrSignature),
                 "__ror__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2148,7 +2166,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return merged;
-                }, "dict.__ror__", ["value"]),
+                }, DictROrSignature),
                 "__ior__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2161,7 +2179,7 @@ internal sealed partial class LythonRuntime
                     UpdateDictionaryFromSource(dict, arguments[0], context, span);
                     context.ObserveCollectionCount(dict.Count, span);
                     return dict;
-                }, "dict.__ior__", ["value"]),
+                }, DictIOrSignature),
                 "__eq__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -2176,7 +2194,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyEquality.AreEqual(dict, arguments[0]);
-                }, "dict.__eq__", ["value"]),
+                }, DictEqSignature),
                 "__ne__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
@@ -2191,7 +2209,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return !PyEquality.AreEqual(dict, arguments[0]);
-                }, "dict.__ne__", ["value"]),
+                }, DictNeSignature),
                 "__lt__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -2200,7 +2218,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNotImplemented.Instance;
-                }, "dict.__lt__", ["value"]),
+                }, DictLtSignature),
                 "__le__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -2209,7 +2227,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNotImplemented.Instance;
-                }, "dict.__le__", ["value"]),
+                }, DictLeSignature),
                 "__gt__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -2218,7 +2236,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNotImplemented.Instance;
-                }, "dict.__gt__", ["value"]),
+                }, DictGtSignature),
                 "__ge__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -2227,7 +2245,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNotImplemented.Instance;
-                }, "dict.__ge__", ["value"]),
+                }, DictGeSignature),
                 "__hash__" => PyNone.Instance,
                 "__reversed__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -2240,7 +2258,7 @@ internal sealed partial class LythonRuntime
                     var memberDictReversedResult = dict.CreateReversedKeysIterator(context.MemoryGovernor, span);
                     context.Services.State.CallTemporaries.TrackFreshMutable(memberDictReversedResult, PyIteratorBase.IteratorValueBytes);
                     return memberDictReversedResult;
-                }, "dict.__reversed__"),
+                }, DictReversedSignature),
                 _ => MissingMemberValue.Instance,
             };
 
