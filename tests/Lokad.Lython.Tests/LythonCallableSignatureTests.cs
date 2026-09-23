@@ -650,6 +650,204 @@ public sealed class LythonCallableSignatureTests
     }
 
     [Fact]
+    public void Create_ReusesHoistedDictViewSignatures()
+    {
+        // N17: companion pin for the hoisted DictViewMembers statics.
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.items.__and__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.items.__and__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.items.__contains__", ["item"]),
+            LythonCallableSignature.Create("ChainMap.items.__contains__", ["item"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.items.__eq__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.items.__eq__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.items.__ge__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.items.__ge__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.items.__gt__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.items.__gt__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.items.__le__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.items.__le__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.items.__lt__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.items.__lt__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.items.__ne__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.items.__ne__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.items.__or__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.items.__or__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.items.__rand__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.items.__rand__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.items.__ror__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.items.__ror__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.items.__rsub__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.items.__rsub__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.items.__rxor__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.items.__rxor__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.items.__sub__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.items.__sub__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.items.__xor__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.items.__xor__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.keys.__and__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.keys.__and__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.keys.__contains__", ["item"]),
+            LythonCallableSignature.Create("ChainMap.keys.__contains__", ["item"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.keys.__eq__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.keys.__eq__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.keys.__ge__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.keys.__ge__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.keys.__gt__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.keys.__gt__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.keys.__le__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.keys.__le__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.keys.__lt__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.keys.__lt__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.keys.__ne__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.keys.__ne__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.keys.__or__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.keys.__or__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.keys.__rand__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.keys.__rand__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.keys.__ror__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.keys.__ror__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.keys.__rsub__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.keys.__rsub__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.keys.__rxor__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.keys.__rxor__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.keys.__sub__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.keys.__sub__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.keys.__xor__", ["value"]),
+            LythonCallableSignature.Create("ChainMap.keys.__xor__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ChainMap.values.__contains__", ["item"]),
+            LythonCallableSignature.Create("ChainMap.values.__contains__", ["item"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_items.__and__", ["value"]),
+            LythonCallableSignature.Create("dict_items.__and__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_items.__contains__", ["item"]),
+            LythonCallableSignature.Create("dict_items.__contains__", ["item"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_items.__eq__", ["value"]),
+            LythonCallableSignature.Create("dict_items.__eq__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_items.__ge__", ["value"]),
+            LythonCallableSignature.Create("dict_items.__ge__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_items.__gt__", ["value"]),
+            LythonCallableSignature.Create("dict_items.__gt__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_items.__le__", ["value"]),
+            LythonCallableSignature.Create("dict_items.__le__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_items.__lt__", ["value"]),
+            LythonCallableSignature.Create("dict_items.__lt__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_items.__ne__", ["value"]),
+            LythonCallableSignature.Create("dict_items.__ne__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_items.__or__", ["value"]),
+            LythonCallableSignature.Create("dict_items.__or__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_items.__rand__", ["value"]),
+            LythonCallableSignature.Create("dict_items.__rand__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_items.__reversed__"),
+            LythonCallableSignature.Create("dict_items.__reversed__"));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_items.__ror__", ["value"]),
+            LythonCallableSignature.Create("dict_items.__ror__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_items.__rsub__", ["value"]),
+            LythonCallableSignature.Create("dict_items.__rsub__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_items.__rxor__", ["value"]),
+            LythonCallableSignature.Create("dict_items.__rxor__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_items.__sub__", ["value"]),
+            LythonCallableSignature.Create("dict_items.__sub__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_items.__xor__", ["value"]),
+            LythonCallableSignature.Create("dict_items.__xor__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_keys.__and__", ["value"]),
+            LythonCallableSignature.Create("dict_keys.__and__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_keys.__contains__", ["item"]),
+            LythonCallableSignature.Create("dict_keys.__contains__", ["item"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_keys.__eq__", ["value"]),
+            LythonCallableSignature.Create("dict_keys.__eq__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_keys.__ge__", ["value"]),
+            LythonCallableSignature.Create("dict_keys.__ge__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_keys.__gt__", ["value"]),
+            LythonCallableSignature.Create("dict_keys.__gt__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_keys.__le__", ["value"]),
+            LythonCallableSignature.Create("dict_keys.__le__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_keys.__lt__", ["value"]),
+            LythonCallableSignature.Create("dict_keys.__lt__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_keys.__ne__", ["value"]),
+            LythonCallableSignature.Create("dict_keys.__ne__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_keys.__or__", ["value"]),
+            LythonCallableSignature.Create("dict_keys.__or__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_keys.__rand__", ["value"]),
+            LythonCallableSignature.Create("dict_keys.__rand__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_keys.__reversed__"),
+            LythonCallableSignature.Create("dict_keys.__reversed__"));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_keys.__ror__", ["value"]),
+            LythonCallableSignature.Create("dict_keys.__ror__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_keys.__rsub__", ["value"]),
+            LythonCallableSignature.Create("dict_keys.__rsub__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_keys.__rxor__", ["value"]),
+            LythonCallableSignature.Create("dict_keys.__rxor__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_keys.__sub__", ["value"]),
+            LythonCallableSignature.Create("dict_keys.__sub__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_keys.__xor__", ["value"]),
+            LythonCallableSignature.Create("dict_keys.__xor__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("dict_values.__reversed__"),
+            LythonCallableSignature.Create("dict_values.__reversed__"));
+    }
+
+    [Fact]
     public void Create_RejectsInvalidParameterMetadata()
     {
         Assert.Throws<ArgumentException>(() =>

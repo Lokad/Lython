@@ -2354,7 +2354,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyContainment.Contains(view, arguments[0], span);
-                }, "dict_keys.__contains__", ["item"]),
+                }, DictKeysContainsSignature),
                 "__or__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2363,7 +2363,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateBitwiseOr(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
-                }, "dict_keys.__or__", ["value"]),
+                }, DictKeysOrSignature),
                 "__ror__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2372,7 +2372,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateBitwiseOr(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
-                }, "dict_keys.__ror__", ["value"]),
+                }, DictKeysROrSignature),
                 "__and__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2381,7 +2381,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateBitwiseAnd(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
-                }, "dict_keys.__and__", ["value"]),
+                }, DictKeysAndSignature),
                 "__rand__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2390,7 +2390,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateBitwiseAnd(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
-                }, "dict_keys.__rand__", ["value"]),
+                }, DictKeysRAndSignature),
                 "__sub__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2399,7 +2399,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateSubtract(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
-                }, "dict_keys.__sub__", ["value"]),
+                }, DictKeysSubSignature),
                 "__rsub__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2408,7 +2408,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateSubtract(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
-                }, "dict_keys.__rsub__", ["value"]),
+                }, DictKeysRSubSignature),
                 "__xor__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2417,7 +2417,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateBitwiseXor(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
-                }, "dict_keys.__xor__", ["value"]),
+                }, DictKeysXorSignature),
                 "__rxor__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2426,7 +2426,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateBitwiseXor(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
-                }, "dict_keys.__rxor__", ["value"]),
+                }, DictKeysRXorSignature),
                 "__eq__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2440,7 +2440,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return SetMembers.AsSetOperand(view, span, context).SetEquals(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "dict_keys.__eq__", ["value"]),
+                }, DictKeysEqSignature),
                 "__ne__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2454,7 +2454,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return !SetMembers.AsSetOperand(view, span, context).SetEquals(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "dict_keys.__ne__", ["value"]),
+                }, DictKeysNeSignature),
                 "__lt__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2468,7 +2468,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return SetMembers.AsSetOperand(view, span, context).IsProperSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "dict_keys.__lt__", ["value"]),
+                }, DictKeysLtSignature),
                 "__le__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2482,7 +2482,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return SetMembers.AsSetOperand(view, span, context).IsSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "dict_keys.__le__", ["value"]),
+                }, DictKeysLeSignature),
                 "__gt__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2496,7 +2496,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return SetMembers.AsSetOperand(view, span, context).IsProperSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "dict_keys.__gt__", ["value"]),
+                }, DictKeysGtSignature),
                 "__ge__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2510,7 +2510,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return SetMembers.AsSetOperand(view, span, context).IsSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "dict_keys.__ge__", ["value"]),
+                }, DictKeysGeSignature),
                 "__hash__" => PyNone.Instance,
                 "__reversed__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -2523,7 +2523,7 @@ internal sealed partial class LythonRuntime
                     var memberKeysReversedResult = view.Source.CreateReversedKeysIterator(context.MemoryGovernor, span);
                     context.Services.State.CallTemporaries.TrackFreshMutable(memberKeysReversedResult, PyIteratorBase.IteratorValueBytes);
                     return memberKeysReversedResult;
-                }, "dict_keys.__reversed__"),
+                }, DictKeysReversedSignature),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -2554,7 +2554,7 @@ internal sealed partial class LythonRuntime
                     var memberValuesReversedResult = view.Source.CreateReversedValuesIterator(context.MemoryGovernor, span);
                     context.Services.State.CallTemporaries.TrackFreshMutable(memberValuesReversedResult, PyIteratorBase.IteratorValueBytes);
                     return memberValuesReversedResult;
-                }, "dict_values.__reversed__"),
+                }, DictValuesReversedSignature),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -2596,7 +2596,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyContainment.Contains(view, arguments[0], span);
-                }, "dict_items.__contains__", ["item"]),
+                }, DictItemsContainsSignature),
                 "__or__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2605,7 +2605,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateBitwiseOr(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
-                }, "dict_items.__or__", ["value"]),
+                }, DictItemsOrSignature),
                 "__ror__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2614,7 +2614,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateBitwiseOr(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
-                }, "dict_items.__ror__", ["value"]),
+                }, DictItemsROrSignature),
                 "__and__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2623,7 +2623,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateBitwiseAnd(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
-                }, "dict_items.__and__", ["value"]),
+                }, DictItemsAndSignature),
                 "__rand__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2632,7 +2632,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateBitwiseAnd(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
-                }, "dict_items.__rand__", ["value"]),
+                }, DictItemsRAndSignature),
                 "__sub__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2641,7 +2641,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateSubtract(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
-                }, "dict_items.__sub__", ["value"]),
+                }, DictItemsSubSignature),
                 "__rsub__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2650,7 +2650,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateSubtract(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
-                }, "dict_items.__rsub__", ["value"]),
+                }, DictItemsRSubSignature),
                 "__xor__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2659,7 +2659,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateBitwiseXor(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
-                }, "dict_items.__xor__", ["value"]),
+                }, DictItemsXorSignature),
                 "__rxor__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2668,7 +2668,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return EvaluateBitwiseXor(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
-                }, "dict_items.__rxor__", ["value"]),
+                }, DictItemsRXorSignature),
                 "__eq__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2682,7 +2682,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return SetMembers.AsSetOperand(view, span, context).SetEquals(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "dict_items.__eq__", ["value"]),
+                }, DictItemsEqSignature),
                 "__ne__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2696,7 +2696,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return !SetMembers.AsSetOperand(view, span, context).SetEquals(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "dict_items.__ne__", ["value"]),
+                }, DictItemsNeSignature),
                 "__lt__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2710,7 +2710,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return SetMembers.AsSetOperand(view, span, context).IsProperSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "dict_items.__lt__", ["value"]),
+                }, DictItemsLtSignature),
                 "__le__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2724,7 +2724,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return SetMembers.AsSetOperand(view, span, context).IsSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "dict_items.__le__", ["value"]),
+                }, DictItemsLeSignature),
                 "__gt__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2738,7 +2738,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return SetMembers.AsSetOperand(view, span, context).IsProperSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "dict_items.__gt__", ["value"]),
+                }, DictItemsGtSignature),
                 "__ge__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2752,7 +2752,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return SetMembers.AsSetOperand(view, span, context).IsSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "dict_items.__ge__", ["value"]),
+                }, DictItemsGeSignature),
                 "__hash__" => PyNone.Instance,
                 "__reversed__" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -2765,7 +2765,7 @@ internal sealed partial class LythonRuntime
                     var memberItemsReversedResult = view.Source.CreateReversedItemsIterator(context.MemoryGovernor, span);
                     context.Services.State.CallTemporaries.TrackFreshMutable(memberItemsReversedResult, PyIteratorBase.IteratorValueBytes);
                     return memberItemsReversedResult;
-                }, "dict_items.__reversed__"),
+                }, DictItemsReversedSignature),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -2804,7 +2804,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyContainment.Contains(view, arguments[0], span);
-                }, "ChainMap.keys.__contains__", ["item"]),
+                }, ChainMapKeysContainsSignature),
                 "__or__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2819,7 +2819,7 @@ internal sealed partial class LythonRuntime
 
 
                     return EvaluateBitwiseOr(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
-                }, "ChainMap.keys.__or__", ["value"]),
+                }, ChainMapKeysOrSignature),
                 "__ror__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2834,7 +2834,7 @@ internal sealed partial class LythonRuntime
 
 
                     return EvaluateBitwiseOr(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
-                }, "ChainMap.keys.__ror__", ["value"]),
+                }, ChainMapKeysROrSignature),
                 "__and__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2849,7 +2849,7 @@ internal sealed partial class LythonRuntime
 
 
                     return EvaluateBitwiseAnd(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
-                }, "ChainMap.keys.__and__", ["value"]),
+                }, ChainMapKeysAndSignature),
                 "__rand__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2864,7 +2864,7 @@ internal sealed partial class LythonRuntime
 
 
                     return EvaluateBitwiseAnd(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
-                }, "ChainMap.keys.__rand__", ["value"]),
+                }, ChainMapKeysRAndSignature),
                 "__sub__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2879,7 +2879,7 @@ internal sealed partial class LythonRuntime
 
 
                     return EvaluateSubtract(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
-                }, "ChainMap.keys.__sub__", ["value"]),
+                }, ChainMapKeysSubSignature),
                 "__rsub__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2894,7 +2894,7 @@ internal sealed partial class LythonRuntime
 
 
                     return EvaluateSubtract(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
-                }, "ChainMap.keys.__rsub__", ["value"]),
+                }, ChainMapKeysRSubSignature),
                 "__xor__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2909,7 +2909,7 @@ internal sealed partial class LythonRuntime
 
 
                     return EvaluateBitwiseXor(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
-                }, "ChainMap.keys.__xor__", ["value"]),
+                }, ChainMapKeysXorSignature),
                 "__rxor__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2924,7 +2924,7 @@ internal sealed partial class LythonRuntime
 
 
                     return EvaluateBitwiseXor(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
-                }, "ChainMap.keys.__rxor__", ["value"]),
+                }, ChainMapKeysRXorSignature),
                 "__eq__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2938,7 +2938,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return SetMembers.AsSetOperand(view, span, context).SetEquals(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "ChainMap.keys.__eq__", ["value"]),
+                }, ChainMapKeysEqSignature),
                 "__ne__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2952,7 +2952,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return !SetMembers.AsSetOperand(view, span, context).SetEquals(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "ChainMap.keys.__ne__", ["value"]),
+                }, ChainMapKeysNeSignature),
                 "__lt__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2966,7 +2966,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return SetMembers.AsSetOperand(view, span, context).IsProperSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "ChainMap.keys.__lt__", ["value"]),
+                }, ChainMapKeysLtSignature),
                 "__le__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2980,7 +2980,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return SetMembers.AsSetOperand(view, span, context).IsSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "ChainMap.keys.__le__", ["value"]),
+                }, ChainMapKeysLeSignature),
                 "__gt__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -2994,7 +2994,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return SetMembers.AsSetOperand(view, span, context).IsProperSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "ChainMap.keys.__gt__", ["value"]),
+                }, ChainMapKeysGtSignature),
                 "__ge__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3008,7 +3008,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return SetMembers.AsSetOperand(view, span, context).IsSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "ChainMap.keys.__ge__", ["value"]),
+                }, ChainMapKeysGeSignature),
                 "__hash__" => PyNone.Instance,
                 _ => MissingMemberValue.Instance,
             };
@@ -3051,7 +3051,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyContainment.Contains(view, arguments[0], span);
-                }, "ChainMap.items.__contains__", ["item"]),
+                }, ChainMapItemsContainsSignature),
                 "__or__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3066,7 +3066,7 @@ internal sealed partial class LythonRuntime
 
 
                     return EvaluateBitwiseOr(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
-                }, "ChainMap.items.__or__", ["value"]),
+                }, ChainMapItemsOrSignature),
                 "__ror__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3081,7 +3081,7 @@ internal sealed partial class LythonRuntime
 
 
                     return EvaluateBitwiseOr(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
-                }, "ChainMap.items.__ror__", ["value"]),
+                }, ChainMapItemsROrSignature),
                 "__and__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3096,7 +3096,7 @@ internal sealed partial class LythonRuntime
 
 
                     return EvaluateBitwiseAnd(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
-                }, "ChainMap.items.__and__", ["value"]),
+                }, ChainMapItemsAndSignature),
                 "__rand__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3111,7 +3111,7 @@ internal sealed partial class LythonRuntime
 
 
                     return EvaluateBitwiseAnd(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
-                }, "ChainMap.items.__rand__", ["value"]),
+                }, ChainMapItemsRAndSignature),
                 "__sub__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3126,7 +3126,7 @@ internal sealed partial class LythonRuntime
 
 
                     return EvaluateSubtract(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
-                }, "ChainMap.items.__sub__", ["value"]),
+                }, ChainMapItemsSubSignature),
                 "__rsub__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3141,7 +3141,7 @@ internal sealed partial class LythonRuntime
 
 
                     return EvaluateSubtract(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
-                }, "ChainMap.items.__rsub__", ["value"]),
+                }, ChainMapItemsRSubSignature),
                 "__xor__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3156,7 +3156,7 @@ internal sealed partial class LythonRuntime
 
 
                     return EvaluateBitwiseXor(SetMembers.AsSetOperand(view, span, context), SetMembers.AsSetOperand(arguments[0], span, context), context, span);
-                }, "ChainMap.items.__xor__", ["value"]),
+                }, ChainMapItemsXorSignature),
                 "__rxor__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3171,7 +3171,7 @@ internal sealed partial class LythonRuntime
 
 
                     return EvaluateBitwiseXor(SetMembers.AsSetOperand(arguments[0], span, context), SetMembers.AsSetOperand(view, span, context), context, span);
-                }, "ChainMap.items.__rxor__", ["value"]),
+                }, ChainMapItemsRXorSignature),
                 "__eq__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3185,7 +3185,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return SetMembers.AsSetOperand(view, span, context).SetEquals(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "ChainMap.items.__eq__", ["value"]),
+                }, ChainMapItemsEqSignature),
                 "__ne__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3199,7 +3199,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return !SetMembers.AsSetOperand(view, span, context).SetEquals(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "ChainMap.items.__ne__", ["value"]),
+                }, ChainMapItemsNeSignature),
                 "__lt__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3213,7 +3213,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return SetMembers.AsSetOperand(view, span, context).IsProperSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "ChainMap.items.__lt__", ["value"]),
+                }, ChainMapItemsLtSignature),
                 "__le__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3227,7 +3227,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return SetMembers.AsSetOperand(view, span, context).IsSubsetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "ChainMap.items.__le__", ["value"]),
+                }, ChainMapItemsLeSignature),
                 "__gt__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3241,7 +3241,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return SetMembers.AsSetOperand(view, span, context).IsProperSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "ChainMap.items.__gt__", ["value"]),
+                }, ChainMapItemsGtSignature),
                 "__ge__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -3255,7 +3255,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return SetMembers.AsSetOperand(view, span, context).IsSupersetOf(SetMembers.AsSetOperand(arguments[0], span, context));
-                }, "ChainMap.items.__ge__", ["value"]),
+                }, ChainMapItemsGeSignature),
                 "__hash__" => PyNone.Instance,
                 _ => MissingMemberValue.Instance,
             };
@@ -3283,7 +3283,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyContainment.Contains(view, arguments[0], span);
-                }, "ChainMap.values.__contains__", ["item"]),
+                }, ChainMapValuesContainsSignature),
                 "__hash__" => PyNone.Instance,
                 _ => MissingMemberValue.Instance,
             };
@@ -3298,6 +3298,71 @@ internal sealed partial class LythonRuntime
         private static readonly LythonCallableSignature DictItemsIsDisjointSignature = LythonCallableSignature.Create("dict_items.isdisjoint", ["other"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
         private static readonly LythonCallableSignature ChainMapKeysIsDisjointSignature = LythonCallableSignature.Create("ChainMap.keys.isdisjoint", ["other"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
         private static readonly LythonCallableSignature ChainMapItemsIsDisjointSignature = LythonCallableSignature.Create("ChainMap.items.isdisjoint", ["other"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+        // N17: remaining fixed signatures hoisted per family.
+        private static readonly LythonCallableSignature ChainMapItemsAndSignature = LythonCallableSignature.Create("ChainMap.items.__and__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapItemsContainsSignature = LythonCallableSignature.Create("ChainMap.items.__contains__", ["item"]);
+        private static readonly LythonCallableSignature ChainMapItemsEqSignature = LythonCallableSignature.Create("ChainMap.items.__eq__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapItemsGeSignature = LythonCallableSignature.Create("ChainMap.items.__ge__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapItemsGtSignature = LythonCallableSignature.Create("ChainMap.items.__gt__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapItemsLeSignature = LythonCallableSignature.Create("ChainMap.items.__le__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapItemsLtSignature = LythonCallableSignature.Create("ChainMap.items.__lt__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapItemsNeSignature = LythonCallableSignature.Create("ChainMap.items.__ne__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapItemsOrSignature = LythonCallableSignature.Create("ChainMap.items.__or__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapItemsRAndSignature = LythonCallableSignature.Create("ChainMap.items.__rand__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapItemsROrSignature = LythonCallableSignature.Create("ChainMap.items.__ror__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapItemsRSubSignature = LythonCallableSignature.Create("ChainMap.items.__rsub__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapItemsRXorSignature = LythonCallableSignature.Create("ChainMap.items.__rxor__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapItemsSubSignature = LythonCallableSignature.Create("ChainMap.items.__sub__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapItemsXorSignature = LythonCallableSignature.Create("ChainMap.items.__xor__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapKeysAndSignature = LythonCallableSignature.Create("ChainMap.keys.__and__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapKeysContainsSignature = LythonCallableSignature.Create("ChainMap.keys.__contains__", ["item"]);
+        private static readonly LythonCallableSignature ChainMapKeysEqSignature = LythonCallableSignature.Create("ChainMap.keys.__eq__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapKeysGeSignature = LythonCallableSignature.Create("ChainMap.keys.__ge__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapKeysGtSignature = LythonCallableSignature.Create("ChainMap.keys.__gt__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapKeysLeSignature = LythonCallableSignature.Create("ChainMap.keys.__le__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapKeysLtSignature = LythonCallableSignature.Create("ChainMap.keys.__lt__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapKeysNeSignature = LythonCallableSignature.Create("ChainMap.keys.__ne__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapKeysOrSignature = LythonCallableSignature.Create("ChainMap.keys.__or__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapKeysRAndSignature = LythonCallableSignature.Create("ChainMap.keys.__rand__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapKeysROrSignature = LythonCallableSignature.Create("ChainMap.keys.__ror__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapKeysRSubSignature = LythonCallableSignature.Create("ChainMap.keys.__rsub__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapKeysRXorSignature = LythonCallableSignature.Create("ChainMap.keys.__rxor__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapKeysSubSignature = LythonCallableSignature.Create("ChainMap.keys.__sub__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapKeysXorSignature = LythonCallableSignature.Create("ChainMap.keys.__xor__", ["value"]);
+        private static readonly LythonCallableSignature ChainMapValuesContainsSignature = LythonCallableSignature.Create("ChainMap.values.__contains__", ["item"]);
+        private static readonly LythonCallableSignature DictItemsAndSignature = LythonCallableSignature.Create("dict_items.__and__", ["value"]);
+        private static readonly LythonCallableSignature DictItemsContainsSignature = LythonCallableSignature.Create("dict_items.__contains__", ["item"]);
+        private static readonly LythonCallableSignature DictItemsEqSignature = LythonCallableSignature.Create("dict_items.__eq__", ["value"]);
+        private static readonly LythonCallableSignature DictItemsGeSignature = LythonCallableSignature.Create("dict_items.__ge__", ["value"]);
+        private static readonly LythonCallableSignature DictItemsGtSignature = LythonCallableSignature.Create("dict_items.__gt__", ["value"]);
+        private static readonly LythonCallableSignature DictItemsLeSignature = LythonCallableSignature.Create("dict_items.__le__", ["value"]);
+        private static readonly LythonCallableSignature DictItemsLtSignature = LythonCallableSignature.Create("dict_items.__lt__", ["value"]);
+        private static readonly LythonCallableSignature DictItemsNeSignature = LythonCallableSignature.Create("dict_items.__ne__", ["value"]);
+        private static readonly LythonCallableSignature DictItemsOrSignature = LythonCallableSignature.Create("dict_items.__or__", ["value"]);
+        private static readonly LythonCallableSignature DictItemsRAndSignature = LythonCallableSignature.Create("dict_items.__rand__", ["value"]);
+        private static readonly LythonCallableSignature DictItemsReversedSignature = LythonCallableSignature.Create("dict_items.__reversed__");
+        private static readonly LythonCallableSignature DictItemsROrSignature = LythonCallableSignature.Create("dict_items.__ror__", ["value"]);
+        private static readonly LythonCallableSignature DictItemsRSubSignature = LythonCallableSignature.Create("dict_items.__rsub__", ["value"]);
+        private static readonly LythonCallableSignature DictItemsRXorSignature = LythonCallableSignature.Create("dict_items.__rxor__", ["value"]);
+        private static readonly LythonCallableSignature DictItemsSubSignature = LythonCallableSignature.Create("dict_items.__sub__", ["value"]);
+        private static readonly LythonCallableSignature DictItemsXorSignature = LythonCallableSignature.Create("dict_items.__xor__", ["value"]);
+        private static readonly LythonCallableSignature DictKeysAndSignature = LythonCallableSignature.Create("dict_keys.__and__", ["value"]);
+        private static readonly LythonCallableSignature DictKeysContainsSignature = LythonCallableSignature.Create("dict_keys.__contains__", ["item"]);
+        private static readonly LythonCallableSignature DictKeysEqSignature = LythonCallableSignature.Create("dict_keys.__eq__", ["value"]);
+        private static readonly LythonCallableSignature DictKeysGeSignature = LythonCallableSignature.Create("dict_keys.__ge__", ["value"]);
+        private static readonly LythonCallableSignature DictKeysGtSignature = LythonCallableSignature.Create("dict_keys.__gt__", ["value"]);
+        private static readonly LythonCallableSignature DictKeysLeSignature = LythonCallableSignature.Create("dict_keys.__le__", ["value"]);
+        private static readonly LythonCallableSignature DictKeysLtSignature = LythonCallableSignature.Create("dict_keys.__lt__", ["value"]);
+        private static readonly LythonCallableSignature DictKeysNeSignature = LythonCallableSignature.Create("dict_keys.__ne__", ["value"]);
+        private static readonly LythonCallableSignature DictKeysOrSignature = LythonCallableSignature.Create("dict_keys.__or__", ["value"]);
+        private static readonly LythonCallableSignature DictKeysRAndSignature = LythonCallableSignature.Create("dict_keys.__rand__", ["value"]);
+        private static readonly LythonCallableSignature DictKeysReversedSignature = LythonCallableSignature.Create("dict_keys.__reversed__");
+        private static readonly LythonCallableSignature DictKeysROrSignature = LythonCallableSignature.Create("dict_keys.__ror__", ["value"]);
+        private static readonly LythonCallableSignature DictKeysRSubSignature = LythonCallableSignature.Create("dict_keys.__rsub__", ["value"]);
+        private static readonly LythonCallableSignature DictKeysRXorSignature = LythonCallableSignature.Create("dict_keys.__rxor__", ["value"]);
+        private static readonly LythonCallableSignature DictKeysSubSignature = LythonCallableSignature.Create("dict_keys.__sub__", ["value"]);
+        private static readonly LythonCallableSignature DictKeysXorSignature = LythonCallableSignature.Create("dict_keys.__xor__", ["value"]);
+        private static readonly LythonCallableSignature DictValuesReversedSignature = LythonCallableSignature.Create("dict_values.__reversed__");
     }
 
     internal static class DefaultDictMembers
