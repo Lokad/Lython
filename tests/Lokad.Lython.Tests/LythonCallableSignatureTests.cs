@@ -1493,6 +1493,54 @@ public sealed class LythonCallableSignatureTests
     }
 
     [Fact]
+    public void Create_ReusesHoistedOpenPyxlModelSignatures()
+    {
+        // N17: companion pin for the hoisted openpyxl model statics.
+        Assert.Same(
+            LythonCallableSignature.Create("TableList.keys", []),
+            LythonCallableSignature.Create("TableList.keys", []));
+        Assert.Same(
+            LythonCallableSignature.Create("TableList.values", []),
+            LythonCallableSignature.Create("TableList.values", []));
+        Assert.Same(
+            LythonCallableSignature.Create("TableList.items", []),
+            LythonCallableSignature.Create("TableList.items", []));
+        Assert.Same(
+            LythonCallableSignature.Create("SheetProtection.enable", []),
+            LythonCallableSignature.Create("SheetProtection.enable", []));
+        Assert.Same(
+            LythonCallableSignature.Create("SheetProtection.disable", []),
+            LythonCallableSignature.Create("SheetProtection.disable", []));
+        Assert.Same(
+            LythonCallableSignature.Create("WorkbookProtection.set_workbook_password", ["value", "already_hashed"], requiredCount: 1),
+            LythonCallableSignature.Create("WorkbookProtection.set_workbook_password", ["value", "already_hashed"], requiredCount: 1));
+        Assert.Same(
+            LythonCallableSignature.Create("WorkbookProtection.set_revisions_password", ["value", "already_hashed"], requiredCount: 1),
+            LythonCallableSignature.Create("WorkbookProtection.set_revisions_password", ["value", "already_hashed"], requiredCount: 1));
+        Assert.Same(
+            LythonCallableSignature.Create("Chart.add_data", ["data", "titles_from_data", "from_rows"], requiredCount: 1),
+            LythonCallableSignature.Create("Chart.add_data", ["data", "titles_from_data", "from_rows"], requiredCount: 1));
+        Assert.Same(
+            LythonCallableSignature.Create("Chart.set_categories", ["labels"]),
+            LythonCallableSignature.Create("Chart.set_categories", ["labels"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Chart.append", ["value"]),
+            LythonCallableSignature.Create("Chart.append", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("DataValidation.add", ["cell_range"]),
+            LythonCallableSignature.Create("DataValidation.add", ["cell_range"]));
+        Assert.Same(
+            LythonCallableSignature.Create("DataValidationList.append", ["data_validation"]),
+            LythonCallableSignature.Create("DataValidationList.append", ["data_validation"]));
+        Assert.Same(
+            LythonCallableSignature.Create("ConditionalFormattingList.items", []),
+            LythonCallableSignature.Create("ConditionalFormattingList.items", []));
+        Assert.Same(
+            LythonCallableSignature.Create("ConditionalFormattingList.add", ["range_string", "rule"], requiredCount: 2),
+            LythonCallableSignature.Create("ConditionalFormattingList.add", ["range_string", "rule"], requiredCount: 2));
+    }
+
+    [Fact]
     public void Create_RejectsInvalidParameterMetadata()
     {
         Assert.Throws<ArgumentException>(() =>

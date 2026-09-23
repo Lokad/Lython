@@ -90,6 +90,9 @@ internal sealed partial class LythonRuntime
         IPyIterableValue,
         IPyRenderableValue
     {
+        // N17: hot fixed signatures hoisted per family.
+        private static readonly LythonCallableSignature ConditionalFormattingItemsSignature = LythonCallableSignature.Create("ConditionalFormattingList.items", []);
+        private static readonly LythonCallableSignature ConditionalFormattingAddSignature = LythonCallableSignature.Create("ConditionalFormattingList.add", ["range_string", "rule"], requiredCount: 2);
         private readonly OpenPyxlWorksheet _worksheet;
         private readonly MemoryGovernor? _governor;
         private readonly LythonSourceSpan? _allocationSpan;
@@ -118,8 +121,8 @@ internal sealed partial class LythonRuntime
                 "ranges" => _governor is null
                     ? new PyList(_worksheet.ConditionalFormattings.Select(formatting => (object)PyString.FromString(formatting.Sqref)))
                     : new PyList(_worksheet.ConditionalFormattings.Select(formatting => (object)PyString.FromString(formatting.Sqref, _governor, _allocationSpan)), _governor, _allocationSpan),
-                "items" => BoundCallable.Create(Items, "ConditionalFormattingList.items", []),
-                "add" => BoundCallable.Create(Add, "ConditionalFormattingList.add", ["range_string", "rule"], requiredCount: 2),
+                "items" => BoundCallable.Create(Items, ConditionalFormattingItemsSignature),
+                "add" => BoundCallable.Create(Add, ConditionalFormattingAddSignature),
                 _ => MissingMemberValue.Instance,
             };
 

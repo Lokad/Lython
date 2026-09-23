@@ -343,6 +343,10 @@ internal sealed partial class LythonRuntime
 
     internal sealed class OpenPyxlChartStub : IPyMutableDynamicAttributes, IPyRenderableValue
     {
+        // N17: hot fixed signatures hoisted per family.
+        private static readonly LythonCallableSignature ChartAddDataSignature = LythonCallableSignature.Create("Chart.add_data", ["data", "titles_from_data", "from_rows"], requiredCount: 1);
+        private static readonly LythonCallableSignature ChartSetCategoriesSignature = LythonCallableSignature.Create("Chart.set_categories", ["labels"]);
+        private static readonly LythonCallableSignature ChartAppendSignature = LythonCallableSignature.Create("Chart.append", ["value"]);
         private readonly List<object> _series = new();
         private object _categories = PyNone.Instance;
 
@@ -390,9 +394,9 @@ internal sealed partial class LythonRuntime
                 "y_axis" => YAxis,
                 "series" => new PyList(_series),
                 "categories" => _categories,
-                "add_data" => BoundCallable.Create(AddData, "Chart.add_data", ["data", "titles_from_data", "from_rows"], requiredCount: 1),
-                "set_categories" => BoundCallable.Create(SetCategories, "Chart.set_categories", ["labels"]),
-                "append" => BoundCallable.Create(Append, "Chart.append", ["value"]),
+                "add_data" => BoundCallable.Create(AddData, ChartAddDataSignature),
+                "set_categories" => BoundCallable.Create(SetCategories, ChartSetCategoriesSignature),
+                "append" => BoundCallable.Create(Append, ChartAppendSignature),
                 _ => MissingMemberValue.Instance,
             };
 

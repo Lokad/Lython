@@ -297,6 +297,8 @@ internal sealed partial class LythonRuntime
 
     internal sealed class OpenPyxlDataValidation : IPyMutableDynamicAttributes, IPyRenderableValue
     {
+        // N17: hot fixed signatures hoisted per family.
+        private static readonly LythonCallableSignature DataValidationAddSignature = LythonCallableSignature.Create("DataValidation.add", ["cell_range"]);
         private readonly List<CellRangeAddress> _ranges = new();
 
         public OpenPyxlDataValidation(
@@ -397,7 +399,7 @@ internal sealed partial class LythonRuntime
                 "prompt" => OptionalStringValue(Prompt),
                 "sqref" => PyString.FromString(Sqref),
                 "ranges" => new PyList(_ranges.Select(range => (object)PyString.FromString(range.Reference))),
-                "add" => BoundCallable.Create(Add, "DataValidation.add", ["cell_range"]),
+                "add" => BoundCallable.Create(Add, DataValidationAddSignature),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -540,6 +542,8 @@ internal sealed partial class LythonRuntime
         IPyIterableValue,
         IPyRenderableValue
     {
+        // N17: hot fixed signatures hoisted per family.
+        private static readonly LythonCallableSignature DataValidationListAppendSignature = LythonCallableSignature.Create("DataValidationList.append", ["data_validation"]);
         private readonly OpenPyxlWorksheet _worksheet;
 
         public OpenPyxlDataValidationList(OpenPyxlWorksheet worksheet)
@@ -553,7 +557,7 @@ internal sealed partial class LythonRuntime
             {
                 "dataValidation" => new PyList(_worksheet.DataValidations.Select(validation => (object)validation)),
                 "count" => new BigInteger(_worksheet.DataValidations.Count),
-                "append" => BoundCallable.Create(Append, "DataValidationList.append", ["data_validation"]),
+                "append" => BoundCallable.Create(Append, DataValidationListAppendSignature),
                 _ => MissingMemberValue.Instance,
             };
 

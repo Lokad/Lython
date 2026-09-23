@@ -292,6 +292,9 @@ internal sealed partial class LythonRuntime
 
     internal sealed class OpenPyxlSheetProtection : IPyMutableDynamicAttributes, IPyRenderableValue
     {
+        // N17: hot fixed signatures hoisted per family.
+        private static readonly LythonCallableSignature SheetProtectionEnableSignature = LythonCallableSignature.Create("SheetProtection.enable", []);
+        private static readonly LythonCallableSignature SheetProtectionDisableSignature = LythonCallableSignature.Create("SheetProtection.disable", []);
         private readonly OpenPyxlWorksheet _worksheet;
 
         public OpenPyxlSheetProtection(OpenPyxlWorksheet worksheet)
@@ -360,8 +363,8 @@ internal sealed partial class LythonRuntime
                 "hashValue" => OptionalStringValue(HashValue),
                 "saltValue" => OptionalStringValue(SaltValue),
                 "spinCount" => SpinCount is null ? PyNone.Instance : new BigInteger(SpinCount.Value),
-                "enable" => BoundCallable.Create(Enable, "SheetProtection.enable", []),
-                "disable" => BoundCallable.Create(Disable, "SheetProtection.disable", []),
+                "enable" => BoundCallable.Create(Enable, SheetProtectionEnableSignature),
+                "disable" => BoundCallable.Create(Disable, SheetProtectionDisableSignature),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -440,6 +443,9 @@ internal sealed partial class LythonRuntime
 
     internal sealed class OpenPyxlWorkbookSecurity : IPyMutableDynamicAttributes, IPyRenderableValue
     {
+        // N17: hot fixed signatures hoisted per family.
+        private static readonly LythonCallableSignature WorkbookProtectionSetPasswordSignature = LythonCallableSignature.Create("WorkbookProtection.set_workbook_password", ["value", "already_hashed"], requiredCount: 1);
+        private static readonly LythonCallableSignature WorkbookProtectionSetRevisionsPasswordSignature = LythonCallableSignature.Create("WorkbookProtection.set_revisions_password", ["value", "already_hashed"], requiredCount: 1);
         private readonly OpenPyxlWorkbook _workbook;
 
         public OpenPyxlWorkbookSecurity(OpenPyxlWorkbook workbook)
@@ -547,8 +553,8 @@ internal sealed partial class LythonRuntime
                 "revisionsHashValue" => OptionalStringValue(RevisionsHashValue),
                 "revisionsSaltValue" => OptionalStringValue(RevisionsSaltValue),
                 "revisionsSpinCount" => RevisionsSpinCount is null ? PyNone.Instance : new BigInteger(RevisionsSpinCount.Value),
-                "set_workbook_password" => BoundCallable.Create(SetWorkbookPassword, "WorkbookProtection.set_workbook_password", ["value", "already_hashed"], requiredCount: 1),
-                "set_revisions_password" => BoundCallable.Create(SetRevisionsPassword, "WorkbookProtection.set_revisions_password", ["value", "already_hashed"], requiredCount: 1),
+                "set_workbook_password" => BoundCallable.Create(SetWorkbookPassword, WorkbookProtectionSetPasswordSignature),
+                "set_revisions_password" => BoundCallable.Create(SetRevisionsPassword, WorkbookProtectionSetRevisionsPasswordSignature),
                 _ => MissingMemberValue.Instance,
             };
 

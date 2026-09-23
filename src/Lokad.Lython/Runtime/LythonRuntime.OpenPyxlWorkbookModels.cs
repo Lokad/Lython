@@ -353,6 +353,10 @@ internal sealed partial class LythonRuntime
         IPyIterableValue,
         IPyRenderableValue
     {
+        // N17: hot fixed signatures hoisted per family.
+        private static readonly LythonCallableSignature TableListKeysSignature = LythonCallableSignature.Create("TableList.keys", []);
+        private static readonly LythonCallableSignature TableListValuesSignature = LythonCallableSignature.Create("TableList.values", []);
+        private static readonly LythonCallableSignature TableListItemsSignature = LythonCallableSignature.Create("TableList.items", []);
         private readonly OpenPyxlWorksheet _worksheet;
         private readonly MemoryGovernor? _governor;
         private readonly LythonSourceSpan? _allocationSpan;
@@ -378,9 +382,9 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
-                "keys" => BoundCallable.Create(Keys, "TableList.keys", []),
-                "values" => BoundCallable.Create(Values, "TableList.values", []),
-                "items" => BoundCallable.Create(Items, "TableList.items", []),
+                "keys" => BoundCallable.Create(Keys, TableListKeysSignature),
+                "values" => BoundCallable.Create(Values, TableListValuesSignature),
+                "items" => BoundCallable.Create(Items, TableListItemsSignature),
                 _ => MissingMemberValue.Instance,
             };
 
