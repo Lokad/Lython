@@ -440,7 +440,7 @@ internal sealed partial class LythonRuntime
             GuardIntegerLeftShift(lhs, rhs, context.MemoryGovernor, span);
             return OwnHeapInteger(PyNumberOps.LeftShift(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
         }
-        catch (InvalidOperationException ex) when (ex.Message == "negative shift count")
+        catch (PyNegativeShiftException ex)
         {
             throw new LythonRuntimeException("ValueError", ex.Message, span);
         }
@@ -461,7 +461,7 @@ internal sealed partial class LythonRuntime
         {
             return OwnHeapInteger(PyNumberOps.RightShift(lhs, rhs), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
         }
-        catch (InvalidOperationException ex) when (ex.Message == "negative shift count")
+        catch (PyNegativeShiftException ex)
         {
             throw new LythonRuntimeException("ValueError", ex.Message, span);
         }

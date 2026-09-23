@@ -196,7 +196,7 @@ internal static class PyNumberOps
     {
         if (rhs < BigInteger.Zero)
         {
-            throw new InvalidOperationException("negative shift count");
+            throw new PyNegativeShiftException("negative shift count");
         }
 
         return lhs << checked((int)rhs);
@@ -206,7 +206,7 @@ internal static class PyNumberOps
     {
         if (rhs < BigInteger.Zero)
         {
-            throw new InvalidOperationException("negative shift count");
+            throw new PyNegativeShiftException("negative shift count");
         }
 
         return lhs >> checked((int)rhs);
@@ -380,5 +380,18 @@ internal static class PyNumberOps
         }
 
         return quotient;
+    }
+}
+
+// N16: negative-shift failures carry this marker from their origin so catch
+// sites recognize them by type instead of comparing English message text.
+// Deriving from InvalidOperationException keeps any unknown CLR-level catcher
+// behaving as before. The public ValueError identity and message flow from
+// this origin like any guest-visible failure.
+internal sealed class PyNegativeShiftException : InvalidOperationException
+{
+    public PyNegativeShiftException(string message)
+        : base(message)
+    {
     }
 }

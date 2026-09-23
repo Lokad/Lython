@@ -56,4 +56,18 @@ public sealed class PyNumberPrimitiveTests
         Assert.Equal(new BigInteger(4), PyNumberOps.LeftShift(new BigInteger(1), new BigInteger(2)));
         Assert.Equal(new BigInteger(3), PyNumberOps.RightShift(new BigInteger(12), new BigInteger(2)));
     }
+
+    [Fact]
+    public void NegativeShifts_CarryTypedMarkerInsteadOfMessageText()
+    {
+        // N16: the origin throws the narrow marker so catch sites match by type.
+        // Exact-type pin: fails while the origin throws plain InvalidOperationException.
+        var left = Assert.Throws<PyNegativeShiftException>(() => PyNumberOps.LeftShift(BigInteger.One, -BigInteger.One));
+        Assert.Equal("negative shift count", left.Message);
+        var right = Assert.Throws<PyNegativeShiftException>(() => PyNumberOps.RightShift(BigInteger.One, -BigInteger.One));
+        Assert.Equal("negative shift count", right.Message);
+        // Unknown CLR-level catchers keep behaving as before via the base type.
+        Assert.IsAssignableFrom<InvalidOperationException>(left);
+        Assert.IsAssignableFrom<InvalidOperationException>(right);
+    }
 }
