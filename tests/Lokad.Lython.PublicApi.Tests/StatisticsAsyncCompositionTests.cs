@@ -91,14 +91,14 @@ public sealed class StatisticsAsyncCompositionTests
             new List<object?> { 1.8947368421052633, 2.2894284851066637 });
     }
 
-    // Quantile cut points keep the pinned whole-value int rendering (quantiles is
-    // intentionally untouched by N13), so the cut arrives as an integer here.
+    // Quantile cut points are true-division floats (CPython); single-point data keeps
+    // its original element type instead.
     [Fact]
     public async Task QuantilesOverSuspendingIteratorComposes()
     {
         await AssertAsyncMatchesSync(
             "import statistics\nwith open(\"/r.txt\") as f:\n    return statistics.quantiles((int(s) for s in f), n=2)\n",
-            new List<object?> { new BigInteger(3) });
+            new List<object?> { 3.0 });
     }
 
     [Fact]

@@ -175,7 +175,7 @@ return "|".join(out)
         Assert.True(
             valid.Success,
             valid.Failure?.Message ?? string.Join(" | ", valid.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        Assert.Equal("2|0.0|199|2", Assert.IsType<string>(valid.ReturnValue));
+        Assert.Equal("2.0|0.0|199|2", Assert.IsType<string>(valid.ReturnValue));
 
         var invalid = new LythonEngine().Run(
             """
@@ -252,7 +252,7 @@ statistics.quantiles([1], n=0)
     [InlineData(
         """
 import statistics
-statistics.quantiles([1], method="bogus")
+statistics.quantiles([1, 2], method="bogus")
 """,
         "ValueError",
         "Unknown method")]

@@ -290,4 +290,31 @@ public sealed class StatisticsPrecisionScenarioTests
         Assert.Equal("StatisticsError", asyncResult.Failure?.ExceptionType);
         Assert.Contains("at least two data points", asyncResult.Failure?.Message, StringComparison.Ordinal);
     }
+    [Fact]
+    public async Task QuantilesRenderFloatsAndKeepSinglePointType()
+    {
+        // N29: cut points are true-division floats (CPython); a single data
+        // point returns the original element itself in both modes.
+        var script = Compile(
+            """
+            import statistics
+            return [statistics.quantiles([1, 2, 3, 4, 5]),
+                    statistics.quantiles([1, 2, 3, 4, 5], method="inclusive"),
+                    statistics.quantiles([1], n=4),
+                    statistics.quantiles([2.5], n=4)]
+            """);
+        var expected = new List<object?>
+        {
+            new List<object?> { 1.5, 3.0, 4.5 },
+            new List<object?> { 2.0, 3.0, 4.0 },
+            new List<object?> { new BigInteger(1), new BigInteger(1), new BigInteger(1) },
+            new List<object?> { 2.5, 2.5, 2.5 },
+        };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
 }

@@ -1208,11 +1208,40 @@ internal sealed partial class LythonRuntime
         private static object Quantiles(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            var values = GetNumericValuesFromData(arguments, "statistics.quantiles", span, context, scratch);
-            values.Sort();
+            // Sized-empty keeps the historical text (the shared objects drain
+            // below reports it with a different qualifier).
+            if (arguments.Length > 0 && arguments[0] is IReadOnlyCollection<object> sized && sized.Count == 0)
+            {
+                throw StatisticsError("statistics.quantiles requires at least one data point.", span);
+            }
+
+            var source = arguments.Length <= 1 ? arguments : new[] { arguments[0] };
+            var originals = GetNumericObjects(source, "statistics.quantiles", span, context, scratch);
             var n = arguments.Length >= 2 && arguments[1] is not PyNone
                 ? ExpectPositivePartitionCount(arguments[1], "statistics.quantiles(..., n=...)", span)
                 : 4;
+            // CPython returns the single data point itself (original type) n-1
+            // times, before validating the method.
+            if (originals.Count == 1)
+            {
+                context.ObserveCollectionCount(n - 1, span);
+                var single = new List<object>(Math.Max(n - 1, 0));
+                for (var i = 1; i < n; i++)
+                {
+                    single.Add(originals[0]);
+                }
+
+                return new PyList(single, context.MemoryGovernor, span);
+            }
+            // Cut points interpolate over doubles (true-division floats like
+            // CPython); the originals above only serve the single-point case.
+            var values = new List<double>(originals.Count);
+            foreach (var original in originals)
+            {
+                values.Add(ExpectRealForStatistics(original, "statistics.quantiles", span));
+            }
+
+            values.Sort();
             var method = arguments.Length >= 3 && arguments[2] is not PyNone
                 ? RuntimeArgumentValidation.ExpectString(arguments[2], "statistics.quantiles(..., method=...)", span)
                 : "exclusive";
@@ -1238,7 +1267,7 @@ internal sealed partial class LythonRuntime
                 var value = method == "inclusive"
                     ? InterpolateInclusiveQuantile(values, i, n)
                     : InterpolateExclusiveQuantile(values, i, n);
-                cutPoints.Add(IsWholeInteger(value) ? new BigInteger(value) : value);
+                cutPoints.Add(value);
                 if ((i & 63) == 0)
                 {
                     context.CheckExecutionBudget(span);
@@ -1251,11 +1280,39 @@ internal sealed partial class LythonRuntime
         private static async ValueTask<object> QuantilesAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            var values = await GetNumericValuesFromDataAsync(arguments, "statistics.quantiles", span, context, scratch).ConfigureAwait(false);
-            values.Sort();
+            // Same empty checks as the synchronous twin above.
+            if (arguments.Length > 0 && arguments[0] is IReadOnlyCollection<object> sized && sized.Count == 0)
+            {
+                throw StatisticsError("statistics.quantiles requires at least one data point.", span);
+            }
+
+            var source = arguments.Length <= 1 ? arguments : new[] { arguments[0] };
+            var originals = await GetNumericObjectsAsync(source, "statistics.quantiles", span, context, scratch).ConfigureAwait(false);
             var n = arguments.Length >= 2 && arguments[1] is not PyNone
                 ? ExpectPositivePartitionCount(arguments[1], "statistics.quantiles(..., n=...)", span)
                 : 4;
+            // CPython returns the single data point itself (original type) n-1
+            // times, before validating the method.
+            if (originals.Count == 1)
+            {
+                context.ObserveCollectionCount(n - 1, span);
+                var single = new List<object>(Math.Max(n - 1, 0));
+                for (var i = 1; i < n; i++)
+                {
+                    single.Add(originals[0]);
+                }
+
+                return new PyList(single, context.MemoryGovernor, span);
+            }
+            // Cut points interpolate over doubles (true-division floats like
+            // CPython); the originals above only serve the single-point case.
+            var values = new List<double>(originals.Count);
+            foreach (var original in originals)
+            {
+                values.Add(ExpectRealForStatistics(original, "statistics.quantiles", span));
+            }
+
+            values.Sort();
             var method = arguments.Length >= 3 && arguments[2] is not PyNone
                 ? RuntimeArgumentValidation.ExpectString(arguments[2], "statistics.quantiles(..., method=...)", span)
                 : "exclusive";
@@ -1279,7 +1336,7 @@ internal sealed partial class LythonRuntime
                 var value = method == "inclusive"
                     ? InterpolateInclusiveQuantile(values, i, n)
                     : InterpolateExclusiveQuantile(values, i, n);
-                cutPoints.Add(IsWholeInteger(value) ? new BigInteger(value) : value);
+                cutPoints.Add(value);
                 if ((i & 63) == 0)
                 {
                     context.CheckExecutionBudget(span);
