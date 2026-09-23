@@ -38,9 +38,21 @@ jobs:
         run: dotnet build tools/LythonProbe/LythonProbe.csproj -c Release
       - name: Test Release
         shell: pwsh
+        env:
+          # N35: capture a dump on testhost abort without affecting green runs.
+          DOTNET_DbgEnableMiniDump: 1
+          DOTNET_DbgMiniDumpType: Mini
+          DOTNET_DbgMiniDumpName: ${{ github.workspace }}/crash-%p.dmp
         run: |
           try { dotnet test Lokad.Lython.slnx -c Release 2>&1 | Tee-Object -FilePath test.log } catch { exit 1 }
           if ($LASTEXITCODE -ne 0) { exit 1 }
+      - name: Publish crash dumps
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crash-dumps-${{ matrix.os }}
+          path: ${{ github.workspace }}/crash-*.dmp
+          if-no-files-found: ignore
       - name: Publish test log
         if: always()
         uses: actions/upload-artifact@v4
