@@ -511,7 +511,11 @@ internal sealed partial class LythonRuntime
                 Array.Copy(values, starIndex, starredItems, 0, starredCount);
                 if (tuple.Items[starIndex] is LoopStarredTargetSyntax starred)
                 {
-                    StoreName(starred.Name, new PyList(starredItems, context.MemoryGovernor, span), context, span);
+                    // Abandoned remainders reclaim through the pool like display lists;
+                    // otherwise every dropped remainder strands its charges until denial.
+                    var remainder = new PyList(starredItems, context.MemoryGovernor, span);
+                    context.Services.State.CallTemporaries.TrackFreshMutable(remainder, remainder.CommittedStorageBytes);
+                    StoreName(starred.Name, remainder, context, span);
                 }
 
                 for (var i = starIndex + 1; i < tuple.Items.Count; i++)
@@ -596,7 +600,9 @@ internal sealed partial class LythonRuntime
         var starredCount = layout.StarredValueCount(values.Length);
         var starredItems = new object[starredCount];
         Array.Copy(values, layout.StarredTargetIndex, starredItems, 0, starredCount);
-        StoreUnpackingTarget(targets[layout.StarredTargetIndex], new PyList(starredItems, context.MemoryGovernor, span), context, span);
+        var remainder = new PyList(starredItems, context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(remainder, remainder.CommittedStorageBytes);
+        StoreUnpackingTarget(targets[layout.StarredTargetIndex], remainder, context, span);
 
         for (var i = layout.StarredTargetIndex + 1; i < targets.Count; i++)
         {

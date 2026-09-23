@@ -237,11 +237,20 @@ public sealed class StarredLoopTargetTests
         var funded = script.Run(new MockLythonHost());
         Assert.True(funded.Success, funded.Failure?.Message);
         Assert.Equal("done", funded.ReturnValue);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 16000000 };
-        AssertError(script.Run(new MockLythonHost(), options), "MemoryError", "execution memory budget exceeded");
         var fundedAsync = await script.RunAsync(new MockLythonHost());
         Assert.True(fundedAsync.Success, fundedAsync.Failure?.Message);
-        AssertError(await script.RunAsync(new MockLythonHost(), options), "MemoryError", "execution memory budget exceeded");
+        // Retaining the same remainders still denies: the budget binds
+        // reachable data, while dropped remainders reclaim through the pool.
+        var retained = Compile("""
+            row = list(range(50))
+            kept = []
+            for a, *b in [row] * 20000:
+                kept.append(b)
+            return len(kept)
+            """);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 16000000 };
+        AssertError(retained.Run(new MockLythonHost(), options), "MemoryError", "execution memory budget exceeded");
+        AssertError(await retained.RunAsync(new MockLythonHost(), options), "MemoryError", "execution memory budget exceeded");
     }
 
     [Fact]
@@ -260,5 +269,68 @@ public sealed class StarredLoopTargetTests
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new BigInteger(6), result.ReturnValue);
         Assert.True(host.CompletedAsynchronously > 0);
+    }
+
+    private static long PeakOf(string source)
+    {
+        var script = Compile(source);
+        var result = script.Run(new MockLythonHost());
+        Assert.True(result.Success, result.Failure?.Message);
+        return result.PeakExecutionMemoryBytes;
+    }
+
+    [Fact]
+    public void DiscardedLoopRemaindersStayBounded()
+    {
+        // N32: abandoned remainders reclaim through the pool like display
+        // lists, so 10x iterations stay far below 2x peak. (Before the fix the
+        // ratio was exactly 10x: every dropped remainder stranded its charges.)
+        const string template = "for a, *b in ([0] * 20 for _ in range({0})):\n    pass\nreturn \"done\"\n";
+        var small = PeakOf(string.Format(template, 10000));
+        var large = PeakOf(string.Format(template, 100000));
+        Assert.True(large <= 3 * small, $"large={large} small={small}");
+    }
+
+    [Fact]
+    public void DiscardedAssignRemaindersStayBounded()
+    {
+        // N32: same bound through the standalone-unpacking path, whose
+        // remainder list was equally untracked.
+        const string template = "row = list(range(20))\nfor i in range({0}):\n    a, *b = row\nreturn \"done\"\n";
+        var small = PeakOf(string.Format(template, 10000));
+        var large = PeakOf(string.Format(template, 100000));
+        Assert.True(large <= 3 * small, $"large={large} small={small}");
+    }
+
+    [Fact]
+    public void DiscardedSubscriptRemaindersStayBounded()
+    {
+        // N32: remainder stored through subscript targets rebinds (and
+        // releases) the previous remainder every iteration.
+        const string template = "d = {}\nrow = list(range(20))\nfor i in range(NNNN):\n    d[0], *d[1] = row\nreturn len(d)\n";
+        var small = PeakOf(template.Replace("NNNN", "10000"));
+        var large = PeakOf(template.Replace("NNNN", "100000"));
+        Assert.True(large <= 3 * small, $"large={large} small={small}");
+    }
+
+    [Fact]
+    public async Task AsyncFileRowRemaindersStayBounded()
+    {
+        // N32: real suspension dimension; chunked file iteration stays lazy so
+        // only per-line remainders turn over.
+        static string MakeRows(int count) => string.Concat(Enumerable.Repeat("k v w x\n", count));
+        async Task<long> PeakOfRows(int count)
+        {
+            var host = new DelayedLythonHost();
+            host.SeedFile("/r.txt", MakeRows(count));
+            var script = Compile("with open(\"/r.txt\") as f:\n    for line in f:\n        first, *rest = line.split()\n    return \"done\"\n");
+            var result = await script.RunAsync(host);
+            Assert.True(result.Success, result.Failure?.Message);
+            return result.PeakExecutionMemoryBytes;
+        }
+
+        var small = await PeakOfRows(3000);
+        var large = await PeakOfRows(30000);
+        Assert.True(large <= 3 * small, $"large={large} small={small}");
     }
 }
