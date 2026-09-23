@@ -1364,6 +1364,24 @@ public sealed class LythonCallableSignatureTests
     }
 
     [Fact]
+    public void Create_ReusesHoistedContextSignatures()
+    {
+        // N17: companion pin for the hoisted PyDecimalContext statics.
+        Assert.Same(
+            LythonCallableSignature.Create("Context.copy", []),
+            LythonCallableSignature.Create("Context.copy", []));
+        Assert.Same(
+            LythonCallableSignature.Create("Context.clear_flags", []),
+            LythonCallableSignature.Create("Context.clear_flags", []));
+        Assert.Same(
+            LythonCallableSignature.Create("Context.create_decimal", ["value"]),
+            LythonCallableSignature.Create("Context.create_decimal", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("Context.create_decimal_from_float", ["f"]),
+            LythonCallableSignature.Create("Context.create_decimal_from_float", ["f"]));
+    }
+
+    [Fact]
     public void Create_RejectsInvalidParameterMetadata()
     {
         Assert.Throws<ArgumentException>(() =>

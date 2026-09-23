@@ -55,6 +55,12 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
         _traps = traps is null ? new PyDict() : new PyDict(traps);
     }
 
+    // N17: hot fixed signatures hoisted per family (see ListMembers).
+    private static readonly LythonCallableSignature ContextCopySignature = LythonCallableSignature.Create("Context.copy", []);
+    private static readonly LythonCallableSignature ContextClearFlagsSignature = LythonCallableSignature.Create("Context.clear_flags", []);
+    private static readonly LythonCallableSignature ContextCreateDecimalSignature = LythonCallableSignature.Create("Context.create_decimal", ["value"]);
+    private static readonly LythonCallableSignature ContextCreateDecimalFromFloatSignature = LythonCallableSignature.Create("Context.create_decimal_from_float", ["f"]);
+
     public int Precision { get; private set; }
 
     public DecimalRoundingMode Rounding { get; private set; }
@@ -109,7 +115,7 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
                 }
 
                 return LythonRuntime.OwnDecimalValue(Copy(), context, span);
-            }, "Context.copy", []),
+            }, ContextCopySignature),
             "clear_flags" => new PyDecimalBoundCallable((arguments, span) =>
             {
                 if (arguments.Length != 0)
@@ -119,7 +125,7 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
 
                 _flags = new PyDict();
                 return PyNone.Instance;
-            }, "Context.clear_flags", []),
+            }, ContextClearFlagsSignature),
             "create_decimal" => new PyDecimalBoundCallable((arguments, span, context) =>
             {
                 if (arguments.Length is < 1 or > 2)
@@ -133,7 +139,7 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
                 }
 
                 return LythonRuntime.OwnDecimalValue(PyDecimalOps.Parse(arguments[0], span), context, span);
-            }, "Context.create_decimal", ["value"]),
+            }, ContextCreateDecimalSignature),
             "create_decimal_from_float" => new PyDecimalBoundCallable((arguments, span, context) =>
             {
                 if (arguments.Length != 1 || arguments[0] is not double floating || !double.IsFinite(floating))
@@ -142,7 +148,7 @@ internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRendera
                 }
 
                 return LythonRuntime.OwnDecimalValue(new PyDecimal((decimal)floating), context, span);
-            }, "Context.create_decimal_from_float", ["f"]),
+            }, ContextCreateDecimalFromFloatSignature),
             _ => MissingMemberValue.Instance,
         };
 
@@ -259,7 +265,7 @@ internal sealed class PyDecimalBoundCallable : LythonRuntime.ICallable, IPyRende
     {
     }
 
-    private PyDecimalBoundCallable(
+    public PyDecimalBoundCallable(
         Func<object[], LythonSourceSpan, object> implementation,
         LythonCallableSignature signature)
     {
@@ -272,7 +278,7 @@ internal sealed class PyDecimalBoundCallable : LythonRuntime.ICallable, IPyRende
     {
     }
 
-    private PyDecimalBoundCallable(
+    public PyDecimalBoundCallable(
         Func<object[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> implementation,
         LythonCallableSignature signature)
     {
