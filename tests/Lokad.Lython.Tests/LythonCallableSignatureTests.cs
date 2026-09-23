@@ -1616,6 +1616,39 @@ public sealed class LythonCallableSignatureTests
     }
 
     [Fact]
+    public void Create_ReusesHoistedZipSignatures()
+    {
+        // N17: companion pin for the hoisted PyZipFile statics.
+        Assert.Same(
+            LythonCallableSignature.Create("zipfile.ZipFile.getinfo", ["name"], 1),
+            LythonCallableSignature.Create("zipfile.ZipFile.getinfo", ["name"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("zipfile.ZipFile.read", ["name", "pwd"], 1),
+            LythonCallableSignature.Create("zipfile.ZipFile.read", ["name", "pwd"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("zipfile.ZipFile.open", ["name", "mode", "pwd", "force_zip64"], 1),
+            LythonCallableSignature.Create("zipfile.ZipFile.open", ["name", "mode", "pwd", "force_zip64"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("zipfile.ZipFile.writestr", ["zinfo_or_arcname", "data", "compress_type", "compresslevel"], 2),
+            LythonCallableSignature.Create("zipfile.ZipFile.writestr", ["zinfo_or_arcname", "data", "compress_type", "compresslevel"], 2));
+        Assert.Same(
+            LythonCallableSignature.Create("zipfile.ZipFile.write", ["filename", "arcname", "compress_type", "compresslevel"], 1),
+            LythonCallableSignature.Create("zipfile.ZipFile.write", ["filename", "arcname", "compress_type", "compresslevel"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("zipfile.ZipFile.mkdir", ["zinfo_or_arcname", "mode"], 1),
+            LythonCallableSignature.Create("zipfile.ZipFile.mkdir", ["zinfo_or_arcname", "mode"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("zipfile.ZipFile.extract", ["member", "path", "pwd"], 1),
+            LythonCallableSignature.Create("zipfile.ZipFile.extract", ["member", "path", "pwd"], 1));
+        Assert.Same(
+            LythonCallableSignature.Create("zipfile.ZipFile.extractall", ["path", "members", "pwd"], 0),
+            LythonCallableSignature.Create("zipfile.ZipFile.extractall", ["path", "members", "pwd"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("zipfile.ZipFile.__exit__", ["exc_type", "exc_value", "traceback"], 3),
+            LythonCallableSignature.Create("zipfile.ZipFile.__exit__", ["exc_type", "exc_value", "traceback"], 3));
+    }
+
+    [Fact]
     public void Create_RejectsInvalidParameterMetadata()
     {
         Assert.Throws<ArgumentException>(() =>

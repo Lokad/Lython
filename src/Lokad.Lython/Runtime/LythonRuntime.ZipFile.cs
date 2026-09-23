@@ -117,6 +117,16 @@ internal sealed partial class LythonRuntime
 
         public int GetPyHashCode() => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);
 
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature ZipGetinfoSignature = LythonCallableSignature.Create("zipfile.ZipFile.getinfo", ["name"], 1);
+        private static readonly LythonCallableSignature ZipReadSignature = LythonCallableSignature.Create("zipfile.ZipFile.read", ["name", "pwd"], 1);
+        private static readonly LythonCallableSignature ZipOpenSignature = LythonCallableSignature.Create("zipfile.ZipFile.open", ["name", "mode", "pwd", "force_zip64"], 1);
+        private static readonly LythonCallableSignature ZipWritestrSignature = LythonCallableSignature.Create("zipfile.ZipFile.writestr", ["zinfo_or_arcname", "data", "compress_type", "compresslevel"], 2);
+        private static readonly LythonCallableSignature ZipWriteSignature = LythonCallableSignature.Create("zipfile.ZipFile.write", ["filename", "arcname", "compress_type", "compresslevel"], 1);
+        private static readonly LythonCallableSignature ZipMkdirSignature = LythonCallableSignature.Create("zipfile.ZipFile.mkdir", ["zinfo_or_arcname", "mode"], 1);
+        private static readonly LythonCallableSignature ZipExtractSignature = LythonCallableSignature.Create("zipfile.ZipFile.extract", ["member", "path", "pwd"], 1);
+        private static readonly LythonCallableSignature ZipExtractallSignature = LythonCallableSignature.Create("zipfile.ZipFile.extractall", ["path", "members", "pwd"], 0);
+        private static readonly LythonCallableSignature ZipExitSignature = LythonCallableSignature.Create("zipfile.ZipFile.__exit__", ["exc_type", "exc_value", "traceback"], 3);
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -127,23 +137,23 @@ internal sealed partial class LythonRuntime
                 "compression" => _compression,
                 "namelist" => BoundCallable.CreateNoArguments(this, "zipfile.ZipFile.namelist", static (receiver, span, context) => receiver.NameList(span, context)),
                 "infolist" => BoundCallable.CreateNoArguments(this, "zipfile.ZipFile.infolist", static (receiver, span, context) => receiver.InfoList(span, context)),
-                "getinfo" => BoundCallable.Create((arguments, span, context) => GetInfo(arguments, span), "zipfile.ZipFile.getinfo", ["name"], 1),
-                "read" => BoundCallable.Create((arguments, span, context) => Read(arguments, span, context), "zipfile.ZipFile.read", ["name", "pwd"], 1),
-                "open" => BoundCallable.Create((arguments, span, context) => Open(arguments, span, context), "zipfile.ZipFile.open", ["name", "mode", "pwd", "force_zip64"], 1),
-                "writestr" => BoundCallable.Create((arguments, span, context) => WriteString(arguments, span, context), "zipfile.ZipFile.writestr", ["zinfo_or_arcname", "data", "compress_type", "compresslevel"], 2),
-                "write" => BoundCallable.Create((arguments, span, context) => WriteFile(arguments, span, context), async (arguments, span, context) => await WriteFileAsync(arguments, span, context).ConfigureAwait(false), "zipfile.ZipFile.write", ["filename", "arcname", "compress_type", "compresslevel"], 1),
-                "mkdir" => BoundCallable.Create((arguments, span, context) => MakeDirectory(arguments, span, context), "zipfile.ZipFile.mkdir", ["zinfo_or_arcname", "mode"], 1),
+                "getinfo" => BoundCallable.Create((arguments, span, context) => GetInfo(arguments, span), ZipGetinfoSignature),
+                "read" => BoundCallable.Create((arguments, span, context) => Read(arguments, span, context), ZipReadSignature),
+                "open" => BoundCallable.Create((arguments, span, context) => Open(arguments, span, context), ZipOpenSignature),
+                "writestr" => BoundCallable.Create((arguments, span, context) => WriteString(arguments, span, context), ZipWritestrSignature),
+                "write" => BoundCallable.Create((arguments, span, context) => WriteFile(arguments, span, context), ZipWriteSignature, async (arguments, span, context) => await WriteFileAsync(arguments, span, context).ConfigureAwait(false)),
+                "mkdir" => BoundCallable.Create((arguments, span, context) => MakeDirectory(arguments, span, context), ZipMkdirSignature),
                 "printdir" => BoundCallable.CreateNoArguments(this, "zipfile.ZipFile.printdir", static (receiver, span, context) => receiver.PrintDirectory(span, context),
                 static (receiver, span, context) => receiver.PrintDirectoryAsync(span, context)),
                 "testzip" => BoundCallable.CreateNoArguments(this, "zipfile.ZipFile.testzip", static (receiver, span, context) => receiver.TestZip(span, context)),
                 "extract" => BoundCallable.Create(
                     (arguments, span, context) => Extract(arguments, span, context),
-                    async (arguments, span, context) => await ExtractAsync(arguments, span, context).ConfigureAwait(false),
-                    "zipfile.ZipFile.extract", ["member", "path", "pwd"], 1),
+                    ZipExtractSignature,
+                    async (arguments, span, context) => await ExtractAsync(arguments, span, context).ConfigureAwait(false)),
                 "extractall" => BoundCallable.Create(
                     (arguments, span, context) => ExtractAll(arguments, span, context),
-                    async (arguments, span, context) => await ExtractAllAsync(arguments, span, context).ConfigureAwait(false),
-                    "zipfile.ZipFile.extractall", ["path", "members", "pwd"], 0),
+                    ZipExtractallSignature,
+                    async (arguments, span, context) => await ExtractAllAsync(arguments, span, context).ConfigureAwait(false)),
                 "close" => BoundCallable.CreateNoArguments(this, "zipfile.ZipFile.close", static (receiver, span, _) =>
                 {
                     receiver.Close(span);
@@ -165,6 +175,7 @@ internal sealed partial class LythonRuntime
                     Close(span);
                     return false;
                 },
+                ZipExitSignature,
                 async (arguments, span, _) =>
                 {
                     if (arguments.Length != 3)
@@ -174,7 +185,7 @@ internal sealed partial class LythonRuntime
 
                     await CloseAsync(span).ConfigureAwait(false);
                     return false;
-                }, "zipfile.ZipFile.__exit__", ["exc_type", "exc_value", "traceback"], 3),
+                }),
                 _ => MissingMemberValue.Instance,
             };
 
