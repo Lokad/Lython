@@ -564,6 +564,8 @@ internal sealed partial class LythonRuntime
 
     internal static class TupleMembers
     {
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature TupleHashSignature = LythonCallableSignature.Create("tuple.__hash__");
         private static async ValueTask<object> CountAsync(int count, Func<int, object> getItem, object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length != 1)
@@ -808,7 +810,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return ComputeBuiltinHash(source, span);
-                }, "tuple.__hash__"),
+                }, TupleHashSignature),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -854,6 +856,8 @@ internal sealed partial class LythonRuntime
 
     internal static class NoneMembers
     {
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature NoneHashSignature = LythonCallableSignature.Create("None.__hash__");
         public static bool TryGetMember(PyNone none, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -939,7 +943,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return ComputeBuiltinHash(none, span);
-                }, "None.__hash__"),
+                }, NoneHashSignature),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -949,6 +953,27 @@ internal sealed partial class LythonRuntime
 
     internal static class IntMembers
     {
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature IntBitLengthSignature = LythonCallableSignature.Create("int.bit_length");
+        private static readonly LythonCallableSignature IntBitCountSignature = LythonCallableSignature.Create("int.bit_count");
+        private static readonly LythonCallableSignature IntConjugateSignature = LythonCallableSignature.Create("int.conjugate");
+        private static readonly LythonCallableSignature IntAsIntegerRatioSignature = LythonCallableSignature.Create("int.as_integer_ratio");
+        private static readonly LythonCallableSignature IntIsIntegerSignature = LythonCallableSignature.Create("int.is_integer");
+        private static readonly LythonCallableSignature IntEqSignature = LythonCallableSignature.Create("int.__eq__", ["value"]);
+        private static readonly LythonCallableSignature IntNeSignature = LythonCallableSignature.Create("int.__ne__", ["value"]);
+        private static readonly LythonCallableSignature IntLtSignature = LythonCallableSignature.Create("int.__lt__", ["value"]);
+        private static readonly LythonCallableSignature IntLeSignature = LythonCallableSignature.Create("int.__le__", ["value"]);
+        private static readonly LythonCallableSignature IntGtSignature = LythonCallableSignature.Create("int.__gt__", ["value"]);
+        private static readonly LythonCallableSignature IntGeSignature = LythonCallableSignature.Create("int.__ge__", ["value"]);
+        private static readonly LythonCallableSignature IntBoolSignature = LythonCallableSignature.Create("int.__bool__");
+        private static readonly LythonCallableSignature IntHashSignature = LythonCallableSignature.Create("int.__hash__");
+        private static readonly LythonCallableSignature IntIntSignature = LythonCallableSignature.Create("int.__int__");
+        private static readonly LythonCallableSignature IntIndexSignature = LythonCallableSignature.Create("int.__index__");
+        private static readonly LythonCallableSignature IntTruncSignature = LythonCallableSignature.Create("int.__trunc__");
+        private static readonly LythonCallableSignature IntFloorSignature = LythonCallableSignature.Create("int.__floor__");
+        private static readonly LythonCallableSignature IntCeilSignature = LythonCallableSignature.Create("int.__ceil__");
+        private static readonly LythonCallableSignature IntFloatSignature = LythonCallableSignature.Create("int.__float__");
+        private static readonly LythonCallableSignature IntRoundSignature = LythonCallableSignature.Create("int.__round__");
         public static bool TryGetMember(object receiver, string name, [MaybeNullWhen(false)] out object value)
         {
             var integer = receiver switch
@@ -975,7 +1000,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return new BigInteger(BigInteger.Abs(integer.Value).GetBitLength());
-                }, "int.bit_length"),
+                }, IntBitLengthSignature),
                 "bit_count" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -996,7 +1021,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return new BigInteger(ones);
-                }, "int.bit_count"),
+                }, IntBitCountSignature),
                 "conjugate" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -1005,7 +1030,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return integer.Value;
-                }, "int.conjugate"),
+                }, IntConjugateSignature),
                 "as_integer_ratio" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -1014,7 +1039,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return new PyTuple([integer.Value, BigInteger.One], context.MemoryGovernor, span);
-                }, "int.as_integer_ratio"),
+                }, IntAsIntegerRatioSignature),
                 "is_integer" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -1023,7 +1048,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return true;
-                }, "int.is_integer"),
+                }, IntIsIntegerSignature),
                 "numerator" => integer.Value,
                 "denominator" => BigInteger.One,
                 "real" => integer.Value,
@@ -1045,7 +1070,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return integer.Value == other;
-                }, "int.__eq__", ["value"]),
+                }, IntEqSignature),
                 "__ne__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -1059,7 +1084,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return integer.Value != other;
-                }, "int.__ne__", ["value"]),
+                }, IntNeSignature),
                 "__lt__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -1073,7 +1098,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return integer.Value.CompareTo(other) < 0;
-                }, "int.__lt__", ["value"]),
+                }, IntLtSignature),
                 "__le__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -1087,7 +1112,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return integer.Value.CompareTo(other) <= 0;
-                }, "int.__le__", ["value"]),
+                }, IntLeSignature),
                 "__gt__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -1101,7 +1126,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return integer.Value.CompareTo(other) > 0;
-                }, "int.__gt__", ["value"]),
+                }, IntGtSignature),
                 "__ge__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -1115,7 +1140,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return integer.Value.CompareTo(other) >= 0;
-                }, "int.__ge__", ["value"]),
+                }, IntGeSignature),
                 "__bool__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -1124,7 +1149,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return integer.Value != BigInteger.Zero;
-                }, "int.__bool__"),
+                }, IntBoolSignature),
                 "__hash__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -1133,7 +1158,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return ComputeBuiltinHash(integer.Value, span);
-                }, "int.__hash__"),
+                }, IntHashSignature),
                 "__int__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -1142,7 +1167,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return integer.Value;
-                }, "int.__int__"),
+                }, IntIntSignature),
                 "__index__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -1151,7 +1176,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return integer.Value;
-                }, "int.__index__"),
+                }, IntIndexSignature),
                 "__trunc__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -1160,7 +1185,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return integer.Value;
-                }, "int.__trunc__"),
+                }, IntTruncSignature),
                 "__floor__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -1169,7 +1194,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return integer.Value;
-                }, "int.__floor__"),
+                }, IntFloorSignature),
                 "__ceil__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -1178,7 +1203,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return integer.Value;
-                }, "int.__ceil__"),
+                }, IntCeilSignature),
                 "__float__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -1194,7 +1219,7 @@ internal sealed partial class LythonRuntime
                     {
                         throw new LythonRuntimeException("OverflowError", ex.Message, span);
                     }
-                }, "int.__float__"),
+                }, IntFloatSignature),
                 "__round__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length > 1)
@@ -1208,7 +1233,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return Round(arguments.Length == 0 ? [integer.Value] : [integer.Value, arguments[0]], span, context);
-                }, "int.__round__"),
+                }, IntRoundSignature),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1218,6 +1243,25 @@ internal sealed partial class LythonRuntime
 
     internal static class FloatMembers
     {
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature FloatConjugateSignature = LythonCallableSignature.Create("float.conjugate");
+        private static readonly LythonCallableSignature FloatAsIntegerRatioSignature = LythonCallableSignature.Create("float.as_integer_ratio");
+        private static readonly LythonCallableSignature FloatIsIntegerSignature = LythonCallableSignature.Create("float.is_integer");
+        private static readonly LythonCallableSignature FloatHexSignature = LythonCallableSignature.Create("float.hex");
+        private static readonly LythonCallableSignature FloatEqSignature = LythonCallableSignature.Create("float.__eq__", ["value"]);
+        private static readonly LythonCallableSignature FloatNeSignature = LythonCallableSignature.Create("float.__ne__", ["value"]);
+        private static readonly LythonCallableSignature FloatLtSignature = LythonCallableSignature.Create("float.__lt__", ["value"]);
+        private static readonly LythonCallableSignature FloatLeSignature = LythonCallableSignature.Create("float.__le__", ["value"]);
+        private static readonly LythonCallableSignature FloatGtSignature = LythonCallableSignature.Create("float.__gt__", ["value"]);
+        private static readonly LythonCallableSignature FloatGeSignature = LythonCallableSignature.Create("float.__ge__", ["value"]);
+        private static readonly LythonCallableSignature FloatBoolSignature = LythonCallableSignature.Create("float.__bool__");
+        private static readonly LythonCallableSignature FloatHashSignature = LythonCallableSignature.Create("float.__hash__");
+        private static readonly LythonCallableSignature FloatIntSignature = LythonCallableSignature.Create("float.__int__");
+        private static readonly LythonCallableSignature FloatFloatSignature = LythonCallableSignature.Create("float.__float__");
+        private static readonly LythonCallableSignature FloatTruncSignature = LythonCallableSignature.Create("float.__trunc__");
+        private static readonly LythonCallableSignature FloatFloorSignature = LythonCallableSignature.Create("float.__floor__");
+        private static readonly LythonCallableSignature FloatCeilSignature = LythonCallableSignature.Create("float.__ceil__");
+        private static readonly LythonCallableSignature FloatRoundSignature = LythonCallableSignature.Create("float.__round__");
         public static bool TryGetMember(double number, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -1230,7 +1274,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return number;
-                }, "float.conjugate"),
+                }, FloatConjugateSignature),
                 "as_integer_ratio" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -1239,7 +1283,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return FloatAsIntegerRatio(number, span);
-                }, "float.as_integer_ratio"),
+                }, FloatAsIntegerRatioSignature),
                 "is_integer" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -1248,7 +1292,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return !double.IsInfinity(number) && !double.IsNaN(number) && number == Math.Truncate(number);
-                }, "float.is_integer"),
+                }, FloatIsIntegerSignature),
                 "real" => number,
                 "imag" => 0.0,
                 "hex" => BoundCallable.Create((arguments, span, _) =>
@@ -1259,7 +1303,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyString.FromString(FloatToHex(number));
-                }, "float.hex"),
+                }, FloatHexSignature),
                 "fromhex" => new BuiltinTypeMethod("float", "fromhex", bindsOwner: true, FloatFromHex),
                 "__eq__" => BoundCallable.Create((arguments, span, _) =>
                 {
@@ -1274,7 +1318,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNumberOps.AreEqual(PyNumber.FromFloat(number), other);
-                }, "float.__eq__", ["value"]),
+                }, FloatEqSignature),
                 "__ne__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -1288,7 +1332,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return !PyNumberOps.AreEqual(PyNumber.FromFloat(number), other);
-                }, "float.__ne__", ["value"]),
+                }, FloatNeSignature),
                 "__lt__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -1302,7 +1346,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNumberOps.TryCompare(PyNumber.FromFloat(number), other, out var comparison) && comparison < 0;
-                }, "float.__lt__", ["value"]),
+                }, FloatLtSignature),
                 "__le__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -1316,7 +1360,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNumberOps.TryCompare(PyNumber.FromFloat(number), other, out var comparison) && comparison <= 0;
-                }, "float.__le__", ["value"]),
+                }, FloatLeSignature),
                 "__gt__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -1330,7 +1374,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNumberOps.TryCompare(PyNumber.FromFloat(number), other, out var comparison) && comparison > 0;
-                }, "float.__gt__", ["value"]),
+                }, FloatGtSignature),
                 "__ge__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -1344,7 +1388,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNumberOps.TryCompare(PyNumber.FromFloat(number), other, out var comparison) && comparison >= 0;
-                }, "float.__ge__", ["value"]),
+                }, FloatGeSignature),
                 "__bool__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -1353,7 +1397,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return number != 0.0;
-                }, "float.__bool__"),
+                }, FloatBoolSignature),
                 "__hash__" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 0)
@@ -1362,7 +1406,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return ComputeBuiltinHash(number, span);
-                }, "float.__hash__"),
+                }, FloatHashSignature),
                 "__int__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -1371,7 +1415,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return OwnHeapInteger(FloatToInteger(number, span, Math.Truncate), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
-                }, "float.__int__"),
+                }, FloatIntSignature),
                 "__float__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -1380,7 +1424,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return number;
-                }, "float.__float__"),
+                }, FloatFloatSignature),
                 "__trunc__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -1389,7 +1433,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return OwnHeapInteger(FloatToInteger(number, span, Math.Truncate), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
-                }, "float.__trunc__"),
+                }, FloatTruncSignature),
                 "__floor__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -1398,7 +1442,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return OwnHeapInteger(FloatToInteger(number, span, Math.Floor), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
-                }, "float.__floor__"),
+                }, FloatFloorSignature),
                 "__ceil__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -1407,7 +1451,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return OwnHeapInteger(FloatToInteger(number, span, Math.Ceiling), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
-                }, "float.__ceil__"),
+                }, FloatCeilSignature),
                 "__round__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length > 1)
@@ -1416,7 +1460,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return Round(arguments.Length == 0 ? [number] : [number, arguments[0]], span, context);
-                }, "float.__round__"),
+                }, FloatRoundSignature),
                 _ => MissingMemberValue.Instance,
             };
 
@@ -1724,6 +1768,8 @@ internal sealed partial class LythonRuntime
 
     internal static class RangeMembers
     {
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature RangeHashSignature = LythonCallableSignature.Create("range.__hash__");
         public static bool TryGetMember(PyRange range, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -1876,7 +1922,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return ComputeBuiltinHash(range, span);
-                }, "range.__hash__"),
+                }, RangeHashSignature),
                 "__reversed__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)

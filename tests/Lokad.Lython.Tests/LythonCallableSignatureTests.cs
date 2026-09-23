@@ -97,6 +97,136 @@ public sealed class LythonCallableSignatureTests
     }
 
     [Fact]
+    public void Create_ReusesHoistedNumericAndHashSignatures()
+    {
+        // N17: companion pin for the hoisted Int/FloatMembers statics and the
+        // remaining Create-based __hash__ methods (tuple/None/range).
+        Assert.Same(
+            LythonCallableSignature.Create("int.bit_length"),
+            LythonCallableSignature.Create("int.bit_length"));
+        Assert.Same(
+            LythonCallableSignature.Create("int.bit_count"),
+            LythonCallableSignature.Create("int.bit_count"));
+        Assert.Same(
+            LythonCallableSignature.Create("int.conjugate"),
+            LythonCallableSignature.Create("int.conjugate"));
+        Assert.Same(
+            LythonCallableSignature.Create("int.as_integer_ratio"),
+            LythonCallableSignature.Create("int.as_integer_ratio"));
+        Assert.Same(
+            LythonCallableSignature.Create("int.is_integer"),
+            LythonCallableSignature.Create("int.is_integer"));
+        Assert.Same(
+            LythonCallableSignature.Create("int.__bool__"),
+            LythonCallableSignature.Create("int.__bool__"));
+        Assert.Same(
+            LythonCallableSignature.Create("int.__hash__"),
+            LythonCallableSignature.Create("int.__hash__"));
+        Assert.Same(
+            LythonCallableSignature.Create("int.__int__"),
+            LythonCallableSignature.Create("int.__int__"));
+        Assert.Same(
+            LythonCallableSignature.Create("int.__index__"),
+            LythonCallableSignature.Create("int.__index__"));
+        Assert.Same(
+            LythonCallableSignature.Create("int.__trunc__"),
+            LythonCallableSignature.Create("int.__trunc__"));
+        Assert.Same(
+            LythonCallableSignature.Create("int.__floor__"),
+            LythonCallableSignature.Create("int.__floor__"));
+        Assert.Same(
+            LythonCallableSignature.Create("int.__ceil__"),
+            LythonCallableSignature.Create("int.__ceil__"));
+        Assert.Same(
+            LythonCallableSignature.Create("int.__float__"),
+            LythonCallableSignature.Create("int.__float__"));
+        Assert.Same(
+            LythonCallableSignature.Create("int.__round__"),
+            LythonCallableSignature.Create("int.__round__"));
+        Assert.Same(
+            LythonCallableSignature.Create("int.__eq__", ["value"]),
+            LythonCallableSignature.Create("int.__eq__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("int.__ne__", ["value"]),
+            LythonCallableSignature.Create("int.__ne__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("int.__lt__", ["value"]),
+            LythonCallableSignature.Create("int.__lt__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("int.__le__", ["value"]),
+            LythonCallableSignature.Create("int.__le__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("int.__gt__", ["value"]),
+            LythonCallableSignature.Create("int.__gt__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("int.__ge__", ["value"]),
+            LythonCallableSignature.Create("int.__ge__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("float.conjugate"),
+            LythonCallableSignature.Create("float.conjugate"));
+        Assert.Same(
+            LythonCallableSignature.Create("float.as_integer_ratio"),
+            LythonCallableSignature.Create("float.as_integer_ratio"));
+        Assert.Same(
+            LythonCallableSignature.Create("float.is_integer"),
+            LythonCallableSignature.Create("float.is_integer"));
+        Assert.Same(
+            LythonCallableSignature.Create("float.hex"),
+            LythonCallableSignature.Create("float.hex"));
+        Assert.Same(
+            LythonCallableSignature.Create("float.__bool__"),
+            LythonCallableSignature.Create("float.__bool__"));
+        Assert.Same(
+            LythonCallableSignature.Create("float.__hash__"),
+            LythonCallableSignature.Create("float.__hash__"));
+        Assert.Same(
+            LythonCallableSignature.Create("float.__int__"),
+            LythonCallableSignature.Create("float.__int__"));
+        Assert.Same(
+            LythonCallableSignature.Create("float.__float__"),
+            LythonCallableSignature.Create("float.__float__"));
+        Assert.Same(
+            LythonCallableSignature.Create("float.__trunc__"),
+            LythonCallableSignature.Create("float.__trunc__"));
+        Assert.Same(
+            LythonCallableSignature.Create("float.__floor__"),
+            LythonCallableSignature.Create("float.__floor__"));
+        Assert.Same(
+            LythonCallableSignature.Create("float.__ceil__"),
+            LythonCallableSignature.Create("float.__ceil__"));
+        Assert.Same(
+            LythonCallableSignature.Create("float.__round__"),
+            LythonCallableSignature.Create("float.__round__"));
+        Assert.Same(
+            LythonCallableSignature.Create("float.__eq__", ["value"]),
+            LythonCallableSignature.Create("float.__eq__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("float.__ne__", ["value"]),
+            LythonCallableSignature.Create("float.__ne__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("float.__lt__", ["value"]),
+            LythonCallableSignature.Create("float.__lt__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("float.__le__", ["value"]),
+            LythonCallableSignature.Create("float.__le__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("float.__gt__", ["value"]),
+            LythonCallableSignature.Create("float.__gt__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("float.__ge__", ["value"]),
+            LythonCallableSignature.Create("float.__ge__", ["value"]));
+        Assert.Same(
+            LythonCallableSignature.Create("tuple.__hash__"),
+            LythonCallableSignature.Create("tuple.__hash__"));
+        Assert.Same(
+            LythonCallableSignature.Create("None.__hash__"),
+            LythonCallableSignature.Create("None.__hash__"));
+        Assert.Same(
+            LythonCallableSignature.Create("range.__hash__"),
+            LythonCallableSignature.Create("range.__hash__"));
+    }
+
+    [Fact]
     public void Create_RejectsInvalidParameterMetadata()
     {
         Assert.Throws<ArgumentException>(() =>
