@@ -140,6 +140,33 @@ internal static partial class PyDecimalOps
         return new PyDecimalTuple(IsSigned(value.Value) ? 1 : 0, digitsTuple, new BigInteger(value.Exponent));
     }
 
+    // Matches the CPython statistics Decimal(Fraction) constructor form used
+    // for exact mean/variance quotients: trailing zeros are not significant.
+    // String-based and exact for finite decimals; bounded by the fixed scale.
+    internal static decimal StripTrailingZeros(decimal value)
+    {
+        if (value == 0m)
+        {
+            return 0m;
+        }
+
+        var text = value.ToString(CultureInfo.InvariantCulture);
+        var dot = text.IndexOf('.');
+        if (dot < 0)
+        {
+            return value;
+        }
+
+        var end = text.Length - 1;
+        while (end > dot && text[end] == '0')
+        {
+            end--;
+        }
+
+        var normalized = end == dot ? text.Substring(0, dot) : text.Substring(0, end + 1);
+        return decimal.Parse(normalized, CultureInfo.InvariantCulture);
+    }
+
     public static BigInteger Adjusted(PyDecimal value)
     {
         var tuple = AsTuple(value);

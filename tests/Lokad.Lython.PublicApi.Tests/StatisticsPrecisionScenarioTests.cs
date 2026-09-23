@@ -355,4 +355,30 @@ public sealed class StatisticsPrecisionScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task DecimalMeanNormalizesTrailingZeros()
+    {
+        // N29: CPython constructs Decimal means via Decimal(Fraction), so exact
+        // quotients carry no trailing zeros. Inexact divisions keep .NET
+        // fixed-precision digits (SPEC: no arbitrary precision).
+        var script = Compile(
+            """
+            from decimal import Decimal
+            import statistics
+            return [str(statistics.mean([Decimal("1.5"), Decimal("2.5")])),
+                    str(statistics.mean([Decimal("2.50")])),
+                    str(statistics.mean([Decimal("0.0")])),
+                    str(statistics.mean([Decimal("-1.5"), Decimal("-2.5")])),
+                    str(statistics.mean([Decimal("0.5"), Decimal("0.75"), Decimal("0.625"), Decimal("0.375")]))]
+            """);
+        var expected = new List<object?> { "2", "2.5", "0", "-2", "0.5625" };
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
 }

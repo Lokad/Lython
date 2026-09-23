@@ -440,7 +440,7 @@ internal sealed partial class LythonRuntime
                 {
                     try
                     {
-                        return new PyDecimal((_decimalTotal + (decimal)_intTotal) / _count);
+                        return new PyDecimal(PyDecimalOps.StripTrailingZeros((_decimalTotal + (decimal)_intTotal) / _count));
                     }
                     catch (OverflowException)
                     {
