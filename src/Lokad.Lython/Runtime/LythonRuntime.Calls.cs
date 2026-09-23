@@ -2785,6 +2785,11 @@ internal sealed partial class LythonRuntime
             int requiredCount)
             => new(implementation, LythonCallableSignature.Create(name, parameterNames, requiredCount));
 
+        public static BoundCallable CreateWithPresence(
+            Func<BoundCallArguments, LythonSourceSpan, ExecutionContext, object> implementation,
+            LythonCallableSignature signature)
+            => new(implementation, signature);
+
         public static BoundCallable Create(Func<object[], LythonSourceSpan, ExecutionContext, object> implementation, Func<object[], LythonSourceSpan, ExecutionContext, ValueTask<object>> asyncImplementation)
             => Create(implementation, LythonCallableSignature.Create("bound method"), asyncImplementation);
 

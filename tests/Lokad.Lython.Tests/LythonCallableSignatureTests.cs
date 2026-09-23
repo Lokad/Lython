@@ -1082,6 +1082,57 @@ public sealed class LythonCallableSignatureTests
     }
 
     [Fact]
+    public void Create_ReusesHoistedDateTimeSignatures()
+    {
+        // N17: companion pin for the hoisted Date/Time/DateTime/Timezone statics.
+        Assert.Same(
+            LythonCallableSignature.Create("date.__format__", ["format_spec"]),
+            LythonCallableSignature.Create("date.__format__", ["format_spec"]));
+        Assert.Same(
+            LythonCallableSignature.Create("date.strftime", ["format"]),
+            LythonCallableSignature.Create("date.strftime", ["format"]));
+        Assert.Same(
+            LythonCallableSignature.Create("date.replace", ["year", "month", "day"], 0),
+            LythonCallableSignature.Create("date.replace", ["year", "month", "day"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("time.isoformat", ["timespec"], 0),
+            LythonCallableSignature.Create("time.isoformat", ["timespec"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("time.__format__", ["format_spec"]),
+            LythonCallableSignature.Create("time.__format__", ["format_spec"]));
+        Assert.Same(
+            LythonCallableSignature.Create("time.strftime", ["format"]),
+            LythonCallableSignature.Create("time.strftime", ["format"]));
+        Assert.Same(
+            LythonCallableSignature.Create("time.replace", ["hour", "minute", "second", "microsecond", "tzinfo", "fold"], 0),
+            LythonCallableSignature.Create("time.replace", ["hour", "minute", "second", "microsecond", "tzinfo", "fold"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("datetime.astimezone", ["tz"], 0),
+            LythonCallableSignature.Create("datetime.astimezone", ["tz"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("datetime.isoformat", ["sep", "timespec"], 0),
+            LythonCallableSignature.Create("datetime.isoformat", ["sep", "timespec"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("datetime.__format__", ["format_spec"]),
+            LythonCallableSignature.Create("datetime.__format__", ["format_spec"]));
+        Assert.Same(
+            LythonCallableSignature.Create("datetime.strftime", ["format"]),
+            LythonCallableSignature.Create("datetime.strftime", ["format"]));
+        Assert.Same(
+            LythonCallableSignature.Create("datetime.replace", ["year", "month", "day", "hour", "minute", "second", "microsecond", "tzinfo", "fold"], 0),
+            LythonCallableSignature.Create("datetime.replace", ["year", "month", "day", "hour", "minute", "second", "microsecond", "tzinfo", "fold"], 0));
+        Assert.Same(
+            LythonCallableSignature.Create("timezone.utcoffset", ["dt"]),
+            LythonCallableSignature.Create("timezone.utcoffset", ["dt"]));
+        Assert.Same(
+            LythonCallableSignature.Create("timezone.tzname", ["dt"]),
+            LythonCallableSignature.Create("timezone.tzname", ["dt"]));
+        Assert.Same(
+            LythonCallableSignature.Create("timezone.dst", ["dt"]),
+            LythonCallableSignature.Create("timezone.dst", ["dt"]));
+    }
+
+    [Fact]
     public void Create_RejectsInvalidParameterMetadata()
     {
         Assert.Throws<ArgumentException>(() =>

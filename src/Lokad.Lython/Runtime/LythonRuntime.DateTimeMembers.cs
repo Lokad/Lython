@@ -27,6 +27,10 @@ internal sealed partial class LythonRuntime
 
     internal static class DateMembers
     {
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature DateFormatSignature = LythonCallableSignature.Create("date.__format__", ["format_spec"]);
+        private static readonly LythonCallableSignature DateStrftimeSignature = LythonCallableSignature.Create("date.strftime", ["format"]);
+        private static readonly LythonCallableSignature DateReplaceSignature = LythonCallableSignature.Create("date.replace", ["year", "month", "day"], 0);
         public static bool TryGetMember(PyDate date, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -54,7 +58,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyDateTimeOps.OwnDateTimeText(PyDateTimeOps.FormatValue(date, format, span), context.MemoryGovernor, span);
-                }, "date.__format__", ["format_spec"]),
+                }, DateFormatSignature),
                 "strftime" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -68,7 +72,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyDateTimeOps.OwnDateTimeText(PyDateTimeOps.Strftime(date.Value, format, span), context.MemoryGovernor, span);
-                }, "date.strftime", ["format"]),
+                }, DateStrftimeSignature),
                 "replace" => BoundCallable.CreateWithPresence((bound, span, context) =>
                 {
                     var arguments = bound.Values;
@@ -101,7 +105,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyDateTimeOps.OwnDateTimeValue(new PyDate(new DateOnly(year, month, day)), context, span);
-                }, "date.replace", ["year", "month", "day"], 0),
+                }, DateReplaceSignature),
                 _ => MissingMemberValue.Instance
             };
 
@@ -111,6 +115,11 @@ internal sealed partial class LythonRuntime
 
     internal static class TimeMembers
     {
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature TimeIsoformatSignature = LythonCallableSignature.Create("time.isoformat", ["timespec"], 0);
+        private static readonly LythonCallableSignature TimeFormatSignature = LythonCallableSignature.Create("time.__format__", ["format_spec"]);
+        private static readonly LythonCallableSignature TimeStrftimeSignature = LythonCallableSignature.Create("time.strftime", ["format"]);
+        private static readonly LythonCallableSignature TimeReplaceSignature = LythonCallableSignature.Create("time.replace", ["hour", "minute", "second", "microsecond", "tzinfo", "fold"], 0);
         public static bool TryGetMember(PyTime time, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -139,7 +148,7 @@ internal sealed partial class LythonRuntime
 
                     var timespec = GetTimespec(ArgAt(bound.Values, 0), 1, span, context, IsAssigned(bound, 0));
                     return PyDateTimeOps.OwnDateTimeText(time.IsoFormat(timespec), context.MemoryGovernor, span);
-                }, "time.isoformat", ["timespec"], 0),
+                }, TimeIsoformatSignature),
                 "__format__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -153,7 +162,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyDateTimeOps.OwnDateTimeText(PyDateTimeOps.FormatValue(time, format, span), context.MemoryGovernor, span);
-                }, "time.__format__", ["format_spec"]),
+                }, TimeFormatSignature),
                 "strftime" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -167,7 +176,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyDateTimeOps.OwnDateTimeText(PyDateTimeOps.Strftime(time.Value, time.TzInfo, format, span), context.MemoryGovernor, span);
-                }, "time.strftime", ["format"]),
+                }, TimeStrftimeSignature),
                 "replace" => BoundCallable.CreateWithPresence((bound, span, context) =>
                 {
                     var arguments = bound.Values;
@@ -215,7 +224,7 @@ internal sealed partial class LythonRuntime
                         new TimeOnly(hour, minute, second, microsecond / 1000, microsecond % 1000),
                         ReplacementTimezone(arguments, 4, time.TzInfo, span, context, IsAssigned(4)),
                         fold), context, span);
-                }, "time.replace", ["hour", "minute", "second", "microsecond", "tzinfo", "fold"], 0),
+                }, TimeReplaceSignature),
                 _ => MissingMemberValue.Instance
             };
 
@@ -225,6 +234,12 @@ internal sealed partial class LythonRuntime
 
     internal static class DateTimeMembers
     {
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature DateTimeAstimezoneSignature = LythonCallableSignature.Create("datetime.astimezone", ["tz"], 0);
+        private static readonly LythonCallableSignature DateTimeIsoformatSignature = LythonCallableSignature.Create("datetime.isoformat", ["sep", "timespec"], 0);
+        private static readonly LythonCallableSignature DateTimeFormatSignature = LythonCallableSignature.Create("datetime.__format__", ["format_spec"]);
+        private static readonly LythonCallableSignature DateTimeStrftimeSignature = LythonCallableSignature.Create("datetime.strftime", ["format"]);
+        private static readonly LythonCallableSignature DateTimeReplaceSignature = LythonCallableSignature.Create("datetime.replace", ["year", "month", "day", "hour", "minute", "second", "microsecond", "tzinfo", "fold"], 0);
         public static bool TryGetMember(PyDateTime dateTime, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -293,7 +308,7 @@ internal sealed partial class LythonRuntime
 
                     context.RegisterHostCall(span);
                     return PyDateTimeOps.OwnDateTimeValue(PyDateTimeOps.Astimezone(dateTime, targetTimezone, context.Host.LocalNow.Offset, span), context, span);
-                }, "datetime.astimezone", ["tz"], 0),
+                }, DateTimeAstimezoneSignature),
                 "isoformat" => BoundCallable.CreateWithPresence((bound, span, context) =>
                 {
                     if (bound.Values.Length > 2)
@@ -304,7 +319,7 @@ internal sealed partial class LythonRuntime
                     var separator = GetSeparator(ArgAt(bound.Values, 0), span, context, IsAssigned(bound, 0));
                     var timespec = GetTimespec(ArgAt(bound.Values, 1), 2, span, context, IsAssigned(bound, 1));
                     return PyDateTimeOps.OwnDateTimeText(dateTime.IsoFormat(separator, timespec), context.MemoryGovernor, span);
-                }, "datetime.isoformat", ["sep", "timespec"], 0),
+                }, DateTimeIsoformatSignature),
                 "__format__" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -318,7 +333,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyDateTimeOps.OwnDateTimeText(PyDateTimeOps.FormatValue(dateTime, format, span), context.MemoryGovernor, span);
-                }, "datetime.__format__", ["format_spec"]),
+                }, DateTimeFormatSignature),
                 "strftime" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -332,7 +347,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyDateTimeOps.OwnDateTimeText(PyDateTimeOps.Strftime(dateTime.Value, dateTime.TzInfo, format, span), context.MemoryGovernor, span);
-                }, "datetime.strftime", ["format"]),
+                }, DateTimeStrftimeSignature),
                 "replace" => BoundCallable.CreateWithPresence((bound, span, context) =>
                 {
                     var arguments = bound.Values;
@@ -398,7 +413,7 @@ internal sealed partial class LythonRuntime
                         new DateTime(year, month, day, hour, minute, second, microsecond / 1000, DateTimeKind.Unspecified).AddTicks((microsecond % 1000) * 10L),
                         ReplacementTimezone(arguments, 7, dateTime.TzInfo, span, context, IsAssigned(7)),
                         fold), context, span);
-                }, "datetime.replace", ["year", "month", "day", "hour", "minute", "second", "microsecond", "tzinfo", "fold"], 0),
+                }, DateTimeReplaceSignature),
                 _ => MissingMemberValue.Instance
             };
 
@@ -409,6 +424,10 @@ internal sealed partial class LythonRuntime
 
     internal static class TimezoneMembers
     {
+        // N17: hot fixed signatures hoisted per family (see ListMembers).
+        private static readonly LythonCallableSignature TimezoneUtcoffsetSignature = LythonCallableSignature.Create("timezone.utcoffset", ["dt"]);
+        private static readonly LythonCallableSignature TimezoneTznameSignature = LythonCallableSignature.Create("timezone.tzname", ["dt"]);
+        private static readonly LythonCallableSignature TimezoneDstSignature = LythonCallableSignature.Create("timezone.dst", ["dt"]);
         public static bool TryGetMember(PyTimezone timezone, string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
@@ -421,7 +440,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyDateTimeOps.OwnDateTimeValue(new PyTimedelta(timezone.Offset), context, span);
-                }, "timezone.utcoffset", ["dt"]),
+                }, TimezoneUtcoffsetSignature),
                 "tzname" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -430,7 +449,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyDateTimeOps.OwnDateTimeText(PyString.FromString(timezone.Name), context.MemoryGovernor, span);
-                }, "timezone.tzname", ["dt"]),
+                }, TimezoneTznameSignature),
                 "dst" => BoundCallable.Create((arguments, span, _) =>
                 {
                     if (arguments.Length != 1)
@@ -439,7 +458,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNone.Instance;
-                }, "timezone.dst", ["dt"]),
+                }, TimezoneDstSignature),
                 _ => MissingMemberValue.Instance
             };
 
