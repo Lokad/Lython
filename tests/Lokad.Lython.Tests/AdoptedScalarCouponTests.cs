@@ -104,6 +104,25 @@ public sealed class AdoptedScalarCouponTests
     }
 
     [Fact]
+    public void AdoptAllDenialRestoresPreheldAlias()
+    {
+        // N27: the rollback record precedes each coupon, so a batch denied
+        // after touching a pre-held alias unwinds to that alias alone.
+        var (context, span) = Budgeted(2 * AdoptedScalarCoupons.CouponBytes + 8);
+        var coupons = new AdoptedScalarCoupons();
+        object box = new BigInteger(4);
+        coupons.Adopt(box, context.MemoryGovernor, span);
+        var before = context.MemoryGovernor.CurrentCommittedBytes;
+        var values = new object[] { box, new BigInteger(5), new BigInteger(6) };
+        Assert.Throws<LythonRuntimeException>(() => coupons.AdoptAll(values, context.MemoryGovernor, span));
+        Assert.Equal(AdoptedScalarCoupons.CouponBytes, coupons.CommittedBytes);
+        Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        coupons.Release(box, context.MemoryGovernor);
+        Assert.Equal(0, coupons.CommittedBytes);
+    }
+
+    [Fact]
     public void AddRefMovesOnlyRefcounts()
     {
         var (context, span) = Budgeted(65536);

@@ -64,8 +64,9 @@ internal sealed class AdoptedScalarCoupons
         }
     }
 
-    // All-or-nothing batch adoption: every staged increment rolls back when any
-    // coupon denies, so the caller either owns the whole batch or nothing.
+    // All-or-nothing batch adoption: the rollback record precedes each coupon,
+    // so a denied coupon (or a failed record allocation) rolls back to pre-held
+    // counts and the caller either owns the whole batch or nothing beyond them.
     // The values enumerable may be consumed twice on the rollback path only;
     // callers pass materialized inputs.
     public void AdoptAll(IEnumerable<object> values, MemoryGovernor governor, LythonSourceSpan? span)
@@ -80,9 +81,12 @@ internal sealed class AdoptedScalarCoupons
                     continue;
                 }
 
-                AdoptStaged(value!, governor, span);
+                // Record before adopting: a record-allocation failure then
+                // commits nothing, and a denied adoption still unwinds through
+                // UnadoptOne, which ignores recorded-but-unadopted identities.
                 staged ??= new List<object>();
                 staged.Add(value!);
+                AdoptStaged(value!, governor, span);
             }
         }
         catch
@@ -110,16 +114,18 @@ internal sealed class AdoptedScalarCoupons
             {
                 if (IsAdoptableScalar(pair.Key) && !ChargeReclamationPool.IsTrackedValue(pair.Key!))
                 {
-                    AdoptStaged(pair.Key, governor, span);
+                    // Record before adopting (see AdoptAll): the rollback
+                    // tolerates recorded-but-unadopted entries.
                     staged ??= new List<object>();
                     staged.Add(pair.Key);
+                    AdoptStaged(pair.Key, governor, span);
                 }
 
                 if (IsAdoptableScalar(pair.Value) && !ChargeReclamationPool.IsTrackedValue(pair.Value!))
                 {
-                    AdoptStaged(pair.Value, governor, span);
                     staged ??= new List<object>();
                     staged.Add(pair.Value);
+                    AdoptStaged(pair.Value, governor, span);
                 }
             }
         }
@@ -204,7 +210,10 @@ internal sealed class AdoptedScalarCoupons
 
     private void UnadoptOne(object value, MemoryGovernor governor)
     {
-        if (!_refcounts!.TryGetValue(value, out var held))
+        // A batch rollback may name an identity whose adoption denied before
+        // the refcount map existed (the record precedes the coupon): nothing
+        // to release, matching the Release/ReleaseAll guards above.
+        if (_refcounts is null || !_refcounts.TryGetValue(value, out var held))
         {
             return;
         }
