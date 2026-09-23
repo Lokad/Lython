@@ -6,6 +6,7 @@ namespace Lokad.Lython.Tests;
 // accounted. Cumulative allocation (GC traffic, not live heap) must stay far
 // below the old 16-17 MB for empty/short/denied huge requests. Thresholds are
 // generous (2 MB) to avoid JIT noise while still catching the old path.
+[Collection("AllocationSensitive")]
 public sealed class BatchedTupleAllocationTests
 {
     private static LythonRunOptions Tiny() => new()

@@ -6,6 +6,7 @@ namespace Lokad.Lython.Tests;
 // Thresholds generous (20 MB) to absorb Release per-run overhead (~9 MB)
 // while still catching old 6.5 MB quantiles/samples and 60 MB join traffic
 // (old totals ~15 MB / ~69 MB with overhead).
+[Collection("AllocationSensitive")]
 public sealed class OutputGrowthAllocationTests
 {
     private static LythonRunOptions Tiny() => new()
