@@ -304,6 +304,31 @@ public sealed class StarredLoopTargetTests
     }
 
     [Fact]
+    public async Task DiscardedAssignRemainders_DoNotDeny()
+    {
+        // N32/N35: deterministic pin for remainder reclamation on the
+        // standalone-assign path. Peak-ratio bounds scale with GC timing
+        // below the pool window, but denial is absolute: stranded
+        // remainders accumulate monotonically (100k x 20-elem rows peaked
+        // 158 MB pre-fix), so 20000 iterations must deny a 16 MB budget
+        // without the fix and succeed with it. Post-fix peaks stay near
+        // the pool window (measured <= 6.5 MB at 400k), far below budget.
+        var script = Compile("""
+            row = list(range(20))
+            for i in range(20000):
+                a, *b = row
+            return "done"
+            """);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 16000000 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("done", sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("done", asyncResult.ReturnValue);
+    }
+
+    [Fact]
     public void DiscardedSubscriptRemaindersStayBounded()
     {
         // N32: remainder stored through subscript targets rebinds (and
