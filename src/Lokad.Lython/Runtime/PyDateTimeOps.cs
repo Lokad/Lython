@@ -547,7 +547,7 @@ internal static partial class PyDateTimeOps
             throw new LythonRuntimeException("TypeError", "datetime.date.fromisocalendar(year, week, day) expects three integer arguments.", span);
         }
 
-        return new PyDate(DateFromIsoCalendarValue(arguments[0], arguments[1], arguments[2], span, context));
+        return OwnDateTimeValue(new PyDate(DateFromIsoCalendarValue(arguments[0], arguments[1], arguments[2], span, context)), context, span);
     }
 
     public static object DateFromTimestamp(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
