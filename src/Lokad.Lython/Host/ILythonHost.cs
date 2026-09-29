@@ -57,9 +57,31 @@ public interface ILythonHost
     }
 
     /// <summary>Replaces a contained text file with the supplied well-formed UTF-8 bytes.</summary>
+    /// <remarks>
+    /// Write-buffer ownership: the runtime supplies a freshly-allocated buffer on every call
+    /// and never mutates or reuses it afterwards. The buffer is guaranteed valid only until the
+    /// returned task completes, so consume it (decode, hash, stream to disk) or copy it before
+    /// completing; a synchronous run additionally requires an already-completed task (see
+    /// <see cref="ILythonSynchronousHostCapability"/>). Bytes retained afterwards are host-owned
+    /// storage, never charged against the execution memory budget: a host that keeps every
+    /// completed file grows with the data it keeps by its own policy, not by a runtime leak. A
+    /// host that persists externally (streams the payload out, then drops it) needs no second
+    /// resident copy of a completed file.
+    /// </remarks>
     ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken);
 
     /// <summary>Appends well-formed UTF-8 bytes to a contained text file.</summary>
+    /// <remarks>
+    /// Write-buffer ownership: the runtime supplies a freshly-allocated buffer on every call
+    /// and never mutates or reuses it afterwards. The buffer is guaranteed valid only until the
+    /// returned task completes, so consume it (decode, hash, stream to disk) or copy it before
+    /// completing; a synchronous run additionally requires an already-completed task (see
+    /// <see cref="ILythonSynchronousHostCapability"/>). Bytes retained afterwards are host-owned
+    /// storage, never charged against the execution memory budget: a host that keeps every
+    /// completed file grows with the data it keeps by its own policy, not by a runtime leak. A
+    /// host that persists externally (streams the payload out, then drops it) needs no second
+    /// resident copy of a completed file.
+    /// </remarks>
     ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken);
 
     /// <summary>Reads a complete binary file when the host exposes binary I/O.</summary>
@@ -68,7 +90,14 @@ public interface ILythonHost
         => throw new LythonHostCapabilityUnavailableException("binary file I/O");
 
     /// <summary>Replaces a contained binary file when the host exposes binary I/O.</summary>
-    /// <remarks>The default implementation rejects binary access explicitly.</remarks>
+    /// <remarks>The default implementation rejects binary access explicitly.
+    /// Write-buffer ownership: the runtime supplies a freshly-allocated buffer on every call
+    /// and never mutates or reuses it afterwards. The buffer is guaranteed valid only until the
+    /// returned task completes, so consume it or copy it before completing; a synchronous run
+    /// additionally requires an already-completed task (see
+    /// <see cref="ILythonSynchronousHostCapability"/>). Bytes retained afterwards are host-owned
+    /// storage, never charged against the execution memory budget.
+    /// </remarks>
     ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
         => throw new LythonHostCapabilityUnavailableException("binary file I/O");
 
@@ -77,6 +106,12 @@ public interface ILythonHost
     /// Implementations must preserve the existing prefix and create a missing file. The default
     /// implementation composes the other host operations and is therefore neither atomic nor
     /// allocation-free; hosts with native append support should override it.
+    /// Write-buffer ownership: the runtime supplies a freshly-allocated buffer on every call
+    /// and never mutates or reuses it afterwards. The buffer is guaranteed valid only until the
+    /// returned task completes, so consume it or copy it before completing; a synchronous run
+    /// additionally requires an already-completed task (see
+    /// <see cref="ILythonSynchronousHostCapability"/>). Bytes retained afterwards are host-owned
+    /// storage, never charged against the execution memory budget.
     /// </remarks>
     async ValueTask AppendBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
     {
