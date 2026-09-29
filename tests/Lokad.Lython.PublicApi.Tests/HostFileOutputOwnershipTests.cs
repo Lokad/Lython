@@ -1,3 +1,4 @@
+using System;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
@@ -13,6 +14,7 @@ public sealed class HostFileOutputOwnershipTests
     private const int FileCount = 16;
     private const int FileBytes = 32768;
     private const long BudgetBytes = 262144;
+    private const long PeakAgreementToleranceBytes = 16384;
     private const long ExpectedHostBytes = (long)FileCount * FileBytes;
 
     private static string BatchScript => """
@@ -62,8 +64,17 @@ public sealed class HostFileOutputOwnershipTests
         Assert.Equal(ExpectedHostBytes * (byte)'a', sink.Checksum);
         Assert.Equal(0, sink.RetainedBytes);
 
-        Assert.Equal(sunk.PeakExecutionMemoryBytes, retained.PeakExecutionMemoryBytes);
+        // One-time runtime warm-up (codecs, static caches) is charged to whichever
+        // run executes first in the process, and parallel collection scheduling
+        // decides that (4,486 B observed on ubuntu CI), so exact peak equality is
+        // brittle. The ownership invariant is exact host-side bytes with bounded
+        // runtime peaks on both runs.
+        Assert.True(
+            Math.Abs(sunk.PeakExecutionMemoryBytes - retained.PeakExecutionMemoryBytes)
+                <= PeakAgreementToleranceBytes,
+            $"sink peak={sunk.PeakExecutionMemoryBytes} retained peak={retained.PeakExecutionMemoryBytes}");
         Assert.True(retained.PeakExecutionMemoryBytes <= BudgetBytes);
+        Assert.True(sunk.PeakExecutionMemoryBytes <= BudgetBytes);
     }
 
     [Fact]
@@ -83,8 +94,17 @@ public sealed class HostFileOutputOwnershipTests
         Assert.True(sunk.Success, sunk.Failure?.Message);
         Assert.Equal(ExpectedHostBytes, sink.ReceivedBytes);
 
-        Assert.Equal(sunk.PeakExecutionMemoryBytes, retained.PeakExecutionMemoryBytes);
+        // One-time runtime warm-up (codecs, static caches) is charged to whichever
+        // run executes first in the process, and parallel collection scheduling
+        // decides that (4,486 B observed on ubuntu CI), so exact peak equality is
+        // brittle. The ownership invariant is exact host-side bytes with bounded
+        // runtime peaks on both runs.
+        Assert.True(
+            Math.Abs(sunk.PeakExecutionMemoryBytes - retained.PeakExecutionMemoryBytes)
+                <= PeakAgreementToleranceBytes,
+            $"sink peak={sunk.PeakExecutionMemoryBytes} retained peak={retained.PeakExecutionMemoryBytes}");
         Assert.True(retained.PeakExecutionMemoryBytes <= BudgetBytes);
+        Assert.True(sunk.PeakExecutionMemoryBytes <= BudgetBytes);
     }
 
     [Fact]
