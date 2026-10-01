@@ -222,12 +222,16 @@ internal sealed partial class LythonRuntime
                 TextNewlineMode newline)
             {
                 ChargeFileHandleValue(context.MemoryGovernor, null);
-                return new(
+                // Outstanding writers publish at successful execution end when the
+                // script never closes them; registration lives on the shared run state.
+                TextFileHandle handle = new(
                     path,
                     new TextFileWriteState(path, TextFileWriteMode.Write, context, encoding, errors, newline, BigInteger.Zero),
                     context,
                     encoding,
                     errors);
+                context.Services.State.TrackOpenTextWriter(handle);
+                return handle;
             }
 
             public static TextFileHandle ForAppend(
@@ -290,6 +294,9 @@ internal sealed partial class LythonRuntime
                     reader.Release();
                 }
 
+                // Only reached after a successful flush: a failed close keeps its
+                // registration so end-of-run publication can retry it.
+                _context.Services.State.UntrackOpenTextWriter(this);
                 IsClosed = true;
                 return false;
             }
@@ -312,6 +319,9 @@ internal sealed partial class LythonRuntime
                     reader.Release();
                 }
 
+                // Only reached after a successful flush: a failed close keeps its
+                // registration so end-of-run publication can retry it.
+                _context.Services.State.UntrackOpenTextWriter(this);
                 IsClosed = true;
                 return false;
             }
@@ -462,12 +472,14 @@ internal sealed partial class LythonRuntime
                 BigInteger appendBasePosition)
             {
                 ChargeFileHandleValue(context.MemoryGovernor, null);
-                return new(
+                TextFileHandle handle = new(
                     path,
                     new TextFileWriteState(path, TextFileWriteMode.Append, context, encoding, errors, newline, appendBasePosition),
                     context,
                     encoding,
                     errors);
+                context.Services.State.TrackOpenTextWriter(handle);
+                return handle;
             }
 
             private ChunkedTextFileReadState RequireReader()

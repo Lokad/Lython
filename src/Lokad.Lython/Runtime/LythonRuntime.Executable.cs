@@ -236,14 +236,38 @@ internal sealed partial class LythonRuntime
                 context = new ExecutionContext(host, options);
                 ExecuteExecutableCodeObject(script.EntryPoint, context);
 
+                // Successful execution publishes outstanding writers instead of
+                // silently discarding accepted writes; a publication failure
+                // converts to a failure result below.
+                context.Services.State.CloseOpenTextWriters();
+
                 return CreateSuccessfulResult(context, null, options);
             }
             catch (ReturnSignal signal)
             {
+                // A top-level return still publishes outstanding writers; a
+                // publication failure replaces the return with a failure.
+                try
+                {
+                    context?.Services.State.CloseOpenTextWriters();
+                }
+                catch (LythonRuntimeException ex)
+                {
+                    return CreateRuntimeFailureResult(ex, context, options);
+                }
+
                 return CreateReturnedResult(signal, context, options);
             }
             catch (LythonRuntimeException ex)
             {
+                // Preserve the original failure while still attempting publication
+                // (CPython publishes buffered writes even when execution fails).
+                // Cancellation skips publication: a cancelled run leaves no file behind.
+                if (context is not null && !context.Services.State.CancellationRequested)
+                {
+                    context.Services.State.TryCloseOpenTextWriters();
+                }
+
                 return CreateRuntimeFailureResult(ex, context, options);
             }
         });

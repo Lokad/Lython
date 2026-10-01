@@ -15,6 +15,7 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
     private readonly Dictionary<string, string> _writeBytesFailures = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> _nextWriteBytesFailures = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> _nextWriteTextFailures = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, string> _writeTextFailures = new(StringComparer.Ordinal);
     private readonly MockTextOutput _stdout = new();
     private readonly MockTextOutput _stderr = new();
     private MockTextInput? _stdin;
@@ -119,6 +120,11 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
         var text = Utf8.GetString(utf8.Span);
 
         path = NormalizePath(path);
+        if (_writeTextFailures.TryGetValue(path, out var writeFailure))
+        {
+            throw new InvalidOperationException(writeFailure);
+        }
+
         if (_nextWriteTextFailures.TryGetValue(path, out var nextFailure))
         {
             _nextWriteTextFailures.Remove(path);
@@ -137,6 +143,11 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
         var text = Utf8.GetString(utf8.Span);
 
         path = NormalizePath(path);
+        if (_writeTextFailures.TryGetValue(path, out var appendFailure))
+        {
+            throw new InvalidOperationException(appendFailure);
+        }
+
         EnsureDirectory(ParentOf(path));
         _rawTextFiles.Remove(path);
         _files[path] = _files.TryGetValue(path, out var current)
@@ -542,6 +553,17 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
     public void FailNextWriteText(string path, string message)
     {
         _nextWriteTextFailures[NormalizePath(path)] = message;
+    }
+
+    public void FailWriteText(string path, string message)
+    {
+        _writeTextFailures[NormalizePath(path)] = message;
+    }
+
+    public void ClearWriteTextFailures()
+    {
+        _writeTextFailures.Clear();
+        _nextWriteTextFailures.Clear();
     }
 
     public void FailNextWriteBytes(string path, string message)

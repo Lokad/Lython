@@ -153,13 +153,13 @@ public sealed class CsvWriterAccountingScenarioTests
             """);
         Assert.True(script.IsValid);
         var syncHost = new MockLythonHost();
-        syncHost.FailNextWriteText("/out.csv", "disk is full");
+        syncHost.FailWriteText("/out.csv", "disk is full");
         var sync = script.Run(syncHost);
         Assert.False(sync.Success);
         Assert.NotNull(sync.Failure);
 
         var asyncHost = new MockLythonHost();
-        asyncHost.FailNextWriteText("/out.csv", "disk is full");
+        asyncHost.FailWriteText("/out.csv", "disk is full");
         var asyncResult = await script.RunAsync(asyncHost);
         Assert.False(asyncResult.Success);
         Assert.NotNull(asyncResult.Failure);
@@ -294,8 +294,9 @@ public sealed class CsvWriterAccountingScenarioTests
     public async Task FailedHostWriteLeavesNoPartialRow()
     {
         // MG02: a failing host write surfaces explicitly without partial row
-        // bytes, and a later run on the same host (one-shot failure consumed)
-        // writes normally.
+        // bytes. The failure persists past the explicit close, so the end-of-run
+        // retry fails too and publishes nothing; clearing it lets a later run on
+        // the same host write normally.
         var script = new LythonEngine().Compile("""
             import csv
             handle = open("/out.csv", "w")
@@ -307,22 +308,24 @@ public sealed class CsvWriterAccountingScenarioTests
         Assert.True(script.IsValid);
         var syncHost = new MockLythonHost();
         syncHost.SeedFile("/out.csv", "");
-        syncHost.FailNextWriteText("/out.csv", "disk is full");
+        syncHost.FailWriteText("/out.csv", "disk is full");
         var sync = script.Run(syncHost);
         Assert.False(sync.Success);
         Assert.NotNull(sync.Failure);
         Assert.Equal("", syncHost.ReadText("/out.csv"));
+        syncHost.ClearWriteTextFailures();
         var syncRetry = script.Run(syncHost);
         Assert.True(syncRetry.Success, syncRetry.Failure?.Message);
         Assert.Equal("a,b\n", syncHost.ReadText("/out.csv"));
 
         var asyncHost = new MockLythonHost();
         asyncHost.SeedFile("/out.csv", "");
-        asyncHost.FailNextWriteText("/out.csv", "disk is full");
+        asyncHost.FailWriteText("/out.csv", "disk is full");
         var asyncResult = await script.RunAsync(asyncHost);
         Assert.False(asyncResult.Success);
         Assert.NotNull(asyncResult.Failure);
         Assert.Equal("", asyncHost.ReadText("/out.csv"));
+        asyncHost.ClearWriteTextFailures();
         var asyncRetry = await script.RunAsync(asyncHost);
         Assert.True(asyncRetry.Success, asyncRetry.Failure?.Message);
         Assert.Equal("a,b\n", asyncHost.ReadText("/out.csv"));

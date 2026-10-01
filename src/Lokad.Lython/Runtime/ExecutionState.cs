@@ -278,6 +278,87 @@ internal sealed class ExecutionState
         }
     }
 
+    // Outstanding text writers opened for writing or appending and not yet
+    // closed. Successful execution publishes them (flush + close) instead of
+    // silently discarding accepted writes; the registry lives on the shared
+    // run state so handles opened under any child scope are covered. Handles
+    // unregister on explicit close; a failed close keeps its registration so
+    // end-of-run publication can retry it.
+    private readonly List<LythonRuntime.ExecutionContext.TextFileHandle> _openTextWriters = new();
+
+    internal void TrackOpenTextWriter(LythonRuntime.ExecutionContext.TextFileHandle handle)
+    {
+        _openTextWriters.Add(handle);
+    }
+
+    internal void UntrackOpenTextWriter(LythonRuntime.ExecutionContext.TextFileHandle handle)
+    {
+        _openTextWriters.Remove(handle);
+    }
+
+    internal bool CancellationRequested => Limits.CancellationToken.IsCancellationRequested;
+
+    // End-of-run publication for outstanding writers, newest first: behaves
+    // exactly like an implicit close() on each handle, so a publication failure
+    // surfaces as a failure rather than silent success. Flushes consume
+    // host-call and memory budgets like explicit closes.
+    internal void CloseOpenTextWriters()
+    {
+        while (_openTextWriters.Count > 0)
+        {
+            var handle = _openTextWriters[^1];
+            handle.Exit();
+        }
+    }
+
+    internal async ValueTask CloseOpenTextWritersAsync()
+    {
+        while (_openTextWriters.Count > 0)
+        {
+            var handle = _openTextWriters[^1];
+            await handle.ExitAsync().ConfigureAwait(false);
+        }
+    }
+
+    // Best-effort variants for the failure path: publication is attempted
+    // (CPython publishes buffered writes even when execution fails) but any
+    // publication error is swallowed so the original failure is preserved.
+    // Handles dequeue before closing so a persistently failing handle cannot
+    // stall the sweep. Cancellation skips publication entirely (checked by
+    // the run entries): a cancelled run leaves no file behind, and host calls
+    // against a canceled token would fail anyway.
+    internal void TryCloseOpenTextWriters()
+    {
+        while (_openTextWriters.Count > 0)
+        {
+            var handle = _openTextWriters[^1];
+            _openTextWriters.RemoveAt(_openTextWriters.Count - 1);
+            try
+            {
+                handle.Exit();
+            }
+            catch (Exception)
+            {
+            }
+        }
+    }
+
+    internal async ValueTask TryCloseOpenTextWritersAsync()
+    {
+        while (_openTextWriters.Count > 0)
+        {
+            var handle = _openTextWriters[^1];
+            _openTextWriters.RemoveAt(_openTextWriters.Count - 1);
+            try
+            {
+                await handle.ExitAsync().ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+            }
+        }
+    }
+
     private readonly record struct PoolRegistration(
         WeakReference<object> Owner,
         ChargeReclamationPool Pool,
