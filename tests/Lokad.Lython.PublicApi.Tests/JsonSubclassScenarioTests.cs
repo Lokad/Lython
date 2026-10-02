@@ -250,4 +250,176 @@ public sealed class JsonSubclassScenarioTests
             Assert.Equal("R|J", result);
         }
     }
+    [Fact]
+    public async Task ClsDispatchDecodesThroughSelectedClass()
+    {
+        var results = await RunBothModes(
+            """
+            import json
+            import json as j
+            class Strict(json.JSONDecoder):
+                def __init__(self, **kw):
+                    super().__init__(parse_int=lambda t: 99, **kw)
+            class Wrap(json.JSONDecoder):
+                def decode(self, s):
+                    return ("W", super().decode(s))
+            out = []
+            out.append(str(json.loads("[1, 2]", cls=Strict)))
+            out.append(str(json.loads("[1]", cls=Wrap)))
+            out.append(str(json.loads("[1]", cls=j.JSONDecoder)))
+            out.append(str(json.loads("[1]", cls=json.JSONDecoder)))
+            from json import JSONDecoder as JD
+            out.append(str(json.loads("[1]", cls=JD)))
+            try:
+                json.loads("{}", cls=json.JSONEncoder)
+                out.append("ok")
+            except AttributeError:
+                out.append("K")
+            try:
+                json.loads("{}", cls=int)
+                out.append("ok")
+            except NotImplementedError:
+                out.append("N")
+            class Plain:
+                pass
+            try:
+                json.loads("{}", cls=Plain)
+                out.append("ok")
+            except NotImplementedError:
+                out.append("P")
+            return "|".join(out)
+            """);
+        foreach (var result in results)
+        {
+            Assert.Equal("[99, 99]|('W', [1])|[1]|[1]|[1]|K|N|P", result);
+        }
+    }
+
+    [Fact]
+    public async Task ClsDispatchEncodesThroughSelectedClass()
+    {
+        var results = await RunBothModes(
+            """
+            import json
+            from json import JSONEncoder as JE
+            class SetEncoder(json.JSONEncoder):
+                def default(self, obj):
+                    if isinstance(obj, set):
+                        return sorted(obj)
+                    return super().default(obj)
+            class Tag(json.JSONEncoder):
+                def __init__(self, tag="T", **kw):
+                    super().__init__(**kw)
+                    self.tag = tag
+                def default(self, o):
+                    return self.tag
+            class Wrap(json.JSONEncoder):
+                def encode(self, o):
+                    return "W:" + super().encode(o)
+            out = []
+            out.append(json.dumps({2, 1}, cls=SetEncoder))
+            out.append(json.dumps({2, 1}, cls=SetEncoder, sort_keys=True))
+            out.append(json.dumps({2}, cls=Tag, tag="X"))
+            out.append(json.dumps({2}, cls=Tag))
+            out.append(json.dumps([1], cls=JE))
+            out.append(json.dumps([1], cls=Wrap))
+            try:
+                json.dumps({}, cls=json.JSONDecoder)
+                out.append("ok")
+            except TypeError:
+                out.append("K")
+            try:
+                json.dumps({}, cls=int)
+                out.append("ok")
+            except NotImplementedError:
+                out.append("N")
+            return "|".join(out)
+            """);
+        foreach (var result in results)
+        {
+            Assert.Equal("[1, 2]|[1, 2]|\"X\"|\"T\"|[1]|W:[1]|K|N", result);
+        }
+    }
+    [Fact]
+    public async Task ClsMalformedCallsFailLikeCpython()
+    {
+        var results = await RunBothModes(
+            """
+            import json
+            class SetEncoder(json.JSONEncoder):
+                def default(self, obj):
+                    if isinstance(obj, set):
+                        return sorted(obj)
+                    return super().default(obj)
+            out = []
+            try:
+                json.dumps([1], cls=SetEncoder, bogus=1)
+                out.append("ok")
+            except TypeError as exc:
+                out.append("T" + str("bogus" in str(exc)))
+            try:
+                json.loads("[1]", cls=SetEncoder)
+                out.append("ok")
+            except AttributeError:
+                out.append("K")
+            try:
+                json.dumps([1], cls=SetEncoder, default=42)
+                out.append("ok")
+            except TypeError:
+                out.append("H")
+            def boom(o):
+                raise RuntimeError("cb")
+            try:
+                json.dumps({1}, cls=SetEncoder, default=boom)
+                out.append("ok")
+            except RuntimeError:
+                out.append("R")
+            try:
+                json.loads("[1]", bogus=1)
+                out.append("ok")
+            except TypeError as exc:
+                out.append("B" + str("bogus" in str(exc)))
+            return "|".join(out)
+            """);
+        foreach (var result in results)
+        {
+            Assert.Equal("TTrue|K|H|R|BTrue", result);
+        }
+    }
+
+    [Fact]
+    public async Task ClsFileRoundTripThroughSelectedClasses()
+    {
+        var host = new MockLythonHost();
+        host.SeedFile("/input.json", "[1, 2]");
+        var compiled = new LythonEngine().Compile(
+            """
+            import json
+            class Strict(json.JSONDecoder):
+                def __init__(self, **kw):
+                    super().__init__(parse_int=lambda t: 99, **kw)
+            class SetEncoder(json.JSONEncoder):
+                def default(self, obj):
+                    if isinstance(obj, set):
+                        return sorted(obj)
+                    return super().default(obj)
+            with open("/input.json", "r") as handle:
+                loaded = json.load(handle, cls=Strict)
+            with open("/out.txt", "w") as handle:
+                json.dump({2, 1}, handle, cls=SetEncoder)
+            return str(loaded)
+            """);
+        Assert.True(compiled.IsValid);
+        var sync = compiled.Run(host);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("[99, 99]", sync.ReturnValue);
+        Assert.Equal("[1, 2]", host.ReadText("/out.txt"));
+
+        var host2 = new MockLythonHost();
+        host2.SeedFile("/input.json", "[1, 2]");
+        var asyncResult = await compiled.RunAsync(host2);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("[99, 99]", asyncResult.ReturnValue);
+        Assert.Equal("[1, 2]", host2.ReadText("/out.txt"));
+    }
 }

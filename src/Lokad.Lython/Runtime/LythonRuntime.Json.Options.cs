@@ -281,16 +281,6 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", $"json option {parameterName}=... expects a callable or None.", span);
         }
 
-        private static void EnsureUnsupportedJsonClassIsNone(object value, string parameterName, LythonSourceSpan span)
-        {
-            if (ReferenceEquals(value, PyNone.Instance))
-            {
-                return;
-            }
-
-            throw new LythonRuntimeException("NotImplementedError", $"json {parameterName}=... custom encoder/decoder classes are not supported by Lython.", span);
-        }
-
         internal static bool ParseJsonBoolOption(object value, bool defaultValue)
             => ReferenceEquals(value, PyNone.Instance) ? defaultValue : IsTruthy(value);
 

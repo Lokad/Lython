@@ -844,61 +844,6 @@ internal sealed partial class LythonRuntime
             return double.Parse(raw, NumberStyles.Float, CultureInfo.InvariantCulture);
         }
 
-        // Until N39 lands, only the default decoder class (or None) is
-        // accepted through cls=...; custom classes fail explicitly.
-        private static void EnsureJsonDecoderClsIsDefaultOrNone(object value, LythonSourceSpan span)
-        {
-            if (ReferenceEquals(value, PyNone.Instance) || value is JsonDecoderClass)
-            {
-                return;
-            }
-
-            throw new LythonRuntimeException("NotImplementedError", "json cls=... custom encoder/decoder classes are not supported by Lython.", span);
-        }
-
-        private static JsonLoadOptions ParseJsonLoadOptions(object[] arguments, LythonSourceSpan span)
-        {
-            EnsureJsonDecoderClsIsDefaultOrNone(GetOptional(arguments, 1), span);
-            return new JsonLoadOptions(
-                OptionalJsonCallable(GetOptional(arguments, 2), "object_hook", span),
-                OptionalJsonCallable(GetOptional(arguments, 3), "parse_float", span),
-                OptionalJsonCallable(GetOptional(arguments, 4), "parse_int", span),
-                OptionalJsonCallable(GetOptional(arguments, 5), "parse_constant", span),
-                OptionalJsonCallable(GetOptional(arguments, 6), "object_pairs_hook", span),
-                ParseJsonBoolOption(GetOptional(arguments, 7), defaultValue: true));
-        }
-
-        // Until N39 lands, only the default encoder class (or None) is
-        // accepted through cls=...; custom classes fail explicitly.
-        private static void EnsureJsonEncoderClsIsDefaultOrNone(object value, LythonSourceSpan span)
-        {
-            if (ReferenceEquals(value, PyNone.Instance) || value is JsonEncoderClass)
-            {
-                return;
-            }
-
-            throw new LythonRuntimeException("NotImplementedError", "json cls=... custom encoder/decoder classes are not supported by Lython.", span);
-        }
-
-        private static JsonDumpOptions ParseJsonDumpOptions(
-            object[] arguments,
-            JsonDumpCallForm callForm,
-            LythonSourceSpan span,
-            ExecutionContext context)
-        {
-            var offset = callForm == JsonDumpCallForm.Dumps ? 0 : 1;
-            EnsureJsonEncoderClsIsDefaultOrNone(GetOptional(arguments, offset + 5), span);
-            var skipKeys = ParseJsonBoolOption(GetOptional(arguments, offset + 1), defaultValue: false);
-            var ensureAscii = ParseJsonBoolOption(GetOptional(arguments, offset + 2), defaultValue: true);
-            var checkCircular = ParseJsonBoolOption(GetOptional(arguments, offset + 3), defaultValue: true);
-            var allowNan = ParseJsonBoolOption(GetOptional(arguments, offset + 4), defaultValue: true);
-            var indent = ParseJsonIndent(GetOptional(arguments, offset + 6), span);
-            var separators = ParseJsonSeparators(GetOptional(arguments, offset + 7), indent is not null, span, context);
-            var defaultCallable = OptionalJsonCallable(GetOptional(arguments, offset + 8), "default", span);
-            var sortKeys = ParseJsonBoolOption(GetOptional(arguments, offset + 9), defaultValue: false);
-            return new JsonDumpOptions(skipKeys, ensureAscii, checkCircular, allowNan, indent, separators.ItemSeparator, separators.KeySeparator, defaultCallable, sortKeys);
-        }
-
         private static PyString ConvertJsonReaderString(ref Utf8JsonReader reader, ExecutionContext context, LythonSourceSpan span)
         {
             // R10: each decoded string owns a refundable snapshot so dropped

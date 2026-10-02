@@ -2373,7 +2373,7 @@ import json as j
 from csv import writer
 from pathlib import Path
 
-j.dumps(obj=1, extra=2)
+j.dumps(1, 2, 3)
 writer(delimiter=",", extra=True)
 Path(1)
 """);
