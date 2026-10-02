@@ -1,3 +1,4 @@
+using System.Numerics;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
@@ -258,5 +259,241 @@ public sealed class JsonEncoderScenarioTests
         var asyncResult = await compiled.RunAsync(host2);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("{\"a\": 2, \"b\": 1}", host2.ReadText("/out.txt"));
+    }
+    [Fact]
+    public async Task IterencodeStreamsLazilyWithJoinParity()
+    {
+        var results = await RunBothModes(
+            """
+            import json
+            calls = []
+            def hook(o):
+                calls.append(o)
+                return [1]
+            e = json.JSONEncoder(default=hook)
+            it = e.iterencode([{"k": 1}, {1, 2}])
+            out = []
+            out.append(next(it))
+            out.append(str(calls))
+            out.append(next(it))
+            out.append(str(calls))
+            rest = list(it)
+            out.append(str(calls))
+            out.append(str("".join([x for x in e.iterencode([{"k": 1}, {1, 2}])]) == e.encode([{"k": 1}, {1, 2}])))
+            it2 = e.iterencode([1])
+            out.append(next(it2))
+            try:
+                while True:
+                    out.append(next(it2))
+            except StopIteration:
+                out.append("STOP")
+            out.append(str(iter(e.iterencode([])) is not None))
+            return "|".join(out)
+            """);
+        foreach (var result in results)
+        {
+            Assert.Equal("[|[]|{|[]|[{1, 2}]|True|[|1|]|STOP|True", result);
+        }
+    }
+
+    [Fact]
+    public async Task IterencodeRecoversAfterPartialFailure()
+    {
+        var results = await RunBothModes(
+            """
+            import json
+            def hook(o):
+                raise RuntimeError("boom")
+            it = json.JSONEncoder(default=hook).iterencode([1, {1, 2}, 3])
+            collected = [next(it), next(it)]
+            out = ["".join(collected)]
+            try:
+                list(it)
+                out.append("NO-FAIL")
+            except RuntimeError:
+                out.append("boom")
+            try:
+                next(it)
+                out.append("NO-STOP")
+            except StopIteration:
+                out.append("STOP")
+            out.append(str(json.JSONEncoder(default=hook).encode([1, 2, 3]) == "[1, 2, 3]"))
+            return "|".join(out)
+            """);
+        foreach (var result in results)
+        {
+            Assert.Equal("[1|boom|STOP|True", result);
+        }
+    }
+
+    [Fact]
+    public async Task IterencodeAbandonAndInterleave()
+    {
+        var results = await RunBothModes(
+            """
+            import json
+            e = json.JSONEncoder()
+            out = []
+            it = e.iterencode([1, {2}, 3])
+            out.append(next(it))
+            del it
+            hooked = json.JSONEncoder(default=lambda o: "H")
+            out.append(str(hooked.encode([1, {2}, 3]) == '[1, "H", 3]'))
+            a = e.iterencode({"x": [1, 2]})
+            b = e.iterencode([10, 20])
+            sa = []
+            sb = []
+            for _ in range(100):
+                try:
+                    sa.append(next(a))
+                except StopIteration:
+                    pass
+                try:
+                    sb.append(next(b))
+                except StopIteration:
+                    pass
+            out.append(str("".join(sa) == e.encode({"x": [1, 2]})))
+            out.append(str("".join(sb) == e.encode([10, 20])))
+            return "|".join(out)
+            """);
+        foreach (var result in results)
+        {
+            Assert.Equal("[|True|True|True", result);
+        }
+    }
+    [Fact]
+    public async Task IterencodeErrorsMirrorEncode()
+    {
+        var results = await RunBothModes(
+            """
+            import json
+            e = json.JSONEncoder()
+            out = []
+            try:
+                list(e.iterencode({(1, 2): 1}))
+                out.append("ok")
+            except TypeError:
+                out.append("T")
+            try:
+                list(json.JSONEncoder(allow_nan=False).iterencode([float("nan")]))
+                out.append("ok")
+            except ValueError:
+                out.append("V")
+            cycle = []
+            cycle.append(cycle)
+            try:
+                list(e.iterencode(cycle))
+                out.append("ok")
+            except ValueError:
+                out.append("C")
+            deep = 1
+            for _ in range(600):
+                deep = [deep]
+            try:
+                e.encode(deep)
+                out.append("ok")
+            except RecursionError:
+                out.append("R")
+            try:
+                "".join(e.iterencode(deep))
+                out.append("ok")
+            except RecursionError:
+                out.append("R")
+            return "|".join(out)
+            """);
+        foreach (var result in results)
+        {
+            Assert.Equal("T|V|C|R|R", result);
+        }
+    }
+
+    [Fact]
+    public async Task StreamedDropSucceedsWhileRetainedDenies()
+    {
+        var drop = new LythonEngine().Compile(
+            """
+            import json
+            e = json.JSONEncoder()
+            big = list(range(20000))
+            total = 0
+            for c in e.iterencode(big):
+                total = total + len(c)
+            return total
+            """);
+        Assert.True(drop.IsValid);
+        var dropOptions = new LythonRunOptions { MaxExecutionMemoryBytes = 8388608 };
+        var dropSync = drop.Run(new MockLythonHost(), dropOptions);
+        Assert.True(dropSync.Success, dropSync.Failure?.Message);
+        Assert.Equal(new BigInteger(128890), dropSync.ReturnValue);
+        var dropAsync = await drop.RunAsync(new MockLythonHost(), dropOptions);
+        Assert.True(dropAsync.Success, dropAsync.Failure?.Message);
+        Assert.Equal(new BigInteger(128890), dropAsync.ReturnValue);
+
+        var denyOptions = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var join = new LythonEngine().Compile(
+            """
+            import json
+            return len("".join(json.JSONEncoder().iterencode(list(range(20000)))))
+            """);
+        Assert.True(join.IsValid);
+        var joinSync = join.Run(new MockLythonHost(), denyOptions);
+        Assert.False(joinSync.Success);
+        Assert.Equal("MemoryError", joinSync.Failure?.ExceptionType);
+        var joinAsync = await join.RunAsync(new MockLythonHost(), denyOptions);
+        Assert.False(joinAsync.Success);
+        Assert.Equal("MemoryError", joinAsync.Failure?.ExceptionType);
+
+        var dumps = new LythonEngine().Compile(
+            """
+            import json
+            return len(json.dumps(list(range(20000))))
+            """);
+        Assert.True(dumps.IsValid);
+        var dumpsSync = dumps.Run(new MockLythonHost(), denyOptions);
+        Assert.False(dumpsSync.Success);
+        Assert.Equal("MemoryError", dumpsSync.Failure?.ExceptionType);
+    }
+
+    [Fact]
+    public async Task DeniedAdvanceFinishesIteratorButRetryRecovers()
+    {
+        var script = new LythonEngine().Compile(
+            """
+            import json
+            it = json.JSONEncoder().iterencode(["xy" * 1000] * 2000)
+            kept = []
+            denied = False
+            try:
+                for c in it:
+                    kept.append(c)
+            except MemoryError:
+                denied = True
+            try:
+                next(it)
+                stopped = False
+            except StopIteration:
+                stopped = True
+            return str(denied) + "|" + str(stopped)
+            """);
+        Assert.True(script.IsValid);
+        // Retaining ~4MB of chunks under 1MB denies mid-drain while the
+        // ~4KB document itself fits; the failed iterator is finished.
+        var tiny = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var deniedSync = script.Run(new MockLythonHost(), tiny);
+        Assert.True(deniedSync.Success, deniedSync.Failure?.Message);
+        Assert.Equal("True|True", deniedSync.ReturnValue);
+        var deniedAsync = await script.RunAsync(new MockLythonHost(), tiny);
+        Assert.True(deniedAsync.Success, deniedAsync.Failure?.Message);
+        Assert.Equal("True|True", deniedAsync.ReturnValue);
+
+        var funded = new LythonEngine().Compile(
+            """
+            import json
+            return len("".join(json.JSONEncoder().iterencode(["xy" * 1000] * 2000)))
+            """);
+        Assert.True(funded.IsValid);
+        var fundedSync = funded.Run(new MockLythonHost());
+        Assert.True(fundedSync.Success, fundedSync.Failure?.Message);
+        Assert.Equal(new BigInteger(4008000), fundedSync.ReturnValue);
     }
 }

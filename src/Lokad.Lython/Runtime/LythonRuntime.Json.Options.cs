@@ -257,7 +257,7 @@ internal sealed partial class LythonRuntime
         private static bool IsJsonNumberTokenByte(byte value)
             => value is >= (byte)'0' and <= (byte)'9' or (byte)'-' or (byte)'+' or (byte)'.' or (byte)'e' or (byte)'E';
 
-        private static object InvokeJsonCallback(ICallable callable, object argument, ExecutionContext context, LythonSourceSpan span)
+        internal static object InvokeJsonCallback(ICallable callable, object argument, ExecutionContext context, LythonSourceSpan span)
         {
             var result = InvokeCallableTarget(callable, span, span, context, [CallArgumentValue.Positional(argument)]);
             // Plain adoption only: callback results may alias live values, so

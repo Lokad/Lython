@@ -40,7 +40,7 @@ internal sealed partial class LythonRuntime
         /// string. Two bytes per character approximate the UTF-16 backing
         /// store; the final string charges separately on ownership transfer.
         /// </summary>
-        private sealed class JsonGrowthCharge : IDisposable
+        internal sealed class JsonGrowthCharge : IDisposable
         {
             private const int ObserveQuantumChars = 1024;
 
@@ -262,7 +262,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static string JsonValueTypeName(object value)
+        internal static string JsonValueTypeName(object value)
             => value switch
             {
                 PyString => "str",
@@ -326,7 +326,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static bool TryConvertJsonObjectKey(object keyValue, bool skipKeys, out string key)
+        internal static bool TryConvertJsonObjectKey(object keyValue, bool skipKeys, out string key)
         {
             switch (keyValue)
             {
@@ -359,11 +359,11 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static bool IsSupportedJsonObjectKey(object key)
+        internal static bool IsSupportedJsonObjectKey(object key)
             => key is PyString or BigInteger or int or bool or PyNone ||
                key is double floating && double.IsFinite(floating);
 
-        private static void AppendJsonValuePrefix(StringBuilder builder, JsonDumpOptions options, int depth, int index, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
+        internal static void AppendJsonValuePrefix(StringBuilder builder, JsonDumpOptions options, int depth, int index, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
         {
             _ = index;
             if (options.IndentUnit is null)
@@ -375,7 +375,7 @@ internal sealed partial class LythonRuntime
             AppendJsonIndent(builder, options, depth, charge, context, span);
         }
 
-        private static void AppendJsonContainerSuffix(StringBuilder builder, JsonDumpOptions options, int depth, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
+        internal static void AppendJsonContainerSuffix(StringBuilder builder, JsonDumpOptions options, int depth, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
         {
             if (options.IndentUnit is null)
             {
@@ -398,13 +398,13 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static void AppendSeparator(StringBuilder builder, string separator, JsonGrowthCharge charge)
+        internal static void AppendSeparator(StringBuilder builder, string separator, JsonGrowthCharge charge)
         {
             charge.Grow(separator.Length);
             builder.Append(separator);
         }
 
-        private static void AppendJsonString(StringBuilder builder, string text, bool ensureAscii, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
+        internal static void AppendJsonString(StringBuilder builder, string text, bool ensureAscii, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
         {
             builder.Append('"');
             for (var i = 0; i < text.Length; i++)
@@ -457,14 +457,14 @@ internal sealed partial class LythonRuntime
         // Large-number writes bypass the scalar loop below, so fund the
         // rendered text before it lands and stay interruptible across the
         // (potentially slow) conversion itself.
-        private static void AppendJsonNumber(StringBuilder builder, string rendered, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
+        internal static void AppendJsonNumber(StringBuilder builder, string rendered, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
         {
             context.CheckExecutionBudget(span);
             charge.Grow(rendered.Length);
             builder.Append(rendered);
         }
 
-        private static void AppendJsonDouble(StringBuilder builder, double value, JsonDumpOptions options, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
+        internal static void AppendJsonDouble(StringBuilder builder, double value, JsonDumpOptions options, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
         {
             if (double.IsNaN(value))
             {
