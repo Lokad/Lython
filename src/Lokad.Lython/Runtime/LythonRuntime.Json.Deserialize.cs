@@ -49,8 +49,9 @@ internal sealed partial class LythonRuntime
 
         // The bytes actually parsed plus the original document for diagnostics and
         // the map between their coordinates. Identical when no control rewriting
-        // happened (the common case); divergent only for lenient parses whose
-        // strings carried bare control bytes.
+        // happened (the common case); divergent only when strings carried
+        // bare control bytes (rewritten in either strictness mode, with strict
+        // violations reported against the parsed prefix).
         private readonly record struct JsonParseInput(PyString Document, ReadOnlyMemory<byte> Source, JsonControlMap? Mapper);
 
         // Translates rewritten-parse coordinates back to original-document

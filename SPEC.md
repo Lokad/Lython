@@ -1157,8 +1157,8 @@ The runtime must support the statement:
 
 The imported module must expose the following JSON helpers:
 
-- `json.load(fp, *, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None)`
-- `json.loads(s, *, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None)`
+- `json.load(fp, *, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None, strict=True)`
+- `json.loads(s, *, cls=None, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, object_pairs_hook=None, strict=True)`
 - `json.dump(obj, fp, *, skipkeys=False, ensure_ascii=True, check_circular=True, allow_nan=True, cls=None, indent=None, separators=None, default=None, sort_keys=False)`
 - `json.dumps(obj, *, skipkeys=False, ensure_ascii=True, check_circular=True, allow_nan=True, cls=None, indent=None, separators=None, default=None, sort_keys=False)`
 - `json.JSONDecodeError`
@@ -1167,11 +1167,11 @@ The imported module must expose the following JSON helpers:
 
 `load` and `dump` are text-only and must operate on Lython text file handles. Binary file handles are outside the public file boundary.
 
-`loads` must support `object_hook`, `object_pairs_hook`, `parse_int`, `parse_float`, and root-level `parse_constant` callbacks. Invalid JSON text must raise catchable `JSONDecodeError` with `msg`, `doc`, `pos`, `lineno`, and `colno` fields.
+`loads` must support `object_hook`, `object_pairs_hook`, `parse_int`, `parse_float`, and root-level `parse_constant` callbacks, plus `strict` (when false, literal control characters inside strings are allowed). Invalid JSON text must raise catchable `JSONDecodeError` with `msg`, `doc`, `pos`, `lineno`, and `colno` fields. Positions and prefix end offsets are Python string indices.
 
 `dumps` and `dump` must support indentation, separators, key sorting, `ensure_ascii`, `skipkeys`, callable `default`, `allow_nan`, and circular-reference checks. Supported output values include `None`, booleans, strings, integers, floats, decimals, lists, tuples, and dictionaries. Dictionary keys may be strings, integers, finite floats, booleans, or `None`; unsupported keys fail unless `skipkeys=True`.
 
-`JSONEncoder` and `JSONDecoder` are exposed only as explicit unsupported custom-class stubs. Passing non-`None` `cls=...` must fail explicitly.
+`json.JSONDecoder` is a reusable class: `JSONDecoder(*, object_hook=None, parse_float=None, parse_int=None, parse_constant=None, strict=True, object_pairs_hook=None)` with `decode(s)` for a complete document (trailing data rejected) and `raw_decode(s, idx=0)` for exactly one value starting at the given string index (no leading whitespace skip, suffix untouched, absolute end index returned). `load`/`loads` accept `cls=json.JSONDecoder` as well as `cls=None`. `JSONEncoder` remains an explicit unsupported stub, and decoder subclasses or other custom `cls=...` classes must fail explicitly.
 
 If a script requests JSON behavior outside the supported subset, the runtime must fail explicitly.
 

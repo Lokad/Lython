@@ -91,6 +91,7 @@ internal sealed partial class LythonRuntime
             return index;
         }
     }
+
     // The stable json.JSONDecoder class identity: construction binds the
     // keyword-only load options (matching the loads() bundle plus strict)
     // while module-function layouts stay positional-first on their own

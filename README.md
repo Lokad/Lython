@@ -175,7 +175,7 @@ Local script imports are separate from builtin modules. Bare `import helper` can
 
 `fnmatch` is deterministic and platform-independent. `fnmatch.fnmatch`, `fnmatch.fnmatchcase`, and `filter` use POSIX-like case-sensitive matching with `*`, `?`, bracket classes, negated classes, and ranges; `translate` returns an anchored regex string compatible with Lython `re`.
 
-`json` covers text-only `load`/`dump` for Lython file handles, `loads`/`dumps`, catchable `JSONDecodeError` fields, parse/object hooks, formatting controls, key sorting/conversion, `skipkeys`, `default`, `allow_nan`, and circular-reference checks. `JSONEncoder` and `JSONDecoder` are exposed as explicit unsupported custom-class stubs.
+`json` covers text-only `load`/`dump` for Lython file handles, `loads`/`dumps`, catchable `JSONDecodeError` fields, parse/object hooks, formatting controls, key sorting/conversion, `skipkeys`, `default`, `allow_nan`, and circular-reference checks. `JSONDecoder` is a reusable class with `decode`/`raw_decode` prefix decoding (accepted through `cls=` too); `JSONEncoder` remains an explicit unsupported stub, as do decoder subclasses and other custom `cls=...` classes.
 
 `itertools` covers common lazy data-wrangling helpers: `chain`, `islice`, `product`, `zip_longest`, `count`, `repeat`, `cycle`, combinatorics, `accumulate`, selectors/predicates, `starmap`, `pairwise`, `groupby`, `tee`, and `batched`. Unbounded iterators remain lazy; functions that must cache inputs or buffers are still subject to Lython's execution limits.
 
