@@ -105,6 +105,28 @@ return json.dumps({"b": 1, "a": 2}, sort_keys=True)
     }
 
     [Fact]
+    public async Task LoadsDeepNestingMeetsBackendDepthCap()
+    {
+        // The streaming core preserves the previous backend limit: nesting
+        // past 64 containers fails explicitly instead of recursing unbounded.
+        var script = new LythonEngine().Compile(
+            """
+            import json
+            return json.loads("[" * 100 + "]" * 100)
+            """);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.False(sync.Success);
+        Assert.Equal("JSONDecodeError", sync.Failure?.ExceptionType);
+        Assert.Contains("maximum configured depth of 64", sync.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.False(asyncResult.Success);
+        Assert.Equal("JSONDecodeError", asyncResult.Failure?.ExceptionType);
+        Assert.Contains("maximum configured depth of 64", asyncResult.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void DeepContainersStayDepthBounded()
     {
         var result = new LythonEngine().Run(

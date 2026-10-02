@@ -13,37 +13,6 @@ internal sealed partial class LythonRuntime
 {
     private sealed partial class JsonModule : PyModule
     {
-        private static bool TryConvertJsonConstant(PyString text, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
-        {
-            var trimmed = text.AsString().Trim();
-            if (trimmed is not ("NaN" or "Infinity" or "-Infinity"))
-            {
-                value = PyNone.Instance;
-                return false;
-            }
-
-            // R10: only mint governed text when a callback needs it, so the
-            // success path without parse_constant strands nothing. The text
-            // owns a refundable snapshot and the callback result adopts via
-            // plain TrackCallResult inside InvokeJsonCallback.
-            if (options.ParseConstant is not null)
-            {
-                var constantText = CreateString(trimmed, context, span);
-                context.Services.State.CallTemporaries.TrackFreshString(constantText, span);
-                value = InvokeJsonCallback(options.ParseConstant, constantText, context, span);
-            }
-            else
-            {
-                value = trimmed switch
-                {
-                    "NaN" => double.NaN,
-                    "Infinity" => double.PositiveInfinity,
-                    _ => double.NegativeInfinity
-                };
-            }
-            return true;
-        }
-
         private static LythonRuntimeException CreateJsonDecodeError(JsonParseInput input, JsonException exception, LythonSourceSpan span, ExecutionContext context)
         {
             var reportedBytePosition = ComputeJsonErrorBytePosition(
