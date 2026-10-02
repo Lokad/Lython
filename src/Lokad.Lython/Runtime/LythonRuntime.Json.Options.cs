@@ -44,22 +44,30 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        private static LythonRuntimeException CreateJsonDecodeError(PyString document, JsonException exception, LythonSourceSpan span, ExecutionContext context)
+        private static LythonRuntimeException CreateJsonDecodeError(JsonParseInput input, JsonException exception, LythonSourceSpan span, ExecutionContext context)
         {
             var reportedBytePosition = ComputeJsonErrorBytePosition(
-                document.Utf8Bytes.Span,
+                input.Source.Span,
                 exception.LineNumber.GetValueOrDefault(),
                 exception.BytePositionInLine.GetValueOrDefault());
-            var bytePosition = NormalizeJsonErrorBytePosition(document.Utf8Bytes.Span, reportedBytePosition, exception.Message);
-            return NewJsonDecodeFailure(document, exception.Message, bytePosition, exception, span, context);
+            var bytePosition = NormalizeJsonErrorBytePosition(input.Source.Span, reportedBytePosition, exception.Message);
+            return NewJsonDecodeFailure(input, exception.Message, bytePosition, exception, span, context);
         }
 
         // Builds the catchable JSONDecodeError value (msg/doc/pos/lineno/colno)
-        // for an explicit message and absolute byte position: used both for
+        // for an explicit message and parse-space byte position: used both for
         // backend errors above and for positions the core detects itself
-        // (truncation, trailing data, strict violations, index bounds).
-        private static LythonRuntimeException NewJsonDecodeFailure(PyString document, string message, int bytePosition, Exception? innerException, LythonSourceSpan span, ExecutionContext context)
+        // (truncation, trailing data, strict violations, index bounds). Positions
+        // map back to the original document when lenient control escaping
+        // rewrote the parsed bytes; the payload always describes the original.
+        private static LythonRuntimeException NewJsonDecodeFailure(JsonParseInput input, string message, int bytePosition, Exception? innerException, LythonSourceSpan span, ExecutionContext context)
         {
+            if (input.Mapper is { } mapper)
+            {
+                bytePosition = mapper.ToOriginal(bytePosition);
+            }
+
+            var document = input.Document;
             var position = document.ByteIndexToRuneIndex(bytePosition);
             var location = ComputeJsonErrorLocation(document, bytePosition);
             // R10: the error payload and message own refundable snapshots
@@ -327,7 +335,7 @@ internal sealed partial class LythonRuntime
             ICallable? ParseFloat,
             ICallable? ParseInt,
             ICallable? ParseConstant,
-            ICallable? ObjectPairsHook);
+            ICallable? ObjectPairsHook, bool Strict);
 
         private enum JsonDumpCallForm
         {

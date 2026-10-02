@@ -147,6 +147,90 @@ public sealed class JsonStrictnessScenarioTests
         Assert.Equal(JsonCanonical(2), asyncValues[2]);
     }
 
+    [Fact]
+    public async Task LoadsStrictDefaultRejectsControlCharacters()
+    {
+        var script = new LythonEngine().Compile(
+            """
+            import json
+            text = chr(34) + "a" + chr(1) + "b" + chr(34)
+            return json.loads(text)
+            """);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.False(sync.Success);
+        Assert.Equal("JSONDecodeError", sync.Failure?.ExceptionType);
+        Assert.Equal("Invalid control character at: line 1 column 3 (char 2)", sync.Failure?.Message);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.False(asyncResult.Success);
+        Assert.Equal("JSONDecodeError", asyncResult.Failure?.ExceptionType);
+        Assert.Equal("Invalid control character at: line 1 column 3 (char 2)", asyncResult.Failure?.Message);
+
+        var keyed = new LythonEngine().Compile(
+            """
+            import json
+            text = "{\"k" + chr(1) + "\": 1}"
+            return json.loads(text)
+            """);
+        Assert.True(keyed.IsValid);
+        var keyedSync = keyed.Run(new MockLythonHost());
+        Assert.False(keyedSync.Success);
+        Assert.Equal("JSONDecodeError", keyedSync.Failure?.ExceptionType);
+        Assert.Contains("Invalid control character at:", keyedSync.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task LoadsStrictFalseAcceptsControlCharacters()
+    {
+        var script = new LythonEngine().Compile(
+            """
+            import json
+            text = chr(34) + "a" + chr(1) + "b" + chr(34)
+            return json.loads(text, strict=False)
+            """);
+        Assert.True(script.IsValid);
+        var expected = "a" + char.ToString((char)1) + "b";
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.ReturnValue);
+    }
+
+    [Fact]
+    public async Task LoadsStrictNoneUsesDefaultRejection()
+    {
+        var script = new LythonEngine().Compile(
+            """
+            import json
+            text = chr(34) + "a" + chr(1) + "b" + chr(34)
+            return json.loads(text, strict=None)
+            """);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.False(sync.Success);
+        Assert.Equal("JSONDecodeError", sync.Failure?.ExceptionType);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.False(asyncResult.Success);
+        Assert.Equal("JSONDecodeError", asyncResult.Failure?.ExceptionType);
+    }
+
+    [Fact]
+    public void LoadsStrictOptionRejectsNonBoolStatically()
+    {
+        var result = new LythonEngine().Run(
+            "import json\njson.loads('{}', strict='yes')",
+            new MockLythonHost());
+
+        Assert.False(result.Success);
+        Assert.Null(result.Failure);
+        Assert.Contains(result.Diagnostics, d => d.Message.Contains("json load option strict=... expects a bool or None.", StringComparison.Ordinal));
+    }
+
     private static string JsonCanonical(int index)
     {
         return index switch

@@ -50,6 +50,7 @@ internal static partial class StaticDataModuleContractFamily
         AnalyzeCallableOrNoneArgument(arguments, optionOffset + 3, "parse_int", "json load option parse_int=... expects a callable or None.", diagnostics, bindings);
         AnalyzeCallableOrNoneArgument(arguments, optionOffset + 4, "parse_constant", "json load option parse_constant=... expects a callable or None.", diagnostics, bindings);
         AnalyzeCallableOrNoneArgument(arguments, optionOffset + 5, "object_pairs_hook", "json load option object_pairs_hook=... expects a callable or None.", diagnostics, bindings);
+        AnalyzeBooleanOrNoneArgument(arguments, optionOffset + 6, "strict", "json load option strict=... expects a bool or None.", diagnostics, bindings);
     }
 
     private static void AnalyzeJsonDumpOptions(

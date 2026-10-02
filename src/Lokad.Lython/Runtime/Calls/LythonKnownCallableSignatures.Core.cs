@@ -19,8 +19,8 @@ internal static partial class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature PathlibPureWindowsPath = LythonCallableSignature.Create("pathlib.PureWindowsPath", requiredCount: 0);
     public static readonly LythonCallableSignature PathlibWindowsPath = LythonCallableSignature.Create("pathlib.WindowsPath", requiredCount: 0);
 
-    public static readonly LythonCallableSignature JsonLoad = LythonCallableSignature.Create("json.load", ["fp", "cls", "object_hook", "parse_float", "parse_int", "parse_constant", "object_pairs_hook"], requiredCount: 1, maximumPositionalArgumentCount: 1);
-    public static readonly LythonCallableSignature JsonLoads = LythonCallableSignature.Create("json.loads", ["s", "cls", "object_hook", "parse_float", "parse_int", "parse_constant", "object_pairs_hook"], requiredCount: 1, maximumPositionalArgumentCount: 1);
+    public static readonly LythonCallableSignature JsonLoad = LythonCallableSignature.Create("json.load", ["fp", "cls", "object_hook", "parse_float", "parse_int", "parse_constant", "object_pairs_hook", "strict"], requiredCount: 1, maximumPositionalArgumentCount: 1);
+    public static readonly LythonCallableSignature JsonLoads = LythonCallableSignature.Create("json.loads", ["s", "cls", "object_hook", "parse_float", "parse_int", "parse_constant", "object_pairs_hook", "strict"], requiredCount: 1, maximumPositionalArgumentCount: 1);
     public static readonly LythonCallableSignature JsonDump = LythonCallableSignature.Create("json.dump", ["obj", "fp", "skipkeys", "ensure_ascii", "check_circular", "allow_nan", "cls", "indent", "separators", "default", "sort_keys"], requiredCount: 2, maximumPositionalArgumentCount: 2);
     public static readonly LythonCallableSignature JsonDumps = LythonCallableSignature.Create("json.dumps", ["obj", "skipkeys", "ensure_ascii", "check_circular", "allow_nan", "cls", "indent", "separators", "default", "sort_keys"], requiredCount: 1, maximumPositionalArgumentCount: 1);
 
