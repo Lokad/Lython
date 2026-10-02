@@ -10,6 +10,13 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     private long _committedBytes;
     private AdoptedScalarCoupons? _scalarCoupons;
 
+    // Structural version for iteration safety, mirroring PyDict: bumped on every
+    // actual membership change (not on no-op adds, discards of missing items, or
+    // capacity-only growth). Iteration checks it on every step and raises a
+    // Python error instead of leaking a CLR collection-modified exception or
+    // silently iterating stale storage after a rebuild.
+    private int _version;
+
     // Protocol-item side index (R13b): items needing __hash__/__eq__ dispatch
     // bypass HashSet probing (which cannot run guest code) and scan with
     // precomputed hashes plus element ==. Dual-homed like PyDict: every
@@ -225,7 +232,13 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     {
         if (PyHashProtocols.NeedsProtocolKey(item))
         {
-            return AddProtocolItem(item);
+            if (AddProtocolItem(item))
+            {
+                _version++;
+                return true;
+            }
+
+            return false;
         }
 
         // At a growth boundary, probe first so a duplicate cannot allocate before
@@ -262,6 +275,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         }
 
         NoteGrowth(committedBefore);
+        _version++;
         return true;
     }
 
@@ -288,10 +302,17 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             if (_items.Remove(item))
             {
                 RemoveProtocolShadow(item);
+                _version++;
                 return true;
             }
 
-            return RemoveProtocolItem(item);
+            if (RemoveProtocolItem(item))
+            {
+                _version++;
+                return true;
+            }
+
+            return false;
         }
 
         // Governed and possibly adopted: resolve the stored identity first so the
@@ -301,10 +322,17 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             _ = _items.Remove(item);
             RemoveProtocolShadow(stored);
             ReleaseOutgoing(stored);
+            _version++;
             return true;
         }
 
-        return RemoveProtocolItem(item);
+        if (RemoveProtocolItem(item))
+        {
+            _version++;
+            return true;
+        }
+
+        return false;
     }
 
     public bool TryPop(out object item)
@@ -338,6 +366,15 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
     public void Clear()
     {
+        // Only an actual membership change trips live iterators: clearing an
+        // already-empty set stays silent like CPython. (The iterator only
+        // observes _items; protocol-only bookkeeping cannot trip it, which
+        // matches the pre-existing iteration surface.)
+        if (Count > 0)
+        {
+            _version++;
+        }
+
         // The shell stays owned for the object lifetime; only backing capacity is released.
         if (_memoryGovernor is not null)
         {
@@ -903,7 +940,44 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
     public PyString RenderInterpolated(PyRenderingContext context) => PyRendering.ToReprPyString(this, context);
 
-    public IEnumerator<object> GetEnumerator() => _items.GetEnumerator();
+    // Set iteration checks the structural version on every step and raises a
+    // Python error on change, mirroring PyDict and CPython ("Set changed size
+    // during iteration"). The InvalidOperationException translation is a safety
+    // net: the explicit version above must fire first, but any unguarded
+    // in-place mutation surfaces as a Python error rather than a CLR leak.
+    public IEnumerator<object> GetEnumerator()
+    {
+        var expectedVersion = _version;
+        using var enumerator = _items.GetEnumerator();
+        while (true)
+        {
+            EnsureUnmodified(expectedVersion);
+            bool moved;
+            try
+            {
+                moved = enumerator.MoveNext();
+            }
+            catch (InvalidOperationException)
+            {
+                throw new LythonRuntimeException("RuntimeError", "Set changed size during iteration", _allocationSpan);
+            }
+
+            if (!moved)
+            {
+                yield break;
+            }
+
+            yield return enumerator.Current;
+        }
+    }
+
+    private void EnsureUnmodified(int expectedVersion)
+    {
+        if (expectedVersion != _version)
+        {
+            throw new LythonRuntimeException("RuntimeError", "Set changed size during iteration", _allocationSpan);
+        }
+    }
 
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
