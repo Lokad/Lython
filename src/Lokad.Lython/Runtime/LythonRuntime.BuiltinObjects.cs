@@ -353,10 +353,25 @@ internal sealed partial class LythonRuntime
     {
         if (type is PyType runtimeSubject)
         {
-            return baseSpec is PyType runtimeBase && runtimeSubject.IsSubtypeOf(runtimeBase);
+            if (baseSpec is PyType runtimeBase)
+            {
+                return runtimeSubject.IsSubtypeOf(runtimeBase);
+            }
+
+            if (runtimeSubject.JsonBase != JsonBaseKind.None)
+            {
+                var jsonBaseName = GetBuiltinTypeName(baseSpec);
+                return runtimeSubject.JsonBase == JsonBaseKind.Encoder
+                    ? jsonBaseName is "json.JSONEncoder" or "object"
+                    : jsonBaseName is "json.JSONDecoder" or "object";
+            }
+
+            return false;
         }
 
-        var subjectName = GetBuiltinTypeName(type);
+        var subjectName = type is PyType subjectType && subjectType.JsonBase != JsonBaseKind.None
+            ? subjectType.JsonBase == JsonBaseKind.Encoder ? "json.JSONEncoder" : "json.JSONDecoder"
+            : GetBuiltinTypeName(type);
         var baseName = GetBuiltinTypeName(baseSpec);
         if (subjectName is null || baseName is null)
         {
@@ -710,8 +725,8 @@ internal sealed partial class LythonRuntime
             "collections.Counter" => value is PyCounter,
             "collections.deque" => value is PyDeque,
             "collections.ChainMap" => value is PyChainMap,
-            "json.JSONDecoder" => value is JsonDecoderObject,
-            "json.JSONEncoder" => value is JsonEncoderObject,
+            "json.JSONDecoder" => value is JsonDecoderObject || value is PyInstance { Type.JsonBase: JsonBaseKind.Decoder },
+            "json.JSONEncoder" => value is JsonEncoderObject || value is PyInstance { Type.JsonBase: JsonBaseKind.Encoder },
             "set" => value is PySet,
             "str" => value is PyString,
             "bytes" => value is PyBytes,

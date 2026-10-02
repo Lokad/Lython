@@ -117,6 +117,15 @@ internal static class PyAttributeLookup
             return true;
         }
 
+        // Guest subclasses of the JSON encoder/decoder resolve engine
+        // members here, where a base-class entry would sit: after instance
+        // and guest-class lookup, so overrides and writes win, and inside
+        // custom __getattribute__ only when it delegates to this path.
+        if (LythonRuntime.JsonSubclassSupport.TryGetEngineMember(instance, memberName, context, span, out value))
+        {
+            return true;
+        }
+
         value = PyNone.Instance;
         return false;
     }
@@ -388,9 +397,26 @@ internal static class PyAttributeLookup
             return false;
         }
 
-        if (boundType.TryLookupInMro(memberName, startIndex, out var rawValue, out _))
+        var foundInMro = boundType.TryLookupInMro(memberName, startIndex, out var rawValue, out var ownerType);
+        var mroValue = foundInMro ? rawValue : null;
+        var defersToEngine = foundInMro && ownerType is not null && context.TryGetBuiltin("object", out var objectBase) && ReferenceEquals(ownerType, objectBase);
+        if (mroValue is not null && !defersToEngine)
         {
-            value = BindForSuper(superObject.BoundObject, boundType, rawValue, context, span);
+            value = BindForSuper(superObject.BoundObject, boundType, mroValue, context, span);
+            return true;
+        }
+
+        // Engine members sit between the last guest base and object, so an
+        // object-root hit (like __init__) defers to them first; guest mixins
+        // above keep precedence through the branch above.
+        if (LythonRuntime.JsonSubclassSupport.TryGetSuperEngineMember(superObject, memberName, context, span, out value))
+        {
+            return true;
+        }
+
+        if (mroValue is not null)
+        {
+            value = BindForSuper(superObject.BoundObject, boundType, mroValue, context, span);
             return true;
         }
 

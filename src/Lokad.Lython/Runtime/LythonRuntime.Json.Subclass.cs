@@ -1,0 +1,272 @@
+using System.Runtime.CompilerServices;
+using Lokad.Lython.Runtime.Text;
+
+namespace Lokad.Lython.Runtime;
+
+internal sealed partial class LythonRuntime
+{
+    // Guest subclasses of json.JSONEncoder/JSONDecoder (N39). Instances stay
+    // ordinary PyInstance values using the guest class machinery (attribute
+    // lookup, super(), isinstance), while the engine peer below carries the
+    // parse/emit options. Peers die with their instances through the table,
+    // so no instance layout changes are needed.
+    internal static class JsonSubclassSupport
+    {
+        private static readonly ConditionalWeakTable<PyInstance, object> Peers = new();
+
+        internal static bool HasGuestInit(PyType type, ExecutionContext context)
+        {
+            if (!context.TryGetBuiltin("object", out var root) || root is not PyType objectRoot)
+            {
+                return true;
+            }
+
+            foreach (var member in type.Mro)
+            {
+                if (ReferenceEquals(member, objectRoot))
+                {
+                    continue;
+                }
+
+                if (member.TryGetOwnMember("__init__", out _))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // Runs the inherited engine constructor when a JSON subclass defines
+        // no __init__ of its own, exactly where CPython would dispatch to the
+        // base __init__ through the MRO.
+        internal static void RunEngineInit(PyType type, PyInstance instance, CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (type.JsonBase == JsonBaseKind.Encoder)
+            {
+                AttachEncoderPeer(instance, JsonEncoderClass.BindEncoderOptions(arguments, span, context));
+            }
+            else
+            {
+                AttachDecoderPeer(instance, JsonDecoderClass.BindDecoderOptions(arguments, span));
+            }
+        }
+
+        internal static void AttachDecoderPeer(PyInstance instance, JsonDecoderObject peer)
+        {
+            Peers.Remove(instance);
+            Peers.Add(instance, peer);
+        }
+
+        internal static void AttachEncoderPeer(PyInstance instance, JsonEncoderObject peer)
+        {
+            // The core dispatches default() through the instance (mirroring
+            // CPython self.default), while reads keep the raw hook: rebuild
+            // the peer around a trampoline the attribute tables never expose.
+            var trampoline = new JsonSubclassDefaultCallable(instance, peer.DefaultHook);
+            var dump = peer.Options.Dump with { DefaultCallable = trampoline };
+            var linked = new JsonEncoderObject(
+                new JsonEncoderOptions(
+                    peer.Options.SkipKeys,
+                    peer.Options.EnsureAscii,
+                    peer.Options.CheckCircular,
+                    peer.Options.AllowNan,
+                    peer.Options.SortKeys,
+                    peer.Options.Indent,
+                    dump),
+                peer.ItemSeparator,
+                peer.KeySeparator,
+                peer.DefaultHook);
+            Peers.Remove(instance);
+            Peers.Add(instance, linked);
+            if (peer.DefaultHook is not null)
+            {
+                // CPython stores an explicit default= hook on the instance,
+                // so it wins over a class-level override like theirs does.
+                instance.SetAttribute("default", peer.DefaultHook);
+            }
+        }
+
+        internal static bool TryGetEncoderPeer(PyInstance instance, [MaybeNullWhen(false)] out JsonEncoderObject peer)
+        {
+            if (Peers.TryGetValue(instance, out var raw) && raw is JsonEncoderObject typed)
+            {
+                peer = typed;
+                return true;
+            }
+
+            peer = null;
+            return false;
+        }
+
+        internal static bool TryGetDecoderPeer(PyInstance instance, [MaybeNullWhen(false)] out JsonDecoderObject peer)
+        {
+            if (Peers.TryGetValue(instance, out var raw) && raw is JsonDecoderObject typed)
+            {
+                peer = typed;
+                return true;
+            }
+
+            peer = null;
+            return false;
+        }
+
+        // Resolves engine members where a base-class entry would sit: after
+        // instance and guest-class lookup, so overrides and writes win. Peer
+        // construction always precedes use; a missing peer means guest
+        // __init__ skipped its super() call, which CPython also rejects.
+        internal static bool TryGetEngineMember(PyInstance instance, string memberName, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+        {
+            value = PyNone.Instance;
+            if (instance.Type.JsonBase == JsonBaseKind.Encoder)
+            {
+                if (!TryGetEncoderPeer(instance, out var encoder))
+                {
+                    throw PyMemberAccess.CreateMissingMemberError(instance, memberName, span, context);
+                }
+
+                return JsonEncoderMembers.TryGetMember(encoder, memberName, out value);
+            }
+
+            if (instance.Type.JsonBase == JsonBaseKind.Decoder)
+            {
+                if (!TryGetDecoderPeer(instance, out var decoder))
+                {
+                    throw PyMemberAccess.CreateMissingMemberError(instance, memberName, span, context);
+                }
+
+                return JsonDecoderMembers.TryGetMember(decoder, memberName, out value);
+            }
+
+            return false;
+        }
+
+        internal static bool TryGetSuperEngineMember(PySuper superObject, string memberName, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+        {
+            value = PyNone.Instance;
+            if (superObject.BoundType is not PyType boundType || boundType.JsonBase == JsonBaseKind.None)
+            {
+                return false;
+            }
+
+            if (superObject.BoundObject is not PyInstance instance)
+            {
+                return false;
+            }
+
+            if (memberName == "__init__")
+            {
+                value = new JsonSuperInitCallable(instance, boundType.JsonBase);
+                return true;
+            }
+
+            // Only methods delegate through super: option attributes live on
+            // instances in CPython, so super() must miss them like it does.
+            if (boundType.JsonBase == JsonBaseKind.Encoder)
+            {
+                if (!TryGetEncoderPeer(instance, out var encoder))
+                {
+                    throw PyMemberAccess.CreateMissingMemberError(instance, memberName, span, context);
+                }
+
+                if (memberName == "default")
+                {
+                    value = BoundCallable.Create((arguments, callSpan, callContext) => encoder.Default(arguments, callSpan, callContext), LythonKnownCallableSignatures.JsonEncoderDefault);
+                    return true;
+                }
+
+                if (!JsonEncoderMembers.TryGetMember(encoder, memberName, out var member) || member is not ICallable)
+                {
+                    return false;
+                }
+
+                value = member;
+                return true;
+            }
+
+            if (!TryGetDecoderPeer(instance, out var decoder))
+            {
+                throw PyMemberAccess.CreateMissingMemberError(instance, memberName, span, context);
+            }
+
+            if (!JsonDecoderMembers.TryGetMember(decoder, memberName, out var decoderMember) || decoderMember is not ICallable)
+            {
+                return false;
+            }
+
+            value = decoderMember;
+            return true;
+        }
+
+        // Dispatches default() through the instance like CPython self.default:
+        // instance attributes, then guest overrides, then the construction
+        // hook, then the base failure. Never exposed to attribute reads, so it
+        // cannot shadow itself.
+        internal sealed class JsonSubclassDefaultCallable : ICallable
+        {
+            private readonly PyInstance _instance;
+            private readonly ICallable? _hook;
+
+            public JsonSubclassDefaultCallable(PyInstance instance, ICallable? hook)
+            {
+                _instance = instance;
+                _hook = hook;
+            }
+
+            public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            {
+                if (_instance.TryGetAttribute("default", context, span, out var member))
+                {
+                    if (member is not ICallable callable)
+                    {
+                        throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(member, context) + "' object is not callable", span);
+                    }
+
+                    return callable.Invoke(arguments, span, context);
+                }
+
+                if (_hook is not null)
+                {
+                    return _hook.Invoke(arguments, span, context);
+                }
+
+                if (arguments.Length != 1)
+                {
+                    throw new LythonRuntimeException("TypeError", "default() takes exactly one argument (" + arguments.Length + " given).", span);
+                }
+
+                throw new LythonRuntimeException("TypeError", "Object of type " + JsonEncoderObject.JsonDefaultTypeName(arguments[0].Value, context) + " is not JSON serializable", span);
+            }
+        }
+
+        // Binds super().__init__() to the engine constructor for the bound
+        // instance: validates like a direct construction, then (re)builds
+        // the peer instead of returning a standalone engine object.
+        private sealed class JsonSuperInitCallable : ICallable
+        {
+            private readonly PyInstance _instance;
+            private readonly JsonBaseKind _kind;
+
+            public JsonSuperInitCallable(PyInstance instance, JsonBaseKind kind)
+            {
+                _instance = instance;
+                _kind = kind;
+            }
+
+            public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            {
+                context.CheckExecutionBudget(span);
+                if (_kind == JsonBaseKind.Encoder)
+                {
+                    AttachEncoderPeer(_instance, JsonEncoderClass.BindEncoderOptions(arguments, span, context));
+                }
+                else
+                {
+                    AttachDecoderPeer(_instance, JsonDecoderClass.BindDecoderOptions(arguments, span));
+                }
+
+                return PyNone.Instance;
+            }
+        }
+    }
+}

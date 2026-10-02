@@ -4,6 +4,13 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
+internal enum JsonBaseKind
+{
+    None,
+    Encoder,
+    Decoder,
+}
+
 internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyHashableValue
 {
     internal static readonly PyBuiltinRuntimeType ModuleType = CreateOpaqueRuntimeType("module");
@@ -222,6 +229,10 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
 
     public void SetMetaType(PyType metaType) => MetaType = metaType;
 
+    internal JsonBaseKind JsonBase { get; private set; }
+
+    internal void SetJsonBase(JsonBaseKind kind) => JsonBase = kind;
+
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         context.CheckExecutionBudget(span);
@@ -247,6 +258,12 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
         if (instance is not PyInstance pyInstance || !pyInstance.Type.IsSubtypeOf(this))
         {
             return instance;
+        }
+
+        if (JsonBase != JsonBaseKind.None && !LythonRuntime.JsonSubclassSupport.HasGuestInit(this, context))
+        {
+            LythonRuntime.JsonSubclassSupport.RunEngineInit(this, pyInstance, arguments, span, context);
+            return pyInstance;
         }
 
         if (TryGetMember("__init__", out var initializer))
@@ -294,6 +311,12 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
         if (instance is not PyInstance pyInstance || !pyInstance.Type.IsSubtypeOf(this))
         {
             return instance;
+        }
+
+        if (JsonBase != JsonBaseKind.None && !LythonRuntime.JsonSubclassSupport.HasGuestInit(this, context))
+        {
+            LythonRuntime.JsonSubclassSupport.RunEngineInit(this, pyInstance, arguments, span, context);
+            return pyInstance;
         }
 
         if (TryGetMember("__init__", out var initializer))

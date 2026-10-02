@@ -135,6 +135,11 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
+            return BindDecoderOptions(arguments, span);
+        }
+
+        internal static JsonDecoderObject BindDecoderOptions(CallArgumentValue[] arguments, LythonSourceSpan span)
+        {
             ICallable? objectHook = null;
             ICallable? parseFloat = null;
             ICallable? parseInt = null;

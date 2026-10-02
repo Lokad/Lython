@@ -588,6 +588,43 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", ex.Message, classDefinition.Span);
         }
 
+        // A JSON encoder/decoder base records engine behavior on the guest
+        // type without entering its MRO; chains below inherit the kind from
+        // their resolved guest bases.
+        var jsonBase = JsonBaseKind.None;
+        foreach (var baseValue in baseTypes)
+        {
+            var baseKind = baseValue switch
+            {
+                JsonEncoderClass => JsonBaseKind.Encoder,
+                JsonDecoderClass => JsonBaseKind.Decoder,
+                _ => JsonBaseKind.None,
+            };
+            if (baseKind != JsonBaseKind.None)
+            {
+                if (jsonBase != JsonBaseKind.None)
+                {
+                    throw new LythonRuntimeException("TypeError", "Cannot combine multiple JSON encoder/decoder base classes.", classDefinition.Span);
+                }
+
+                jsonBase = baseKind;
+            }
+        }
+
+        if (jsonBase == JsonBaseKind.None)
+        {
+            foreach (var resolvedBase in resolvedBases)
+            {
+                if (resolvedBase.JsonBase != JsonBaseKind.None)
+                {
+                    jsonBase = resolvedBase.JsonBase;
+                    break;
+                }
+            }
+        }
+
+        type.SetJsonBase(jsonBase);
+
         if (definingContext.TryGetBuiltinType("type", out var metaType))
         {
             type.SetMetaType(metaType);

@@ -86,7 +86,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "Object of type " + JsonDefaultTypeName(arguments[0], context) + " is not JSON serializable", span);
         }
 
-        private static string JsonDefaultTypeName(object value, ExecutionContext context)
+        internal static string JsonDefaultTypeName(object value, ExecutionContext context)
             => value switch
             {
                 PyString => "str",
@@ -148,6 +148,11 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
+            return BindEncoderOptions(arguments, span, context);
+        }
+
+        internal static JsonEncoderObject BindEncoderOptions(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
             object skipKeys = false;
             object ensureAscii = true;
             object checkCircular = true;
