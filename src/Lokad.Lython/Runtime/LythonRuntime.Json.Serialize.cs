@@ -13,7 +13,7 @@ internal sealed partial class LythonRuntime
 {
     private sealed partial class JsonModule : PyModule
     {
-        private static PyString SerializeJsonText(object value, JsonDumpOptions options, ExecutionContext context, LythonSourceSpan span)
+        internal static PyString SerializeJsonText(object value, JsonDumpOptions options, ExecutionContext context, LythonSourceSpan span)
         {
             try
             {

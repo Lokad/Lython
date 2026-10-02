@@ -868,6 +868,18 @@ internal sealed partial class LythonRuntime
                 ParseJsonBoolOption(GetOptional(arguments, 7), defaultValue: true));
         }
 
+        // Until N39 lands, only the default encoder class (or None) is
+        // accepted through cls=...; custom classes fail explicitly.
+        private static void EnsureJsonEncoderClsIsDefaultOrNone(object value, LythonSourceSpan span)
+        {
+            if (ReferenceEquals(value, PyNone.Instance) || value is JsonEncoderClass)
+            {
+                return;
+            }
+
+            throw new LythonRuntimeException("NotImplementedError", "json cls=... custom encoder/decoder classes are not supported by Lython.", span);
+        }
+
         private static JsonDumpOptions ParseJsonDumpOptions(
             object[] arguments,
             JsonDumpCallForm callForm,
@@ -875,7 +887,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context)
         {
             var offset = callForm == JsonDumpCallForm.Dumps ? 0 : 1;
-            EnsureUnsupportedJsonClassIsNone(GetOptional(arguments, offset + 5), "cls", span);
+            EnsureJsonEncoderClsIsDefaultOrNone(GetOptional(arguments, offset + 5), span);
             var skipKeys = ParseJsonBoolOption(GetOptional(arguments, offset + 1), defaultValue: false);
             var ensureAscii = ParseJsonBoolOption(GetOptional(arguments, offset + 2), defaultValue: true);
             var checkCircular = ParseJsonBoolOption(GetOptional(arguments, offset + 3), defaultValue: true);

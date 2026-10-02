@@ -28,7 +28,7 @@ internal sealed partial class LythonRuntime
                 "dump" => BuiltinCallable.Create(LythonKnownCallableSignatures.JsonDump, Dump),
                 "dumps" => BuiltinCallable.Create(LythonKnownCallableSignatures.JsonDumps, Dumps),
                 "JSONDecodeError" => new ExceptionTypeValue(ModuleException("json", "JSONDecodeError")),
-                "JSONEncoder" => new UnsupportedJsonClassFactory("json.JSONEncoder"),
+                "JSONEncoder" => JsonEncoderClass.Instance,
                 "JSONDecoder" => JsonDecoderClass.Instance,
                 _ => MissingMemberValue.Instance,
             };

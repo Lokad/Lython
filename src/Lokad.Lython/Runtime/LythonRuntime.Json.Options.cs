@@ -18,6 +18,19 @@ internal sealed partial class LythonRuntime
         ICallable? ParseConstant,
         ICallable? ObjectPairsHook, bool Strict);
 
+    internal sealed record JsonDumpOptions(
+        bool SkipKeys,
+        bool EnsureAscii,
+        bool CheckCircular,
+        bool AllowNan,
+        string? IndentUnit,
+        string ItemSeparator,
+        string KeySeparator,
+        ICallable? DefaultCallable,
+        bool SortKeys);
+
+    internal readonly record struct JsonSeparators(string ItemSeparator, string KeySeparator);
+
     private sealed partial class JsonModule : PyModule
     {
         private static LythonRuntimeException CreateJsonDecodeError(JsonParseInput input, JsonException exception, LythonSourceSpan span, ExecutionContext context)
@@ -281,7 +294,7 @@ internal sealed partial class LythonRuntime
         internal static bool ParseJsonBoolOption(object value, bool defaultValue)
             => ReferenceEquals(value, PyNone.Instance) ? defaultValue : IsTruthy(value);
 
-        private static string? ParseJsonIndent(object value, LythonSourceSpan span)
+        internal static string? ParseJsonIndent(object value, LythonSourceSpan span)
         {
             if (ReferenceEquals(value, PyNone.Instance))
             {
@@ -318,7 +331,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "json.dumps(indent=...) expects an integer, string, or None.", span);
         }
 
-        private static JsonSeparators ParseJsonSeparators(object value, bool pretty, LythonSourceSpan span, ExecutionContext context)
+        internal static JsonSeparators ParseJsonSeparators(object value, bool pretty, LythonSourceSpan span, ExecutionContext context)
         {
             if (ReferenceEquals(value, PyNone.Instance))
             {
@@ -365,20 +378,11 @@ internal sealed partial class LythonRuntime
             Dumps
         }
 
-        private readonly record struct JsonSeparators(string ItemSeparator, string KeySeparator);
+
 
         private readonly record struct JsonSourceLocation(int Line, int Column);
 
-        private sealed record JsonDumpOptions(
-            bool SkipKeys,
-            bool EnsureAscii,
-            bool CheckCircular,
-            bool AllowNan,
-            string? IndentUnit,
-            string ItemSeparator,
-            string KeySeparator,
-            ICallable? DefaultCallable,
-            bool SortKeys);
+
 
         private sealed class UnsupportedJsonClassFactory : ICallable, INamedRuntimeCallable, IPyRenderableValue
         {
