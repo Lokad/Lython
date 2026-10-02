@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Globalization;
 using System.Numerics;
 using System.Text.Encodings.Web;
@@ -22,13 +23,19 @@ internal sealed partial class LythonRuntime
 
             try
             {
-                // Bound the BCL document model before parsing: it materializes
-                // the whole input without budget callbacks, so reserve a
-                // conservative multiple up front and hold it until the governed
-                // values below take ownership.
+                // Bound the streaming backend like the previous document model: it
+                // reads ahead without budget callbacks, so reserve a conservative
+                // multiple up front and hold it until the governed values below take
+                // ownership.
                 using var documentCharge = context.MemoryGovernor.ReserveTemporary(checked(4L * text.Utf8Bytes.Length), span);
-                using var document = JsonDocument.Parse(text.Utf8Bytes);
-                return ConvertJson(document.RootElement, options, context, span);
+                var decoded = DecodeJsonPrefix(text, options, context, span, startByte: 0);
+                var end = SkipJsonWhitespace(text.Utf8Bytes.Span, decoded.EndByte);
+                if (end < text.Utf8Bytes.Length)
+                {
+                    throw CreateJsonTrailingDataError(text, end, span, context);
+                }
+
+                return decoded.Value;
             }
             catch (JsonException ex)
             {
@@ -36,21 +43,64 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static object ConvertJson(JsonElement element, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
+        private readonly record struct JsonPrefixDecode(object Value, int EndByte);
+
+        // Reads exactly one JSON value starting at startByte (after insignificant
+        // whitespace) without parsing or copying the rest of the input, so prefixes
+        // never materialize the suffix. Whole-document callers then require
+        // end-of-input; prefix callers take the value end offset. All offsets are
+        // absolute byte positions in the original text.
+        private JsonPrefixDecode DecodeJsonPrefix(PyString text, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int startByte)
+        {
+            var bytes = text.Utf8Bytes.Span;
+            var position = SkipJsonWhitespace(bytes, startByte);
+            if (position >= bytes.Length)
+            {
+                throw CreateJsonExpectingError(text, bytes.Length, JsonIncompleteExpectation.Value, span, context);
+            }
+
+            // The explicit depth cap preserves the previous document-backend limit.
+            var reader = new Utf8JsonReader(bytes.Slice(position), new JsonReaderOptions { MaxDepth = 64 });
+            if (!reader.Read())
+            {
+                throw CreateJsonExpectingError(text, bytes.Length, JsonIncompleteExpectation.Value, span, context);
+            }
+
+            var rootStart = position + (int)reader.TokenStartIndex;
+            var rootIsContainer = reader.TokenType is JsonTokenType.StartObject or JsonTokenType.StartArray;
+            var value = ConvertJsonReaderValue(ref reader, text, position, options, context, span);
+            var rootEnd = rootIsContainer ? position + (int)reader.BytesConsumed : ScanJsonTokenEnd(bytes, rootStart);
+            return new JsonPrefixDecode(value, rootEnd);
+        }
+
+        private static int SkipJsonWhitespace(ReadOnlySpan<byte> bytes, int position)
+        {
+            while (position < bytes.Length && bytes[position] is (byte)' ' or (byte)'\t' or (byte)'\n' or (byte)'\r')
+            {
+                position++;
+            }
+
+            return position;
+        }
+
+        private static object ConvertJsonReaderValue(ref Utf8JsonReader reader, PyString text, int baseByte, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
         {
             context.EnterInterpreterFrame(span);
             try
             {
-                return element.ValueKind switch
+                // PropertyName shares the string path: the reader classifies a quoted
+                // string by colon lookahead, so a key without its colon still decodes
+                // as a string here and the separator checks below report it.
+                return reader.TokenType switch
                 {
-                    JsonValueKind.Object => ConvertJsonObject(element, options, context, span),
-                    JsonValueKind.Array => ConvertJsonArray(element, options, context, span),
-                    JsonValueKind.String => JsonStringToPyString(element, context, span),
-                    JsonValueKind.True => true,
-                    JsonValueKind.False => false,
-                    JsonValueKind.Null => PyNone.Instance,
-                    JsonValueKind.Number => ConvertJsonNumber(element, options, context, span),
-                    _ => throw new InvalidOperationException($"Unsupported JSON value kind: {element.ValueKind}")
+                    JsonTokenType.StartObject => ConvertJsonReaderObject(ref reader, text, baseByte, options, context, span),
+                    JsonTokenType.StartArray => ConvertJsonReaderArray(ref reader, text, baseByte, options, context, span),
+                    JsonTokenType.String or JsonTokenType.PropertyName => ConvertJsonReaderString(ref reader, options, context, span),
+                    JsonTokenType.True => true,
+                    JsonTokenType.False => false,
+                    JsonTokenType.Null => PyNone.Instance,
+                    JsonTokenType.Number => ConvertJsonReaderNumber(ref reader, options, context, span),
+                    _ => throw new InvalidOperationException($"Unsupported JSON value kind: {reader.TokenType}")
                 };
             }
             finally
@@ -59,8 +109,9 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static object ConvertJsonObject(JsonElement element, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
+        private static object ConvertJsonReaderObject(ref Utf8JsonReader reader, PyString text, int baseByte, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
         {
+            var bytes = text.Utf8Bytes.Span;
             if (options.ObjectPairsHook is not null)
             {
                 // R10: every fresh graph node owns a refundable pool snapshot
@@ -70,18 +121,54 @@ internal sealed partial class LythonRuntime
                 // state.
                 var pairs = new PyList([], context.MemoryGovernor, span);
                 context.Services.State.CallTemporaries.TrackFreshMutable(pairs, pairs.CommittedStorageBytes, span);
-                foreach (var property in element.EnumerateObject())
+                var valueEnd = -1;
+                while (true)
                 {
+                    if (!reader.Read())
+                    {
+                        throw CreateJsonExpectingError(text, baseByte + (int)reader.BytesConsumed, JsonIncompleteExpectation.PropertyName, span, context);
+                    }
+
+                    if (reader.TokenType == JsonTokenType.EndObject)
+                    {
+                        if (IsJsonPreviousNonWhitespaceComma(bytes, baseByte + (int)reader.TokenStartIndex))
+                        {
+                            throw CreateJsonExpectingError(text, baseByte + (int)reader.TokenStartIndex, JsonIncompleteExpectation.PropertyName, span, context);
+                        }
+
+                        break;
+                    }
+
+                    if (reader.TokenType is not (JsonTokenType.PropertyName or JsonTokenType.String))
+                    {
+                        throw CreateJsonExpectingError(text, baseByte + (int)reader.TokenStartIndex, JsonIncompleteExpectation.PropertyName, span, context);
+                    }
+
+                    if (valueEnd >= 0)
+                    {
+                        EnsureJsonComma(bytes, valueEnd, text, span, context);
+                    }
+
                     context.CheckExecutionBudget(span);
                     // Track the key before converting the value: a denied
                     // value conversion must not strand the key charge.
-                    var key = CreateString(property.Name, context, span);
-                    context.Services.State.CallTemporaries.TrackFreshString(key, span);
-                    var value = ConvertJson(property.Value, options, context, span);
+                    var keyStart = baseByte + (int)reader.TokenStartIndex;
+                    var key = ConvertJsonReaderString(ref reader, options, context, span);
+                    var keyEnd = ScanJsonTokenEnd(bytes, keyStart);
+                    EnsureJsonColon(bytes, keyEnd, text, span, context);
+                    if (!reader.Read())
+                    {
+                        throw CreateJsonExpectingError(text, baseByte + (int)reader.BytesConsumed, JsonIncompleteExpectation.Value, span, context);
+                    }
+
+                    var valueStart = baseByte + (int)reader.TokenStartIndex;
+                    var valueIsContainer = reader.TokenType is JsonTokenType.StartObject or JsonTokenType.StartArray;
+                    var value = ConvertJsonReaderValue(ref reader, text, baseByte, options, context, span);
                     var pair = PyTuple.FromOwnedArray([key, value], context.MemoryGovernor, span);
                     context.Services.State.CallTemporaries.TrackFreshMutable(pair, pair.CommittedStorageBytes, span);
                     pairs.Add(pair);
                     context.ObserveCollectionCount(pairs.Count, span);
+                    valueEnd = valueIsContainer ? baseByte + (int)reader.BytesConsumed : ScanJsonTokenEnd(bytes, valueStart);
                 }
 
                 return InvokeJsonCallback(options.ObjectPairsHook, pairs, context, span);
@@ -89,14 +176,50 @@ internal sealed partial class LythonRuntime
 
             var result = new PyDict(context.MemoryGovernor, span);
             context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
-            foreach (var property in element.EnumerateObject())
+            var dictValueEnd = -1;
+            while (true)
             {
+                if (!reader.Read())
+                {
+                    throw CreateJsonExpectingError(text, baseByte + (int)reader.BytesConsumed, JsonIncompleteExpectation.PropertyName, span, context);
+                }
+
+                if (reader.TokenType == JsonTokenType.EndObject)
+                {
+                    if (IsJsonPreviousNonWhitespaceComma(bytes, baseByte + (int)reader.TokenStartIndex))
+                    {
+                        throw CreateJsonExpectingError(text, baseByte + (int)reader.TokenStartIndex, JsonIncompleteExpectation.PropertyName, span, context);
+                    }
+
+                    break;
+                }
+
+                if (reader.TokenType is not (JsonTokenType.PropertyName or JsonTokenType.String))
+                {
+                    throw CreateJsonExpectingError(text, baseByte + (int)reader.TokenStartIndex, JsonIncompleteExpectation.PropertyName, span, context);
+                }
+
+                if (dictValueEnd >= 0)
+                {
+                    EnsureJsonComma(bytes, dictValueEnd, text, span, context);
+                }
+
                 context.CheckExecutionBudget(span);
-                var key = CreateString(property.Name, context, span);
-                context.Services.State.CallTemporaries.TrackFreshString(key, span);
-                var value = ConvertJson(property.Value, options, context, span);
-                result.SetItem(key, value);
+                var dictKeyStart = baseByte + (int)reader.TokenStartIndex;
+                var dictKey = ConvertJsonReaderString(ref reader, options, context, span);
+                var dictKeyEnd = ScanJsonTokenEnd(bytes, dictKeyStart);
+                EnsureJsonColon(bytes, dictKeyEnd, text, span, context);
+                if (!reader.Read())
+                {
+                    throw CreateJsonExpectingError(text, baseByte + (int)reader.BytesConsumed, JsonIncompleteExpectation.Value, span, context);
+                }
+
+                var dictValueStart = baseByte + (int)reader.TokenStartIndex;
+                var dictValueIsContainer = reader.TokenType is JsonTokenType.StartObject or JsonTokenType.StartArray;
+                var dictValue = ConvertJsonReaderValue(ref reader, text, baseByte, options, context, span);
+                result.SetItem(dictKey, dictValue);
                 context.ObserveCollectionCount(result.Count, span);
+                dictValueEnd = dictValueIsContainer ? baseByte + (int)reader.BytesConsumed : ScanJsonTokenEnd(bytes, dictValueStart);
             }
 
             return options.ObjectHook is null
@@ -104,26 +227,53 @@ internal sealed partial class LythonRuntime
                 : InvokeJsonCallback(options.ObjectHook, result, context, span);
         }
 
-        private static PyList ConvertJsonArray(JsonElement element, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
+        private static PyList ConvertJsonReaderArray(ref Utf8JsonReader reader, PyString text, int baseByte, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
         {
+            var bytes = text.Utf8Bytes.Span;
             // R10: the fresh list owns a refundable snapshot; each element
             // adopts ownership at its own construction boundary below, so a
             // dropped array reclaims both the backing and every element.
             var result = new PyList([], context.MemoryGovernor, span);
             context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
-            foreach (var item in element.EnumerateArray())
+            var valueEnd = -1;
+            while (true)
             {
+                if (!reader.Read())
+                {
+                    throw CreateJsonExpectingError(text, baseByte + (int)reader.BytesConsumed, JsonIncompleteExpectation.Value, span, context);
+                }
+
+                if (reader.TokenType == JsonTokenType.EndArray)
+                {
+                    if (IsJsonPreviousNonWhitespaceComma(bytes, baseByte + (int)reader.TokenStartIndex))
+                    {
+                        throw CreateJsonExpectingError(text, baseByte + (int)reader.TokenStartIndex, JsonIncompleteExpectation.Value, span, context);
+                    }
+
+                    break;
+                }
+
+                if (valueEnd >= 0)
+                {
+                    EnsureJsonComma(bytes, valueEnd, text, span, context);
+                }
+
                 context.CheckExecutionBudget(span);
-                result.Add(ConvertJson(item, options, context, span));
+                var arrayValueStart = baseByte + (int)reader.TokenStartIndex;
+                var arrayValueIsContainer = reader.TokenType is JsonTokenType.StartObject or JsonTokenType.StartArray;
+                result.Add(ConvertJsonReaderValue(ref reader, text, baseByte, options, context, span));
                 context.ObserveCollectionCount(result.Count, span);
+                valueEnd = arrayValueIsContainer ? baseByte + (int)reader.BytesConsumed : ScanJsonTokenEnd(bytes, arrayValueStart);
             }
 
             return result;
         }
 
-        private static object ConvertJsonNumber(JsonElement element, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
+        private static object ConvertJsonReaderNumber(ref Utf8JsonReader reader, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
         {
-            var raw = element.GetRawText();
+            // Single-segment input never sequences, so the value span always holds
+            // the complete raw token.
+            var raw = Encoding.UTF8.GetString(reader.ValueSpan);
             var isFloat = raw.Contains('.', StringComparison.Ordinal) ||
                 raw.Contains('e', StringComparison.OrdinalIgnoreCase);
             if (isFloat && options.ParseFloat is not null)
@@ -149,7 +299,7 @@ internal sealed partial class LythonRuntime
                 // Deny on digit scale before parsing allocates the limbs; each
                 // parse yields a fresh magnitude that owns its payload below.
                 GuardIntegerParseBytes(raw, 4, context.MemoryGovernor, span);
-                if (element.TryGetInt64(out var integer))
+                if (reader.TryGetInt64(out var integer))
                 {
                     return new BigInteger(integer);
                 }
@@ -157,7 +307,7 @@ internal sealed partial class LythonRuntime
                 return OwnFreshInteger(BigInteger.Parse(raw, CultureInfo.InvariantCulture), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
             }
 
-            return element.GetDouble();
+            return reader.GetDouble();
         }
 
         private static JsonLoadOptions ParseJsonLoadOptions(object[] arguments, LythonSourceSpan span)
@@ -188,6 +338,128 @@ internal sealed partial class LythonRuntime
             var defaultCallable = OptionalJsonCallable(GetOptional(arguments, offset + 8), "default", span);
             var sortKeys = ParseJsonBoolOption(GetOptional(arguments, offset + 9), defaultValue: false);
             return new JsonDumpOptions(skipKeys, ensureAscii, checkCircular, allowNan, indent, separators.ItemSeparator, separators.KeySeparator, defaultCallable, sortKeys);
+        }
+
+        private static PyString ConvertJsonReaderString(ref Utf8JsonReader reader, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
+        {
+            _ = options;
+            // R10: each decoded string owns a refundable snapshot so dropped
+            // scalar parses reclaim instead of stranding.
+            var text = CreateString(reader.GetString() ?? string.Empty, context, span);
+            context.Services.State.CallTemporaries.TrackFreshString(text, span);
+            return text;
+        }
+
+        private enum JsonIncompleteExpectation
+        {
+            Value,
+            PropertyName,
+            Comma,
+            Colon,
+        }
+
+        // Reports a cleanly truncated prefix with CPython wording at the absolute
+        // byte position: what the truncated input was still expecting there.
+        private static LythonRuntimeException CreateJsonExpectingError(PyString text, int bytePosition, JsonIncompleteExpectation expectation, LythonSourceSpan span, ExecutionContext context)
+        {
+            var message = expectation switch
+            {
+                JsonIncompleteExpectation.PropertyName => "Expecting property name enclosed in double quotes",
+                JsonIncompleteExpectation.Comma => "Expecting ',' delimiter",
+                JsonIncompleteExpectation.Colon => "Expecting ':' delimiter",
+                _ => "Expecting value",
+            };
+
+            return NewJsonDecodeFailure(text, message, bytePosition, innerException: null, span, context);
+        }
+
+        // Reports trailing data with the previous whole-document backend wording:
+        // the first trailing character quoted, with absolute coordinates.
+        private static LythonRuntimeException CreateJsonTrailingDataError(PyString text, int bytePosition, LythonSourceSpan span, ExecutionContext context)
+        {
+            var trailing = text.Utf8Bytes.Span[bytePosition..];
+            var display = Rune.DecodeFromUtf8(trailing, out var rune, out _) == OperationStatus.Done
+                ? rune.ToString()
+                : "?";
+
+            return NewJsonDecodeFailure(text, "'" + display + "' is invalid after a single JSON value. Expected end of data.", bytePosition, innerException: null, span, context);
+        }
+
+        // Requires a comma as the first non-whitespace byte at or after valueEnd:
+        // missing separators surface exactly where CPython reports them.
+        private static void EnsureJsonComma(ReadOnlySpan<byte> bytes, int valueEnd, PyString text, LythonSourceSpan span, ExecutionContext context)
+        {
+            var position = SkipJsonWhitespace(bytes, valueEnd);
+            if (position >= bytes.Length || bytes[position] != (byte)',')
+            {
+                throw CreateJsonExpectingError(text, Math.Min(position, bytes.Length), JsonIncompleteExpectation.Comma, span, context);
+            }
+        }
+
+        // Requires a colon as the first non-whitespace byte at or after keyEnd,
+        // mirroring the comma rule above.
+        private static void EnsureJsonColon(ReadOnlySpan<byte> bytes, int keyEnd, PyString text, LythonSourceSpan span, ExecutionContext context)
+        {
+            var position = SkipJsonWhitespace(bytes, keyEnd);
+            if (position >= bytes.Length || bytes[position] != (byte)':')
+            {
+                throw CreateJsonExpectingError(text, Math.Min(position, bytes.Length), JsonIncompleteExpectation.Colon, span, context);
+            }
+        }
+
+        // Computes a scalar or string token end by raw scanning: the reader may
+        // have consumed past the token while classifying property names, so its
+        // consumed count is only trustworthy after container brackets (which need
+        // no lookahead). Strings walk with escape handling; numbers, literals and
+        // constants consume value characters. Never runs past unterminated input
+        // in practice (the reader rejects it first); the bounds guard is defensive.
+        private static int ScanJsonTokenEnd(ReadOnlySpan<byte> bytes, int tokenStart)
+        {
+            if (tokenStart < bytes.Length && bytes[tokenStart] == (byte)'"')
+            {
+                var position = tokenStart + 1;
+                while (position < bytes.Length)
+                {
+                    if (bytes[position] == (byte)'\\')
+                    {
+                        position += 2;
+                        continue;
+                    }
+
+                    if (bytes[position] == (byte)'"')
+                    {
+                        return position + 1;
+                    }
+
+                    position++;
+                }
+
+                return bytes.Length;
+            }
+
+            var end = tokenStart;
+            while (end < bytes.Length && IsJsonValueByte(bytes[end]))
+            {
+                end++;
+            }
+
+            return end;
+        }
+
+        private static bool IsJsonValueByte(byte value)
+            => value is (>= (byte)'0' and <= (byte)'9') or (>= (byte)'a' and <= (byte)'z') or (>= (byte)'A' and <= (byte)'Z') or (byte)'.' or (byte)'+' or (byte)'-';
+
+        // Detects a trailing comma before a closing bracket: only a comma can
+        // directly precede a closer with no intervening value.
+        private static bool IsJsonPreviousNonWhitespaceComma(ReadOnlySpan<byte> bytes, int tokenStart)
+        {
+            var position = tokenStart - 1;
+            while (position >= 0 && bytes[position] is (byte)' ' or (byte)'\t' or (byte)'\n' or (byte)'\r')
+            {
+                position--;
+            }
+
+            return position >= 0 && bytes[position] == (byte)',';
         }
     }
 }

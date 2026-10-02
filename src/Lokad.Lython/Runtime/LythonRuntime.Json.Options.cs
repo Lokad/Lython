@@ -51,20 +51,29 @@ internal sealed partial class LythonRuntime
                 exception.LineNumber.GetValueOrDefault(),
                 exception.BytePositionInLine.GetValueOrDefault());
             var bytePosition = NormalizeJsonErrorBytePosition(document.Utf8Bytes.Span, reportedBytePosition, exception.Message);
+            return NewJsonDecodeFailure(document, exception.Message, bytePosition, exception, span, context);
+        }
+
+        // Builds the catchable JSONDecodeError value (msg/doc/pos/lineno/colno)
+        // for an explicit message and absolute byte position: used both for
+        // backend errors above and for positions the core detects itself
+        // (truncation, trailing data, strict violations, index bounds).
+        private static LythonRuntimeException NewJsonDecodeFailure(PyString document, string message, int bytePosition, Exception? innerException, LythonSourceSpan span, ExecutionContext context)
+        {
             var position = document.ByteIndexToRuneIndex(bytePosition);
             var location = ComputeJsonErrorLocation(document, bytePosition);
             // R10: the error payload and message own refundable snapshots
             // so a caught and dropped decode error reclaims on sweep.
             var payload = new PyDict(context.MemoryGovernor, span);
             context.Services.State.CallTemporaries.TrackFreshMutable(payload, payload.CommittedStorageBytes, span);
-            var errorMessage = CreateString(exception.Message, context, span);
+            var errorMessage = CreateString(message, context, span);
             context.Services.State.CallTemporaries.TrackFreshString(errorMessage, span);
             payload.SetItem(PyString.FromString("msg"), errorMessage);
             payload.SetItem(PyString.FromString("doc"), document);
             payload.SetItem(PyString.FromString("pos"), new BigInteger(position));
             payload.SetItem(PyString.FromString("lineno"), new BigInteger(location.Line));
             payload.SetItem(PyString.FromString("colno"), new BigInteger(location.Column));
-            return new LythonRuntimeException(ModuleException("json", "JSONDecodeError"), exception.Message, span, exception, payload);
+            return new LythonRuntimeException(ModuleException("json", "JSONDecodeError"), message, span, innerException, payload);
         }
 
         private static int ComputeJsonErrorBytePosition(ReadOnlySpan<byte> text, long lineNumber, long bytePositionInLine)
@@ -366,13 +375,5 @@ internal sealed partial class LythonRuntime
             public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
         }
 
-        private static PyString JsonStringToPyString(JsonElement element, ExecutionContext context, LythonSourceSpan span)
-        {
-            // R10: each decoded string owns a refundable snapshot so dropped
-            // scalar parses reclaim instead of stranding.
-            var text = CreateString(element.GetString() ?? string.Empty, context, span);
-            context.Services.State.CallTemporaries.TrackFreshString(text, span);
-            return text;
-        }
     }
 }
