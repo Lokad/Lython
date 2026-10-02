@@ -1167,7 +1167,7 @@ The imported module must expose the following JSON helpers:
 
 `load` and `dump` are text-only and must operate on Lython text file handles. Binary file handles are outside the public file boundary.
 
-`loads` must support `object_hook`, `object_pairs_hook`, `parse_int`, `parse_float`, and root-level `parse_constant` callbacks, plus `strict` (when false, literal control characters inside strings are allowed). Invalid JSON text must raise catchable `JSONDecodeError` with `msg`, `doc`, `pos`, `lineno`, and `colno` fields. Positions and prefix end offsets are Python string indices.
+`loads` must support `object_hook`, `object_pairs_hook`, `parse_int`, `parse_float`, and `parse_constant` callbacks at every value position, plus `strict` (when false, literal control characters inside strings are allowed). Invalid JSON text must raise catchable `JSONDecodeError` with `msg`, `doc`, `pos`, `lineno`, and `colno` fields. Positions and prefix end offsets are Python string indices.
 
 `dumps` and `dump` must support indentation, separators, key sorting, `ensure_ascii`, `skipkeys`, callable `default`, `allow_nan`, and circular-reference checks. Supported output values include `None`, booleans, strings, integers, floats, decimals, lists, tuples, and dictionaries. Dictionary keys may be strings, integers, finite floats, booleans, or `None`; unsupported keys fail unless `skipkeys=True`.
 

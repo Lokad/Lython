@@ -1,3 +1,4 @@
+using System.Numerics;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
@@ -421,5 +422,33 @@ public sealed class JsonSubclassScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("[99, 99]", asyncResult.ReturnValue);
         Assert.Equal("[1, 2]", host2.ReadText("/out.txt"));
+    }
+    [Fact]
+    public async Task SubclassInstancesReleasePerCall()
+    {
+        // Repeated construction, use and drop of subclass instances must not
+        // accumulate peers or option state against the budget.
+        var script = new LythonEngine().Compile(
+            """
+            import json
+            class SetEncoder(json.JSONEncoder):
+                def default(self, obj):
+                    if isinstance(obj, set):
+                        return sorted(obj)
+                    return super().default(obj)
+            n = 0
+            for _ in range(2000):
+                if json.dumps({1}, cls=SetEncoder) == "[1]":
+                    n = n + 1
+            return n
+            """);
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 4194304 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(new BigInteger(2000), sync.ReturnValue);
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(new BigInteger(2000), asyncResult.ReturnValue);
     }
 }
