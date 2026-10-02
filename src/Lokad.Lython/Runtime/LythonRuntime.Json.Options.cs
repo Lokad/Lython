@@ -11,6 +11,13 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    internal sealed record JsonLoadOptions(
+        ICallable? ObjectHook,
+        ICallable? ParseFloat,
+        ICallable? ParseInt,
+        ICallable? ParseConstant,
+        ICallable? ObjectPairsHook, bool Strict);
+
     private sealed partial class JsonModule : PyModule
     {
         private static LythonRuntimeException CreateJsonDecodeError(JsonParseInput input, JsonException exception, LythonSourceSpan span, ExecutionContext context)
@@ -51,6 +58,57 @@ internal sealed partial class LythonRuntime
             payload.SetItem(PyString.FromString("lineno"), new BigInteger(location.Line));
             payload.SetItem(PyString.FromString("colno"), new BigInteger(location.Column));
             return new LythonRuntimeException(ModuleException("json", "JSONDecodeError"), message, span, innerException, payload);
+        }
+
+        // Builds the catchable JSONDecodeError for an explicit Python string
+        // index (used when the index lies past the end, where no parse byte
+        // position maps to it). Lines and columns count like the byte path.
+        private static LythonRuntimeException NewJsonDecodeFailureAtRune(JsonParseInput input, string message, long runePosition, LythonSourceSpan span, ExecutionContext context)
+        {
+            var location = ComputeJsonRuneLocation(input.Document, runePosition);
+            // R10: the error payload and message own refundable snapshots
+            // so a caught and dropped decode error reclaims on sweep.
+            var payload = new PyDict(context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(payload, payload.CommittedStorageBytes, span);
+            var errorMessage = CreateString(message, context, span);
+            context.Services.State.CallTemporaries.TrackFreshString(errorMessage, span);
+            payload.SetItem(PyString.FromString("msg"), errorMessage);
+            payload.SetItem(PyString.FromString("doc"), input.Document);
+            payload.SetItem(PyString.FromString("pos"), new BigInteger(runePosition));
+            payload.SetItem(PyString.FromString("lineno"), new BigInteger(location.Line));
+            payload.SetItem(PyString.FromString("colno"), new BigInteger(location.Column));
+            return new LythonRuntimeException(ModuleException("json", "JSONDecodeError"), message, span, innerException: null, payload);
+        }
+
+        // Reports a prefix index past the end with CPython coordinates: every
+        // newline in the document precedes it.
+        private static LythonRuntimeException CreateJsonExpectingErrorAtRune(JsonParseInput input, long runePosition, LythonSourceSpan span, ExecutionContext context)
+            => NewJsonDecodeFailureAtRune(input, "Expecting value", runePosition, span, context);
+
+        private static JsonSourceLocation ComputeJsonRuneLocation(PyString document, long runePosition)
+        {
+            var line = 1;
+            var lineStart = 0L;
+            var index = 0L;
+            foreach (var rune in document.EnumerateRunes())
+            {
+                if (index >= runePosition)
+                {
+                    break;
+                }
+
+                // Newlines are single-byte, so no multi-byte sequence can
+                // start with this byte.
+                if (rune.Utf8Bytes.Span[0] == (byte)'\n')
+                {
+                    line++;
+                    lineStart = index + 1;
+                }
+
+                index++;
+            }
+
+            return new JsonSourceLocation(line, (int)(runePosition - lineStart + 1));
         }
 
         private static int ComputeJsonErrorBytePosition(ReadOnlySpan<byte> text, long lineNumber, long bytePositionInLine)
@@ -195,7 +253,7 @@ internal sealed partial class LythonRuntime
             return result;
         }
 
-        private static ICallable? OptionalJsonCallable(object value, string parameterName, LythonSourceSpan span)
+        internal static ICallable? OptionalJsonCallable(object value, string parameterName, LythonSourceSpan span)
         {
             if (ReferenceEquals(value, PyNone.Instance))
             {
@@ -220,7 +278,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("NotImplementedError", $"json {parameterName}=... custom encoder/decoder classes are not supported by Lython.", span);
         }
 
-        private static bool ParseJsonBoolOption(object value, bool defaultValue)
+        internal static bool ParseJsonBoolOption(object value, bool defaultValue)
             => ReferenceEquals(value, PyNone.Instance) ? defaultValue : IsTruthy(value);
 
         private static string? ParseJsonIndent(object value, LythonSourceSpan span)
@@ -299,12 +357,7 @@ internal sealed partial class LythonRuntime
         private static object GetOptional(object[] arguments, int index)
             => index < arguments.Length ? arguments[index] : PyNone.Instance;
 
-        private sealed record JsonLoadOptions(
-            ICallable? ObjectHook,
-            ICallable? ParseFloat,
-            ICallable? ParseInt,
-            ICallable? ParseConstant,
-            ICallable? ObjectPairsHook, bool Strict);
+
 
         private enum JsonDumpCallForm
         {

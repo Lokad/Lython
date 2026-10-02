@@ -24,6 +24,9 @@ internal static partial class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature JsonDump = LythonCallableSignature.Create("json.dump", ["obj", "fp", "skipkeys", "ensure_ascii", "check_circular", "allow_nan", "cls", "indent", "separators", "default", "sort_keys"], requiredCount: 2, maximumPositionalArgumentCount: 2);
     public static readonly LythonCallableSignature JsonDumps = LythonCallableSignature.Create("json.dumps", ["obj", "skipkeys", "ensure_ascii", "check_circular", "allow_nan", "cls", "indent", "separators", "default", "sort_keys"], requiredCount: 1, maximumPositionalArgumentCount: 1);
 
+    public static readonly LythonCallableSignature JsonDecoderDecode = LythonCallableSignature.Create("json.JSONDecoder.decode", ["s"], requiredCount: 1, maximumPositionalArgumentCount: 1);
+    public static readonly LythonCallableSignature JsonDecoderRawDecode = LythonCallableSignature.Create("json.JSONDecoder.raw_decode", ["s", "idx"], requiredCount: 1, maximumPositionalArgumentCount: 2);
+
     public static readonly LythonCallableSignature CsvReader = LythonCallableSignature.Create("csv.reader", ["csvfile", "dialect", "delimiter", "quotechar", "quoting", "doublequote", "escapechar", "skipinitialspace", "lineterminator", "strict"], requiredCount: 1, maximumPositionalArgumentCount: 2);
     public static readonly LythonCallableSignature CsvWriter = LythonCallableSignature.Create("csv.writer", ["fileobj", "dialect", "delimiter", "quotechar", "quoting", "doublequote", "escapechar", "skipinitialspace", "lineterminator", "strict"], requiredCount: 0, maximumPositionalArgumentCount: 2);
     public static readonly LythonCallableSignature CsvDictReader = LythonCallableSignature.Create("csv.DictReader", ["f", "fieldnames", "restkey", "restval", "dialect", "delimiter", "quotechar", "quoting", "doublequote", "escapechar", "skipinitialspace", "lineterminator", "strict"], requiredCount: 1, maximumPositionalArgumentCount: 5);

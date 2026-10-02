@@ -14,33 +14,23 @@ internal sealed partial class LythonRuntime
 {
     private sealed partial class JsonModule : PyModule
     {
-        private object ParseJsonText(PyString text, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
+        internal object ParseJsonText(PyString text, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
         {
             // Bound the streaming backend like the previous document model: it
             // reads ahead without budget callbacks, so reserve a conservative
             // multiple up front and hold it until the governed values below take
             // ownership.
             using var documentCharge = context.MemoryGovernor.ReserveTemporary(checked(4L * text.Utf8Bytes.Length), span);
-            // Walk string spans once: strict mode reports the first bare control
-            // byte, while lenient mode collects them for escape rewriting below.
-            // Either way the streaming backend never sees a bare control byte.
-            var input = new JsonParseInput(text, text.Utf8Bytes, Mapper: null);
-            var controls = ScanJsonStringControls(input.Source.Span);
-            if (controls is { Count: > 0 })
-            {
-                if (options.Strict)
-                {
-                    throw CreateJsonControlCharacterError(input, controls[0], span, context);
-                }
-
-                var rewritten = RewriteJsonControls(input.Source, controls);
-                documentCharge.Grow(rewritten.Length, span);
-                input = new JsonParseInput(text, rewritten, new JsonControlMap(controls.ToArray()));
-            }
+            // Walk string spans once and escape bare controls so the streaming
+            // backend (which rejects them like CPython strict mode) never sees
+            // one; strict violations inside the parsed prefix are reported
+            // below, so suffix controls cannot shadow the prefix result.
+            var (input, controls) = CreateJsonParseInput(text, documentCharge, span);
 
             try
             {
                 var decoded = DecodeJsonPrefix(input, options, context, span, startByte: 0);
+                ThrowIfStrictControlInPrefix(input, controls, options.Strict, decoded.EndByte, span, context);
                 var end = SkipJsonWhitespace(input.Source.Span, decoded.EndByte);
                 if (end < input.Source.Length)
                 {
@@ -99,6 +89,30 @@ internal sealed partial class LythonRuntime
                 }
 
                 return copyPosition - 5 * low;
+            }
+
+            // Maps an original-document byte position to rewritten-parse
+            // coordinates (each preceding control adds five bytes), so
+            // original string indices convert to parse positions. An original
+            // control maps to the start of its six-byte escape.
+            public int ToCopy(int originalPosition)
+            {
+                var low = 0;
+                var high = _originals.Length;
+                while (low < high)
+                {
+                    var middle = (low + high) / 2;
+                    if (_originals[middle] < originalPosition)
+                    {
+                        low = middle + 1;
+                    }
+                    else
+                    {
+                        high = middle;
+                    }
+                }
+
+                return originalPosition + 5 * low;
             }
         }
 
@@ -178,13 +192,79 @@ internal sealed partial class LythonRuntime
             return rewritten;
         }
 
+        // Builds the parse input once for whole-document and prefix entry
+        // points: bare control bytes are escape-rewritten so the streaming
+        // backend never sees one, in either strictness mode. Strict violations
+        // inside the parsed prefix are reported by the caller, which knows the
+        // prefix end; coordinates map back through the control map.
+        private static (JsonParseInput Input, List<int>? Controls) CreateJsonParseInput(PyString text, MemoryGovernor.TemporaryMemoryReservation charge, LythonSourceSpan span)
+        {
+            var input = new JsonParseInput(text, text.Utf8Bytes, Mapper: null);
+            var controls = ScanJsonStringControls(input.Source.Span);
+            if (controls is { Count: > 0 })
+            {
+                var rewritten = RewriteJsonControls(input.Source, controls);
+                charge.Grow(rewritten.Length, span);
+                input = new JsonParseInput(text, rewritten, new JsonControlMap(controls.ToArray()));
+            }
+
+            return (input, controls);
+        }
+
+        // Reports the first bare control byte when strict mode parsed a prefix
+        // covering it. Controls at or past the prefix end belong to the
+        // untouched suffix and never shadow the prefix result.
+        private static void ThrowIfStrictControlInPrefix(JsonParseInput input, List<int>? controls, bool strict, int endCopyByte, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (!strict || controls is not { Count: > 0 })
+            {
+                return;
+            }
+
+            var endOriginal = input.Mapper is null ? endCopyByte : input.Mapper.ToOriginal(endCopyByte);
+            if (controls[0] < endOriginal)
+            {
+                throw CreateJsonControlCharacterError(input, controls[0], span, context);
+            }
+        }
+
+        // Reads exactly one value at the given Python string index with no
+        // leading whitespace skip, returning the value and the absolute end
+        // index in the original string. The suffix is never materialized.
+        internal (object Value, int EndRune) DecodeJsonRawValue(PyString document, long idxRune, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
+        {
+            using var documentCharge = context.MemoryGovernor.ReserveTemporary(checked(4L * document.Utf8Bytes.Length), span);
+            var (input, controls) = CreateJsonParseInput(document, documentCharge, span);
+            if (idxRune > document.Length)
+            {
+                throw CreateJsonExpectingErrorAtRune(input, idxRune, span, context);
+            }
+
+            var startOriginal = document.GetByteIndexForRuneBoundary((int)idxRune);
+            var startCopy = input.Mapper is null ? startOriginal : input.Mapper.ToCopy(startOriginal);
+            try
+            {
+                var (value, endCopy) = ReadJsonValueExact(input, options, context, span, 0, startCopy);
+                ThrowIfStrictControlInPrefix(input, controls, options.Strict, endCopy, span, context);
+                var endOriginal = input.Mapper is null ? endCopy : input.Mapper.ToOriginal(endCopy);
+                return (value, document.ByteIndexToRuneIndex(endOriginal));
+            }
+            catch (JsonException ex)
+            {
+                throw CreateJsonDecodeError(input, ex, span, context);
+            }
+        }
+
         private static LythonRuntimeException CreateJsonControlCharacterError(JsonParseInput input, int bytePosition, LythonSourceSpan span, ExecutionContext context)
         {
             var location = ComputeJsonErrorLocation(input.Document, bytePosition);
             return NewJsonDecodeFailure(
                 input,
                 "Invalid control character at: line " + location.Line + " column " + location.Column + " (char " + input.Document.ByteIndexToRuneIndex(bytePosition) + ")",
-                bytePosition,
+                // bytePosition is original-document: round-trip through the
+                // rewritten coordinates so the shared failure builder (which
+                // maps parse positions back) reports the same position.
+                input.Mapper is null ? bytePosition : input.Mapper.ToCopy(bytePosition),
                 innerException: null,
                 span,
                 context);
@@ -212,6 +292,20 @@ internal sealed partial class LythonRuntime
         {
             var bytes = input.Source.Span;
             position = SkipJsonWhitespace(bytes, position);
+            if (position >= bytes.Length)
+            {
+                throw CreateJsonExpectingError(input, bytes.Length, JsonIncompleteExpectation.Value, span, context);
+            }
+
+            return ReadJsonValueExact(input, options, context, span, depth, position);
+        }
+
+        // Reads one value at the exact byte position with no leading
+        // whitespace skip, for prefix entry points whose contract starts at
+        // the given index.
+        private (object Value, int End) ReadJsonValueExact(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int depth, int position)
+        {
+            var bytes = input.Source.Span;
             if (position >= bytes.Length)
             {
                 throw CreateJsonExpectingError(input, bytes.Length, JsonIncompleteExpectation.Value, span, context);
@@ -749,9 +843,21 @@ internal sealed partial class LythonRuntime
             return double.Parse(raw, NumberStyles.Float, CultureInfo.InvariantCulture);
         }
 
+        // Until N39 lands, only the default decoder class (or None) is
+        // accepted through cls=...; custom classes fail explicitly.
+        private static void EnsureJsonDecoderClsIsDefaultOrNone(object value, LythonSourceSpan span)
+        {
+            if (ReferenceEquals(value, PyNone.Instance) || value is JsonDecoderClass)
+            {
+                return;
+            }
+
+            throw new LythonRuntimeException("NotImplementedError", "json cls=... custom encoder/decoder classes are not supported by Lython.", span);
+        }
+
         private static JsonLoadOptions ParseJsonLoadOptions(object[] arguments, LythonSourceSpan span)
         {
-            EnsureUnsupportedJsonClassIsNone(GetOptional(arguments, 1), "cls", span);
+            EnsureJsonDecoderClsIsDefaultOrNone(GetOptional(arguments, 1), span);
             return new JsonLoadOptions(
                 OptionalJsonCallable(GetOptional(arguments, 2), "object_hook", span),
                 OptionalJsonCallable(GetOptional(arguments, 3), "parse_float", span),

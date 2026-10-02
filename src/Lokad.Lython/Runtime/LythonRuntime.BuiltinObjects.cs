@@ -691,7 +691,8 @@ internal sealed partial class LythonRuntime
             "collections.defaultdict" or
             "collections.Counter" or
             "collections.deque" or
-            "collections.ChainMap";
+            "collections.ChainMap" or
+            "json.JSONDecoder";
     }
 
     internal static bool DoesObjectMatchBuiltinType(string typeName, object value)
@@ -708,6 +709,7 @@ internal sealed partial class LythonRuntime
             "collections.Counter" => value is PyCounter,
             "collections.deque" => value is PyDeque,
             "collections.ChainMap" => value is PyChainMap,
+            "json.JSONDecoder" => value is JsonDecoderObject,
             "set" => value is PySet,
             "str" => value is PyString,
             "bytes" => value is PyBytes,
