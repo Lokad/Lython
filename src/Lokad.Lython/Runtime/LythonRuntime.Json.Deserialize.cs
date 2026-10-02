@@ -235,36 +235,61 @@ internal sealed partial class LythonRuntime
                     : ReadJsonArray(input, options, context, span, depth + 1, position);
             }
 
+            context.EnterInterpreterFrame(span);
             try
             {
-                var reader = new Utf8JsonReader(bytes.Slice(position), new JsonReaderOptions());
-                if (!reader.Read())
+                // CPython prefix rules: literals match case-sensitive prefixes
+                // with no terminator check, and numbers match NUMBER_RE, so
+                // adjacent values end exactly where CPython ends them (whole
+                // document callers then report the remainder as trailing data).
+                if (TryMatchJsonLiteral(bytes, position, "true", out var trueEnd))
                 {
-                    throw CreateJsonExpectingError(input, bytes.Length, JsonIncompleteExpectation.Value, span, context);
+                    return ((object)true, trueEnd);
                 }
 
-                context.EnterInterpreterFrame(span);
-                try
+                if (TryMatchJsonLiteral(bytes, position, "false", out var falseEnd))
                 {
-                    object value = reader.TokenType switch
+                    return ((object)false, falseEnd);
+                }
+
+                if (TryMatchJsonLiteral(bytes, position, "null", out var nullEnd))
+                {
+                    return (PyNone.Instance, nullEnd);
+                }
+
+                if (TryMatchJsonNumber(bytes, position, out var numberEnd))
+                {
+                    return (ConvertJsonNumberText(bytes, position, numberEnd, options, context, span), numberEnd);
+                }
+
+                if (first == (byte)'"')
+                {
+                    try
                     {
-                        JsonTokenType.String or JsonTokenType.PropertyName => ConvertJsonReaderString(ref reader, context, span),
-                        JsonTokenType.Number => ConvertJsonReaderNumber(ref reader, options, context, span),
-                        JsonTokenType.True => (object)true,
-                        JsonTokenType.False => (object)false,
-                        JsonTokenType.Null => PyNone.Instance,
-                        _ => throw CreateJsonExpectingError(input, position, JsonIncompleteExpectation.Value, span, context),
-                    };
-                    return (value, ScanJsonTokenEnd(bytes, position));
+                        var reader = new Utf8JsonReader(bytes.Slice(position), new JsonReaderOptions());
+                        if (!reader.Read())
+                        {
+                            throw CreateJsonExpectingError(input, bytes.Length, JsonIncompleteExpectation.Value, span, context);
+                        }
+
+                        if (reader.TokenType is not JsonTokenType.String and not JsonTokenType.PropertyName)
+                        {
+                            throw CreateJsonExpectingError(input, position, JsonIncompleteExpectation.Value, span, context);
+                        }
+
+                        return (ConvertJsonReaderString(ref reader, context, span), ScanJsonTokenEnd(bytes, position));
+                    }
+                    catch (JsonException ex)
+                    {
+                        throw CreateJsonReaderError(input, position, ex, span, context);
+                    }
                 }
-                finally
-                {
-                    context.LeaveInterpreterFrame();
-                }
+
+                throw CreateJsonExpectingError(input, position, JsonIncompleteExpectation.Value, span, context);
             }
-            catch (JsonException ex)
+            finally
             {
-                throw CreateJsonReaderError(input, position, ex, span, context);
+                context.LeaveInterpreterFrame();
             }
         }
 
@@ -537,6 +562,98 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
+        // Matches a JSON literal (true/false/null) like CPython:
+        // case-sensitive prefix with no terminator validation, so adjacent
+        // values split at the literal end.
+        private static bool TryMatchJsonLiteral(ReadOnlySpan<byte> bytes, int position, string literal, out int end)
+        {
+            if (HasJsonLiteral(bytes, position, literal))
+            {
+                end = position + literal.Length;
+                return true;
+            }
+
+            end = position;
+            return false;
+        }
+
+        // Matches CPython NUMBER_RE (-?(?:0|[1-9]\d*))(\.\d+)?([eE][-+]?\d+)?
+        // as a prefix: a fraction or exponent without digits does not extend
+        // the match, so "1e" ends after "1".
+        private static bool TryMatchJsonNumber(ReadOnlySpan<byte> bytes, int position, out int end)
+        {
+            end = position;
+            var cursor = position;
+            if (cursor < bytes.Length && bytes[cursor] == (byte)'-')
+            {
+                cursor++;
+            }
+
+            if (cursor >= bytes.Length)
+            {
+                return false;
+            }
+
+            if (bytes[cursor] == (byte)'0')
+            {
+                cursor++;
+            }
+            else if (bytes[cursor] is >= (byte)'1' and <= (byte)'9')
+            {
+                do
+                {
+                    cursor++;
+                }
+                while (cursor < bytes.Length && bytes[cursor] is >= (byte)'0' and <= (byte)'9');
+            }
+            else
+            {
+                return false;
+            }
+
+            if (cursor < bytes.Length && bytes[cursor] == (byte)'.')
+            {
+                var fraction = cursor + 1;
+                if (fraction >= bytes.Length || bytes[fraction] is < (byte)'0' or > (byte)'9')
+                {
+                    end = cursor;
+                    return true;
+                }
+
+                do
+                {
+                    fraction++;
+                }
+                while (fraction < bytes.Length && bytes[fraction] is >= (byte)'0' and <= (byte)'9');
+                cursor = fraction;
+            }
+
+            if (cursor < bytes.Length && bytes[cursor] is (byte)'e' or (byte)'E')
+            {
+                var exponent = cursor + 1;
+                if (exponent < bytes.Length && bytes[exponent] is (byte)'+' or (byte)'-')
+                {
+                    exponent++;
+                }
+
+                if (exponent >= bytes.Length || bytes[exponent] is < (byte)'0' or > (byte)'9')
+                {
+                    end = cursor;
+                    return true;
+                }
+
+                do
+                {
+                    exponent++;
+                }
+                while (exponent < bytes.Length && bytes[exponent] is >= (byte)'0' and <= (byte)'9');
+                cursor = exponent;
+            }
+
+            end = cursor;
+            return true;
+        }
+
         // Converts an already-matched constant literal: the parse_constant hook
         // receives the literal text, otherwise the IEEE double. Shared by
         // whole-text and nested positions.
@@ -590,11 +707,12 @@ internal sealed partial class LythonRuntime
             return position;
         }
 
-        private static object ConvertJsonReaderNumber(ref Utf8JsonReader reader, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
+        // Converts an already-matched NUMBER_RE token: hooks receive the raw
+        // token text, otherwise integers narrow to long where possible and
+        // floats parse invariantly. Shared by whole-text and nested positions.
+        private static object ConvertJsonNumberText(ReadOnlySpan<byte> bytes, int start, int end, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
         {
-            // Single-segment input never sequences, so the value span always holds
-            // the complete raw token.
-            var raw = Encoding.UTF8.GetString(reader.ValueSpan);
+            var raw = Encoding.UTF8.GetString(bytes.Slice(start, end - start));
             var isFloat = raw.Contains('.', StringComparison.Ordinal) ||
                 raw.Contains('e', StringComparison.OrdinalIgnoreCase);
             if (isFloat && options.ParseFloat is not null)
@@ -620,7 +738,7 @@ internal sealed partial class LythonRuntime
                 // Deny on digit scale before parsing allocates the limbs; each
                 // parse yields a fresh magnitude that owns its payload below.
                 GuardIntegerParseBytes(raw, 4, context.MemoryGovernor, span);
-                if (reader.TryGetInt64(out var integer))
+                if (long.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var integer))
                 {
                     return new BigInteger(integer);
                 }
@@ -628,7 +746,7 @@ internal sealed partial class LythonRuntime
                 return OwnFreshInteger(BigInteger.Parse(raw, CultureInfo.InvariantCulture), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
             }
 
-            return reader.GetDouble();
+            return double.Parse(raw, NumberStyles.Float, CultureInfo.InvariantCulture);
         }
 
         private static JsonLoadOptions ParseJsonLoadOptions(object[] arguments, LythonSourceSpan span)

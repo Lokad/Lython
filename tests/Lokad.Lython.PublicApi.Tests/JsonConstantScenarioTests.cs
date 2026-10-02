@@ -106,4 +106,32 @@ public sealed class JsonConstantScenarioTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("1:1:2|3:1:4|6:1:7|2:1:3|4:1:5", asyncResult.ReturnValue);
     }
+
+    [Fact]
+    public async Task AdjacentScalarsSplitAtCpythonPrefixEnd()
+    {
+        // Literals match case-sensitive prefixes and numbers match NUMBER_RE,
+        // so the remainder surfaces as trailing data at the CPython offset.
+        var script = new LythonEngine().Compile(
+            """
+            import json
+            texts = ["truefalse", "0x", "1e", "nullx", "01", "[1] [2]"]
+            values = []
+            for text in texts:
+                try:
+                    json.loads(text)
+                    values.append("ok")
+                except json.JSONDecodeError as exc:
+                    values.append(str(exc.pos) + ":" + str(exc.lineno) + ":" + str(exc.colno))
+            return "|".join(values)
+            """);
+        Assert.True(script.IsValid);
+        var sync = script.Run(new MockLythonHost());
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("4:1:5|1:1:2|1:1:2|4:1:5|1:1:2|4:1:5", sync.ReturnValue);
+
+        var asyncResult = await script.RunAsync(new MockLythonHost());
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("4:1:5|1:1:2|1:1:2|4:1:5|1:1:2|4:1:5", asyncResult.ReturnValue);
+    }
 }
