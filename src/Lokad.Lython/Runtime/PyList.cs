@@ -632,7 +632,20 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
     public PyString RenderInterpolated(PyRenderingContext context)
         => PyRendering.ToReprPyString(this, context);
 
-    public IEnumerator<object> GetEnumerator() => _items.GetEnumerator();
+    // Python list iteration follows the live list by index: replacements are
+    // visible, appends are visited when reached, and removals shift or end the
+    // loop like CPython. This must not bind the origin storage: growing past the
+    // small-list capacity swaps the backing store mid-iteration, and a stale
+    // storage enumerator would miss the new elements. It also must not use the
+    // array storage version-checked enumerator, which throws a CLR exception on
+    // same-length replacement instead of iterating.
+    public IEnumerator<object> GetEnumerator()
+    {
+        for (var index = 0; index < Count; index++)
+        {
+            yield return this[index];
+        }
+    }
 
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
