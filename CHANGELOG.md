@@ -4,6 +4,7 @@
 
 ## 0.10.0 - release candidate
 
+- Reject keyword collisions introduced by `**` during argument expansion, including dictionary and Counter constructors; reserve expansion scratch before allocation.
 - Add `json.JSONDecoder`/`JSONEncoder` instances, `raw_decode`, incremental `iterencode`, guest subclass overrides and the `cls` customization path.
 - Sort original JSON dictionary keys before applying `skipkeys`, sharing the order between eager and incremental encoders.
 - Add a public syntax corpus and explicit grammar inventory; correct assignment support documentation and diagnose deferred Python syntax as unsupported before effects.

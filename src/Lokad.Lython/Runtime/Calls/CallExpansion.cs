@@ -71,7 +71,7 @@ internal static class CallExpansion
             return direct;
         }
 
-        var expanded = new CallArgumentAccumulator(arguments.Count, context);
+        var expanded = new CallArgumentAccumulator(arguments.Count, context, target);
         try
         {
             foreach (var argument in arguments)
@@ -128,7 +128,7 @@ internal static class CallExpansion
             return direct;
         }
 
-        var expanded = new CallArgumentAccumulator(arguments.Count, context);
+        var expanded = new CallArgumentAccumulator(arguments.Count, context, target);
         try
         {
             foreach (var argument in arguments)
@@ -318,20 +318,41 @@ internal static class CallExpansion
         private readonly MemoryGovernor _governor;
         private readonly LythonRuntime.ExecutionContext _context;
         private readonly MemoryGovernor.TemporaryMemoryReservation _reservation;
+        private readonly object _target;
+        private HashSet<string>? _keywordNames;
 
-        public CallArgumentAccumulator(int sourceArgumentCount, LythonRuntime.ExecutionContext context)
+        public CallArgumentAccumulator(int sourceArgumentCount, LythonRuntime.ExecutionContext context, object target)
         {
-            _values = new CallArgumentValue[Math.Max(sourceArgumentCount, 4)];
+            var capacity = Math.Max(sourceArgumentCount, 4);
             _count = 0;
             _addedSinceBudgetCheck = 0;
             _span = null;
             _context = context;
+            _target = target;
+            _keywordNames = null;
             _governor = context.MemoryGovernor;
-            _reservation = _governor.ReserveTemporary(EstimateArgumentBytes(_values.Length), null);
+            _reservation = _governor.ReserveTemporary(EstimateArgumentBytes(capacity), null);
+            _values = new CallArgumentValue[capacity];
         }
 
         public void Add(CallArgumentValue value, LythonSourceSpan? span)
         {
+            if (value.IsKeyword)
+            {
+                // ** collisions are call-site errors even for constructors
+                // that accept arbitrary keywords. Fund the borrowed-name
+                // set before allocation, including its resize overlap.
+                if (_keywordNames is null)
+                {
+                    _reservation.Grow(128, span);
+                    _keywordNames = new HashSet<string>(StringComparer.Ordinal);
+                }
+                _reservation.Grow(96, span);
+                if (!_keywordNames.Add(value.KeywordName))
+                    throw new LythonRuntimeException("TypeError",
+                        (CallsiteCallableName(_target, _context) ?? "call") +
+                        " got multiple values for keyword argument '" + value.KeywordName + "'", span);
+            }
             if (_count == _values.Length)
             {
                 var previousCapacity = _values.Length;
