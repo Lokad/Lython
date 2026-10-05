@@ -117,8 +117,8 @@ internal static partial class StaticBindingEngine
         {
             var effectiveIndex = parameterIndex - firstParameterIndex;
             var parameter = parameters[parameterIndex];
-            parameterIndices?.Add(parameter.Name, effectiveIndex);
-            if (parameter.Kind != FunctionParameterKind.Positional)
+            if (parameter.Kind != FunctionParameterKind.PositionalOnly) parameterIndices?.Add(parameter.Name, effectiveIndex);
+            if (parameter.Kind is not (FunctionParameterKind.Positional or FunctionParameterKind.PositionalOnly))
             {
                 continue;
             }
@@ -206,7 +206,7 @@ internal static partial class StaticBindingEngine
         {
             if (firstParameterIndex != 1 ||
                 summary.Parameters.Count == 0 ||
-                summary.Parameters[0].Kind != FunctionParameterKind.Positional)
+                summary.Parameters[0].Kind is not (FunctionParameterKind.Positional or FunctionParameterKind.PositionalOnly))
             {
                 return false;
             }
@@ -222,7 +222,7 @@ internal static partial class StaticBindingEngine
             var parameter = summary.Parameters[parameterIndex];
             if (parameter.Kind == FunctionParameterKind.KeywordOnly)
             {
-                if (arguments.Keywords.ContainsKey(parameter.Name))
+                if (parameter.Kind != FunctionParameterKind.PositionalOnly && arguments.Keywords.ContainsKey(parameter.Name))
                 {
                     consumedKeywordCount++;
                     parameterBindings.Set(parameter.Name, arguments.ResolveKeywordValue(parameter.Name, callBindings));
@@ -239,14 +239,14 @@ internal static partial class StaticBindingEngine
                 continue;
             }
 
-            if (parameter.Kind != FunctionParameterKind.Positional)
+            if (parameter.Kind is not (FunctionParameterKind.Positional or FunctionParameterKind.PositionalOnly))
             {
                 return false;
             }
 
             if (positionalIndex < arguments.Positional.Count)
             {
-                if (arguments.Keywords.ContainsKey(parameter.Name))
+                if (parameter.Kind != FunctionParameterKind.PositionalOnly && arguments.Keywords.ContainsKey(parameter.Name))
                 {
                     return false;
                 }
@@ -254,7 +254,7 @@ internal static partial class StaticBindingEngine
                 parameterBindings.Set(parameter.Name, arguments.ResolvePositionalValue(positionalIndex, callBindings));
                 positionalIndex++;
             }
-            else if (arguments.Keywords.ContainsKey(parameter.Name))
+            else if (parameter.Kind != FunctionParameterKind.PositionalOnly && arguments.Keywords.ContainsKey(parameter.Name))
             {
                 consumedKeywordCount++;
                 parameterBindings.Set(parameter.Name, arguments.ResolveKeywordValue(parameter.Name, callBindings));

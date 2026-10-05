@@ -157,7 +157,7 @@ internal sealed partial class LythonRuntime
 
             var keywordName = argument.KeywordName;
             if (!plan.LayoutParameterIndex.TryGetValue(keywordName, out var keywordIndex) ||
-                keywordIndex >= plan.NamedLayoutCount)
+                keywordIndex >= plan.NamedLayoutCount || keywordIndex < plan.PositionalOnlyCount)
             {
                 if (plan.VariadicDictionary is null)
                 {

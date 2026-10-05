@@ -22,6 +22,10 @@ internal sealed class FunctionBindingPlan
         {
             switch (parameter.Kind)
             {
+                case FunctionParameterKind.PositionalOnly:
+                    positional.Add(parameter);
+                    PositionalOnlyCount++;
+                    break;
                 case FunctionParameterKind.Positional:
                     positional.Add(parameter);
                     named[parameter.Name] = parameter;
@@ -94,9 +98,12 @@ internal sealed class FunctionBindingPlan
     public IReadOnlyDictionary<string, int> LayoutParameterIndex { get; }
 
     // Number of positional plus keyword-only slots. Keyword matching must
-    // stay within these: a keyword equal to a variadic name is overflow,
+    // stay below this count and at or above PositionalOnlyCount: a keyword
+    // equal to a positional-only or variadic name is overflow,
     // exactly like a name the plan never declared.
     public int NamedLayoutCount { get; }
+
+    public int PositionalOnlyCount { get; }
 
     public LoweredFunctionParameter? VariadicList { get; }
 

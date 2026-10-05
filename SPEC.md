@@ -441,9 +441,9 @@ and trailing commas. Receivers and indices evaluate once at each ordered store.
 With headers accept parenthesized item lists, optional grouped trailing commas
 and full assignment targets. Target binding is protected by the entered manager:
 failures unwind or suppress through __exit__ like failures in the body.
-Current syntax exclusions include positional-only `/` parameters in functions
-and lambdas; and the `u` string prefix. Ordinary assignment has a broader target
-grammar, as specified in section 9.3.1. Type aliases, type parameters, `except*`,
+Positional-only parameters using `/` are supported in functions and lambdas.
+Their names do not bind keyword arguments; with **kwargs those names become
+overflow keys. Current syntax exclusions include the `u` string prefix. Type aliases, type parameters, `except*`,
 matrix multiplication and complex literals are outside the current subset.
 These forms must produce explicit unsupported diagnostics before execution.
 

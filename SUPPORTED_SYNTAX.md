@@ -14,7 +14,7 @@ implemented or a claim of complete PEP 701 support.
 | Assignment, star targets, augmented assignment | Names, attributes, subscripts, slices, tuple/list/nested unpacking, one starred leaf per level, chained and augmented stores; name annotations | `assignment` |
 | For/while statements | Full assignment targets, nested tuple/list and starred unpacking, trailing commas, loop `else`, scope-correct `break`/`continue` | `loops`, `invalid` |
 | Comprehensions, generator expressions | List/set/dict comprehensions and generator expressions, multiple clauses and ordered lazy filters, separate iteration scopes, restricted walrus bindings | `comprehensions`, `invalid` |
-| Function definitions, lambdas, arguments | Defaults, keyword-only and variadic parameters, annotations, positional/keyword/starred calls, closures, global/nonlocal declarations, decorators | `functions`, `invalid` |
+| Function definitions, lambdas, arguments | Defaults, positional-only, keyword-only and variadic parameters, annotations, positional/keyword/starred calls, closures, global/nonlocal declarations, decorators | `functions`, `invalid` |
 | Class definitions | Bases, decorators, methods, `super`, property/static/class methods; contained dataclass subset | `classes` |
 | Try, raise, assert | Typed/bare handlers, tuple handlers and `as`, `else`/`finally`, chained exceptions, assertions | `exceptions`, `invalid` |
 | With statements | Single, comma-separated or grouped managers; full assignment targets; ordered enter and reverse exit, including binding failures | `with` |
@@ -30,7 +30,7 @@ host effects in this same guest language.
 
 Compilation rejects these forms before any guest effects:
 
-- Positional-only `/` parameters in both `def` and lambda; the `u` string prefix.
+- The `u` string prefix.
 - Generator functions (`yield`, `yield from`), `async def`, `await`, `async for`
   and `async with`.
 - Type alias statements and type parameters, `except*`, matrix multiplication

@@ -444,6 +444,7 @@ internal sealed partial class Parser
         var seenVariadicList = false;
         var seenVariadicDictionary = false;
         var keywordOnly = false;
+        var seenSlash = false;
 
         if (CurrentToken == terminator)
         {
@@ -457,8 +458,27 @@ internal sealed partial class Parser
             var kind = keywordOnly ? FunctionParameterKind.KeywordOnly : FunctionParameterKind.Positional;
             if (CurrentToken == Token.Slash)
             {
-                AddDiagnostic("LA2000", "Unsupported Python construct 'positional-only parameters'.", _position);
-                return false;
+                var slash = ReadToken();
+                if (seenSlash || keywordOnly || parsed.Count == 0)
+                {
+                    AddDiagnostic("LA1032", "'/' must follow positional parameters and appear once before '*'.", slash);
+                    return false;
+                }
+                seenSlash = true;
+                for (var i = 0; i < parsed.Count; i++) parsed[i] = parsed[i] with { Kind = FunctionParameterKind.PositionalOnly };
+                if (CurrentToken == Token.Comma) ReadToken();
+                else if (CurrentToken != terminator)
+                {
+                    AddDiagnostic("LA1033", "Expected ',' or parameter-list end after '/'.", _position);
+                    return false;
+                }
+                if (CurrentToken == terminator)
+                {
+                    terminatorToken = ReadToken();
+                    parameters = parsed;
+                    return true;
+                }
+                continue;
             }
             if (CurrentToken == Token.StarStar)
             {

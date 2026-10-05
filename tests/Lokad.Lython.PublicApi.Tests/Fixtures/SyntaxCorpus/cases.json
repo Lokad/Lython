@@ -442,12 +442,12 @@
   {
     "name": "parameter-kinds",
     "family": "functions",
-    "status": "unsupported",
+    "status": "supported",
     "source": "def f(a, /, b=2, *args, c=3, **kwargs):\n    return a,b,args,c,kwargs\nprint(f(1,4,5,c=6,d=7))\n",
     "standardOutput": "(1, 4, (5,), 6, {'d': 7})\n",
     "success": true,
     "exceptionType": null,
-    "note": "Positional-only slash parameters are not implemented."
+    "note": "Output verified against isolated CPython 3.13.2."
   },
   {
     "name": "bare-star",
@@ -462,12 +462,12 @@
   {
     "name": "posonly-kwargs-name",
     "family": "functions",
-    "status": "unsupported",
+    "status": "supported",
     "source": "def f(x, /, **kw):\n    return x,kw\nprint(f(1,x=2))\n",
     "standardOutput": "(1, {'x': 2})\n",
     "success": true,
     "exceptionType": null,
-    "note": "Positional-only slash parameters are not implemented."
+    "note": "Output verified against isolated CPython 3.13.2."
   },
   {
     "name": "starred-call",
@@ -492,12 +492,12 @@
   {
     "name": "lambda-parameter-kinds",
     "family": "functions",
-    "status": "unsupported",
+    "status": "supported",
     "source": "f=lambda a, /, *, b=2: a+b\nprint(f(1,b=4))\n",
     "standardOutput": "5\n",
     "success": true,
     "exceptionType": null,
-    "note": "Positional-only slash lambda parameters are not implemented."
+    "note": "Output verified against isolated CPython 3.13.2."
   },
   {
     "name": "lambda-tuple-default",
@@ -1338,5 +1338,85 @@
     "success": true,
     "exceptionType": null,
     "note": "Output verified against isolated CPython 3.13.2."
+  },
+  {
+    "name": "posonly-methods-and-defaults",
+    "family": "functions",
+    "status": "supported",
+    "source": "class C:\n    def f(self, /, x=2, *, y=3, **kw): return x,y,kw\nc=C()\nprint(c.f(self=9))\nprint(c.f(4,y=5))\nprint((lambda a=1, /, b=2: (a,b))())\n",
+    "standardOutput": "(2, 3, {'self': 9})\n(4, 5, {})\n(1, 2)\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "Output verified against isolated CPython 3.13.2."
+  },
+  {
+    "name": "posonly-keyword-rejection",
+    "family": "functions",
+    "status": "supported",
+    "source": "def f(x, /, y=2): return x+y\nfor kw in [{'x':1},{'x':1,'y':3}]:\n    try: f(**kw)\n    except TypeError: print('TypeError')\nprint(f(1,y=3))\n",
+    "standardOutput": "TypeError\nTypeError\n4\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "Output verified against isolated CPython 3.13.2."
+  },
+  {
+    "name": "invalid-posonly-0",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "def f(/): pass\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": "Invalid slash placement/default ordering verified against CPython."
+  },
+  {
+    "name": "invalid-posonly-1",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "def f(a,/,/): pass\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": "Invalid slash placement/default ordering verified against CPython."
+  },
+  {
+    "name": "invalid-posonly-2",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "def f(*a,/): pass\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": "Invalid slash placement/default ordering verified against CPython."
+  },
+  {
+    "name": "invalid-posonly-3",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "def f(a=1,/,b): pass\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": "Invalid slash placement/default ordering verified against CPython."
+  },
+  {
+    "name": "invalid-posonly-4",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "f=lambda /: 1\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": "Invalid slash placement/default ordering verified against CPython."
+  },
+  {
+    "name": "invalid-posonly-5",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "def f(a,/ b): pass\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": "Invalid slash placement/default ordering verified against CPython."
   }
 ]

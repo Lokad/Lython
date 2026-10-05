@@ -177,7 +177,7 @@ internal sealed partial class ExecutableScript
             {
                 foreach (var parameter in _functionParameters)
                 {
-                    if (parameter.Kind is FunctionParameterKind.Positional or FunctionParameterKind.KeywordOnly or FunctionParameterKind.VariadicList or FunctionParameterKind.VariadicDictionary)
+                    if (parameter.Kind is FunctionParameterKind.Positional or FunctionParameterKind.PositionalOnly or FunctionParameterKind.KeywordOnly or FunctionParameterKind.VariadicList or FunctionParameterKind.VariadicDictionary)
                     {
                         if (IsLocalBindingName(parameter.Name))
                         {

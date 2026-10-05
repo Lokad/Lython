@@ -352,6 +352,7 @@ internal sealed record DataclassDecoratorSyntax(
 internal enum FunctionParameterKind
 {
     Positional,
+    PositionalOnly,
     KeywordOnly,
     VariadicList,
     VariadicDictionary,
