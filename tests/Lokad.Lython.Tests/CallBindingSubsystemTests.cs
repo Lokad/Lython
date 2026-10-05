@@ -204,13 +204,13 @@ f("a")
         return method.Invoke(null, [expression, context]).RequireNotNull();
     }
     [Fact]
-    public void DuplicateKeywordArgumentsAreRejected()
+    public void UnpackedDuplicateKeywordArgumentsAreRejected()
     {
         var result = new LythonEngine().Run(
             """
 def f(x):
     return x
-return f(x=1, x=2)
+return f(x=1, **{'x': 2})
 """,
             new MockLythonHost());
 

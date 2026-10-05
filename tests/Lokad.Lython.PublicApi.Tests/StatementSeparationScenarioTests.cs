@@ -5,7 +5,7 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 /// <summary>
 /// R43: statements on the same source line must be separated by a semicolon,
-/// and numbers glued to identifiers are one invalid literal. Both used to
+/// and invalid number/identifier combinations are rejected. Both used to
 /// parse (and run) silently with CPython-divergent meaning.
 /// </summary>
 public sealed class StatementSeparationScenarioTests
@@ -36,7 +36,6 @@ public sealed class StatementSeparationScenarioTests
         {
             "x = 1x\n",
             "x = 0xFG\n",
-            "x = 1j\n",
             "x = 1x = 2\n",
         };
         foreach (var source in cases)
