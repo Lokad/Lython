@@ -37,6 +37,8 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(functionDefinition.Span);
         try
         {
+            using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(functionDefinition.Decorators.Count), functionDefinition.Span);
+            var decorators = await EvaluateDecoratorsAsync(functionDefinition.Decorators, context).ConfigureAwait(false);
             var syntax = functionDefinition.Syntax;
             var function = CreateLoweredFunction(
                 functionDefinition,
@@ -44,7 +46,7 @@ internal sealed partial class LythonRuntime
                 await BuildDefaultArgumentMapAsync(functionDefinition.Parameters, expression => EvaluateLoweredExpressionAsync(expression, context)).ConfigureAwait(false));
             StoreName(
                 syntax.Name,
-                await ApplyDecoratorsAsync(function, functionDefinition.Decorators, functionDefinition.Span, context).ConfigureAwait(false),
+                await ApplyDecoratorsAsync(function, decorators, functionDefinition.Span, context).ConfigureAwait(false),
                 context,
                 functionDefinition.Span);
         }
@@ -59,6 +61,8 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(classDefinition.Span);
         try
         {
+            using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(classDefinition.Decorators.Count), classDefinition.Span);
+            var decorators = await EvaluateDecoratorsAsync(classDefinition.Decorators, context).ConfigureAwait(false);
             var baseTypes = new object[classDefinition.Bases.Count];
             for (var i = 0; i < classDefinition.Bases.Count; i++)
             {
@@ -94,7 +98,7 @@ internal sealed partial class LythonRuntime
             }
             StoreName(
                 classDefinition.Syntax.Name,
-                await ApplyDecoratorsAsync(type, classDefinition.Decorators, classDefinition.Span, context).ConfigureAwait(false),
+                await ApplyDecoratorsAsync(type, decorators, classDefinition.Span, context).ConfigureAwait(false),
                 context,
                 classDefinition.Span);
         }
@@ -104,12 +108,22 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static async ValueTask<object> ApplyDecoratorsAsync(object value, IReadOnlyList<LoweredExpression> decorators, LythonSourceSpan span, ExecutionContext context)
+    private static async ValueTask<object[]> EvaluateDecoratorsAsync(IReadOnlyList<LoweredExpression> expressions, ExecutionContext context)
+    {
+        var values = new object[expressions.Count];
+        for (var i = 0; i < expressions.Count; i++)
+        {
+            values[i] = await EvaluateLoweredExpressionAsync(expressions[i], context).ConfigureAwait(false);
+        }
+        return values;
+    }
+
+    private static async ValueTask<object> ApplyDecoratorsAsync(object value, IReadOnlyList<object> decorators, LythonSourceSpan span, ExecutionContext context)
     {
         object current = value;
         for (var i = decorators.Count - 1; i >= 0; i--)
         {
-            var decorator = await EvaluateLoweredExpressionAsync(decorators[i], context).ConfigureAwait(false);
+            var decorator = decorators[i];
             if (decorator is not ICallable callable)
             {
                 throw new LythonRuntimeException("TypeError", "Decorator expression must evaluate to a callable.", span);

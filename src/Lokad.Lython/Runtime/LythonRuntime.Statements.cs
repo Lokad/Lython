@@ -200,6 +200,8 @@ internal sealed partial class LythonRuntime
 
     private static void ExecuteFunctionDefinition(FunctionDefinitionStatementSyntax statement, ExecutionContext context)
     {
+        using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(statement.Decorators.Count), statement.Span);
+        var decorators = EvaluateDecorators(statement.Decorators.Select(LoweredScript.LowerStandaloneExpression).ToArray(), context);
         var loweredParameters = statement.Parameters
             .Select(parameter => new LoweredFunctionParameter(
                 parameter.Name,
@@ -222,7 +224,7 @@ internal sealed partial class LythonRuntime
         TrackFunctionValue(function, loweredParameters.Count(static p => p.DefaultValue is not null), closureRetentionBytes, docstringBytes, context, statement.Span);
         StoreName(
             statement.Name,
-            ApplyDecorators(function, statement.Decorators.Select(LoweredScript.LowerStandaloneExpression).ToArray(), statement.Span, context),
+            ApplyDecorators(function, decorators, statement.Span, context),
             context,
             statement.Span);
     }

@@ -310,6 +310,8 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(functionBinding.Function.Span);
         try
         {
+            using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(functionBinding.Function.Decorators.Count), functionBinding.Function.Span);
+            var decorators = EvaluateDecorators(functionBinding.Function.Decorators, context);
             var (closureCells, closureCellBytes) = functionBinding.CodeObject is null
                 ? ([], 0L)
                 : CaptureExecutableClosures(functionBinding.CodeObject, context, functionBinding.Function.Span);
@@ -339,7 +341,7 @@ internal sealed partial class LythonRuntime
                 ? PyFunctionBase.CaptureFunctionDocstring(defined, functionBinding.Function.Body, context, functionBinding.Function.Span)
                 : 0;
             TrackFunctionValue(function, functionBinding.DefaultValues.Count, closureRetentionBytes + closureCellBytes, docstringBytes, context, functionBinding.Function.Span);
-            var decorated = ApplyDecorators(function, functionBinding.Function.Decorators, functionBinding.Function.Span, context);
+            var decorated = ApplyDecorators(function, decorators, functionBinding.Function.Span, context);
             AssignExecutableBoundName(codeObject, locals, localCells, functionBinding.Function.Syntax.Name, decorated, context, functionBinding.Function.Span);
         }
         finally

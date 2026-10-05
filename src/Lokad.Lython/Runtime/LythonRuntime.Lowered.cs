@@ -43,12 +43,14 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(functionDefinition.Span);
         try
         {
+            using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(functionDefinition.Decorators.Count), functionDefinition.Span);
+            var decorators = EvaluateDecorators(functionDefinition.Decorators, context);
             var syntax = functionDefinition.Syntax;
             var function = CreateLoweredFunction(
                 functionDefinition,
                 context,
                 BuildDefaultArgumentMap(functionDefinition.Parameters, expression => EvaluateLoweredExpression(expression, context)));
-            StoreName(syntax.Name, ApplyDecorators(function, functionDefinition.Decorators, functionDefinition.Span, context), context, functionDefinition.Span);
+            StoreName(syntax.Name, ApplyDecorators(function, decorators, functionDefinition.Span, context), context, functionDefinition.Span);
         }
         finally
         {
@@ -61,6 +63,8 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(classDefinition.Span);
         try
         {
+            using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(classDefinition.Decorators.Count), classDefinition.Span);
+            var decorators = EvaluateDecorators(classDefinition.Decorators, context);
             var baseTypes = new object[classDefinition.Bases.Count];
             for (var i = 0; i < classDefinition.Bases.Count; i++)
             {
@@ -93,7 +97,7 @@ internal sealed partial class LythonRuntime
             {
                 InvokeInitSubclass(defined, classKeywordArguments, classDefinition.Span, context);
             }
-            StoreName(classDefinition.Syntax.Name, ApplyDecorators(type, classDefinition.Decorators, classDefinition.Span, context), context, classDefinition.Span);
+            StoreName(classDefinition.Syntax.Name, ApplyDecorators(type, decorators, classDefinition.Span, context), context, classDefinition.Span);
         }
         finally
         {
@@ -101,12 +105,22 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object ApplyDecorators(object value, IReadOnlyList<LoweredExpression> decorators, LythonSourceSpan span, ExecutionContext context)
+    private static object[] EvaluateDecorators(IReadOnlyList<LoweredExpression> expressions, ExecutionContext context)
+    {
+        var values = new object[expressions.Count];
+        for (var i = 0; i < expressions.Count; i++)
+        {
+            values[i] = EvaluateLoweredExpression(expressions[i], context);
+        }
+        return values;
+    }
+
+    private static object ApplyDecorators(object value, IReadOnlyList<object> decorators, LythonSourceSpan span, ExecutionContext context)
     {
         object current = value;
         for (var i = decorators.Count - 1; i >= 0; i--)
         {
-            var decorator = EvaluateLoweredExpression(decorators[i], context);
+            var decorator = decorators[i];
             if (decorator is not LythonRuntime.ICallable callable)
             {
                 throw new LythonRuntimeException("TypeError", "Decorator expression must evaluate to a callable.", span);
