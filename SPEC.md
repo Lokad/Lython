@@ -523,6 +523,8 @@ host effects; it does not make Python asynchronous syntax available to scripts.
 Loop and comprehension targets follow ordinary assignment rules, including
 nested list/tuple unpacking, starred targets, attribute/subscript/slice stores
 and trailing commas. Receivers and indices evaluate once at each ordered store.
+Unpacking scratch remains charged until all target stores finish, including
+guest setters and delayed host effects; failure releases its reservation.
 With headers accept parenthesized item lists, optional grouped trailing commas
 and full assignment targets. Target binding is protected by the entered manager:
 failures unwind or suppress through __exit__ like failures in the body.

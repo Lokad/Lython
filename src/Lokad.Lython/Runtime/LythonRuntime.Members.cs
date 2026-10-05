@@ -4066,10 +4066,11 @@ internal sealed partial class LythonRuntime
 
                     foreach (var element in ToSequence(RuntimeValue(itemsCallable.Invoke([], span, context)), span, context))
                     {
-                        var values = MaterializeUnpackingSequence(element, span, context);
-                        if (values.Length != 2)
+                        using var materialized = MaterializeUnpackingSequence(element, span, context);
+                        var values = materialized.Items;
+                        if (values.Count != 2)
                         {
-                            throw new LythonRuntimeException("ValueError", DescribeLoopArityMismatch(2, values.Length), span);
+                            throw new LythonRuntimeException("ValueError", DescribeLoopArityMismatch(2, values.Count), span);
                         }
 
                         MergeCounterUnionPair(counter, values[0], values[1], span);

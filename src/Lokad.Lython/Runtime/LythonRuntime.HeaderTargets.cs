@@ -36,24 +36,29 @@ internal sealed partial class LythonRuntime
                 else ExecuteSliceAssignment(sequence, start, end, step, value, slice.Span, context);
                 break;
             case UnpackingAssignmentTargetGroupSyntax group:
-                var values = await MaterializeHeaderSequenceAsync(value, group.Span, context).ConfigureAwait(false);
+            {
+                // Receivers and setters can allocate or suspend while this
+                // snapshot stays live; retain its reservation through all stores.
+                using var materialized = await MaterializeHeaderSequenceAsync(value, group.Span, context).ConfigureAwait(false);
+                var values = materialized.Items;
                 var layout = UnpackingLayout.FromTargets(group.Targets);
-                if (!layout.AcceptsValueCount(values.Length))
-                    throw new LythonRuntimeException("ValueError", layout.DescribeArityMismatch(values.Length), group.Span);
+                if (!layout.AcceptsValueCount(values.Count))
+                    throw new LythonRuntimeException("ValueError", layout.DescribeArityMismatch(values.Count), group.Span);
                 for (var i = 0; i < group.Targets.Count; i++)
                 {
                     object childValue;
                     if (i == layout.StarredTargetIndex)
                     {
-                        var rest = new PyList(values.Skip(i).Take(layout.StarredValueCount(values.Length)), context.MemoryGovernor, group.Span);
+                        var rest = new PyList(values.Skip(i).Take(layout.StarredValueCount(values.Count)), context.MemoryGovernor, group.Span);
                         context.Services.State.CallTemporaries.TrackFreshMutable(rest, rest.CommittedStorageBytes);
                         childValue = rest;
                     }
                     else childValue = values[layout.HasStarredTarget && i > layout.StarredTargetIndex
-                        ? layout.SourceIndexForTrailingTarget(i, values.Length) : i];
+                        ? layout.SourceIndexForTrailingTarget(i, values.Count) : i];
                     await AssignTargetAsync(AssignmentTargetFacts.FromUnpacking(group.Targets[i]), reads, childValue, context).ConfigureAwait(false);
                 }
                 break;
+            }
         }
     }
 
@@ -69,9 +74,9 @@ internal sealed partial class LythonRuntime
         else SetSubscriptValue(receiver, index, value, span, context);
     }
 
-    private static async ValueTask<object[]> MaterializeHeaderSequenceAsync(object value, LythonSourceSpan span, ExecutionContext context)
+    private static async ValueTask<PyIteration.DrainLease> MaterializeHeaderSequenceAsync(object value, LythonSourceSpan span, ExecutionContext context)
     {
-        try { return (await PyIteration.MaterializeAsync(value, span, context).ConfigureAwait(false)).ToArray(); }
+        try { return await PyIteration.MaterializeLeasedAsync(value, span, context).ConfigureAwait(false); }
         catch (PyNotIterableException)
         {
             throw new LythonRuntimeException("TypeError", $"cannot unpack non-iterable {UnboundTypeMethod.PythonTypeName(value, context)} object", span);

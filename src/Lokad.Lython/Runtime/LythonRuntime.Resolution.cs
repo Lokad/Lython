@@ -485,7 +485,9 @@ internal sealed partial class LythonRuntime
                 StoreName(name.Name, value, context, span);
                 return;
             case LoopTupleTargetSyntax tuple:
-                var values = asynchronous ? await MaterializeHeaderSequenceAsync(value, span, context).ConfigureAwait(false) : MaterializeUnpackingSequence(value, span, context);
+            {
+                using var materialized = asynchronous ? await MaterializeHeaderSequenceAsync(value, span, context).ConfigureAwait(false) : MaterializeUnpackingSequence(value, span, context);
+                var values = materialized.Items;
                 var starIndex = -1;
                 for (var i = 0; i < tuple.Items.Count; i++)
                 {
@@ -502,9 +504,9 @@ internal sealed partial class LythonRuntime
 
                 if (starIndex < 0)
                 {
-                    if (values.Length != tuple.Items.Count)
+                    if (values.Count != tuple.Items.Count)
                     {
-                        throw new LythonRuntimeException("ValueError", DescribeLoopArityMismatch(tuple.Items.Count, values.Length), span);
+                        throw new LythonRuntimeException("ValueError", DescribeLoopArityMismatch(tuple.Items.Count, values.Count), span);
                     }
 
                     for (var i = 0; i < tuple.Items.Count; i++)
@@ -516,9 +518,9 @@ internal sealed partial class LythonRuntime
                 }
 
                 var required = tuple.Items.Count - 1;
-                if (values.Length < required)
+                if (values.Count < required)
                 {
-                    throw new LythonRuntimeException("ValueError", $"not enough values to unpack (expected at least {required}, got {values.Length})", span);
+                    throw new LythonRuntimeException("ValueError", $"not enough values to unpack (expected at least {required}, got {values.Count})", span);
                 }
 
                 for (var i = 0; i < starIndex; i++)
@@ -526,14 +528,12 @@ internal sealed partial class LythonRuntime
                     await AssignLoopTargetCoreAsync(tuple.Items[i], values[i], span, context, asynchronous).ConfigureAwait(false);
                 }
 
-                var starredCount = values.Length - required;
-                var starredItems = new object[starredCount];
-                Array.Copy(values, starIndex, starredItems, 0, starredCount);
+                var starredCount = values.Count - required;
                 if (AssignmentTargetFacts.IsStarred(tuple.Items[starIndex]))
                 {
                     // Abandoned remainders reclaim through the pool like display lists;
                     // otherwise every dropped remainder strands its charges until denial.
-                    var remainder = new PyList(starredItems, context.MemoryGovernor, span);
+                    var remainder = new PyList(values.Skip(starIndex).Take(starredCount), context.MemoryGovernor, span);
                     context.Services.State.CallTemporaries.TrackFreshMutable(remainder, remainder.CommittedStorageBytes);
                     if (tuple.Items[starIndex] is LoopStarredTargetSyntax starred) StoreName(starred.Name, remainder, context, span);
                     else await AssignLoopTargetCoreAsync(tuple.Items[starIndex], remainder, span, context, asynchronous).ConfigureAwait(false);
@@ -541,10 +541,11 @@ internal sealed partial class LythonRuntime
 
                 for (var i = starIndex + 1; i < tuple.Items.Count; i++)
                 {
-                    await AssignLoopTargetCoreAsync(tuple.Items[i], values[values.Length - (tuple.Items.Count - i)], span, context, asynchronous).ConfigureAwait(false);
+                    await AssignLoopTargetCoreAsync(tuple.Items[i], values[values.Count - (tuple.Items.Count - i)], span, context, asynchronous).ConfigureAwait(false);
                 }
 
                 return;
+            }
             default:
                 throw new InvalidOperationException($"Unsupported loop target type: {target.GetType().Name}");
         }
@@ -599,11 +600,12 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         ExecutionContext context)
     {
-        var values = MaterializeUnpackingSequence(value, span, context);
+        using var materialized = MaterializeUnpackingSequence(value, span, context);
+        var values = materialized.Items;
         var layout = UnpackingLayout.FromTargets(targets);
-        if (!layout.AcceptsValueCount(values.Length))
+        if (!layout.AcceptsValueCount(values.Count))
         {
-            throw new LythonRuntimeException("ValueError", layout.DescribeArityMismatch(values.Length), span);
+            throw new LythonRuntimeException("ValueError", layout.DescribeArityMismatch(values.Count), span);
         }
 
         if (!layout.HasStarredTarget)
@@ -621,16 +623,14 @@ internal sealed partial class LythonRuntime
             StoreUnpackingTarget(targets[i], values[i], context, span);
         }
 
-        var starredCount = layout.StarredValueCount(values.Length);
-        var starredItems = new object[starredCount];
-        Array.Copy(values, layout.StarredTargetIndex, starredItems, 0, starredCount);
-        var remainder = new PyList(starredItems, context.MemoryGovernor, span);
+        var starredCount = layout.StarredValueCount(values.Count);
+        var remainder = new PyList(values.Skip(layout.StarredTargetIndex).Take(starredCount), context.MemoryGovernor, span);
         context.Services.State.CallTemporaries.TrackFreshMutable(remainder, remainder.CommittedStorageBytes);
         StoreUnpackingTarget(targets[layout.StarredTargetIndex], remainder, context, span);
 
         for (var i = layout.StarredTargetIndex + 1; i < targets.Count; i++)
         {
-            var offset = layout.SourceIndexForTrailingTarget(i, values.Length);
+            var offset = layout.SourceIndexForTrailingTarget(i, values.Count);
             StoreUnpackingTarget(targets[i], values[offset], context, span);
         }
     }
@@ -677,11 +677,11 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object[] MaterializeUnpackingSequence(object value, LythonSourceSpan span, ExecutionContext context)
+    private static PyIteration.DrainLease MaterializeUnpackingSequence(object value, LythonSourceSpan span, ExecutionContext context)
     {
         try
         {
-            return MaterializeSequenceForUnpacking(value, span, context);
+            return PyIteration.MaterializeLeased(value, span, context);
         }
         catch (PyNotIterableException)
         {
@@ -693,56 +693,5 @@ internal sealed partial class LythonRuntime
         => valueCount > targetCount
             ? $"too many values to unpack (expected {targetCount})"
             : $"not enough values to unpack (expected {targetCount}, got {valueCount})";
-
-    private static object[] MaterializeSequenceForUnpacking(object value, LythonSourceSpan span, ExecutionContext context)
-    {
-        if (value is object[] array)
-        {
-            return array;
-        }
-
-        if (value is PyTuple tuple)
-        {
-            return tuple.ToArray();
-        }
-
-        if (value is PyList list)
-        {
-            return list.ToArray();
-        }
-
-        // Unpack targets are fixed-arity except for one starred remainder, so
-        // the drained prefix is transient scratch coexisting with live iteration
-        // state. Mirror the shared asynchronous drain: charge backing growth
-        // before it can allocate, observe the collection count per item, and
-        // cover the final array until the starred list (or names) take over.
-        using var temporary = context.MemoryGovernor.ReserveTemporary(0, span);
-        var items = new List<object>();
-        var chargedCapacity = 0;
-        foreach (var item in ToSequence(value, span, context))
-        {
-            if (items.Count == items.Capacity)
-            {
-                var predicted = items.Capacity == 0 ? 4L : (long)items.Capacity * 2L;
-                temporary.Grow(checked(16L * (predicted - chargedCapacity)), span);
-            }
-
-            items.Add(item);
-            if (items.Capacity > chargedCapacity)
-            {
-                temporary.Grow(16L * (items.Capacity - chargedCapacity), span);
-                chargedCapacity = items.Capacity;
-            }
-
-            context.ObserveCollectionCount(items.Count, span);
-            if ((items.Count & 63) == 0)
-            {
-                context.CheckExecutionBudget(span);
-            }
-        }
-
-        temporary.Grow(16L * items.Count, span);
-        return [.. items];
-    }
 
 }

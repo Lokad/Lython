@@ -108,4 +108,49 @@ public sealed class HeaderAssignmentScenarioTests
         Assert.Equal(sync.StandardOutput, result.StandardOutput);
         Assert.True(delayed.CompletedAsynchronously >= 2);
     }
+
+    [Theory]
+    [InlineData("for box[0], *rest in [repeat(None,40000)]:\n    print(len(rest))", "39999")]
+    [InlineData("print([len(rest) for box[0], *rest in [repeat(None,40000)]])", "[39999]")]
+    [InlineData("print(list(len(rest) for box[0], *rest in [repeat(None,40000)]))", "[39999]")]
+    [InlineData("with Manager() as [box[0], *rest]:\n    print(len(rest))", "39999")]
+    public async Task UnpackingScratchStaysChargedDuringTargetStoresAndReleasesAfterFailure(string header, string boundCount)
+    {
+        var source = """
+            from itertools import repeat
+            class Box:
+                def __setitem__(self, key, value):
+                    with open('/data.txt') as f:f.read()
+                    print('entered')
+                    scratch=(None,)*100000
+                    print('stored')
+            class Manager:
+                def __enter__(self):return repeat(None,40000)
+                def __exit__(self, kind, value, trace):return False
+            box=Box()
+            """ + "\ntry:\n" + string.Join("\n", header.Split('\n').Select(line => "    " + line)) +
+            "\nexcept MemoryError:print('denied')\nprint(len((None,)*100000))\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join(";", script.Diagnostics.Select(d => d.Message)));
+        foreach (var budget in new[] { 2621440L, 8388608L })
+        {
+            var expected = budget == 2621440
+                ? "entered\ndenied\n100000\n"
+                : "entered\nstored\n" + boundCount + "\n100000\n";
+            var options = new LythonRunOptions { MaxExecutionMemoryBytes = budget };
+            var host = new MockLythonHost();
+            host.SeedFile("/data.txt", "!");
+            var sync = script.Run(host, options);
+            Assert.True(sync.Success, sync.Failure?.Message);
+            Assert.Equal(expected, sync.StandardOutput);
+            Assert.True(sync.PeakExecutionMemoryBytes <= budget);
+            var delayed = new DelayedLythonHost();
+            delayed.SeedFile("/data.txt", "!");
+            var result = await script.RunAsync(delayed, options);
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(expected, result.StandardOutput);
+            Assert.True(result.PeakExecutionMemoryBytes <= budget);
+            Assert.True(delayed.CompletedAsynchronously > 0);
+        }
+    }
 }
