@@ -85,6 +85,7 @@ internal sealed partial class Parser
             if (parser.CurrentToken != Token.CloseParen)
             {
                 var sawKeywordArgument = false;
+                var sawDictionaryUnpacking = false;
                 while (true)
                 {
                     var form = CallArgumentForm.Positional;
@@ -93,10 +94,11 @@ internal sealed partial class Parser
                         parser.ReadToken();
                         form = CallArgumentForm.StarredDictionary;
                         sawKeywordArgument = true;
+                        sawDictionaryUnpacking = true;
                     }
                     else if (parser.CurrentToken == Token.Star)
                     {
-                        if (sawKeywordArgument)
+                        if (sawDictionaryUnpacking)
                         {
                             parser.AddDiagnostic("LA2000", "Unsupported Python construct 'positional argument after keyword argument'.", parser._position);
                             return null;
@@ -164,7 +166,10 @@ internal sealed partial class Parser
 
             return new CallExpressionSyntax(
                 target,
-                arguments,
+                // Python evaluates positional and * arguments before keyword
+                // arguments, even when a * argument is written after one.
+                arguments.Where(a => a.Kind is CallArgumentKind.Positional or CallArgumentKind.StarredList)
+                    .Concat(arguments.Where(a => a.Kind is CallArgumentKind.Keyword or CallArgumentKind.StarredDictionary)).ToArray(),
                 Merge(target.Span, parser.SpanOf(closeParenToken)));
         }
     }

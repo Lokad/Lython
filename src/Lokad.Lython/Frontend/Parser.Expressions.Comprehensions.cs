@@ -41,16 +41,19 @@ internal sealed partial class Parser
             SkipGroupedExpressionTrivia();
 
             ExpressionSyntax? condition = null;
-            if (CurrentToken == Token.If)
+            while (CurrentToken == Token.If)
             {
                 ReadToken();
                 SkipGroupedExpressionTrivia();
-                condition = ParseExpression();
-                if (condition is null)
+                var filter = ParseOrExpression();
+                if (filter is null)
                 {
                     AddDiagnostic("LA1010", "Expected condition after 'if'.", _position);
                     return false;
                 }
+                condition = condition is null
+                    ? filter
+                    : new BinaryExpressionSyntax(condition, BinaryOperatorSyntax.And, filter, Merge(condition.Span, filter.Span));
                 SkipGroupedExpressionTrivia();
             }
 

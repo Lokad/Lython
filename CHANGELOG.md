@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Support repeated comprehension filters and starred arguments after keywords, preserving Python's short-circuit and argument evaluation order.
 - Reject duplicate parameters/keywords, invalid comprehension assignment expressions, inconsistent pattern captures and out-of-scope loop control before execution can perform effects.
 - Decode JSON prefixes without scanning or reserving unused suffixes; fund lenient control rewriting per string before allocation and reject strict strings before dependent hooks.
 - Dispatch guest `__getitem__` consistently in lowered execution and await its effects under `RunAsync`.
