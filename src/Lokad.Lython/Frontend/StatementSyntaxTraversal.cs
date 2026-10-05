@@ -58,6 +58,8 @@ internal static class StatementSyntaxTraversal
 
             case WithStatementSyntax withStatement:
                 yield return withStatement.ContextExpression;
+                if (withStatement.Target is not null)
+                    foreach (var read in AssignmentTargetFacts.Reads(withStatement.Target)) yield return read;
                 break;
 
             case IfStatementSyntax ifStatement:

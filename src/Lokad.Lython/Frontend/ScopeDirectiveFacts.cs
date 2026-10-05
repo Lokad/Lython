@@ -185,7 +185,7 @@ internal static class ScopeDirectiveFactsCollector
                     break;
 
                 case WithStatementSyntax withStatement:
-                    if (withStatement.VariableName is not null) names.Add(withStatement.VariableName);
+                    names.UnionWith(withStatement.BoundNames);
                     break;
 
                 case TryStatementSyntax tryStatement:

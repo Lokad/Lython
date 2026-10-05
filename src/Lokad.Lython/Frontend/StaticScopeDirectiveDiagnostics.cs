@@ -257,7 +257,9 @@ internal static class StaticScopeDirectiveDiagnostics
                 if (forStatement.ElseStatements is not null) AnalyzeNestedSeen(forStatement.ElseStatements, names);
                 break;
             case WithStatementSyntax withStatement:
-                if (withStatement.VariableName is not null) names.Add(withStatement.VariableName);
+                names.UnionWith(withStatement.BoundNames);
+                if (withStatement.Target is not null)
+                    foreach (var read in AssignmentTargetFacts.Reads(withStatement.Target)) CollectSeenNames(read, names);
                 CollectSeenNames(withStatement.ContextExpression, names);
                 AnalyzeNestedSeen(withStatement.Body, names);
                 break;

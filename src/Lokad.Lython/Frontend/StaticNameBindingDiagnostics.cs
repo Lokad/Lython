@@ -76,6 +76,7 @@ internal static class StaticNameBindingDiagnostics
         foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
         {
             if (statement is ForStatementSyntax loop && !ReferenceEquals(expression, loop.Iterable)) continue;
+            if (statement is WithStatementSyntax manager && !ReferenceEquals(expression, manager.ContextExpression)) continue;
             if (statement is MatchStatementSyntax matchGuardOwner &&
                 IsMatchCaseGuard(matchGuardOwner, expression))
             {
@@ -137,10 +138,8 @@ internal static class StaticNameBindingDiagnostics
                 break;
 
             case WithStatementSyntax withStatement:
-                if (withStatement.VariableName is not null)
-                {
-                    maybeAssigned.Add(withStatement.VariableName);
-                }
+                if (withStatement.Target is not null)
+                    AnalyzeLoopStores(AssignmentTargetFacts.ToLoop(withStatement.Target), context, localNames, maybeAssigned);
                 AnalyzeStatements(withStatement.Body, context, localNames, maybeAssigned);
                 break;
 

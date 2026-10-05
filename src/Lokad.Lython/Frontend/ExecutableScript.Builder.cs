@@ -216,10 +216,8 @@ internal sealed partial class ExecutableScript
                         }
                         break;
                     case LoweredWithStatement withStatement:
-                        if (withStatement.Syntax.VariableName is not null)
-                        {
-                            if (IsLocalBindingName(withStatement.Syntax.VariableName)) InternLocal(withStatement.Syntax.VariableName);
-                        }
+                        foreach (var name in withStatement.Syntax.BoundNames)
+                            if (IsLocalBindingName(name)) InternLocal(name);
                         CollectLocals(withStatement.Body);
                         break;
                 }

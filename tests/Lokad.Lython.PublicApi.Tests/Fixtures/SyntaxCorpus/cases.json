@@ -672,32 +672,32 @@
   {
     "name": "with-parenthesized",
     "family": "with",
-    "status": "unsupported",
+    "status": "supported",
     "source": "events=[]\nclass C:\n    def __init__(self,n):\n        self.n=n\n    def __enter__(self):\n        events.append(self.n)\n        return (self.n, self.n+1)\n    def __exit__(self,a,b,c):\n        events.append(-self.n)\n        return False\n\nwith (\n    C(1) as a,\n    C(2) as b,\n):\n    print(a,b)\nprint(events)\n",
     "standardOutput": "(1, 2) (2, 3)\n[1, 2, -2, -1]\n",
     "success": true,
     "exceptionType": null,
-    "note": "Grouped with-item lists are not implemented."
+    "note": "Output verified against isolated CPython 3.13.2."
   },
   {
     "name": "with-unpacked-target",
     "family": "with",
-    "status": "unsupported",
+    "status": "supported",
     "source": "events=[]\nclass C:\n    def __init__(self,n):\n        self.n=n\n    def __enter__(self):\n        events.append(self.n)\n        return (self.n, self.n+1)\n    def __exit__(self,a,b,c):\n        events.append(-self.n)\n        return False\n\nwith C(1) as (a,b):\n    print(a,b)\nprint(events)\n",
     "standardOutput": "1 2\n[1, -1]\n",
     "success": true,
     "exceptionType": null,
-    "note": "Tuple-shaped with-as targets are not implemented."
+    "note": "Output verified against isolated CPython 3.13.2."
   },
   {
     "name": "with-list-target",
     "family": "with",
-    "status": "unsupported",
+    "status": "supported",
     "source": "events=[]\nclass C:\n    def __init__(self,n):\n        self.n=n\n    def __enter__(self):\n        events.append(self.n)\n        return (self.n, self.n+1)\n    def __exit__(self,a,b,c):\n        events.append(-self.n)\n        return False\n\nwith C(1) as [a,b]:\n    print(a,b)\nprint(events)\n",
     "standardOutput": "1 2\n[1, -1]\n",
     "success": true,
     "exceptionType": null,
-    "note": "List-shaped with-as targets are not implemented."
+    "note": "Output verified against isolated CPython 3.13.2."
   },
   {
     "name": "import-alias",
@@ -1308,5 +1308,35 @@
     "success": true,
     "exceptionType": null,
     "note": "Output verified against isolated CPython."
+  },
+  {
+    "name": "with-grouped-nested-stores",
+    "family": "with",
+    "status": "supported",
+    "source": "class C:\n    def __enter__(self): return (1,(2,3,4))\n    def __exit__(self,a,b,c): print('exit'); return False\nclass Box: pass\nbox=Box()\na=[0,0,0]\nwith (\n    C() as [a[0], (box.x, *a[1:])],\n):\n    print(a,box.x)\n",
+    "standardOutput": "[1, 3, 4] 2\nexit\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "Output verified against isolated CPython 3.13.2."
+  },
+  {
+    "name": "with-target-failure-unwinds",
+    "family": "with",
+    "status": "supported",
+    "source": "events=[]\nclass C:\n    def __init__(self,n,values): self.n=n; self.values=values\n    def __enter__(self): events.append('enter'+self.n); return self.values\n    def __exit__(self,a,b,c): events.append('exit'+self.n); return False\ndef run():\n    try:\n        with (C('a',(1,2)) as (x,y), C('b',(3,)) as (z,w)):\n            events.append('body')\n    except ValueError:\n        events.append('caught')\n    return x,y\nprint(run())\nprint(events)\n",
+    "standardOutput": "(1, 2)\n['entera', 'enterb', 'exitb', 'exita', 'caught']\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "Output verified against isolated CPython 3.13.2."
+  },
+  {
+    "name": "with-target-failure-suppressed",
+    "family": "with",
+    "status": "supported",
+    "source": "class C:\n    def __enter__(self): return (1,)\n    def __exit__(self,a,b,c): print(a.__name__); return True\ndef run():\n    with C() as [a,b]:\n        print('body')\n    print('after')\nrun()\n",
+    "standardOutput": "ValueError\nafter\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "Output verified against isolated CPython 3.13.2."
   }
 ]

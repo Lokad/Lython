@@ -320,7 +320,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static void AssignTarget(AssignmentTargetSyntax target, object value, ExecutionContext context)
+    internal static void AssignTarget(AssignmentTargetSyntax target, object value, ExecutionContext context)
     {
         switch (target)
         {
@@ -666,7 +666,7 @@ internal sealed partial class LythonRuntime
             loweredContextExpression is null
                 ? EvaluateExpression(statement.ContextExpression, context)
                 : EvaluateLoweredExpression(loweredContextExpression, context),
-            statement.VariableName,
+            statement.LoweredTarget,
             loweredBody ?? LoweredScript.Lower(new ScriptSyntax(statement.Body)).Statements,
             statement.Span,
             statement.ContextExpression.Span,
@@ -681,7 +681,7 @@ internal sealed partial class LythonRuntime
     {
         _ = await PyContextManagers.ExecuteWithAsync(
                 await EvaluateLoweredExpressionAsync(loweredContextExpression, context).ConfigureAwait(false),
-                statement.VariableName,
+                statement.LoweredTarget,
                 loweredBody,
                 statement.Span,
                 statement.ContextExpression.Span,

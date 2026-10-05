@@ -438,8 +438,10 @@ host effects; it does not make Python asynchronous syntax available to scripts.
 Loop and comprehension targets follow ordinary assignment rules, including
 nested list/tuple unpacking, starred targets, attribute/subscript/slice stores
 and trailing commas. Receivers and indices evaluate once at each ordered store.
-Current syntax exclusions also include parenthesized lists of `with` items;
-destructuring `with ... as` targets; positional-only `/` parameters in functions
+With headers accept parenthesized item lists, optional grouped trailing commas
+and full assignment targets. Target binding is protected by the entered manager:
+failures unwind or suppress through __exit__ like failures in the body.
+Current syntax exclusions include positional-only `/` parameters in functions
 and lambdas; and the `u` string prefix. Ordinary assignment has a broader target
 grammar, as specified in section 9.3.1. Type aliases, type parameters, `except*`,
 matrix multiplication and complex literals are outside the current subset.

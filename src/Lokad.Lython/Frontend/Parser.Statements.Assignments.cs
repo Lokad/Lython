@@ -173,12 +173,9 @@ internal sealed partial class Parser
     private StatementSyntax? ParseWithStatement()
     {
         var withToken = ReadToken();
-        if (LooksLikeGroupedWithItems())
-        {
-            AddDiagnostic("LA2000", "Unsupported Python construct 'grouped with items'.", _position);
-            return null;
-        }
-        var managers = new List<(ExpressionSyntax ContextExpression, string? VariableName)>();
+        var grouped = LooksLikeGroupedWithItems();
+        if (grouped) { ReadToken(); SkipGroupedExpressionTrivia(); }
+        var managers = new List<(ExpressionSyntax ContextExpression, AssignmentTargetSyntax? Target)>();
         while (true)
         {
             var contextExpression = ParseExpression();
@@ -187,32 +184,33 @@ internal sealed partial class Parser
                 AddDiagnostic("LA1010", "Expected expression after 'with'.", withToken);
                 return null;
             }
-
-            string? variableName = null;
+            AssignmentTargetSyntax? target = null;
+            if (grouped) SkipGroupedExpressionTrivia();
             if (CurrentToken == Token.As)
             {
                 ReadToken();
-                if (!TryReadNameToken(out var variableToken))
+                if (grouped) SkipGroupedExpressionTrivia();
+                var expression = ParsePostfixExpression();
+                if (expression is null || !TryConvertExpressionToAssignmentTarget(expression, out target))
                 {
-                    if (CurrentToken is Token.OpenParen or Token.OpenBracket)
-                    {
-                        AddDiagnostic("LA2000", "Unsupported Python construct 'destructuring with-as target'.", _position);
-                        return null;
-                    }
-                    AddDiagnostic("LA1045", "Expected identifier after 'as' in with statement.", _position);
+                    AddDiagnostic("LA1045", "Invalid assignment target after 'as' in with statement.", _position);
                     return null;
                 }
-
-                variableName = IdentifierText(variableToken);
             }
-
-            managers.Add((contextExpression, variableName));
-            if (CurrentToken != Token.Comma)
-            {
-                break;
-            }
-
+            managers.Add((contextExpression, target));
+            if (grouped) SkipGroupedExpressionTrivia();
+            if (CurrentToken != Token.Comma) break;
             ReadToken();
+            if (grouped)
+            {
+                SkipGroupedExpressionTrivia();
+                if (CurrentToken == Token.CloseParen) break;
+            }
+        }
+        if (grouped && !TryRead(Token.CloseParen, out _))
+        {
+            AddDiagnostic("LA1045", "Expected ')' after with items.", _position);
+            return null;
         }
 
         if (!TryRead(Token.Colon, out _))
@@ -235,7 +233,7 @@ internal sealed partial class Parser
             [
                 new WithStatementSyntax(
                     manager.ContextExpression,
-                    manager.VariableName,
+                    manager.Target,
                     nestedBody,
                     Merge(manager.ContextExpression.Span, nestedBody[^1].Span))
             ];

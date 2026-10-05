@@ -331,19 +331,21 @@ internal sealed partial class ExecutableScript
             AddInstruction(currentBlock, ExecutableInstruction.Dup(statement.Span));
             AddInstruction(currentBlock, ExecutableInstruction.StoreLocal(managerSlot, statement.Span));
             AddInstruction(currentBlock, ExecutableInstruction.EnterContextManager(statement.ContextExpression.Span));
-            if (statement.Syntax.VariableName is not null)
-            {
-                CompileStoreBoundName(statement.Syntax.VariableName, statement.Span, currentBlock);
-            }
-            else
-            {
-                AddInstruction(currentBlock, ExecutableInstruction.PopTop(statement.Span));
-            }
-
+            var enteredSlot = statement.Syntax.Target is null ? -1 : InternSyntheticLocal("with_value");
+            AddInstruction(currentBlock, enteredSlot < 0
+                ? ExecutableInstruction.PopTop(statement.Span)
+                : ExecutableInstruction.StoreLocal(enteredSlot, statement.Span));
             var bodyBlock = CreateBlock();
             AddInstruction(currentBlock, ExecutableInstruction.Jump(bodyBlock, statement.Span));
-
             var protectedStart = bodyBlock;
+            if (statement.Syntax.Target is not null)
+            {
+                AddInstruction(bodyBlock, ExecutableInstruction.LoadLocal(enteredSlot, statement.Span));
+                if (statement.Syntax.Target is NameAssignmentTargetSyntax name)
+                    CompileStoreBoundName(name.Name, statement.Span, bodyBlock);
+                else AddInstruction(bodyBlock, ExecutableInstruction.AssignLoopTarget(
+                    InternLoopTarget(AssignmentTargetFacts.ToLoop(statement.Syntax.Target), statement.Span), statement.Span));
+            }
             _protectedDepth++;
             int? bodyExit;
             try

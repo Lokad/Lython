@@ -106,6 +106,7 @@ internal static partial class StaticAbstractInterpreter
                 case WithStatementSyntax withStatement:
                     AnalyzeExpression(withStatement.ContextExpression, diagnostics, bindings);
                     var withBindings = bindings.Clone();
+                        foreach (var name in withStatement.BoundNames) withBindings.Remove(name);
                     if (withStatement.VariableName is not null &&
                         StaticAbstractValueResolver.TryResolve(withStatement.ContextExpression, bindings, out var contextValue) &&
                         contextValue.Kind == AbstractValueKind.TextFileHandle)
@@ -115,10 +116,7 @@ internal static partial class StaticAbstractInterpreter
 
                     AnalyzeStatements(withStatement.Body, diagnostics, withBindings);
                     bindings.ReplaceWith(withBindings);
-                    if (withStatement.VariableName is not null)
-                    {
-                        bindings.Remove(withStatement.VariableName);
-                    }
+                    foreach (var name in withStatement.BoundNames) bindings.Remove(name);
                     return true;
 
                 case IfStatementSyntax ifStatement:

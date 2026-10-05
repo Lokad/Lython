@@ -17,7 +17,7 @@ implemented or a claim of complete PEP 701 support.
 | Function definitions, lambdas, arguments | Defaults, keyword-only and variadic parameters, annotations, positional/keyword/starred calls, closures, global/nonlocal declarations, decorators | `functions`, `invalid` |
 | Class definitions | Bases, decorators, methods, `super`, property/static/class methods; contained dataclass subset | `classes` |
 | Try, raise, assert | Typed/bare handlers, tuple handlers and `as`, `else`/`finally`, chained exceptions, assertions | `exceptions`, `invalid` |
-| With statements | Single or comma-separated managers; optional single-name bindings; ordered enter and reverse exit | `with` |
+| With statements | Single, comma-separated or grouped managers; full assignment targets; ordered enter and reverse exit, including binding failures | `with` |
 | Imports, simple statements, blocks | Allowed modules and members, aliases/dotted imports, grouped from-imports, semicolon statements, one-line and indented suites | `imports`, `invalid` |
 | Formatted strings | Adjacent text/formatted literals, escaped braces, conversions/specifiers, nested format fields, quoted expressions and enclosing-quote reuse | `fstrings` |
 | Match, patterns | Literal/guard, sequence/star, mapping/rest, class, OR and AS patterns; unique captures and equal OR bindings | `patterns`, `invalid` |
@@ -30,18 +30,16 @@ host effects in this same guest language.
 
 Compilation rejects these forms before any guest effects:
 
-- Parenthesized lists of `with` items and tuple/list `as` targets. Parenthesizing
-  a single context expression remains supported.
 - Positional-only `/` parameters in both `def` and lambda; the `u` string prefix.
 - Generator functions (`yield`, `yield from`), `async def`, `await`, `async for`
   and `async with`.
 - Type alias statements and type parameters, `except*`, matrix multiplication
   and complex literals.
 
-The first two bullets are temporary compatibility boundaries retained after
+The first bullet is a temporary compatibility boundary retained after
 the probe fixes. Tests pin their rejection with an unsupported diagnostic and
-a source span. Loops and comprehensions accept ordinary assignment targets; context-manager
-headers retain a narrower binding grammar.
+a source span. Loops, comprehensions and context-manager headers accept ordinary assignment
+targets.
 
 ## Corpus and verification
 

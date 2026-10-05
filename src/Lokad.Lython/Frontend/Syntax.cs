@@ -246,9 +246,14 @@ internal sealed record ExpressionStatementSyntax(
 
 internal sealed record WithStatementSyntax(
     ExpressionSyntax ContextExpression,
-    string? VariableName,
+    AssignmentTargetSyntax? Target,
     IReadOnlyList<StatementSyntax> Body,
-    LythonSourceSpan Span) : StatementSyntax(Span);
+    LythonSourceSpan Span) : StatementSyntax(Span)
+{
+    public string? VariableName => (Target as NameAssignmentTargetSyntax)?.Name;
+    public LoweredStoreTarget? LoweredTarget { get; } = Target is null ? null : new(Target);
+    public IEnumerable<string> BoundNames => Target is null ? [] : AssignmentTargetFacts.Names(Target);
+}
 
 internal sealed record IfStatementSyntax(
     ExpressionSyntax Condition,

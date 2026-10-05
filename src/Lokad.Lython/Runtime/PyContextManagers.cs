@@ -6,7 +6,7 @@ internal static class PyContextManagers
 {
     public static object ExecuteWith(
         object manager,
-        string? variableName,
+        LoweredStoreTarget? target,
         IReadOnlyList<LoweredStatement> body,
         LythonSourceSpan span,
         LythonSourceSpan expressionSpan,
@@ -15,14 +15,10 @@ internal static class PyContextManagers
         var protocol = Resolve(manager, expressionSpan, context);
         var entered = protocol.Enter();
 
-        if (variableName is not null)
-        {
-            LythonRuntime.StoreName(variableName, entered, context, span);
-        }
-
         LythonRuntime.LoweredBlockFlow flow;
         try
         {
+            if (target is not null) LythonRuntime.AssignTarget(target.Syntax, entered, context);
             flow = LythonRuntime.ExecuteStatements(body, context);
         }
         catch (LythonRuntime.ReturnSignal)
@@ -66,7 +62,7 @@ internal static class PyContextManagers
 
     public static async ValueTask<object> ExecuteWithAsync(
         object manager,
-        string? variableName,
+        LoweredStoreTarget? target,
         IReadOnlyList<LoweredStatement> body,
         LythonSourceSpan span,
         LythonSourceSpan expressionSpan,
@@ -75,14 +71,10 @@ internal static class PyContextManagers
         var protocol = Resolve(manager, expressionSpan, context);
         var entered = await EnterAsync(protocol, span, context).ConfigureAwait(false);
 
-        if (variableName is not null)
-        {
-            LythonRuntime.StoreName(variableName, entered, context, span);
-        }
-
         LythonRuntime.LoweredBlockFlow flow;
         try
         {
+            if (target is not null) await LythonRuntime.AssignTargetAsync(target, entered, context).ConfigureAwait(false);
             flow = await LythonRuntime.ExecuteStatementsAsync(body, context).ConfigureAwait(false);
         }
         catch (LythonRuntime.ReturnSignal)
