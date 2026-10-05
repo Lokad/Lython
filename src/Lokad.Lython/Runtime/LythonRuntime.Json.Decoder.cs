@@ -6,17 +6,45 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     // Ordinary JSONDecoder instances (N37): reusable and independent, each
-    // carrying its own load options (hooks plus strict). The class object
-    // below only builds this exact instance kind; subclasses (N39) and
-    // custom cls=... classes fail explicitly through the load options gate.
-    internal sealed class JsonDecoderObject : IPyTruthyValue, IPyRenderableValue
+    // carrying constructor-captured scanner options plus writable public
+    // attributes, matching CPython when those attributes are later replaced.
+    internal sealed class JsonDecoderObject : IPyTruthyValue, IPyRenderableValue, IPyMutableDynamicAttributes
     {
-        internal JsonDecoderObject(JsonLoadOptions options)
+        internal JsonDecoderObject(JsonLoadOptions options, ExecutionContext context)
         {
             Options = options;
+            context.TryGetBuiltin("int", out var integer);
+            context.TryGetBuiltin("float", out var floating);
+            Attributes = new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["strict"] = options.Strict,
+                ["object_hook"] = (object?)options.ObjectHook ?? PyNone.Instance,
+                ["object_pairs_hook"] = (object?)options.ObjectPairsHook ?? PyNone.Instance,
+                ["parse_int"] = (object?)options.ParseInt ?? integer!,
+                ["parse_float"] = (object?)options.ParseFloat ?? floating!,
+                ["parse_constant"] = (object?)options.ParseConstant ?? BoundCallable.Create((args, span, ctx) =>
+                    (args[0] is PyString text ? text.ToString() : throw new LythonRuntimeException("TypeError", "JSON constant must be a string", span)) switch
+                    {
+                        "NaN" => (object)double.NaN,
+                        "Infinity" => double.PositiveInfinity,
+                        "-Infinity" => double.NegativeInfinity,
+                        _ => throw new LythonRuntimeException("KeyError", "Unknown JSON constant", span)
+                    }, LythonCallableSignature.Create("json.parse_constant", ["s"]))
+            };
         }
 
         internal JsonLoadOptions Options { get; }
+
+        internal Dictionary<string, object> Attributes { get; }
+
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value) => JsonDecoderMembers.TryGetMember(this, name, out value);
+
+        public bool TrySetMember(string name, object value)
+        {
+            if (!Attributes.ContainsKey(name)) return false;
+            Attributes[name] = value;
+            return true;
+        }
 
         public bool IsTruthy() => true;
 
@@ -135,10 +163,10 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            return BindDecoderOptions(arguments, span);
+            return BindDecoderOptions(arguments, span, context);
         }
 
-        internal static JsonDecoderObject BindDecoderOptions(CallArgumentValue[] arguments, LythonSourceSpan span)
+        internal static JsonDecoderObject BindDecoderOptions(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             ICallable? objectHook = null;
             ICallable? parseFloat = null;
@@ -185,7 +213,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "JSONDecoder.__init__() takes 1 positional argument but " + (positional + 1) + " were given.", span);
             }
 
-            return new JsonDecoderObject(new JsonLoadOptions(objectHook, parseFloat, parseInt, parseConstant, objectPairsHook, strict));
+            return new JsonDecoderObject(new JsonLoadOptions(objectHook, parseFloat, parseInt, parseConstant, objectPairsHook, strict), context);
         }
 
         public PyString RenderPython(PyRenderingContext context)
@@ -201,6 +229,7 @@ internal sealed partial class LythonRuntime
     {
         public static bool TryGetMember(JsonDecoderObject decoder, string name, [MaybeNullWhen(false)] out object value)
         {
+            if (decoder.Attributes.TryGetValue(name, out value!)) return true;
             value = name switch
             {
                 "decode" => BoundCallable.Create((arguments, span, context) => decoder.Decode(arguments, span, context), LythonKnownCallableSignatures.JsonDecoderDecode),

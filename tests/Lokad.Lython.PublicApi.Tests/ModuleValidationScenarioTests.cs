@@ -327,7 +327,7 @@ json.dumps(re.search("a", "a"))
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
         Assert.Equal("TypeError", result.Failure?.ExceptionType);
-        Assert.Contains("Unsupported json.dumps value type", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.Contains("Object of type Match is not JSON serializable", result.Failure?.Message, StringComparison.Ordinal);
     }
 
     [Fact]

@@ -48,7 +48,7 @@ internal sealed partial class LythonRuntime
             }
             else
             {
-                AttachDecoderPeer(instance, JsonDecoderClass.BindDecoderOptions(arguments, span));
+                AttachDecoderPeer(instance, JsonDecoderClass.BindDecoderOptions(arguments, span, context));
             }
         }
 
@@ -56,35 +56,19 @@ internal sealed partial class LythonRuntime
         {
             Peers.Remove(instance);
             Peers.Add(instance, peer);
+            foreach (var pair in peer.Attributes) instance.SetAttribute(pair.Key, pair.Value);
         }
 
         internal static void AttachEncoderPeer(PyInstance instance, JsonEncoderObject peer)
         {
-            // The core dispatches default() through the instance (mirroring
-            // CPython self.default), while reads keep the raw hook: rebuild
-            // the peer around a trampoline the attribute tables never expose.
-            var trampoline = new JsonSubclassDefaultCallable(instance, peer.DefaultHook);
-            var dump = peer.Options.Dump with { DefaultCallable = trampoline };
-            var linked = new JsonEncoderObject(
-                new JsonEncoderOptions(
-                    peer.Options.SkipKeys,
-                    peer.Options.EnsureAscii,
-                    peer.Options.CheckCircular,
-                    peer.Options.AllowNan,
-                    peer.Options.SortKeys,
-                    peer.Options.Indent,
-                    dump),
-                peer.ItemSeparator,
-                peer.KeySeparator,
-                peer.DefaultHook);
+            peer.GuestOwner = instance;
             Peers.Remove(instance);
-            Peers.Add(instance, linked);
-            if (peer.DefaultHook is not null)
+            Peers.Add(instance, peer);
+            foreach (var name in new[] { "skipkeys", "ensure_ascii", "check_circular", "allow_nan", "sort_keys", "indent", "item_separator", "key_separator" })
             {
-                // CPython stores an explicit default= hook on the instance,
-                // so it wins over a class-level override like theirs does.
-                instance.SetAttribute("default", peer.DefaultHook);
+                if (JsonEncoderMembers.TryGetMember(peer, name, out var value)) instance.SetAttribute(name, value);
             }
+            if (peer.DefaultHook is not null) instance.SetAttribute("default", peer.DefaultHook);
         }
 
         internal static bool TryGetEncoderPeer(PyInstance instance, [MaybeNullWhen(false)] out JsonEncoderObject peer)
@@ -125,7 +109,7 @@ internal sealed partial class LythonRuntime
                     throw PyMemberAccess.CreateMissingMemberError(instance, memberName, span, context);
                 }
 
-                return JsonEncoderMembers.TryGetMember(encoder, memberName, out value);
+                return memberName is "encode" or "iterencode" or "default" && JsonEncoderMembers.TryGetMember(encoder, memberName, out value);
             }
 
             if (instance.Type.JsonBase == JsonBaseKind.Decoder)
@@ -135,7 +119,7 @@ internal sealed partial class LythonRuntime
                     throw PyMemberAccess.CreateMissingMemberError(instance, memberName, span, context);
                 }
 
-                return JsonDecoderMembers.TryGetMember(decoder, memberName, out value);
+                return memberName is "decode" or "raw_decode" && JsonDecoderMembers.TryGetMember(decoder, memberName, out value);
             }
 
             return false;
@@ -262,7 +246,7 @@ internal sealed partial class LythonRuntime
                 }
                 else
                 {
-                    AttachDecoderPeer(_instance, JsonDecoderClass.BindDecoderOptions(arguments, span));
+                    AttachDecoderPeer(_instance, JsonDecoderClass.BindDecoderOptions(arguments, span, context));
                 }
 
                 return PyNone.Instance;

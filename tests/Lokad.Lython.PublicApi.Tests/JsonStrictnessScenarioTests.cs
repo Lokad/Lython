@@ -20,12 +20,12 @@ public sealed class JsonStrictnessScenarioTests
         var sync = script.Run(new MockLythonHost());
         Assert.False(sync.Success);
         Assert.Equal("TypeError", sync.Failure?.ExceptionType);
-        Assert.Contains("Unsupported json.dumps value type: set", sync.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
+        Assert.Contains("Object of type set is not JSON serializable", sync.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
 
         var asyncResult = await script.RunAsync(new MockLythonHost());
         Assert.False(asyncResult.Success);
         Assert.Equal("TypeError", asyncResult.Failure?.ExceptionType);
-        Assert.Contains("Unsupported json.dumps value type: set", asyncResult.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
+        Assert.Contains("Object of type set is not JSON serializable", asyncResult.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
     }
 
     [Fact]

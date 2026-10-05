@@ -9,19 +9,17 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     // Ordinary JSONEncoder instances (N38): reusable and independent, each
-    // carrying its parsed dump options plus the raw values behind the
-    // readable attributes below. Subclasses (N39) and custom cls=...
-    // classes fail explicitly through the dump options gate.
+    // carrying authoritative mutable option values. Each operation captures
+    // its effective options; subclasses read their ordinary instance state.
     internal sealed record JsonEncoderOptions(
         object SkipKeys,
         object EnsureAscii,
         object CheckCircular,
         object AllowNan,
         object SortKeys,
-        object Indent,
-        JsonDumpOptions Dump);
+        object Indent);
 
-    internal sealed class JsonEncoderObject : IPyTruthyValue, IPyRenderableValue
+    internal sealed class JsonEncoderObject : IPyTruthyValue, IPyRenderableValue, IPyMutableDynamicAttributes
     {
         internal JsonEncoderObject(JsonEncoderOptions options, PyString itemSeparator, PyString keySeparator, ICallable? defaultHook)
         {
@@ -31,13 +29,77 @@ internal sealed partial class LythonRuntime
             DefaultHook = defaultHook;
         }
 
-        internal JsonEncoderOptions Options { get; }
+        internal JsonEncoderOptions Options { get; private set; }
 
-        internal PyString ItemSeparator { get; }
+        internal PyInstance? GuestOwner { get; set; }
 
-        internal PyString KeySeparator { get; }
+        internal object ItemSeparator { get; private set; }
 
-        internal ICallable? DefaultHook { get; }
+        internal object KeySeparator { get; private set; }
+
+        internal object? DefaultHook { get; private set; }
+
+        public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value) => JsonEncoderMembers.TryGetMember(this, name, out value);
+
+        public bool TrySetMember(string name, object value)
+        {
+            switch (name)
+            {
+                case "skipkeys": Options = Options with { SkipKeys = value }; break;
+                case "ensure_ascii": Options = Options with { EnsureAscii = value }; break;
+                case "check_circular": Options = Options with { CheckCircular = value }; break;
+                case "allow_nan": Options = Options with { AllowNan = value }; break;
+                case "sort_keys": Options = Options with { SortKeys = value }; break;
+                case "indent": Options = Options with { Indent = value }; break;
+                case "item_separator": ItemSeparator = value; break;
+                case "key_separator": KeySeparator = value; break;
+                case "default": DefaultHook = value; break;
+                default: return false;
+            }
+            return true;
+        }
+
+        internal JsonDumpOptions GetDumpOptions(ExecutionContext context, LythonSourceSpan span)
+        {
+            object Read(string name, object fallback)
+            {
+                if (GuestOwner is null) return fallback;
+                if (GuestOwner.TryGetAttribute(name, context, span, out var value)) return value;
+                throw PyMemberAccess.CreateMissingMemberError(GuestOwner, name, span, context);
+            }
+            string Separator(string name, object fallback)
+            {
+                var value = Read(name, fallback);
+                if (PyStringOps.TryAsString(value, out var text)) return text.ToString();
+                throw new LythonRuntimeException("TypeError", "JSON separator must be a string", span);
+            }
+            object defaultMethod;
+            if (GuestOwner is not null)
+            {
+                if (!GuestOwner.TryGetAttribute("default", context, span, out defaultMethod!))
+                    throw PyMemberAccess.CreateMissingMemberError(GuestOwner, "default", span, context);
+            }
+            else
+            {
+                JsonEncoderMembers.TryGetMember(this, "default", out defaultMethod!);
+            }
+            return new JsonDumpOptions(
+                JsonModule.ParseJsonBoolOption(Read("skipkeys", Options.SkipKeys), false),
+                JsonModule.ParseJsonBoolOption(Read("ensure_ascii", Options.EnsureAscii), true),
+                JsonModule.ParseJsonBoolOption(Read("check_circular", Options.CheckCircular), true),
+                JsonModule.ParseJsonBoolOption(Read("allow_nan", Options.AllowNan), true),
+                JsonModule.ParseJsonIndent(Read("indent", Options.Indent), span),
+                Separator("item_separator", ItemSeparator),
+                Separator("key_separator", KeySeparator),
+                defaultMethod as ICallable ?? new JsonInvalidDefaultCallable(defaultMethod),
+                JsonModule.ParseJsonBoolOption(Read("sort_keys", Options.SortKeys), false));
+        }
+
+        private sealed class JsonInvalidDefaultCallable(object value) : ICallable
+        {
+            public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+                => throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(value, context) + "' object is not callable", span);
+        }
 
         public bool IsTruthy() => true;
 
@@ -57,7 +119,7 @@ internal sealed partial class LythonRuntime
             }
 
             context.CheckExecutionBudget(span);
-            return JsonModule.SerializeJsonText(arguments[0], Options.Dump, context, span);
+            return JsonModule.SerializeJsonText(arguments[0], GetDumpOptions(context, span), context, span);
         }
 
         public object IterEncode(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -68,7 +130,7 @@ internal sealed partial class LythonRuntime
             }
 
             context.CheckExecutionBudget(span);
-            var iterator = new JsonEncodeIterator(arguments[0], Options.Dump, context, span);
+            var iterator = new JsonEncodeIterator(arguments[0], GetDumpOptions(context, span), context, span);
             context.Services.State.CallTemporaries.TrackFreshMutable(iterator, PyIteratorBase.IteratorValueBytes, span);
             return iterator;
         }
@@ -208,20 +270,10 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "JSONEncoder.__init__() takes 1 positional argument but " + (positional + 1) + " were given.", span);
             }
 
-            var indentUnit = JsonModule.ParseJsonIndent(indent, span);
+            _ = JsonModule.ParseJsonIndent(indent, span);
             var parsedSeparators = JsonModule.ParseJsonSeparators(hasSeparators ? separators : PyNone.Instance, !ReferenceEquals(indent, PyNone.Instance), span, context);
-            var dump = new JsonDumpOptions(
-                JsonModule.ParseJsonBoolOption(skipKeys, defaultValue: false),
-                JsonModule.ParseJsonBoolOption(ensureAscii, defaultValue: true),
-                JsonModule.ParseJsonBoolOption(checkCircular, defaultValue: true),
-                JsonModule.ParseJsonBoolOption(allowNan, defaultValue: true),
-                indentUnit,
-                parsedSeparators.ItemSeparator,
-                parsedSeparators.KeySeparator,
-                defaultHook,
-                JsonModule.ParseJsonBoolOption(sortKeys, defaultValue: false));
             return new JsonEncoderObject(
-                new JsonEncoderOptions(skipKeys, ensureAscii, checkCircular, allowNan, sortKeys, indent, dump),
+                new JsonEncoderOptions(skipKeys, ensureAscii, checkCircular, allowNan, sortKeys, indent),
                 PyString.FromString(parsedSeparators.ItemSeparator),
                 PyString.FromString(parsedSeparators.KeySeparator),
                 defaultHook);
@@ -249,7 +301,7 @@ internal sealed partial class LythonRuntime
                     value = BoundCallable.Create((arguments, span, context) => encoder.IterEncode(arguments, span, context), LythonKnownCallableSignatures.JsonEncoderIterencode);
                     return true;
                 case "default":
-                    value = encoder.DefaultHook is not null
+                    value = encoder.GuestOwner is null && encoder.DefaultHook is not null
                         ? encoder.DefaultHook
                         : BoundCallable.Create((arguments, span, context) => encoder.Default(arguments, span, context), LythonKnownCallableSignatures.JsonEncoderDefault);
                     return true;
