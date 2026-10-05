@@ -13,6 +13,21 @@ internal sealed partial class LythonRuntime
 {
     private sealed partial class JsonModule : PyModule
     {
+        // Callers fund the retained reference pairs before entering. CPython
+        // sorts the original keys before applying skipkeys or key validation.
+        internal static List<(object OriginalKey, object Value)> CollectSortedJsonEntries(
+            PyDict dict, ExecutionContext context, LythonSourceSpan span)
+        {
+            var entries = new List<(object OriginalKey, object Value)>(dict.Count);
+            foreach (var pair in dict)
+            {
+                context.CheckExecutionBudget(span);
+                entries.Add((pair.Key, pair.Value));
+            }
+            entries.Sort((left, right) => PyComparison.Compare(left.OriginalKey, right.OriginalKey, span));
+            return entries;
+        }
+
         internal static PyString SerializeJsonText(object value, JsonDumpOptions options, ExecutionContext context, LythonSourceSpan span)
             => SerializeJsonTextCoreAsync(value, options, context, span, false).GetAwaiter().GetResult();
 
@@ -162,37 +177,30 @@ internal sealed partial class LythonRuntime
                     // dict: fund that scratch (pairs plus backing) before building
                     // it instead of growing uncharged.
                     charge.GrowBytes(checked(32L * dict.Count));
-                    var entries = new List<(object OriginalKey, object Value)>();
-                    foreach (var pair in dict)
+                    var entries = CollectSortedJsonEntries(dict, context, span);
+                    builder.Append("{");
+                    var emitted = 0;
+                    foreach (var entry in entries)
                     {
-                        context.CheckExecutionBudget(span);
-                        if (IsSupportedJsonObjectKey(pair.Key))
+                        if (!IsSupportedJsonObjectKey(entry.OriginalKey))
                         {
-                            entries.Add((pair.Key, pair.Value));
-                        }
-                        else if (!options.SkipKeys)
-                        {
+                            if (options.SkipKeys) continue;
                             throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
                         }
-                    }
-
-                    entries.Sort((left, right) => PyComparison.Compare(left.OriginalKey, right.OriginalKey, span));
-                    builder.Append("{");
-                    for (var index = 0; index < entries.Count; index++)
-                    {
-                        if (index > 0)
+                        if (emitted > 0)
                         {
                             AppendSeparator(builder, options.ItemSeparator, charge);
                         }
 
-                        AppendJsonValuePrefix(builder, options, depth + 1, index, charge, context, span);
-                        _ = TryConvertJsonObjectKey(entries[index].OriginalKey, skipKeys: false, out var key);
+                        AppendJsonValuePrefix(builder, options, depth + 1, emitted, charge, context, span);
+                        _ = TryConvertJsonObjectKey(entry.OriginalKey, skipKeys: false, out var key);
                         AppendJsonString(builder, key, options.EnsureAscii, charge, context, span);
                         AppendSeparator(builder, options.KeySeparator, charge);
-                        await AppendJsonValueAsync(builder, entries[index].Value, options, context, span, depth + 1, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
+                        await AppendJsonValueAsync(builder, entry.Value, options, context, span, depth + 1, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
+                        emitted++;
                     }
 
-                    if (entries.Count > 0)
+                    if (emitted > 0)
                     {
                         AppendJsonContainerSuffix(builder, options, depth, charge, context, span);
                     }

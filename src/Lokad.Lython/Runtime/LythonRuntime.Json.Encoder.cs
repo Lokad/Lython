@@ -710,21 +710,7 @@ internal sealed partial class LythonRuntime
             GrowScratch(estimate);
             try
             {
-                var entries = new List<(object OriginalKey, object Value)>();
-                foreach (var pair in dict)
-                {
-                    _context.CheckExecutionBudget(_span);
-                    if (JsonModule.IsSupportedJsonObjectKey(pair.Key))
-                    {
-                        entries.Add((pair.Key, pair.Value));
-                    }
-                    else if (!_options.SkipKeys)
-                    {
-                        throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
-                    }
-                }
-
-                entries.Sort((left, right) => PyComparison.Compare(left.OriginalKey, right.OriginalKey, _span));
+                var entries = JsonModule.CollectSortedJsonEntries(dict, _context, _span);
                 frame.SortedEntries = entries;
                 frame.ScratchBytes = estimate;
                 _stack.Push(frame);
@@ -750,6 +736,11 @@ internal sealed partial class LythonRuntime
                     }
 
                     var entry = frame.SortedEntries[frame.SortedIndex++];
+                    if (!JsonModule.IsSupportedJsonObjectKey(entry.OriginalKey))
+                    {
+                        if (_options.SkipKeys) continue;
+                        throw new InvalidOperationException("json.dumps() requires dictionary keys to be strings, numbers, booleans, or None.");
+                    }
                     key = entry.OriginalKey;
                     value = entry.Value;
                     return true;

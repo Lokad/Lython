@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Sort original JSON dictionary keys before applying `skipkeys`, sharing the order between eager and incremental encoders.
 - Add a public syntax corpus and explicit grammar inventory; correct assignment support documentation and diagnose deferred Python syntax as unsupported before effects.
 - Isolate CPython differential imports from shared temporary directories and ambient modules, restoring the chunked-read validation gate.
 - Await JSON hooks and selected-class construction/dispatch through `RunAsync`, including incremental encoding, cancellation and delayed host effects.

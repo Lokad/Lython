@@ -182,47 +182,6 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        // Dispatches default() through the instance like CPython self.default:
-        // instance attributes, then guest overrides, then the construction
-        // hook, then the base failure. Never exposed to attribute reads, so it
-        // cannot shadow itself.
-        internal sealed class JsonSubclassDefaultCallable : ICallable
-        {
-            private readonly PyInstance _instance;
-            private readonly ICallable? _hook;
-
-            public JsonSubclassDefaultCallable(PyInstance instance, ICallable? hook)
-            {
-                _instance = instance;
-                _hook = hook;
-            }
-
-            public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-            {
-                if (_instance.TryGetAttribute("default", context, span, out var member))
-                {
-                    if (member is not ICallable callable)
-                    {
-                        throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(member, context) + "' object is not callable", span);
-                    }
-
-                    return callable.Invoke(arguments, span, context);
-                }
-
-                if (_hook is not null)
-                {
-                    return _hook.Invoke(arguments, span, context);
-                }
-
-                if (arguments.Length != 1)
-                {
-                    throw new LythonRuntimeException("TypeError", "default() takes exactly one argument (" + arguments.Length + " given).", span);
-                }
-
-                throw new LythonRuntimeException("TypeError", "Object of type " + JsonEncoderObject.JsonDefaultTypeName(arguments[0].Value, context) + " is not JSON serializable", span);
-            }
-        }
-
         // Binds super().__init__() to the engine constructor for the bound
         // instance: validates like a direct construction, then (re)builds
         // the peer instead of returning a standalone engine object.
