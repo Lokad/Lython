@@ -75,6 +75,7 @@ internal static class StaticNameBindingDiagnostics
     {
         foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
         {
+            if (statement is ForStatementSyntax loop && !ReferenceEquals(expression, loop.Iterable)) continue;
             if (statement is MatchStatementSyntax matchGuardOwner &&
                 IsMatchCaseGuard(matchGuardOwner, expression))
             {
@@ -162,7 +163,7 @@ internal static class StaticNameBindingDiagnostics
             case ForStatementSyntax forStatement:
                 {
                     var bodyAssigned = Clone(maybeAssigned);
-                    AddLoopTarget(forStatement.Target, bodyAssigned);
+                    AnalyzeLoopStores(forStatement.Target, context, localNames, bodyAssigned);
                     AnalyzeStatements(forStatement.Body, context, localNames, bodyAssigned);
                     maybeAssigned.UnionWith(bodyAssigned);
                     if (forStatement.ElseStatements is not null)
@@ -409,7 +410,7 @@ internal static class StaticNameBindingDiagnostics
         foreach (var clause in clauses)
         {
             AnalyzeExpression(clause.Iterable, context, localNames, comprehensionAssigned);
-            AddLoopTarget(clause.Target, comprehensionAssigned);
+            AnalyzeLoopStores(clause.Target, context, localNames, comprehensionAssigned);
             if (clause.Condition is not null)
             {
                 AnalyzeExpression(clause.Condition, context, localNames, comprehensionAssigned);
@@ -461,10 +462,25 @@ internal static class StaticNameBindingDiagnostics
         return false;
     }
 
+    private static void AnalyzeLoopStores(LoopTargetSyntax target, StaticAnalysisContext context,
+        HashSet<string> localNames, HashSet<string> assigned)
+    {
+        if (target is LoopTupleTargetSyntax tuple)
+        {
+            foreach (var child in tuple.Items) AnalyzeLoopStores(child, context, localNames, assigned);
+            return;
+        }
+        foreach (var read in AssignmentTargetFacts.Reads(target)) AnalyzeExpression(read, context, localNames, assigned);
+        AddLoopTarget(target, assigned);
+    }
+
     private static void AddLoopTarget(LoopTargetSyntax target, HashSet<string> maybeAssigned)
     {
         switch (target)
         {
+            case LoopStoreTargetSyntax store:
+                foreach (var binding in AssignmentTargetFacts.Names(store.Target)) maybeAssigned.Add(binding);
+                break;
             case LoopNameTargetSyntax nameTarget:
                 maybeAssigned.Add(nameTarget.Name);
                 break;

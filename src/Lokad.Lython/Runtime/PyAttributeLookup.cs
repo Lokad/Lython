@@ -424,6 +424,22 @@ internal static class PyAttributeLookup
         return false;
     }
 
+    internal static async ValueTask<bool> TrySetDescriptorValueAsync(object descriptor, PyInstance instance, object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        if (descriptor is PyProperty property)
+        {
+            await property.SetAsync(instance, value, context, span).ConfigureAwait(false);
+            return true;
+        }
+        if (descriptor is PyInstance descriptorInstance &&
+            TryLookupDescriptorMethod(descriptorInstance, "__set__", context, span, out var callable))
+        {
+            _ = await CallableInvocation.InvokeBinaryAsync(callable, instance, value, span, context).ConfigureAwait(false);
+            return true;
+        }
+        return TrySetDescriptorValue(descriptor, instance, value, context, span);
+    }
+
     public static bool TrySetDescriptorValue(object descriptor, PyInstance instance, object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (descriptor is IPySettableDescriptor settable)

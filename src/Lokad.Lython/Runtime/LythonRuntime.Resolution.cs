@@ -463,23 +463,33 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal static void AssignLoopTarget(
+    internal static void AssignLoopTarget(LoopTargetSyntax target, object value, LythonSourceSpan span, ExecutionContext context)
+        => AssignLoopTargetCoreAsync(target, value, span, context, false).GetAwaiter().GetResult();
+
+    internal static ValueTask AssignLoopTargetAsync(LoopTargetSyntax target, object value, LythonSourceSpan span, ExecutionContext context)
+        => AssignLoopTargetCoreAsync(target, value, span, context, true);
+
+    private static async ValueTask AssignLoopTargetCoreAsync(
         LoopTargetSyntax target,
         object value,
         LythonSourceSpan span,
-        ExecutionContext context)
+        ExecutionContext context, bool asynchronous)
     {
         switch (target)
         {
+            case LoopStoreTargetSyntax store:
+                if (asynchronous) await AssignTargetAsync(store.LoweredTarget, value, context).ConfigureAwait(false);
+                else AssignTarget(store.Target, value, context);
+                return;
             case LoopNameTargetSyntax name:
                 StoreName(name.Name, value, context, span);
                 return;
             case LoopTupleTargetSyntax tuple:
-                var values = MaterializeUnpackingSequence(value, span, context);
+                var values = asynchronous ? await MaterializeHeaderSequenceAsync(value, span, context).ConfigureAwait(false) : MaterializeUnpackingSequence(value, span, context);
                 var starIndex = -1;
                 for (var i = 0; i < tuple.Items.Count; i++)
                 {
-                    if (tuple.Items[i] is LoopStarredTargetSyntax)
+                    if (AssignmentTargetFacts.IsStarred(tuple.Items[i]))
                     {
                         if (starIndex >= 0)
                         {
@@ -499,7 +509,7 @@ internal sealed partial class LythonRuntime
 
                     for (var i = 0; i < tuple.Items.Count; i++)
                     {
-                        AssignLoopTarget(tuple.Items[i], values[i], span, context);
+                        await AssignLoopTargetCoreAsync(tuple.Items[i], values[i], span, context, asynchronous).ConfigureAwait(false);
                     }
 
                     return;
@@ -513,24 +523,25 @@ internal sealed partial class LythonRuntime
 
                 for (var i = 0; i < starIndex; i++)
                 {
-                    AssignLoopTarget(tuple.Items[i], values[i], span, context);
+                    await AssignLoopTargetCoreAsync(tuple.Items[i], values[i], span, context, asynchronous).ConfigureAwait(false);
                 }
 
                 var starredCount = values.Length - required;
                 var starredItems = new object[starredCount];
                 Array.Copy(values, starIndex, starredItems, 0, starredCount);
-                if (tuple.Items[starIndex] is LoopStarredTargetSyntax starred)
+                if (AssignmentTargetFacts.IsStarred(tuple.Items[starIndex]))
                 {
                     // Abandoned remainders reclaim through the pool like display lists;
                     // otherwise every dropped remainder strands its charges until denial.
                     var remainder = new PyList(starredItems, context.MemoryGovernor, span);
                     context.Services.State.CallTemporaries.TrackFreshMutable(remainder, remainder.CommittedStorageBytes);
-                    StoreName(starred.Name, remainder, context, span);
+                    if (tuple.Items[starIndex] is LoopStarredTargetSyntax starred) StoreName(starred.Name, remainder, context, span);
+                    else await AssignLoopTargetCoreAsync(tuple.Items[starIndex], remainder, span, context, asynchronous).ConfigureAwait(false);
                 }
 
                 for (var i = starIndex + 1; i < tuple.Items.Count; i++)
                 {
-                    AssignLoopTarget(tuple.Items[i], values[values.Length - (tuple.Items.Count - i)], span, context);
+                    await AssignLoopTargetCoreAsync(tuple.Items[i], values[values.Length - (tuple.Items.Count - i)], span, context, asynchronous).ConfigureAwait(false);
                 }
 
                 return;
@@ -564,6 +575,9 @@ internal sealed partial class LythonRuntime
     {
         switch (target)
         {
+            case LoopStoreTargetSyntax store:
+                foreach (var binding in AssignmentTargetFacts.Names(store.Target)) names.Add(binding);
+                break;
             case LoopNameTargetSyntax name:
                 names.Add(name.Name);
                 break;

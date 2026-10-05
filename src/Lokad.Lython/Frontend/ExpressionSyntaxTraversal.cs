@@ -23,6 +23,7 @@ internal static class ExpressionSyntaxTraversal
                 foreach (var clause in listComprehension.Clauses)
                 {
                     yield return clause.Iterable;
+                    foreach (var read in AssignmentTargetFacts.Reads(clause.Target)) yield return read;
                     if (clause.Condition is not null) yield return clause.Condition;
                 }
                 break;
@@ -32,6 +33,7 @@ internal static class ExpressionSyntaxTraversal
                 foreach (var clause in generator.Clauses)
                 {
                     yield return clause.Iterable;
+                    foreach (var read in AssignmentTargetFacts.Reads(clause.Target)) yield return read;
                     if (clause.Condition is not null) yield return clause.Condition;
                 }
                 break;
@@ -53,6 +55,7 @@ internal static class ExpressionSyntaxTraversal
                 foreach (var clause in setComprehension.Clauses)
                 {
                     yield return clause.Iterable;
+                    foreach (var read in AssignmentTargetFacts.Reads(clause.Target)) yield return read;
                     if (clause.Condition is not null) yield return clause.Condition;
                 }
                 break;
@@ -63,6 +66,7 @@ internal static class ExpressionSyntaxTraversal
                 foreach (var clause in dictComprehension.Clauses)
                 {
                     yield return clause.Iterable;
+                    foreach (var read in AssignmentTargetFacts.Reads(clause.Target)) yield return read;
                     if (clause.Condition is not null) yield return clause.Condition;
                 }
                 break;

@@ -435,8 +435,10 @@ and `async with` are outside the current language subset. These forms must
 be rejected explicitly. `LythonEngine.RunAsync` is an embedding API that awaits
 host effects; it does not make Python asynchronous syntax available to scripts.
 
-Current syntax exclusions also include list-shaped, attribute, subscript and
-trailing-comma loop/comprehension targets; parenthesized lists of `with` items;
+Loop and comprehension targets follow ordinary assignment rules, including
+nested list/tuple unpacking, starred targets, attribute/subscript/slice stores
+and trailing commas. Receivers and indices evaluate once at each ordered store.
+Current syntax exclusions also include parenthesized lists of `with` items;
 destructuring `with ... as` targets; positional-only `/` parameters in functions
 and lambdas; and the `u` string prefix. Ordinary assignment has a broader target
 grammar, as specified in section 9.3.1. Type aliases, type parameters, `except*`,

@@ -205,6 +205,24 @@ internal static class PyMemberAccess
         return resolver(probe, memberName, out value);
     }
 
+    public static async ValueTask<bool> TryAssignAsync(object target, string memberName, object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        if (target is PyInstance instance && instance.Type.TryLookupInMro("__setattr__", 0, out var raw, out _))
+        {
+            var bound = raw switch
+            {
+                IPyBindableCallable bindable => bindable.Bind(instance),
+                IPyDescriptor descriptor => descriptor.Get(instance, instance.Type, context, span),
+                _ => raw,
+            };
+            if (bound is not LythonRuntime.ICallable callable)
+                throw new LythonRuntimeException("TypeError", "__setattr__ must be callable.", span);
+            _ = await callable.InvokeAsync([CallArgumentValue.Positional(PyString.FromString(memberName)), CallArgumentValue.Positional(value)], span, context).ConfigureAwait(false);
+            return true;
+        }
+        return TryAssign(target, memberName, value, context, span);
+    }
+
     public static bool TryAssign(object target, string memberName, object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (target is PyModule module && module.TrySetMember(memberName, value))

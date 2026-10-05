@@ -66,6 +66,7 @@ internal static class StatementSyntaxTraversal
 
             case ForStatementSyntax forStatement:
                 yield return forStatement.Iterable;
+                foreach (var read in AssignmentTargetFacts.Reads(forStatement.Target)) yield return read;
                 break;
 
             case WhileStatementSyntax whileStatement:

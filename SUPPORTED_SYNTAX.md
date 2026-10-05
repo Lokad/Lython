@@ -12,7 +12,7 @@ implemented or a claim of complete PEP 701 support.
 | Tokens, names, strings | Unicode identifiers with NFKC normalization, soft keywords, numeric separators, raw/bytes/formatted and triple strings, explicit/implicit joining | `lexical`, `fstrings` |
 | Expressions, comparison, inversion, primary | Arithmetic/bitwise precedence, lazy Boolean operators, comparison chains, conditional and assignment expressions, member access, scalar/slice/tuple-key subscripts | `expressions` |
 | Assignment, star targets, augmented assignment | Names, attributes, subscripts, slices, tuple/list/nested unpacking, one starred leaf per level, chained and augmented stores; name annotations | `assignment` |
-| For/while statements | Name and parenthesized tuple targets, starred names, loop `else`, scope-correct `break`/`continue` | `loops`, `invalid` |
+| For/while statements | Full assignment targets, nested tuple/list and starred unpacking, trailing commas, loop `else`, scope-correct `break`/`continue` | `loops`, `invalid` |
 | Comprehensions, generator expressions | List/set/dict comprehensions and generator expressions, multiple clauses and ordered lazy filters, separate iteration scopes, restricted walrus bindings | `comprehensions`, `invalid` |
 | Function definitions, lambdas, arguments | Defaults, keyword-only and variadic parameters, annotations, positional/keyword/starred calls, closures, global/nonlocal declarations, decorators | `functions`, `invalid` |
 | Class definitions | Bases, decorators, methods, `super`, property/static/class methods; contained dataclass subset | `classes` |
@@ -30,8 +30,6 @@ host effects in this same guest language.
 
 Compilation rejects these forms before any guest effects:
 
-- List-shaped, attribute and subscript loop/comprehension targets; a trailing
-  comma in those targets, including `for a, in rows`.
 - Parenthesized lists of `with` items and tuple/list `as` targets. Parenthesizing
   a single context expression remains supported.
 - Positional-only `/` parameters in both `def` and lambda; the `u` string prefix.
@@ -40,16 +38,16 @@ Compilation rejects these forms before any guest effects:
 - Type alias statements and type parameters, `except*`, matrix multiplication
   and complex literals.
 
-The first three bullets are temporary compatibility boundaries retained after
+The first two bullets are temporary compatibility boundaries retained after
 the probe fixes. Tests pin their rejection with an unsupported diagnostic and
-a source span. Ordinary assignment accepts several target forms excluded from
-loop and context-manager headers.
+a source span. Loops and comprehensions accept ordinary assignment targets; context-manager
+headers retain a narrower binding grammar.
 
 ## Corpus and verification
 
 [cases.json](tests/Lokad.Lython.PublicApi.Tests/Fixtures/SyntaxCorpus/cases.json)
-contains 128 independently specified cases: 80 supported cases, 23 invalid
-programs, 24 unsupported forms and one embedding extension. Supported output
+contains independently specified supported cases, invalid programs, explicitly
+unsupported forms and one embedding extension. Supported output
 values were established with isolated CPython 3.13.2 and rechecked after the
 fixes. Invalid programs and unsupported forms must fail compilation, including
 when preceding statements would perform effects.

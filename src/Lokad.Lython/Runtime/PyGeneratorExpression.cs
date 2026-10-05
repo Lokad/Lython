@@ -186,7 +186,7 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
         {
             // One shared scope per generator run: loop targets rebind the same
             // cells, so closures observe final values like eager comprehensions.
-            LythonRuntime.AssignLoopTarget(clause.Target, item, clause.Iterable.Span, scope);
+            await LythonRuntime.AssignLoopTargetAsync(clause.Target, item, clause.Iterable.Span, scope).ConfigureAwait(false);
 
             if (clause.Condition is not null &&
                 !LythonRuntime.IsTruthy(await LythonRuntime.EvaluateLoweredExpressionAsync(clause.Condition, scope).ConfigureAwait(false), scope, clause.Condition.Span))

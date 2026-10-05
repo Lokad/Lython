@@ -87,7 +87,7 @@ internal sealed partial class Parser
 
         if (CurrentToken != Token.Comma)
         {
-            if (first is LoopStarredTargetSyntax)
+            if (AssignmentTargetFacts.IsStarred(first))
             {
                 AddDiagnostic("LA1015", "Starred assignment target must be in a list or tuple.", tokenIndex);
                 return false;
@@ -98,22 +98,19 @@ internal sealed partial class Parser
         }
 
         var items = new List<LoopTargetSyntax> { first };
-        var hasStarred = first is LoopStarredTargetSyntax;
+        var hasStarred = AssignmentTargetFacts.IsStarred(first);
         while (CurrentToken == Token.Comma)
         {
             ReadToken();
-            if (CurrentToken is Token.In or Token.CloseParen)
-            {
-                AddDiagnostic("LA2000", "Unsupported Python construct 'trailing comma in loop target'.", _position);
-                return false;
-            }
+            SkipGroupedExpressionTrivia();
+            if (CurrentToken is Token.In or Token.CloseParen or Token.CloseBracket) break;
             if (!TryParseLoopTargetAtom(out var item, out var itemToken))
             {
                 AddDiagnostic("LA1015", "Expected loop variable after ','.", _position);
                 return false;
             }
 
-            if (item is LoopStarredTargetSyntax)
+            if (AssignmentTargetFacts.IsStarred(item))
             {
                 if (hasStarred)
                 {
@@ -133,55 +130,16 @@ internal sealed partial class Parser
 
     private bool TryParseLoopTargetAtom(out LoopTargetSyntax target, out int tokenIndex)
     {
-        if (TryReadNameToken(out tokenIndex))
-        {
-            target = new LoopNameTargetSyntax(IdentifierText(tokenIndex));
-            if (CurrentToken is Token.Dot or Token.OpenBracket)
-            {
-                AddDiagnostic("LA2000", "Unsupported Python construct 'attribute or subscript loop target'.", _position);
-                return false;
-            }
-            return true;
-        }
-
-        if (CurrentToken == Token.Star)
-        {
-            var starToken = ReadToken();
-            if (!TryReadNameToken(out var nameToken))
-            {
-                AddDiagnostic("LA1015", "Expected loop variable after '*'.", starToken);
-                target = new LoopTupleTargetSyntax(Array.Empty<LoopTargetSyntax>());
-                return false;
-            }
-
-            target = new LoopStarredTargetSyntax(IdentifierText(nameToken));
-            tokenIndex = starToken;
-            return true;
-        }
-
-        if (TryRead(Token.OpenParen, out var openParen))
-        {
-            if (!TryParseLoopTarget(out target, out _))
-            {
-                target = new LoopTupleTargetSyntax(Array.Empty<LoopTargetSyntax>());
-                return false;
-            }
-
-            if (!TryRead(Token.CloseParen, out _))
-            {
-                AddDiagnostic("LA1045", "Expected ')' after loop target.", _position);
-                target = new LoopTupleTargetSyntax(Array.Empty<LoopTargetSyntax>());
-                return false;
-            }
-
-            tokenIndex = openParen;
-            return true;
-        }
-
-        target = new LoopTupleTargetSyntax(Array.Empty<LoopTargetSyntax>());
         tokenIndex = _position;
-        if (CurrentToken == Token.OpenBracket)
-            AddDiagnostic("LA2000", "Unsupported Python construct 'list-shaped loop target'.", _position);
+        var starred = TryRead(Token.Star, out _);
+        var expression = ParsePostfixExpression();
+        if (expression is not null && TryConvertExpressionToAssignmentTarget(expression, out var assignment))
+        {
+            target = starred ? AssignmentTargetFacts.Starred(assignment!) : AssignmentTargetFacts.ToLoop(assignment!);
+            return true;
+        }
+        target = new LoopTupleTargetSyntax(Array.Empty<LoopTargetSyntax>());
+        AddDiagnostic("LA1015", "Invalid assignment target in loop.", tokenIndex);
         return false;
     }
 

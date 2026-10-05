@@ -116,6 +116,14 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
         return callable.Invoke(Array.Empty<CallArgumentValue>(), accessSpan, context);
     }
 
+    internal async ValueTask SetAsync(PyInstance instance, object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        if (_setter is null)
+            throw new LythonRuntimeException("AttributeError", BuildMissingSetterMessage(instance.Type), span);
+        var callable = BindAccessor(_setter, instance, instance.Type, context, span, PropertyAccessorKind.Setter);
+        _ = await CallableInvocation.InvokeUnaryAsync(callable, value, span, context).ConfigureAwait(false);
+    }
+
     public void Set(PyInstance instance, object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (_setter is null)

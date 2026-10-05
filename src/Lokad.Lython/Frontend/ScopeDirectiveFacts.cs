@@ -256,6 +256,9 @@ internal static class ScopeDirectiveFactsCollector
     {
         switch (target)
         {
+            case LoopStoreTargetSyntax store:
+                foreach (var binding in AssignmentTargetFacts.Names(store.Target)) names.Add(binding);
+                break;
             case LoopNameTargetSyntax name:
                 names.Add(name.Name);
                 break;

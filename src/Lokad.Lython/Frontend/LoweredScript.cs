@@ -188,7 +188,7 @@ internal sealed class LoweredScript
             _ => throw new InvalidOperationException($"Unsupported augmented assignment target: {target.GetType().Name}"),
         };
 
-    private static LoweredExpression LowerExpression(ExpressionSyntax expression)
+    internal static LoweredExpression LowerExpression(ExpressionSyntax expression)
     {
         return expression switch
         {

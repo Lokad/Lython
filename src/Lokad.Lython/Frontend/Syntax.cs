@@ -509,6 +509,13 @@ internal sealed record GeneratorExpressionSyntax(
 
 internal abstract record LoopTargetSyntax;
 
+internal sealed record LoopStoreTargetSyntax(
+    AssignmentTargetSyntax Target,
+    bool IsStarred = false) : LoopTargetSyntax
+{
+    public LoweredStoreTarget LoweredTarget { get; } = new(Target);
+}
+
 internal sealed record LoopNameTargetSyntax(
     string Name) : LoopTargetSyntax;
 

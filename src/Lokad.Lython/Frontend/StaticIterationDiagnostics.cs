@@ -65,7 +65,7 @@ internal static class StaticIterationDiagnostics
             var required = target.Items.Count;
             foreach (var targetItem in target.Items)
             {
-                if (targetItem is LoopStarredTargetSyntax)
+                if (AssignmentTargetFacts.IsStarred(targetItem))
                 {
                     required--;
                 }

@@ -547,7 +547,7 @@ internal static partial class StaticBindingEngine
                 break;
 
             case LoopTupleTargetSyntax tupleTarget:
-                if (tupleTarget.Items.Any(static item => item is LoopStarredTargetSyntax))
+                if (tupleTarget.Items.Any(static item => AssignmentTargetFacts.IsStarred(item)))
                 {
                     BindLoopTargetUnknown(target, bindings);
                 }
@@ -573,6 +573,9 @@ internal static partial class StaticBindingEngine
         {
             case LoopNameTargetSyntax nameTarget:
                 bindings.Set(nameTarget.Name, AbstractValue.Unknown());
+                break;
+            case LoopStoreTargetSyntax store:
+                foreach (var name in AssignmentTargetFacts.Names(store.Target)) bindings.Set(name, AbstractValue.Unknown());
                 break;
             case LoopStarredTargetSyntax starredTarget:
                 bindings.Set(starredTarget.Name, AbstractValue.Unknown());

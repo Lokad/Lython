@@ -252,22 +252,22 @@
   {
     "name": "for-list-target",
     "family": "loops",
-    "status": "unsupported",
+    "status": "supported",
     "source": "out=[]\nfor [a,b] in [(1,2),(3,4)]:\n    out.append(a+b)\nprint(out)\n",
     "standardOutput": "[3, 7]\n",
     "success": true,
     "exceptionType": null,
-    "note": "List-shaped loop targets are not implemented."
+    "note": "Output verified against isolated CPython."
   },
   {
     "name": "for-single-target-comma",
     "family": "loops",
-    "status": "unsupported",
+    "status": "supported",
     "source": "out=[]\nfor a, in [(1,), (2,)]:\n    out.append(a)\nprint(out)\n",
     "standardOutput": "[1, 2]\n",
     "success": true,
     "exceptionType": null,
-    "note": "A trailing comma in a loop target is not implemented."
+    "note": "Output verified against isolated CPython."
   },
   {
     "name": "for-star-target",
@@ -282,22 +282,22 @@
   {
     "name": "for-attribute-target",
     "family": "loops",
-    "status": "unsupported",
+    "status": "supported",
     "source": "class C:\n    pass\nc=C()\nfor c.x in [1,2]:\n    pass\nprint(c.x)\n",
     "standardOutput": "2\n",
     "success": true,
     "exceptionType": null,
-    "note": "Attribute loop targets are not implemented."
+    "note": "Output verified against isolated CPython."
   },
   {
     "name": "for-subscript-target",
     "family": "loops",
-    "status": "unsupported",
+    "status": "supported",
     "source": "a=[0]\nfor a[0] in [1,2]:\n    pass\nprint(a)\n",
     "standardOutput": "[2]\n",
     "success": true,
     "exceptionType": null,
-    "note": "Subscript loop targets are not implemented."
+    "note": "Output verified against isolated CPython."
   },
   {
     "name": "loop-else",
@@ -382,22 +382,22 @@
   {
     "name": "comprehension-list-target",
     "family": "comprehensions",
-    "status": "unsupported",
+    "status": "supported",
     "source": "print([a+b for [a,b] in [(1,2)]])\n",
     "standardOutput": "[3]\n",
     "success": true,
     "exceptionType": null,
-    "note": "List-shaped comprehension targets are not implemented."
+    "note": "Output verified against isolated CPython."
   },
   {
     "name": "comprehension-single-comma",
     "family": "comprehensions",
-    "status": "unsupported",
+    "status": "supported",
     "source": "print([a for a, in [(1,), (2,)]])\n",
     "standardOutput": "[1, 2]\n",
     "success": true,
     "exceptionType": null,
-    "note": "A trailing comma in a comprehension target is not implemented."
+    "note": "Output verified against isolated CPython."
   },
   {
     "name": "comprehension-scope",
@@ -1278,5 +1278,35 @@
     "success": false,
     "exceptionType": "SyntaxError",
     "note": "Python asynchronous syntax is outside the contained synchronous guest language."
+  },
+  {
+    "name": "loop-nested-starred-stores",
+    "family": "loops",
+    "status": "supported",
+    "source": "class C: pass\nc=C()\na=[0,0,0]\nfor [a[0], (c.x, *a[1:])], in [([1,(2,3,4)],)]:\n    print(a,c.x)\n",
+    "standardOutput": "[1, 3, 4] 2\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "Output verified against isolated CPython."
+  },
+  {
+    "name": "comprehension-stores-scope",
+    "family": "comprehensions",
+    "status": "supported",
+    "source": "class C: pass\nc=C()\na=[0]\ni=99\nprint([(i,a[0],c.x) for [i,a[0],c.x] in [(1,2,3),(4,5,6)]])\nprint(i,a,c.x)\nprint(list(a[0] for a[0] in [7,8]))\nprint(a)\n",
+    "standardOutput": "[(1, 2, 3), (4, 5, 6)]\n99 [5] 6\n[7, 8]\n[8]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "Output verified against isolated CPython."
+  },
+  {
+    "name": "loop-stores-evaluation-order",
+    "family": "loops",
+    "status": "supported",
+    "source": "events=[]\na=[0,0]\ndef receiver():\n    events.append('receiver')\n    return a\ndef index():\n    events.append('index')\n    return 1\nfor a[0], receiver()[index()] in [(2,3),(4,5)]:\n    events.append(tuple(a))\nprint(events)\n",
+    "standardOutput": "['receiver', 'index', (2, 3), 'receiver', 'index', (4, 5)]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "Output verified against isolated CPython."
   }
 ]

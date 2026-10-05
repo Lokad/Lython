@@ -381,6 +381,10 @@ internal static class StaticScopeDirectiveDiagnostics
     {
         switch (target)
         {
+            case LoopStoreTargetSyntax store:
+                foreach (var read in AssignmentTargetFacts.Reads(store.Target)) CollectSeenNames(read, names);
+                foreach (var name in AssignmentTargetFacts.Names(store.Target)) names.Add(name);
+                break;
             case LoopNameTargetSyntax name:
                 names.Add(name.Name);
                 break;

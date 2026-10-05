@@ -505,6 +505,16 @@ internal sealed partial class LythonRuntime
 
     private sealed class ObjectSetAttrMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember, IPyRenderableValue
     {
+        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length == 3 && !arguments.Any(static argument => argument.IsKeyword) &&
+                arguments[0].Value is PyInstance instance && PyStringOps.TryAsString(arguments[1].Value, out var name) &&
+                instance.Type.TryLookupInMro(name.AsString(), 0, out var descriptor, out _) &&
+                await PyAttributeLookup.TrySetDescriptorValueAsync(descriptor, instance, arguments[2].Value, context, span).ConfigureAwait(false))
+                return PyNone.Instance;
+            return Invoke(arguments, span, context);
+        }
+
         // Unbound object slots render like CPython slot wrappers (quoted
         // owner, plural objects).
         public PyString RenderPython(PyRenderingContext context)
