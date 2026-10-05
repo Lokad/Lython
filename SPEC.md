@@ -390,10 +390,12 @@ The supported subset must support exactly the following literal forms:
 - decimal integer literals with `_` separators
 - float literals
 - float literals with exponent notation
+- imaginary literals with `j` or `J`
 - single-quoted string literals
 - double-quoted string literals
 - triple-quoted string literals
 - raw string literals
+- Unicode-prefixed string literals with `u` or `U`
 - `True`
 - `False`
 - `None`
@@ -419,9 +421,6 @@ Bytes literals and formatted string literals are supported. Formatted strings
 support conversions, format specifications, nested replacement fields inside a
 format specification, and debug expressions within the implemented expression
 subset.
-
-Complex-number literals are not supported and must be rejected explicitly.
-
 
 ### 8.4 Generator functions
 

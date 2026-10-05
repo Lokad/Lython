@@ -84,9 +84,16 @@ Lython supports a broad, practical subset of Python. Ordinary control flow, func
 
 The [supported syntax inventory](SUPPORTED_SYNTAX.md) lists implemented grammar
 families, embedding extensions and explicit exclusions, with links to the
-public regression corpus. Some valid Python combinations remain unsupported,
-including positional-only `/` parameters, several loop target forms and
-grouped/destructuring context-manager headers.
+public regression corpus. Functions and lambdas accept positional-only `/`
+parameters; loop, comprehension and context-manager targets support ordinary
+assignment forms, including nested and starred unpacking. Context-manager
+headers also accept parenthesized item lists.
+
+Generator functions support `yield`, `yield from`, `send`, `throw` and `close`
+within the [documented suspension boundaries](SPEC.md#84-generator-functions).
+Modern type aliases and generic function/class headers retain Python-shaped
+typing metadata and lazy annotation scopes. Unicode-prefixed strings, complex
+literals and arithmetic, and matrix protocol operators `@`/`@=` are supported.
 
 Parenthesized, bracketed, and braced expressions may span physical lines using Python's implicit line joining, including inside compound-statement headers such as `if`, `for`, and `while`.
 
@@ -191,7 +198,7 @@ Local script imports are separate from builtin modules. Bare `import helper` can
 
 `math` tracks the common CPython 3.13 scalar and aggregate helpers used in generated scripts, including integer combinatorics, `dist`, variadic `hypot`, `frexp`/`ldexp`/`modf`, IEEE-adjacent helpers, `gamma`/`lgamma`, `fma`, and `sumprod`. Exact combinatorics are arbitrary-size where practical, but computations that imply unbounded local loops fail explicitly under Lython's contained execution model.
 
-`operator` covers direct-function equivalents for supported unary, binary, comparison, item, sequence, in-place, and callable operations, including `itemgetter`, `attrgetter`, `methodcaller`, and `operator.call`. The helpers reuse Lython's existing expression and augmented-assignment semantics; `matmul` fails explicitly because Lython does not support the matrix-multiplication operator.
+`operator` covers direct-function equivalents for supported unary, binary, comparison, item, sequence, in-place, and callable operations, including `itemgetter`, `attrgetter`, `methodcaller`, and `operator.call`. The helpers reuse Lython's existing expression and augmented-assignment semantics; `matmul` and `imatmul` dispatch through the matrix protocols.
 
 `glob` is host-mediated over the same contained path model. Module-level `glob.glob(...)` returns Python strings, `glob.iglob(...)` returns a one-shot iterator over materialized string results, and relative patterns return relative paths. `root_dir`, `recursive`, `include_hidden`, `escape`, `has_magic`, and `translate` are supported; `dir_fd`, `glob0`, and `glob1` fail explicitly.
 
@@ -205,7 +212,7 @@ Intentionally unsupported or constrained:
 - unrestricted imports from disk
 - sockets and HTTP
 - broad shell/process authority beyond the host-mediated `subprocess` surface
-- `yield` and async/await
+- guest async/await syntax and `except*`
 - parts of Python metaprogramming and object-model edge behavior outside the contained runtime model
 - a full general-purpose Python standard library
 
