@@ -28,5 +28,6 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <None Update="Fixtures/SyntaxCorpus/cases.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

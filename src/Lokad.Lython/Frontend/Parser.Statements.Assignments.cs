@@ -173,6 +173,11 @@ internal sealed partial class Parser
     private StatementSyntax? ParseWithStatement()
     {
         var withToken = ReadToken();
+        if (LooksLikeGroupedWithItems())
+        {
+            AddDiagnostic("LA2000", "Unsupported Python construct 'grouped with items'.", _position);
+            return null;
+        }
         var managers = new List<(ExpressionSyntax ContextExpression, string? VariableName)>();
         while (true)
         {
@@ -189,6 +194,11 @@ internal sealed partial class Parser
                 ReadToken();
                 if (!TryReadNameToken(out var variableToken))
                 {
+                    if (CurrentToken is Token.OpenParen or Token.OpenBracket)
+                    {
+                        AddDiagnostic("LA2000", "Unsupported Python construct 'destructuring with-as target'.", _position);
+                        return null;
+                    }
                     AddDiagnostic("LA1045", "Expected identifier after 'as' in with statement.", _position);
                     return null;
                 }
@@ -232,6 +242,23 @@ internal sealed partial class Parser
         }
 
         return ((WithStatementSyntax)nestedBody[0]) with { Span = Merge(SpanOf(withToken), body[^1].Span) };
+    }
+
+    private bool LooksLikeGroupedWithItems()
+    {
+        if (CurrentToken != Token.OpenParen) return false;
+        var depth = 0;
+        for (var offset = 0; ; offset++)
+        {
+            var token = PeekToken(offset);
+            if (token == Token.End) return false;
+            if (token is Token.OpenParen or Token.OpenBracket or Token.OpenBrace) depth++;
+            else if (token is Token.CloseParen or Token.CloseBracket or Token.CloseBrace)
+            {
+                if (--depth == 0) return false;
+            }
+            else if (depth == 1 && token is Token.As or Token.Comma) return true;
+        }
     }
 
     private StatementSyntax? ParseUnpackingAssignmentStatement()

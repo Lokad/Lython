@@ -102,6 +102,11 @@ internal sealed partial class Parser
         while (CurrentToken == Token.Comma)
         {
             ReadToken();
+            if (CurrentToken is Token.In or Token.CloseParen)
+            {
+                AddDiagnostic("LA2000", "Unsupported Python construct 'trailing comma in loop target'.", _position);
+                return false;
+            }
             if (!TryParseLoopTargetAtom(out var item, out var itemToken))
             {
                 AddDiagnostic("LA1015", "Expected loop variable after ','.", _position);
@@ -131,6 +136,11 @@ internal sealed partial class Parser
         if (TryReadNameToken(out tokenIndex))
         {
             target = new LoopNameTargetSyntax(IdentifierText(tokenIndex));
+            if (CurrentToken is Token.Dot or Token.OpenBracket)
+            {
+                AddDiagnostic("LA2000", "Unsupported Python construct 'attribute or subscript loop target'.", _position);
+                return false;
+            }
             return true;
         }
 
@@ -170,6 +180,8 @@ internal sealed partial class Parser
 
         target = new LoopTupleTargetSyntax(Array.Empty<LoopTargetSyntax>());
         tokenIndex = _position;
+        if (CurrentToken == Token.OpenBracket)
+            AddDiagnostic("LA2000", "Unsupported Python construct 'list-shaped loop target'.", _position);
         return false;
     }
 

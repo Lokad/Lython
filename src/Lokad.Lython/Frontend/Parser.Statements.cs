@@ -117,6 +117,11 @@ internal sealed partial class Parser
 
         if (!TryRead(Token.OpenParen, out var openParen))
         {
+            if (CurrentToken == Token.OpenBracket)
+            {
+                AddDiagnostic("LA2000", "Unsupported Python construct 'type parameters'.", _position);
+                return null;
+            }
             AddDiagnostic("LA1031", "Expected '(' after function name.", nameToken);
             return null;
         }
@@ -346,6 +351,12 @@ internal sealed partial class Parser
             return null;
         }
 
+        if (CurrentToken == Token.OpenBracket)
+        {
+            AddDiagnostic("LA2000", "Unsupported Python construct 'type parameters'.", _position);
+            return null;
+        }
+
         var bases = new List<ExpressionSyntax>();
         var keywordArguments = new List<ClassKeywordArgumentSyntax>();
         if (TryRead(Token.OpenParen, out var openParen))
@@ -444,6 +455,11 @@ internal sealed partial class Parser
         while (true)
         {
             var kind = keywordOnly ? FunctionParameterKind.KeywordOnly : FunctionParameterKind.Positional;
+            if (CurrentToken == Token.Slash)
+            {
+                AddDiagnostic("LA2000", "Unsupported Python construct 'positional-only parameters'.", _position);
+                return false;
+            }
             if (CurrentToken == Token.StarStar)
             {
                 if (seenVariadicDictionary)

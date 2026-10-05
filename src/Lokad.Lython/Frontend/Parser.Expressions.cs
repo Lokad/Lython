@@ -317,6 +317,12 @@ internal sealed partial class Parser
                 Merge(expression.Span, right.Span));
         }
 
+        if (layer == LeftAssociativeLayer.Multiplicative && CurrentToken == Token.At)
+        {
+            AddDiagnostic("LA2000", "Unsupported Python construct 'matrix multiplication'.", _position);
+            return null;
+        }
+
         return expression;
     }
 

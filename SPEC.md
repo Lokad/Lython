@@ -65,12 +65,10 @@ This means:
 3. Unsupported constructs must fail clearly.
 4. The runtime must not silently reinterpret Python code with non-Python semantics.
 
-Lython is intended to be:
-
-- a strict subset of Python
-- an extension of the Lark foundation where applicable
-
-If a construct is already defined by the adopted Lark foundation, this specification does not need to restate it unless Lython changes, restricts, or extends its meaning.
+Lython implements a strict, extensive Python subset through a handwritten
+frontend. Its syntax contract comes from this specification and the explicit
+[supported syntax inventory](SUPPORTED_SYNTAX.md), rather than inheritance from
+an external grammar. Embedding extensions are identified separately.
 
 The implementation may be independent from any existing Python runtime, but the language contract is defined in Python terms first.
 
@@ -256,11 +254,12 @@ This section is normative.
 
 Unless explicitly listed as supported, a Python construct must be treated as unsupported.
 
-For syntax, expression forms, and lower-level language constructs already defined by the adopted Lark foundation, Lython inherits that foundation rather than restating it here.
+The [supported syntax inventory](SUPPORTED_SYNTAX.md) maps the implemented
+surface to Python 3.13 grammar families and durable public regressions. Its
+explicit exclusions constrain the commitments below. Passing a finite corpus
+does not establish complete Python grammar or PEP 701 compatibility.
 
-This section therefore focuses on the additional Python-surface commitments that are not merely inherited from Lark.
-
-### 8.1 Supported Python-Surface Additions
+### 8.1 Supported Python Surface
 
 The supported subset must support:
 
@@ -436,13 +435,21 @@ and `async with` are outside the current language subset. These forms must
 be rejected explicitly. `LythonEngine.RunAsync` is an embedding API that awaits
 host effects; it does not make Python asynchronous syntax available to scripts.
 
+Current syntax exclusions also include list-shaped, attribute, subscript and
+trailing-comma loop/comprehension targets; parenthesized lists of `with` items;
+destructuring `with ... as` targets; positional-only `/` parameters in functions
+and lambdas; and the `u` string prefix. Ordinary assignment has a broader target
+grammar, as specified in section 9.3.1. Type aliases, type parameters, `except*`,
+matrix multiplication and complex literals are outside the current subset.
+These forms must produce explicit unsupported diagnostics before execution.
+
 ---
 
 ## 9. Semantic Compatibility
 
 This section is normative.
 
-It defines runtime semantics that are not supplied by the adopted Lark foundation.
+It defines the runtime semantics of the supported Python subset.
 
 ### 9.1 Truthiness
 
@@ -530,7 +537,13 @@ The supported ordinary assignment targets are:
 
 Chained assignment may assign to any supported ordinary assignment target. The right-hand expression must be evaluated once, then stored into each target from left to right.
 
-Flat unpacking assignment with identifier targets is supported, including at most one starred identifier target. Parenthesized and list-shaped assignment targets such as `(a, b) = row`, `[a, b] = row`, and `(target) = value` are not supported. Nested destructuring such as `(a, (b, c)) = row` is not supported.
+Tuple-shaped, parenthesized and list-shaped unpacking assignments are supported,
+including nested destructuring and a trailing comma for a one-item tuple.
+Leaves may be supported ordinary assignment targets. Each unpacking level may
+contain at most one starred target. Receivers and indices are evaluated at the
+corresponding store, in source order. This broader ordinary-assignment grammar
+does not imply support for the excluded loop and context-manager targets in
+section 8.4.
 
 Annotated assignment is supported for simple names only. Annotated attribute and subscript targets such as `obj.value: T = x` and `items[0]: T = x` are not supported.
 

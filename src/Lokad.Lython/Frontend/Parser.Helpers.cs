@@ -390,6 +390,13 @@ internal sealed partial class Parser
 
     private bool TryParseUnsupportedStatement(out StatementSyntax? statement)
     {
+        if (IsNameToken(CurrentToken) && _tokens.GetString(_position) == "type" &&
+            IsNameToken(PeekToken(1)) && PeekToken(2) is Token.Assign or Token.OpenBracket)
+        {
+            AddDiagnostic("LA2000", "Unsupported Python construct 'type alias'.", _position);
+            statement = null;
+            return true;
+        }
         if (CurrentToken is Token.From or Token.Del)
         {
             statement = null;

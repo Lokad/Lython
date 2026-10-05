@@ -233,6 +233,11 @@ internal sealed partial class Parser
         while (CurrentToken == Token.Except)
         {
             var exceptToken = ReadToken();
+            if (CurrentToken == Token.Star)
+            {
+                AddDiagnostic("LA2000", "Unsupported Python construct 'except*'.", _position);
+                return null;
+            }
             IReadOnlyList<string>? exceptionTypes = null;
             string? exceptionVariable = null;
             if (CurrentToken != Token.Colon)

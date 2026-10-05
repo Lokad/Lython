@@ -107,8 +107,9 @@ internal sealed partial class Parser
             ? previousEndTokenIndex
             : _position;
 
-    // Numbers glued to identifiers (1x, 0x1F, 1j) lex as two adjacent tokens
-    // but are one invalid literal in Python. Keywords lex as their own tokens,
+    // Numbers glued to identifiers lex as two adjacent tokens. Imaginary
+    // literals are valid Python but outside the subset; other glued forms
+    // are invalid literals. Keywords lex as their own tokens,
     // so `1in[1,2]` stays valid: only a true Identifier abutting the number
     // fails. Runs before parsing; diagnostics accumulate with the parse below.
     private void ValidateNumberIdentifierGluing()
@@ -124,7 +125,13 @@ internal sealed partial class Parser
             var next = _tokens.Tokens[index + 1];
             if (next.Token == Token.Identifier && next.Start == current.Start + current.Length)
             {
-                AddDiagnostic("LA1009", "Invalid number literal.", Merge(index, index + 1));
+                if (_tokens.GetString(index + 1) is "j" or "J" &&
+                    !(_tokens.GetString(index).StartsWith("0x", StringComparison.OrdinalIgnoreCase) ||
+                      _tokens.GetString(index).StartsWith("0o", StringComparison.OrdinalIgnoreCase) ||
+                      _tokens.GetString(index).StartsWith("0b", StringComparison.OrdinalIgnoreCase)))
+                    AddDiagnostic("LA2000", "Unsupported Python construct 'complex literal'.", Merge(index, index + 1));
+                else
+                    AddDiagnostic("LA1009", "Invalid number literal.", Merge(index, index + 1));
             }
         }
     }

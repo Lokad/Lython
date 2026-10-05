@@ -82,6 +82,12 @@ The example elides the host implementation on purpose. In practice, `host` is yo
 
 Lython supports a broad, practical subset of Python. Ordinary control flow, functions, exceptions, collections, comprehensions, strings, regex, classes and dataclasses, structural pattern matching, and host-mediated file/path work are expected to work.
 
+The [supported syntax inventory](SUPPORTED_SYNTAX.md) lists implemented grammar
+families, embedding extensions and explicit exclusions, with links to the
+public regression corpus. Some valid Python combinations remain unsupported,
+including positional-only `/` parameters, several loop target forms and
+grouped/destructuring context-manager headers.
+
 Parenthesized, bracketed, and braced expressions may span physical lines using Python's implicit line joining, including inside compound-statement headers such as `if`, `for`, and `while`.
 
 Tuple expression lists follow ordinary Python spelling in statement contexts: assignment values, `return`, expression statements, and `for` iterables may omit parentheses, including the one-item trailing-comma form.

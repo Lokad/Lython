@@ -1,0 +1,1282 @@
+[
+  {
+    "name": "implicit-joining",
+    "family": "lexical",
+    "status": "supported",
+    "source": "x = [\n    1, # comment\n    2,\n]\nif (\n    sum(x) == 3\n):\n    print(x)\n",
+    "standardOutput": "[1, 2]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "explicit-joining",
+    "family": "lexical",
+    "status": "supported",
+    "source": "x = 1 + \\\n    2\nprint(x)\n",
+    "standardOutput": "3\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "unicode-name",
+    "family": "lexical",
+    "status": "supported",
+    "source": "café = 3\nprint(café)\n",
+    "standardOutput": "3\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "identifier-nfkc",
+    "family": "lexical",
+    "status": "supported",
+    "source": "K = 4\nprint(K)\n",
+    "standardOutput": "4\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "soft-keywords",
+    "family": "lexical",
+    "status": "supported",
+    "source": "match = 1\ncase = 2\ntype = 3\nprint(match, case, type)\n",
+    "standardOutput": "1 2 3\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "numeric-forms",
+    "family": "lexical",
+    "status": "supported",
+    "source": "print(0x_FF, 0o_17, 0b_101, 1_000, 1.2e-3, .5, 5.)\n",
+    "standardOutput": "255 15 5 1000 0.0012 0.5 5.0\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "literal-prefixes",
+    "family": "lexical",
+    "status": "unsupported",
+    "source": "print(r\"\\n\", b\"ab\", rb\"\\n\", u\"ok\", \"a\" \"b\")\n",
+    "standardOutput": "\\n b'ab' b'\\\\n' ok ab\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "The u string prefix is not implemented."
+  },
+  {
+    "name": "triple-string",
+    "family": "lexical",
+    "status": "supported",
+    "source": "print(\"\"\"first\nsecond\"\"\")\n",
+    "standardOutput": "first\nsecond\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "operator-precedence",
+    "family": "expressions",
+    "status": "supported",
+    "source": "print(-2**2, 2**-2, 2**3**2, 1 | 2 & 4, not 1 == 2)\n",
+    "standardOutput": "-4 0.25 512 1 True\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "boolean-laziness",
+    "family": "expressions",
+    "status": "supported",
+    "source": "print(0 and 1/0, 2 or 1/0, 1 if True else 1/0)\n",
+    "standardOutput": "0 2 1\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "comparison-chain",
+    "family": "expressions",
+    "status": "supported",
+    "source": "print(1 < 2 < 3, 1 in [1] is not None, 2 not in [1])\n",
+    "standardOutput": "True True True\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "walrus-condition",
+    "family": "expressions",
+    "status": "supported",
+    "source": "if (n := 3) > 1:\n    print(n)\n",
+    "standardOutput": "3\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "ternary-nesting",
+    "family": "expressions",
+    "status": "supported",
+    "source": "print(1 if False else 2 if True else 3)\n",
+    "standardOutput": "2\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "slices",
+    "family": "expressions",
+    "status": "supported",
+    "source": "x = [0,1,2,3,4]\nprint(x[::-1], x[1:4:2], x[:])\n",
+    "standardOutput": "[4, 3, 2, 1, 0] [1, 3] [0, 1, 2, 3, 4]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "display-unpack",
+    "family": "expressions",
+    "status": "supported",
+    "source": "print([0,*range(3)], (*[1,2],3), sorted({0,*[1,2]}), {**{'x':1},'x':2})\n",
+    "standardOutput": "[0, 0, 1, 2] (1, 2, 3) [0, 1, 2] {'x': 2}\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "multidimensional-subscript",
+    "family": "expressions",
+    "status": "supported",
+    "source": "class C:\n    def __getitem__(self, x):\n        return x\nprint(C()[1, 2])\n",
+    "standardOutput": "(1, 2)\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "assignment-nested",
+    "family": "assignment",
+    "status": "supported",
+    "source": "a, (b, *c) = [1, [2,3,4]]\nprint(a,b,c)\n",
+    "standardOutput": "1 2 [3, 4]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "assignment-list",
+    "family": "assignment",
+    "status": "supported",
+    "source": "[a,b] = (1,2)\nprint(a,b)\n",
+    "standardOutput": "1 2\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "assignment-one-tuple",
+    "family": "assignment",
+    "status": "supported",
+    "source": "a, = [3]\nprint(a)\n",
+    "standardOutput": "3\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "assignment-chain",
+    "family": "assignment",
+    "status": "supported",
+    "source": "a = b = []\na.append(1)\nprint(b, a is b)\n",
+    "standardOutput": "[1] True\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "assignment-attr-subscript",
+    "family": "assignment",
+    "status": "supported",
+    "source": "class C:\n    pass\nc = C()\na = [0]\nc.x, a[0] = 2, 3\nprint(c.x, a)\n",
+    "standardOutput": "2 [3]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "augmented-once",
+    "family": "assignment",
+    "status": "supported",
+    "source": "calls = []\ndef index():\n    calls.append(1)\n    return 0\nx = [[1]]\nx[index()] += [2]\nprint(x, calls)\n",
+    "standardOutput": "[[1, 2]] [1]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "slice-assignment-delete",
+    "family": "assignment",
+    "status": "supported",
+    "source": "x = [0,1,2,3]\nx[1:3] = [7,8,9]\ndel x[::2]\nprint(x)\n",
+    "standardOutput": "[7, 9]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "annotated-assignment",
+    "family": "assignment",
+    "status": "supported",
+    "source": "x: int = 3\nprint(x)\n",
+    "standardOutput": "3\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "for-tuple-target",
+    "family": "loops",
+    "status": "supported",
+    "source": "out=[]\nfor a,b in [(1,2),(3,4)]:\n    out.append(a+b)\nprint(out)\n",
+    "standardOutput": "[3, 7]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "for-list-target",
+    "family": "loops",
+    "status": "unsupported",
+    "source": "out=[]\nfor [a,b] in [(1,2),(3,4)]:\n    out.append(a+b)\nprint(out)\n",
+    "standardOutput": "[3, 7]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "List-shaped loop targets are not implemented."
+  },
+  {
+    "name": "for-single-target-comma",
+    "family": "loops",
+    "status": "unsupported",
+    "source": "out=[]\nfor a, in [(1,), (2,)]:\n    out.append(a)\nprint(out)\n",
+    "standardOutput": "[1, 2]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "A trailing comma in a loop target is not implemented."
+  },
+  {
+    "name": "for-star-target",
+    "family": "loops",
+    "status": "supported",
+    "source": "out=[]\nfor a,*b in [(1,2,3)]:\n    out.append([a,b])\nprint(out)\n",
+    "standardOutput": "[[1, [2, 3]]]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "for-attribute-target",
+    "family": "loops",
+    "status": "unsupported",
+    "source": "class C:\n    pass\nc=C()\nfor c.x in [1,2]:\n    pass\nprint(c.x)\n",
+    "standardOutput": "2\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "Attribute loop targets are not implemented."
+  },
+  {
+    "name": "for-subscript-target",
+    "family": "loops",
+    "status": "unsupported",
+    "source": "a=[0]\nfor a[0] in [1,2]:\n    pass\nprint(a)\n",
+    "standardOutput": "[2]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "Subscript loop targets are not implemented."
+  },
+  {
+    "name": "loop-else",
+    "family": "loops",
+    "status": "supported",
+    "source": "for i in [1]:\n    pass\nelse:\n    print(i)\nx=0\nwhile x<2:\n    x+=1\nelse:\n    print(x)\n",
+    "standardOutput": "1\n2\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "loop-break-continue",
+    "family": "loops",
+    "status": "supported",
+    "source": "for i in range(3):\n    if i==0:\n        continue\n    print(i)\n    break\nelse:\n    print('bad')\n",
+    "standardOutput": "1\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "comprehension-all",
+    "family": "comprehensions",
+    "status": "supported",
+    "source": "print([x*x for x in range(3)], sorted({x for x in [1,1,2]}), {x:x+1 for x in [1,2]}, list(x+1 for x in [1,2]))\n",
+    "standardOutput": "[0, 1, 4] [1, 2] {1: 2, 2: 3} [2, 3]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "comprehension-multiple-filters",
+    "family": "comprehensions",
+    "status": "supported",
+    "source": "print([x for x in range(6) if x > 1 if x < 4])\n",
+    "standardOutput": "[2, 3]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "set-multiple-filters",
+    "family": "comprehensions",
+    "status": "supported",
+    "source": "print(sorted({x for x in range(6) if x > 1 if x < 4}))\n",
+    "standardOutput": "[2, 3]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "dict-multiple-filters",
+    "family": "comprehensions",
+    "status": "supported",
+    "source": "print({x:x for x in range(6) if x > 1 if x < 4})\n",
+    "standardOutput": "{2: 2, 3: 3}\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "generator-multiple-filters",
+    "family": "comprehensions",
+    "status": "supported",
+    "source": "print(list(x for x in range(6) if x > 1 if x < 4))\n",
+    "standardOutput": "[2, 3]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "comprehension-multiple-for",
+    "family": "comprehensions",
+    "status": "supported",
+    "source": "print([(x,y) for x in [1,2] for y in [3,4] if x+y>4])\n",
+    "standardOutput": "[(1, 4), (2, 3), (2, 4)]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "comprehension-list-target",
+    "family": "comprehensions",
+    "status": "unsupported",
+    "source": "print([a+b for [a,b] in [(1,2)]])\n",
+    "standardOutput": "[3]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "List-shaped comprehension targets are not implemented."
+  },
+  {
+    "name": "comprehension-single-comma",
+    "family": "comprehensions",
+    "status": "unsupported",
+    "source": "print([a for a, in [(1,), (2,)]])\n",
+    "standardOutput": "[1, 2]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "A trailing comma in a comprehension target is not implemented."
+  },
+  {
+    "name": "comprehension-scope",
+    "family": "comprehensions",
+    "status": "supported",
+    "source": "x=9\nprint([x for x in [1,2]], x)\n",
+    "standardOutput": "[1, 2] 9\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "comprehension-walrus",
+    "family": "comprehensions",
+    "status": "supported",
+    "source": "y=0\nprint([y:=x for x in range(3)], y)\n",
+    "standardOutput": "[0, 1, 2] 2\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "comprehension-ternary-filter",
+    "family": "comprehensions",
+    "status": "supported",
+    "source": "print([x for x in range(4) if (True if x>1 else False)])\n",
+    "standardOutput": "[2, 3]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "generator-sole-call-argument",
+    "family": "comprehensions",
+    "status": "supported",
+    "source": "print(sum(x*x for x in range(4)))\n",
+    "standardOutput": "14\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "parameter-kinds",
+    "family": "functions",
+    "status": "unsupported",
+    "source": "def f(a, /, b=2, *args, c=3, **kwargs):\n    return a,b,args,c,kwargs\nprint(f(1,4,5,c=6,d=7))\n",
+    "standardOutput": "(1, 4, (5,), 6, {'d': 7})\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "Positional-only slash parameters are not implemented."
+  },
+  {
+    "name": "bare-star",
+    "family": "functions",
+    "status": "supported",
+    "source": "def f(a, *, b=2):\n    return a+b\nprint(f(1,b=4))\n",
+    "standardOutput": "5\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "posonly-kwargs-name",
+    "family": "functions",
+    "status": "unsupported",
+    "source": "def f(x, /, **kw):\n    return x,kw\nprint(f(1,x=2))\n",
+    "standardOutput": "(1, {'x': 2})\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "Positional-only slash parameters are not implemented."
+  },
+  {
+    "name": "starred-call",
+    "family": "functions",
+    "status": "supported",
+    "source": "def f(a,b,c):\n    return a,b,c\nprint(f(*[1],**{'b':2,'c':3}))\n",
+    "standardOutput": "(1, 2, 3)\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "keyword-before-star-call",
+    "family": "functions",
+    "status": "supported",
+    "source": "def f(a,b):\n    return a,b\nprint(f(b=2,*[1]))\n",
+    "standardOutput": "(1, 2)\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "lambda-parameter-kinds",
+    "family": "functions",
+    "status": "unsupported",
+    "source": "f=lambda a, /, *, b=2: a+b\nprint(f(1,b=4))\n",
+    "standardOutput": "5\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "Positional-only slash lambda parameters are not implemented."
+  },
+  {
+    "name": "lambda-tuple-default",
+    "family": "functions",
+    "status": "supported",
+    "source": "f=lambda x=(1,2): x\nprint(f())\n",
+    "standardOutput": "(1, 2)\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "definition-default-once",
+    "family": "functions",
+    "status": "supported",
+    "source": "def f(x=[]):\n    x.append(1)\n    return len(x)\nprint(f(), f())\n",
+    "standardOutput": "1 2\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "closure-nonlocal",
+    "family": "functions",
+    "status": "supported",
+    "source": "def outer():\n    x=0\n    def inner():\n        nonlocal x\n        x+=1\n        return x\n    return inner\nf=outer()\nprint(f(),f())\n",
+    "standardOutput": "1 2\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "global-binding",
+    "family": "functions",
+    "status": "supported",
+    "source": "x=1\ndef f():\n    global x\n    x=2\nf()\nprint(x)\n",
+    "standardOutput": "2\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "return-tuple",
+    "family": "functions",
+    "status": "supported",
+    "source": "def f():\n    return 1,2,\nprint(f())\n",
+    "standardOutput": "(1, 2)\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "decorator-order",
+    "family": "functions",
+    "status": "supported",
+    "source": "events=[]\ndef deco(x):\n    events.append(x)\n    def apply(f):\n        events.append(x+10)\n        return f\n    return apply\n@deco(1)\n@deco(2)\ndef f():\n    return 3\nprint(events,f())\n",
+    "standardOutput": "[1, 2, 12, 11] 3\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "function-annotations",
+    "family": "functions",
+    "status": "supported",
+    "source": "def f(x:int=1) -> int:\n    return x\nprint(f())\n",
+    "standardOutput": "1\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "class-super",
+    "family": "classes",
+    "status": "supported",
+    "source": "class A:\n    def f(self):\n        return 1\nclass B(A):\n    def f(self):\n        return super().f()+1\nprint(B().f())\n",
+    "standardOutput": "2\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "class-decorator",
+    "family": "classes",
+    "status": "supported",
+    "source": "def deco(cls):\n    cls.x=4\n    return cls\n@deco\nclass C:\n    pass\nprint(C.x)\n",
+    "standardOutput": "4\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "class-property",
+    "family": "classes",
+    "status": "supported",
+    "source": "class C:\n    @property\n    def x(self):\n        return 4\nprint(C().x)\n",
+    "standardOutput": "4\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "class-static-class-method",
+    "family": "classes",
+    "status": "supported",
+    "source": "class C:\n    @staticmethod\n    def f(x):\n        return x\n    @classmethod\n    def g(cls):\n        return cls.__name__\nprint(C.f(4),C.g())\n",
+    "standardOutput": "4 C\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "try-all-suites",
+    "family": "exceptions",
+    "status": "supported",
+    "source": "try:\n    print(1)\nexcept ValueError:\n    print(2)\nelse:\n    print(3)\nfinally:\n    print(4)\n",
+    "standardOutput": "1\n3\n4\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "except-tuple-binding",
+    "family": "exceptions",
+    "status": "supported",
+    "source": "try:\n    raise ValueError('bad')\nexcept (ValueError,TypeError) as e:\n    print(str(e))\n",
+    "standardOutput": "bad\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "raise-from",
+    "family": "exceptions",
+    "status": "supported",
+    "source": "try:\n    try:\n        raise ValueError('v')\n    except ValueError as e:\n        raise TypeError('t') from e\nexcept TypeError as e:\n    print(str(e), str(e.__cause__))\n",
+    "standardOutput": "t v\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "finally-return",
+    "family": "exceptions",
+    "status": "supported",
+    "source": "def f():\n    try:\n        return 1\n    finally:\n        return 2\nprint(f())\n",
+    "standardOutput": "2\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "assert-message",
+    "family": "exceptions",
+    "status": "supported",
+    "source": "try:\n    assert False, 'bad'\nexcept AssertionError as e:\n    print(str(e))\n",
+    "standardOutput": "bad\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "with-multiple",
+    "family": "with",
+    "status": "supported",
+    "source": "events=[]\nclass C:\n    def __init__(self,n):\n        self.n=n\n    def __enter__(self):\n        events.append(self.n)\n        return (self.n, self.n+1)\n    def __exit__(self,a,b,c):\n        events.append(-self.n)\n        return False\n\nwith C(1) as a, C(2) as b:\n    print(a,b)\nprint(events)\n",
+    "standardOutput": "(1, 2) (2, 3)\n[1, 2, -2, -1]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "with-parenthesized",
+    "family": "with",
+    "status": "unsupported",
+    "source": "events=[]\nclass C:\n    def __init__(self,n):\n        self.n=n\n    def __enter__(self):\n        events.append(self.n)\n        return (self.n, self.n+1)\n    def __exit__(self,a,b,c):\n        events.append(-self.n)\n        return False\n\nwith (\n    C(1) as a,\n    C(2) as b,\n):\n    print(a,b)\nprint(events)\n",
+    "standardOutput": "(1, 2) (2, 3)\n[1, 2, -2, -1]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "Grouped with-item lists are not implemented."
+  },
+  {
+    "name": "with-unpacked-target",
+    "family": "with",
+    "status": "unsupported",
+    "source": "events=[]\nclass C:\n    def __init__(self,n):\n        self.n=n\n    def __enter__(self):\n        events.append(self.n)\n        return (self.n, self.n+1)\n    def __exit__(self,a,b,c):\n        events.append(-self.n)\n        return False\n\nwith C(1) as (a,b):\n    print(a,b)\nprint(events)\n",
+    "standardOutput": "1 2\n[1, -1]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "Tuple-shaped with-as targets are not implemented."
+  },
+  {
+    "name": "with-list-target",
+    "family": "with",
+    "status": "unsupported",
+    "source": "events=[]\nclass C:\n    def __init__(self,n):\n        self.n=n\n    def __enter__(self):\n        events.append(self.n)\n        return (self.n, self.n+1)\n    def __exit__(self,a,b,c):\n        events.append(-self.n)\n        return False\n\nwith C(1) as [a,b]:\n    print(a,b)\nprint(events)\n",
+    "standardOutput": "1 2\n[1, -1]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "List-shaped with-as targets are not implemented."
+  },
+  {
+    "name": "import-alias",
+    "family": "imports",
+    "status": "supported",
+    "source": "import math as m, json as j\nprint(m.isfinite(2),j.loads('1'))\n",
+    "standardOutput": "True 1\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "from-grouped",
+    "family": "imports",
+    "status": "supported",
+    "source": "from math import (\n    floor as f,\n    ceil,\n)\nprint(f(1.5),ceil(1.5))\n",
+    "standardOutput": "1 2\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "simple-statement-chain",
+    "family": "imports",
+    "status": "supported",
+    "source": "import math; x=3; print(x); assert x==3; del x\n",
+    "standardOutput": "3\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "one-line-suite",
+    "family": "imports",
+    "status": "supported",
+    "source": "if True: x=1; print(x)\nfor i in [2]: print(i)\n",
+    "standardOutput": "1\n2\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "fstring-basic",
+    "family": "fstrings",
+    "status": "supported",
+    "source": "x=3\nprint(f\"x={x!r:>3}\", f\"{x=}\", f\"{x:0{4}d}\")\n",
+    "standardOutput": "x=  3 x=3 0003\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "fstring-adjacent",
+    "family": "fstrings",
+    "status": "supported",
+    "source": "x=2\nprint(\"a\" f\"{x}\" \"b\")\n",
+    "standardOutput": "a2b\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "fstring-same-quotes",
+    "family": "fstrings",
+    "status": "supported",
+    "source": "d={\"x\":2}\nprint(f\"{d[\"x\"]}\")\n",
+    "standardOutput": "2\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "fstring-backslash-expression",
+    "family": "fstrings",
+    "status": "supported",
+    "source": "print(f\"{chr(10).join([\"a\", \"b\"])}\")\n",
+    "standardOutput": "a\nb\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "fstring-escaped-expression",
+    "family": "fstrings",
+    "status": "supported",
+    "source": "print(f'{\"a\\nb\"}')\n",
+    "standardOutput": "a\nb\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "fstring-comment",
+    "family": "fstrings",
+    "status": "supported",
+    "source": "x=3\nprint(f\"\"\"{x # inline comment\n}\"\"\")\n",
+    "standardOutput": "3\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "fstring-lambda",
+    "family": "fstrings",
+    "status": "supported",
+    "source": "print(f\"{(lambda x: x+1)(2)}\")\n",
+    "standardOutput": "3\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "fstring-raw",
+    "family": "fstrings",
+    "status": "supported",
+    "source": "x=2\nprint(rf\"\\n{x}\")\n",
+    "standardOutput": "\\n2\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "match-literal-guard",
+    "family": "patterns",
+    "status": "supported",
+    "source": "match [1,2]:\n    case [a,b] if a==1:\n        print(a,b)\n    case _:\n        print('bad')\n",
+    "standardOutput": "1 2\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "match-or-as",
+    "family": "patterns",
+    "status": "supported",
+    "source": "match 2:\n    case (1|2) as x:\n        print(x)\n    case _:\n        print('bad')\n",
+    "standardOutput": "2\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "match-sequence-star",
+    "family": "patterns",
+    "status": "supported",
+    "source": "match [1,2,3]:\n    case [a,*rest]:\n        print(a,rest)\n",
+    "standardOutput": "1 [2, 3]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "match-mapping-rest",
+    "family": "patterns",
+    "status": "supported",
+    "source": "match {'a':1,'b':2}:\n    case {'a':x,**rest}:\n        print(x,rest)\n",
+    "standardOutput": "1 {'b': 2}\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "match-class",
+    "family": "patterns",
+    "status": "supported",
+    "source": "class C:\n    __match_args__=('x',)\n    def __init__(self,x):\n        self.x=x\nmatch C(3):\n    case C(x):\n        print(x)\n",
+    "standardOutput": "3\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "match-soft-names",
+    "family": "patterns",
+    "status": "supported",
+    "source": "match=3\ncase=4\nmatch match:\n    case 3:\n        print(case)\n",
+    "standardOutput": "4\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "invalid-target-literal",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "1=2\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "invalid-two-star-targets",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "a,*b,*c=[1,2,3]\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "invalid-duplicate-parameter",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "def f(x,x):\n    pass\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "invalid-parameter-default-order",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "def f(x=1,y):\n    pass\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "invalid-bare-star",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "def f(*):\n    pass\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "invalid-return-outside-function",
+    "family": "invalid",
+    "status": "extension",
+    "source": "return 1\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": "Top-level return is the embedding result extension."
+  },
+  {
+    "name": "invalid-break-outside-loop",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "break\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "invalid-continue-outside-loop",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "continue\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "invalid-break-through-function",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "for x in [1]:\n    def f():\n        break\n    f()\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "invalid-continue-through-function",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "for x in [1]:\n    def f():\n        continue\n    f()\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "invalid-nonlocal-unbound",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "def f():\n    nonlocal x\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "invalid-global-after-use",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "x=1\ndef f():\n    print(x)\n    global x\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "invalid-keyword-duplicate",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "print(end='',end='')\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "invalid-comprehension-walrus-target",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "print([x:=x for x in range(3)])\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "invalid-comprehension-walrus-iterable",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "print([x for x in (y:=range(3))])\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "invalid-comprehension-rebind-outer",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "print([[y:=x for x in range(2)] for y in range(2)])\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "invalid-match-duplicate-capture",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "match [1,2]:\n    case [x,x]:\n        print(x)\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "invalid-match-unreachable",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "match 1:\n    case _:\n        print(1)\n    case 2:\n        print(2)\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "invalid-match-or-bindings",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "match 1:\n    case 1|x:\n        print(1)\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "invalid-except-after-bare",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "try:\n    pass\nexcept:\n    pass\nexcept ValueError:\n    pass\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "invalid-import-trailing-comma",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "from math import floor,\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "invalid-unclosed-delimiter",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "x=[1,2\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "invalid-number-underscore",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "x=1__0\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "invalid-leading-zero",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "x=01\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": ""
+  },
+  {
+    "name": "unsupported-yield",
+    "family": "boundaries",
+    "status": "unsupported",
+    "source": "def f():\n    yield 1\nprint(list(f()))\n",
+    "standardOutput": "[1]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "unsupported-yield-from",
+    "family": "boundaries",
+    "status": "unsupported",
+    "source": "def f():\n    yield from [1]\nprint(list(f()))\n",
+    "standardOutput": "[1]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "unsupported-async-def",
+    "family": "boundaries",
+    "status": "unsupported",
+    "source": "async def f():\n    return 1\n",
+    "standardOutput": "",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "unsupported-type-alias",
+    "family": "boundaries",
+    "status": "unsupported",
+    "source": "type Pair = tuple[int,int]\n",
+    "standardOutput": "",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "unsupported-type-parameters",
+    "family": "boundaries",
+    "status": "unsupported",
+    "source": "def f[T](x:T):\n    return x\n",
+    "standardOutput": "",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "unsupported-except-star",
+    "family": "boundaries",
+    "status": "unsupported",
+    "source": "try:\n    pass\nexcept* ValueError:\n    pass\n",
+    "standardOutput": "",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "unsupported-matmul",
+    "family": "boundaries",
+    "status": "unsupported",
+    "source": "print([1] @ [2])\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "TypeError",
+    "note": ""
+  },
+  {
+    "name": "unsupported-complex",
+    "family": "boundaries",
+    "status": "unsupported",
+    "source": "print(1j)\n",
+    "standardOutput": "1j\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "json-strict-hook-order",
+    "family": "json",
+    "status": "supported",
+    "source": "import json\nevents=[]\ndef hook(o):\n    events.append('hook')\n    return o\ntry:\n    json.loads('{\"x\":\"a'+chr(1)+'b\"}', object_hook=hook)\nexcept json.JSONDecodeError as e:\n    print(e.pos,events)\n",
+    "standardOutput": "7 []\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "json-raw-prior-control",
+    "family": "json",
+    "status": "supported",
+    "source": "import json\ns='\"a'+chr(1)+'\" 42'\ntry:\n    print(json.JSONDecoder().raw_decode(s,5))\nexcept json.JSONDecodeError as e:\n    print('error', e.pos)\n",
+    "standardOutput": "(42, 7)\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "json-strict-error-before-hook",
+    "family": "json",
+    "status": "supported",
+    "source": "import json\ndef hook(o):\n    raise ValueError('hook ran')\ntry:\n    json.loads('{\"x\":\"a'+chr(1)+'b\"}', object_hook=hook)\nexcept json.JSONDecodeError:\n    print('syntax')\nexcept ValueError:\n    print('hook')\n",
+    "standardOutput": "syntax\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "json-decoder-public-option",
+    "family": "json",
+    "status": "supported",
+    "source": "import json\nd=json.JSONDecoder(strict=False)\nprint(d.strict)\n",
+    "standardOutput": "False\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "json-encoder-option-mutation",
+    "family": "json",
+    "status": "supported",
+    "source": "import json\ne=json.JSONEncoder()\ne.ensure_ascii=False\nprint(e.encode('é'))\n",
+    "standardOutput": "\"é\"\n",
+    "success": true,
+    "exceptionType": null,
+    "note": ""
+  },
+  {
+    "name": "unsupported-await",
+    "family": "boundaries",
+    "status": "unsupported",
+    "source": "await value\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": "Python asynchronous syntax is outside the contained synchronous guest language."
+  },
+  {
+    "name": "unsupported-async-for",
+    "family": "boundaries",
+    "status": "unsupported",
+    "source": "async for x in []:\n    pass\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": "Python asynchronous syntax is outside the contained synchronous guest language."
+  },
+  {
+    "name": "unsupported-async-with",
+    "family": "boundaries",
+    "status": "unsupported",
+    "source": "async with value:\n    pass\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": "Python asynchronous syntax is outside the contained synchronous guest language."
+  }
+]
