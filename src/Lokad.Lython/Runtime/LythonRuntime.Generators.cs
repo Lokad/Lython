@@ -28,13 +28,11 @@ internal sealed partial class LythonRuntime
                 code.LocalNames.Count + code.MemberCacheCount + code.CallCacheCount + code.Blocks.Count));
             frame.MemoryGovernor.Reserve(bytes, span);
             frame.MemoryGovernor.Commit(bytes);
-            try
-            {
-                var generator = new PyGenerator(code, frame, span, bytes, closureCells);
-                frame.Services.State.CallTemporaries.TrackFreshMutable(generator, bytes, span);
-                return generator;
-            }
+            PyGenerator generator;
+            try { generator = new PyGenerator(code, frame, span, bytes, closureCells); }
             catch { frame.MemoryGovernor.Release(bytes); throw; }
+            frame.Services.State.CallTemporaries.TrackFreshMutable(generator, bytes, span);
+            return generator;
         }
 
         private PyGenerator(ExecutableCodeObject code, ExecutionContext frame, LythonSourceSpan span, long bytes, IReadOnlyList<ExecutableCell>? closureCells)
