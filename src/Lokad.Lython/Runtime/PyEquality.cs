@@ -28,6 +28,8 @@ internal static class PyEquality
             return true;
         }
 
+        if (left is PyGenericAlias leftAlias && right is PyGenericAlias rightAlias) return leftAlias.Equals(rightAlias);
+
         if (left is IPythonExceptionType leftExceptionType && right is IPythonExceptionType rightExceptionType)
         {
             return leftExceptionType.ExceptionIdentity == rightExceptionType.ExceptionIdentity;

@@ -150,7 +150,11 @@ internal static class PyTyping
         value = name switch
         {
             "TYPE_CHECKING" => false,
-            "TypeVar" => TypeVarCallable.Instance,
+            "TypeVar" => PyTypeParameter.TypeVarType,
+            "TypeVarTuple" => PyTypeParameter.TypeVarTupleType,
+            "ParamSpec" => PyTypeParameter.ParamSpecType,
+            "TypeAliasType" => PyTypeAlias.RuntimeType,
+            "NoDefault" => PyTypeParameter.NoDefault,
             "NewType" => NewTypeCallable.Instance,
             "cast" => CastCallable.Instance,
             "get_origin" => GetOriginCallable.Instance,
@@ -217,6 +221,9 @@ internal static class PyTyping
             throw new LythonRuntimeException("TypeError", "typing.get_origin(tp) expects one argument.", span);
         }
 
+        if (value is PyGenericAlias generic) return generic.Origin;
+        if (value is PyUnpackedType) return new PyTypingAlias("Unpack");
+        if (value is PyParamSpecPart part) return part.Parameter;
         if (value is not PyTypingAlias { IsSubscripted: true } alias)
         {
             return PyNone.Instance;
@@ -244,6 +251,8 @@ internal static class PyTyping
             throw new LythonRuntimeException("TypeError", "typing.get_args(tp) expects one argument.", span);
         }
 
+        if (value is PyGenericAlias generic) return generic.Arguments;
+        if (value is PyUnpackedType unpacked) return new PyTuple([unpacked.Value], context.MemoryGovernor, span);
         if (value is not PyTypingAlias alias)
         {
             return PyTuple.Empty;

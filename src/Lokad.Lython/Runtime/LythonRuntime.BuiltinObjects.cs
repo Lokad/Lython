@@ -1,3 +1,4 @@
+using Lokad.Lython.Frontend;
 using System.Buffers;
 using System.Globalization;
 using System.Numerics;
@@ -678,9 +679,10 @@ internal sealed partial class LythonRuntime
         _ => null,
     };
 
-    private static bool IsBuiltinTypeName(string name)
+    internal static bool IsBuiltinTypeName(string name)
     {
         return name is
+            "typing.TypeVar" or "typing.TypeVarTuple" or "typing.ParamSpec" or "typing.TypeAliasType" or "types.GenericAlias" or "typing._GenericAlias" or
             "generator" or
             "bool" or
             "int" or
@@ -716,6 +718,11 @@ internal sealed partial class LythonRuntime
     {
         return typeName switch
         {
+            "typing.TypeVar" => value is PyTypeParameter { Kind: TypeParameterKind.TypeVar },
+            "typing.TypeVarTuple" => value is PyTypeParameter { Kind: TypeParameterKind.TypeVarTuple },
+            "typing.ParamSpec" => value is PyTypeParameter { Kind: TypeParameterKind.ParamSpec },
+            "typing.TypeAliasType" => value is PyTypeAlias,
+            "types.GenericAlias" or "typing._GenericAlias" => value is PyGenericAlias,
             "generator" => value is PyGenerator or PyGeneratorExpression,
             "bool" => value is bool,
             "int" => value is BigInteger or int or bool,
@@ -745,6 +752,29 @@ internal sealed partial class LythonRuntime
             "random.Random" => value is RandomModule.PyRandom,
             _ => false
         };
+    }
+
+    private static async ValueTask<object> GetAttrAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length is < 2 or > 3) throw new LythonRuntimeException("TypeError", "getattr expects two or three arguments", span);
+        var name = ExpectAttributeName(arguments[1], span);
+        try
+        {
+            var result = await TryResolveRuntimeMemberAsync(arguments[0], name, context, span).ConfigureAwait(false);
+            if (result.Found) return result.Value;
+        }
+        catch (LythonRuntimeException exception) when (exception.ExceptionType == "AttributeError" && arguments.Length == 3)
+        { return arguments[2]; }
+        if (arguments.Length == 3) return arguments[2];
+        throw PyMemberAccess.CreateMissingMemberError(arguments[0], name, span, context);
+    }
+
+    private static async ValueTask<object> HasAttrAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (arguments.Length != 2) throw new LythonRuntimeException("TypeError", "hasattr expects two arguments", span);
+        var name = ExpectAttributeName(arguments[1], span);
+        try { return (await TryResolveRuntimeMemberAsync(arguments[0], name, context, span).ConfigureAwait(false)).Found; }
+        catch (LythonRuntimeException exception) when (exception.ExceptionType == "AttributeError") { return false; }
     }
 
     private static object GetAttr(object[] arguments, LythonSourceSpan span, ExecutionContext context)

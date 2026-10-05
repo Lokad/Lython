@@ -182,6 +182,8 @@ internal sealed partial class Parser
         {
             var openBracketToken = parser.ReadToken();
             parser.SkipGroupedExpressionTrivia();
+            var firstUnpacked = parser.CurrentToken == Token.Star;
+            if (firstUnpacked) parser.ReadToken();
             ExpressionSyntax? start = null;
             if (parser.CurrentToken != Token.Colon)
             {
@@ -249,9 +251,9 @@ internal sealed partial class Parser
                 return null;
             }
 
-            if (parser.CurrentToken == Token.Comma)
+            if (parser.CurrentToken == Token.Comma || firstUnpacked)
             {
-                var items = new List<ExpressionSyntax> { start };
+                var items = new List<CollectionDisplayItemSyntax> { firstUnpacked ? new CollectionUnpackingItemSyntax(start, start.Span) : new CollectionValueItemSyntax(start) };
                 while (parser.CurrentToken == Token.Comma)
                 {
                     parser.ReadToken();
@@ -261,6 +263,8 @@ internal sealed partial class Parser
                         break;
                     }
 
+                    var unpacked = parser.CurrentToken == Token.Star;
+                    if (unpacked) parser.ReadToken();
                     var next = parser.ParseNestedExpression(parser._position);
                     if (next is null)
                     {
@@ -269,11 +273,11 @@ internal sealed partial class Parser
                     }
                     parser.SkipGroupedExpressionTrivia();
 
-                    items.Add(next);
+                    items.Add(unpacked ? new CollectionUnpackingItemSyntax(next, next.Span) : new CollectionValueItemSyntax(next));
                 }
 
                 start = new TupleLiteralExpressionSyntax(
-                    items.Select(static item => (CollectionDisplayItemSyntax)new CollectionValueItemSyntax(item)).ToArray(),
+                    items.ToArray(),
                     Merge(items[0].Span, items[^1].Span));
             }
 

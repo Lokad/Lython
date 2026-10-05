@@ -39,6 +39,9 @@ internal sealed partial class ExecutableScript
                 case LoweredScopeDirectiveStatement:
                     return currentBlock;
 
+                case LoweredFunctionDefinitionStatement functionDefinition when functionDefinition.TypeParameters is not null:
+                    AddInstruction(currentBlock, ExecutableInstruction.ExecuteFallbackStatement(InternStatementFallback(functionDefinition), functionDefinition.Span));
+                    return currentBlock;
                 case LoweredFunctionDefinitionStatement functionDefinition:
                     AddInstruction(currentBlock, ExecutableInstruction.DefineFunction(InternFunction(functionDefinition), functionDefinition.Span));
                     return currentBlock;

@@ -46,10 +46,10 @@ internal sealed partial class LythonRuntime
             using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(functionDefinition.Decorators.Count), functionDefinition.Span);
             var decorators = EvaluateDecorators(functionDefinition.Decorators, context);
             var syntax = functionDefinition.Syntax;
-            var function = CreateLoweredFunction(
-                functionDefinition,
-                context,
-                BuildDefaultArgumentMap(functionDefinition.Parameters, expression => EvaluateLoweredExpression(expression, context)));
+            var defaults = BuildDefaultArgumentMap(functionDefinition.Parameters, expression => EvaluateLoweredExpression(expression, context));
+            var typeScope = CreateTypeScope(functionDefinition.TypeParameters, context, functionDefinition.Span);
+            var function = CreateLoweredFunction(functionDefinition, typeScope.Closure, defaults);
+            AttachTypeMetadataAsync(function, functionDefinition, typeScope, context, false).GetAwaiter().GetResult();
             StoreName(syntax.Name, ApplyDecorators(function, decorators, functionDefinition.Span, context), context, functionDefinition.Span);
         }
         finally
@@ -65,22 +65,23 @@ internal sealed partial class LythonRuntime
         {
             using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(classDefinition.Decorators.Count), classDefinition.Span);
             var decorators = EvaluateDecorators(classDefinition.Decorators, context);
+            var typeScope = CreateTypeScope(classDefinition.TypeParameters, context, classDefinition.Span);
             var baseTypes = new object[classDefinition.Bases.Count];
             for (var i = 0; i < classDefinition.Bases.Count; i++)
             {
-                baseTypes[i] = EvaluateLoweredExpression(classDefinition.Bases[i], context);
+                baseTypes[i] = EvaluateLoweredExpression(classDefinition.Bases[i], typeScope.Annotations);
             }
 
             var classKeywordArguments = new CallArgumentValue[classDefinition.KeywordArguments.Count];
             for (var i = 0; i < classDefinition.KeywordArguments.Count; i++)
             {
                 var argument = classDefinition.KeywordArguments[i];
-                classKeywordArguments[i] = CallArgumentValue.Keyword(argument.KeywordName, EvaluateLoweredExpression(argument.Expression, context));
+                classKeywordArguments[i] = CallArgumentValue.Keyword(argument.KeywordName, EvaluateLoweredExpression(argument.Expression, typeScope.Annotations));
             }
-            var resolvedBases = ResolveClassBases(baseTypes, classDefinition.Span, context);
+            var resolvedBases = AddGenericClassBase(classDefinition, ResolveClassBases(baseTypes, classDefinition.Span, context), context);
             ValidateClassKeywordArguments(classKeywordArguments, classDefinition.Span);
 
-            var classContext = ExecutionContext.CreateClassBody(context);
+            var classContext = ExecutionContext.CreateClassBody(typeScope.Closure);
             var classFlow = ExecuteStatements(classDefinition.Body, classContext);
             if (classFlow.Control is not null)
             {
@@ -92,6 +93,7 @@ internal sealed partial class LythonRuntime
                 throw classFlow.Return;
             }
 
+            AttachGenericClassMetadataAsync(classDefinition, typeScope, classContext, false, baseTypes).GetAwaiter().GetResult();
             var type = CreateLoweredClassType(classDefinition, resolvedBases, baseTypes, classContext, context);
             if (type is PyType defined)
             {
@@ -317,6 +319,7 @@ internal sealed partial class LythonRuntime
                     {
                         AssignTarget(annotated.Assignment.Target, EvaluateLoweredExpression(annotated.Expression, context), context);
                     }
+                    StoreModernClassAnnotationAsync(annotated, context, false).GetAwaiter().GetResult();
                     return;
                 case LoweredAugmentedAssignmentStatement augmented:
                     var augmentedTarget = ResolveLoweredAugmentedAssignmentTarget(augmented.Target, context);

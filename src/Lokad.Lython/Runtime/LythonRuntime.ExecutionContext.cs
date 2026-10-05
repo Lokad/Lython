@@ -107,7 +107,7 @@ internal sealed partial class LythonRuntime
             => new(template, new ModuleScope(sourcePath, moduleName));
 
         public static ExecutionContext CreateClassBody(ExecutionContext parent)
-            => new(parent, ClassBodyScope.Instance);
+            => new(parent, ClassBodyScope.Instance) { EvaluateModernClassAnnotations = HasTypeParameterScope(parent) };
 
         private ExecutionContext(ExecutionContext template, ModuleScope scope)
         {
@@ -153,6 +153,9 @@ internal sealed partial class LythonRuntime
         public ILythonHost Host => Services.Host;
 
         public ExecutionContext? ParentContext { get; }
+        internal bool IsTypeParameterScope { get; init; }
+        internal bool HasModernTypeDeclarations { get; set; }
+        internal bool EvaluateModernClassAnnotations { get; init; }
 
         // Names the invoked function for nested-qualname resolution; null outside
         // function invocations (modules, class bodies and other plain scopes

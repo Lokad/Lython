@@ -8,6 +8,11 @@ internal abstract record LoweredExpression
     public LythonSourceSpan Span => Syntax.Span;
 }
 
+internal sealed record LoweredUnpackedTypeExpression(UnpackedTypeExpressionSyntax Unpacked, LoweredExpression Value) : LoweredExpression
+{
+    public override ExpressionSyntax Syntax => Unpacked;
+}
+
 internal sealed record LoweredYieldExpression(YieldExpressionSyntax Yield, LoweredExpression? Value) : LoweredExpression
 {
     public override ExpressionSyntax Syntax => Yield;

@@ -62,6 +62,9 @@ internal static partial class StaticBindingEngine
                 }
                 break;
 
+            case TypeAliasStatementSyntax alias:
+                bindings.Remove(alias.Name);
+                break;
             case AssignmentStatementSyntax assignment:
                 UpdateBinding(assignment.Name, assignment.Expression, bindings);
                 break;

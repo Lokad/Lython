@@ -266,6 +266,8 @@ internal sealed partial class LythonRuntime
         {
             return await GetUserItemAsync(instance, index, context, subscript.Span).ConfigureAwait(false);
         }
+        if (target is PyType type && type.TryGetMember("__type_params__", out _))
+            return await CreateGenericSubscriptAsync(target, index, context, subscript.Span, true).ConfigureAwait(false);
         return ReadLoweredSubscript(target, index, subscript.Span, context);
     }
 
@@ -281,7 +283,9 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> ResolveLoweredMemberAsync(LoweredMemberExpression member, ExecutionContext context)
     {
         var target = await EvaluateLoweredExpressionAsync(member.Target, context).ConfigureAwait(false);
-        return ResolveLoweredMemberValue(member, target, context);
+        var result = await TryResolveRuntimeMemberAsync(target, member.Member.MemberName, context, member.Span).ConfigureAwait(false);
+        if (!result.Found) throw PyMemberAccess.CreateMissingMemberError(target, member.Member.MemberName, member.Span, context);
+        return result.Value;
     }
 
     private static async ValueTask<object> EvaluateLoweredBinaryAsync(LoweredBinaryExpression binary, ExecutionContext context)

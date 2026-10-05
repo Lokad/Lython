@@ -34,6 +34,7 @@ internal static class SyntaxValidityDiagnostics
             }
         }
         diagnostics.AddRange(GeneratorSyntaxFacts.Validate(script));
+        diagnostics.AddRange(ModernTypeSyntaxFacts.Validate(script));
         return diagnostics;
 
         void Error(string message, LythonSourceSpan span)

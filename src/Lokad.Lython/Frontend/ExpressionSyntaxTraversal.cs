@@ -7,6 +7,9 @@ internal static class ExpressionSyntaxTraversal
     {
         switch (expression)
         {
+            case UnpackedTypeExpressionSyntax unpacked:
+                yield return unpacked.Value;
+                break;
             case YieldExpressionSyntax { Value: not null } yielded:
                 yield return yielded.Value;
                 break;

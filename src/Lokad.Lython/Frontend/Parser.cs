@@ -175,6 +175,10 @@ internal sealed partial class Parser
             return ParseScopeDirectiveStatement();
         }
 
+        if (IsNameToken(CurrentToken) && IdentifierText(_position) == "type" &&
+            IsNameToken(PeekToken(1)) && PeekToken(2) is Token.Assign or Token.OpenBracket)
+            return ParseTypeAlias();
+
         if (TryParseUnsupportedStatement(out var unsupported))
         {
             return unsupported;
@@ -224,6 +228,10 @@ internal sealed partial class Parser
         {
             return _pendingStatements.Dequeue();
         }
+
+        if (IsNameToken(CurrentToken) && IdentifierText(_position) == "type" &&
+            IsNameToken(PeekToken(1)) && PeekToken(2) is Token.Assign or Token.OpenBracket)
+            return ParseTypeAlias();
 
         if (TryParseUnsupportedStatement(out var unsupported))
         {

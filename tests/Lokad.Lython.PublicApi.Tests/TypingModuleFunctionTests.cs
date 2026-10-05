@@ -52,7 +52,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.Equal("typing.List[int]|typing.Dict[str, int]|<class 'list'>|(<class 'str'>, <class 'int'>)|7|3|False|T|Point(x=1, y=2)|1|2|abc|<class 'Box'>|<class 'Shape'>|<class 'Row'>", host.ReadText("/out.txt"));
+        Assert.Equal("typing.List[int]|typing.Dict[str, int]|<class 'list'>|(<class 'str'>, <class 'int'>)|7|3|False|~T|Point(x=1, y=2)|1|2|abc|<class 'Box'>|<class 'Shape'>|<class 'Row'>", host.ReadText("/out.txt"));
     }
 
     [Fact]

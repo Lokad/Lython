@@ -100,6 +100,7 @@ internal sealed partial class LythonRuntime
                     var index = Pop(_stack, instruction.Span);
                     var receiver = Pop(_stack, instruction.Span);
                     PushObserved(receiver is PyInstance instance ? await GetUserItemAsync(instance, index, context, instruction.Span).ConfigureAwait(false)
+                        : receiver is PyType type && type.TryGetMember("__type_params__", out _) ? await CreateGenericSubscriptAsync(receiver, index, context, instruction.Span, true).ConfigureAwait(false)
                         : ReadLoweredSubscript(receiver, index, instruction.Span, context), instruction.Span);
                     break;
                 case ExecutableOpCode.Binary:

@@ -95,6 +95,13 @@ internal static class PyIndexing
             return ReadSlice(target, slice.StartBound, slice.StopBound, slice.StepBound, span, context);
         }
 
+        if (context is not null && (target is INamedRuntimeCallable named && named.Name is "list" or "tuple" or "dict" or "set" or "type" ||
+            target is PyType type && (type.Name == "Generic" || type.TryGetMember("__type_params__", out _))))
+        {
+            var alias = LythonRuntime.CreateGenericSubscriptAsync(target, index, context, span, false).GetAwaiter().GetResult();
+            context.Services.State.CallTemporaries.TrackCallResult(alias, span);
+            return alias;
+        }
         return target switch
         {
             IPySubscriptableValue value => value.GetSubscript(index, span),

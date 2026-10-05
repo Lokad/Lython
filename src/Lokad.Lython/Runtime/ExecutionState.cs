@@ -7,6 +7,7 @@ internal sealed class ExecutionState
 {
     private Dictionary<object, RuntimeMemberCacheEntry>? _runtimeMemberCaches;
     private readonly List<PoolRegistration> _poolRegistrations = new();
+    internal PyType? TypingGeneric { get; set; }
     private long _csvPulls;
     private long _boundCalls;
     private readonly ConditionalWeakTable<object, StrongBox<long>> _objectIds = new();

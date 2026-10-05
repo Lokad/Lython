@@ -471,7 +471,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            if (baseValue is not PyType type)
+            if ((baseValue is PyGenericAlias generic ? generic.Origin : baseValue) is not PyType type)
             {
                 throw new LythonRuntimeException("TypeError", "Class bases must be user-defined Lython classes.", span);
             }

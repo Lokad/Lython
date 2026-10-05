@@ -82,6 +82,7 @@ internal static class ScopeDirectiveFactsCollector
     private static StatementSyntax GetSyntax(LoweredStatement statement)
         => statement switch
         {
+            LoweredTypeAliasStatement lowered => lowered.Syntax,
             LoweredImportStatement lowered => lowered.Syntax,
             LoweredScopeDirectiveStatement lowered => lowered.Syntax,
             LoweredFunctionDefinitionStatement lowered => lowered.Syntax,
@@ -156,6 +157,9 @@ internal static class ScopeDirectiveFactsCollector
                     }
                     break;
 
+                case TypeAliasStatementSyntax alias:
+                    names.Add(alias.Name);
+                    break;
                 case AssignmentStatementSyntax assignment:
                     names.Add(assignment.Name);
                     break;

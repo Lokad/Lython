@@ -617,6 +617,14 @@ internal sealed partial class LythonRuntime
                                  ExecutableOpCode.PopTop:
                                 if (asynchronous && instruction.OpCode == ExecutableOpCode.EvaluateFallbackExpression)
                                     PushObserved(await EvaluateLoweredExpressionAsync(codeObject.ExpressionFallbacks[instruction.ExpressionFallbackIndex].Expression, context).ConfigureAwait(false), instruction.Span);
+                                else if (asynchronous && instruction.OpCode == ExecutableOpCode.LoadMember)
+                                {
+                                    var target = Pop(_stack, instruction.Span);
+                                    var name = codeObject.Names[instruction.NameIndex];
+                                    var member = await TryResolveRuntimeMemberAsync(target, name, context, instruction.Span).ConfigureAwait(false);
+                                    if (!member.Found) throw PyMemberAccess.CreateMissingMemberError(target, name, instruction.Span, context);
+                                    PushObserved(member.Value, instruction.Span);
+                                }
                                 else ExecuteStackTransfer(instruction);
                                 break;
 

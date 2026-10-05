@@ -455,7 +455,33 @@ uncalled bodies. Generator frame/code introspection and implicit execution of
 guest cleanup from CLR garbage collection are outside this contained subset;
 use explicit close or exhaust a generator for its Python cleanup.
 
-### 8.5 Deliberately Unsupported Python Surface
+### 8.5 Modern typing syntax
+
+`type Name[T, *Ts, **P] = expression`, generic function and class headers,
+bounds/constraints and Python 3.13 type parameter defaults are supported.
+Type parameters live in annotation scopes, remain visible to function bodies,
+and do not leak into the surrounding namespace. Function defaults and
+decorators evaluate outside that scope. Generic annotations evaluate eagerly;
+alias values, bounds, constraints and defaults evaluate lazily, cache successful
+results and retry failures. Lazy evaluation awaits host effects in RunAsync.
+Class annotation scopes can read class members and observe later class updates.
+
+The objects expose Python-shaped metadata through `__type_params__`,
+`__value__`, `__bound__`, `__constraints__`, `__default__`, variance flags and
+`has_default`. `typing.TypeVar`, `TypeVarTuple`, `ParamSpec`, `NoDefault`,
+`get_origin` and `get_args` expose these objects. Builtin type subscripts,
+variadic subscripts/annotations and type unions retain their type arguments.
+Generic classes inherit `typing.Generic`, expose parameters/original bases,
+validate specialization arity and fill omitted defaults using Python 3.13's
+observable behavior. Specializations delegate construction to their origin.
+Retained annotation scopes, lazy cells and generic argument storage are governed.
+
+Legacy `typing` aliases remain the previously documented contained subset;
+this is not a static type checker. Direct construction of TypeAliasType and
+GenericAlias is explicitly rejected; use type statements and subscripting.
+Annotation scopes reject yield, walrus and nonlocal type-parameter rebinding.
+
+### 8.6 Deliberately Unsupported Python Surface
 
 Classes, comprehensions, generator expressions, lambdas, decorators, context
 managers, structural pattern matching, assertions, deletion, keyword and
@@ -477,8 +503,8 @@ failures unwind or suppress through __exit__ like failures in the body.
 Positional-only parameters using `/` are supported in functions and lambdas.
 Their names do not bind keyword arguments; with **kwargs those names become
 overflow keys. The `u`/`U` prefixes produce ordinary Unicode strings, including
-adjacent literal concatenation. Type aliases, type parameters, `except*`,
-matrix multiplication and complex literals are outside the current subset.
+adjacent literal concatenation. `except*`, matrix multiplication and complex
+literals are outside the current subset.
 These forms must produce explicit unsupported diagnostics before execution.
 
 ---

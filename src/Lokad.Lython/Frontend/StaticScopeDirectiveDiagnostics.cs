@@ -204,6 +204,9 @@ internal static class StaticScopeDirectiveDiagnostics
                     foreach (var memberName in ImportSyntaxFacts.EnumerateBindingNames(importStatement)) names.Add(memberName);
                 }
                 break;
+            case TypeAliasStatementSyntax alias:
+                names.Add(alias.Name);
+                break;
             case AssignmentStatementSyntax assignment:
                 names.Add(assignment.Name);
                 CollectSeenNames(assignment.Expression, names);

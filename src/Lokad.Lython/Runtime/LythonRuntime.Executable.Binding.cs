@@ -317,6 +317,13 @@ internal sealed partial class LythonRuntime
         ExecutableCell?[]? localCells,
         ExecutionContext context)
     {
+        if (functionBinding.Function.TypeParameters is not null || HasTypeParameterScope(context))
+        {
+            ExecuteLoweredFunctionDefinition(functionBinding.Function, context);
+            SyncExecutableLocalsFromContext(codeObject, locals, localCells, context);
+            return;
+        }
+
         context.EnterInterpreterFrame(functionBinding.Function.Span);
         try
         {

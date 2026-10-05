@@ -32,6 +32,14 @@ internal sealed record ScopeDirectiveStatementSyntax(
     IReadOnlyList<string> Names,
     LythonSourceSpan Span) : StatementSyntax(Span);
 
+internal sealed record UnpackedTypeExpressionSyntax(ExpressionSyntax Value, LythonSourceSpan Span) : ExpressionSyntax(Span);
+
+internal enum TypeParameterKind { TypeVar, TypeVarTuple, ParamSpec }
+internal sealed record TypeParameterSyntax(string Name, TypeParameterKind Kind, ExpressionSyntax? Bound,
+    ExpressionSyntax? Default, bool UnpackDefault, LythonSourceSpan Span);
+internal sealed record TypeAliasStatementSyntax(string Name, IReadOnlyList<TypeParameterSyntax>? TypeParameters,
+    ExpressionSyntax Value, LythonSourceSpan Span) : StatementSyntax(Span);
+
 internal sealed record AssignmentStatementSyntax(
     string Name,
     ExpressionSyntax Expression,
@@ -309,7 +317,8 @@ internal sealed record FunctionDefinitionStatementSyntax(
     IReadOnlyList<FunctionParameterSyntax> Parameters,
     ExpressionSyntax? ReturnAnnotation,
     IReadOnlyList<StatementSyntax> Body,
-    LythonSourceSpan Span) : StatementSyntax(Span);
+    LythonSourceSpan Span,
+    IReadOnlyList<TypeParameterSyntax>? TypeParameters = null) : StatementSyntax(Span);
 
 internal sealed record ClassDefinitionStatementSyntax(
     string Name,
@@ -318,7 +327,8 @@ internal sealed record ClassDefinitionStatementSyntax(
     IReadOnlyList<ExpressionSyntax> Bases,
     IReadOnlyList<ClassKeywordArgumentSyntax> KeywordArguments,
     IReadOnlyList<StatementSyntax> Body,
-    LythonSourceSpan Span) : StatementSyntax(Span);
+    LythonSourceSpan Span,
+    IReadOnlyList<TypeParameterSyntax>? TypeParameters = null) : StatementSyntax(Span);
 
 internal sealed record ClassKeywordArgumentSyntax(
     string Name,

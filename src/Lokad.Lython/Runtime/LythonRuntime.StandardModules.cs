@@ -379,7 +379,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class TypingModule : PyModule
+    private sealed class TypingModule : PyModule, IPyContextualDynamicAttributes
     {
         public static readonly TypingModule Instance = new();
 
@@ -390,6 +390,12 @@ internal sealed partial class LythonRuntime
 
         public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
             => PyTyping.TryGetMember(name, out value);
+
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+        {
+            if (name == "Generic") { value = GetTypingGeneric(context, span); return true; }
+            return TryGetMember(name, out value);
+        }
     }
 
 }

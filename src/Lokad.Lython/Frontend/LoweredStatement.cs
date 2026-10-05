@@ -17,6 +17,13 @@ internal abstract record LoweredStatement(LythonSourceSpan Span)
     public abstract LoweredStatementKind Kind { get; }
 }
 
+internal sealed record LoweredTypeParameter(TypeParameterSyntax Syntax, LoweredExpression? Bound, LoweredExpression? Default);
+internal sealed record LoweredTypeAliasStatement(TypeAliasStatementSyntax Syntax, LoweredExpression Value) : LoweredStatement(Syntax.Span)
+{
+    public override LoweredStatementKind Kind => LoweredStatementKind.Other;
+    public IReadOnlyList<LoweredTypeParameter>? TypeParameters { get; } = LoweredScript.LowerTypeParameters(Syntax.TypeParameters);
+}
+
 internal sealed record LoweredImportStatement(
     ImportStatementSyntax Syntax) : LoweredStatement(Syntax.Span)
 {
@@ -43,6 +50,7 @@ internal sealed record LoweredFunctionDefinitionStatement(
     IReadOnlyList<LoweredStatement> Body) : LoweredStatement(Syntax.Span)
 {
     public override LoweredStatementKind Kind => LoweredStatementKind.FunctionDefinition;
+    public IReadOnlyList<LoweredTypeParameter>? TypeParameters { get; } = LoweredScript.LowerTypeParameters(Syntax.TypeParameters);
     public ExecutableCodeObject? GeneratorCode { get; } = GeneratorSyntaxFacts.IsGenerator(Syntax.Body)
         ? ExecutableScript.CompileGenerator(Parameters, Body) : null;
 }
@@ -55,6 +63,7 @@ internal sealed record LoweredClassDefinitionStatement(
     IReadOnlyList<LoweredStatement> Body) : LoweredStatement(Syntax.Span)
 {
     public override LoweredStatementKind Kind => LoweredStatementKind.ClassDefinition;
+    public IReadOnlyList<LoweredTypeParameter>? TypeParameters { get; } = LoweredScript.LowerTypeParameters(Syntax.TypeParameters);
 }
 
 internal abstract record LoweredAssignmentStatement(

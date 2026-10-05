@@ -40,10 +40,10 @@ internal sealed partial class LythonRuntime
             using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(functionDefinition.Decorators.Count), functionDefinition.Span);
             var decorators = await EvaluateDecoratorsAsync(functionDefinition.Decorators, context).ConfigureAwait(false);
             var syntax = functionDefinition.Syntax;
-            var function = CreateLoweredFunction(
-                functionDefinition,
-                context,
-                await BuildDefaultArgumentMapAsync(functionDefinition.Parameters, expression => EvaluateLoweredExpressionAsync(expression, context)).ConfigureAwait(false));
+            var defaults = await BuildDefaultArgumentMapAsync(functionDefinition.Parameters, expression => EvaluateLoweredExpressionAsync(expression, context)).ConfigureAwait(false);
+            var typeScope = CreateTypeScope(functionDefinition.TypeParameters, context, functionDefinition.Span);
+            var function = CreateLoweredFunction(functionDefinition, typeScope.Closure, defaults);
+            await AttachTypeMetadataAsync(function, functionDefinition, typeScope, context, true).ConfigureAwait(false);
             StoreName(
                 syntax.Name,
                 await ApplyDecoratorsAsync(function, decorators, functionDefinition.Span, context).ConfigureAwait(false),
@@ -63,23 +63,24 @@ internal sealed partial class LythonRuntime
         {
             using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(classDefinition.Decorators.Count), classDefinition.Span);
             var decorators = await EvaluateDecoratorsAsync(classDefinition.Decorators, context).ConfigureAwait(false);
+            var typeScope = CreateTypeScope(classDefinition.TypeParameters, context, classDefinition.Span);
             var baseTypes = new object[classDefinition.Bases.Count];
             for (var i = 0; i < classDefinition.Bases.Count; i++)
             {
-                baseTypes[i] = await EvaluateLoweredExpressionAsync(classDefinition.Bases[i], context).ConfigureAwait(false);
+                baseTypes[i] = await EvaluateLoweredExpressionAsync(classDefinition.Bases[i], typeScope.Annotations).ConfigureAwait(false);
             }
 
             var classKeywordArguments = new CallArgumentValue[classDefinition.KeywordArguments.Count];
             for (var i = 0; i < classDefinition.KeywordArguments.Count; i++)
             {
                 var argument = classDefinition.KeywordArguments[i];
-                classKeywordArguments[i] = CallArgumentValue.Keyword(argument.KeywordName, await EvaluateLoweredExpressionAsync(argument.Expression, context).ConfigureAwait(false));
+                classKeywordArguments[i] = CallArgumentValue.Keyword(argument.KeywordName, await EvaluateLoweredExpressionAsync(argument.Expression, typeScope.Annotations).ConfigureAwait(false));
             }
 
-            var resolvedBases = ResolveClassBases(baseTypes, classDefinition.Span, context);
+            var resolvedBases = AddGenericClassBase(classDefinition, ResolveClassBases(baseTypes, classDefinition.Span, context), context);
             ValidateClassKeywordArguments(classKeywordArguments, classDefinition.Span);
 
-            var classContext = ExecutionContext.CreateClassBody(context);
+            var classContext = ExecutionContext.CreateClassBody(typeScope.Closure);
             var classFlow = await ExecuteStatementsAsync(classDefinition.Body, classContext).ConfigureAwait(false);
             if (classFlow.Control is not null)
             {
@@ -91,6 +92,7 @@ internal sealed partial class LythonRuntime
                 throw classFlow.Return;
             }
 
+            await AttachGenericClassMetadataAsync(classDefinition, typeScope, classContext, true, baseTypes).ConfigureAwait(false);
             var type = CreateLoweredClassType(classDefinition, resolvedBases, baseTypes, classContext, context);
             if (type is PyType defined)
             {
@@ -337,6 +339,7 @@ internal sealed partial class LythonRuntime
                     {
                         AssignTarget(annotated.Assignment.Target, await EvaluateLoweredExpressionAsync(annotated.Expression, context).ConfigureAwait(false), context);
                     }
+                    await StoreModernClassAnnotationAsync(annotated, context, true).ConfigureAwait(false);
                     return;
                 case LoweredAugmentedAssignmentStatement augmented:
                     var augmentedTarget = await ResolveLoweredAugmentedAssignmentTargetAsync(augmented.Target, context).ConfigureAwait(false);

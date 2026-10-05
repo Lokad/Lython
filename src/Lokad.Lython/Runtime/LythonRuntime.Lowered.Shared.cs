@@ -51,6 +51,9 @@ internal sealed partial class LythonRuntime
     {
         switch (statement)
         {
+            case LoweredTypeAliasStatement alias:
+                ExecuteTypeAlias(alias, context);
+                return default;
             case LoweredImportStatement importStatement:
                 await execution.ExecuteImportAsync(importStatement, context).ConfigureAwait(false);
                 return default;
@@ -123,6 +126,10 @@ internal sealed partial class LythonRuntime
     {
         switch (expression)
         {
+            case LoweredUnpackedTypeExpression unpacked:
+                var unpackedValue = await execution.EvaluateExpressionAsync(unpacked.Value, context).ConfigureAwait(false);
+                return unpackedValue is PyTypeParameter { Kind: TypeParameterKind.TypeVarTuple } or PyGenericAlias
+                    ? new PyUnpackedType(unpackedValue) : throw new LythonRuntimeException("TypeError", "Type annotation cannot be unpacked", unpacked.Span);
             case LoweredIdentifierExpression identifier:
                 return ResolveIdentifier(identifier.Identifier, context);
             case LoweredStringLiteralExpression text:
@@ -555,6 +562,7 @@ internal sealed partial class LythonRuntime
             Dictionary<string, object> members,
             ExecutionContext context)
         {
+            if (syntax.TypeParameters is not null) return;
             PyDict? annotations = null;
             foreach (var statement in syntax.Body.OfType<AnnotatedAssignmentStatementSyntax>())
             {
@@ -583,7 +591,7 @@ internal sealed partial class LythonRuntime
             type = new PyType(
                 classDefinition.Syntax.Name,
                 resolvedBases,
-                new Dictionary<string, object>(classContext.Variables, StringComparer.Ordinal),
+                classContext.HasModernTypeDeclarations ? classContext.Variables : new Dictionary<string, object>(classContext.Variables, StringComparer.Ordinal),
                 definingContext.MemoryGovernor,
                 classDefinition.Span);
         }

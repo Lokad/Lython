@@ -23,7 +23,7 @@
     "name": "unicode-name",
     "family": "lexical",
     "status": "supported",
-    "source": "café = 3\nprint(café)\n",
+    "source": "caf\u00e9 = 3\nprint(caf\u00e9)\n",
     "standardOutput": "3\n",
     "success": true,
     "exceptionType": null,
@@ -33,7 +33,7 @@
     "name": "identifier-nfkc",
     "family": "lexical",
     "status": "supported",
-    "source": "K = 4\nprint(K)\n",
+    "source": "\u212a = 4\nprint(K)\n",
     "standardOutput": "4\n",
     "success": true,
     "exceptionType": null,
@@ -1150,9 +1150,9 @@
     "note": ""
   },
   {
-    "name": "unsupported-type-alias",
-    "family": "boundaries",
-    "status": "unsupported",
+    "name": "type-alias",
+    "family": "typing",
+    "status": "supported",
     "source": "type Pair = tuple[int,int]\n",
     "standardOutput": "",
     "success": true,
@@ -1160,9 +1160,9 @@
     "note": ""
   },
   {
-    "name": "unsupported-type-parameters",
-    "family": "boundaries",
-    "status": "unsupported",
+    "name": "type-parameters",
+    "family": "typing",
+    "status": "supported",
     "source": "def f[T](x:T):\n    return x\n",
     "standardOutput": "",
     "success": true,
@@ -1243,8 +1243,8 @@
     "name": "json-encoder-option-mutation",
     "family": "json",
     "status": "supported",
-    "source": "import json\ne=json.JSONEncoder()\ne.ensure_ascii=False\nprint(e.encode('é'))\n",
-    "standardOutput": "\"é\"\n",
+    "source": "import json\ne=json.JSONEncoder()\ne.ensure_ascii=False\nprint(e.encode('\u00e9'))\n",
+    "standardOutput": "\"\u00e9\"\n",
     "success": true,
     "exceptionType": null,
     "note": ""
@@ -1424,7 +1424,7 @@
     "family": "lexical",
     "status": "supported",
     "source": "print(u\"a\" U'b' \"c\" r\"d\" f\"{5}\")\nprint(repr(u\"\\u03b1\\n\"))\nprint(U\"\"\"first\nsecond\"\"\")\n",
-    "standardOutput": "abcd5\n'α\\n'\nfirst\nsecond\n",
+    "standardOutput": "abcd5\n'\u03b1\\n'\nfirst\nsecond\n",
     "success": true,
     "exceptionType": null,
     "note": "Output verified against isolated CPython 3.13.2."
@@ -1818,5 +1818,315 @@
     "success": true,
     "exceptionType": null,
     "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-alias",
+    "family": "typing",
+    "status": "supported",
+    "source": "type A = int\nprint(A.__name__,A.__module__,A.__value__ is int,A.__type_params__)\n",
+    "standardOutput": "A __main__ True ()\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-alias-lazy",
+    "family": "typing",
+    "status": "supported",
+    "source": "events=[]\ndef compute():\n    events.append(\"called\")\n    return int\ntype A=compute()\nprint(events)\nprint(A.__value__ is int,A.__value__ is int,events)\n",
+    "standardOutput": "[]\nTrue True ['called']\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-alias-forward",
+    "family": "typing",
+    "status": "supported",
+    "source": "type A=Later\ntry:print(A.__value__)\nexcept NameError:print(\"unbound\")\nLater=int\nprint(A.__value__ is int)\nLater=str\nprint(A.__value__ is int)\n",
+    "standardOutput": "unbound\nTrue\nTrue\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-function",
+    "family": "typing",
+    "status": "supported",
+    "source": "def f[T](x:T)->T:return x\nT=f.__type_params__[0]\nprint(T.__name__,type(T).__name__,f.__annotations__[\"x\"] is T,f.__annotations__[\"return\"] is T,f(3))\n",
+    "standardOutput": "T TypeVar True True 3\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-function-body",
+    "family": "typing",
+    "status": "supported",
+    "source": "def f[T]():return T\nprint(f() is f.__type_params__[0],\"T\" in globals())\n",
+    "standardOutput": "True False\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-parameters",
+    "family": "typing",
+    "status": "supported",
+    "source": "from typing import NoDefault,TypeVar,ParamSpec,TypeVarTuple\ndef f[T:int,*Ts,**P]():pass\nT,Ts,P=f.__type_params__\nprint(type(T) is TypeVar,type(Ts) is TypeVarTuple,type(P) is ParamSpec)\nprint(T.__bound__ is int,T.__constraints__,T.__infer_variance__,T.__covariant__,T.__contravariant__)\nprint(T.__default__ is NoDefault,T.has_default(),Ts.has_default(),P.has_default())\n",
+    "standardOutput": "True True True\nTrue () True False False\nTrue False False False\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-defaults",
+    "family": "typing",
+    "status": "supported",
+    "source": "def f[T=int,U=T]():pass\nT,U=f.__type_params__\nprint(T.__default__ is int,U.__default__ is T,T.has_default())\n",
+    "standardOutput": "True True True\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-constraints",
+    "family": "typing",
+    "status": "supported",
+    "source": "def f[T:(str,bytes)]():pass\nT=f.__type_params__[0]\nprint(T.__constraints__==(str,bytes),T.__bound__)\n",
+    "standardOutput": "True None\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-generic-alias",
+    "family": "typing",
+    "status": "supported",
+    "source": "from typing import get_origin,get_args\ntype A[T]=list[T]\nT=A.__type_params__[0]\nprint(get_origin(A[int]) is A,get_args(A[int])==(int,))\nprint(get_origin(A.__value__) is list,get_args(A.__value__)==(T,))\n",
+    "standardOutput": "True True\nTrue True\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-class",
+    "family": "typing",
+    "status": "supported",
+    "source": "class C[T]:\n    value:T\n    def get(self):return T\nT=C.__type_params__[0]\nprint(C.__parameters__==(T,),C.__annotations__[\"value\"] is T,C().get() is T)\nprint(C[int].__origin__ is C,C[int].__args__==(int,))\n",
+    "standardOutput": "True True True\nTrue True\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-class-alias",
+    "family": "typing",
+    "status": "supported",
+    "source": "class C:\n    x=1\n    type A=x\nC.x=2\nprint(C.A.__value__)\n",
+    "standardOutput": "2\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-union",
+    "family": "typing",
+    "status": "supported",
+    "source": "from typing import get_args\ntype A=int | str | int\nprint(str(A.__value__),get_args(A.__value__)==(int,str))\n",
+    "standardOutput": "int | str True\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-default-scope",
+    "family": "typing",
+    "status": "supported",
+    "source": "T=\"outer\"\ndef f[T](x=T):return x,T\nprint(f()[0],f()[1] is f.__type_params__[0])\n",
+    "standardOutput": "outer True\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-variadic-alias",
+    "family": "typing",
+    "status": "supported",
+    "source": "type A[*Ts]=tuple[*Ts]\nTs=A.__type_params__[0]\nprint(str(A.__value__),A[int,str].__args__==(int,str),str(next(iter(Ts))))\n",
+    "standardOutput": "tuple[typing.Unpack[Ts]] True typing.Unpack[Ts]\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-variadic-annotation",
+    "family": "typing",
+    "status": "supported",
+    "source": "def f[*Ts](*args: *Ts):return args\nTs=f.__type_params__[0]\nprint(str(f.__annotations__[\"args\"]),f(1,2))\n",
+    "standardOutput": "typing.Unpack[Ts] (1, 2)\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-class-defaults",
+    "family": "typing",
+    "status": "supported",
+    "source": "class C[T=int,U=str]:pass\nprint(C[float].__args__==(float,str),C[()].__args__==(int,str),type(C[int]).__name__)\ntry:C[int,str,bytes]\nexcept TypeError:print(\"arity\")\n",
+    "standardOutput": "True True _GenericAlias\narity\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-alias-defaults",
+    "family": "typing",
+    "status": "supported",
+    "source": "type A[T=int,U=str]=tuple[T,U]\nprint(A[float].__args__==(float,),A[()].__args__==(),A[int,str,bytes].__args__==(int,str,bytes))\n",
+    "standardOutput": "True True True\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-class-annotation-order",
+    "family": "typing",
+    "status": "supported",
+    "source": "events=[]\ndef mark(x):events.append(x);return int\nclass C[T]:\n    x:mark(\"annotation\")=mark(\"value\")\n    events.append(\"body\")\nprint(events)\n",
+    "standardOutput": "['value', 'annotation', 'body']\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-generic-base",
+    "family": "typing",
+    "status": "supported",
+    "source": "from typing import Generic,get_origin\nclass C[T]:pass\nprint(C.__bases__==(Generic,),C.__mro__==(C,Generic,object),get_origin(C.__orig_bases__[0]) is Generic,issubclass(C,Generic))\n",
+    "standardOutput": "True True True True\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-legacy-vars",
+    "family": "typing",
+    "status": "supported",
+    "source": "from typing import TypeVar,ParamSpec,TypeVarTuple\nT=TypeVar(\"T\",str,bytes,default=int)\nP=ParamSpec(\"P\",default=[int,str])\nTs=TypeVarTuple(\"Ts\")\nprint(str(T),T.__constraints__==(str,bytes),T.has_default(),P.has_default(),str(P.args),str(P.kwargs),str(Ts))\n",
+    "standardOutput": "~T True True True P.args P.kwargs Ts\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-alias-equality",
+    "family": "typing",
+    "status": "supported",
+    "source": "type A[T]=T\nprint(list[int]==list[int],list[int]!=list[str],A[int]==A[int],len({list[int],list[int]}))\n",
+    "standardOutput": "True True True 1\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-default-substitution",
+    "family": "typing",
+    "status": "supported",
+    "source": "class C[T=int,U=T,V=list[T]]:pass\nprint(C[str].__args__==(str,str,list[str]))\n",
+    "standardOutput": "False\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-class-inheritance",
+    "family": "typing",
+    "status": "supported",
+    "source": "from typing import Generic\nclass B[T]:pass\nclass C[T](B[T]):pass\nprint(C.__bases__==(B,Generic),C.__orig_bases__[0].__origin__ is B)\n",
+    "standardOutput": "True True\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-orig-class",
+    "family": "typing",
+    "status": "supported",
+    "source": "class C[T]:pass\nx=C[int]()\nprint(x.__orig_class__==C[int])\n",
+    "standardOutput": "True\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "invalid-typing-0",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "type A[T,T]=int",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": null,
+    "note": "CPython 3.13.2 rejects before execution"
+  },
+  {
+    "name": "invalid-typing-1",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "type A[]=int",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": null,
+    "note": "CPython 3.13.2 rejects before execution"
+  },
+  {
+    "name": "invalid-typing-2",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "def f[T=int,U]():pass",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": null,
+    "note": "CPython 3.13.2 rejects before execution"
+  },
+  {
+    "name": "invalid-typing-3",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "type A[T:(x:=int)]=int",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": null,
+    "note": "CPython 3.13.2 rejects before execution"
+  },
+  {
+    "name": "invalid-typing-4",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "type A=(yield 1)",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": null,
+    "note": "CPython 3.13.2 rejects before execution"
+  },
+  {
+    "name": "invalid-typing-5",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "def f[T]():\n    nonlocal T",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": null,
+    "note": "CPython 3.13.2 rejects before execution"
+  },
+  {
+    "name": "invalid-typing-6",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "type A[*Ts:int]=int",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": null,
+    "note": "CPython 3.13.2 rejects before execution"
   }
 ]

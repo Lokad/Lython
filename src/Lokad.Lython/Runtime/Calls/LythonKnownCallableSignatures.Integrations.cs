@@ -77,7 +77,7 @@ internal static partial class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature DataclassesAsTuple = LythonCallableSignature.Create("dataclasses.astuple", ["obj", "tuple_factory"], requiredCount: 1);
     public static readonly LythonCallableSignature DataclassesReplace = LythonCallableSignature.Create("dataclasses.replace", ["obj"], requiredCount: 1, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.Keywords);
 
-    public static readonly LythonCallableSignature TypingTypeVar = LythonCallableSignature.Create("typing.TypeVar", ["name"], requiredCount: 1, variadicParameters: LythonVariadicParameters.Keywords);
+    public static readonly LythonCallableSignature TypingTypeVar = LythonCallableSignature.Create("typing.TypeVar", ["name"], requiredCount: 1, variadicParameters: LythonVariadicParameters.Keywords | LythonVariadicParameters.Positional);
     public static readonly LythonCallableSignature TypingNewType = LythonCallableSignature.Create("typing.NewType", ["name", "tp"]);
     public static readonly LythonCallableSignature TypingCast = LythonCallableSignature.Create("typing.cast", ["typ", "val"]);
     public static readonly LythonCallableSignature TypingGetOrigin = LythonCallableSignature.Create("typing.get_origin", ["tp"]);

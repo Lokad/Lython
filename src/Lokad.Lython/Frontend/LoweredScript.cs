@@ -52,10 +52,15 @@ internal sealed class LoweredScript
         return lowered;
     }
 
+    internal static IReadOnlyList<LoweredTypeParameter>? LowerTypeParameters(IReadOnlyList<TypeParameterSyntax>? parameters)
+        => parameters?.Select(parameter => new LoweredTypeParameter(parameter, parameter.Bound is null ? null : LowerExpression(parameter.Bound),
+            parameter.Default is null ? null : LowerExpression(parameter.Default))).ToArray();
+
     private static LoweredStatement LowerStatement(StatementSyntax statement)
     {
         return statement switch
         {
+            TypeAliasStatementSyntax alias => new LoweredTypeAliasStatement(alias, LowerExpression(alias.Value)),
             ImportStatementSyntax importStatement => new LoweredImportStatement(importStatement),
             ScopeDirectiveStatementSyntax scopeDirective => new LoweredScopeDirectiveStatement(scopeDirective),
             FunctionDefinitionStatementSyntax functionDefinition => new LoweredFunctionDefinitionStatement(
@@ -192,6 +197,7 @@ internal sealed class LoweredScript
     {
         return expression switch
         {
+            UnpackedTypeExpressionSyntax unpacked => new LoweredUnpackedTypeExpression(unpacked, LowerExpression(unpacked.Value)),
             YieldExpressionSyntax yielded => new LoweredYieldExpression(yielded, yielded.Value is null ? null : LowerExpression(yielded.Value)),
             IdentifierExpressionSyntax identifier => new LoweredIdentifierExpression(identifier),
             StringLiteralExpressionSyntax text => new LoweredStringLiteralExpression(text),

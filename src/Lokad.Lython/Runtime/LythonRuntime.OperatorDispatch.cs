@@ -41,6 +41,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
+        if (op == BinaryOperatorSyntax.BitwiseOr && TryTypeUnion(left, right, context, span, out var union)) return union;
         if (TryEvaluateNumericProtocol(op, left, right, context, span, out var protocolResult))
         {
             return protocolResult;
@@ -69,6 +70,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
+        if (op == BinaryOperatorSyntax.BitwiseOr && TryTypeUnion(left, right, context, span, out var union)) return union;
         var protocol = await EvaluateNumericProtocolAsync(op, left, right, context, span).ConfigureAwait(false);
         if (protocol.Kind == SpecialMethodInvocationKind.Invoked)
         {

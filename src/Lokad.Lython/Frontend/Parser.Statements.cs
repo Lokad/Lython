@@ -115,13 +115,9 @@ internal sealed partial class Parser
             return null;
         }
 
+        if (!TryParseTypeParameters(out var typeParameters)) return null;
         if (!TryRead(Token.OpenParen, out var openParen))
         {
-            if (CurrentToken == Token.OpenBracket)
-            {
-                AddDiagnostic("LA2000", "Unsupported Python construct 'type parameters'.", _position);
-                return null;
-            }
             AddDiagnostic("LA1031", "Expected '(' after function name.", nameToken);
             return null;
         }
@@ -171,7 +167,7 @@ internal sealed partial class Parser
             parameters,
             returnAnnotation,
             body,
-            Merge(SpanOf(defToken), body[^1].Span));
+            Merge(SpanOf(defToken), body[^1].Span), typeParameters);
     }
 
     private StatementSyntax? ParseClassDefinition()
@@ -351,11 +347,7 @@ internal sealed partial class Parser
             return null;
         }
 
-        if (CurrentToken == Token.OpenBracket)
-        {
-            AddDiagnostic("LA2000", "Unsupported Python construct 'type parameters'.", _position);
-            return null;
-        }
+        if (!TryParseTypeParameters(out var typeParameters)) return null;
 
         var bases = new List<ExpressionSyntax>();
         var keywordArguments = new List<ClassKeywordArgumentSyntax>();
@@ -431,7 +423,7 @@ internal sealed partial class Parser
             bases,
             keywordArguments,
             body,
-            Merge(SpanOf(classToken), body[^1].Span));
+            Merge(SpanOf(classToken), body[^1].Span), typeParameters);
     }
 
     private bool TryParseFunctionParameters(Token terminator, string owner, bool allowAnnotations, out IReadOnlyList<FunctionParameterSyntax> parameters, out int terminatorToken)
@@ -528,7 +520,10 @@ internal sealed partial class Parser
             if (allowAnnotations && CurrentToken == Token.Colon)
             {
                 ReadToken();
+                var unpackAnnotation = kind == FunctionParameterKind.VariadicList && CurrentToken == Token.Star;
+                if (unpackAnnotation) ReadToken();
                 annotation = ParseExpression();
+                if (unpackAnnotation && annotation is not null) annotation = new UnpackedTypeExpressionSyntax(annotation, annotation.Span);
                 if (annotation is null)
                 {
                     AddDiagnostic(owner == "lambda" ? "LA1073" : "LA1074", $"Expected annotation expression in {owner}.", parameterToken);
