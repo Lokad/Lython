@@ -619,7 +619,7 @@ internal sealed partial class Parser
         if (IsNameToken(CurrentToken) && PeekToken(1) == Token.String)
         {
             var parsed = ParsePrimaryExpression();
-            if (parsed is BytesLiteralExpressionSyntax)
+            if (parsed is BytesLiteralExpressionSyntax or StringLiteralExpressionSyntax)
             {
                 expression = parsed;
                 return true;

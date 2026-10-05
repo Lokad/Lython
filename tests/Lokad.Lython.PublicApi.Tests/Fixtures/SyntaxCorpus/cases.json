@@ -2478,5 +2478,25 @@
     "success": true,
     "exceptionType": null,
     "note": "CPython 3.13.2"
+  },
+  {
+    "name": "unicode-patterns",
+    "family": "patterns",
+    "status": "supported",
+    "source": "match u\"ab\":\n    case U\"a\" u\"b\":print(\"match\")\nmatch {\"key\":1}:\n    case {u\"key\":value}:print(value)\n",
+    "standardOutput": "match\n1\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "unicode-pattern-prefix-gap",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "match \"x\":\n    case u \"x\":pass\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
   }
 ]

@@ -531,7 +531,7 @@ Positional-only parameters using `/` are supported in functions and lambdas.
 Their names do not bind keyword arguments; with **kwargs those names become
 overflow keys. The `u`/`U` prefixes produce ordinary Unicode strings, including
 adjacent literal concatenation. `except*` is outside the current subset.
-These forms must produce explicit unsupported diagnostics before execution.
+This handler syntax must produce an explicit unsupported diagnostic before execution.
 
 ---
 
