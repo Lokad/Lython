@@ -115,11 +115,35 @@ public sealed class ChunkedReadDifferentialTests
         }
     }
 
+    [Fact]
+    public async Task CpythonOracleIgnoresSiblingModules()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "lython-oracle-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var driverPath = Path.Combine(directory, "driver.py");
+            var blobPath = Path.Combine(directory, "blob.bin");
+            await File.WriteAllTextAsync(driverPath, Driver);
+            await File.WriteAllTextAsync(Path.Combine(directory, "base64.py"), "raise RuntimeError('ambient module imported')");
+            await File.WriteAllBytesAsync(blobPath, Encoding.UTF8.GetBytes("hello\n"));
+            var (python, version) = ResolveCpython();
+            Assert.All(RunCpython(python, version, driverPath, blobPath), row => Assert.Equal("hello\n", row));
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
     private static List<string> RunCpython(string python, string version, string driverPath, string blobPath)
     {
         // Both streams drain concurrently under one deadline; a wedged child
         // surfaces as a TimeoutException instead of hanging the suite.
-        var run = SubprocessProbeRunner.Run(python, [driverPath, blobPath]);
+        // Isolation also excludes the script's temporary directory from
+        // imports: scanning a crowded shared temp directory can exceed the
+        // deadline, and sibling modules must never replace the oracle's stdlib.
+        var run = SubprocessProbeRunner.Run(python, ["-I", "-X", "utf8", driverPath, blobPath]);
         Assert.True(run.ExitCode == 0, $"CPython {version} exited with {run.ExitCode}: " + run.StandardError);
         // CPython text-mode stdout translates newlines on Windows, so every
         // line may trail a carriage return; payloads never legitimately start
