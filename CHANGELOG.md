@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Dispatch guest `__getitem__` consistently in lowered execution and await its effects under `RunAsync`.
 - Evaluate decorator expressions before function defaults and class bases/bodies, then apply decorators in reverse order, including through asynchronous hosts.
 - Corrected logical `not` precedence relative to comparisons and arithmetic, while rejecting invalid arithmetic placement of `not`.
 - Fixed nested `def` functions failing to capture transitively free variables once the definers returned (`NameError`); closures now bind through intermediate scopes with nearest-rebinding semantics.

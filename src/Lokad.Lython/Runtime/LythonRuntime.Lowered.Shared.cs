@@ -668,6 +668,11 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         ExecutionContext context)
     {
+        if (target is PyInstance instance)
+        {
+            return GetUserItem(instance, index, context, span);
+        }
+
         if (target is PyDefaultDict defaultDict)
         {
             return defaultDict.GetOrCreate(ValidateDictionaryKey(index, span), context, span);

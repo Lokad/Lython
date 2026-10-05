@@ -262,6 +262,10 @@ internal sealed partial class LythonRuntime
     {
         var target = await EvaluateLoweredExpressionAsync(subscript.Target, context).ConfigureAwait(false);
         var index = await EvaluateLoweredExpressionAsync(subscript.Index, context).ConfigureAwait(false);
+        if (target is PyInstance instance)
+        {
+            return await GetUserItemAsync(instance, index, context, subscript.Span).ConfigureAwait(false);
+        }
         return ReadLoweredSubscript(target, index, subscript.Span, context);
     }
 

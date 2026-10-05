@@ -290,6 +290,16 @@ internal sealed partial class LythonRuntime
         return CallableInvocation.InvokeUnary(callable, index, span, context);
     }
 
+    private static async ValueTask<object> GetUserItemAsync(PyInstance instance, object index, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (!instance.TryGetAttribute("__getitem__", context, span, out var member) || member is not ICallable callable)
+        {
+            throw new LythonRuntimeException("TypeError", $"'{instance.Type.Name}' object is not subscriptable", span);
+        }
+
+        return await CallableInvocation.InvokeUnaryAsync(callable, index, span, context).ConfigureAwait(false);
+    }
+
     internal static object CoerceIndexProtocol(object index, ExecutionContext context, LythonSourceSpan span)
     {
         if (index is not PyInstance instance)
