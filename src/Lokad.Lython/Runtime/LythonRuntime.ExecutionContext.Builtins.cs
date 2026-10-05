@@ -115,6 +115,7 @@ internal sealed partial class LythonRuntime
                 ["KeyboardInterrupt"] = new ExceptionTypeValue("KeyboardInterrupt"),
                 ["bool"] = BuiltinCallable.Create(LythonCallableSignature.Create("bool", ["value"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Bool, BoolAsync),
                 ["int"] = BuiltinCallable.Create(LythonCallableSignature.Create("int", ["x", "base"], requiredCount: 0, maximumPositionalArgumentCount: 2, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Int),
+                ["complex"] = new PyBuiltinRuntimeType("complex", ConstructComplex, null, ConstructComplexAsync),
                 ["float"] = BuiltinCallable.Create(LythonCallableSignature.Create("float", ["value"], requiredCount: 0, maximumPositionalArgumentCount: 1, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Float),
                 ["bytes"] = BuiltinCallable.Create(LythonCallableSignature.Create("bytes", ["source", "encoding", "errors"], requiredCount: 0, maximumPositionalArgumentCount: 3, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Bytes, BytesAsync),
                 ["staticmethod"] = BuiltinCallable.Create("staticmethod", StaticMethod, ["func"], requiredCount: 1),

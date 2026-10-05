@@ -359,6 +359,7 @@ internal sealed partial class LythonRuntime
 
     private static object AbsValue(object value, ExecutionContext context, LythonSourceSpan span)
     {
+        if (value is PyComplex complex) return complex.Magnitude(span);
         if (value is PyInstance absInstance &&
             TryInvokeUnarySpecialMethod(absInstance, "__abs__", context, span, out var absolute))
         {
@@ -389,6 +390,9 @@ internal sealed partial class LythonRuntime
         {
             throw new LythonRuntimeException("TypeError", "pow(base, exp[, mod]) expects two or three arguments.", span);
         }
+
+        if (arguments.Length == 3 && arguments[2] is not PyNone && arguments.Take(2).Any(value => value is PyComplex))
+            throw new LythonRuntimeException("ValueError", "complex modulo", span);
 
         // User-defined __pow__ takes precedence like CPython, binary and ternary
         // (an explicit None modulus behaves as absent everywhere).

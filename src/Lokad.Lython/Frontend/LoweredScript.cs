@@ -203,6 +203,7 @@ internal sealed class LoweredScript
             StringLiteralExpressionSyntax text => new LoweredStringLiteralExpression(text),
             BytesLiteralExpressionSyntax bytes => new LoweredBytesLiteralExpression(bytes),
             IntegerLiteralExpressionSyntax integer => new LoweredIntegerLiteralExpression(integer),
+            ImaginaryLiteralExpressionSyntax imaginary => new LoweredImaginaryLiteralExpression(imaginary),
             FloatLiteralExpressionSyntax floating => new LoweredFloatLiteralExpression(floating),
             BooleanLiteralExpressionSyntax boolean => new LoweredBooleanLiteralExpression(boolean),
             NoneLiteralExpressionSyntax none => new LoweredNoneLiteralExpression(none),

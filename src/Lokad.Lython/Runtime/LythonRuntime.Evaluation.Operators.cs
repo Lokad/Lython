@@ -39,6 +39,7 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateAdd(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
+        if (left is PyComplex || right is PyComplex) return EvaluateComplexBinary(BinaryOperatorSyntax.Add, left, right, context, span);
         if (left is PyDecimal || right is PyDecimal)
         {
             return OwnDecimalValue(PyDecimalOps.Add(left, right, span, operation ?? "+"), context, span);
@@ -171,6 +172,7 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateSubtract(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
+        if (left is PyComplex || right is PyComplex) return EvaluateComplexBinary(BinaryOperatorSyntax.Subtract, left, right, context, span);
         // R13b: set/counter regions below observe ambient provenance.
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
         if (left is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView || right is DictKeysView or DictItemsView or ChainMapKeysView or ChainMapItemsView)
@@ -228,6 +230,7 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateMultiply(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
+        if (left is PyComplex || right is PyComplex) return EvaluateComplexBinary(BinaryOperatorSyntax.Multiply, left, right, context, span);
         if (left is PyDecimal || right is PyDecimal)
         {
             return OwnDecimalValue(PyDecimalOps.Multiply(left, right, span, operation ?? "*"), context, span);
@@ -364,6 +367,7 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateDivide(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
+        if (left is PyComplex || right is PyComplex) return EvaluateComplexBinary(BinaryOperatorSyntax.Divide, left, right, context, span);
         if (left is PyDecimal || right is PyDecimal)
         {
             return OwnDecimalValue(PyDecimalOps.Divide(left, right, span, operation ?? "/"), context, span);
@@ -416,6 +420,7 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateFloorDivide(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
+        if (left is PyComplex || right is PyComplex) return EvaluateComplexBinary(BinaryOperatorSyntax.FloorDivide, left, right, context, span);
         if (left is PyDecimal || right is PyDecimal)
         {
             return OwnDecimalValue(PyDecimalOps.FloorDivide(left, right, span, operation ?? "//"), context, span);
@@ -453,6 +458,7 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateModulo(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
+        if ((left is PyComplex || right is PyComplex) && left is not PyString) return EvaluateComplexBinary(BinaryOperatorSyntax.Modulo, left, right, context, span);
         if (left is PyString template)
         {
             return FormatPercentString(template, right, context, span);
@@ -492,6 +498,7 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluatePower(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
+        if (left is PyComplex || right is PyComplex) return EvaluateComplexBinary(BinaryOperatorSyntax.Power, left, right, context, span);
         if (left is PyDecimal || right is PyDecimal)
         {
             return OwnDecimalValue(PyDecimalOps.Power(left, right, span, operation ?? "** or pow()"), context, span);
@@ -530,7 +537,7 @@ internal sealed partial class LythonRuntime
             }
             if (leftValue < 0 && double.IsFinite(rightValue) && rightValue != Math.Truncate(rightValue))
             {
-                throw new LythonRuntimeException("TypeError", "complex results are not supported by Lython", span);
+                return PyComplex.Own(ComplexPower(new System.Numerics.Complex(leftValue, 0), new System.Numerics.Complex(rightValue, 0), context, span), context, span);
             }
 
             GuardIntegerPower(lhs, rhs, context.MemoryGovernor, span);

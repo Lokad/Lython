@@ -30,6 +30,12 @@ internal sealed partial class Parser
                 SpanOf(tokenIndex));
         }
 
+        if (CurrentToken == Token.Imaginary)
+        {
+            var imaginaryToken = ReadToken();
+            return new ImaginaryLiteralExpressionSyntax(_tokens.GetString(imaginaryToken), SpanOf(imaginaryToken));
+        }
+
         if (CurrentToken == Token.Float)
         {
             var tokenIndex = ReadToken();

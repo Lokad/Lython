@@ -133,7 +133,7 @@ return str(1.0) + "|" + repr(-0.0) + "|" + str(1e20) + "|" + str(math.inf) + "|"
     }
 
     [Fact]
-    public void FloatingPowerRejectsPythonExceptionalCases()
+    public void FloatingPowerHandlesPythonExceptionalCases()
     {
         var result = new LythonEngine().Run(
             """
@@ -142,9 +142,7 @@ try:
     0.0 ** -1
 except ZeroDivisionError:
     values.append("zero")
-try:
-    (-1.0) ** 0.5
-except TypeError:
+if isinstance((-1.0) ** 0.5, complex):
     values.append("complex")
 values.append(str(pow(2, -1, 5)))
 try:

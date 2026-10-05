@@ -138,6 +138,8 @@ internal sealed partial class LythonRuntime
                 return SharedBytesLiteral(bytes);
             case LoweredIntegerLiteralExpression integer:
                 return SharedIntegerMagnitude(integer);
+            case LoweredImaginaryLiteralExpression imaginary:
+                return PyComplex.Create(0, Numbers.PyNumberOps.ParseFloat(imaginary.Literal.ValueText[..^1]), context, imaginary.Span);
             case LoweredFloatLiteralExpression floating:
                 return ParseFloat(floating.Literal);
             case LoweredBooleanLiteralExpression boolean:

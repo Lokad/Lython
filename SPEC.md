@@ -481,7 +481,34 @@ this is not a static type checker. Direct construction of TypeAliasType and
 GenericAlias is explicitly rejected; use type statements and subscripting.
 Annotation scopes reject yield, walrus and nonlocal type-parameter rebinding.
 
-### 8.6 Deliberately Unsupported Python Surface
+### 8.6 Matrix operators and complex values
+
+`@` shares multiplication precedence and associates left to right. It dispatches
+through `__matmul__` and `__rmatmul__`, giving an overriding reflected method
+on a strict subclass priority. A declined operation (`NotImplemented`) tries
+the remaining eligible slot once; same-type operands do not invoke the
+reflected slot. `@=` tries `__imatmul__` and then binary dispatch. Receivers,
+indices and right operands evaluate once, in Python order. `operator.matmul`
+and `operator.imatmul` use the same dispatch. Builtin scalars and containers
+provide no default matrix operation. RunAsync awaits guest protocol calls and
+augmented target item reads/stores.
+
+Decimal imaginary literals with `j`/`J`, including separators, exponents and
+leading zeroes, produce complex values. `complex(real=0, imag=0)` accepts
+numeric inputs, Python-shaped strings and conversion hooks (`__complex__`,
+then `__float__`, then `__index__`); RunAsync awaits those hooks. Arithmetic
+supports addition, subtraction, multiplication, division and exponentiation,
+including mixed real operands and negative real fractional powers. Values
+expose real/imaginary components, conjugation, magnitude, truth and equality
+with real numeric values. Equal numeric keys share hashes. Ordering, floor
+arithmetic, bitwise operations and real-only conversions fail explicitly.
+Signed zeros, nonfinite components, repr/str and floating format codes retain
+Python behavior. Complex literal patterns are supported. Newly created values,
+retained method wrappers and format expansion are governed; public results
+project to System.Numerics.Complex. Complex subclasses and the cmath module
+remain outside the current object/module surface.
+
+### 8.7 Deliberately Unsupported Python Surface
 
 Classes, comprehensions, generator expressions, lambdas, decorators, context
 managers, structural pattern matching, assertions, deletion, keyword and
@@ -503,8 +530,7 @@ failures unwind or suppress through __exit__ like failures in the body.
 Positional-only parameters using `/` are supported in functions and lambdas.
 Their names do not bind keyword arguments; with **kwargs those names become
 overflow keys. The `u`/`U` prefixes produce ordinary Unicode strings, including
-adjacent literal concatenation. `except*`, matrix multiplication and complex
-literals are outside the current subset.
+adjacent literal concatenation. `except*` is outside the current subset.
 These forms must produce explicit unsupported diagnostics before execution.
 
 ---
@@ -634,7 +660,7 @@ Assignment expressions using `:=` are supported for simple-name targets only. Th
 
 Numeric behavior for the supported subset must follow Python semantics.
 
-The supported subset includes integer values, floating-point values, and boolean values.
+The supported subset includes integer, floating-point, boolean and complex values.
 
 `int` must have Python integer semantics:
 
@@ -1002,7 +1028,7 @@ The `decimal` module exposes the common CPython-shaped `Decimal`, `DecimalTuple`
 
 The `math` module exposes the common CPython 3.13 scalar and aggregate helpers expected by generated scripts: elementary functions and constants, `factorial`, `gcd`, `lcm`, `comb`, `perm`, `isqrt`, `dist`, variadic `hypot`, `frexp`, `ldexp`, `modf`, `remainder`, `nextafter`, `ulp`, `exp2`, `expm1`, `log1p`, `cbrt`, `erf`, `erfc`, `gamma`, `lgamma`, `fma`, `sumprod`, `prod`, and `fsum`. Integer-only functions must accept `bool` as an integer. Domain, overflow, and keyword-only call-shape errors should follow CPython for supported functions. Exact integer helpers should use arbitrary-size integers where practical, while computations that imply unbounded local loops may fail explicitly under Lython's contained execution model.
 
-The `operator` module exposes direct-function equivalents for supported expression and container operations: truth/not/identity helpers, unary numeric helpers, arithmetic and bitwise binary helpers, rich comparisons, `getitem`, `setitem`, `delitem`, `contains`, `length_hint`, `countOf`, `indexOf`, in-place helpers matching Lython augmented assignment, `operator.call`, `itemgetter`, `attrgetter`, and `methodcaller`. These helpers must reuse the runtime's existing Python-shaped equality, comparison, indexing, calling, and mutation semantics. `operator.matmul` must fail explicitly unless Lython later adds matrix-multiplication syntax and semantics.
+The `operator` module exposes direct-function equivalents for supported expression and container operations: truth/not/identity helpers, unary numeric helpers, arithmetic and bitwise binary helpers, rich comparisons, `getitem`, `setitem`, `delitem`, `contains`, `length_hint`, `countOf`, `indexOf`, in-place helpers matching Lython augmented assignment, `operator.call`, `itemgetter`, `attrgetter`, and `methodcaller`. These helpers must reuse the runtime's existing Python-shaped equality, comparison, indexing, calling, and mutation semantics. `operator.matmul` and `operator.imatmul` reuse matrix protocol dispatch.
 
 The `os` module follows the same contained path model. It may expose Python-shaped constants such as `name`, `sep`, `linesep`, `pathsep`, `extsep`, `devnull`, and access-mode constants using documented contained values. Supported file-tree operations must remain host-mediated through `ILythonHost`.
 

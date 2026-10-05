@@ -42,6 +42,11 @@ internal sealed record LoweredIntegerLiteralExpression(
     public override ExpressionSyntax Syntax => Literal;
 }
 
+internal sealed record LoweredImaginaryLiteralExpression(ImaginaryLiteralExpressionSyntax Literal) : LoweredExpression
+{
+    public override ExpressionSyntax Syntax => Literal;
+}
+
 internal sealed record LoweredFloatLiteralExpression(
     FloatLiteralExpressionSyntax Literal) : LoweredExpression
 {

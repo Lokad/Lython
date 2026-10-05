@@ -109,6 +109,7 @@ internal enum AugmentedAssignmentOperatorSyntax
     Add,
     Subtract,
     Multiply,
+    MatrixMultiply,
     Divide,
     FloorDivide,
     Modulo,
@@ -424,6 +425,8 @@ internal sealed record IntegerLiteralExpressionSyntax(
     string ValueText,
     LythonSourceSpan Span) : ExpressionSyntax(Span);
 
+internal sealed record ImaginaryLiteralExpressionSyntax(string ValueText, LythonSourceSpan Span) : ExpressionSyntax(Span);
+
 internal sealed record FloatLiteralExpressionSyntax(
     string ValueText,
     LythonSourceSpan Span) : ExpressionSyntax(Span);
@@ -669,6 +672,7 @@ internal enum BinaryOperatorSyntax
     Add,
     Subtract,
     Multiply,
+    MatrixMultiply,
     Divide,
     FloorDivide,
     Modulo,

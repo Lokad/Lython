@@ -670,6 +670,7 @@ internal sealed partial class Parser
     private static bool IsAugmentedAssignmentToken(Token token)
     {
         return token is
+            Token.AtEqual or
             Token.PlusEqual or
             Token.MinusEqual or
             Token.StarEqual or
@@ -688,6 +689,9 @@ internal sealed partial class Parser
     {
         switch (token)
         {
+            case Token.AtEqual:
+                op = AugmentedAssignmentOperatorSyntax.MatrixMultiply;
+                return true;
             case Token.PlusEqual:
                 op = AugmentedAssignmentOperatorSyntax.Add;
                 return true;

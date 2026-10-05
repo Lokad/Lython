@@ -36,6 +36,10 @@ internal sealed partial class ExecutableScript
                     AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyNumberOps.ParseInteger(integer.Literal.ValueText)), integer.Span));
                     return currentBlock;
 
+                case LoweredImaginaryLiteralExpression imaginary:
+                    AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(new PyComplex(0, PyNumberOps.ParseFloat(imaginary.Literal.ValueText[..^1]))), imaginary.Span));
+                    return currentBlock;
+
                 case LoweredFloatLiteralExpression floating:
                     AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyNumberOps.ParseFloat(floating.Literal.ValueText)), floating.Span));
                     return currentBlock;
@@ -329,6 +333,7 @@ internal sealed partial class ExecutableScript
                 BinaryOperatorSyntax.Add => ExecutableBinaryOperator.Add,
                 BinaryOperatorSyntax.Subtract => ExecutableBinaryOperator.Subtract,
                 BinaryOperatorSyntax.Multiply => ExecutableBinaryOperator.Multiply,
+                BinaryOperatorSyntax.MatrixMultiply => ExecutableBinaryOperator.MatrixMultiply,
                 BinaryOperatorSyntax.Divide => ExecutableBinaryOperator.Divide,
                 BinaryOperatorSyntax.FloorDivide => ExecutableBinaryOperator.FloorDivide,
                 BinaryOperatorSyntax.Modulo => ExecutableBinaryOperator.Modulo,
@@ -367,6 +372,7 @@ internal sealed partial class ExecutableScript
                 AugmentedAssignmentOperatorSyntax.Add => ExecutableAugmentedOperator.Add,
                 AugmentedAssignmentOperatorSyntax.Subtract => ExecutableAugmentedOperator.Subtract,
                 AugmentedAssignmentOperatorSyntax.Multiply => ExecutableAugmentedOperator.Multiply,
+                AugmentedAssignmentOperatorSyntax.MatrixMultiply => ExecutableAugmentedOperator.MatrixMultiply,
                 AugmentedAssignmentOperatorSyntax.Divide => ExecutableAugmentedOperator.Divide,
                 AugmentedAssignmentOperatorSyntax.FloorDivide => ExecutableAugmentedOperator.FloorDivide,
                 AugmentedAssignmentOperatorSyntax.Modulo => ExecutableAugmentedOperator.Modulo,

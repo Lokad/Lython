@@ -126,6 +126,7 @@ internal sealed partial class LythonRuntime
             return PyDateTimeOps.FormatValue(value, PyString.FromString(formatSpecifier), span).AsString();
         }
 
+        if (value is PyComplex complex) return FormatComplexValue(complex, formatSpecifier, context, span);
         var spec = ParseInterpolatedFormatSpecifier(formatSpecifier, value, span);
         if (TryFormatNumericValue(value, spec, context, span, out var numericText, out var numericPrefixLength))
         {

@@ -35,7 +35,8 @@ internal sealed partial class LythonRuntime
                 "floordiv" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorFloorDiv, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateFloorDivide(left, right, context, innerSpan))),
                 "mod" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorMod, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateModulo(left, right, context, innerSpan))),
                 "pow" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorPow, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluatePower(left, right, context, innerSpan))),
-                "matmul" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorMatMul, (arguments, span, _) => Binary(arguments, span, UnsupportedMatMul)),
+                "matmul" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorMatMul, (arguments, span, context) => EvaluateMatrixMultiplyAsync(arguments[0], arguments[1], context, span, false).GetAwaiter().GetResult(), (arguments, span, context) => EvaluateMatrixMultiplyAsync(arguments[0], arguments[1], context, span, true)),
+                "imatmul" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorIMatMul, (arguments, span, context) => EvaluateMatrixInPlaceAsync(arguments[0], arguments[1], context, span, false).GetAwaiter().GetResult(), (arguments, span, context) => EvaluateMatrixInPlaceAsync(arguments[0], arguments[1], context, span, true)),
                 "lshift" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorLShift, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateLeftShift(left, right, context, innerSpan))),
                 "rshift" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorRShift, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateRightShift(left, right, context, innerSpan))),
                 "and_" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorAnd, (arguments, span, context) => Binary(arguments, span, (left, right, innerSpan) => EvaluateBitwiseAnd(left, right, context, innerSpan))),
@@ -290,13 +291,6 @@ internal sealed partial class LythonRuntime
         }
 
         return integer;
-    }
-
-    private static object UnsupportedMatMul(object left, object right, LythonSourceSpan span)
-    {
-        _ = left;
-        _ = right;
-        throw new LythonRuntimeException("TypeError", "operator.matmul(a, b) is unsupported because Lython has no matrix multiplication operator.", span);
     }
 
     private static object EvaluateConcat(object left, object right, ExecutionContext context, LythonSourceSpan span)

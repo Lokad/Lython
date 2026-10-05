@@ -302,7 +302,7 @@ import operator
 operator.matmul(1, 2)
 """,
         "TypeError",
-        "matrix multiplication")]
+        "unsupported operand type(s) for @")]
     [InlineData(
         """
 import operator

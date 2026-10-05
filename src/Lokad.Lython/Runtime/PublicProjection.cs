@@ -34,6 +34,7 @@ internal static class PublicProjection
             BigInteger => value,
             float => value,
             double => value,
+            PyComplex complex => new Complex(complex.Real, complex.Imaginary),
             decimal => value,
             string text => ProjectClrString(text, budget),
             byte[] bytes => ProjectByteArray(bytes, budget),

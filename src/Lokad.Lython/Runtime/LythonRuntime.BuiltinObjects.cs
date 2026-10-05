@@ -686,6 +686,7 @@ internal sealed partial class LythonRuntime
             "generator" or
             "bool" or
             "int" or
+            "complex" or
             "float" or
             "list" or
             "tuple" or
@@ -727,6 +728,7 @@ internal sealed partial class LythonRuntime
             "bool" => value is bool,
             "int" => value is BigInteger or int or bool,
             "float" => value is double,
+            "complex" => value is PyComplex,
             "list" => value is PyList,
             "tuple" => value is PyTuple or PyNamedTupleObject or PyTypingNamedTupleObject or TimeStructTimeValue,
             "dict" => value is PyDict or PyDefaultDict or PyCounter,

@@ -343,12 +343,12 @@ internal sealed partial class LythonRuntime
                     return;
                 case LoweredAugmentedAssignmentStatement augmented:
                     var augmentedTarget = await ResolveLoweredAugmentedAssignmentTargetAsync(augmented.Target, context).ConfigureAwait(false);
-                    augmentedTarget.Store(await EvaluateAugmentedAssignmentAsync(
+                    await augmentedTarget.StoreValueAsync(await EvaluateAugmentedAssignmentAsync(
                         augmentedTarget.CurrentValue,
                         await EvaluateLoweredExpressionAsync(augmented.Expression, context).ConfigureAwait(false),
                         augmented.Assignment.Operator,
                         context,
-                        augmented.Span).ConfigureAwait(false));
+                        augmented.Span).ConfigureAwait(false)).ConfigureAwait(false);
                     return;
                 case LoweredUnpackingAssignmentStatement unpacking:
                     AssignTargets(
@@ -402,10 +402,13 @@ internal sealed partial class LythonRuntime
             case LoweredSubscriptAugmentedAssignmentTarget subscript:
                 var subscriptTarget = await EvaluateLoweredExpressionAsync(subscript.Receiver, context).ConfigureAwait(false);
                 var index = await EvaluateLoweredExpressionAsync(subscript.Index, context).ConfigureAwait(false);
-                var subscriptValue = ReadSubscriptValue(subscriptTarget, index, subscript.Span, context);
+                var subscriptValue = subscriptTarget is PyInstance subscriptInstance
+                    ? await GetUserItemAsync(subscriptInstance, index, context, subscript.Span).ConfigureAwait(false)
+                    : ReadSubscriptValue(subscriptTarget, index, subscript.Span, context);
                 return new AugmentedAssignmentTargetReference(
                     subscriptValue,
-                    value => SetSubscriptValue(subscriptTarget, index, value, subscript.Span, context));
+                    value => SetSubscriptValue(subscriptTarget, index, value, subscript.Span, context),
+                    value => SetHeaderSubscriptAsync(subscriptTarget, index, value, subscript.Span, context));
 
             case LoweredSliceAugmentedAssignmentTarget slice:
                 var sliceTarget = await EvaluateLoweredExpressionAsync(slice.Receiver, context).ConfigureAwait(false);
@@ -418,10 +421,14 @@ internal sealed partial class LythonRuntime
                 var step = slice.Step is null
                     ? null
                     : await EvaluateLoweredExpressionAsync(slice.Step, context).ConfigureAwait(false);
-                var sliceValue = PyIndexing.ReadSlice(sliceTarget, start, end, step, slice.Span, context);
+                var sliceIndex = new PySlice(start ?? PyNone.Instance, end ?? PyNone.Instance, step ?? PyNone.Instance);
+                var sliceValue = sliceTarget is PyInstance sliceInstance
+                    ? await GetUserItemAsync(sliceInstance, sliceIndex, context, slice.Span).ConfigureAwait(false)
+                    : PyIndexing.ReadSlice(sliceTarget, start, end, step, slice.Span, context);
                 return new AugmentedAssignmentTargetReference(
                     sliceValue,
-                    value => ExecuteSliceAssignment(sliceTarget, start, end, step, value, slice.Span, context));
+                    value => ExecuteSliceAssignment(sliceTarget, start, end, step, value, slice.Span, context),
+                    sliceTarget is PyInstance ? value => SetHeaderSubscriptAsync(sliceTarget, sliceIndex, value, slice.Span, context) : null);
 
             case LoweredMemberAugmentedAssignmentTarget member:
                 var memberTarget = await EvaluateLoweredExpressionAsync(member.Receiver, context).ConfigureAwait(false);
@@ -432,7 +439,12 @@ internal sealed partial class LythonRuntime
 
                 return new AugmentedAssignmentTargetReference(
                     memberValue,
-                    value => SetMemberValue(memberTarget, member.Target.MemberName, value, member.Span, context));
+                    value => SetMemberValue(memberTarget, member.Target.MemberName, value, member.Span, context),
+                    async value =>
+                    {
+                        if (!await PyMemberAccess.TryAssignAsync(memberTarget, member.Target.MemberName, value, context, member.Span).ConfigureAwait(false))
+                            throw new LythonRuntimeException("TypeError", "Object does not support attribute assignment", member.Span);
+                    });
 
             default:
                 throw new InvalidOperationException($"Unsupported lowered augmented target: {target.GetType().Name}");

@@ -8,6 +8,8 @@ internal static class PyEquality
 {
     public static bool AreEqual(object left, object right)
     {
+        if (left is PyComplex || right is PyComplex) return PyComplex.AreEqual(left, right);
+
         // Decimal coercion has its own Python rules and must run before the broader
         // numeric tower. In particular, falling back to CLR Equals would make equal
         // values with different runtime representations compare unequal.

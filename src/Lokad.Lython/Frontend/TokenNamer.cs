@@ -101,6 +101,8 @@ internal sealed class TokenNamer : ITokenNamer<Token>
             Token.None => "'None'",
             Token.String => "string",
             Token.Float => "float",
+            Token.Imaginary => "imaginary number",
+            Token.AtEqual => "'@='",
             Token.Integer => "integer",
             _ => throw new ArgumentOutOfRangeException(nameof(t), t, null)
         };

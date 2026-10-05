@@ -41,6 +41,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
+        if (op == BinaryOperatorSyntax.MatrixMultiply) return EvaluateMatrixMultiplyAsync(left, right, context, span, false).GetAwaiter().GetResult();
         if (op == BinaryOperatorSyntax.BitwiseOr && TryTypeUnion(left, right, context, span, out var union)) return union;
         if (TryEvaluateNumericProtocol(op, left, right, context, span, out var protocolResult))
         {
@@ -70,6 +71,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
+        if (op == BinaryOperatorSyntax.MatrixMultiply) return await EvaluateMatrixMultiplyAsync(left, right, context, span, true).ConfigureAwait(false);
         if (op == BinaryOperatorSyntax.BitwiseOr && TryTypeUnion(left, right, context, span, out var union)) return union;
         var protocol = await EvaluateNumericProtocolAsync(op, left, right, context, span).ConfigureAwait(false);
         if (protocol.Kind == SpecialMethodInvocationKind.Invoked)
@@ -97,7 +99,11 @@ internal sealed partial class LythonRuntime
         object right,
         ExecutionContext context,
         LythonSourceSpan span)
-        => op switch
+    {
+        if (op == BinaryOperatorSyntax.Is) return AreIdentical(left, right);
+        if (op == BinaryOperatorSyntax.IsNot) return !AreIdentical(left, right);
+        if ((left is PyComplex || right is PyComplex) && !(op == BinaryOperatorSyntax.Modulo && left is Runtime.Text.PyString)) return EvaluateComplexBinary(op, left, right, context, span);
+        return op switch
         {
             BinaryOperatorSyntax.Add => EvaluateAdd(left, right, context, span),
             BinaryOperatorSyntax.Subtract => EvaluateSubtract(left, right, context, span),
@@ -115,6 +121,7 @@ internal sealed partial class LythonRuntime
             BinaryOperatorSyntax.IsNot => !AreIdentical(left, right),
             _ => throw new InvalidOperationException($"Unknown eager binary operator: {op}"),
         };
+    }
 
     private static object EvaluateUnaryOperator(
         UnaryOperatorSyntax op,
@@ -160,7 +167,15 @@ internal sealed partial class LythonRuntime
         object operand,
         ExecutionContext context,
         LythonSourceSpan span)
-        => op switch
+    {
+        if (operand is PyComplex complex) return op switch
+        {
+            UnaryOperatorSyntax.Plus => complex,
+            UnaryOperatorSyntax.Minus => PyComplex.Create(-complex.Real, -complex.Imaginary, context, span),
+            UnaryOperatorSyntax.Not => !complex.IsTruthy(),
+            _ => throw RuntimeErrors.BadUnaryOperand("~", operand, span),
+        };
+        return op switch
         {
             UnaryOperatorSyntax.Not => !IsTruthy(operand, context, span),
             UnaryOperatorSyntax.Plus => EvaluateUnaryPlus(operand, context, span),
@@ -168,6 +183,7 @@ internal sealed partial class LythonRuntime
             UnaryOperatorSyntax.BitwiseNot => EvaluateBitwiseNot(operand, context, span),
             _ => throw new InvalidOperationException($"Unknown unary operator: {op}"),
         };
+    }
 
     private static string? UnarySpecialMethod(UnaryOperatorSyntax op)
         => op switch

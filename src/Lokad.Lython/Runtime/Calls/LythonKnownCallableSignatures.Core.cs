@@ -85,6 +85,7 @@ internal static partial class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature OperatorFloorDiv = LythonCallableSignature.Create("operator.floordiv", ["a", "b"]);
     public static readonly LythonCallableSignature OperatorMod = LythonCallableSignature.Create("operator.mod", ["a", "b"]);
     public static readonly LythonCallableSignature OperatorPow = LythonCallableSignature.Create("operator.pow", ["a", "b"]);
+    public static readonly LythonCallableSignature OperatorIMatMul = LythonCallableSignature.Create("operator.imatmul", ["a", "b"]);
     public static readonly LythonCallableSignature OperatorMatMul = LythonCallableSignature.Create("operator.matmul", ["a", "b"]);
     public static readonly LythonCallableSignature OperatorLShift = LythonCallableSignature.Create("operator.lshift", ["a", "b"]);
     public static readonly LythonCallableSignature OperatorRShift = LythonCallableSignature.Create("operator.rshift", ["a", "b"]);

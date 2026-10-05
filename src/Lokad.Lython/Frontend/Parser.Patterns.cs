@@ -589,16 +589,31 @@ internal sealed partial class Parser
     {
         expression = null;
 
-        if (CurrentToken is Token.String or Token.Integer or Token.Float or Token.True or Token.False or Token.None)
+        if (CurrentToken is Token.Integer or Token.Float or Token.Imaginary ||
+            CurrentToken == Token.Minus && PeekToken(1) is Token.Integer or Token.Float or Token.Imaginary)
+        {
+            var parsed = CurrentToken == Token.Minus ? ParseUnaryExpression() : ParsePrimaryExpression();
+            if (parsed is null) return false;
+            if (CurrentToken is Token.Plus or Token.Minus && PeekToken(1) == Token.Imaginary)
+            {
+                if (parsed is ImaginaryLiteralExpressionSyntax or UnaryExpressionSyntax { Operand: ImaginaryLiteralExpressionSyntax })
+                {
+                    AddDiagnostic("LA1100", "Complex literal patterns require a real part followed by an imaginary part.", parsed.Span);
+                    return false;
+                }
+                var operationToken = CurrentToken; ReadToken();
+                var operation = operationToken == Token.Plus ? BinaryOperatorSyntax.Add : BinaryOperatorSyntax.Subtract;
+                var imaginary = ParsePrimaryExpression();
+                if (imaginary is null) return false;
+                parsed = new BinaryExpressionSyntax(parsed, operation, imaginary, Merge(parsed.Span, imaginary.Span));
+            }
+            expression = parsed; return true;
+        }
+        if (CurrentToken is Token.String or Token.True or Token.False or Token.None)
         {
             var parsed = ParsePrimaryExpression();
-            if (parsed is null)
-            {
-                return false;
-            }
-
-            expression = parsed;
-            return true;
+            if (parsed is null) return false;
+            expression = parsed; return true;
         }
 
         if (IsNameToken(CurrentToken) && PeekToken(1) == Token.String)
@@ -613,15 +628,6 @@ internal sealed partial class Parser
             return false;
         }
 
-        if ((CurrentToken is Token.Plus or Token.Minus) && (PeekToken(1) is Token.Integer or Token.Float))
-        {
-            var parsed = ParseUnaryExpression();
-            if (parsed is UnaryExpressionSyntax)
-            {
-                expression = parsed;
-                return true;
-            }
-        }
 
         return false;
     }

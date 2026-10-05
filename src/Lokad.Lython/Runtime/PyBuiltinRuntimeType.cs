@@ -7,17 +7,20 @@ internal sealed class PyBuiltinRuntimeType : LythonRuntime.ICallable, IPyRendera
 {
     private readonly Func<CallArgumentValue[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> _constructor;
     private readonly Func<string, object?>? _memberFactory;
+    private readonly Func<CallArgumentValue[], LythonSourceSpan, LythonRuntime.ExecutionContext, ValueTask<object>>? _asyncConstructor;
 
     public PyBuiltinRuntimeType(string name, Func<CallArgumentValue[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> constructor) : this(name, constructor, null) { }
 
     public PyBuiltinRuntimeType(
         string name,
         Func<CallArgumentValue[], LythonSourceSpan, LythonRuntime.ExecutionContext, object> constructor,
-        Func<string, object?>? memberFactory)
+        Func<string, object?>? memberFactory,
+        Func<CallArgumentValue[], LythonSourceSpan, LythonRuntime.ExecutionContext, ValueTask<object>>? asyncConstructor = null)
     {
         Name = name;
         _constructor = constructor;
         _memberFactory = memberFactory;
+        _asyncConstructor = asyncConstructor;
         _shortName = PyString.FromString(name.Substring(name.LastIndexOf((char)46) + 1));
     }
 
@@ -29,6 +32,9 @@ internal sealed class PyBuiltinRuntimeType : LythonRuntime.ICallable, IPyRendera
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         => _constructor(arguments, span, context);
+
+    public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => _asyncConstructor is null ? new(Invoke(arguments, span, context)) : _asyncConstructor(arguments, span, context);
 
     // Runtime types resolve __module__ through the shared label catalog and
     // __bases__/__mro__ per read: base objects mix global type singletons with

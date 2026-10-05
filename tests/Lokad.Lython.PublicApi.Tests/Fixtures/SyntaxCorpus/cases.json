@@ -1180,24 +1180,24 @@
     "note": ""
   },
   {
-    "name": "unsupported-matmul",
-    "family": "boundaries",
-    "status": "unsupported",
+    "name": "matmul",
+    "family": "expressions",
+    "status": "supported",
     "source": "print([1] @ [2])\n",
     "standardOutput": "",
     "success": false,
     "exceptionType": "TypeError",
-    "note": ""
+    "note": "CPython 3.13.2"
   },
   {
-    "name": "unsupported-complex",
-    "family": "boundaries",
-    "status": "unsupported",
+    "name": "complex",
+    "family": "expressions",
+    "status": "supported",
     "source": "print(1j)\n",
     "standardOutput": "1j\n",
     "success": true,
     "exceptionType": null,
-    "note": ""
+    "note": "CPython 3.13.2"
   },
   {
     "name": "json-strict-hook-order",
@@ -2124,6 +2124,296 @@
     "family": "invalid",
     "status": "invalid",
     "source": "type A[*Ts:int]=int",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": null,
+    "note": "CPython 3.13.2 rejects before execution"
+  },
+  {
+    "name": "matrix-basic",
+    "family": "expressions",
+    "status": "supported",
+    "source": "class M:\n    def __matmul__(self,other):return 7\nprint(M()@M())\n",
+    "standardOutput": "7\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "matrix-reflected",
+    "family": "expressions",
+    "status": "supported",
+    "source": "events=[]\nclass L:\n    def __matmul__(self,other):events.append(\"left\");return NotImplemented\nclass R:\n    def __rmatmul__(self,other):events.append(\"right\");return 9\nprint(L()@R(),events)\n",
+    "standardOutput": "9 ['left', 'right']\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "matrix-subclass",
+    "family": "expressions",
+    "status": "supported",
+    "source": "events=[]\nclass L:\n    def __matmul__(self,other):events.append(\"left\");return 1\nclass R(L):\n    def __rmatmul__(self,other):events.append(\"right\");return 2\nprint(L()@R(),events)\n",
+    "standardOutput": "2 ['right']\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "matrix-same-type",
+    "family": "expressions",
+    "status": "supported",
+    "source": "events=[]\nclass M:\n    def __matmul__(self,other):events.append(\"left\");return NotImplemented\n    def __rmatmul__(self,other):events.append(\"right\");return 4\ntry:M()@M()\nexcept TypeError:print(\"type\",events)\n",
+    "standardOutput": "type ['left']\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "matrix-inplace",
+    "family": "expressions",
+    "status": "supported",
+    "source": "from operator import matmul,imatmul\nevents=[]\nclass M:\n    def __imatmul__(self,other):events.append(\"inplace\");return NotImplemented\n    def __matmul__(self,other):events.append(\"matrix\");return 7\nx=M()\nx @= 1\nprint(x,matmul(M(),1),imatmul(M(),1),events)\n",
+    "standardOutput": "7 7 7 ['inplace', 'matrix', 'matrix', 'inplace', 'matrix']\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "matrix-order",
+    "family": "expressions",
+    "status": "supported",
+    "source": "events=[]\nclass M:\n    def __matmul__(self,other):events.append(\"@\"+other);return self\n    def __mul__(self,other):events.append(\"*\"+other);return self\ndef m():events.append(\"receiver\");return box\ndef index():events.append(\"index\");return 0\nbox=[M()]\nm()[index()] @= \"a\"\nx=M() @ \"b\" * \"c\"\nprint(events)\n",
+    "standardOutput": "['receiver', 'index', '@a', '@b', '*c']\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "complex-literals",
+    "family": "expressions",
+    "status": "supported",
+    "source": "print(1j,2J,.5j,1.e2j,1_0j,0012j,1+2j,-2j,0j,-0j)\n",
+    "standardOutput": "1j 2j 0.5j 100j 10j 12j (1+2j) (-0-2j) 0j (-0-0j)\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "complex-construct",
+    "family": "expressions",
+    "status": "supported",
+    "source": "print(complex(),complex(2),complex(2,3),complex(imag=2),complex(real=2,imag=3),complex(1+2j,3+4j))\n",
+    "standardOutput": "0j (2+0j) (2+3j) 2j (2+3j) (-3+5j)\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "complex-strings",
+    "family": "expressions",
+    "status": "supported",
+    "source": "for s in [\"1+2j\",\"j\",\"-j\",\"( -1.5e2+2.3e-1j )\",\"nan+nanj\",\"inf-infj\",\"1_0+2_0j\"]:print(complex(s))\n",
+    "standardOutput": "(1+2j)\n1j\n-1j\n(-150+0.23j)\n(nan+nanj)\n(inf-infj)\n(10+20j)\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "complex-arithmetic",
+    "family": "expressions",
+    "status": "supported",
+    "source": "z=1+2j\nprint(z+3,3+z,z-3,3-z,z*3,3*z,z*z,z/z,2/z,z**2,z**-2,pow(2j,3),sum([z,z]))\n",
+    "standardOutput": "(4+2j) (4+2j) (-2+2j) (2-2j) (3+6j) (3+6j) (-3+4j) (1+0j) (0.4-0.8j) (-3+4j) (-0.12-0.16j) (-0-8j) (2+4j)\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "complex-members",
+    "family": "expressions",
+    "status": "supported",
+    "source": "z=3+4j\nprint(z.real,z.imag,z.conjugate(),abs(z),type(z).__name__,type(z) is complex,isinstance(z,complex),bool(z),bool(0j),z.__complex__() is z)\n",
+    "standardOutput": "3.0 4.0 (3-4j) 5.0 complex True True True False True\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "complex-equality",
+    "family": "expressions",
+    "status": "supported",
+    "source": "from decimal import Decimal\nprint(1+0j==1,1+0j==True,2j==2,0j==0.0,complex(9007199254740992)==9007199254740993,complex(2)==Decimal(2))\nprint(len({1,1.0,True,1+0j}),{1:\"value\"}[1+0j],hash(1+0j)==hash(1))\n",
+    "standardOutput": "True True False True False True\n1 value True\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "complex-restrictions",
+    "family": "expressions",
+    "status": "supported",
+    "source": "z=1+2j\nfor f in [lambda:z<2,lambda:z//2,lambda:z%2,lambda:z&2,lambda:int(z),lambda:float(z),lambda:round(z),lambda:divmod(z,2)]:\n    try:f()\n    except TypeError:print(\"type\")\ntry:z/0\nexcept ZeroDivisionError:print(\"zero\")\n",
+    "standardOutput": "type\ntype\ntype\ntype\ntype\ntype\ntype\ntype\nzero\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "complex-formats",
+    "family": "expressions",
+    "status": "supported",
+    "source": "z=1.25-2.5j\nfor spec in [\"\",\".2f\",\"+.1f\",\">20.2f\",\"*^20.1f\",\".3e\",\".3g\"]:print(format(z,spec))\nprint(f\"{z:.2f}\",\"%s %r\"%(z,z))\n",
+    "standardOutput": "(1.25-2.5j)\n1.25-2.50j\n+1.2-2.5j\n          1.25-2.50j\n******1.2-2.5j******\n1.250e+00-2.500e+00j\n1.25-2.5j\n1.25-2.50j (1.25-2.5j) (1.25-2.5j)\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "complex-zero",
+    "family": "expressions",
+    "status": "supported",
+    "source": "for z in [complex(0.0,0.0),complex(-0.0,0.0),complex(0.0,-0.0),complex(-0.0,-0.0)]:print(z,-z,z.conjugate())\n",
+    "standardOutput": "0j (-0-0j) -0j\n(-0+0j) -0j (-0-0j)\n-0j (-0+0j) 0j\n(-0-0j) 0j (-0+0j)\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "complex-real-power",
+    "family": "expressions",
+    "status": "supported",
+    "source": "z=(-1)**0.5\nprint(type(z) is complex,abs(z-1j)<1e-14,(-4.0)**.5)\n",
+    "standardOutput": "True True (1.2246467991473532e-16+2j)\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "complex-augmented",
+    "family": "expressions",
+    "status": "supported",
+    "source": "z=1j\nz+=2\nz*=3\nz/=1j\nz**=2\nprint(z)\n",
+    "standardOutput": "(-27-36j)\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "complex-nonfinite",
+    "family": "expressions",
+    "status": "supported",
+    "source": "for z in [complex(float(\"inf\"),2),complex(float(\"nan\"),2),complex(0,float(\"-inf\")),complex(0,float(\"nan\"))]:print(z,z==z,bool(z))\n",
+    "standardOutput": "(inf+2j) True True\n(nan+2j) False True\n-infj True True\nnanj False True\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "complex-default-format",
+    "family": "expressions",
+    "status": "supported",
+    "source": "for z in [2j,1+2j,0j,complex(-0.,-0.)]:\n    for spec in [\"20\",\"+\",\".2\",\"#.2\",\".2n\",\"+.2g\"]:print(repr(format(z,spec)))\n",
+    "standardOutput": "'                  2j'\n'+2j'\n'2j'\n'2.0j'\n'0+2j'\n'+0+2j'\n'              (1+2j)'\n'(+1+2j)'\n'(1+2j)'\n'(1.0+2.0j)'\n'1+2j'\n'+1+2j'\n'                  0j'\n'+0j'\n'0j'\n'0.0j'\n'0+0j'\n'+0+0j'\n'             (-0-0j)'\n'(-0-0j)'\n'(-0-0j)'\n'(-0.0-0.0j)'\n'-0-0j'\n'-0-0j'\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "complex-hooks",
+    "family": "expressions",
+    "status": "supported",
+    "source": "events=[]\nclass C:\n    def __complex__(self):events.append(\"complex\");return 1+2j\nclass F:\n    def __float__(self):events.append(\"float\");return 3.0\nclass I:\n    def __index__(self):events.append(\"index\");return 4\nprint(complex(C()),complex(F()),complex(I()),complex(1,F()),events)\n",
+    "standardOutput": "(1+2j) (3+0j) (4+0j) (1+3j) ['complex', 'float', 'index', 'float']\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "complex-patterns",
+    "family": "expressions",
+    "status": "supported",
+    "source": "for z in [1+2j,-1-2j,3j,5]:\n    match z:\n        case 1+2j:print(\"first\")\n        case -1-2j:print(\"second\")\n        case 3j:print(\"third\")\n        case _:print(\"other\")\n",
+    "standardOutput": "first\nsecond\nthird\nother\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "matrix-generator",
+    "family": "expressions",
+    "status": "supported",
+    "source": "class M:\n    def __matmul__(self,x):return x+1\ndef f():\n    x=M() @ (yield 1)\n    yield x\ng=f()\nprint(next(g),g.send(4))\n",
+    "standardOutput": "1 5\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "complex-errors",
+    "family": "expressions",
+    "status": "supported",
+    "source": "for f in [lambda:complex(\"1 + 2j\"),lambda:complex(\"1\",2),lambda:complex(1,\"2\"),lambda:complex(None),lambda:format(1j,\"020\"),lambda:format(1j,\"=10\"),lambda:pow(2j,3,2)]:\n    try:f()\n    except (TypeError,ValueError) as e:print(type(e).__name__)\n",
+    "standardOutput": "ValueError\nTypeError\nTypeError\nTypeError\nValueError\nValueError\nValueError\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "invalid-complex-0",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "print(0x2j)",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": null,
+    "note": "CPython 3.13.2 rejects before execution"
+  },
+  {
+    "name": "invalid-complex-1",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "print(1jname)",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": null,
+    "note": "CPython 3.13.2 rejects before execution"
+  },
+  {
+    "name": "invalid-complex-2",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "print(1__2j)",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": null,
+    "note": "CPython 3.13.2 rejects before execution"
+  },
+  {
+    "name": "invalid-complex-3",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "print(1_j)",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": null,
+    "note": "CPython 3.13.2 rejects before execution"
+  },
+  {
+    "name": "invalid-complex-4",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "match 1j:\n    case 1j+2j:pass",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": null,
+    "note": "CPython 3.13.2 rejects before execution"
+  },
+  {
+    "name": "invalid-complex-5",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "match 1j:\n    case +1j:pass",
     "standardOutput": "",
     "success": false,
     "exceptionType": null,

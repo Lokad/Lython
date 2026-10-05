@@ -258,7 +258,14 @@ internal sealed partial class LythonRuntime
         target.Store(updated);
     }
 
-    private sealed record AugmentedAssignmentTargetReference(object CurrentValue, Action<object> Store);
+    private sealed record AugmentedAssignmentTargetReference(object CurrentValue, Action<object> Store, Func<object, ValueTask>? AsyncStore = null)
+    {
+        public ValueTask StoreValueAsync(object value)
+        {
+            if (AsyncStore is not null) return AsyncStore(value);
+            Store(value); return ValueTask.CompletedTask;
+        }
+    }
 
     private static void ExecuteAnnotatedAssignment(AnnotatedAssignmentStatementSyntax statement, ExecutionContext context)
     {
@@ -696,6 +703,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
+        if (op == AugmentedAssignmentOperatorSyntax.MatrixMultiply) return EvaluateMatrixInPlaceAsync(currentValue, right, context, span, false).GetAwaiter().GetResult();
         var inPlaceMethod = op switch
         {
             AugmentedAssignmentOperatorSyntax.Add => "__iadd__",
@@ -851,6 +859,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
+        if (op == AugmentedAssignmentOperatorSyntax.MatrixMultiply) return await EvaluateMatrixInPlaceAsync(currentValue, right, context, span, true).ConfigureAwait(false);
         // Async twin covering the in-place drains whose sources can suspend
         // (list/deque extension, dict-family staged merges). Every other shape
         // rides the sync path unchanged, preserving its fail-fast behavior and

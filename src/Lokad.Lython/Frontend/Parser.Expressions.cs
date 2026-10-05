@@ -318,11 +318,6 @@ internal sealed partial class Parser
                 Merge(expression.Span, right.Span));
         }
 
-        if (layer == LeftAssociativeLayer.Multiplicative && CurrentToken == Token.At)
-        {
-            AddDiagnostic("LA2000", "Unsupported Python construct 'matrix multiplication'.", _position);
-            return null;
-        }
 
         return expression;
     }
@@ -374,6 +369,9 @@ internal sealed partial class Parser
                 return true;
             case (LeftAssociativeLayer.Additive, Token.Minus):
                 binaryOperator = BinaryOperatorSyntax.Subtract;
+                return true;
+            case (LeftAssociativeLayer.Multiplicative, Token.At):
+                binaryOperator = BinaryOperatorSyntax.MatrixMultiply;
                 return true;
             case (LeftAssociativeLayer.Multiplicative, Token.Star):
                 binaryOperator = BinaryOperatorSyntax.Multiply;

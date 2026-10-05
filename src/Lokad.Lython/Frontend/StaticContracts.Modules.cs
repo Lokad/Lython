@@ -383,6 +383,7 @@ internal static partial class StaticContracts
             "mod",
             "pow",
             "matmul",
+            "imatmul",
             "lshift",
             "rshift",
             "and_",

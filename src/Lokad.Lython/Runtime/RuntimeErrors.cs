@@ -80,6 +80,7 @@ internal static class RuntimeErrors
         PyNotImplemented => "NotImplementedType",
         PyString => "str",
         double => "float",
+        PyComplex => "complex",
         bool => "bool",
         BigInteger or int => "int",
         PyList => "list",

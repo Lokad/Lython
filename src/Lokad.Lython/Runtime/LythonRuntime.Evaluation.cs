@@ -26,6 +26,7 @@ internal sealed partial class LythonRuntime
                 // MG08: heap-sized integer literals own their magnitude storage like
                 // arithmetic results; inline-range values stay free.
                 IntegerLiteralExpressionSyntax integer => OwnHeapInteger(ParseInteger(integer), context.MemoryGovernor, context.Services.State.CallTemporaries, integer.Span),
+                ImaginaryLiteralExpressionSyntax imaginary => PyComplex.Create(0, PyNumberOps.ParseFloat(imaginary.ValueText[..^1]), context, imaginary.Span),
                 FloatLiteralExpressionSyntax floating => ParseFloat(floating),
                 BooleanLiteralExpressionSyntax boolean => boolean.Value,
                 NoneLiteralExpressionSyntax => PyNone.Instance,
