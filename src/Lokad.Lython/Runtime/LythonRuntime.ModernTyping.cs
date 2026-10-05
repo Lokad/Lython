@@ -33,7 +33,7 @@ internal sealed partial class LythonRuntime
             var boundSyntax = parameter.Syntax.Bound;
             while (boundSyntax is ParenthesizedExpressionSyntax parenthesized) boundSyntax = parenthesized.Inner;
             var variable = new PyTypeParameter(parameter.Syntax.Name, parameter.Syntax.Kind,
-                parameter.Syntax.Kind == TypeParameterKind.TypeVar,
+                parameter.Syntax.Kind != TypeParameterKind.TypeVarTuple,
                 parameter.Bound is null ? null : new(parameter.Bound, scope), boundSyntax is TupleLiteralExpressionSyntax,
                 parameter.Default is null ? null : new(parameter.Default, scope), parameter.Syntax.UnpackDefault, context, parameter.Syntax.Span);
             values[i] = variable;
@@ -66,6 +66,8 @@ internal sealed partial class LythonRuntime
     {
         if (origin is not PyType type || !type.TryGetMember("__type_params__", out var raw) || raw is not PyTuple parameters)
             return PyGenericAlias.Create(origin, index, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
+        if (parameters.Count(parameter => parameter is PyTypeParameter { Kind: TypeParameterKind.TypeVarTuple }) > 1)
+            throw new LythonRuntimeException("TypeError", "More than one TypeVarTuple parameter in generic class", span);
         var arguments = index is PyTuple tuple ? tuple : new PyTuple([index], context.MemoryGovernor, span);
         var values = new PyList([], context.MemoryGovernor, span);
         context.Services.State.CallTemporaries.TrackFreshMutable(values, values.CommittedStorageBytes, span);
@@ -179,30 +181,49 @@ internal sealed partial class LythonRuntime
 
     internal static object ConstructTypeParameter(TypeParameterKind kind, CallArgumentValue[] arguments, ExecutionContext context, LythonSourceSpan span)
     {
-        if (arguments.Length == 0 || !PyStringOps.TryAsString(arguments[0].Value, out var name))
-            throw new LythonRuntimeException("TypeError", "Type parameter name must be a string", span);
-        object? bound = null, defaultValue = null;
+        using var scratch = context.MemoryGovernor.ReserveTemporary(128L + 64L * arguments.Length, span);
+        object? nameValue = null, bound = null, defaultValue = null;
+        var constraints = new List<object>();
         var covariant = false; var contravariant = false; var inferVariance = false;
-        foreach (var argument in arguments.Skip(1))
+        var positional = 0;
+        foreach (var argument in arguments)
         {
-            if (!argument.IsKeyword) continue;
+            if (!argument.IsKeyword)
+            {
+                if (positional++ == 0)
+                {
+                    if (nameValue is not null) throw new LythonRuntimeException("TypeError", "Multiple type parameter names", span);
+                    nameValue = argument.Value;
+                }
+                else constraints.Add(argument.Value);
+                continue;
+            }
             switch (argument.KeywordName)
             {
-                case "bound": bound = argument.Value; break;
+                case "name":
+                    if (nameValue is not null) throw new LythonRuntimeException("TypeError", "Multiple type parameter names", span);
+                    nameValue = argument.Value; break;
+                case "bound" when kind != TypeParameterKind.TypeVarTuple: bound = argument.Value is PyNone ? null : argument.Value; break;
                 case "default": defaultValue = ReferenceEquals(argument.Value, PyTypeParameter.NoDefault) ? null : argument.Value; break;
-                case "covariant": covariant = IsTruthy(argument.Value, context, span); break;
-                case "contravariant": contravariant = IsTruthy(argument.Value, context, span); break;
-                case "infer_variance": inferVariance = IsTruthy(argument.Value, context, span); break;
+                case "covariant" when kind != TypeParameterKind.TypeVarTuple: covariant = IsTruthy(argument.Value, context, span); break;
+                case "contravariant" when kind != TypeParameterKind.TypeVarTuple: contravariant = IsTruthy(argument.Value, context, span); break;
+                case "infer_variance" when kind != TypeParameterKind.TypeVarTuple: inferVariance = IsTruthy(argument.Value, context, span); break;
                 default: throw new LythonRuntimeException("TypeError", "Unexpected type parameter keyword", span);
             }
         }
-        var constraints = arguments.Skip(1).Where(argument => !argument.IsKeyword).Select(argument => argument.Value).ToArray();
-        if (constraints.Length == 1 || constraints.Length != 0 && (kind != TypeParameterKind.TypeVar || bound is not null))
+        if (nameValue is null || !PyStringOps.TryAsString(nameValue, out var name))
+            throw new LythonRuntimeException("TypeError", "Type parameter name must be a string", span);
+        if (constraints.Count == 1 || constraints.Count != 0 && (kind != TypeParameterKind.TypeVar || bound is not null))
             throw new LythonRuntimeException("TypeError", "Invalid type parameter constraints", span);
         if (covariant && contravariant || inferVariance && (covariant || contravariant))
             throw new LythonRuntimeException("ValueError", "Invalid variance flags", span);
-        if (constraints.Length != 0) bound = new PyTuple(constraints, context.MemoryGovernor, span);
-        return new PyTypeParameter(name.AsString(), kind, inferVariance, null, constraints.Length != 0, null, false,
+        if (constraints.Count != 0)
+        {
+            var tuple = new PyTuple(constraints, context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(tuple, tuple.CommittedStorageBytes, span);
+            bound = tuple;
+        }
+        return new PyTypeParameter(name.AsString(), kind, inferVariance, null, constraints.Count != 0, null, false,
             context, span, bound, defaultValue, covariant, contravariant);
     }
 

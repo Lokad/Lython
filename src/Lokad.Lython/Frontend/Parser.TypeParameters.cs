@@ -10,7 +10,6 @@ internal sealed partial class Parser
         var result = new List<TypeParameterSyntax>();
         var names = new HashSet<string>(StringComparer.Ordinal);
         var hasDefault = false;
-        var kinds = new HashSet<TypeParameterKind>();
         while (CurrentToken != Token.CloseBracket)
         {
             var kind = TryRead(Token.StarStar, out _) ? TypeParameterKind.ParamSpec
@@ -18,7 +17,6 @@ internal sealed partial class Parser
             if (!TryReadNameToken(out var nameToken)) return Fail("Expected type parameter name.", opening);
             var name = IdentifierText(nameToken);
             if (!names.Add(name)) return Fail("Duplicate type parameter name.", nameToken);
-            if (kind != TypeParameterKind.TypeVar && !kinds.Add(kind)) return Fail("Repeated variadic type parameter.", nameToken);
             ExpressionSyntax? bound = null, defaultValue = null;
             if (TryRead(Token.Colon, out _))
             {

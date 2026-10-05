@@ -30,6 +30,8 @@ internal static class PyEquality
             return true;
         }
 
+        if (left is PyParamSpecPart leftPart && right is PyParamSpecPart rightPart) return leftPart.Equals(rightPart);
+
         if (left is PyGenericAlias leftAlias && right is PyGenericAlias rightAlias) return leftAlias.Equals(rightAlias);
 
         if (left is IPythonExceptionType leftExceptionType && right is IPythonExceptionType rightExceptionType)

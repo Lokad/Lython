@@ -49,7 +49,7 @@ internal sealed class PyTypeParameter : IPyContextualDynamicAttributes, IPyAsync
     private readonly object? _constantBound, _constantDefault;
     private readonly bool _constraints, _unpackDefault;
     private readonly long _bytes;
-    private object? _hasDefaultMethod, _args, _kwargs, _unpacked, _unpackedDefault;
+    private object? _unpacked, _unpackedDefault;
     public TypeParameterKind Kind { get; }
     public bool InferVariance { get; }
     public bool Covariant { get; }
@@ -93,7 +93,7 @@ internal sealed class PyTypeParameter : IPyContextualDynamicAttributes, IPyAsync
         {
             case "__name__": return (true, _name);
             case "__module__": return (true, _module);
-            case "__infer_variance__" when Kind == TypeParameterKind.TypeVar: return (true, InferVariance);
+            case "__infer_variance__" when Kind != TypeParameterKind.TypeVarTuple: return (true, InferVariance);
             case "__covariant__" when Kind != TypeParameterKind.TypeVarTuple: return (true, Covariant);
             case "__contravariant__" when Kind != TypeParameterKind.TypeVarTuple: return (true, Contravariant);
             case "__bound__" when Kind != TypeParameterKind.TypeVarTuple:
@@ -103,9 +103,13 @@ internal sealed class PyTypeParameter : IPyContextualDynamicAttributes, IPyAsync
             case "__default__":
                 var result = _default is null ? _constantDefault ?? NoDefault : await _default.GetAsync(asynchronous).ConfigureAwait(false);
                 return (true, _unpackDefault ? _unpackedDefault ??= new PyUnpackedType(result) : result);
-            case "has_default": return (true, _hasDefaultMethod ??= new HasDefaultMethod(this));
-            case "args" when Kind == TypeParameterKind.ParamSpec: return (true, _args ??= new PyParamSpecPart(this, true));
-            case "kwargs" when Kind == TypeParameterKind.ParamSpec: return (true, _kwargs ??= new PyParamSpecPart(this, false));
+            case "has_default":
+                context.MemoryGovernor.Reserve(96, span); context.MemoryGovernor.Commit(96);
+                var method = new HasDefaultMethod(this, context.MemoryGovernor, span);
+                context.Services.State.CallTemporaries.TrackFreshMutable(method, 96, span);
+                return (true, method);
+            case "args" when Kind == TypeParameterKind.ParamSpec: return (true, PyParamSpecPart.Create(this, true, context, span));
+            case "kwargs" when Kind == TypeParameterKind.ParamSpec: return (true, PyParamSpecPart.Create(this, false, context, span));
             default: return (false, PyNone.Instance);
         }
     }
@@ -116,10 +120,15 @@ internal sealed class PyTypeParameter : IPyContextualDynamicAttributes, IPyAsync
     }
     public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);
     public PyString RenderPython(PyRenderingContext context)
-        => PyString.FromString((InferVariance || Kind != TypeParameterKind.TypeVar ? "" : Covariant ? "+" : Contravariant ? "-" : "~") + Name, context.Context.MemoryGovernor);
+        => PyString.FromString((InferVariance || Kind == TypeParameterKind.TypeVarTuple ? "" : Covariant ? "+" : Contravariant ? "-" : "~") + Name, context.Context.MemoryGovernor);
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
-    private sealed class HasDefaultMethod(PyTypeParameter parameter) : LythonRuntime.ICallable
+    private sealed class HasDefaultMethod(PyTypeParameter parameter, MemoryGovernor governor, LythonSourceSpan span) : LythonRuntime.ICallable,
+        LythonRuntime.IPyBoundEngineMethod, IPyGovernedValue, IPyOwnershipSnapshot
     {
+        public MemoryGovernor? OwnerMemoryGovernor => governor;
+        public LythonSourceSpan? AllocationSpan => span;
+        bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes) { bytes = 96; return true; }
+
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
             if (arguments.Length != 0) throw new LythonRuntimeException("TypeError", "has_default() takes no arguments", span);
@@ -150,10 +159,23 @@ internal sealed record PyUnpackedType(object Value) : IPyRenderableValue, IPyDyn
     }
 }
 
-internal sealed record PyParamSpecPart(PyTypeParameter Parameter, bool Positional) : IPyRenderableValue
+internal sealed record PyParamSpecPart(PyTypeParameter Parameter, bool Positional) : IPyRenderableValue, IPyDynamicAttributes,
+    IPyGovernedValue, IPyOwnershipSnapshot
 {
-    public PyString RenderPython(PyRenderingContext context) => PyString.FromString(Parameter.Name + (Positional ? ".args" : ".kwargs"));
+    public MemoryGovernor? OwnerMemoryGovernor { get; private init; }
+    public LythonSourceSpan? AllocationSpan { get; private init; }
+    bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes) => OwnershipSnapshot.Owned(OwnerMemoryGovernor, 96, out bytes);
+    internal static PyParamSpecPart Create(PyTypeParameter parameter, bool positional, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        context.MemoryGovernor.Reserve(96, span); context.MemoryGovernor.Commit(96);
+        var value = new PyParamSpecPart(parameter, positional) { OwnerMemoryGovernor = context.MemoryGovernor, AllocationSpan = span };
+        context.Services.State.CallTemporaries.TrackFreshMutable(value, 96, span); return value;
+    }
+    public PyString RenderPython(PyRenderingContext context) => PyString.FromString(Parameter.Name + (Positional ? ".args" : ".kwargs"), context.Context.MemoryGovernor, AllocationSpan);
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value) { value = name == "__origin__" ? Parameter : PyNone.Instance; return value is not PyNone; }
+    public bool Equals(PyParamSpecPart? other) => other is not null && ReferenceEquals(Parameter, other.Parameter) && Positional == other.Positional;
+    public override int GetHashCode() => HashCode.Combine(Parameter, Positional);
 }
 
 internal sealed class PyTypeAlias : IPyContextualDynamicAttributes, IPyAsyncDynamicAttributes, IPySubscriptableValue,

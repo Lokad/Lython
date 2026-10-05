@@ -2418,5 +2418,65 @@
     "success": false,
     "exceptionType": null,
     "note": "CPython 3.13.2 rejects before execution"
+  },
+  {
+    "name": "typing-keyword-name",
+    "family": "typing",
+    "status": "supported",
+    "source": "from typing import TypeVar,ParamSpec,TypeVarTuple\nprint(TypeVar(bound=int,name=\"T\"),ParamSpec(default=int,name=\"P\"),TypeVarTuple(default=int,name=\"Ts\"))\n",
+    "standardOutput": "~T ~P Ts\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-fresh-metadata",
+    "family": "typing",
+    "status": "supported",
+    "source": "from typing import TypeVar,ParamSpec,TypeVarTuple,get_origin\nT=TypeVar(\"T\")\nP=ParamSpec(\"P\")\nTs=TypeVarTuple(\"Ts\")\nprint(T.has_default is T.has_default,P.args is P.args,P.args==P.args,P.kwargs==P.kwargs,P.args!=P.kwargs,get_origin(P.args) is P,next(iter(Ts)) is next(iter(Ts)))\n",
+    "standardOutput": "False False True True True True True\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-multiple-variadic-functions",
+    "family": "typing",
+    "status": "supported",
+    "source": "def f[*Ts,*Us,**P,**Q]():pass\ntype A[*Ts,*Us,**P,**Q]=int\nprint(f.__type_params__,A.__type_params__)\n",
+    "standardOutput": "(Ts, Us, P, Q) (Ts, Us, P, Q)\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-multiline-type-parameters",
+    "family": "typing",
+    "status": "supported",
+    "source": "type A[\n    T: int = int,\n]=list[T]\nprint(A.__type_params__[0].__name__,A.__type_params__[0].__bound__ is int)\n",
+    "standardOutput": "T True\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-multiple-variadic-class",
+    "family": "typing",
+    "status": "supported",
+    "source": "class C[*Ts,*Us]:pass\nprint(C.__type_params__)\ntry:C[int,str]\nexcept TypeError:print(\"arity\")\n",
+    "standardOutput": "(Ts, Us)\narity\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
+  },
+  {
+    "name": "typing-paramspec-variance",
+    "family": "typing",
+    "status": "supported",
+    "source": "from typing import ParamSpec\nP=ParamSpec(\"P\",infer_variance=True)\ndef f[**Q]():pass\nQ=f.__type_params__[0]\nprint(P,Q,P.__infer_variance__,Q.__infer_variance__)\n",
+    "standardOutput": "P Q True True\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "CPython 3.13.2"
   }
 ]
