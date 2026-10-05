@@ -1037,11 +1037,13 @@ internal sealed partial class LythonRuntime
         private static readonly PyString LambdaName = PyString.FromString("<lambda>");
 
         private readonly LoweredExpression _body;
+        private readonly ExecutableCodeObject? _generatorCode;
         private readonly FunctionBindingPlan _bindingPlan;
         private readonly ExecutionContext _closure;
 
-        public LambdaFunction(IReadOnlyList<LoweredFunctionParameter> parameters, LoweredExpression body, ExecutionContext closure, Dictionary<string, object> defaultValues)
+        public LambdaFunction(IReadOnlyList<LoweredFunctionParameter> parameters, LoweredExpression body, ExecutionContext closure, Dictionary<string, object> defaultValues, ExecutableCodeObject? generatorCode = null)
         {
+            _generatorCode = generatorCode;
             _body = body;
             _closure = closure;
             _bindingPlan = new FunctionBindingPlan("<lambda>", PythonCallableKind.Lambda, parameters, defaultValues);
@@ -1108,7 +1110,7 @@ internal sealed partial class LythonRuntime
 
             try
             {
-                return EvaluateLoweredExpression(_body, frame);
+                return _generatorCode is not null ? PyGenerator.Create(_generatorCode, frame, span) : EvaluateLoweredExpression(_body, frame);
             }
             catch (LythonRuntimeException ex)
             {
@@ -1148,7 +1150,7 @@ internal sealed partial class LythonRuntime
 
             try
             {
-                return await EvaluateLoweredExpressionAsync(_body, frame).ConfigureAwait(false);
+                return _generatorCode is not null ? PyGenerator.Create(_generatorCode, frame, span) : await EvaluateLoweredExpressionAsync(_body, frame).ConfigureAwait(false);
             }
             catch (LythonRuntimeException ex)
             {

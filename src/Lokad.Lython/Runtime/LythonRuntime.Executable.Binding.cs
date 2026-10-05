@@ -23,6 +23,8 @@ internal sealed partial class LythonRuntime
         var frame = context.CurrentExecutableFrame;
         if (frame is null || !frame.TryGetClosureCell(slot, out var cell))
         {
+            if (codeObject.ScopeFacts.IsNonlocal(codeObject.ClosureNames[slot]))
+                return ResolveName(codeObject.ClosureNames[slot], span, context);
             throw RuntimeErrors.FreeVariableNotAssociated(codeObject.ClosureNames[slot], span);
         }
 
@@ -56,6 +58,11 @@ internal sealed partial class LythonRuntime
         var frame = context.CurrentExecutableFrame;
         if (frame is null || !frame.TryGetClosureCell(slot, out var cell))
         {
+            if (codeObject.ScopeFacts.IsNonlocal(codeObject.ClosureNames[slot]))
+            {
+                StoreName(codeObject.ClosureNames[slot], value, context, span);
+                return;
+            }
             throw RuntimeErrors.NameNotDefined(codeObject.ClosureNames[slot], span);
         }
 
@@ -121,6 +128,9 @@ internal sealed partial class LythonRuntime
             {
                 continue;
             }
+
+            if (abrupt is PendingJump jump && jump.TargetBlock >= region.ProtectedStartBlockIndex && jump.TargetBlock <= region.ProtectedEndBlockIndex)
+                continue;
 
             if (abrupt is PendingException { Exception: var exception } &&
                 region.ExceptBlockIndex is int exceptBlock &&
@@ -315,8 +325,11 @@ internal sealed partial class LythonRuntime
             var (closureCells, closureCellBytes) = functionBinding.CodeObject is null
                 ? ([], 0L)
                 : CaptureExecutableClosures(functionBinding.CodeObject, context, functionBinding.Function.Span);
-            var function = functionBinding.CodeObject is null
-                ? (object)new PyFunction(
+            var function = functionBinding.Function.GeneratorCode is not null
+                ? (object)new PyGeneratorFunction(functionBinding.Function, context.FunctionClosureContext,
+                    MaterializeExecutableDefaultValues(functionBinding.DefaultValues, context), closureCells)
+                : functionBinding.CodeObject is null
+                ? new PyFunction(
                     functionBinding.Function.Syntax.Name,
                     functionBinding.Function.Parameters,
                     functionBinding.Function.Body,

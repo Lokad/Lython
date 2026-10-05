@@ -38,7 +38,7 @@ internal sealed partial class LythonRuntime
     }
 
     internal static PyException CreatePythonExceptionInstance(LythonRuntimeException exception)
-        => new PyException(exception.Identity, exception.Message, exception.Payload ?? PyNone.Instance) with
+        => exception.OriginalPythonException ?? new PyException(exception.Identity, exception.Message, exception.Payload ?? PyNone.Instance) with
         {
             Cause = exception.PythonCause,
             Context = exception.PythonContext,

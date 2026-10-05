@@ -547,7 +547,7 @@ open("/repo/input.txt", "r" "b")
     [InlineData("    value = 1\n", "LA1000", "Unexpected indentation")]
     [InlineData("text = \"\\xZ0\"\n", "LA1007", "Malformed \\x escape")]
     [InlineData("text = f\"{\"\n", "LA1007", "f-string")]
-    [InlineData("text = u\"hello\"\n", "LA1007", "Unsupported string prefix 'u'")]
+    [InlineData("text = ur\"hello\"\n", "LA1007", "Unsupported string prefix 'ur'")]
     public void Compile_CommonSyntaxFailures_ReportRepairableDiagnostics(
         string source,
         string expectedCode,

@@ -27,7 +27,6 @@ public sealed class UnsupportedFeatureScenarioTests
     }
 
     [Theory]
-    [InlineData("yield 1\n", "yield")]
     [InlineData("async def f():\n    pass\n", "async")]
     [InlineData("value = await work()\n", "await")]
     [InlineData("def f(a = 1, b):\n    pass\n", "non-default parameter after default parameter")]

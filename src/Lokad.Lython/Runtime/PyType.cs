@@ -17,6 +17,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
     private static readonly PyBuiltinRuntimeType PathType = CreateOpaqueRuntimeType("pathlib.Path");
     internal static readonly PyBuiltinRuntimeType RegexPatternType = CreateOpaqueRuntimeType("re.Pattern");
     internal static readonly PyBuiltinRuntimeType RegexMatchType = CreateOpaqueRuntimeType("re.Match");
+    internal static readonly PyBuiltinRuntimeType GeneratorType = CreateOpaqueRuntimeType("generator");
     internal static readonly PyBuiltinRuntimeType FunctionType = CreateOpaqueRuntimeType("function");
     internal static readonly PyBuiltinRuntimeType MethodType = CreateOpaqueRuntimeType("method");
     internal static readonly PyBuiltinRuntimeType BuiltinFunctionType = CreateOpaqueRuntimeType("builtin_function_or_method");

@@ -580,7 +580,7 @@ internal sealed partial class LythonRuntime
             return arguments[1];
         }
 
-        throw new LythonRuntimeException("StopIteration", "", span);
+        throw new LythonRuntimeException("StopIteration", "", span, null, (arguments[0] as PyGenerator)?.ReturnValue);
     }
 
     private static async ValueTask<object> NextAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -635,7 +635,7 @@ internal sealed partial class LythonRuntime
             return arguments[1];
         }
 
-        throw new LythonRuntimeException("StopIteration", "", span);
+        throw new LythonRuntimeException("StopIteration", "", span, null, (arguments[0] as PyGenerator)?.ReturnValue);
     }
 
 }

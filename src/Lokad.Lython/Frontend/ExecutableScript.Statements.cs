@@ -109,12 +109,15 @@ internal sealed partial class ExecutableScript
                 case LoweredAnnotatedAssignmentStatement annotated:
                     if (annotated.Expression is null)
                     {
-                        throw new ExecutableLoweringFallbackException($"Executable IR lowering does not support annotation-only assignments: {annotated.Assignment.GetType().Name}.");
+                        if (!_generator) throw new ExecutableLoweringFallbackException($"Executable IR lowering does not support annotation-only assignments: {annotated.Assignment.GetType().Name}.");
+                        AddInstruction(currentBlock, ExecutableInstruction.ExecuteFallbackStatement(InternStatementFallback(assignment), assignment.Span));
+                        return currentBlock;
                     }
 
                     if (annotated.Assignment.Target is not NameAssignmentTargetSyntax targetName)
                     {
-                        AddInstruction(currentBlock, ExecutableInstruction.ExecuteFallbackStatement(InternStatementFallback(assignment), assignment.Span));
+                        currentBlock = CompileExpression(annotated.Expression, currentBlock);
+                        CompileStoreTarget(annotated.Assignment.Target, annotated.Span, currentBlock);
                         return currentBlock;
                     }
 
@@ -139,17 +142,12 @@ internal sealed partial class ExecutableScript
                     currentBlock = CompileExpression(chained.Expression, currentBlock);
                     for (var i = 0; i < chained.Assignment.Targets.Count; i++)
                     {
-                        if (chained.Assignment.Targets[i] is not NameAssignmentTargetSyntax name)
-                        {
-                            throw new ExecutableLoweringFallbackException($"Executable IR lowering does not support chained assignment target {chained.Assignment.Targets[i].GetType().Name}.");
-                        }
-
                         if (i < chained.Assignment.Targets.Count - 1)
                         {
                             AddInstruction(currentBlock, ExecutableInstruction.Dup(chained.Span));
                         }
 
-                        CompileStoreBoundName(name.Name, chained.Span, currentBlock);
+                        CompileStoreTarget(chained.Assignment.Targets[i], chained.Span, currentBlock);
                     }
                     return currentBlock;
 
@@ -158,10 +156,28 @@ internal sealed partial class ExecutableScript
                     AddInstruction(currentBlock, ExecutableInstruction.AssignUnpackingTargets(InternUnpackingTargets(unpacking.Assignment.Targets, unpacking.Span), unpacking.Span));
                     return currentBlock;
 
+                case LoweredMemberAssignmentStatement member:
+                    currentBlock = CompileExpression(member.Expression, currentBlock);
+                    CompileStoreTarget(new MemberAssignmentTargetSyntax(member.Assignment.Target, member.Assignment.MemberName, member.Span), member.Span, currentBlock);
+                    return currentBlock;
+                case LoweredSubscriptAssignmentStatement subscript:
+                    currentBlock = CompileExpression(subscript.Expression, currentBlock);
+                    CompileStoreTarget(new SubscriptAssignmentTargetSyntax(subscript.Assignment.Target, subscript.Assignment.Index, subscript.Span), subscript.Span, currentBlock);
+                    return currentBlock;
+                case LoweredSliceAssignmentStatement slice:
+                    currentBlock = CompileExpression(slice.Expression, currentBlock);
+                    CompileStoreTarget(new SliceAssignmentTargetSyntax(slice.Assignment.Target, slice.Assignment.Start, slice.Assignment.End, slice.Assignment.Step, slice.Span), slice.Span, currentBlock);
+                    return currentBlock;
                 default:
                     AddInstruction(currentBlock, ExecutableInstruction.ExecuteFallbackStatement(InternStatementFallback(assignment), assignment.Span));
                     return currentBlock;
             }
+        }
+
+        private void CompileStoreTarget(AssignmentTargetSyntax target, LythonSourceSpan span, int block)
+        {
+            if (target is NameAssignmentTargetSyntax name) CompileStoreBoundName(name.Name, span, block);
+            else AddInstruction(block, ExecutableInstruction.AssignLoopTarget(InternLoopTarget(AssignmentTargetFacts.ToLoop(target), span), span));
         }
 
         private int CompileForStatement(LoweredForStatement statement, int currentBlock)
@@ -485,7 +501,7 @@ internal sealed partial class ExecutableScript
 
         private int? CompileBreakStatement(LoweredBreakStatement statement, int currentBlock)
         {
-            if (_protectedDepth > 0)
+            if (_protectedDepth > 0 && !_generator)
             {
                 throw new ExecutableLoweringFallbackException("Executable IR lowering does not support break inside a protected with/try region; using the lowered execution path.");
             }
@@ -493,6 +509,12 @@ internal sealed partial class ExecutableScript
             if (!_loops.TryPeek(out var loop))
             {
                 throw new ExecutableLoweringFallbackException("Executable IR lowering cannot emit break outside a loop.");
+            }
+
+            if (_protectedDepth > 0)
+            {
+                AddInstruction(currentBlock, ExecutableInstruction.AbruptJump(loop.BreakBlockIndex, loop.HasIterator, statement.Span));
+                return null;
             }
 
             if (loop.HasIterator)
@@ -506,7 +528,7 @@ internal sealed partial class ExecutableScript
 
         private int? CompileContinueStatement(LoweredContinueStatement statement, int currentBlock)
         {
-            if (_protectedDepth > 0)
+            if (_protectedDepth > 0 && !_generator)
             {
                 throw new ExecutableLoweringFallbackException("Executable IR lowering does not support continue inside a protected with/try region; using the lowered execution path.");
             }
@@ -516,7 +538,9 @@ internal sealed partial class ExecutableScript
                 throw new ExecutableLoweringFallbackException("Executable IR lowering cannot emit continue outside a loop.");
             }
 
-            AddInstruction(currentBlock, ExecutableInstruction.Jump(loop.ContinueBlockIndex, statement.Span));
+            AddInstruction(currentBlock, _protectedDepth > 0
+                ? ExecutableInstruction.AbruptJump(loop.ContinueBlockIndex, false, statement.Span)
+                : ExecutableInstruction.Jump(loop.ContinueBlockIndex, statement.Span));
             return null;
         }
 

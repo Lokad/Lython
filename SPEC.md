@@ -422,7 +422,40 @@ subset.
 
 Complex-number literals are not supported and must be rejected explicitly.
 
-### 8.4 Deliberately Unsupported Python Surface
+
+### 8.4 Generator functions
+
+Functions and lambdas containing `yield` or `yield from` return lazy, single-pass
+Python generators. Calling a generator function binds arguments without running
+its body. `next`, `send`, `throw`, `close`, `__iter__` and `__next__` resume the
+retained frame. A non-None initial send raises TypeError; recursive advancement
+raises ValueError. Return values are delivered as StopIteration.value on the
+first exhaustion; later pulls have value None. Escaping StopIteration becomes
+RuntimeError with the original exception as its cause (PEP 479).
+
+`yield from` delegates iteration, sent values, thrown exceptions and close;
+delegate return values become the yield-from expression's result. Exception
+handlers, context managers and finally suites survive suspension. Explicit
+close injects GeneratorExit and runs cleanup; yielding during close raises
+RuntimeError. Following Python 3.13, close returns a value explicitly returned
+while handling GeneratorExit. Closing an unstarted generator runs no body.
+
+Suspended frames and their retained interpreter storage are governed execution
+values. RunAsync awaits host effects when advancing, sending, throwing or
+closing a generator, including delegated user iterators. Cancellation remains
+terminal. Reusing a compiled script creates independent generator state.
+
+The current resumable subset rejects suspension within starred calls/displays,
+formatted-string fields, comprehension operands, assignment-target receivers or
+indices, non-name augmented assignments, assert/raise/delete expressions, match
+guards, and nested definition decorators/defaults/annotations or class headers.
+Ordinary forms of these constructs remain available in generator bodies without
+suspension in those positions. Rejection happens during compilation, including
+uncalled bodies. Generator frame/code introspection and implicit execution of
+guest cleanup from CLR garbage collection are outside this contained subset;
+use explicit close or exhaust a generator for its Python cleanup.
+
+### 8.5 Deliberately Unsupported Python Surface
 
 Classes, comprehensions, generator expressions, lambdas, decorators, context
 managers, structural pattern matching, assertions, deletion, keyword and
@@ -430,8 +463,8 @@ variadic arguments, default parameter values, and conditional expressions are
 part of the supported subset. Their feature-specific limitations are normative
 where described elsewhere in this document.
 
-Generator functions using `yield`, asynchronous functions, `await`, `async for`,
-and `async with` are outside the current language subset. These forms must
+Asynchronous functions, `await`, `async for`, and `async with` are outside the
+current language subset. These forms must
 be rejected explicitly. `LythonEngine.RunAsync` is an embedding API that awaits
 host effects; it does not make Python asynchronous syntax available to scripts.
 

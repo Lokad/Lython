@@ -25,7 +25,16 @@ public sealed class LythonEngine
         var diagnostics = frontend.Diagnostics;
         var isValid = diagnostics.All(static d => d.Severity != LythonDiagnosticSeverity.Error);
         var script = frontend.Script;
-        var loweredScript = script is null ? null : LoweredScript.Lower(script);
+        LoweredScript? loweredScript = null;
+        try
+        {
+            if (isValid && script is not null) loweredScript = LoweredScript.Lower(script);
+        }
+        catch (GeneratorLoweringException exception)
+        {
+            diagnostics = diagnostics.Append(new LythonDiagnostic("LA2000", exception.Message, LythonDiagnosticSeverity.Error, exception.Span)).ToArray();
+            isValid = false;
+        }
         ExecutableScript? executableScript = null;
         if (loweredScript is not null)
         {

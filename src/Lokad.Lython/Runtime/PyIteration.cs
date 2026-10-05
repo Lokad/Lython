@@ -445,6 +445,11 @@ internal static class PyIteration
             return new Cursor(value, span);
         }
 
+        public static async ValueTask<Cursor> CreateAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+            => value is PyInstance instance
+                ? new Cursor(value, span, await PyUserIterator.CreateAsync(instance, context, span).ConfigureAwait(false))
+                : Create(value, span, context);
+
         public bool TryMoveNext([MaybeNullWhen(false)] out object value)
         {
             if (_userIterator is not null)

@@ -30,7 +30,7 @@ internal sealed partial class ExecutableScript
                 return false;
             }
 
-            return instructions[^1].OpCode is ExecutableOpCode.Jump or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone;
+            return instructions[^1].OpCode is ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone;
         }
 
         private IReadOnlyList<ExecutableBasicBlock> NormalizeBlocks(IReadOnlyList<int> ordered, IReadOnlyDictionary<int, int> indexMap)
@@ -163,6 +163,7 @@ internal sealed partial class ExecutableScript
                 {
                     switch (instruction.OpCode)
                     {
+                        case ExecutableOpCode.AbruptJump:
                         case ExecutableOpCode.Jump:
                         case ExecutableOpCode.JumpIfFalse:
                         case ExecutableOpCode.ForNext:
@@ -211,7 +212,7 @@ internal sealed partial class ExecutableScript
         {
             return instruction.OpCode switch
             {
-                ExecutableOpCode.Jump or
+                ExecutableOpCode.AbruptJump or ExecutableOpCode.Jump or
                 ExecutableOpCode.JumpIfFalse or
                 ExecutableOpCode.ForNext or
                 ExecutableOpCode.EndFinally => instruction.WithTargetBlockIndex(indexMap[FinalJumpTarget(instruction.TargetBlockIndex)]),
@@ -373,22 +374,28 @@ internal sealed partial class ExecutableScript
 
         private int InternLoopTarget(LoopTargetSyntax target, LythonSourceSpan span)
         {
+            if (_generator && AssignmentTargetFacts.Reads(target).Any(GeneratorSyntaxFacts.ContainsYield))
+                throw new GeneratorLoweringException("Suspension in assignment target receivers or indices is not supported.", span);
             _loopTargets.Add(new ExecutableLoopTargetBinding(target, span));
             return _loopTargets.Count - 1;
         }
 
         private int InternUnpackingTargets(IReadOnlyList<UnpackingTargetSyntax> targets, LythonSourceSpan span)
         {
+            if (_generator && targets.SelectMany(target => AssignmentTargetFacts.Reads(AssignmentTargetFacts.FromUnpacking(target))).Any(GeneratorSyntaxFacts.ContainsYield))
+                throw new GeneratorLoweringException("Suspension in assignment target receivers or indices is not supported.", span);
             _unpackingTargets.Add(new ExecutableUnpackingTargetBinding(targets, span));
             return _unpackingTargets.Count - 1;
         }
 
         private int InternFunction(LoweredFunctionDefinitionStatement functionDefinition)
         {
+            if (_generator && StatementSyntaxTraversal.EnumerateDirectExpressions(functionDefinition.Syntax).Any(GeneratorSyntaxFacts.ContainsYield))
+                throw new GeneratorLoweringException("Suspension in nested definition decorators, defaults or annotations is not supported.", functionDefinition.Span);
             ExecutableCodeObject? codeObject;
             try
             {
-                codeObject = new Builder(
+                codeObject = functionDefinition.GeneratorCode ?? new Builder(
                     functionDefinition.Parameters,
                     // Forward our own candidates downward: a nested def only sees the names its
                     // parent captured or owns at build time, so without our candidates a
@@ -415,6 +422,8 @@ internal sealed partial class ExecutableScript
 
         private int InternMatchCase(MatchCaseSyntax matchCase)
         {
+            if (_generator && matchCase.Guard is not null && GeneratorSyntaxFacts.ContainsYield(matchCase.Guard))
+                throw new GeneratorLoweringException("Suspension in match guards is not supported.", matchCase.Guard.Span);
             var localBindings = new Dictionary<string, int>(StringComparer.Ordinal);
             foreach (var name in EnumeratePatternBindingNames(matchCase.Pattern))
             {
@@ -430,12 +439,25 @@ internal sealed partial class ExecutableScript
 
         private int InternStatementFallback(LoweredStatement statement)
         {
+            StatementSyntax? syntax = statement switch
+            {
+                LoweredClassDefinitionStatement item => item.Syntax,
+                LoweredAssertStatement item => item.Syntax,
+                LoweredDeleteStatement item => item.Syntax,
+                LoweredRaiseStatement item => item.Syntax,
+                LoweredAssignmentStatement item => item.Syntax,
+                _ => null,
+            };
+            if (_generator && syntax is not null && StatementSyntaxTraversal.EnumerateDirectExpressions(syntax).Any(GeneratorSyntaxFacts.ContainsYield))
+                throw new GeneratorLoweringException("Suspension in this statement is not supported.", statement.Span);
             _statementFallbacks.Add(new ExecutableStatementFallback(statement));
             return _statementFallbacks.Count - 1;
         }
 
         private int InternExpressionFallback(LoweredExpression expression)
         {
+            if (_generator && GeneratorSyntaxFacts.ContainsYield(expression.Syntax))
+                throw new GeneratorLoweringException("Suspension in starred displays/calls, formatted strings or comprehensions is not supported.", expression.Span);
             _expressionFallbacks.Add(new ExecutableExpressionFallback(expression));
             return _expressionFallbacks.Count - 1;
         }

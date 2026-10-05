@@ -396,12 +396,16 @@ internal sealed partial class LythonRuntime
         return new LoweredBlockFlow(pendingControl, pendingReturn);
     }
 
-    private static PyFunction CreateLoweredFunction(
+    private static PyFunctionBase CreateLoweredFunction(
         LoweredFunctionDefinitionStatement functionDefinition,
         ExecutionContext context,
         Dictionary<string, object> defaults)
     {
-        var function = new PyFunction(
+        var (generatorCells, generatorCellBytes) = functionDefinition.GeneratorCode is { ClosureNames.Count: > 0 } generatorCode && context.CurrentExecutableFrame is not null
+            ? CaptureExecutableClosures(generatorCode, context, functionDefinition.Span) : ([], 0L);
+        PyFunctionBase function = functionDefinition.GeneratorCode is not null
+            ? new PyGeneratorFunction(functionDefinition, context.FunctionClosureContext, defaults, generatorCells)
+            : new PyFunction(
             functionDefinition.Syntax.Name,
             functionDefinition.Parameters,
             functionDefinition.Body,
@@ -412,7 +416,7 @@ internal sealed partial class LythonRuntime
         ChargeDefaultArguments(functionDefinition.Parameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, functionDefinition.Span);
         var closureRetentionBytes = ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, functionDefinition.Span);
         var docstringBytes = PyFunctionBase.CaptureFunctionDocstring(function, functionDefinition.Body, context, functionDefinition.Span);
-        TrackFunctionValue(function, functionDefinition.Parameters.Count(static p => p.DefaultValue is not null), closureRetentionBytes, docstringBytes, context, functionDefinition.Span);
+        TrackFunctionValue(function, functionDefinition.Parameters.Count(static p => p.DefaultValue is not null), closureRetentionBytes + generatorCellBytes, docstringBytes, context, functionDefinition.Span);
         return function;
     }
 

@@ -49,6 +49,8 @@ internal class LythonRuntimeException : Exception
 
     public object? Payload { get; }
 
+    public PyException? OriginalPythonException { get; init; }
+
     public PyException? PythonCause { get; set; }
 
     // Explicit construction args (or an assigned override) travel beside the

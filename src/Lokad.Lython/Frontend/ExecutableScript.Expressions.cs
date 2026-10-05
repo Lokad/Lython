@@ -14,6 +14,12 @@ internal sealed partial class ExecutableScript
         {
             switch (expression)
             {
+                case LoweredYieldExpression yielded:
+                    if (yielded.Value is null)
+                        AddInstruction(currentBlock, ExecutableInstruction.LoadConst(InternConstant(PyNone.Instance), yielded.Span));
+                    else currentBlock = CompileExpression(yielded.Value, currentBlock);
+                    AddInstruction(currentBlock, ExecutableInstruction.Yield(yielded.Yield.Delegated, yielded.Span));
+                    return currentBlock;
                 case LoweredParenthesizedExpression parenthesized:
                     currentBlock = CompileExpression(parenthesized.Inner, currentBlock);
                     return currentBlock;

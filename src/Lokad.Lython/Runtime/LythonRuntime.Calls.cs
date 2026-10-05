@@ -589,6 +589,7 @@ internal sealed partial class LythonRuntime
             PyType type => type.MetaType ?? TryGetBuiltinOrNull(context, "type"),
             PyFunctionBase => PyType.FunctionType,
             LambdaFunction => PyType.FunctionType,
+            PyGenerator or PyGeneratorExpression => PyType.GeneratorType,
             FunctionNewMethod => PyType.FunctionType,
             IPySlotWrapper => PyType.WrapperDescriptorType,
             ObjectNewMethod => PyType.BuiltinFunctionType,

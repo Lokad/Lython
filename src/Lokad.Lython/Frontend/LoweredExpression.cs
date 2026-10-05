@@ -8,6 +8,11 @@ internal abstract record LoweredExpression
     public LythonSourceSpan Span => Syntax.Span;
 }
 
+internal sealed record LoweredYieldExpression(YieldExpressionSyntax Yield, LoweredExpression? Value) : LoweredExpression
+{
+    public override ExpressionSyntax Syntax => Yield;
+}
+
 internal sealed record LoweredIdentifierExpression(
     IdentifierExpressionSyntax Identifier) : LoweredExpression
 {
@@ -257,6 +262,10 @@ internal sealed record LoweredLambdaExpression(
     LoweredExpression Body) : LoweredExpression
 {
     public override ExpressionSyntax Syntax => Lambda;
+    public ExecutableCodeObject? GeneratorCode { get; } = GeneratorSyntaxFacts.ContainsYield(Lambda.Body)
+        ? ExecutableScript.CompileGenerator(Lambda.Parameters.Select(parameter => new LoweredFunctionParameter(
+            parameter.Name, parameter.Kind, null, null)).ToArray(),
+            [new LoweredReturnStatement(new ReturnStatementSyntax(Lambda.Body, Lambda.Span), Body)]) : null;
 }
 
 internal sealed record LoweredOtherExpression(

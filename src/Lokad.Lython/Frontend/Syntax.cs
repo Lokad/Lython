@@ -395,6 +395,9 @@ internal sealed record TryStatementSyntax(
 internal abstract record ExpressionSyntax(
     LythonSourceSpan Span);
 
+internal sealed record YieldExpressionSyntax(ExpressionSyntax? Value, bool Delegated,
+    LythonSourceSpan Span) : ExpressionSyntax(Span);
+
 internal sealed record IdentifierExpressionSyntax(
     string Name,
     LythonSourceSpan Span) : ExpressionSyntax(Span);

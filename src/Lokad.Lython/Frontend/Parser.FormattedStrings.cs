@@ -419,7 +419,10 @@ internal sealed partial class Parser
     private static bool TryParseEmbeddedExpression(string expressionText, [MaybeNullWhen(false)] out ExpressionSyntax expression)
     {
         expression = null;
-        var frontend = LythonFrontend.Compile("value = " + expressionText + "\n");
+        // The enclosing syntax pass supplies the real scope, including yield legality.
+        var tokens = FormattedStringTokenization.Read("value = " + expressionText + "\n");
+        if (tokens.HasInvalidTokens) return false;
+        var frontend = new Parser(tokens).Parse();
         if (frontend.Script?.Statements is not [AssignmentStatementSyntax assignment] || frontend.Diagnostics.Count != 0)
         {
             return false;

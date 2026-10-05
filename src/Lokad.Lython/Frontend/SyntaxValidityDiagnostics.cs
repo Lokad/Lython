@@ -33,6 +33,7 @@ internal static class SyntaxValidityDiagnostics
                 foreach (var child in body) statements.Push((child, depth));
             }
         }
+        diagnostics.AddRange(GeneratorSyntaxFacts.Validate(script));
         return diagnostics;
 
         void Error(string message, LythonSourceSpan span)

@@ -7,6 +7,7 @@ internal sealed partial class Parser
 {
     private ExpressionSyntax? ParseExpression()
     {
+        if (CurrentToken == Token.Yield) return ParseYieldExpression();
         var expression = ParseOrExpression();
         if (expression is null)
         {

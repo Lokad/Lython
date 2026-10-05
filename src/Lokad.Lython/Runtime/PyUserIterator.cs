@@ -83,6 +83,9 @@ internal sealed class PyUserIterator : IPyIteratorValue
 
     public async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
+        if (_iterator is IPyAsyncIteratorValue asynchronous)
+            return await asynchronous.TryMoveNextAsync().ConfigureAwait(false);
+
         if (_iterator is IPyIteratorValue iterator)
         {
             return iterator.TryMoveNext(out var value)

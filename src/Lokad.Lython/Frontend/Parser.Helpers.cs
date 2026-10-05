@@ -464,7 +464,6 @@ internal sealed partial class Parser
         {
             Token.Elif => "elif",
             Token.With => "with",
-            Token.Yield => "yield",
             Token.Async => "async",
             Token.Await => "await",
             Token.Lambda => "lambda",

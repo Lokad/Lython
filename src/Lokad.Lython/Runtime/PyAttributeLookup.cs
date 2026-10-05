@@ -149,6 +149,7 @@ internal static class PyAttributeLookup
             ["PermissionError"] = "OSError",
             ["TimeoutError"] = "OSError",
             ["SystemExit"] = "BaseException",
+            ["GeneratorExit"] = "BaseException",
         };
 
     // Collections members route by name like CPython: deque owns its slot,

@@ -14,6 +14,7 @@ implemented or a claim of complete PEP 701 support.
 | Assignment, star targets, augmented assignment | Names, attributes, subscripts, slices, tuple/list/nested unpacking, one starred leaf per level, chained and augmented stores; name annotations | `assignment` |
 | For/while statements | Full assignment targets, nested tuple/list and starred unpacking, trailing commas, loop `else`, scope-correct `break`/`continue` | `loops`, `invalid` |
 | Comprehensions, generator expressions | List/set/dict comprehensions and generator expressions, multiple clauses and ordered lazy filters, separate iteration scopes, restricted walrus bindings | `comprehensions`, `invalid` |
+| Generator functions | Lazy yield/yield-from, send/throw/close, return values, delegation and suspended try/with/finally cleanup; bounded suspension positions in SPEC | `generators` |
 | Function definitions, lambdas, arguments | Defaults, positional-only, keyword-only and variadic parameters, annotations, positional/keyword/starred calls, closures, global/nonlocal declarations, decorators | `functions`, `invalid` |
 | Class definitions | Bases, decorators, methods, `super`, property/static/class methods; contained dataclass subset | `classes` |
 | Try, raise, assert | Typed/bare handlers, tuple handlers and `as`, `else`/`finally`, chained exceptions, assertions | `exceptions`, `invalid` |
@@ -30,10 +31,13 @@ host effects in this same guest language.
 
 Compilation rejects these forms before any guest effects:
 
-- Generator functions (`yield`, `yield from`), `async def`, `await`, `async for`
-  and `async with`.
+- `async def`, `await`, `async for` and `async with`.
 - Type alias statements and type parameters, `except*`, matrix multiplication
   and complex literals.
+
+The generator suspension boundaries listed in SPEC are also compile-time
+exclusions. Guest cleanup requires exhaustion or explicit close; CLR collection
+does not execute guest code.
 
 ## Corpus and verification
 

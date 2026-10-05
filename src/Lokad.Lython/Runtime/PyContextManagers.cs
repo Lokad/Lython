@@ -156,7 +156,7 @@ internal static class PyContextManagers
         }
     }
 
-    private static ValueTask<object> EnterAsync(IPyContextManager manager, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    internal static ValueTask<object> EnterAsync(IPyContextManager manager, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         if (manager is CallableContextManager callable)
         {
@@ -171,7 +171,7 @@ internal static class PyContextManagers
         return ValueTask.FromResult(manager.Enter());
     }
 
-    private static ValueTask<bool> ExitAsync(
+    internal static ValueTask<bool> ExitAsync(
         IPyContextManager manager,
         object exceptionType,
         object exceptionValue,

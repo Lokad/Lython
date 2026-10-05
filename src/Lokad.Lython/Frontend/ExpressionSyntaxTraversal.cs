@@ -7,6 +7,9 @@ internal static class ExpressionSyntaxTraversal
     {
         switch (expression)
         {
+            case YieldExpressionSyntax { Value: not null } yielded:
+                yield return yielded.Value;
+                break;
             case FormattedStringExpressionSyntax formatted:
                 foreach (var child in FormattedStringSyntaxTraversal.EnumerateExpressions(formatted.Parts))
                 {

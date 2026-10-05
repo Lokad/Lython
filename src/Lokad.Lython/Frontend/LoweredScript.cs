@@ -192,6 +192,7 @@ internal sealed class LoweredScript
     {
         return expression switch
         {
+            YieldExpressionSyntax yielded => new LoweredYieldExpression(yielded, yielded.Value is null ? null : LowerExpression(yielded.Value)),
             IdentifierExpressionSyntax identifier => new LoweredIdentifierExpression(identifier),
             StringLiteralExpressionSyntax text => new LoweredStringLiteralExpression(text),
             BytesLiteralExpressionSyntax bytes => new LoweredBytesLiteralExpression(bytes),

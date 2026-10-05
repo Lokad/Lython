@@ -52,6 +52,9 @@ internal enum ExecutableOpCode
     EndFinally,
     Return,
     ReturnNone,
+    Yield,
+    YieldFrom,
+    AbruptJump,
 }
 
 internal enum ExecutableBinaryOperator
@@ -185,6 +188,7 @@ internal readonly record struct ExecutableInstruction
     public int NameIndex => ReadOperand(_primaryOperand, OperandKind.NameIndex);
     public int ExpressionFallbackIndex => ReadOperand(_primaryOperand, OperandKind.ExpressionFallbackIndex);
     public int MemberCacheIndex => ReadOperand(_secondaryOperand, OperandKind.MemberCacheIndex);
+    public bool DiscardIterator => ReadOperand(_secondaryOperand, OperandKind.ItemCount) != 0;
     public int ItemCount => ReadOperand(_primaryOperand, OperandKind.ItemCount);
     public int PairCount => ReadOperand(_primaryOperand, OperandKind.PairCount);
     public int MatchCaseIndex => ReadOperand(_primaryOperand, OperandKind.MatchCaseIndex);
@@ -315,6 +319,9 @@ internal readonly record struct ExecutableInstruction
     public static ExecutableInstruction Unary(ExecutableUnaryOperator op, LythonSourceSpan span)
         => new(ExecutableOpCode.Unary, span, Operand.None, Operand.None, default, op, default, default);
 
+    public static ExecutableInstruction AbruptJump(int targetBlockIndex, bool discardIterator, LythonSourceSpan span)
+        => CreateIndexed(ExecutableOpCode.AbruptJump, new Operand(OperandKind.BlockIndex, targetBlockIndex), new Operand(OperandKind.ItemCount, discardIterator ? 1 : 0), span);
+
     public static ExecutableInstruction Jump(int targetBlockIndex, LythonSourceSpan span)
         => CreateIndexed(ExecutableOpCode.Jump, new Operand(OperandKind.BlockIndex, targetBlockIndex), span);
 
@@ -336,9 +343,13 @@ internal readonly record struct ExecutableInstruction
     public static ExecutableInstruction ReturnNone(LythonSourceSpan span)
         => Create(ExecutableOpCode.ReturnNone, span);
 
+    public static ExecutableInstruction Yield(bool delegated, LythonSourceSpan span)
+        => Create(delegated ? ExecutableOpCode.YieldFrom : ExecutableOpCode.Yield, span);
+
     public ExecutableInstruction WithTargetBlockIndex(int targetBlockIndex)
         => OpCode switch
         {
+            ExecutableOpCode.AbruptJump => AbruptJump(targetBlockIndex, DiscardIterator, Span),
             ExecutableOpCode.Jump => Jump(targetBlockIndex, Span),
             ExecutableOpCode.JumpIfFalse => JumpIfFalse(targetBlockIndex, Span),
             ExecutableOpCode.ForNext => ForNext(targetBlockIndex, Span),
@@ -410,7 +421,10 @@ internal sealed record ExecutableLoopTargetBinding(
 
 internal sealed record ExecutableUnpackingTargetBinding(
     IReadOnlyList<UnpackingTargetSyntax> Targets,
-    LythonSourceSpan Span);
+    LythonSourceSpan Span)
+{
+    public LoweredStoreTarget Lowered { get; } = new(new UnpackingAssignmentTargetGroupSyntax(Targets, Span));
+}
 
 internal sealed record ExecutableFunctionBinding(
     LoweredFunctionDefinitionStatement Function,

@@ -9,7 +9,7 @@ internal sealed partial class LythonRuntime
     /// code-object invocation. Keeping this state together makes opcode handlers
     /// independently reviewable without extending the runtime entry-point method.
     /// </summary>
-    private sealed class ExecutableFrameInterpreter(
+    private sealed partial class ExecutableFrameInterpreter(
         ExecutableCodeObject codeObject,
         ExecutionContext context,
         object[] locals,
@@ -18,6 +18,26 @@ internal sealed partial class LythonRuntime
         private readonly ExecutableValueStack _stack = new(Math.Max(8, codeObject.LocalNames.Count));
         private int _currentBlockIndex = codeObject.EntryBlockIndex;
         private PendingAbruptSignal? _pendingAbrupt;
+        private int _instructionIndex;
+        private bool _waitingForSend;
+        private object _sentValue = PyNone.Instance;
+        private LythonRuntimeException? _injectedException;
+        private GeneratorDelegation? _delegation;
+        internal bool HasYield { get; private set; }
+        internal object YieldValue { get; private set; } = PyNone.Instance;
+
+        internal void Resume(object sent, LythonRuntimeException? injected)
+        {
+            HasYield = false;
+            _sentValue = sent;
+            _injectedException = injected;
+            if (_waitingForSend)
+            {
+                _waitingForSend = false;
+                if (injected is null) _stack.Push(sent);
+                _sentValue = PyNone.Instance;
+            }
+        }
         private object? _frameReturnValue;
         private bool _hasFrameReturn;
         // Handler-save chain, created on first except-route push: plain calls
@@ -26,12 +46,26 @@ internal sealed partial class LythonRuntime
 
         private Stack<ActiveExceptionSave> SavedActiveExceptions() => _savedActiveExceptions ??= new();
 
-        private readonly PyException? _entryActiveException = context.Services.CurrentException;
+        private PyException? _entryActiveException = context.Services.CurrentException;
 
-        private sealed record ActiveExceptionSave(
-            PyException? SavedException,
-            int? SuiteStartBlockIndex,
-            int? SuiteEndBlockIndex);
+        private sealed class ActiveExceptionSave(PyException? savedException, int? suiteStartBlockIndex, int? suiteEndBlockIndex)
+        {
+            public PyException? SavedException { get; set; } = savedException;
+            public int? SuiteStartBlockIndex { get; } = suiteStartBlockIndex;
+            public int? SuiteEndBlockIndex { get; } = suiteEndBlockIndex;
+        }
+
+        internal bool HasActiveHandler => _savedActiveExceptions is { Count: > 0 };
+        internal void SetCallerException(PyException? exception)
+        {
+            _entryActiveException = exception;
+            if (_savedActiveExceptions is { Count: > 0 } saves)
+            {
+                ActiveExceptionSave? outermost = null;
+                foreach (var save in saves) outermost = save;
+                outermost!.SavedException = exception;
+            }
+        }
 
         // Abandoning the frame drops its saved handler chain and restores the
         // active exception from frame entry, like CPython deleting handler
@@ -396,10 +430,24 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
+        private bool DeliverJump(PendingJump jump, LythonSourceSpan span)
+        {
+            _pendingAbrupt = null;
+            if (TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, jump, span, ref _pendingAbrupt, ref _currentBlockIndex, out _)) return true;
+            if (jump.DiscardIterator) _stack.RemoveTail(1);
+            UnwindAbandonedHandlers(jump.TargetBlock);
+            UnwindAbandonedHandlerVars(context, span, jump.TargetBlock);
+            _currentBlockIndex = jump.TargetBlock;
+            return true;
+        }
+
         private bool ExecuteControlFlow(ExecutableInstruction instruction)
         {
             switch (instruction.OpCode)
             {
+                case ExecutableOpCode.AbruptJump:
+                    return DeliverJump(new PendingJump(instruction.TargetBlockIndex, instruction.DiscardIterator), instruction.Span);
+
                 case ExecutableOpCode.JumpIfFalse:
                     if (!IsTruthy(Pop(_stack, instruction.Span), context, instruction.Span))
                     {
@@ -429,6 +477,7 @@ internal sealed partial class LythonRuntime
                     return false;
 
                 case ExecutableOpCode.EndFinally:
+                    if (_pendingAbrupt is PendingJump pendingJump) return DeliverJump(pendingJump, instruction.Span);
                     if (_pendingAbrupt is PendingException)
                     {
                         // An exception-routed finally suite exits: restore the
@@ -486,7 +535,10 @@ internal sealed partial class LythonRuntime
 
         internal object FrameReturnValue => _frameReturnValue.RequireNotNull();
 
-        public void Execute()
+        public void Execute() => ExecuteCoreAsync(false).GetAwaiter().GetResult();
+        public ValueTask ExecuteAsync() => ExecuteCoreAsync(true);
+
+        private async ValueTask ExecuteCoreAsync(bool asynchronous)
         {
             // Every control-flow edge must arrive at a block with the same value
             // stack depth. The first arrival records that depth; edge handling
@@ -502,19 +554,52 @@ internal sealed partial class LythonRuntime
                 var jumped = false;
 
                 var instructions = block.Instructions;
-                for (var instructionIndex = 0; instructionIndex < instructions.Count; instructionIndex++)
+                for (; _instructionIndex < instructions.Count; _instructionIndex++)
                 {
-                    var instruction = instructions[instructionIndex];
+                    var instruction = instructions[_instructionIndex];
                     context.Services.CheckExecutionBudget(instruction.Span);
 
                     try
                     {
+                        if (_injectedException is not null && _delegation is null)
+                        {
+                            var injected = _injectedException;
+                            _injectedException = null;
+                            throw injected;
+                        }
                         switch (instruction.OpCode)
                         {
+                            case ExecutableOpCode.Yield:
+                                YieldValue = Pop(_stack, instruction.Span);
+                                HasYield = true;
+                                _waitingForSend = true;
+                                _instructionIndex++;
+                                return;
+                            case ExecutableOpCode.YieldFrom:
+                                if (_delegation is null)
+                                {
+                                    var source = Pop(_stack, instruction.Span);
+                                    var iterator = asynchronous ? await IterAsync([source], instruction.Span, context).ConfigureAwait(false) : Iter([source], instruction.Span, context);
+                                    _delegation = new GeneratorDelegation(iterator, context, instruction.Span);
+                                }
+                                var delegated = asynchronous ? await _delegation.AdvanceAsync(_sentValue, _injectedException, true).ConfigureAwait(false)
+                                    : _delegation.Advance(_sentValue, _injectedException);
+                                _sentValue = PyNone.Instance;
+                                _injectedException = null;
+                                if (delegated.HasValue)
+                                {
+                                    YieldValue = delegated.Value;
+                                    HasYield = true;
+                                    return;
+                                }
+                                _stack.Push(_delegation.ReturnValue);
+                                _delegation = null;
+                                break;
                             case ExecutableOpCode.Import or
                                  ExecutableOpCode.DefineFunction or
                                  ExecutableOpCode.ExecuteFallbackStatement:
-                                ExecuteDefinitionOrFallback(instruction);
+                                if (asynchronous) await ExecuteDefinitionOrFallbackAsync(instruction).ConfigureAwait(false);
+                                else ExecuteDefinitionOrFallback(instruction);
                                 break;
 
                             case ExecutableOpCode.LoadConst or
@@ -530,7 +615,9 @@ internal sealed partial class LythonRuntime
                                  ExecutableOpCode.StoreName or
                                  ExecutableOpCode.Dup or
                                  ExecutableOpCode.PopTop:
-                                ExecuteStackTransfer(instruction);
+                                if (asynchronous && instruction.OpCode == ExecutableOpCode.EvaluateFallbackExpression)
+                                    PushObserved(await EvaluateLoweredExpressionAsync(codeObject.ExpressionFallbacks[instruction.ExpressionFallbackIndex].Expression, context).ConfigureAwait(false), instruction.Span);
+                                else ExecuteStackTransfer(instruction);
                                 break;
 
                             case ExecutableOpCode.MakeList or
@@ -541,7 +628,7 @@ internal sealed partial class LythonRuntime
                                  ExecutableOpCode.EnterContextManager or
                                  ExecutableOpCode.ExitContextManager or
                                  ExecutableOpCode.MatchCase:
-                                jumped = ExecuteStructure(instruction);
+                                jumped = asynchronous ? await ExecuteStructureAsync(instruction).ConfigureAwait(false) : ExecuteStructure(instruction);
                                 break;
 
                             case ExecutableOpCode.GetIter or
@@ -554,17 +641,17 @@ internal sealed partial class LythonRuntime
                                  ExecutableOpCode.Binary or
                                  ExecutableOpCode.Augmented or
                                  ExecutableOpCode.Unary:
-                                jumped = ExecuteValueOperation(instruction);
+                                jumped = asynchronous ? await ExecuteValueOperationAsync(instruction).ConfigureAwait(false) : ExecuteValueOperation(instruction);
                                 break;
 
-                            case ExecutableOpCode.JumpIfFalse or
+                            case ExecutableOpCode.AbruptJump or ExecutableOpCode.JumpIfFalse or
                                  ExecutableOpCode.ChainLink or
                                  ExecutableOpCode.Jump or
                                  ExecutableOpCode.ClearException or
                                  ExecutableOpCode.EndFinally or
                                  ExecutableOpCode.Return or
                                  ExecutableOpCode.ReturnNone:
-                                jumped = ExecuteControlFlow(instruction);
+                                jumped = asynchronous ? await ExecuteControlFlowAsync(instruction).ConfigureAwait(false) : ExecuteControlFlow(instruction);
                                 break;
 
                             default:
@@ -576,7 +663,9 @@ internal sealed partial class LythonRuntime
                         if (!TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingReturn(signal.Value), instruction.Span, ref _pendingAbrupt, ref _currentBlockIndex, out _))
                         {
                             AbandonFrame(instruction.Span);
-                            throw;
+                            _frameReturnValue = signal.Value;
+                            _hasFrameReturn = true;
+                            return;
                         }
 
                         jumped = true;
@@ -594,6 +683,8 @@ internal sealed partial class LythonRuntime
                     catch (LythonRuntimeException ex)
                     {
                         var previousActive = context.Services.CurrentException;
+                        _delegation = null;
+                        _injectedException = null;
                         if (!TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingException(ex), instruction.Span, ref _pendingAbrupt, ref _currentBlockIndex, out var matchedRegion))
                         {
                             AbandonFrame(instruction.Span);
@@ -627,6 +718,7 @@ internal sealed partial class LythonRuntime
 
                     if (jumped)
                     {
+                        _instructionIndex = 0;
                         break;
                     }
                 }

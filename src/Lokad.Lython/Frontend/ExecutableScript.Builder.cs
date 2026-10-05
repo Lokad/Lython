@@ -21,6 +21,9 @@ internal sealed partial class ExecutableScript
         return new ExecutableScript(lowered, new Builder().CompileCodeObject("<module>", lowered.Statements));
     }
 
+    internal static ExecutableCodeObject CompileGenerator(IReadOnlyList<LoweredFunctionParameter> parameters, IReadOnlyList<LoweredStatement> body)
+        => new Builder(parameters, true).CompileCodeObject("<generator>", body);
+
     private sealed partial class Builder
     {
         private static readonly LythonSourceSpan EmptySpan = new(0, 0, 0, 0);
@@ -48,6 +51,7 @@ internal sealed partial class ExecutableScript
         private readonly List<ExecutableExpressionFallback> _expressionFallbacks = [];
         private readonly Stack<LoopContext> _loops = [];
         private int _protectedDepth;
+        private bool _generator;
         private int _syntheticLocalCounter;
 
         private readonly IReadOnlyList<LoweredFunctionParameter>? _functionParameters;
@@ -57,6 +61,7 @@ internal sealed partial class ExecutableScript
         internal Builder() : this(null, null) { }
 
         internal Builder(IReadOnlyList<LoweredFunctionParameter>? functionParameters) : this(functionParameters, null) { }
+        internal Builder(IReadOnlyList<LoweredFunctionParameter> functionParameters, bool generator) : this(functionParameters, null) { _generator = generator; }
 
         internal Builder(
             IReadOnlyList<LoweredFunctionParameter>? functionParameters,
@@ -91,7 +96,7 @@ internal sealed partial class ExecutableScript
             var normalizedBlocks = NormalizeBlocks(ordered, indexMap);
             var normalizedRegions = NormalizeRegions(ordered, indexMap);
             var requiresLocalVariableMirroring =
-                _expressionFallbacks.Count != 0 ||
+                _generator || _expressionFallbacks.Count != 0 ||
                 _statementFallbacks.Count != 0 ||
                 _functions.Any(function => function.CodeObject is null) ||
                 _functions.Any(function => function.CodeObject?.RequiresLocalVariableMirroring == true);

@@ -43,6 +43,8 @@ internal sealed record LoweredFunctionDefinitionStatement(
     IReadOnlyList<LoweredStatement> Body) : LoweredStatement(Syntax.Span)
 {
     public override LoweredStatementKind Kind => LoweredStatementKind.FunctionDefinition;
+    public ExecutableCodeObject? GeneratorCode { get; } = GeneratorSyntaxFacts.IsGenerator(Syntax.Body)
+        ? ExecutableScript.CompileGenerator(Parameters, Body) : null;
 }
 
 internal sealed record LoweredClassDefinitionStatement(

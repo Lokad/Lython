@@ -472,7 +472,7 @@ internal sealed partial class LythonRuntime
             loweredParameters,
             lambda.Body,
             context,
-            BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)));
+            BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)), lambda.GeneratorCode);
         ChargeFunctionValue(context, lambda.Span);
         ChargeDefaultArguments(loweredParameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, lambda.Span);
         var closureRetentionBytes = ChargeClosureRetention(context, context.MemoryGovernor, lambda.Span);

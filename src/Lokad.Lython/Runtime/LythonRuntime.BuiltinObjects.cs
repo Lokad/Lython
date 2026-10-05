@@ -681,6 +681,7 @@ internal sealed partial class LythonRuntime
     private static bool IsBuiltinTypeName(string name)
     {
         return name is
+            "generator" or
             "bool" or
             "int" or
             "float" or
@@ -715,6 +716,7 @@ internal sealed partial class LythonRuntime
     {
         return typeName switch
         {
+            "generator" => value is PyGenerator or PyGeneratorExpression,
             "bool" => value is bool,
             "int" => value is BigInteger or int or bool,
             "float" => value is double,

@@ -168,6 +168,8 @@ internal sealed partial class LythonRuntime
 
     // A pending return carries the value, not a signal object: ordinary returns
     // deliver through this record without ever throwing (see DeliverReturn).
+    private sealed record PendingJump(int TargetBlock, bool DiscardIterator) : PendingAbruptSignal;
+
     private sealed record PendingReturn(object Value) : PendingAbruptSignal;
 
     private sealed record PendingControl(ControlSignal Control) : PendingAbruptSignal;

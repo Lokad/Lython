@@ -197,8 +197,10 @@ internal sealed partial class LythonRuntime
     }
 
     private static object EvaluateExecutableBinary(ExecutableBinaryOperator op, object left, object right, LythonSourceSpan span, ExecutionContext context)
-    {
-        var syntaxOperator = op switch
+        => EvaluateBinaryOperator(MapExecutableBinary(op), left, right, context, span);
+
+    private static BinaryOperatorSyntax MapExecutableBinary(ExecutableBinaryOperator op)
+        => op switch
         {
             ExecutableBinaryOperator.Add => BinaryOperatorSyntax.Add,
             ExecutableBinaryOperator.Subtract => BinaryOperatorSyntax.Subtract,
@@ -225,12 +227,11 @@ internal sealed partial class LythonRuntime
             _ => throw new InvalidOperationException($"Executable IR contains unknown binary operator {op}."),
         };
 
-        return EvaluateBinaryOperator(syntaxOperator, left, right, context, span);
-    }
-
     private static object EvaluateExecutableUnary(ExecutableUnaryOperator op, object operand, ExecutionContext context, LythonSourceSpan span)
-    {
-        var syntaxOperator = op switch
+        => EvaluateUnaryOperator(MapExecutableUnary(op), operand, context, span);
+
+    private static UnaryOperatorSyntax MapExecutableUnary(ExecutableUnaryOperator op)
+        => op switch
         {
             ExecutableUnaryOperator.Not => UnaryOperatorSyntax.Not,
             ExecutableUnaryOperator.Plus => UnaryOperatorSyntax.Plus,
@@ -239,14 +240,11 @@ internal sealed partial class LythonRuntime
             _ => throw new InvalidOperationException($"Executable IR contains unknown unary operator {op}."),
         };
 
-        return EvaluateUnaryOperator(syntaxOperator, operand, context, span);
-    }
-
     private static object EvaluateExecutableAugmented(ExecutableAugmentedOperator op, object currentValue, object right, ExecutionContext context, LythonSourceSpan span)
-        => EvaluateAugmentedAssignment(
-            currentValue,
-            right,
-            op switch
+        => EvaluateAugmentedAssignment(currentValue, right, MapExecutableAugmented(op), context, span);
+
+    private static AugmentedAssignmentOperatorSyntax MapExecutableAugmented(ExecutableAugmentedOperator op)
+        => op switch
             {
                 ExecutableAugmentedOperator.Add => AugmentedAssignmentOperatorSyntax.Add,
                 ExecutableAugmentedOperator.Subtract => AugmentedAssignmentOperatorSyntax.Subtract,
@@ -261,7 +259,5 @@ internal sealed partial class LythonRuntime
                 ExecutableAugmentedOperator.LeftShift => AugmentedAssignmentOperatorSyntax.LeftShift,
                 ExecutableAugmentedOperator.RightShift => AugmentedAssignmentOperatorSyntax.RightShift,
                 _ => throw new InvalidOperationException($"Executable IR contains unknown augmented operator {op}."),
-            },
-            context,
-            span);
+            };
 }
