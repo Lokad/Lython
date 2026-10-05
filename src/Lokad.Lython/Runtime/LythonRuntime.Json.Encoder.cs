@@ -122,6 +122,14 @@ internal sealed partial class LythonRuntime
             return JsonModule.SerializeJsonText(arguments[0], GetDumpOptions(context, span), context, span);
         }
 
+        public async ValueTask<object> EncodeAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length != 1)
+                throw new LythonRuntimeException("TypeError", "JSONEncoder.encode() takes exactly one argument (" + arguments.Length + " given).", span);
+            context.CheckExecutionBudget(span);
+            return await JsonModule.SerializeJsonTextAsync(arguments[0], GetDumpOptions(context, span), context, span).ConfigureAwait(false);
+        }
+
         public object IterEncode(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length != 1)
@@ -295,7 +303,7 @@ internal sealed partial class LythonRuntime
             switch (name)
             {
                 case "encode":
-                    value = BoundCallable.Create((arguments, span, context) => encoder.Encode(arguments, span, context), LythonKnownCallableSignatures.JsonEncoderEncode);
+                    value = BoundCallable.Create((arguments, span, context) => encoder.Encode(arguments, span, context), LythonKnownCallableSignatures.JsonEncoderEncode, (arguments, span, context) => encoder.EncodeAsync(arguments, span, context));
                     return true;
                 case "iterencode":
                     value = BoundCallable.Create((arguments, span, context) => encoder.IterEncode(arguments, span, context), LythonKnownCallableSignatures.JsonEncoderIterencode);
@@ -365,7 +373,6 @@ internal sealed partial class LythonRuntime
         private readonly HashSet<object>? _markers;
         private object? _rootValue;
         private bool _hasRoot;
-        private int _defaultDepth;
         private long _scratchBytes;
         private bool _finished;
 
@@ -388,11 +395,19 @@ internal sealed partial class LythonRuntime
 
         public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
         {
+            var result = TryMoveNextCoreAsync(false).GetAwaiter().GetResult();
+            value = result.HasValue ? result.Value : PyNone.Instance;
+            return result.HasValue;
+        }
+
+        public override ValueTask<PyIterationResult> TryMoveNextAsync() => TryMoveNextCoreAsync(true);
+
+        private async ValueTask<PyIterationResult> TryMoveNextCoreAsync(bool asynchronous)
+        {
             _context.CheckExecutionBudget(_span);
             if (_finished)
             {
-                value = PyNone.Instance;
-                return false;
+                return PyIterationResult.End;
             }
 
             try
@@ -402,12 +417,12 @@ internal sealed partial class LythonRuntime
                 while (true)
                 {
                     _context.CheckExecutionBudget(_span);
-                    if (!Advance(builder, charge, out var chunkReady))
+                    var (advanced, chunkReady) = await AdvanceAsync(builder, charge, asynchronous).ConfigureAwait(false);
+                    if (!advanced)
                     {
                         DiscardScratch();
                         _finished = true;
-                        value = PyNone.Instance;
-                        return false;
+                        return PyIterationResult.End;
                     }
 
                     if (!chunkReady || builder.Length == 0)
@@ -420,8 +435,7 @@ internal sealed partial class LythonRuntime
                     charge.Grow(builder.Length);
                     var chunk = LythonRuntime.CreateString(builder.ToString(), _context, _span);
                     _context.Services.State.CallTemporaries.TrackFreshString(chunk, _span);
-                    value = chunk;
-                    return true;
+                    return PyIterationResult.Yield(chunk);
                 }
             }
             catch (InvalidOperationException ex)
@@ -498,13 +512,13 @@ internal sealed partial class LythonRuntime
         // chunk when chunkReady). Structural order mirrors the eager renderer
         // exactly: separators, indent prefixes, keys and values concatenate to
         // the same text encode() produces.
-        private bool Advance(StringBuilder builder, JsonModule.JsonGrowthCharge charge, out bool chunkReady)
+        private async ValueTask<(bool Advanced, bool ChunkReady)> AdvanceAsync(StringBuilder builder, JsonModule.JsonGrowthCharge charge, bool asynchronous)
         {
-            chunkReady = false;
+            var chunkReady = false;
             if (_hasRoot)
             {
                 _hasRoot = false;
-                return AdvanceValue(_rootValue!, 0, builder, charge, out chunkReady);
+                return await AdvanceValueAsync(_rootValue!, 0, builder, charge, asynchronous).ConfigureAwait(false);
             }
 
             while (_stack.Count > 0)
@@ -520,7 +534,7 @@ internal sealed partial class LythonRuntime
 
                     builder.Append(frame.IsList ? '[' : '{');
                     chunkReady = true;
-                    return true;
+                    return (true, chunkReady);
                 }
 
                 if (frame.IsList)
@@ -535,7 +549,7 @@ internal sealed partial class LythonRuntime
 
                         builder.Append(']');
                         chunkReady = true;
-                        return true;
+                        return (true, chunkReady);
                     }
 
                     var element = frame.ListItems.Current;
@@ -546,7 +560,7 @@ internal sealed partial class LythonRuntime
 
                     AppendPrettyPrefix(builder, frame.Depth + 1, charge);
                     frame.Index++;
-                    return AdvanceValue(element, frame.Depth + 1, builder, charge, out chunkReady);
+                    return await AdvanceValueAsync(element, frame.Depth + 1, builder, charge, asynchronous).ConfigureAwait(false);
                 }
 
                 if (!TryTakePair(frame, out var key, out var pairValue))
@@ -559,7 +573,7 @@ internal sealed partial class LythonRuntime
 
                     builder.Append('}');
                     chunkReady = true;
-                    return true;
+                    return (true, chunkReady);
                 }
 
                 if (frame.Index > 0)
@@ -576,17 +590,17 @@ internal sealed partial class LythonRuntime
                 JsonModule.AppendJsonString(builder, keyText, _options.EnsureAscii, charge, _context, _span);
                 JsonModule.AppendSeparator(builder, _options.KeySeparator, charge);
                 frame.Index++;
-                return AdvanceValue(pairValue, frame.Depth + 1, builder, charge, out chunkReady);
+                return await AdvanceValueAsync(pairValue, frame.Depth + 1, builder, charge, asynchronous).ConfigureAwait(false);
             }
 
-            return false;
+            return (false, false);
         }
 
-        private bool AdvanceValue(object value, int depth, StringBuilder builder, JsonModule.JsonGrowthCharge charge, out bool chunkReady)
+        private async ValueTask<(bool Advanced, bool ChunkReady)> AdvanceValueAsync(object value, int depth, StringBuilder builder, JsonModule.JsonGrowthCharge charge, bool asynchronous, int defaultDepth = 0)
         {
-            chunkReady = false;
+            var chunkReady = false;
             _context.CheckExecutionBudget(_span);
-            if (depth >= ExecutionLimits.MaxInterpreterDepth || _defaultDepth >= ExecutionLimits.MaxInterpreterDepth)
+            if (depth >= ExecutionLimits.MaxInterpreterDepth || defaultDepth >= ExecutionLimits.MaxInterpreterDepth)
             {
                 throw new LythonRuntimeException(
                     "RecursionError",
@@ -599,48 +613,48 @@ internal sealed partial class LythonRuntime
                 case PyNone:
                     builder.Append("null");
                     chunkReady = true;
-                    return true;
+                    return (true, chunkReady);
                 case PyString text:
                     JsonModule.AppendJsonString(builder, text.AsString(), _options.EnsureAscii, charge, _context, _span);
                     chunkReady = true;
-                    return true;
+                    return (true, chunkReady);
                 case bool boolean:
                     builder.Append(boolean ? "true" : "false");
                     chunkReady = true;
-                    return true;
+                    return (true, chunkReady);
                 case BigInteger integer:
                     _context.CheckExecutionBudget(_span);
                     JsonModule.AppendJsonNumber(builder, integer.ToString(CultureInfo.InvariantCulture), charge, _context, _span);
                     chunkReady = true;
-                    return true;
+                    return (true, chunkReady);
                 case int integer:
                     JsonModule.AppendJsonNumber(builder, integer.ToString(CultureInfo.InvariantCulture), charge, _context, _span);
                     chunkReady = true;
-                    return true;
+                    return (true, chunkReady);
                 case double floating:
                     JsonModule.AppendJsonDouble(builder, floating, _options, charge, _context, _span);
                     chunkReady = true;
-                    return true;
+                    return (true, chunkReady);
                 case PyDecimal decimalValue:
                     JsonModule.AppendJsonNumber(builder, PyDecimalOps.Format(decimalValue), charge, _context, _span);
                     chunkReady = true;
-                    return true;
+                    return (true, chunkReady);
                 case PyList list:
                     PushListFrame(list, list.GetEnumerator(), depth);
-                    return true;
+                    return (true, chunkReady);
                 case PyTuple tuple:
                     PushListFrame(tuple, tuple.GetEnumerator(), depth);
-                    return true;
+                    return (true, chunkReady);
                 case PyDict dict:
                     PushDictFrame(dict, depth);
-                    return true;
+                    return (true, chunkReady);
                 default:
                     if (_options.DefaultCallable is null)
                     {
                         throw new InvalidOperationException($"Unsupported json.dumps value type: {JsonModule.JsonValueTypeName(value)}");
                     }
 
-                    var replacement = JsonModule.InvokeJsonCallback(_options.DefaultCallable, value, _context, _span);
+                    var replacement = await JsonModule.InvokeJsonCallbackCoreAsync(_options.DefaultCallable, value, _context, _span, asynchronous).ConfigureAwait(false);
                     if (ReferenceEquals(replacement, value))
                     {
                         throw new LythonRuntimeException("ValueError", "json.dumps default returned the original unsupported object.", _span);
@@ -649,8 +663,7 @@ internal sealed partial class LythonRuntime
                     // Replacements that keep producing fresh unsupported
                     // objects carry their own depth budget like the eager
                     // path instead of recursing past the container guard.
-                    _defaultDepth++;
-                    return AdvanceValue(replacement, depth, builder, charge, out chunkReady);
+                    return await AdvanceValueAsync(replacement, depth, builder, charge, asynchronous, defaultDepth + 1).ConfigureAwait(false);
             }
         }
 

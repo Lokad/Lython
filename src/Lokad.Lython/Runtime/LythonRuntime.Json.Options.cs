@@ -261,6 +261,15 @@ internal sealed partial class LythonRuntime
             return result;
         }
 
+        internal static async ValueTask<object> InvokeJsonCallbackCoreAsync(ICallable callable, object argument, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+        {
+            if (!asynchronous) return InvokeJsonCallback(callable, argument, context, span);
+            var result = await InvokeCallableTargetAsync(callable, span, span, context,
+                () => ValueTask.FromResult(new[] { CallArgumentValue.Positional(argument) })).ConfigureAwait(false);
+            context.Services.State.CallTemporaries.TrackCallResult(result, span);
+            return result;
+        }
+
         internal static ICallable? OptionalJsonCallable(object value, string parameterName, LythonSourceSpan span)
         {
             if (ReferenceEquals(value, PyNone.Instance))

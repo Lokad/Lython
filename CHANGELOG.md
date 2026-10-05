@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Await JSON hooks and selected-class construction/dispatch through `RunAsync`, including incremental encoding, cancellation and delayed host effects.
 - Make JSON encoder option writes authoritative for subsequent encoding and expose writable decoder attributes with CPython's constructor-captured scanner behavior, including subclasses.
 - Accept f-string fields that reuse their enclosing quote character, including adjacent literals and quoted expressions in format fields.
 - Support repeated comprehension filters and starred arguments after keywords, preserving Python's short-circuit and argument evaluation order.

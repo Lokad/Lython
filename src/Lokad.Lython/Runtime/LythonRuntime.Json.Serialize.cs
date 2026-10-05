@@ -14,6 +14,12 @@ internal sealed partial class LythonRuntime
     private sealed partial class JsonModule : PyModule
     {
         internal static PyString SerializeJsonText(object value, JsonDumpOptions options, ExecutionContext context, LythonSourceSpan span)
+            => SerializeJsonTextCoreAsync(value, options, context, span, false).GetAwaiter().GetResult();
+
+        internal static ValueTask<PyString> SerializeJsonTextAsync(object value, JsonDumpOptions options, ExecutionContext context, LythonSourceSpan span)
+            => SerializeJsonTextCoreAsync(value, options, context, span, true);
+
+        private static async ValueTask<PyString> SerializeJsonTextCoreAsync(object value, JsonDumpOptions options, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
             try
             {
@@ -22,7 +28,7 @@ internal sealed partial class LythonRuntime
                 // final value, at which point this temporary is released.
                 using var charge = new JsonGrowthCharge(context.MemoryGovernor, span);
                 var active = options.CheckCircular ? new HashSet<object>(ReferenceEqualityComparer.Instance) : null;
-                AppendJsonValue(builder, value, options, context, span, depth: 0, defaultDepth: 0, active, charge);
+                await AppendJsonValueAsync(builder, value, options, context, span, depth: 0, defaultDepth: 0, active, charge, asynchronous).ConfigureAwait(false);
                 // The UTF-16 copy below coexists briefly with the builder backing
                 // and the final UTF-8 value: fund it before duplicating.
                 charge.Grow(builder.Length);
@@ -90,7 +96,7 @@ internal sealed partial class LythonRuntime
             public void Dispose() => _reservation.Dispose();
         }
 
-        private static void AppendJsonValue(
+        private static async ValueTask AppendJsonValueAsync(
             StringBuilder builder,
             object value,
             JsonDumpOptions options,
@@ -99,9 +105,10 @@ internal sealed partial class LythonRuntime
             int depth,
             int defaultDepth,
             HashSet<object>? active,
-            JsonGrowthCharge charge)
+            JsonGrowthCharge charge,
+            bool asynchronous)
         {
-            void AppendDictionary(PyDict dict)
+            async ValueTask AppendDictionaryAsync(PyDict dict)
             {
                 if (active is not null && !active.Add(dict))
                 {
@@ -138,7 +145,7 @@ internal sealed partial class LythonRuntime
                             _ = TryConvertJsonObjectKey(pair.Key, skipKeys: false, out var key);
                             AppendJsonString(builder, key, options.EnsureAscii, charge, context, span);
                             AppendSeparator(builder, options.KeySeparator, charge);
-                            AppendJsonValue(builder, pair.Value, options, context, span, depth + 1, defaultDepth, active, charge);
+                            await AppendJsonValueAsync(builder, pair.Value, options, context, span, depth + 1, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
                             index++;
                         }
 
@@ -182,7 +189,7 @@ internal sealed partial class LythonRuntime
                         _ = TryConvertJsonObjectKey(entries[index].OriginalKey, skipKeys: false, out var key);
                         AppendJsonString(builder, key, options.EnsureAscii, charge, context, span);
                         AppendSeparator(builder, options.KeySeparator, charge);
-                        AppendJsonValue(builder, entries[index].Value, options, context, span, depth + 1, defaultDepth, active, charge);
+                        await AppendJsonValueAsync(builder, entries[index].Value, options, context, span, depth + 1, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
                     }
 
                     if (entries.Count > 0)
@@ -234,18 +241,18 @@ internal sealed partial class LythonRuntime
                     AppendJsonNumber(builder, PyDecimalOps.Format(decimalValue), charge, context, span);
                     return;
                 case PyList list:
-                    AppendJsonSequence(builder, list, options, context, span, depth, defaultDepth, active, charge);
+                    await AppendJsonSequenceAsync(builder, list, options, context, span, depth, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
                     return;
                 case PyTuple tuple:
-                    AppendJsonSequence(builder, tuple, options, context, span, depth, defaultDepth, active, charge);
+                    await AppendJsonSequenceAsync(builder, tuple, options, context, span, depth, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
                     return;
                 case PyDict dict:
-                    AppendDictionary(dict);
+                    await AppendDictionaryAsync(dict).ConfigureAwait(false);
                     return;
                 default:
                     if (options.DefaultCallable is not null)
                     {
-                        var replacement = InvokeJsonCallback(options.DefaultCallable, value, context, span);
+                        var replacement = await InvokeJsonCallbackCoreAsync(options.DefaultCallable, value, context, span, asynchronous).ConfigureAwait(false);
                         if (ReferenceEquals(replacement, value))
                         {
                             throw new LythonRuntimeException("ValueError", "json.dumps default returned the original unsupported object.", span);
@@ -254,7 +261,7 @@ internal sealed partial class LythonRuntime
                         // Replacements that keep producing fresh unsupported objects
                         // would otherwise recurse past the container depth guard, so
                         // default applications carry their own depth budget.
-                        AppendJsonValue(builder, replacement, options, context, span, depth, defaultDepth + 1, active, charge);
+                        await AppendJsonValueAsync(builder, replacement, options, context, span, depth, defaultDepth + 1, active, charge, asynchronous).ConfigureAwait(false);
                         return;
                     }
 
@@ -280,7 +287,7 @@ internal sealed partial class LythonRuntime
                 _ => value.GetType().Name,
             };
 
-        private static void AppendJsonSequence(
+        private static async ValueTask AppendJsonSequenceAsync(
             StringBuilder builder,
             IEnumerable<object> sequence,
             JsonDumpOptions options,
@@ -289,7 +296,7 @@ internal sealed partial class LythonRuntime
             int depth,
             int defaultDepth,
             HashSet<object>? active,
-            JsonGrowthCharge charge)
+            JsonGrowthCharge charge, bool asynchronous)
         {
             if (active is not null && !active.Add(sequence))
             {
@@ -309,7 +316,7 @@ internal sealed partial class LythonRuntime
                     }
 
                     AppendJsonValuePrefix(builder, options, depth + 1, index, charge, context, span);
-                    AppendJsonValue(builder, item, options, context, span, depth + 1, defaultDepth, active, charge);
+                    await AppendJsonValueAsync(builder, item, options, context, span, depth + 1, defaultDepth, active, charge, asynchronous).ConfigureAwait(false);
                     index++;
                 }
 

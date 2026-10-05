@@ -57,6 +57,12 @@ internal sealed partial class LythonRuntime
         public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
         public object Decode(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => DecodeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+        public ValueTask<object> DecodeAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => DecodeCoreAsync(arguments, span, context, true);
+
+        private async ValueTask<object> DecodeCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             if (arguments.Length != 1)
             {
@@ -69,10 +75,18 @@ internal sealed partial class LythonRuntime
             }
 
             context.CheckExecutionBudget(span);
-            return JsonModule.Instance.ParseJsonText(text, Options, context, span);
+            return asynchronous
+                ? await JsonModule.Instance.ParseJsonTextAsync(text, Options, context, span).ConfigureAwait(false)
+                : JsonModule.Instance.ParseJsonText(text, Options, context, span);
         }
 
         public object RawDecode(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => RawDecodeCoreAsync(arguments, span, context, false).GetAwaiter().GetResult();
+
+        public ValueTask<object> RawDecodeAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => RawDecodeCoreAsync(arguments, span, context, true);
+
+        private async ValueTask<object> RawDecodeCoreAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             if (arguments.Length is < 1 or > 2)
             {
@@ -86,7 +100,9 @@ internal sealed partial class LythonRuntime
 
             var index = arguments.Length == 2 ? CoerceJsonRawIndex(arguments[1], context, span) : 0L;
             context.CheckExecutionBudget(span);
-            var (value, end) = JsonModule.Instance.DecodeJsonRawValue(text, index, Options, context, span);
+            var (value, end) = asynchronous
+                ? await JsonModule.Instance.DecodeJsonRawValueAsync(text, index, Options, context, span).ConfigureAwait(false)
+                : JsonModule.Instance.DecodeJsonRawValue(text, index, Options, context, span);
             return new PyTuple(new object[] { value, new BigInteger(end) }, context.MemoryGovernor, span);
         }
 
@@ -232,8 +248,8 @@ internal sealed partial class LythonRuntime
             if (decoder.Attributes.TryGetValue(name, out value!)) return true;
             value = name switch
             {
-                "decode" => BoundCallable.Create((arguments, span, context) => decoder.Decode(arguments, span, context), LythonKnownCallableSignatures.JsonDecoderDecode),
-                "raw_decode" => BoundCallable.Create((arguments, span, context) => decoder.RawDecode(arguments, span, context), LythonKnownCallableSignatures.JsonDecoderRawDecode),
+                "decode" => BoundCallable.Create((arguments, span, context) => decoder.Decode(arguments, span, context), LythonKnownCallableSignatures.JsonDecoderDecode, (arguments, span, context) => decoder.DecodeAsync(arguments, span, context)),
+                "raw_decode" => BoundCallable.Create((arguments, span, context) => decoder.RawDecode(arguments, span, context), LythonKnownCallableSignatures.JsonDecoderRawDecode, (arguments, span, context) => decoder.RawDecodeAsync(arguments, span, context)),
                 _ => MissingMemberValue.Instance,
             };
 

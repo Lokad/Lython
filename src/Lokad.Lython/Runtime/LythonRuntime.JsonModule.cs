@@ -25,9 +25,9 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "load" => new JsonModuleCallable(LythonKnownCallableSignatures.JsonLoad, Load, LoadAsync),
-                "loads" => new JsonModuleCallable(LythonKnownCallableSignatures.JsonLoads, Loads),
-                "dump" => new JsonModuleCallable(LythonKnownCallableSignatures.JsonDump, Dump),
-                "dumps" => new JsonModuleCallable(LythonKnownCallableSignatures.JsonDumps, Dumps),
+                "loads" => new JsonModuleCallable(LythonKnownCallableSignatures.JsonLoads, Loads, LoadsAsync),
+                "dump" => new JsonModuleCallable(LythonKnownCallableSignatures.JsonDump, Dump, DumpAsync),
+                "dumps" => new JsonModuleCallable(LythonKnownCallableSignatures.JsonDumps, Dumps, DumpsAsync),
                 "JSONDecodeError" => new ExceptionTypeValue(ModuleException("json", "JSONDecodeError")),
                 "JSONEncoder" => JsonEncoderClass.Instance,
                 "JSONDecoder" => JsonDecoderClass.Instance,
@@ -207,6 +207,21 @@ internal sealed partial class LythonRuntime
             return DecodeWithClass(text, ResolveDecoderClass(GetOptional(bound, 1), span), bound, extras, span, context);
         }
 
+        private async ValueTask<object> LoadsAsync(
+            object[] bound,
+            IReadOnlyList<KeyValuePair<string, object>> extras,
+            LythonSourceSpan span,
+            ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            if (bound.Length < 1 || !PyStringOps.TryAsString(bound[0], out var text))
+            {
+                throw new LythonRuntimeException("TypeError", "json.loads(s, *, ...) expects a string argument.", span);
+            }
+
+            return await DecodeWithClassAsync(text, ResolveDecoderClass(GetOptional(bound, 1), span), bound, extras, span, context).ConfigureAwait(false);
+        }
+
         private object Dump(
             object[] bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
@@ -229,6 +244,30 @@ internal sealed partial class LythonRuntime
             return PyNone.Instance;
         }
 
+        private async ValueTask<object> DumpAsync(
+            object[] bound,
+            IReadOnlyList<KeyValuePair<string, object>> extras,
+            LythonSourceSpan span,
+            ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            if (bound.Length < 2 || bound[1] is not ExecutionContext.TextFileHandle file)
+            {
+                throw new LythonRuntimeException("TypeError", "json.dump(obj, fp, *, ...) expects an object and writable text file handle.", span);
+            }
+
+            var encoded = await EncodeWithClassAsync(bound[0], ResolveEncoderClass(GetOptional(bound, 6), span), bound, extras, JsonDumpCallForm.Dump, span, context).ConfigureAwait(false);
+            if (encoded is not PyString text)
+            {
+                throw new LythonRuntimeException("TypeError", "json.dump() encoder returned a non-string value.", span);
+            }
+
+            // TextFileHandle.Write stages governed output; publication is
+            // awaited by the handle's close/context-exit operation.
+            _ = file.Write(text);
+            return PyNone.Instance;
+        }
+
         private object Dumps(
             object[] bound,
             IReadOnlyList<KeyValuePair<string, object>> extras,
@@ -242,6 +281,21 @@ internal sealed partial class LythonRuntime
             }
 
             return EncodeWithClass(bound[0], ResolveEncoderClass(GetOptional(bound, 5), span), bound, extras, JsonDumpCallForm.Dumps, span, context);
+        }
+
+        private async ValueTask<object> DumpsAsync(
+            object[] bound,
+            IReadOnlyList<KeyValuePair<string, object>> extras,
+            LythonSourceSpan span,
+            ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            if (bound.Length < 1)
+            {
+                throw new LythonRuntimeException("TypeError", "json.dumps(obj, *, ...) expects one object argument.", span);
+            }
+
+            return await EncodeWithClassAsync(bound[0], ResolveEncoderClass(GetOptional(bound, 5), span), bound, extras, JsonDumpCallForm.Dumps, span, context).ConfigureAwait(false);
         }
 
         // Every entry point dispatches through the selected class like
@@ -407,6 +461,30 @@ internal sealed partial class LythonRuntime
             }
 
             return callable.Invoke([CallArgumentValue.Positional(value)], span, context);
+        }
+
+        private async ValueTask<object> EncodeWithClassAsync(
+            object value,
+            object clsValue,
+            object[] bound,
+            IReadOnlyList<KeyValuePair<string, object>> extras,
+            JsonDumpCallForm callForm,
+            LythonSourceSpan span,
+            ExecutionContext context)
+        {
+            var forwarded = BuildEncoderForwardArgs(bound, extras, callForm).ToArray();
+            var instance = await ((ICallable)clsValue).InvokeAsync(forwarded, span, context).ConfigureAwait(false);
+            if (!PyMemberAccess.TryResolve(instance, "encode", context, span, out var method))
+            {
+                throw PyMemberAccess.CreateMissingMemberError(instance, "encode", span, context);
+            }
+
+            if (method is not ICallable callable)
+            {
+                throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(method, context) + "' object is not callable", span);
+            }
+
+            return await callable.InvokeAsync([CallArgumentValue.Positional(value)], span, context).ConfigureAwait(false);
         }
 
         private static object ConstructEncoderClass(

@@ -15,12 +15,18 @@ internal sealed partial class LythonRuntime
     private sealed partial class JsonModule : PyModule
     {
         internal object ParseJsonText(PyString text, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
+            => ParseJsonTextCoreAsync(text, options, context, span, false).GetAwaiter().GetResult();
+
+        internal ValueTask<object> ParseJsonTextAsync(PyString text, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
+            => ParseJsonTextCoreAsync(text, options, context, span, true);
+
+        private async ValueTask<object> ParseJsonTextCoreAsync(PyString text, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
             var input = new JsonParseInput(text, text.Utf8Bytes);
 
             try
             {
-                var decoded = DecodeJsonPrefix(input, options, context, span, startByte: 0);
+                var decoded = await DecodeJsonPrefixAsync(input, options, context, span, startByte: 0, asynchronous).ConfigureAwait(false);
                 var end = SkipJsonWhitespace(input.Source.Span, decoded.EndByte, context, span);
                 if (end < input.Source.Length)
                 {
@@ -45,6 +51,12 @@ internal sealed partial class LythonRuntime
         // leading whitespace skip, returning the value and the absolute end
         // index in the original string. The suffix is never materialized.
         internal (object Value, int EndRune) DecodeJsonRawValue(PyString document, long idxRune, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
+            => DecodeJsonRawValueCoreAsync(document, idxRune, options, context, span, false).GetAwaiter().GetResult();
+
+        internal ValueTask<(object Value, int EndRune)> DecodeJsonRawValueAsync(PyString document, long idxRune, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
+            => DecodeJsonRawValueCoreAsync(document, idxRune, options, context, span, true);
+
+        private async ValueTask<(object Value, int EndRune)> DecodeJsonRawValueCoreAsync(PyString document, long idxRune, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
             context.CheckExecutionBudget(span);
             var input = new JsonParseInput(document, document.Utf8Bytes);
@@ -56,7 +68,7 @@ internal sealed partial class LythonRuntime
             var startOriginal = document.GetByteIndexForRuneBoundary((int)idxRune);
             try
             {
-                var (value, endCopy) = ReadJsonValueExact(input, options, context, span, 0, startOriginal);
+                var (value, endCopy) = await ReadJsonValueExactAsync(input, options, context, span, 0, startOriginal, asynchronous).ConfigureAwait(false);
                 var endOriginal = endCopy;
                 return (value, document.ByteIndexToRuneIndex(endOriginal));
             }
@@ -71,49 +83,49 @@ internal sealed partial class LythonRuntime
         // never materialize the suffix. Whole-document callers then require
         // end-of-input; prefix callers take the value end offset. All offsets are
         // absolute byte positions in the original text.
-        private JsonPrefixDecode DecodeJsonPrefix(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int startByte)
+        private async ValueTask<JsonPrefixDecode> DecodeJsonPrefixAsync(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int startByte, bool asynchronous)
         {
-            var bytes = input.Source.Span;
-            var position = SkipJsonWhitespace(bytes, startByte, context, span);
+            var bytes = input.Source;
+            var position = SkipJsonWhitespace(bytes.Span, startByte, context, span);
             if (position >= bytes.Length)
             {
                 throw CreateJsonExpectingError(input, bytes.Length, JsonIncompleteExpectation.Value, span, context);
             }
 
-            var (value, end) = ReadJsonValue(input, options, context, span, 0, position);
+            var (value, end) = await ReadJsonValueAsync(input, options, context, span, 0, position, asynchronous).ConfigureAwait(false);
             return new JsonPrefixDecode(value, end);
         }
 
-        private (object Value, int End) ReadJsonValue(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int depth, int position)
+        private async ValueTask<(object Value, int End)> ReadJsonValueAsync(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int depth, int position, bool asynchronous)
         {
-            var bytes = input.Source.Span;
-            position = SkipJsonWhitespace(bytes, position, context, span);
+            var bytes = input.Source;
+            position = SkipJsonWhitespace(bytes.Span, position, context, span);
             if (position >= bytes.Length)
             {
                 throw CreateJsonExpectingError(input, bytes.Length, JsonIncompleteExpectation.Value, span, context);
             }
 
-            return ReadJsonValueExact(input, options, context, span, depth, position);
+            return await ReadJsonValueExactAsync(input, options, context, span, depth, position, asynchronous).ConfigureAwait(false);
         }
 
         // Reads one value at the exact byte position with no leading
         // whitespace skip, for prefix entry points whose contract starts at
         // the given index.
-        private (object Value, int End) ReadJsonValueExact(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int depth, int position)
+        private async ValueTask<(object Value, int End)> ReadJsonValueExactAsync(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int depth, int position, bool asynchronous)
         {
             context.CheckExecutionBudget(span);
-            var bytes = input.Source.Span;
+            var bytes = input.Source;
             if (position >= bytes.Length)
             {
                 throw CreateJsonExpectingError(input, bytes.Length, JsonIncompleteExpectation.Value, span, context);
             }
 
-            if (TryMatchJsonConstant(bytes, position, out var constant, out var constantEnd))
+            if (TryMatchJsonConstant(bytes.Span, position, out var constant, out var constantEnd))
             {
-                return (ConvertJsonConstant(constant, options, context, span), constantEnd);
+                return (await ConvertJsonConstantAsync(constant, options, context, span, asynchronous).ConfigureAwait(false), constantEnd);
             }
 
-            var first = bytes[position];
+            var first = bytes.Span[position];
             if (first is (byte)'{' or (byte)'[')
             {
                 if (depth >= 64)
@@ -122,8 +134,8 @@ internal sealed partial class LythonRuntime
                 }
 
                 return first == (byte)'{'
-                    ? ReadJsonObject(input, options, context, span, depth + 1, position)
-                    : ReadJsonArray(input, options, context, span, depth + 1, position);
+                    ? await ReadJsonObjectAsync(input, options, context, span, depth + 1, position, asynchronous).ConfigureAwait(false)
+                    : await ReadJsonArrayAsync(input, options, context, span, depth + 1, position, asynchronous).ConfigureAwait(false);
             }
 
             context.EnterInterpreterFrame(span);
@@ -133,25 +145,25 @@ internal sealed partial class LythonRuntime
                 // with no terminator check, and numbers match NUMBER_RE, so
                 // adjacent values end exactly where CPython ends them (whole
                 // document callers then report the remainder as trailing data).
-                if (TryMatchJsonLiteral(bytes, position, "true", out var trueEnd))
+                if (TryMatchJsonLiteral(bytes.Span, position, "true", out var trueEnd))
                 {
                     return ((object)true, trueEnd);
                 }
 
-                if (TryMatchJsonLiteral(bytes, position, "false", out var falseEnd))
+                if (TryMatchJsonLiteral(bytes.Span, position, "false", out var falseEnd))
                 {
                     return ((object)false, falseEnd);
                 }
 
-                if (TryMatchJsonLiteral(bytes, position, "null", out var nullEnd))
+                if (TryMatchJsonLiteral(bytes.Span, position, "null", out var nullEnd))
                 {
                     return (PyNone.Instance, nullEnd);
                 }
 
-                if (TryMatchJsonNumber(bytes, position, context, span, out var numberEnd))
+                if (TryMatchJsonNumber(bytes.Span, position, context, span, out var numberEnd))
                 {
                     using var numberScratch = context.MemoryGovernor.ReserveTemporary(checked(4L * (numberEnd - position)), span);
-                    return (ConvertJsonNumberText(bytes, position, numberEnd, options, context, span), numberEnd);
+                    return (await ConvertJsonNumberTextAsync(bytes, position, numberEnd, options, context, span, asynchronous).ConfigureAwait(false), numberEnd);
                 }
 
                 if (first == (byte)'"')
@@ -269,9 +281,9 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private (object Value, int End) ReadJsonObject(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int depth, int openBrace)
+        private async ValueTask<(object Value, int End)> ReadJsonObjectAsync(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int depth, int openBrace, bool asynchronous)
         {
-            var bytes = input.Source.Span;
+            var bytes = input.Source;
             if (options.ObjectPairsHook is not null)
             {
                 // R10: every fresh graph node owns a refundable pool snapshot
@@ -287,16 +299,16 @@ internal sealed partial class LythonRuntime
                     // A closer never needs comma verification: the previous
                     // character decides between valid end and trailing comma.
                     var pairPeek = pairValueEnd < 0
-                        ? SkipJsonWhitespace(bytes, openBrace + 1, context, span)
-                        : SkipJsonWhitespace(bytes, pairValueEnd, context, span);
-                    if (pairPeek < bytes.Length && bytes[pairPeek] == (byte)'}')
+                        ? SkipJsonWhitespace(bytes.Span, openBrace + 1, context, span)
+                        : SkipJsonWhitespace(bytes.Span, pairValueEnd, context, span);
+                    if (pairPeek < bytes.Length && bytes.Span[pairPeek] == (byte)'}')
                     {
-                        if (IsJsonPreviousNonWhitespaceComma(bytes, pairPeek))
+                        if (IsJsonPreviousNonWhitespaceComma(bytes.Span, pairPeek))
                         {
                             throw CreateJsonExpectingError(input, pairPeek, JsonIncompleteExpectation.PropertyName, span, context);
                         }
 
-                        return (InvokeJsonCallback(options.ObjectPairsHook, pairs, context, span), pairPeek + 1);
+                        return (await InvokeJsonCallbackCoreAsync(options.ObjectPairsHook, pairs, context, span, asynchronous).ConfigureAwait(false), pairPeek + 1);
                     }
 
                     int pairKeyStart;
@@ -306,7 +318,7 @@ internal sealed partial class LythonRuntime
                     }
                     else
                     {
-                        pairKeyStart = SkipJsonWhitespace(bytes, EnsureJsonComma(bytes, pairValueEnd, input, span, context) + 1, context, span);
+                        pairKeyStart = SkipJsonWhitespace(bytes.Span, EnsureJsonComma(bytes.Span, pairValueEnd, input, span, context) + 1, context, span);
                     }
 
                     if (pairKeyStart >= bytes.Length)
@@ -314,25 +326,25 @@ internal sealed partial class LythonRuntime
                         throw CreateJsonExpectingError(input, bytes.Length, JsonIncompleteExpectation.PropertyName, span, context);
                     }
 
-                    if (bytes[pairKeyStart] == (byte)'}')
+                    if (bytes.Span[pairKeyStart] == (byte)'}')
                     {
                         throw CreateJsonExpectingError(input, pairKeyStart, JsonIncompleteExpectation.PropertyName, span, context);
                     }
 
-                    if (bytes[pairKeyStart] != (byte)'"')
+                    if (bytes.Span[pairKeyStart] != (byte)'"')
                     {
                         throw CreateJsonExpectingError(input, pairKeyStart, JsonIncompleteExpectation.PropertyName, span, context);
                     }
 
                     context.CheckExecutionBudget(span);
-                    var (pairKeyObject, pairKeyEnd) = ReadJsonValue(input, options, context, span, depth, pairKeyStart);
+                    var (pairKeyObject, pairKeyEnd) = await ReadJsonValueAsync(input, options, context, span, depth, pairKeyStart, asynchronous).ConfigureAwait(false);
                     if (pairKeyObject is not PyString pairKey)
                     {
                         throw new InvalidOperationException("JSON object key decoded to a non-string.");
                     }
 
-                    var pairColon = EnsureJsonColon(bytes, pairKeyEnd, input, span, context);
-                    var (pairValue, pairEnd) = ReadJsonValue(input, options, context, span, depth, pairColon + 1);
+                    var pairColon = EnsureJsonColon(bytes.Span, pairKeyEnd, input, span, context);
+                    var (pairValue, pairEnd) = await ReadJsonValueAsync(input, options, context, span, depth, pairColon + 1, asynchronous).ConfigureAwait(false);
                     var pair = PyTuple.FromOwnedArray([pairKey, pairValue], context.MemoryGovernor, span);
                     context.Services.State.CallTemporaries.TrackFreshMutable(pair, pair.CommittedStorageBytes, span);
                     pairs.Add(pair);
@@ -349,11 +361,11 @@ internal sealed partial class LythonRuntime
                 // A closer never needs comma verification: the previous
                 // character decides between valid end and trailing comma.
                 var peek = valueEnd < 0
-                    ? SkipJsonWhitespace(bytes, openBrace + 1, context, span)
-                    : SkipJsonWhitespace(bytes, valueEnd, context, span);
-                if (peek < bytes.Length && bytes[peek] == (byte)'}')
+                    ? SkipJsonWhitespace(bytes.Span, openBrace + 1, context, span)
+                    : SkipJsonWhitespace(bytes.Span, valueEnd, context, span);
+                if (peek < bytes.Length && bytes.Span[peek] == (byte)'}')
                 {
-                    if (IsJsonPreviousNonWhitespaceComma(bytes, peek))
+                    if (IsJsonPreviousNonWhitespaceComma(bytes.Span, peek))
                     {
                         throw CreateJsonExpectingError(input, peek, JsonIncompleteExpectation.PropertyName, span, context);
                     }
@@ -361,7 +373,7 @@ internal sealed partial class LythonRuntime
                     var end = peek + 1;
                     return options.ObjectHook is null
                         ? ((object)result, end)
-                        : (InvokeJsonCallback(options.ObjectHook, result, context, span), end);
+                        : (await InvokeJsonCallbackCoreAsync(options.ObjectHook, result, context, span, asynchronous).ConfigureAwait(false), end);
                 }
 
                 int keyStart;
@@ -371,7 +383,7 @@ internal sealed partial class LythonRuntime
                 }
                 else
                 {
-                    keyStart = SkipJsonWhitespace(bytes, EnsureJsonComma(bytes, valueEnd, input, span, context) + 1, context, span);
+                    keyStart = SkipJsonWhitespace(bytes.Span, EnsureJsonComma(bytes.Span, valueEnd, input, span, context) + 1, context, span);
                 }
 
                 if (keyStart >= bytes.Length)
@@ -379,34 +391,34 @@ internal sealed partial class LythonRuntime
                     throw CreateJsonExpectingError(input, bytes.Length, JsonIncompleteExpectation.PropertyName, span, context);
                 }
 
-                if (bytes[keyStart] == (byte)'}')
+                if (bytes.Span[keyStart] == (byte)'}')
                 {
                     throw CreateJsonExpectingError(input, keyStart, JsonIncompleteExpectation.PropertyName, span, context);
                 }
 
-                if (bytes[keyStart] != (byte)'"')
+                if (bytes.Span[keyStart] != (byte)'"')
                 {
                     throw CreateJsonExpectingError(input, keyStart, JsonIncompleteExpectation.PropertyName, span, context);
                 }
 
                 context.CheckExecutionBudget(span);
-                var (memberKeyObject, memberKeyEnd) = ReadJsonValue(input, options, context, span, depth, keyStart);
+                var (memberKeyObject, memberKeyEnd) = await ReadJsonValueAsync(input, options, context, span, depth, keyStart, asynchronous).ConfigureAwait(false);
                 if (memberKeyObject is not PyString memberKey)
                 {
                     throw new InvalidOperationException("JSON object key decoded to a non-string.");
                 }
 
-                var memberColon = EnsureJsonColon(bytes, memberKeyEnd, input, span, context);
-                var (memberValue, memberEnd) = ReadJsonValue(input, options, context, span, depth, memberColon + 1);
+                var memberColon = EnsureJsonColon(bytes.Span, memberKeyEnd, input, span, context);
+                var (memberValue, memberEnd) = await ReadJsonValueAsync(input, options, context, span, depth, memberColon + 1, asynchronous).ConfigureAwait(false);
                 result.SetItem(memberKey, memberValue);
                 context.ObserveCollectionCount(result.Count, span);
                 valueEnd = memberEnd;
             }
         }
 
-        private (object Value, int End) ReadJsonArray(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int depth, int openBracket)
+        private async ValueTask<(object Value, int End)> ReadJsonArrayAsync(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int depth, int openBracket, bool asynchronous)
         {
-            var bytes = input.Source.Span;
+            var bytes = input.Source;
             // R10: the fresh list owns a refundable snapshot; each element
             // adopts ownership at its own construction boundary below, so a
             // dropped array reclaims both the backing and every element.
@@ -418,11 +430,11 @@ internal sealed partial class LythonRuntime
                 // A closer never needs comma verification: the previous
                 // character decides between valid end and trailing comma.
                 var peek = valueEnd < 0
-                    ? SkipJsonWhitespace(bytes, openBracket + 1, context, span)
-                    : SkipJsonWhitespace(bytes, valueEnd, context, span);
-                if (peek < bytes.Length && bytes[peek] == (byte)']')
+                    ? SkipJsonWhitespace(bytes.Span, openBracket + 1, context, span)
+                    : SkipJsonWhitespace(bytes.Span, valueEnd, context, span);
+                if (peek < bytes.Length && bytes.Span[peek] == (byte)']')
                 {
-                    if (IsJsonPreviousNonWhitespaceComma(bytes, peek))
+                    if (IsJsonPreviousNonWhitespaceComma(bytes.Span, peek))
                     {
                         throw CreateJsonExpectingError(input, peek, JsonIncompleteExpectation.Value, span, context);
                     }
@@ -437,7 +449,7 @@ internal sealed partial class LythonRuntime
                 }
                 else
                 {
-                    elementStart = SkipJsonWhitespace(bytes, EnsureJsonComma(bytes, valueEnd, input, span, context) + 1, context, span);
+                    elementStart = SkipJsonWhitespace(bytes.Span, EnsureJsonComma(bytes.Span, valueEnd, input, span, context) + 1, context, span);
                 }
 
                 if (elementStart >= bytes.Length)
@@ -445,13 +457,13 @@ internal sealed partial class LythonRuntime
                     throw CreateJsonExpectingError(input, bytes.Length, JsonIncompleteExpectation.Value, span, context);
                 }
 
-                if (bytes[elementStart] == (byte)']')
+                if (bytes.Span[elementStart] == (byte)']')
                 {
                     throw CreateJsonExpectingError(input, elementStart, JsonIncompleteExpectation.Value, span, context);
                 }
 
                 context.CheckExecutionBudget(span);
-                var (element, elementEnd) = ReadJsonValue(input, options, context, span, depth, elementStart);
+                var (element, elementEnd) = await ReadJsonValueAsync(input, options, context, span, depth, elementStart, asynchronous).ConfigureAwait(false);
                 result.Add(element);
                 context.ObserveCollectionCount(result.Count, span);
                 valueEnd = elementEnd;
@@ -611,13 +623,13 @@ internal sealed partial class LythonRuntime
         // Converts an already-matched constant literal: the parse_constant hook
         // receives the literal text, otherwise the IEEE double. Shared by
         // whole-text and nested positions.
-        private static object ConvertJsonConstant(string literal, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
+        private static async ValueTask<object> ConvertJsonConstantAsync(string literal, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
             if (options.ParseConstant is not null)
             {
                 var constantText = CreateString(literal, context, span);
                 context.Services.State.CallTemporaries.TrackFreshString(constantText, span);
-                return InvokeJsonCallback(options.ParseConstant, constantText, context, span);
+                return await InvokeJsonCallbackCoreAsync(options.ParseConstant, constantText, context, span, asynchronous).ConfigureAwait(false);
             }
 
             return literal switch
@@ -667,9 +679,9 @@ internal sealed partial class LythonRuntime
         // Converts an already-matched NUMBER_RE token: hooks receive the raw
         // token text, otherwise integers narrow to long where possible and
         // floats parse invariantly. Shared by whole-text and nested positions.
-        private static object ConvertJsonNumberText(ReadOnlySpan<byte> bytes, int start, int end, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span)
+        private static async ValueTask<object> ConvertJsonNumberTextAsync(ReadOnlyMemory<byte> bytes, int start, int end, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
-            var raw = Encoding.UTF8.GetString(bytes.Slice(start, end - start));
+            var raw = Encoding.UTF8.GetString(bytes.Span.Slice(start, end - start));
             var isFloat = raw.Contains('.', StringComparison.Ordinal) ||
                 raw.Contains('e', StringComparison.OrdinalIgnoreCase);
             if (isFloat && options.ParseFloat is not null)
@@ -680,14 +692,14 @@ internal sealed partial class LythonRuntime
                 // TrackCallResult inside InvokeJsonCallback.
                 var floatText = CreateString(raw, context, span);
                 context.Services.State.CallTemporaries.TrackFreshString(floatText, span);
-                return InvokeJsonCallback(options.ParseFloat, floatText, context, span);
+                return await InvokeJsonCallbackCoreAsync(options.ParseFloat, floatText, context, span, asynchronous).ConfigureAwait(false);
             }
 
             if (!isFloat && options.ParseInt is not null)
             {
                 var intText = CreateString(raw, context, span);
                 context.Services.State.CallTemporaries.TrackFreshString(intText, span);
-                return InvokeJsonCallback(options.ParseInt, intText, context, span);
+                return await InvokeJsonCallbackCoreAsync(options.ParseInt, intText, context, span, asynchronous).ConfigureAwait(false);
             }
 
             if (!isFloat)
