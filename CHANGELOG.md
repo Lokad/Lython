@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## 0.10.0 - release candidate
+
+- Add `json.JSONDecoder`/`JSONEncoder` instances, `raw_decode`, incremental `iterencode`, guest subclass overrides and the `cls` customization path.
 - Sort original JSON dictionary keys before applying `skipkeys`, sharing the order between eager and incremental encoders.
 - Add a public syntax corpus and explicit grammar inventory; correct assignment support documentation and diagnose deferred Python syntax as unsupported before effects.
 - Isolate CPython differential imports from shared temporary directories and ambient modules, restoring the chunked-read validation gate.
