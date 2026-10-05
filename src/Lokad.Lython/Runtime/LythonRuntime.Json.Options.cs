@@ -47,15 +47,10 @@ internal sealed partial class LythonRuntime
         // for an explicit message and parse-space byte position: used both for
         // backend errors above and for positions the core detects itself
         // (truncation, trailing data, strict violations, index bounds). Positions
-        // map back to the original document when lenient control escaping
-        // rewrote the parsed bytes; the payload always describes the original.
+        // always refer to the original document; token-local backend errors
+        // are translated before reaching this shared payload builder.
         private static LythonRuntimeException NewJsonDecodeFailure(JsonParseInput input, string message, int bytePosition, Exception? innerException, LythonSourceSpan span, ExecutionContext context)
         {
-            if (input.Mapper is { } mapper)
-            {
-                bytePosition = mapper.ToOriginal(bytePosition);
-            }
-
             var document = input.Document;
             var position = document.ByteIndexToRuneIndex(bytePosition);
             var location = ComputeJsonErrorLocation(document, bytePosition);
