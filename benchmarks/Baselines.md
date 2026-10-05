@@ -147,6 +147,11 @@ repeatably by `ZipHostTrafficTests`):
 | ZIP list+read 200 entries (20,100 expanded) | read x1, stat x1 | 19,366 | 0 |
 | ZIP append 20 to 200-entry archive | read x1, stat x1, write x1 | 19,366 | 21,206 |
 | ZIP extract 200 entries | mkdir x1, read x1, stat x402, write x200 | 19,366 | 20,100 |
+
+ZIP compressed byte totals are measurements for this environment. Native
+DEFLATE implementations can differ slightly across OS/runtime versions; the
+traffic regressions assert exact transfer counts and fixture-relative bytes,
+with exact expanded sizes and STORED append overhead.
 | ZIP write 50/200/800 fixed entries | write x1 | 0 | 4,802 / 19,402 / 78,202 |
 | ZIP read 50/200/800 entries | read x1, stat x1 | 4,802 / 19,402 / 78,202 | 0 |
 | ZIP write 1MB compressible entry | write x1 | 0 | 1,101 |
