@@ -71,7 +71,7 @@ internal sealed partial class Parser
             if (PeekToken(1) == Token.String)
             {
                 var prefix = _tokens.GetString(_position);
-                if (IsFormattedStringPrefix(prefix))
+                if (IsFormattedStringPrefix(prefix) || prefix is "u" or "U")
                 {
                     return ParseStringLiteralExpression();
                 }
@@ -80,7 +80,8 @@ internal sealed partial class Parser
                 {
                     var prefixToken = ReadToken();
                     var stringToken = ReadToken();
-                    if (!TryDecodeBytesLiteral(_tokens.GetString(stringToken), out var bytes, out var message))
+                    if (!TryDecodeBytesLiteral(_tokens.GetString(stringToken), out var bytes, out var message,
+                        isRaw: prefix.Contains('r') || prefix.Contains('R')))
                     {
                         AddDiagnostic("LA1007", message, prefixToken);
                         return null;
@@ -179,6 +180,25 @@ internal sealed partial class Parser
             if (IsNameToken(CurrentToken) && PeekToken(1) == Token.String)
             {
                 var prefix = _tokens.GetString(_position);
+                if (prefix is "u" or "U")
+                {
+                    var unicodePrefixToken = ReadToken();
+                    var unicodeStringToken = ReadToken();
+                    if (_tokens.Tokens[unicodePrefixToken].Start + _tokens.Tokens[unicodePrefixToken].Length != _tokens.Tokens[unicodeStringToken].Start)
+                    {
+                        AddDiagnostic("LA1007", "String prefix must be adjacent to its literal.", unicodePrefixToken);
+                        return null;
+                    }
+                    if (!TryDecodeStringLiteral(_tokens.GetString(unicodeStringToken), out var value, out var message))
+                    {
+                        AddDiagnostic("LA1007", message, unicodeStringToken);
+                        return null;
+                    }
+                    if (firstToken < 0) firstToken = unicodePrefixToken;
+                    text.Append(value);
+                    lastToken = unicodeStringToken;
+                    continue;
+                }
                 if (!IsFormattedStringPrefix(prefix))
                 {
                     if (IsBytesStringPrefix(prefix))

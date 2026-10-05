@@ -247,7 +247,7 @@ internal sealed partial class Parser
         return text is "f" or "F" or "fr" or "Fr" or "fR" or "FR" or "rf" or "rF" or "Rf" or "RF";
     }
 
-    private static bool TryDecodeBytesLiteral(string literal, out byte[] value, out string message)
+    private static bool TryDecodeBytesLiteral(string literal, out byte[] value, out string message, bool isRaw = false)
     {
         value = Array.Empty<byte>();
         if (!TryExtractStringContent(literal, out var content))
@@ -262,7 +262,9 @@ internal sealed partial class Parser
             return false;
         }
 
-        if (!TryDecodeStringLiteral(literal, out var decoded, out message, decodeUnicodeEscapes: false))
+        var decoded = content;
+        message = string.Empty;
+        if (!isRaw && !TryDecodeStringLiteral(literal, out decoded, out message, decodeUnicodeEscapes: false))
         {
             return false;
         }

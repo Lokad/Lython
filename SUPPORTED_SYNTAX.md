@@ -9,7 +9,7 @@ implemented or a claim of complete PEP 701 support.
 
 | Grammar family | Supported commitments | Public regression family |
 | --- | --- | --- |
-| Tokens, names, strings | Unicode identifiers with NFKC normalization, soft keywords, numeric separators, raw/bytes/formatted and triple strings, explicit/implicit joining | `lexical`, `fstrings` |
+| Tokens, names, strings | Unicode identifiers with NFKC normalization, soft keywords, numeric separators, raw/bytes/formatted/Unicode-prefixed and triple strings, explicit/implicit joining | `lexical`, `fstrings` |
 | Expressions, comparison, inversion, primary | Arithmetic/bitwise precedence, lazy Boolean operators, comparison chains, conditional and assignment expressions, member access, scalar/slice/tuple-key subscripts | `expressions` |
 | Assignment, star targets, augmented assignment | Names, attributes, subscripts, slices, tuple/list/nested unpacking, one starred leaf per level, chained and augmented stores; name annotations | `assignment` |
 | For/while statements | Full assignment targets, nested tuple/list and starred unpacking, trailing commas, loop `else`, scope-correct `break`/`continue` | `loops`, `invalid` |
@@ -30,16 +30,10 @@ host effects in this same guest language.
 
 Compilation rejects these forms before any guest effects:
 
-- The `u` string prefix.
 - Generator functions (`yield`, `yield from`), `async def`, `await`, `async for`
   and `async with`.
 - Type alias statements and type parameters, `except*`, matrix multiplication
   and complex literals.
-
-The first bullet is a temporary compatibility boundary retained after
-the probe fixes. Tests pin their rejection with an unsupported diagnostic and
-a source span. Loops, comprehensions and context-manager headers accept ordinary assignment
-targets.
 
 ## Corpus and verification
 

@@ -443,7 +443,8 @@ and full assignment targets. Target binding is protected by the entered manager:
 failures unwind or suppress through __exit__ like failures in the body.
 Positional-only parameters using `/` are supported in functions and lambdas.
 Their names do not bind keyword arguments; with **kwargs those names become
-overflow keys. Current syntax exclusions include the `u` string prefix. Type aliases, type parameters, `except*`,
+overflow keys. The `u`/`U` prefixes produce ordinary Unicode strings, including
+adjacent literal concatenation. Type aliases, type parameters, `except*`,
 matrix multiplication and complex literals are outside the current subset.
 These forms must produce explicit unsupported diagnostics before execution.
 

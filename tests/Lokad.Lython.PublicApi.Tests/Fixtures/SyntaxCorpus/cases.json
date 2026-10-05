@@ -62,12 +62,12 @@
   {
     "name": "literal-prefixes",
     "family": "lexical",
-    "status": "unsupported",
+    "status": "supported",
     "source": "print(r\"\\n\", b\"ab\", rb\"\\n\", u\"ok\", \"a\" \"b\")\n",
     "standardOutput": "\\n b'ab' b'\\\\n' ok ab\n",
     "success": true,
     "exceptionType": null,
-    "note": "The u string prefix is not implemented."
+    "note": "Output verified against isolated CPython 3.13.2."
   },
   {
     "name": "triple-string",
@@ -1418,5 +1418,65 @@
     "success": false,
     "exceptionType": "SyntaxError",
     "note": "Invalid slash placement/default ordering verified against CPython."
+  },
+  {
+    "name": "unicode-prefix-adjacent-and-escapes",
+    "family": "lexical",
+    "status": "supported",
+    "source": "print(u\"a\" U'b' \"c\" r\"d\" f\"{5}\")\nprint(repr(u\"\\u03b1\\n\"))\nprint(U\"\"\"first\nsecond\"\"\")\n",
+    "standardOutput": "abcd5\n'α\\n'\nfirst\nsecond\n",
+    "success": true,
+    "exceptionType": null,
+    "note": "Output verified against isolated CPython 3.13.2."
+  },
+  {
+    "name": "invalid-unicode-prefix-0",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "print(u \"abc\")\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": "Invalid prefix or mixed text/bytes verified against CPython."
+  },
+  {
+    "name": "invalid-unicode-prefix-1",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "print(ur\"abc\")\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": "Invalid prefix or mixed text/bytes verified against CPython."
+  },
+  {
+    "name": "invalid-unicode-prefix-2",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "print(uf\"abc\")\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": "Invalid prefix or mixed text/bytes verified against CPython."
+  },
+  {
+    "name": "invalid-unicode-prefix-3",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "print(ub\"abc\")\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": "Invalid prefix or mixed text/bytes verified against CPython."
+  },
+  {
+    "name": "invalid-unicode-prefix-4",
+    "family": "invalid",
+    "status": "invalid",
+    "source": "print(u\"a\" b\"b\")\n",
+    "standardOutput": "",
+    "success": false,
+    "exceptionType": "SyntaxError",
+    "note": "Invalid prefix or mixed text/bytes verified against CPython."
   }
 ]
