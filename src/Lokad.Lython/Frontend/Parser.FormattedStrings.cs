@@ -160,7 +160,7 @@ internal sealed partial class Parser
         return true;
     }
 
-    private static bool TryFindFormattedStringFieldEnd(string content, int start, out int end)
+    internal static bool TryFindFormattedStringFieldEnd(string content, int start, out int end)
     {
         end = -1;
         var parenDepth = 0;

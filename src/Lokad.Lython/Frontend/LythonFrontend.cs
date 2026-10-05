@@ -32,8 +32,7 @@ internal static class LythonFrontend
             return new FrontendResult(null, [indentationDiagnostic]);
         }
 
-        var tokenReader = new ReflectionTokenReader<Token>();
-        var tokens = tokenReader.ReadAllTokens(source);
+        var tokens = FormattedStringTokenization.Read(source);
 
         if (tokens.HasInvalidTokens)
         {
