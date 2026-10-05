@@ -49,6 +49,12 @@ internal static class LythonFrontend
             return parsed;
         }
 
+        var syntaxDiagnostics = SyntaxValidityDiagnostics.Analyze(parsed.Script);
+        if (syntaxDiagnostics.Count > 0)
+        {
+            return new FrontendResult(null, parsed.Diagnostics.Concat(syntaxDiagnostics).ToArray());
+        }
+
         var diagnostics = parsed.Diagnostics
             .Concat(AnnotationDiagnostics.Analyze(parsed.Script))
             .Concat(StaticAnalyzer.Analyze(parsed.Script))

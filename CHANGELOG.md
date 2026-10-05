@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Reject duplicate parameters/keywords, invalid comprehension assignment expressions, inconsistent pattern captures and out-of-scope loop control before execution can perform effects.
 - Decode JSON prefixes without scanning or reserving unused suffixes; fund lenient control rewriting per string before allocation and reject strict strings before dependent hooks.
 - Dispatch guest `__getitem__` consistently in lowered execution and await its effects under `RunAsync`.
 - Evaluate decorator expressions before function defaults and class bases/bodies, then apply decorators in reverse order, including through asynchronous hosts.
