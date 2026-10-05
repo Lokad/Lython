@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Corrected logical `not` precedence relative to comparisons and arithmetic, while rejecting invalid arithmetic placement of `not`.
 - Fixed nested `def` functions failing to capture transitively free variables once the definers returned (`NameError`); closures now bind through intermediate scopes with nearest-rebinding semantics.
 - Per-call `*args`/`**kwargs` materializations now release when dropped instead of accumulating across calls, while retained results stay charged.
 

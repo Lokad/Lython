@@ -324,7 +324,7 @@ internal sealed partial class Parser
         => layer switch
         {
             LeftAssociativeLayer.Or => ParseAndExpression(),
-            LeftAssociativeLayer.And => ParseComparisonExpression(),
+            LeftAssociativeLayer.And => ParseNotExpression(),
             LeftAssociativeLayer.BitwiseOr => ParseBitwiseXorExpression(),
             LeftAssociativeLayer.BitwiseXor => ParseBitwiseAndExpression(),
             LeftAssociativeLayer.BitwiseAnd => ParseShiftExpression(),
@@ -400,13 +400,28 @@ internal sealed partial class Parser
             _ => throw new ArgumentOutOfRangeException(nameof(layer), layer, "Unknown binary precedence layer."),
         };
 
-    private ExpressionSyntax? ParseUnaryExpression()
+    private ExpressionSyntax? ParseNotExpression()
     {
         if (CurrentToken == Token.Not)
         {
             var notToken = ReadToken();
             var diagnosticCount = _diagnostics.Count;
-            var operand = ParseNestedUnaryOperand(notToken);
+            if (_unaryOperatorDepth >= LythonEngine.MaxUnaryOperatorNesting)
+            {
+                AddDiagnostic("LA0004", $"Unary operator nesting exceeds the maximum of {LythonEngine.MaxUnaryOperatorNesting} levels.", notToken);
+                return null;
+            }
+
+            _unaryOperatorDepth++;
+            ExpressionSyntax? operand;
+            try
+            {
+                operand = ParseNotExpression();
+            }
+            finally
+            {
+                _unaryOperatorDepth--;
+            }
             if (operand is null)
             {
                 if (_diagnostics.Count == diagnosticCount)
@@ -419,6 +434,11 @@ internal sealed partial class Parser
             return new UnaryExpressionSyntax(UnaryOperatorSyntax.Not, operand, Merge(SpanOf(notToken), operand.Span));
         }
 
+        return ParseComparisonExpression();
+    }
+
+    private ExpressionSyntax? ParseUnaryExpression()
+    {
         if (CurrentToken is Token.Plus or Token.Minus)
         {
             var operatorToken = ReadToken();
