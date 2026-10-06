@@ -114,7 +114,7 @@ internal sealed partial class Parser
     private MatchCaseSyntax? ParseMatchCase()
     {
         var caseToken = ReadToken();
-        var pattern = ParsePattern();
+        var pattern = ParseCasePattern();
         if (pattern is null)
         {
             AddDiagnostic("LA1087", "Expected pattern after 'case'.", caseToken);
@@ -146,6 +146,33 @@ internal sealed partial class Parser
         }
 
         return new MatchCaseSyntax(pattern, guard, body, Merge(SpanOf(caseToken), body[^1].Span));
+    }
+
+    private PatternSyntax? ParseCasePattern()
+    {
+        var firstToken = _position;
+        var first = ParseMaybeStarPattern();
+        if (first is null) return null;
+        if (CurrentToken != Token.Comma)
+        {
+            if (first is not MatchStarPatternSyntax) return first;
+            AddDiagnostic("LA1100", "An open starred sequence pattern requires a comma.", firstToken);
+            return null;
+        }
+
+        var items = new List<PatternSyntax> { first };
+        var lastSpan = first.Span;
+        while (CurrentToken == Token.Comma)
+        {
+            lastSpan = SpanOf(ReadToken());
+            if (CurrentToken is Token.Colon or Token.If) break;
+            var next = ParseMaybeStarPattern();
+            if (next is null) return null;
+            items.Add(next);
+            lastSpan = next.Span;
+        }
+        if (!ValidateSequenceStarPattern(items, firstToken)) return null;
+        return new MatchSequencePatternSyntax(items, Merge(first.Span, lastSpan));
     }
 
     private PatternSyntax? ParsePattern()

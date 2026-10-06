@@ -601,6 +601,11 @@ commas and starred unpacking. Operands evaluate once from left to right, with
 unpacking drained before case selection and governed like ordinary tuple displays.
 A starred subject requires a comma; conditional unpacking operands need grouping.
 
+Case headers accept open sequence patterns such as `case head, *tail:` and
+singleton trailing-comma patterns. Sequence items share the bracketed-pattern
+rules for OR/AS subpatterns, unique captures, guards and a single starred item;
+a bare starred pattern without a comma is invalid.
+
 Successful match-pattern captures are bound in the enclosing scope before the
 guard runs. Guard assignment expressions use that same scope, including function
 cells and global/nonlocal declarations; their bindings remain visible even when
