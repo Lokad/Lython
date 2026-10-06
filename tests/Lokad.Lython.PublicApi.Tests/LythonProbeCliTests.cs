@@ -80,7 +80,7 @@ public sealed class LythonProbeCliTests
     public void PythonComparisonTransportsLiteralUnicodeAsUtf8()
     {
         var report = RunProbeJson("-c", "print('é☃')", "--compare-python");
-        Assert.True(report.GetProperty("Matches").GetBoolean());
+        Assert.True(report.GetProperty("Matches").GetBoolean(), report.ToString());
         Assert.Equal("é☃\n", report.GetProperty("Lython").GetProperty("StandardOutput").GetString());
     }
 

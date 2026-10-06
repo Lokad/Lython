@@ -14,7 +14,7 @@ import io
 import json
 import sys
 
-source = sys.stdin.read()
+source = sys.stdin.buffer.read().decode("utf-8")
 stdout = io.StringIO()
 stderr = io.StringIO()
 failure = None
@@ -293,7 +293,9 @@ static ProbeResult RunPython(string pythonCommand, string source)
         RedirectStandardInput = true,
         StandardInputEncoding = new System.Text.UTF8Encoding(false),
         RedirectStandardOutput = true,
+        StandardOutputEncoding = System.Text.Encoding.UTF8,
         RedirectStandardError = true,
+        StandardErrorEncoding = System.Text.Encoding.UTF8,
         UseShellExecute = false,
         CreateNoWindow = true,
     };
