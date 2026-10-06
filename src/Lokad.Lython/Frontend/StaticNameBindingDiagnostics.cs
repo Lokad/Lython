@@ -199,6 +199,7 @@ internal static class StaticNameBindingDiagnostics
                         if (matchCase.Guard is not null)
                         {
                             AnalyzeExpression(matchCase.Guard, context, localNames, caseAssigned);
+                            maybeAssigned.UnionWith(caseAssigned);
                         }
 
                         AnalyzeStatements(matchCase.Body, context, localNames, caseAssigned);
@@ -364,22 +365,26 @@ internal static class StaticNameBindingDiagnostics
             case ListComprehensionExpressionSyntax listComprehension:
                 var listAssigned = AnalyzeComprehensionClauses(listComprehension.Clauses, context, localNames, maybeAssigned);
                 AnalyzeExpression(listComprehension.ItemExpression, context, localNames, listAssigned);
+                ScopeDirectiveFactsCollector.CollectExpressionBindings(expression, maybeAssigned);
                 return;
 
             case GeneratorExpressionSyntax generator:
                 var generatorAssigned = AnalyzeComprehensionClauses(generator.Clauses, context, localNames, maybeAssigned);
                 AnalyzeExpression(generator.ItemExpression, context, localNames, generatorAssigned);
+                ScopeDirectiveFactsCollector.CollectExpressionBindings(expression, maybeAssigned);
                 return;
 
             case SetComprehensionExpressionSyntax setComprehension:
                 var setAssigned = AnalyzeComprehensionClauses(setComprehension.Clauses, context, localNames, maybeAssigned);
                 AnalyzeExpression(setComprehension.ItemExpression, context, localNames, setAssigned);
+                ScopeDirectiveFactsCollector.CollectExpressionBindings(expression, maybeAssigned);
                 return;
 
             case DictComprehensionExpressionSyntax dictComprehension:
                 var dictAssigned = AnalyzeComprehensionClauses(dictComprehension.Clauses, context, localNames, maybeAssigned);
                 AnalyzeExpression(dictComprehension.KeyExpression, context, localNames, dictAssigned);
                 AnalyzeExpression(dictComprehension.ValueExpression, context, localNames, dictAssigned);
+                ScopeDirectiveFactsCollector.CollectExpressionBindings(expression, maybeAssigned);
                 return;
 
             case AssignmentExpressionSyntax assignment:

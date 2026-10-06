@@ -126,6 +126,8 @@ internal sealed partial class LythonRuntime
     {
         switch (expression)
         {
+            case LoweredCapturedExpression captured:
+                return captured.Value;
             case LoweredUnpackedTypeExpression unpacked:
                 var unpackedValue = await execution.EvaluateExpressionAsync(unpacked.Value, context).ConfigureAwait(false);
                 return unpackedValue is PyTypeParameter { Kind: TypeParameterKind.TypeVarTuple } or PyGenericAlias
@@ -258,6 +260,7 @@ internal sealed partial class LythonRuntime
                     builder.AppendText(text.Text);
                     break;
                 case LoweredFormattedStringExpressionPart expression:
+                    var value = await evaluateExpression(expression.Expression).ConfigureAwait(false);
                     var formatSpecifier = expression.FormatSpecifierParts is null
                         ? expression.FormatSpecifier
                         : (await EvaluateLoweredFormattedStringPartsCoreAsync(
@@ -266,7 +269,7 @@ internal sealed partial class LythonRuntime
                             span,
                             evaluateExpression).ConfigureAwait(false)).AsString();
                     builder.AppendValue(
-                        await evaluateExpression(expression.Expression).ConfigureAwait(false),
+                        value,
                         expression.Conversion,
                         formatSpecifier);
                     break;
@@ -856,9 +859,9 @@ internal sealed partial class LythonRuntime
         if (sourceCount > 0) storage.Grow(64L + 32L * sourceCount, definition.Span);
         var arguments = asynchronous
             ? await CallExpansion.ExpandLoweredArgumentsAsync(definition.HeaderArguments, context,
-                EvaluateLoweredExpressionAsync, ClassHeaderExpansionTarget).ConfigureAwait(false)
+                EvaluateLoweredExpressionAsync, ClassHeaderExpansionTarget, deferSingleStar: false).ConfigureAwait(false)
             : CallExpansion.ExpandLoweredArguments(definition.HeaderArguments, context,
-                EvaluateLoweredExpression, ClassHeaderExpansionTarget);
+                EvaluateLoweredExpression, ClassHeaderExpansionTarget, deferSingleStar: false);
         if (arguments.Length > sourceCount)
             storage.Grow(32L * (arguments.Length - sourceCount), definition.Span);
 

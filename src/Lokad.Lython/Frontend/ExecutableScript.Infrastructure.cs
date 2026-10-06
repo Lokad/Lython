@@ -424,8 +424,6 @@ internal sealed partial class ExecutableScript
 
         private int InternMatchCase(MatchCaseSyntax matchCase)
         {
-            if (_generator && matchCase.Guard is not null && GeneratorSyntaxFacts.ContainsYield(matchCase.Guard))
-                throw new GeneratorLoweringException("Suspension in match guards is not supported.", matchCase.Guard.Span);
             var localBindings = new Dictionary<string, int>(StringComparer.Ordinal);
             foreach (var name in EnumeratePatternBindingNames(matchCase.Pattern))
             {

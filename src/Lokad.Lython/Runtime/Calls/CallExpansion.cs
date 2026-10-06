@@ -24,7 +24,8 @@ internal static class CallExpansion
         IReadOnlyList<LoweredCallArgument> arguments,
         LythonRuntime.ExecutionContext context,
         Func<LoweredExpression, LythonRuntime.ExecutionContext, object> evaluateExpression,
-        object target)
+        object target,
+        bool deferSingleStar = true)
     {
         return ExpandArguments(
             arguments,
@@ -32,14 +33,15 @@ internal static class CallExpansion
             argument => argument.Expression.Span,
             argument => evaluateExpression(argument.Expression, context),
             context,
-            target);
+            target, deferSingleStar);
     }
 
     public static ValueTask<CallArgumentValue[]> ExpandLoweredArgumentsAsync(
         IReadOnlyList<LoweredCallArgument> arguments,
         LythonRuntime.ExecutionContext context,
         Func<LoweredExpression, LythonRuntime.ExecutionContext, ValueTask<object>> evaluateExpression,
-        object target)
+        object target,
+        bool deferSingleStar = true)
     {
         return ExpandArgumentsAsync(
             arguments,
@@ -47,7 +49,7 @@ internal static class CallExpansion
             argument => argument.Expression.Span,
             argument => evaluateExpression(argument.Expression, context),
             context,
-            target);
+            target, deferSingleStar);
     }
 
     private static CallArgumentValue[] ExpandArguments<TArgument>(
@@ -56,7 +58,8 @@ internal static class CallExpansion
         Func<TArgument, LythonSourceSpan> getSpan,
         Func<TArgument, object> evaluateValue,
         LythonRuntime.ExecutionContext context,
-        object target)
+        object target,
+        bool deferSingleStar = true)
     {
         if (!HasStarExpansion(arguments, getForm))
         {
@@ -71,7 +74,7 @@ internal static class CallExpansion
             return direct;
         }
 
-        var expanded = new CallArgumentAccumulator(arguments.Count, context, target);
+        var expanded = new CallArgumentAccumulator(arguments.Count, context, target, deferSingleStar: deferSingleStar && HasSingleStarArgument(arguments, getForm));
         try
         {
             foreach (var argument in arguments)
@@ -87,7 +90,7 @@ internal static class CallExpansion
                         expanded.Add(CallArgumentValue.Keyword(form.KeywordName, LythonRuntime.RuntimeValue(evaluateValue(argument))), span);
                         break;
                     case CallArgumentKind.StarredList:
-                        expanded = AppendStarredValues(evaluateValue(argument), getSpan(argument), expanded, target, context);
+                        expanded.AppendAsync(form, evaluateValue(argument), getSpan(argument), false).GetAwaiter().GetResult();
                         break;
                     case CallArgumentKind.StarredDictionary:
                         expanded = AppendStarredDictionary(evaluateValue(argument), getSpan(argument), expanded, target, context);
@@ -97,6 +100,7 @@ internal static class CallExpansion
                 }
             }
 
+            expanded.FinishDeferredStarAsync(false).GetAwaiter().GetResult();
             return expanded.ToArray();
         }
         finally
@@ -111,7 +115,8 @@ internal static class CallExpansion
         Func<TArgument, LythonSourceSpan> getSpan,
         Func<TArgument, ValueTask<object>> evaluateValue,
         LythonRuntime.ExecutionContext context,
-        object target)
+        object target,
+        bool deferSingleStar = true)
     {
         if (!HasStarExpansion(arguments, getForm))
         {
@@ -128,7 +133,7 @@ internal static class CallExpansion
             return direct;
         }
 
-        var expanded = new CallArgumentAccumulator(arguments.Count, context, target);
+        var expanded = new CallArgumentAccumulator(arguments.Count, context, target, deferSingleStar: deferSingleStar && HasSingleStarArgument(arguments, getForm));
         try
         {
             foreach (var argument in arguments)
@@ -144,7 +149,7 @@ internal static class CallExpansion
                         expanded.Add(CallArgumentValue.Keyword(form.KeywordName, LythonRuntime.RuntimeValue(await evaluateValue(argument).ConfigureAwait(false))), span);
                         break;
                     case CallArgumentKind.StarredList:
-                        expanded = await AppendStarredValuesAsync(await evaluateValue(argument).ConfigureAwait(false), getSpan(argument), expanded, target, context).ConfigureAwait(false);
+                        await expanded.AppendAsync(form, await evaluateValue(argument).ConfigureAwait(false), getSpan(argument), true).ConfigureAwait(false);
                         break;
                     case CallArgumentKind.StarredDictionary:
                         expanded = await AppendStarredDictionaryAsync(await evaluateValue(argument).ConfigureAwait(false), getSpan(argument), expanded, target, context).ConfigureAwait(false);
@@ -154,12 +159,29 @@ internal static class CallExpansion
                 }
             }
 
+            await expanded.FinishDeferredStarAsync(true).ConfigureAwait(false);
             return expanded.ToArray();
         }
         finally
         {
             expanded.Dispose();
         }
+    }
+
+    private static bool HasSingleStarArgument<TArgument>(IReadOnlyList<TArgument> arguments, Func<TArgument, CallArgumentForm> getForm)
+    {
+        var count = 0;
+        var starred = false;
+        foreach (var argument in arguments)
+        {
+            var kind = getForm(argument).Kind;
+            if (kind is CallArgumentKind.Positional or CallArgumentKind.StarredList)
+            {
+                count++;
+                starred = kind == CallArgumentKind.StarredList;
+            }
+        }
+        return count == 1 && starred;
     }
 
     private static bool HasStarExpansion<TArgument>(
@@ -406,7 +428,7 @@ internal static class CallExpansion
         }
     }
 
-    private struct CallArgumentAccumulator : IDisposable
+    internal sealed class CallArgumentAccumulator : IExecutableTemporaryValue
     {
         private const int BudgetCheckInterval = 64;
 
@@ -416,22 +438,43 @@ internal static class CallExpansion
         private LythonSourceSpan? _span;
         private readonly MemoryGovernor _governor;
         private readonly LythonRuntime.ExecutionContext _context;
-        private readonly MemoryGovernor.TemporaryMemoryReservation _reservation;
+        private readonly MemoryGovernor.TemporaryMemoryReservation? _reservation;
+        private long _retainedBytes;
+        private readonly bool _deferSingleStar;
+        private object? _deferredStar;
+        private LythonSourceSpan? _deferredSpan;
         private readonly object _target;
         private HashSet<string>? _keywordNames;
 
-        public CallArgumentAccumulator(int sourceArgumentCount, LythonRuntime.ExecutionContext context, object target)
+        public CallArgumentAccumulator(int sourceArgumentCount, LythonRuntime.ExecutionContext context, object target, bool retained = false, bool deferSingleStar = false)
         {
             var capacity = Math.Max(sourceArgumentCount, 4);
             _count = 0;
             _addedSinceBudgetCheck = 0;
             _span = null;
             _context = context;
+            _deferSingleStar = deferSingleStar;
             _target = target;
             _keywordNames = null;
             _governor = context.MemoryGovernor;
-            _reservation = _governor.ReserveTemporary(EstimateArgumentBytes(capacity), null);
+            if (retained)
+            {
+                _retainedBytes = EstimateArgumentBytes(capacity);
+                _governor.Reserve(_retainedBytes, null);
+                _governor.Commit(_retainedBytes);
+            }
+            else _reservation = _governor.ReserveTemporary(EstimateArgumentBytes(capacity), null);
             _values = new CallArgumentValue[capacity];
+            if (retained) context.Services.State.CallTemporaries.TrackFreshMutable(this, _retainedBytes);
+        }
+
+        private void Grow(long bytes, LythonSourceSpan? span)
+        {
+            if (_reservation is not null) { _reservation.Grow(bytes, span); return; }
+            _governor.Reserve(bytes, span);
+            _governor.Commit(bytes);
+            _retainedBytes = checked(_retainedBytes + bytes);
+            ChargeReclamationPool.NotifyStorageReplaced(this, _retainedBytes);
         }
 
         public void Add(CallArgumentValue value, LythonSourceSpan? span)
@@ -443,10 +486,10 @@ internal static class CallExpansion
                 // set before allocation, including its resize overlap.
                 if (_keywordNames is null)
                 {
-                    _reservation.Grow(128, span);
+                    Grow(128, span);
                     _keywordNames = new HashSet<string>(StringComparer.Ordinal);
                 }
-                _reservation.Grow(96, span);
+                Grow(96, span);
                 if (!_keywordNames.Add(value.KeywordName))
                     throw new LythonRuntimeException("TypeError",
                         (CallsiteCallableName(_target, _context) ?? "call") +
@@ -456,7 +499,7 @@ internal static class CallExpansion
             {
                 var previousCapacity = _values.Length;
                 var newCapacity = checked(previousCapacity * 2);
-                _reservation.Grow(EstimateArgumentBytes(newCapacity) - EstimateArgumentBytes(previousCapacity), span);
+                Grow(EstimateArgumentBytes(newCapacity) - EstimateArgumentBytes(previousCapacity), span);
                 Array.Resize(ref _values, newCapacity);
             }
 
@@ -486,11 +529,65 @@ internal static class CallExpansion
 
             // The exact array coexists briefly with the growth buffer, so
             // reserve both before making the final allocation.
-            _reservation.Grow(EstimateArgumentBytes(_count), _span);
+            Grow(EstimateArgumentBytes(_count), _span);
             return _values[.._count];
         }
 
-        public void Dispose() => _reservation.Dispose();
+        internal async ValueTask AppendAsync(CallArgumentForm form, object value, LythonSourceSpan span, bool asynchronous)
+        {
+            switch (form.Kind)
+            {
+                case CallArgumentKind.Positional: Add(CallArgumentValue.Positional(value), span); break;
+                case CallArgumentKind.Keyword: Add(CallArgumentValue.Keyword(form.KeywordName, value), span); break;
+                case CallArgumentKind.StarredList:
+                    if (_deferSingleStar)
+                    {
+                        _deferredStar = value;
+                        _deferredSpan = span;
+                        break;
+                    }
+                    if (asynchronous) await AppendStarredValuesAsync(value, span, this, _target, _context).ConfigureAwait(false);
+                    else AppendStarredValues(value, span, this, _target, _context);
+                    break;
+                case CallArgumentKind.StarredDictionary:
+                    if (asynchronous) await AppendStarredDictionaryAsync(value, span, this, _target, _context).ConfigureAwait(false);
+                    else AppendStarredDictionary(value, span, this, _target, _context);
+                    break;
+            }
+        }
+
+        internal async ValueTask FinishDeferredStarAsync(bool asynchronous)
+        {
+            if (_deferredStar is not { } source) return;
+            _deferredStar = null;
+            if (asynchronous) await AppendStarredValuesAsync(source, _deferredSpan!, this, _target, _context).ConfigureAwait(false);
+            else AppendStarredValues(source, _deferredSpan!, this, _target, _context);
+        }
+
+        internal async ValueTask<object> InvokeAsync(LythonSourceSpan targetSpan, LythonSourceSpan callSpan, bool asynchronous)
+        {
+            try
+            {
+                await FinishDeferredStarAsync(asynchronous).ConfigureAwait(false);
+                return asynchronous
+                    ? await LythonRuntime.InvokeCallableTargetAsync(_target, targetSpan, callSpan, _context,
+                        () => new ValueTask<CallArgumentValue[]>(ToArray())).ConfigureAwait(false)
+                    : LythonRuntime.InvokeCallableTarget(_target, targetSpan, callSpan, _context, ToArray);
+            }
+            finally { Dispose(); }
+        }
+
+        public void Dispose()
+        {
+            _reservation?.Dispose();
+            if (_retainedBytes == 0) return;
+            _values = [];
+            _deferredStar = null;
+            _keywordNames = null;
+            _governor.Release(_retainedBytes);
+            _retainedBytes = 0;
+            ChargeReclamationPool.NotifyStorageReplaced(this, 0);
+        }
 
         private static long EstimateArgumentBytes(int count) => 64L + (32L * count);
     }

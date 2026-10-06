@@ -8,6 +8,12 @@ internal abstract record LoweredExpression
     public LythonSourceSpan Span => Syntax.Span;
 }
 
+// Used only for already evaluated operands in a resumed executable operation.
+internal sealed record LoweredCapturedExpression(ExpressionSyntax Original, object Value) : LoweredExpression
+{
+    public override ExpressionSyntax Syntax => Original;
+}
+
 internal sealed record LoweredUnpackedTypeExpression(UnpackedTypeExpressionSyntax Unpacked, LoweredExpression Value) : LoweredExpression
 {
     public override ExpressionSyntax Syntax => Unpacked;

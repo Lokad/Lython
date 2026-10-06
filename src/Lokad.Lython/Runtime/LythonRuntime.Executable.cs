@@ -246,6 +246,8 @@ internal sealed partial class LythonRuntime
             }
 
             var newCount = Count - count;
+            for (var i = newCount; i < Count; i++)
+                if (_items[i] is IExecutableTemporaryValue temporary) temporary.Dispose();
             Array.Clear(_items, newCount, count);
             Count = newCount;
         }

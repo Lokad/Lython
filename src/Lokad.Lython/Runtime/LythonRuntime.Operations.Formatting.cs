@@ -31,11 +31,12 @@ internal sealed partial class LythonRuntime
                     builder.AppendString(text.Text);
                     break;
                 case FormattedStringExpressionPartSyntax expression:
+                    var fieldValue = EvaluateExpression(expression.Expression, context);
                     var formatSpecifier = expression.FormatSpecifierParts is null
                         ? expression.FormatSpecifier
                         : EvaluateFormattedStringParts(expression.FormatSpecifierParts, context, span).AsString();
                     builder.Append(PyRendering.OwnJoinItem(FormatInterpolatedStringPart(
-                        EvaluateExpression(expression.Expression, context),
+                        fieldValue,
                         expression.Conversion,
                         formatSpecifier,
                         context,

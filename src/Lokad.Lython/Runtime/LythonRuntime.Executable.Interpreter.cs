@@ -73,6 +73,7 @@ internal sealed partial class LythonRuntime
         // names and restoring the previous exception on frame exit.
         private void AbandonFrame(LythonSourceSpan span)
         {
+            _stack.RemoveTail(_stack.Count);
             _savedActiveExceptions?.Clear();
             AbandonActiveHandlerVars(context, span);
             context.Services.SetCurrentException(_entryActiveException);
@@ -596,6 +597,9 @@ internal sealed partial class LythonRuntime
                         }
                         switch (instruction.OpCode)
                         {
+                            case ExecutableOpCode.ApplyOperation:
+                                await ExecutePreparedOperationAsync((ExecutableOperation)codeObject.Constants[instruction.ConstantIndex]!, instruction.Span, asynchronous).ConfigureAwait(false);
+                                break;
                             case ExecutableOpCode.Yield:
                                 YieldValue = Pop(_stack, instruction.Span);
                                 HasYield = true;

@@ -321,7 +321,7 @@ internal static class ScopeDirectiveFactsCollector
         }
     }
 
-    private static void CollectExpressionBindings(ExpressionSyntax expression, HashSet<string> names)
+    internal static void CollectExpressionBindings(ExpressionSyntax expression, HashSet<string> names)
     {
         if (expression is LambdaExpressionSyntax)
         {

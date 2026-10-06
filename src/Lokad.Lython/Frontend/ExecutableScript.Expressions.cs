@@ -12,6 +12,8 @@ internal sealed partial class ExecutableScript
     {
         private int CompileExpression(LoweredExpression expression, int currentBlock)
         {
+            if (_generator && GeneratorSyntaxFacts.ContainsYield(expression.Syntax) &&
+                TryCompileSuspendingExpression(expression, currentBlock, out var resumedBlock)) return resumedBlock;
             switch (expression)
             {
                 case LoweredYieldExpression yielded:

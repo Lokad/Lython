@@ -1772,22 +1772,22 @@
   {
     "name": "generator-yield-star-call",
     "family": "generators",
-    "status": "unsupported",
-    "source": "def g():\n    print(*(yield 1))\n",
-    "standardOutput": "",
+    "status": "supported",
+    "source": "def g():\n    print(*(yield 1))\n    yield 2\ng=g()\nprint(next(g))\nprint(g.send([3,4]))\n",
+    "standardOutput": "1\n3 4\n2\n",
     "success": true,
     "exceptionType": null,
-    "note": "Explicit suspension boundary"
+    "note": "CPython 3.13.2"
   },
   {
     "name": "generator-yield-fstring",
     "family": "generators",
-    "status": "unsupported",
-    "source": "def g():\n    x=f\"{(yield 1)}\"\n",
-    "standardOutput": "",
+    "status": "supported",
+    "source": "def g():\n    yield f\"{(yield 1)}\"\ng=g()\nprint(next(g),g.send(2))\n",
+    "standardOutput": "1 2\n",
     "success": true,
     "exceptionType": null,
-    "note": "Explicit suspension boundary"
+    "note": "CPython 3.13.2"
   },
   {
     "name": "generator-yield-target-index",

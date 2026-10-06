@@ -20,6 +20,7 @@ internal enum ExecutableOpCode
     LoadGlobal,
     LoadName,
     EvaluateFallbackExpression,
+    ApplyOperation,
     LoadMember,
     StoreLocal,
     StoreClosure,
@@ -218,6 +219,9 @@ internal readonly record struct ExecutableInstruction
 
     public static ExecutableInstruction ExecuteFallbackStatement(int statementIndex, LythonSourceSpan span)
         => CreateIndexed(ExecutableOpCode.ExecuteFallbackStatement, new Operand(OperandKind.StatementFallbackIndex, statementIndex), span);
+
+    public static ExecutableInstruction ApplyOperation(int constantIndex, LythonSourceSpan span)
+        => CreateIndexed(ExecutableOpCode.ApplyOperation, new Operand(OperandKind.ConstantIndex, constantIndex), span);
 
     public static ExecutableInstruction LoadConst(int constantIndex, LythonSourceSpan span)
         => CreateIndexed(ExecutableOpCode.LoadConst, new Operand(OperandKind.ConstantIndex, constantIndex), span);
