@@ -267,7 +267,8 @@ internal sealed partial class LythonRuntime
         ExecutableCell?[]? localCells,
         ExecutionContext context)
     {
-        if (importBinding.ModuleName == "__future__")
+        if (importBinding.ModuleName == "__future__" && importBinding.ImportedMembers is not null &&
+            ImportsOnlyFutureAnnotations(importBinding.ImportedMembers))
         {
             ExecuteImport(new ImportStatementSyntax(importBinding.ModuleName, importBinding.BindingName,
                 importBinding.BoundModuleName, importBinding.ImportedMembers, importBinding.Span), context);

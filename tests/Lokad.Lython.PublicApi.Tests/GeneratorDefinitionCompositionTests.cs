@@ -352,6 +352,20 @@ public sealed class GeneratorDefinitionCompositionTests
         Assert.Equal("", compiled.Run(new MockLythonHost()).StandardOutput);
     }
 
+    [Fact]
+    public async Task OrdinaryFutureModuleImportsPreserveEagerAnnotations()
+    {
+        await AssertOutput("""
+            import __future__
+            events=[]
+            def annotation():
+             events.append('annotation')
+             return 'observed'
+            def run(value:annotation()=7):return value
+            print(run(),events,run.__annotations__)
+            """, "7 ['annotation'] {'value': 'observed'}\n");
+    }
+
     private static async Task AssertOutput(string source, string expected)
     {
         var compiled = new LythonEngine().Compile(source);

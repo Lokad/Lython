@@ -162,16 +162,11 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         Func<string, ValueTask<PyModule>> resolveModule)
     {
-        if (string.Equals(statement.ModuleName, "__future__", StringComparison.Ordinal))
+        if (string.Equals(statement.ModuleName, "__future__", StringComparison.Ordinal) &&
+            statement.ImportedMembers is not null && ImportsOnlyFutureAnnotations(statement.ImportedMembers))
         {
-            if (statement.ImportedMembers is not null &&
-                ImportsOnlyFutureAnnotations(statement.ImportedMembers))
-            {
-                context.PostponedAnnotations = true;
-                return;
-            }
-
-            throw RuntimeErrors.NoModuleNamed(statement.ModuleName, statement.Span);
+            context.PostponedAnnotations = true;
+            return;
         }
 
         var module = await ResolveImportedModuleHierarchyCore(statement.ModuleName, statement.Span, resolveModule).ConfigureAwait(false);
