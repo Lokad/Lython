@@ -158,6 +158,26 @@ internal sealed partial class ExecutableScript
                     AddInstruction(currentBlock, ExecutableInstruction.Slice(parts, slice.Span));
                     return currentBlock;
 
+                case LoweredSliceValueExpression sliceValue:
+                    var valueParts = ExecutableSliceParts.None;
+                    if (sliceValue.Start is not null)
+                    {
+                        currentBlock = CompileExpression(sliceValue.Start, currentBlock);
+                        valueParts |= ExecutableSliceParts.Start;
+                    }
+                    if (sliceValue.End is not null)
+                    {
+                        currentBlock = CompileExpression(sliceValue.End, currentBlock);
+                        valueParts |= ExecutableSliceParts.End;
+                    }
+                    if (sliceValue.Step is not null)
+                    {
+                        currentBlock = CompileExpression(sliceValue.Step, currentBlock);
+                        valueParts |= ExecutableSliceParts.Step;
+                    }
+                    AddInstruction(currentBlock, ExecutableInstruction.MakeSlice(valueParts, sliceValue.Span));
+                    return currentBlock;
+
                 case LoweredBinaryExpression binary:
                     if (binary.Binary.Operator is BinaryOperatorSyntax.Or or BinaryOperatorSyntax.And)
                     {

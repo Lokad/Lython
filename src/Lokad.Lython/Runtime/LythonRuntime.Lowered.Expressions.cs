@@ -227,8 +227,33 @@ internal sealed partial class LythonRuntime
         var start = slice.Start is null ? null : EvaluateLoweredExpression(slice.Start, context);
         var end = slice.End is null ? null : EvaluateLoweredExpression(slice.End, context);
         var step = slice.Step is null ? null : EvaluateLoweredExpression(slice.Step, context);
-        return PyIndexing.ReadSlice(target, start, end, step, slice.Span, context);
+        return ReadSliceValue(target, start, end, step, slice.Span, context);
     }
+
+    private static object EvaluateLoweredSliceValue(LoweredSliceValueExpression slice, ExecutionContext context)
+    {
+        var start = slice.Start is null ? null : EvaluateLoweredExpression(slice.Start, context);
+        var end = slice.End is null ? null : EvaluateLoweredExpression(slice.End, context);
+        var step = slice.Step is null ? null : EvaluateLoweredExpression(slice.Step, context);
+        return CreateSliceValue(start, end, step, slice.Span, context);
+    }
+
+    private static PySlice CreateSliceValue(object? start, object? end, object? step, LythonSourceSpan span, ExecutionContext context)
+    {
+        var value = PyIndexing.CreateMappingSliceKey(start, end, step, context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(value, 64L, span);
+        return value;
+    }
+
+    private static object ReadSliceValue(object target, object? start, object? end, object? step, LythonSourceSpan span, ExecutionContext context)
+        => target is PyInstance instance
+            ? GetUserItem(instance, CreateSliceValue(start, end, step, span, context), context, span)
+            : PyIndexing.ReadSlice(target, start, end, step, span, context);
+
+    private static ValueTask<object> ReadSliceValueAsync(object target, object? start, object? end, object? step, LythonSourceSpan span, ExecutionContext context)
+        => target is PyInstance instance
+            ? GetUserItemAsync(instance, CreateSliceValue(start, end, step, span, context), context, span)
+            : new(PyIndexing.ReadSlice(target, start, end, step, span, context));
 
     private static object ResolveLoweredMember(LoweredMemberExpression member, ExecutionContext context)
     {

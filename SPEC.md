@@ -587,6 +587,15 @@ parameter. Ordinary class-suite name lookup remains separate, including eager
 comprehension expressions; closures created there capture the class cell.
 Shared cells and their retained enclosing contexts remain memory governed.
 
+Subscriptions accept ordered mixtures of scalar indices, slices, ellipsis and
+starred items. A comma or starred item produces a tuple key, including singleton
+slice tuples; slices preserve raw bounds and do not resolve the `slice` builtin.
+Reads, stores, augmented stores and deletion share these keys. Receivers and key
+operands evaluate once in Python order, including generator suspension and delayed
+item protocols. Materialized slices and tuple storage remain memory governed;
+starred expansion obeys the collection-size limit. Assignment expressions in
+slice bounds require parentheses.
+
 Match subjects accept unparenthesized tuple expression lists, singleton trailing
 commas and starred unpacking. Operands evaluate once from left to right, with
 unpacking drained before case selection and governed like ordinary tuple displays.

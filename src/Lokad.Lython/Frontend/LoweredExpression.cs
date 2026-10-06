@@ -235,6 +235,15 @@ internal sealed record LoweredSliceExpression(
     public override ExpressionSyntax Syntax => Slice;
 }
 
+internal sealed record LoweredSliceValueExpression(
+    SliceValueExpressionSyntax Slice,
+    LoweredExpression? Start,
+    LoweredExpression? End,
+    LoweredExpression? Step) : LoweredExpression
+{
+    public override ExpressionSyntax Syntax => Slice;
+}
+
 internal sealed record LoweredBinaryExpression(
     BinaryExpressionSyntax Binary,
     LoweredExpression Left,

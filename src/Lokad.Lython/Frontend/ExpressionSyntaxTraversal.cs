@@ -106,6 +106,12 @@ internal static class ExpressionSyntaxTraversal
                 if (slice.Step is not null) yield return slice.Step;
                 break;
 
+            case SliceValueExpressionSyntax slice:
+                if (slice.Start is not null) yield return slice.Start;
+                if (slice.End is not null) yield return slice.End;
+                if (slice.Step is not null) yield return slice.Step;
+                break;
+
             case BinaryExpressionSyntax binary:
                 yield return binary.Left;
                 yield return binary.Right;

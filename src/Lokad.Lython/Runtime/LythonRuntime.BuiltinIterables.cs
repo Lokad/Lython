@@ -522,7 +522,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "slice expected at most 3 arguments, got " + arguments.Length, span);
         }
 
-        // Slice syntax never materializes an object; only explicit calls retain one.
+        // Explicit calls retain a slice, as do materialized subscription keys.
         context.MemoryGovernor.Reserve(64L, span);
         context.MemoryGovernor.Commit(64L);
         return arguments.Length switch

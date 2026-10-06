@@ -43,6 +43,7 @@ internal enum ExecutableOpCode
     Call,
     Subscript,
     Slice,
+    MakeSlice,
     Binary,
     Augmented,
     Unary,
@@ -320,6 +321,9 @@ internal readonly record struct ExecutableInstruction
 
     public static ExecutableInstruction Slice(ExecutableSliceParts parts, LythonSourceSpan span)
         => new(ExecutableOpCode.Slice, span, Operand.None, Operand.None, default, default, default, parts);
+
+    public static ExecutableInstruction MakeSlice(ExecutableSliceParts parts, LythonSourceSpan span)
+        => new(ExecutableOpCode.MakeSlice, span, Operand.None, Operand.None, default, default, default, parts);
 
     public static ExecutableInstruction Binary(ExecutableBinaryOperator op, LythonSourceSpan span)
         => new(ExecutableOpCode.Binary, span, Operand.None, Operand.None, op, default, default, default);

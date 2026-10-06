@@ -684,6 +684,12 @@ internal sealed record SliceExpressionSyntax(
     ExpressionSyntax? Step,
     LythonSourceSpan Span) : ExpressionSyntax(Span);
 
+internal sealed record SliceValueExpressionSyntax(
+    ExpressionSyntax? Start,
+    ExpressionSyntax? End,
+    ExpressionSyntax? Step,
+    LythonSourceSpan Span) : ExpressionSyntax(Span);
+
 internal enum BinaryOperatorSyntax
 {
     Or,

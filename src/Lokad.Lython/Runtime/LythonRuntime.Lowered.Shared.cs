@@ -194,6 +194,8 @@ internal sealed partial class LythonRuntime
                 return await execution.EvaluateSubscriptAsync(subscript, context).ConfigureAwait(false);
             case LoweredSliceExpression slice:
                 return await execution.EvaluateSliceAsync(slice, context).ConfigureAwait(false);
+            case LoweredSliceValueExpression slice:
+                return await execution.EvaluateSliceValueAsync(slice, context).ConfigureAwait(false);
             case LoweredBinaryExpression binary:
                 return await execution.EvaluateBinaryAsync(binary, context).ConfigureAwait(false);
             case LoweredChainedComparisonExpression chained:

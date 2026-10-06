@@ -26,6 +26,13 @@ public sealed class RetainedCodeAccountingTests
     }
 
     [Fact]
+    public void CompositeSliceKeysRetainAllBoundsOnce()
+    {
+        var body = TopLevel("def f():\n return x[1:2,0]\n");
+        Assert.Equal(9, LythonRuntime.CountDeferredModuleCode(body));
+    }
+
+    [Fact]
     public void EmptyModuleCostsNothing()
     {
         var root = NewRoot(out var governor);

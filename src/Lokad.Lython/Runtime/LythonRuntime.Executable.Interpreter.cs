@@ -393,6 +393,11 @@ internal sealed partial class LythonRuntime
                     PushObserved(ExecuteExecutableSlice(_stack, instruction.SliceParts, instruction.Span, context), instruction.Span);
                     break;
 
+                case ExecutableOpCode.MakeSlice:
+                    var (start, stop, step) = PopExecutableSliceBounds(_stack, instruction.SliceParts, instruction.Span);
+                    PushObserved(CreateSliceValue(start, stop, step, instruction.Span, context), instruction.Span);
+                    break;
+
                 case ExecutableOpCode.Binary:
                     var binaryRight = Pop(_stack, instruction.Span);
                     var binaryLeft = Pop(_stack, instruction.Span);
@@ -701,6 +706,7 @@ internal sealed partial class LythonRuntime
                                  ExecutableOpCode.Call or
                                  ExecutableOpCode.Subscript or
                                  ExecutableOpCode.Slice or
+                                 ExecutableOpCode.MakeSlice or
                                  ExecutableOpCode.Binary or
                                  ExecutableOpCode.Augmented or
                                  ExecutableOpCode.Unary:

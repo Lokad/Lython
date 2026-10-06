@@ -143,6 +143,12 @@ internal static partial class StaticAbstractInterpreter
                     StaticStructuralDiagnostics.AnalyzeSliceAccess(slice, diagnostics, bindings);
                     return true;
 
+                case SliceValueExpressionSyntax slice:
+                    AnalyzeExpressionIfPresent(slice.Start, diagnostics, bindings);
+                    AnalyzeExpressionIfPresent(slice.End, diagnostics, bindings);
+                    AnalyzeExpressionIfPresent(slice.Step, diagnostics, bindings);
+                    return true;
+
                 default:
                     return false;
             }

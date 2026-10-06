@@ -66,6 +66,13 @@ internal sealed partial class LythonRuntime
 
     private static object ExecuteExecutableSlice(ExecutableValueStack stack, ExecutableSliceParts parts, LythonSourceSpan span, ExecutionContext context)
     {
+        var (start, end, step) = PopExecutableSliceBounds(stack, parts, span);
+        var target = Pop(stack, span);
+        return ReadSliceValue(target, start, end, step, span, context);
+    }
+
+    private static (object? Start, object? End, object? Step) PopExecutableSliceBounds(ExecutableValueStack stack, ExecutableSliceParts parts, LythonSourceSpan span)
+    {
         object? step = null;
         object? end = null;
         object? start = null;
@@ -83,8 +90,7 @@ internal sealed partial class LythonRuntime
             start = Pop(stack, span);
         }
 
-        var target = Pop(stack, span);
-        return PyIndexing.ReadSlice(target, start, end, step, span, context);
+        return (start, end, step);
     }
 
     private static bool CanCacheRuntimeMemberTarget(object target)

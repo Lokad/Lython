@@ -49,6 +49,9 @@ internal sealed partial class LythonRuntime
         /// <summary>Evaluates a slice access.</summary>
         ValueTask<object> EvaluateSliceAsync(LoweredSliceExpression expression, ExecutionContext context);
 
+        /// <summary>Materializes a slice in a composite subscription key.</summary>
+        ValueTask<object> EvaluateSliceValueAsync(LoweredSliceValueExpression expression, ExecutionContext context);
+
         /// <summary>Evaluates a binary operation with mode-appropriate short circuiting.</summary>
         ValueTask<object> EvaluateBinaryAsync(LoweredBinaryExpression expression, ExecutionContext context);
 
@@ -178,6 +181,9 @@ internal sealed partial class LythonRuntime
         public ValueTask<object> EvaluateSliceAsync(LoweredSliceExpression expression, ExecutionContext context)
             => new(EvaluateLoweredSlice(expression, context));
 
+        public ValueTask<object> EvaluateSliceValueAsync(LoweredSliceValueExpression expression, ExecutionContext context)
+            => new(EvaluateLoweredSliceValue(expression, context));
+
         public ValueTask<object> EvaluateBinaryAsync(LoweredBinaryExpression expression, ExecutionContext context)
             => new(EvaluateLoweredBinary(expression, context));
 
@@ -305,6 +311,9 @@ internal sealed partial class LythonRuntime
 
         public ValueTask<object> EvaluateSliceAsync(LoweredSliceExpression expression, ExecutionContext context)
             => LythonRuntime.EvaluateLoweredSliceAsync(expression, context);
+
+        public ValueTask<object> EvaluateSliceValueAsync(LoweredSliceValueExpression expression, ExecutionContext context)
+            => LythonRuntime.EvaluateLoweredSliceValueAsync(expression, context);
 
         public ValueTask<object> EvaluateBinaryAsync(LoweredBinaryExpression expression, ExecutionContext context)
             => LythonRuntime.EvaluateLoweredBinaryAsync(expression, context);

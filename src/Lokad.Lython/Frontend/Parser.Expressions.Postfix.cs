@@ -182,10 +182,46 @@ internal sealed partial class Parser
         {
             var openBracketToken = parser.ReadToken();
             parser.SkipGroupedExpressionTrivia();
-            var firstUnpacked = parser.CurrentToken == Token.Star;
-            if (firstUnpacked) parser.ReadToken();
+            var items = new List<CollectionDisplayItemSyntax>();
+            var tupleKey = false;
+            while (true)
+            {
+                var unpacked = parser.CurrentToken == Token.Star;
+                var unpackingSpan = unpacked ? parser.SpanOf(parser.ReadToken()) : default(LythonSourceSpan?);
+                var item = ParseItem(parser, openBracketToken, allowSlice: !unpacked);
+                if (item is null) return null;
+                items.Add(unpacked
+                    ? new CollectionUnpackingItemSyntax(item, Merge(unpackingSpan ?? item.Span, item.Span))
+                    : new CollectionValueItemSyntax(item));
+                tupleKey |= unpacked;
+                parser.SkipGroupedExpressionTrivia();
+                if (parser.CurrentToken != Token.Comma) break;
+                tupleKey = true;
+                parser.ReadToken();
+                parser.SkipGroupedExpressionTrivia();
+                if (parser.CurrentToken == Token.CloseBracket) break;
+            }
+
+            if (!parser.TryRead(Token.CloseBracket, out var closeBracketToken))
+            {
+                parser.AddDiagnostic("LA1023", "Expected ']' after index expression.", openBracketToken);
+                return null;
+            }
+
+            var span = Merge(target.Span, parser.SpanOf(closeBracketToken));
+            if (!tupleKey && items[0].Expression is SliceValueExpressionSyntax slice)
+                return new SliceExpressionSyntax(target, slice.Start, slice.End, slice.Step, span);
+            var key = tupleKey
+                ? new TupleLiteralExpressionSyntax(items, Merge(items[0].Span, items[^1].Span))
+                : items[0].Expression;
+            return new SubscriptExpressionSyntax(target, key, span);
+        }
+
+        private static ExpressionSyntax? ParseItem(Parser parser, int openBracketToken, bool allowSlice)
+        {
+            var firstToken = parser._position;
             ExpressionSyntax? start = null;
-            if (parser.CurrentToken != Token.Colon)
+            if (parser.CurrentToken != Token.Colon || !allowSlice)
             {
                 start = parser.ParseNestedExpression(parser._position);
                 if (start is null)
@@ -195,103 +231,46 @@ internal sealed partial class Parser
                 }
                 parser.SkipGroupedExpressionTrivia();
             }
+            if (parser.CurrentToken != Token.Colon || !allowSlice) return start;
 
-            if (parser.CurrentToken == Token.Colon)
+            var lastSpan = parser.SpanOf(parser.ReadToken());
+            parser.SkipGroupedExpressionTrivia();
+            ExpressionSyntax? end = null;
+            if (parser.CurrentToken is not (Token.Comma or Token.CloseBracket or Token.Colon))
             {
-                parser.ReadToken();
-                parser.SkipGroupedExpressionTrivia();
-
-                ExpressionSyntax? end = null;
-                if (parser.CurrentToken != Token.CloseBracket && parser.CurrentToken != Token.Colon)
+                end = parser.ParseNestedExpression(parser._position);
+                if (end is null)
                 {
-                    end = parser.ParseNestedExpression(parser._position);
-                    if (end is null)
-                    {
-                        parser.AddDiagnostic("LA1022", "Expected index expression after '['.", openBracketToken);
-                        return null;
-                    }
-                    parser.SkipGroupedExpressionTrivia();
-                }
-
-                ExpressionSyntax? step = null;
-                if (parser.CurrentToken == Token.Colon)
-                {
-                    parser.ReadToken();
-                    parser.SkipGroupedExpressionTrivia();
-                    if (parser.CurrentToken != Token.CloseBracket)
-                    {
-                        step = parser.ParseNestedExpression(parser._position);
-                        if (step is null)
-                        {
-                            parser.AddDiagnostic("LA1022", "Expected index expression after '['.", openBracketToken);
-                            return null;
-                        }
-                        parser.SkipGroupedExpressionTrivia();
-                    }
-                }
-
-                parser.SkipGroupedExpressionTrivia();
-                if (!parser.TryRead(Token.CloseBracket, out var closeSliceToken))
-                {
-                    parser.AddDiagnostic("LA1023", "Expected ']' after index expression.", openBracketToken);
+                    parser.AddDiagnostic("LA1022", "Expected slice stop expression.", openBracketToken);
                     return null;
                 }
-
-                return new SliceExpressionSyntax(
-                    target,
-                    start,
-                    end,
-                    step,
-                    Merge(target.Span, parser.SpanOf(closeSliceToken)));
+                lastSpan = end.Span;
+                parser.SkipGroupedExpressionTrivia();
             }
 
-            if (start is null)
+            ExpressionSyntax? step = null;
+            if (parser.CurrentToken == Token.Colon)
             {
-                parser.AddDiagnostic("LA1022", "Expected index expression after '['.", openBracketToken);
-                return null;
-            }
-
-            if (parser.CurrentToken == Token.Comma || firstUnpacked)
-            {
-                var items = new List<CollectionDisplayItemSyntax> { firstUnpacked ? new CollectionUnpackingItemSyntax(start, start.Span) : new CollectionValueItemSyntax(start) };
-                while (parser.CurrentToken == Token.Comma)
+                lastSpan = parser.SpanOf(parser.ReadToken());
+                parser.SkipGroupedExpressionTrivia();
+                if (parser.CurrentToken is not (Token.Comma or Token.CloseBracket))
                 {
-                    parser.ReadToken();
-                    parser.SkipGroupedExpressionTrivia();
-                    if (parser.CurrentToken == Token.CloseBracket)
+                    step = parser.ParseNestedExpression(parser._position);
+                    if (step is null)
                     {
-                        break;
-                    }
-
-                    var unpacked = parser.CurrentToken == Token.Star;
-                    if (unpacked) parser.ReadToken();
-                    var next = parser.ParseNestedExpression(parser._position);
-                    if (next is null)
-                    {
-                        parser.AddDiagnostic("LA1022", "Expected index expression after '['.", openBracketToken);
+                        parser.AddDiagnostic("LA1022", "Expected slice step expression.", openBracketToken);
                         return null;
                     }
+                    lastSpan = step.Span;
                     parser.SkipGroupedExpressionTrivia();
-
-                    items.Add(unpacked ? new CollectionUnpackingItemSyntax(next, next.Span) : new CollectionValueItemSyntax(next));
                 }
-
-                start = new TupleLiteralExpressionSyntax(
-                    items.ToArray(),
-                    Merge(items[0].Span, items[^1].Span));
             }
-
-            parser.SkipGroupedExpressionTrivia();
-            if (!parser.TryRead(Token.CloseBracket, out var closeBracketToken))
+            if (start is AssignmentExpressionSyntax || end is AssignmentExpressionSyntax || step is AssignmentExpressionSyntax)
             {
-                parser.AddDiagnostic("LA1023", "Expected ']' after index expression.", openBracketToken);
+                parser.AddDiagnostic("LA1100", "Assignment expressions in slice bounds require parentheses.", firstToken);
                 return null;
             }
-
-            return new SubscriptExpressionSyntax(
-                target,
-                start,
-                Merge(target.Span, parser.SpanOf(closeBracketToken)));
+            return new SliceValueExpressionSyntax(start, end, step, Merge(parser.SpanOf(firstToken), lastSpan));
         }
     }
 }

@@ -42,6 +42,7 @@ public sealed class ExpressionSyntaxTraversalTests
             second);
         AssertChildren(new SubscriptExpressionSyntax(first, second, Span), first, second);
         AssertChildren(new SliceExpressionSyntax(first, second, third, null, Span), first, second, third);
+        AssertChildren(new SliceValueExpressionSyntax(first, null, third, Span), first, third);
         AssertChildren(new BinaryExpressionSyntax(first, BinaryOperatorSyntax.Add, second, Span), first, second);
         AssertChildren(
             new ChainedComparisonExpressionSyntax([first, second, third], [BinaryOperatorSyntax.Less, BinaryOperatorSyntax.Less], Span),

@@ -274,6 +274,11 @@ internal sealed class LoweredScript
                 slice.Start is null ? null : LowerExpression(slice.Start),
                 slice.End is null ? null : LowerExpression(slice.End),
                 slice.Step is null ? null : LowerExpression(slice.Step)),
+            SliceValueExpressionSyntax slice => new LoweredSliceValueExpression(
+                slice,
+                slice.Start is null ? null : LowerExpression(slice.Start),
+                slice.End is null ? null : LowerExpression(slice.End),
+                slice.Step is null ? null : LowerExpression(slice.Step)),
             BinaryExpressionSyntax binary => new LoweredBinaryExpression(
                 binary,
                 LowerExpression(binary.Left),

@@ -30,6 +30,7 @@ internal sealed partial class LythonRuntime
                 FloatLiteralExpressionSyntax floating => ParseFloat(floating),
                 BooleanLiteralExpressionSyntax boolean => boolean.Value,
                 NoneLiteralExpressionSyntax => PyNone.Instance,
+                EllipsisLiteralExpressionSyntax => PyEllipsis.Instance,
                 FormattedStringExpressionSyntax formatted => EvaluateFormattedString(formatted, context),
                 ListLiteralExpressionSyntax list => CreateListLiteral(list, context),
                 ListComprehensionExpressionSyntax listComprehension => EvaluateListComprehension(listComprehension, context),
@@ -45,6 +46,10 @@ internal sealed partial class LythonRuntime
                 CallExpressionSyntax call => InvokeCall(call, context),
                 SubscriptExpressionSyntax subscript => EvaluateSubscript(subscript, context),
                 SliceExpressionSyntax slice => EvaluateSlice(slice, context),
+                SliceValueExpressionSyntax slice => CreateSliceValue(
+                    slice.Start is null ? null : EvaluateExpression(slice.Start, context),
+                    slice.End is null ? null : EvaluateExpression(slice.End, context),
+                    slice.Step is null ? null : EvaluateExpression(slice.Step, context), slice.Span, context),
                 BinaryExpressionSyntax binary => EvaluateBinary(binary, context),
                 ChainedComparisonExpressionSyntax chainedComparison => EvaluateChainedComparison(chainedComparison, context),
                 UnaryExpressionSyntax unary => EvaluateUnary(unary, context),
