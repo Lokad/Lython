@@ -327,12 +327,8 @@ internal static partial class StaticAbstractInterpreter
                     return true;
 
                 case ClassDefinitionStatementSyntax classDefinition:
-                    AnalyzeExpressions(classDefinition.Decorators, diagnostics, bindings);
-                    AnalyzeExpressions(classDefinition.Bases, diagnostics, bindings);
-                    foreach (var keywordArgument in classDefinition.KeywordArguments)
-                    {
-                        AnalyzeExpression(keywordArgument.Value, diagnostics, bindings);
-                    }
+                    foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(classDefinition))
+                        AnalyzeExpression(expression, diagnostics, bindings);
 
                     AnalyzeStatements(classDefinition.Body, diagnostics, bindings.Clone());
                     return true;

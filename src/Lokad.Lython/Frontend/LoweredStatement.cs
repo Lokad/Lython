@@ -64,6 +64,9 @@ internal sealed record LoweredClassDefinitionStatement(
 {
     public override LoweredStatementKind Kind => LoweredStatementKind.ClassDefinition;
     public IReadOnlyList<LoweredTypeParameter>? TypeParameters { get; } = LoweredScript.LowerTypeParameters(Syntax.TypeParameters);
+    public IReadOnlyList<LoweredCallArgument> HeaderArguments { get; } = Syntax.HeaderArguments is { } arguments
+        ? arguments.Select(argument => new LoweredCallArgument(argument.Form, LoweredScript.LowerExpression(argument.Expression))).ToArray()
+        : Bases.Select(expression => new LoweredCallArgument(CallArgumentForm.Positional, expression)).Concat(KeywordArguments).ToArray();
 }
 
 internal abstract record LoweredAssignmentStatement(

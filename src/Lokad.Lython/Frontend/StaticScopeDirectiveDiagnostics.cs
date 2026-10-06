@@ -251,6 +251,8 @@ internal static class StaticScopeDirectiveDiagnostics
                 names.Add(functionDefinition.Name);
                 break;
             case ClassDefinitionStatementSyntax classDefinition:
+                foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(classDefinition))
+                    CollectSeenNames(expression, names);
                 names.Add(classDefinition.Name);
                 break;
             case ForStatementSyntax forStatement:

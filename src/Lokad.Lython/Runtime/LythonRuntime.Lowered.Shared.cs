@@ -844,6 +844,47 @@ internal sealed partial class LythonRuntime
         return value;
     }
 
+    private static readonly BuiltinCallable ClassHeaderExpansionTarget = BuiltinCallable.Create(
+        LythonCallableSignature.Create("__build_class__", []),
+        static (_, _, _) => throw new InvalidOperationException("Class header expansion target cannot be invoked."));
+
+    private static async ValueTask<(object[] Bases, CallArgumentValue[] Keywords)> EvaluateClassHeaderArgumentsAsync(
+        LoweredClassDefinitionStatement definition, ExecutionContext context,
+        MemoryGovernor.TemporaryMemoryReservation storage, bool asynchronous)
+    {
+        var sourceCount = definition.HeaderArguments.Count;
+        if (sourceCount > 0) storage.Grow(64L + 32L * sourceCount, definition.Span);
+        var arguments = asynchronous
+            ? await CallExpansion.ExpandLoweredArgumentsAsync(definition.HeaderArguments, context,
+                EvaluateLoweredExpressionAsync, ClassHeaderExpansionTarget).ConfigureAwait(false)
+            : CallExpansion.ExpandLoweredArguments(definition.HeaderArguments, context,
+                EvaluateLoweredExpression, ClassHeaderExpansionTarget);
+        if (arguments.Length > sourceCount)
+            storage.Grow(32L * (arguments.Length - sourceCount), definition.Span);
+
+        var positionalCount = arguments.Count(argument => argument.IsPositional);
+        var keywordCount = arguments.Length - positionalCount;
+        if (arguments.Length > 0)
+            storage.Grow(EstimateObjectArrayBytes(positionalCount) + 64L + 32L * keywordCount, definition.Span);
+        var bases = new object[positionalCount];
+        var keywords = new CallArgumentValue[keywordCount];
+        var baseIndex = 0;
+        var keywordIndex = 0;
+        foreach (var argument in arguments)
+        {
+            context.CheckExecutionBudget(definition.Span);
+            if (argument.IsPositional) bases[baseIndex++] = argument.Value;
+            else
+            {
+                // Dynamic ** names are CLR text retained across the class
+                // suite and subclass hook, beyond the expansion's scratch.
+                storage.Grow(2L * argument.KeywordName.Length, definition.Span);
+                keywords[keywordIndex++] = argument;
+            }
+        }
+        return (bases, keywords);
+    }
+
     private static void ValidateClassKeywordArguments(CallArgumentValue[] arguments, LythonSourceSpan span)
     {
         foreach (var argument in arguments)

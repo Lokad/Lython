@@ -104,8 +104,15 @@ internal static class StatementSyntaxTraversal
 
             case ClassDefinitionStatementSyntax classDefinition:
                 foreach (var decorator in classDefinition.Decorators) yield return decorator;
-                foreach (var @base in classDefinition.Bases) yield return @base;
-                foreach (var keywordArgument in classDefinition.KeywordArguments) yield return keywordArgument.Value;
+                if (classDefinition.HeaderArguments is { } arguments)
+                {
+                    foreach (var argument in arguments) yield return argument.Expression;
+                }
+                else
+                {
+                    foreach (var @base in classDefinition.Bases) yield return @base;
+                    foreach (var keywordArgument in classDefinition.KeywordArguments) yield return keywordArgument.Value;
+                }
                 break;
 
             case ReturnStatementSyntax { Expression: not null } returnStatement:

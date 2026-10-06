@@ -66,18 +66,10 @@ internal sealed partial class LythonRuntime
             using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(classDefinition.Decorators.Count), classDefinition.Span);
             var decorators = EvaluateDecorators(classDefinition.Decorators, context);
             var typeScope = CreateTypeScope(classDefinition.TypeParameters, context, classDefinition.Span);
-            var baseTypes = new object[classDefinition.Bases.Count];
-            for (var i = 0; i < classDefinition.Bases.Count; i++)
-            {
-                baseTypes[i] = EvaluateLoweredExpression(classDefinition.Bases[i], typeScope.Annotations);
-            }
+            var header = EvaluateClassHeaderArgumentsAsync(classDefinition, typeScope.Annotations, decoratorStorage, false).GetAwaiter().GetResult();
+            var baseTypes = header.Bases;
+            var classKeywordArguments = header.Keywords;
 
-            var classKeywordArguments = new CallArgumentValue[classDefinition.KeywordArguments.Count];
-            for (var i = 0; i < classDefinition.KeywordArguments.Count; i++)
-            {
-                var argument = classDefinition.KeywordArguments[i];
-                classKeywordArguments[i] = CallArgumentValue.Keyword(argument.KeywordName, EvaluateLoweredExpression(argument.Expression, typeScope.Annotations));
-            }
             var resolvedBases = AddGenericClassBase(classDefinition, ResolveClassBases(baseTypes, classDefinition.Span, context), context);
             ValidateClassKeywordArguments(classKeywordArguments, classDefinition.Span);
 

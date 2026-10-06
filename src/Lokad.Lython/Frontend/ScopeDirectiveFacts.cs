@@ -213,6 +213,8 @@ internal static class ScopeDirectiveFactsCollector
 
                 case ClassDefinitionStatementSyntax classDefinition:
                     names.Add(classDefinition.Name);
+                    foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(classDefinition))
+                        CollectExpressionBindings(expression, names);
                     continue;
 
                 case ExpressionStatementSyntax expressionStatement:

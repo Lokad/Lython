@@ -329,7 +329,8 @@ internal sealed record ClassDefinitionStatementSyntax(
     IReadOnlyList<ClassKeywordArgumentSyntax> KeywordArguments,
     IReadOnlyList<StatementSyntax> Body,
     LythonSourceSpan Span,
-    IReadOnlyList<TypeParameterSyntax>? TypeParameters = null) : StatementSyntax(Span);
+    IReadOnlyList<TypeParameterSyntax>? TypeParameters = null,
+    IReadOnlyList<CallArgumentSyntax>? HeaderArguments = null) : StatementSyntax(Span);
 
 internal sealed record ClassKeywordArgumentSyntax(
     string Name,

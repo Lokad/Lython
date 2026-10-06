@@ -30,7 +30,7 @@ internal sealed partial class LythonRuntime
             () => CallExpansion.ExpandRawArguments(call.Arguments, context, EvaluateExpression, target));
     }
 
-    private static object InvokeCallableTarget(
+    internal static object InvokeCallableTarget(
         object target,
         LythonSourceSpan targetSpan,
         LythonSourceSpan callSpan,
@@ -72,7 +72,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static async ValueTask<object> InvokeCallableTargetAsync(
+    internal static async ValueTask<object> InvokeCallableTargetAsync(
         object target,
         LythonSourceSpan targetSpan,
         LythonSourceSpan callSpan,

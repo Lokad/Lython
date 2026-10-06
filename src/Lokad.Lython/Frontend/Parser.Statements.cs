@@ -349,60 +349,17 @@ internal sealed partial class Parser
 
         if (!TryParseTypeParameters(out var typeParameters)) return null;
 
-        var bases = new List<ExpressionSyntax>();
-        var keywordArguments = new List<ClassKeywordArgumentSyntax>();
-        if (TryRead(Token.OpenParen, out var openParen))
+        IReadOnlyList<CallArgumentSyntax> headerArguments = [];
+        if (CurrentToken == Token.OpenParen)
         {
-            if (CurrentToken != Token.CloseParen)
-            {
-                while (true)
-                {
-                    if (IsNameToken(CurrentToken) &&
-                        PeekToken(1) == Token.Assign &&
-                        TryReadNameToken(out var keywordNameToken))
-                    {
-                        _ = ReadToken(); // '='
-                        var keywordValue = ParseExpression();
-                        if (keywordValue is null)
-                        {
-                            AddDiagnostic("LA1105", "Expected class keyword value in class definition.", keywordNameToken);
-                            return null;
-                        }
-
-                        keywordArguments.Add(new ClassKeywordArgumentSyntax(
-                            IdentifierText(keywordNameToken),
-                            keywordValue,
-                            Merge(SpanOf(keywordNameToken), keywordValue.Span)));
-                    }
-                    else
-                    {
-                        var baseExpression = ParseExpression();
-                        if (baseExpression is null)
-                        {
-                            AddDiagnostic("LA1101", "Expected base class expression in class definition.", openParen);
-                            return null;
-                        }
-
-                        bases.Add(baseExpression);
-                    }
-                    if (!TryRead(Token.Comma, out _))
-                    {
-                        break;
-                    }
-
-                    if (CurrentToken == Token.CloseParen)
-                    {
-                        break;
-                    }
-                }
-            }
-
-            if (!TryRead(Token.CloseParen, out var closeParen))
-            {
-                AddDiagnostic("LA1102", "Expected ')' after base class list.", nameToken);
-                return null;
-            }
+            var target = new IdentifierExpressionSyntax(IdentifierText(nameToken), SpanOf(nameToken));
+            if (CallPostfixParser.Instance.Parse(this, target) is not CallExpressionSyntax header) return null;
+            headerArguments = header.Arguments;
         }
+        var bases = headerArguments.Where(argument => argument.Kind == CallArgumentKind.Positional)
+            .Select(argument => argument.Expression).ToArray();
+        var keywordArguments = headerArguments.Where(argument => argument.Kind == CallArgumentKind.Keyword)
+            .Select(argument => new ClassKeywordArgumentSyntax(argument.KeywordName, argument.Expression, argument.Expression.Span)).ToArray();
 
         if (!TryRead(Token.Colon, out _))
         {
@@ -423,7 +380,7 @@ internal sealed partial class Parser
             bases,
             keywordArguments,
             body,
-            Merge(SpanOf(classToken), body[^1].Span), typeParameters);
+            Merge(SpanOf(classToken), body[^1].Span), typeParameters, headerArguments);
     }
 
     private bool TryParseFunctionParameters(Token terminator, string owner, bool allowAnnotations, out IReadOnlyList<FunctionParameterSyntax> parameters, out int terminatorToken)

@@ -280,7 +280,7 @@ internal sealed partial class LythonRuntime
 
     private static bool Contains(object container, object candidate, LythonSourceSpan span) => PyContainment.Contains(container, candidate, span);
 
-    private static object GetUserItem(PyInstance instance, object index, ExecutionContext context, LythonSourceSpan span)
+    internal static object GetUserItem(PyInstance instance, object index, ExecutionContext context, LythonSourceSpan span)
     {
         if (!instance.TryGetAttribute("__getitem__", context, span, out var member) || member is not ICallable callable)
         {
@@ -290,7 +290,7 @@ internal sealed partial class LythonRuntime
         return CallableInvocation.InvokeUnary(callable, index, span, context);
     }
 
-    private static async ValueTask<object> GetUserItemAsync(PyInstance instance, object index, ExecutionContext context, LythonSourceSpan span)
+    internal static async ValueTask<object> GetUserItemAsync(PyInstance instance, object index, ExecutionContext context, LythonSourceSpan span)
     {
         if (!instance.TryGetAttribute("__getitem__", context, span, out var member) || member is not ICallable callable)
         {

@@ -549,6 +549,16 @@ overflow keys. The `u`/`U` prefixes produce ordinary Unicode strings, including
 adjacent literal concatenation. `except*` is outside the current subset.
 This handler syntax must produce an explicit unsupported diagnostic before execution.
 
+Class headers accept positional bases, `*` base unpacking, explicit keywords and
+`**` mappings with Python call-argument ordering: positional/starred operands run
+before keywords. Expanded arrays and custom mapping-key snapshots remain governed
+through construction. Mapping keys are collected before value lookups; a duplicate
+keyword skips its value lookup and later argument expressions. RunAsync awaits
+base iteration, keys/value protocols, `__init_subclass__` and decorators. Invalid
+unpackings fail before the suite; duplicate bases and unhandled subclass keywords
+fail after it. Metaclass dispatch remains explicitly unsupported, including through
+`**` options.
+
 Match subjects accept unparenthesized tuple expression lists, singleton trailing
 commas and starred unpacking. Operands evaluate once from left to right, with
 unpacking drained before case selection and governed like ordinary tuple displays.
