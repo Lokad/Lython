@@ -37,24 +37,14 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            if (matchCase.Guard is not null)
-            {
-                var guardContext = new ExecutionContext(context);
-                foreach (var pair in bindings)
-                {
-                    guardContext.Variables[pair.Key] = pair.Value;
-                }
-
-                if (!IsTruthy(EvaluateExpression(matchCase.Guard, guardContext)))
-                {
-                    continue;
-                }
-            }
-
             foreach (var pair in bindings)
             {
                 StoreName(pair.Key, pair.Value, context, matchCase.Span);
             }
+
+            if (matchCase.Guard is not null &&
+                !IsTruthy(EvaluateExpression(matchCase.Guard, context), context, matchCase.Guard.Span))
+                continue;
 
             var signal = ExecuteStatements(matchCase.Body, context);
             if (signal is not null)

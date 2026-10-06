@@ -272,7 +272,28 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(statement.Span);
         try
         {
-            ExecuteMatch(statement.Syntax, await EvaluateLoweredExpressionAsync(statement.Subject, context).ConfigureAwait(false), context);
+            var subject = await EvaluateLoweredExpressionAsync(statement.Subject, context).ConfigureAwait(false);
+            foreach (var matchCase in statement.Cases)
+            {
+                var bindings = new Dictionary<string, object>(StringComparer.Ordinal);
+                if (!TryMatchPattern(matchCase.Syntax.Pattern, subject, context, bindings))
+                    continue;
+
+                foreach (var pair in bindings)
+                    StoreName(pair.Key, pair.Value, context, matchCase.Syntax.Span);
+
+                if (matchCase.Guard is { } guard)
+                {
+                    var guardValue = await EvaluateLoweredExpressionAsync(guard, context).ConfigureAwait(false);
+                    if (!await IsTruthyAsync(guardValue, context, guard.Span).ConfigureAwait(false))
+                        continue;
+                }
+
+                var flow = await ExecuteStatementsAsync(matchCase.Body, context).ConfigureAwait(false);
+                if (flow.Return is not null) throw flow.Return;
+                if (flow.Control is not null) throw flow.Control;
+                return;
+            }
         }
         finally
         {

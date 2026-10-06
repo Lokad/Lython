@@ -421,7 +421,13 @@ internal sealed partial class ExecutableScript
 
                 AddInstruction(nextCaseBlock, ExecutableInstruction.LoadLocal(subjectSlot, matchCase.Syntax.Span));
                 AddInstruction(nextCaseBlock, ExecutableInstruction.MatchCase(InternMatchCase(matchCase.Syntax), failBlock, matchCase.Syntax.Span));
-                AddInstruction(nextCaseBlock, ExecutableInstruction.Jump(bodyBlock, matchCase.Syntax.Span));
+                var successBlock = nextCaseBlock;
+                if (matchCase.Guard is { } guard)
+                {
+                    successBlock = CompileExpression(guard, successBlock);
+                    AddInstruction(successBlock, ExecutableInstruction.JumpIfFalse(failBlock, guard.Span));
+                }
+                AddInstruction(successBlock, ExecutableInstruction.Jump(bodyBlock, matchCase.Syntax.Span));
 
                 var bodyExit = CompileStatements(matchCase.Body, bodyBlock);
                 if (bodyExit is int bodyBlockExit && !IsTerminated(bodyBlockExit))

@@ -534,6 +534,12 @@ overflow keys. The `u`/`U` prefixes produce ordinary Unicode strings, including
 adjacent literal concatenation. `except*` is outside the current subset.
 This handler syntax must produce an explicit unsupported diagnostic before execution.
 
+Successful match-pattern captures are bound in the enclosing scope before the
+guard runs. Guard assignment expressions use that same scope, including function
+cells and global/nonlocal declarations; their bindings remain visible even when
+the guard is false or raises. Guard evaluation and truth conversion await delayed
+host operations in RunAsync, including match statements in class bodies.
+
 ---
 
 ## 9. Semantic Compatibility

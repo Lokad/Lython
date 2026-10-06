@@ -169,7 +169,8 @@ internal static partial class StaticAbstractInterpreter
                         var caseBindings = bindings.Clone();
                         if (matchCase.Guard is not null)
                         {
-                            AnalyzeExpression(matchCase.Guard, diagnostics, bindings);
+                            AnalyzeExpression(matchCase.Guard, diagnostics, caseBindings);
+                            bindings.ReplaceWith(AbstractState.Merge(bindings, caseBindings));
                             StaticConditionRefinements.Apply(matchCase.Guard, assumedTruth: true, caseBindings);
                         }
 

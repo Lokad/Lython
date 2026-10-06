@@ -174,7 +174,8 @@ internal sealed record LoweredWhileStatement(
 
 internal sealed record LoweredMatchCase(
     MatchCaseSyntax Syntax,
-    IReadOnlyList<LoweredStatement> Body);
+    IReadOnlyList<LoweredStatement> Body,
+    LoweredExpression? Guard = null);
 
 internal sealed record LoweredMatchStatement(
     MatchStatementSyntax Syntax,
