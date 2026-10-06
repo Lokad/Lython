@@ -120,6 +120,8 @@ internal sealed partial class LythonRuntime
         // Indexed to avoid boxing the region-list enumerator on every
         // routing scan (same order, no disposal semantics).
         var regions = codeObject.ExceptionRegions;
+        int? failedHandlerStart = null;
+        int? failedHandlerEnd = null;
         for (var regionIndex = 0; regionIndex < regions.Count; regionIndex++)
         {
             var region = regions[regionIndex];
@@ -133,9 +135,32 @@ internal sealed partial class LythonRuntime
                 continue;
 
             if (abrupt is PendingException { Exception: var exception } &&
-                region.ExceptBlockIndex is int exceptBlock &&
-                MatchesCaughtException(region.ExceptionTypeNames, exception, context, span))
+                region.ExceptBlockIndex is int exceptBlock)
             {
+                if (region.ProtectedStartBlockIndex == failedHandlerStart &&
+                    region.ProtectedEndBlockIndex == failedHandlerEnd)
+                    continue;
+
+                bool matches;
+                try
+                {
+                    matches = MatchesCaughtException(region.ExceptionTypeNames, region.ExceptionTypesAreTuple, exception, context, span);
+                }
+                catch (LythonRuntimeException handlerError)
+                {
+                    // A failed header replaces the in-flight exception and bypasses
+                    // the remaining handlers of this try, while its finally and
+                    // enclosing handlers still run.
+                    handlerError.PythonContext ??= CreatePythonExceptionInstance(exception);
+                    abrupt = new PendingException(handlerError);
+                    failedHandlerStart = region.ProtectedStartBlockIndex;
+                    failedHandlerEnd = region.ProtectedEndBlockIndex;
+                    continue;
+                }
+
+                if (!matches)
+                    continue;
+
                 RestoreExecutableStackForHandler(region, stack, blockEntryStackDepths, span);
                 pendingAbrupt = null;
                 matchedRegion = region;
@@ -166,6 +191,8 @@ internal sealed partial class LythonRuntime
             // the next enclosing protected range, just as CPython unwinds nested try suites.
         }
 
+        if (abrupt is PendingException)
+            pendingAbrupt = abrupt;
         return false;
     }
 

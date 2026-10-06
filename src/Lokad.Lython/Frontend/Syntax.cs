@@ -394,7 +394,8 @@ internal sealed record ExceptClauseSyntax(
     IReadOnlyList<string>? ExceptionTypeNames,
     string? ExceptionVariableName,
     IReadOnlyList<StatementSyntax> Body,
-    LythonSourceSpan Span);
+    LythonSourceSpan Span,
+    bool ExceptionTypesAreTuple = false);
 
 internal sealed record TryStatementSyntax(
     IReadOnlyList<StatementSyntax> TryBody,

@@ -18,7 +18,7 @@ implemented or a claim of complete PEP 701 support.
 | Function definitions, lambdas, arguments | Defaults, positional-only, keyword-only and variadic parameters, annotations, positional/keyword/starred calls, closures, global/nonlocal declarations, decorators | `functions`, `invalid` |
 | Modern typing | Lazy type aliases, generic functions/classes/aliases, bounds/constraints/defaults, TypeVar/TypeVarTuple/ParamSpec, annotation scopes and variadic annotations | `typing`, `invalid` |
 | Class definitions | Bases, decorators, methods, `super`, property/static/class methods; contained dataclass subset | `classes` |
-| Try, raise, assert | Typed/bare handlers, tuple handlers and `as`, `else`/`finally`, chained exceptions, assertions | `exceptions`, `invalid` |
+| Try, raise, assert | Typed/bare handlers, named/qualified tuple values, grouped/empty/trailing-comma tuple handlers and `as`, `else`/`finally`, chained exceptions, assertions | `exceptions`, `invalid` |
 | With statements | Single, comma-separated or grouped managers; full assignment targets; ordered enter and reverse exit, including binding failures | `with` |
 | Imports, simple statements, blocks | Allowed modules and members, aliases/dotted imports, grouped from-imports, semicolon statements, one-line and indented suites | `imports`, `invalid` |
 | Formatted strings | Adjacent text/formatted literals, escaped braces, conversions/specifiers, nested format fields, quoted expressions and enclosing-quote reuse | `fstrings` |

@@ -239,6 +239,7 @@ internal sealed partial class Parser
                 return null;
             }
             IReadOnlyList<string>? exceptionTypes = null;
+            var exceptionTypesAreTuple = false;
             string? exceptionVariable = null;
             if (CurrentToken != Token.Colon)
             {
@@ -246,7 +247,8 @@ internal sealed partial class Parser
                 if (CurrentToken == Token.OpenParen)
                 {
                     ReadToken();
-                    while (true)
+                    exceptionTypesAreTuple = CurrentToken == Token.CloseParen;
+                    while (CurrentToken != Token.CloseParen)
                     {
                         if (!TryReadExceptionTypeName("Expected exception type in except tuple.", out var typeName))
                         {
@@ -259,6 +261,7 @@ internal sealed partial class Parser
                             break;
                         }
 
+                        exceptionTypesAreTuple = true;
                         ReadToken();
                     }
 
@@ -311,7 +314,7 @@ internal sealed partial class Parser
             }
 
             var clauseSpan = Merge(SpanOf(exceptToken), body[^1].Span);
-            exceptClauses.Add(new ExceptClauseSyntax(exceptionTypes, exceptionVariable, body, clauseSpan));
+            exceptClauses.Add(new ExceptClauseSyntax(exceptionTypes, exceptionVariable, body, clauseSpan, exceptionTypesAreTuple));
             span = Merge(span, body[^1].Span);
         }
 

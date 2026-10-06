@@ -48,11 +48,12 @@ internal sealed partial class LythonRuntime
 
         private PyException? _entryActiveException = context.Services.CurrentException;
 
-        private sealed class ActiveExceptionSave(PyException? savedException, int? suiteStartBlockIndex, int? suiteEndBlockIndex)
+        private sealed class ActiveExceptionSave(PyException? savedException, int? suiteStartBlockIndex, int? suiteEndBlockIndex, PendingAbruptSignal? savedPendingAbrupt = null)
         {
             public PyException? SavedException { get; set; } = savedException;
             public int? SuiteStartBlockIndex { get; } = suiteStartBlockIndex;
             public int? SuiteEndBlockIndex { get; } = suiteEndBlockIndex;
+            public PendingAbruptSignal? SavedPendingAbrupt { get; } = savedPendingAbrupt;
         }
 
         internal bool HasActiveHandler => _savedActiveExceptions is { Count: > 0 };
@@ -472,8 +473,13 @@ internal sealed partial class LythonRuntime
                             activeHandlers.Pop();
                         }
                     }
-                    context.Services.SetCurrentException(
-                        _savedActiveExceptions is { Count: > 0 } saves ? saves.Pop().SavedException : null);
+                    if (_savedActiveExceptions is { Count: > 0 } saves)
+                    {
+                        var saved = saves.Pop();
+                        context.Services.SetCurrentException(saved.SavedException);
+                        _pendingAbrupt = saved.SavedPendingAbrupt;
+                    }
+                    else context.Services.SetCurrentException(null);
                     return false;
 
                 case ExecutableOpCode.EndFinally:
@@ -691,18 +697,19 @@ internal sealed partial class LythonRuntime
                     catch (LythonRuntimeException ex)
                     {
                         var previousActive = context.Services.CurrentException;
+                        var previousPending = _pendingAbrupt;
                         _delegation = null;
                         _injectedException = null;
                         if (!TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingException(ex), instruction.Span, ref _pendingAbrupt, ref _currentBlockIndex, out var matchedRegion))
                         {
+                            var failure = _pendingAbrupt is PendingException unhandled ? unhandled.Exception : ex;
                             AbandonFrame(instruction.Span);
-                            throw;
+                            throw failure;
                         }
 
                         var routedToHandler = _pendingAbrupt is null;
-                        var routedToCleanup = !routedToHandler &&
-                            _pendingAbrupt is PendingException pending &&
-                            ReferenceEquals(pending.Exception, ex);
+                        var routedToCleanup = !routedToHandler && _pendingAbrupt is PendingException;
+                        var routedException = _pendingAbrupt is PendingException pending ? pending.Exception : ex;
                         if (routedToHandler || routedToCleanup)
                         {
                             // The except route already installed the handler
@@ -713,12 +720,18 @@ internal sealed partial class LythonRuntime
                             var installed = routedToHandler ? context.Services.CurrentException : null;
                             context.Services.SetCurrentException(previousActive);
                             UnwindAbandonedHandlers(_currentBlockIndex);
+                            var retainedPending = routedToHandler &&
+                                _savedActiveExceptions is { Count: > 0 } enclosing &&
+                                enclosing.Peek() is { SuiteStartBlockIndex: int start, SuiteEndBlockIndex: int end } &&
+                                _currentBlockIndex >= start && _currentBlockIndex <= end
+                                ? previousPending : null;
                             SavedActiveExceptions().Push(new ActiveExceptionSave(
                                 context.Services.CurrentException,
                                 matchedRegion?.SuiteStartBlockIndex,
-                                matchedRegion?.SuiteEndBlockIndex));
+                                matchedRegion?.SuiteEndBlockIndex,
+                                retainedPending));
                             context.Services.SetCurrentException(
-                                routedToHandler ? installed : CreatePythonExceptionInstance(ex));
+                                routedToHandler ? installed : CreatePythonExceptionInstance(routedException));
                         }
 
                         jumped = true;

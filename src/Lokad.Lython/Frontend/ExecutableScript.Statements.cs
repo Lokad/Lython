@@ -275,7 +275,8 @@ internal sealed partial class ExecutableScript
                     handler.StartBlock,
                     null,
                     handler.StartBlock,
-                    handler.EndBlock));
+                    handler.EndBlock,
+                    exceptClause.Syntax.ExceptionTypesAreTuple));
 
                 if (finallyClause is { } handlerCleanup)
                 {

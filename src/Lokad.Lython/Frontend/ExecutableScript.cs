@@ -394,7 +394,8 @@ internal sealed record ExecutableExceptionRegion(
     int? ExceptBlockIndex,
     int? FinallyBlockIndex,
     int? SuiteStartBlockIndex,
-    int? SuiteEndBlockIndex);
+    int? SuiteEndBlockIndex,
+    bool ExceptionTypesAreTuple = false);
 
 internal sealed record ExecutableImportBinding(
     string ModuleName,

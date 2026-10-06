@@ -304,16 +304,24 @@ internal sealed partial class LythonRuntime
         catch (LythonRuntimeException ex)
         {
             LoweredExceptClause? matchedClause = null;
-            foreach (var candidate in statement.ExceptClauses)
+            try
             {
-                if (MatchesCaughtException(candidate.Syntax.ExceptionTypeNames, ex, context, statement.Span))
+                foreach (var candidate in statement.ExceptClauses)
                 {
-                    matchedClause = candidate;
-                    break;
+                    if (MatchesCaughtException(candidate.Syntax.ExceptionTypeNames, candidate.Syntax.ExceptionTypesAreTuple, ex, context, statement.Span))
+                    {
+                        matchedClause = candidate;
+                        break;
+                    }
                 }
             }
+            catch (LythonRuntimeException handlerError)
+            {
+                handlerError.PythonContext ??= CreatePythonExceptionInstance(ex);
+                pendingException = handlerError;
+            }
 
-            if (matchedClause is not null)
+            if (pendingException is null && matchedClause is not null)
             {
                 // Handler suites share the enclosing scope like CPython: only
                 // the `as` variable is suite-local (deleted below). A child
@@ -344,7 +352,7 @@ internal sealed partial class LythonRuntime
                     context.Services.SetCurrentException(previousException);
                 }
             }
-            else
+            else if (pendingException is null)
             {
                 pendingException = ex;
             }
@@ -761,7 +769,10 @@ internal sealed partial class LythonRuntime
         ExecutionContext context)
     {
         var current = context.Services.CurrentException;
-        thrown.PythonContext = ReferenceEquals(instance, current) ? null : current;
+        thrown.OriginalPythonException = instance;
+        thrown.PythonCause = instance.Cause;
+        thrown.PythonContext = current is not null && !ReferenceEquals(instance, current) ? current : instance.Context;
+        thrown.SuppressPythonContext = instance.SuppressContext;
         thrown.PythonExplicitArgs = instance.ArgsOverride ?? instance.ExplicitArgs;
     }
 
@@ -780,6 +791,7 @@ internal sealed partial class LythonRuntime
             PythonCause = current.Cause,
             PythonContext = current.Context,
             SuppressPythonContext = current.SuppressContext,
+            OriginalPythonException = current,
         };
     }
 

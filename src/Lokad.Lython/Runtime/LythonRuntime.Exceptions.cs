@@ -38,16 +38,27 @@ internal sealed partial class LythonRuntime
     }
 
     internal static PyException CreatePythonExceptionInstance(LythonRuntimeException exception)
-        => exception.OriginalPythonException ?? new PyException(exception.Identity, exception.Message, exception.Payload ?? PyNone.Instance) with
+    {
+        if (exception.OriginalPythonException is { } original)
+        {
+            original.Cause = exception.PythonCause;
+            original.Context = exception.PythonContext;
+            original.SuppressContext = exception.SuppressPythonContext;
+            return original;
+        }
+
+        return new PyException(exception.Identity, exception.Message, exception.Payload ?? PyNone.Instance) with
         {
             Cause = exception.PythonCause,
             Context = exception.PythonContext,
             SuppressContext = exception.SuppressPythonContext,
             ExplicitArgs = exception.PythonExplicitArgs,
         };
+    }
 
     private static bool MatchesCaughtException(
         IReadOnlyList<string>? caughtTypeNames,
+        bool caughtTypesAreTuple,
         LythonRuntimeException thrown,
         ExecutionContext context,
         LythonSourceSpan span)
@@ -57,34 +68,75 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        foreach (var caughtTypeName in caughtTypeNames)
+        if (!caughtTypesAreTuple)
         {
-            var parts = caughtTypeName.Split('.');
-            object caughtType = ResolveName(parts[0], span, context);
-            for (var i = 1; i < parts.Length; i++)
+            var caughtType = ResolveCaughtExceptionTypeName(caughtTypeNames[0], context, span);
+            if (PyTupleLike.TryGetItems(caughtType, out var tupleItems))
             {
-                if (!TryResolveRuntimeMember(caughtType, parts[i], context, span, out var member))
-                {
-                    throw PyMemberAccess.CreateMissingMemberError(caughtType, parts[i], span, context);
-                }
-
-                caughtType = member;
+                return MatchesCaughtExceptionClasses(tupleItems, thrown, context, span);
             }
 
-            if (caughtType is not IPythonExceptionType pythonExceptionType)
+            return MatchesExceptionType(RequireCaughtExceptionClass(caughtType, span).ExceptionIdentity, thrown.Identity);
+        }
+
+        // Resolve every tuple element before validating or matching, as evaluating
+        // the Python tuple expression would. A later missing name must not be
+        // hidden by an earlier matching class.
+        using var scratch = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(caughtTypeNames.Count), span);
+        var caughtTypes = new object[caughtTypeNames.Count];
+        for (var i = 0; i < caughtTypes.Length; i++)
+        {
+            context.CheckExecutionBudget(span);
+            caughtTypes[i] = ResolveCaughtExceptionTypeName(caughtTypeNames[i], context, span);
+        }
+
+        return MatchesCaughtExceptionClasses(caughtTypes, thrown, context, span);
+    }
+
+    private static object ResolveCaughtExceptionTypeName(string caughtTypeName, ExecutionContext context, LythonSourceSpan span)
+    {
+        var parts = caughtTypeName.Split('.');
+        object caughtType = ResolveName(parts[0], span, context);
+        for (var i = 1; i < parts.Length; i++)
+        {
+            if (!TryResolveRuntimeMember(caughtType, parts[i], context, span, out var member))
             {
-                throw new LythonRuntimeException(
-                    "TypeError",
-                    "catching classes that do not inherit from BaseException is not allowed",
-                    span);
+                throw PyMemberAccess.CreateMissingMemberError(caughtType, parts[i], span, context);
             }
 
-            if (MatchesExceptionType(pythonExceptionType.ExceptionIdentity, thrown.Identity))
-            {
+            caughtType = member;
+        }
+
+        return caughtType;
+    }
+
+    private static bool MatchesCaughtExceptionClasses(
+        IReadOnlyList<object> caughtTypes,
+        LythonRuntimeException thrown,
+        ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        // CPython validates all members, including those after a matching class.
+        // Nested tuples and lists are not valid members of an except tuple.
+        for (var i = 0; i < caughtTypes.Count; i++)
+        {
+            context.CheckExecutionBudget(span);
+            _ = RequireCaughtExceptionClass(caughtTypes[i], span);
+        }
+
+        for (var i = 0; i < caughtTypes.Count; i++)
+        {
+            context.CheckExecutionBudget(span);
+            if (MatchesExceptionType(((IPythonExceptionType)caughtTypes[i]).ExceptionIdentity, thrown.Identity))
                 return true;
-            }
         }
 
         return false;
     }
+
+    private static IPythonExceptionType RequireCaughtExceptionClass(object caughtType, LythonSourceSpan span)
+        => caughtType as IPythonExceptionType ?? throw new LythonRuntimeException(
+            "TypeError",
+            "catching classes that do not inherit from BaseException is not allowed",
+            span);
 }

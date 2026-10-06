@@ -85,7 +85,8 @@ internal sealed partial class ExecutableScript
                     region.ExceptBlockIndex is int exceptBlock ? indexMap[FinalJumpTarget(exceptBlock)] : null,
                     region.FinallyBlockIndex is int finallyBlock ? indexMap[FinalJumpTarget(finallyBlock)] : null,
                     suiteStart,
-                    suiteEnd));
+                    suiteEnd,
+                    region.ExceptionTypesAreTuple));
             }
 
             // Runtime unwinding consumes applicable regions from the narrowest

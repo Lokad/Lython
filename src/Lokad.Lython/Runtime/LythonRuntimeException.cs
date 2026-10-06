@@ -49,7 +49,7 @@ internal class LythonRuntimeException : Exception
 
     public object? Payload { get; }
 
-    public PyException? OriginalPythonException { get; init; }
+    public PyException? OriginalPythonException { get; set; }
 
     public PyException? PythonCause { get; set; }
 
