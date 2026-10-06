@@ -462,12 +462,12 @@ terminal. Reusing a compiled script creates independent generator state.
 Suspension is supported in formatted-string fields and dynamic specifiers,
 starred calls/displays, outermost comprehension iterables, match guards and
 computed exception headers, assignment-target receivers/indices and non-name
-augmented assignments. Operands and expanded arguments retain their
+augmented assignments, assert/raise operands and deletion targets. Operands and expanded arguments retain their
 execution-memory ownership across send/throw/close. A solitary starred call
 argument is iterated after keywords; mixed positional/starred calls expand each
 star before the following argument. F-string values evaluate before specifiers.
-The current resumable subset still rejects assert/raise/delete expressions and
-nested definition decorators/defaults/annotations or class headers.
+The current resumable subset still rejects nested definition
+decorators/defaults/annotations or class headers.
 Ordinary forms of these constructs remain available in generator bodies without
 suspension in those positions. Rejection happens during compilation, including
 uncalled bodies. Generator frame/code introspection and implicit execution of

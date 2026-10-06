@@ -508,6 +508,22 @@ internal static class PyAttributeLookup
         return false;
     }
 
+    internal static async ValueTask<bool> TryDeleteDescriptorValueAsync(object descriptor, PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        if (descriptor is PyProperty property)
+        {
+            await property.DeleteAsync(instance, context, span).ConfigureAwait(false);
+            return true;
+        }
+        if (descriptor is PyInstance descriptorInstance &&
+            TryLookupDescriptorMethod(descriptorInstance, "__delete__", context, span, out var callable))
+        {
+            _ = await CallableInvocation.InvokeUnaryAsync(callable, instance, span, context).ConfigureAwait(false);
+            return true;
+        }
+        return TryDeleteDescriptorValue(descriptor, instance, context, span);
+    }
+
     public static bool TryDeleteDescriptorValue(object descriptor, PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (descriptor is IPyDeletableDescriptor deletable)

@@ -10,6 +10,23 @@ internal sealed partial class LythonRuntime
         {
             switch (operation)
             {
+                case ExecutableFailAssertion assertion:
+                    ThrowAssertionError(assertion.HasMessage ? Pop(_stack, span) : null, context, span);
+                    break;
+                case ExecutableRaise raised:
+                    var cause = raised.HasCause ? Pop(_stack, span) : null;
+                    ThrowRaisedValue(Pop(_stack, span), raised.HasCause, cause, context, span);
+                    break;
+                case ExecutableDeletePreparedTarget deleted:
+                    using (var storage = context.MemoryGovernor.ReserveTemporary(1024, span))
+                    {
+                        var reads = AssignmentTargetFacts.Reads(deleted.Target).ToArray();
+                        var values = CaptureTargetReads(reads, _stack.Count - reads.Length);
+                        _stack.RemoveTail(reads.Length);
+                        await DeletePreparedTargetAsync(deleted.Target, values, context, span, asynchronous).ConfigureAwait(false);
+                        SyncExecutableLocalsFromContext(codeObject, locals, localCells, context);
+                    }
+                    break;
                 case ExecutableUnpackValues unpack:
                     using (var materialized = asynchronous
                         ? await MaterializeHeaderSequenceAsync(Pop(_stack, span), span, context).ConfigureAwait(false)
@@ -60,6 +77,37 @@ internal sealed partial class LythonRuntime
             var result = new Dictionary<ExpressionSyntax, object>(reads.Count);
             for (var i = 0; i < reads.Count; i++) result[reads[i]] = _stack[first + i];
             return result;
+        }
+    }
+
+    private static async ValueTask DeletePreparedTargetAsync(AssignmentTargetSyntax target,
+        IReadOnlyDictionary<ExpressionSyntax, object> reads, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+    {
+        switch (target)
+        {
+            case NameAssignmentTargetSyntax name:
+                if (!DeleteName(name.Name, context, span))
+                    throw new LythonRuntimeException("NameError", $"name '{name.Name}' is not defined", span);
+                break;
+            case MemberAssignmentTargetSyntax member:
+                var receiver = reads[member.Target];
+                var deleted = asynchronous ? await PyMemberAccess.TryDeleteAsync(receiver, member.MemberName, context, span).ConfigureAwait(false)
+                    : PyMemberAccess.TryDelete(receiver, member.MemberName, context, span);
+                if (!deleted) throw PyMemberAccess.CreateMissingMemberError(receiver, member.MemberName, span, context, operation: MissingMemberOperation.Delete);
+                break;
+            case SubscriptAssignmentTargetSyntax item:
+                if (asynchronous) await ExecuteResolvedSubscriptDeletionAsync(reads[item.Target], reads[item.Index], span, context).ConfigureAwait(false);
+                else ExecuteResolvedSubscriptDeletion(reads[item.Target], reads[item.Index], span, context);
+                break;
+            case SliceAssignmentTargetSyntax slice:
+                var sequence = reads[slice.Target];
+                var start = slice.Start is null ? null : reads[slice.Start];
+                var end = slice.End is null ? null : reads[slice.End];
+                var step = slice.Step is null ? null : reads[slice.Step];
+                if (asynchronous) await ExecuteSliceDeletionAsync(sequence, start, end, step, span, context).ConfigureAwait(false);
+                else ExecuteSliceDeletion(sequence, start, end, step, span, context);
+                break;
+            default: throw new InvalidOperationException("Invalid prepared delete target.");
         }
     }
 

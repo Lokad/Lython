@@ -402,7 +402,7 @@ internal sealed partial class LythonRuntime
 
                 var target = await EvaluateLoweredExpressionAsync(subscript.Target, context).ConfigureAwait(false);
                 var index = await EvaluateLoweredExpressionAsync(subscript.Index, context).ConfigureAwait(false);
-                ExecuteResolvedSubscriptDeletion(target, index, span, context);
+                await ExecuteResolvedSubscriptDeletionAsync(target, index, span, context).ConfigureAwait(false);
                 return;
 
             case SliceExpressionSyntax:
@@ -411,12 +411,12 @@ internal sealed partial class LythonRuntime
                     break;
                 }
 
-                ExecuteSliceDeletion(
+                await ExecuteSliceDeletionAsync(
                     await EvaluateLoweredExpressionAsync(slice.Target, context).ConfigureAwait(false),
                     slice.Start is null ? null : await EvaluateLoweredExpressionAsync(slice.Start, context).ConfigureAwait(false),
                     slice.End is null ? null : await EvaluateLoweredExpressionAsync(slice.End, context).ConfigureAwait(false),
                     slice.Step is null ? null : await EvaluateLoweredExpressionAsync(slice.Step, context).ConfigureAwait(false),
-                    span, context);
+                    span, context).ConfigureAwait(false);
                 return;
 
             case MemberExpressionSyntax memberSyntax:
@@ -426,7 +426,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 var memberTarget = await EvaluateLoweredExpressionAsync(member.Target, context).ConfigureAwait(false);
-                if (!PyMemberAccess.TryDelete(memberTarget, memberSyntax.MemberName, context, span))
+                if (!await PyMemberAccess.TryDeleteAsync(memberTarget, memberSyntax.MemberName, context, span).ConfigureAwait(false))
                 {
                     throw PyMemberAccess.CreateMissingMemberError(memberTarget, memberSyntax.MemberName, span, context, operation: MissingMemberOperation.Delete);
                 }
@@ -446,26 +446,8 @@ internal sealed partial class LythonRuntime
         }
 
         var raised = await EvaluateLoweredExpressionAsync(statement.Expression, context).ConfigureAwait(false);
-        if (raised is ExceptionTypeValue typeValue &&
-            typeValue.Invoke([], statement.Span, context) is PyException constructed)
-        {
-            raised = constructed;
-        }
-
-        if (raised is not PyException instance)
-        {
-            throw RuntimeErrors.RaiseExpectsException(statement.Span);
-        }
-
-        var thrown = new LythonRuntimeException(instance.Identity, instance.Message, statement.Span, null, instance.Value);
-        AttachImplicitRaiseChain(thrown, instance, context);
-        if (statement.CauseExpression is not null)
-        {
-            thrown.PythonCause = CoerceRaiseCause(await EvaluateLoweredExpressionAsync(statement.CauseExpression, context).ConfigureAwait(false), statement.Span, context);
-            thrown.SuppressPythonContext = true;
-        }
-
-        throw thrown;
+        var cause = statement.CauseExpression is null ? null : await EvaluateLoweredExpressionAsync(statement.CauseExpression, context).ConfigureAwait(false);
+        ThrowRaisedValue(raised, statement.CauseExpression is not null, cause, context, statement.Span);
     }
 
     private static async ValueTask<object> EvaluateLoweredAssignmentExpressionAsync(LoweredAssignmentExpression assignment, ExecutionContext context)

@@ -146,6 +146,14 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
         _ = CallableInvocation.InvokeUnary(callable, value, span, context);
     }
 
+    internal async ValueTask DeleteAsync(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        if (_deleter is null)
+            throw new LythonRuntimeException("AttributeError", BuildMissingDeleterMessage(instance.Type), span);
+        var callable = BindAccessor(_deleter, instance, instance.Type, context, span, PropertyAccessorKind.Deleter);
+        _ = await callable.InvokeAsync([], span, context).ConfigureAwait(false);
+    }
+
     public void Delete(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (_deleter is null)

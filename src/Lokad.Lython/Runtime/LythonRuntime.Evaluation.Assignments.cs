@@ -28,10 +28,15 @@ internal sealed partial class LythonRuntime
     }
 
     private static void ThrowAssertionError(object? message, ExecutionContext context, LythonSourceSpan span)
-        => throw new LythonRuntimeException(
-            "AssertionError",
-            message is null ? string.Empty : ToInterpolatedPyString(message, context).AsString(),
-            span);
+    {
+        var args = new PyTuple(message is null ? [] : [message], context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(args, args.CommittedStorageBytes, span);
+        throw new LythonRuntimeException("AssertionError",
+            message is null ? string.Empty : ToInterpolatedPyString(message, context).AsString(), span)
+        {
+            PythonExplicitArgs = args,
+        };
+    }
 
     private static void ExecuteDeleteStatement(DeleteStatementSyntax statement, ExecutionContext context)
     {
@@ -601,6 +606,11 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         ExecutionContext context)
     {
+        if (target is PyInstance instance)
+        {
+            InvokeItemMutation(instance, "__delitem__", [CallArgumentValue.Positional(new PySlice(start ?? PyNone.Instance, end ?? PyNone.Instance, step ?? PyNone.Instance))], context, span);
+            return;
+        }
         // Mappings delete colon slices as keys like CPython; bounds stay raw.
         if (target is PyDict || target is PyCounter || target is PyDefaultDict || target is PyChainMap)
         {

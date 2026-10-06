@@ -662,6 +662,21 @@ internal sealed partial class LythonRuntime
         public object Get(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
             => instance is null ? this : Bind(instance);
 
+        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length != 2 || arguments[0].IsKeyword || arguments[1].IsKeyword ||
+                !PyStringOps.TryAsString(arguments[1].Value, out var name))
+                throw new LythonRuntimeException("TypeError", "object.__delattr__(self, name) expects an instance and a string name.", span);
+            if (arguments[0].Value is not PyInstance instance) return Invoke(arguments, span, context);
+            var memberName = name.AsString();
+            if (instance.Type.TryLookupInMro(memberName, 0, out var rawValue, out _) &&
+                await PyAttributeLookup.TryDeleteDescriptorValueAsync(rawValue, instance, context, span).ConfigureAwait(false))
+                return PyNone.Instance;
+            if (!instance.RemoveAttribute(memberName))
+                throw PyMemberAccess.CreateMissingMemberError(instance, memberName, span, context, operation: MissingMemberOperation.Delete);
+            return PyNone.Instance;
+        }
+
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length != 2 ||

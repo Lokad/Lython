@@ -396,6 +396,24 @@ internal static class PyMemberAccess
         throw CreateMissingMemberError(target, memberName, span, context, operation: MissingMemberOperation.Write);
     }
 
+    public static async ValueTask<bool> TryDeleteAsync(object target, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        if (target is PyInstance instance && instance.Type.TryLookupInMro("__delattr__", 0, out var raw, out _))
+        {
+            var bound = raw switch
+            {
+                IPyBindableCallable bindable => bindable.Bind(instance),
+                IPyDescriptor descriptor => await descriptor.GetAsync(instance, instance.Type, context, span).ConfigureAwait(false),
+                _ => raw,
+            };
+            if (bound is not LythonRuntime.ICallable callable)
+                throw new LythonRuntimeException("TypeError", "__delattr__ must be callable.", span);
+            _ = await CallableInvocation.InvokeUnaryAsync(callable, PyString.FromString(memberName), span, context).ConfigureAwait(false);
+            return true;
+        }
+        return TryDelete(target, memberName, context, span);
+    }
+
     public static bool TryDelete(object target, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (target is PyInstance instance)

@@ -442,26 +442,22 @@ internal sealed partial class LythonRuntime
         }
 
         var raised = EvaluateLoweredExpression(statement.Expression, context);
+        var cause = statement.CauseExpression is null ? null : EvaluateLoweredExpression(statement.CauseExpression, context);
+        ThrowRaisedValue(raised, statement.CauseExpression is not null, cause, context, statement.Span);
+    }
 
-        if (raised is ExceptionTypeValue typeValue &&
-            typeValue.Invoke([], statement.Span, context) is PyException constructed)
-        {
+    private static void ThrowRaisedValue(object raised, bool hasCause, object? cause, ExecutionContext context, LythonSourceSpan span)
+    {
+        if (raised is ExceptionTypeValue typeValue && typeValue.Invoke([], span, context) is PyException constructed)
             raised = constructed;
-        }
-
-        if (raised is not PyException instance)
-        {
-            throw RuntimeErrors.RaiseExpectsException(statement.Span);
-        }
-
-        var thrown = new LythonRuntimeException(instance.Identity, instance.Message, statement.Span, null, instance.Value);
+        if (raised is not PyException instance) throw RuntimeErrors.RaiseExpectsException(span);
+        var thrown = new LythonRuntimeException(instance.Identity, instance.Message, span, null, instance.Value);
         AttachImplicitRaiseChain(thrown, instance, context);
-        if (statement.CauseExpression is not null)
+        if (hasCause)
         {
-            thrown.PythonCause = CoerceRaiseCause(EvaluateLoweredExpression(statement.CauseExpression, context), statement.Span, context);
+            thrown.PythonCause = CoerceRaiseCause(cause!, span, context);
             thrown.SuppressPythonContext = true;
         }
-
         throw thrown;
     }
 
