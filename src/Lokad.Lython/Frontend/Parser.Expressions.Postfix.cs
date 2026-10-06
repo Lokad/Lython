@@ -111,7 +111,7 @@ internal sealed partial class Parser
                     {
                         var nameToken = parser.ReadToken();
                         parser.ReadToken();
-                        form = CallArgumentForm.Keyword(parser.IdentifierText(nameToken));
+                        form = CallArgumentForm.Keyword(parser.RawIdentifierText(nameToken));
                         sawKeywordArgument = true;
                     }
                     else if (sawKeywordArgument)

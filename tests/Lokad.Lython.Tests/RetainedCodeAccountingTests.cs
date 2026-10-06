@@ -233,6 +233,28 @@ public sealed class RetainedCodeAccountingTests
     }
 
     [Fact]
+    public void PrivateDefinitionAndTypeParameterSpellingsAreRetained()
+    {
+        var ordinary = TopLevel("class C:\n def f[T](self): return T\n");
+        var privateNames = TopLevel("class C:\n def __f[__T](self): return __T\n");
+        var plain = LythonRuntime.MeasureDeferredModuleCode(ordinary);
+        var mangled = LythonRuntime.MeasureDeferredModuleCode(privateNames);
+        Assert.Equal(plain.Nodes, mangled.Nodes);
+        Assert.Equal(plain.PayloadBytes + 2 * (24 + 2 * 3), mangled.PayloadBytes);
+    }
+
+    [Fact]
+    public void PrivatePatternSpellingIsRetainedWithoutCountingBindingTwice()
+    {
+        var ordinary = TopLevel("class C:\n def f(self,x):\n  match x:\n   case [capture]: return capture\n");
+        var privateNames = TopLevel("class C:\n def f(self,x):\n  match x:\n   case [__capture]: return __capture\n");
+        var plain = LythonRuntime.MeasureDeferredModuleCode(ordinary);
+        var mangled = LythonRuntime.MeasureDeferredModuleCode(privateNames);
+        Assert.Equal(plain.Nodes, mangled.Nodes);
+        Assert.Equal(plain.PayloadBytes + 24 + 2 * 9, mangled.PayloadBytes);
+    }
+
+    [Fact]
     public void FormattedTextChunksMeasured()
     {
         var body = TopLevel("def f():\n    return f\"ab{x}\"\n");

@@ -4,7 +4,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class PyGeneratorFunction(LoweredFunctionDefinitionStatement definition,
     LythonRuntime.ExecutionContext closure, Dictionary<string, object> defaults, IReadOnlyList<LythonRuntime.ExecutableCell>? closureCells = null)
-    : PyFunctionBase(definition.Syntax.Name, definition.Parameters, closure, defaults,
+    : PyFunctionBase(definition.Syntax.DeclaredName, definition.Parameters, closure, defaults,
         ScopeDirectiveFactsCollector.ForFunction(definition.Syntax))
 {
     protected override bool RequiresArgumentMirroring => true;

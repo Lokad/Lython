@@ -568,6 +568,7 @@ internal sealed partial class LythonRuntime
             {
                 case StatementSyntax statement:
                     nodes++;
+                    payload = RuntimeMemoryEstimates.SaturatingAdd(payload, RetainedDeclarationNamesBytes(statement));
                     PushStatementChildren(statement, pending);
                     break;
                 case ExpressionSyntax expression:
@@ -577,6 +578,8 @@ internal sealed partial class LythonRuntime
                     break;
                 case PatternSyntax pattern:
                     nodes++;
+                    if (pattern.OriginalBindingName is { } spelling)
+                        payload = RuntimeMemoryEstimates.SaturatingAdd(payload, checked(24L + 2L * spelling.Length));
                     PushPatternChildren(pattern, pending);
                     break;
                 default:
@@ -585,6 +588,26 @@ internal sealed partial class LythonRuntime
         }
 
         return (nodes, payload);
+    }
+
+    // A private declaration retains its original display spelling alongside
+    // its transformed binding. Account for that additional CLR string, including
+    // private type parameters whose public names preserve the source spelling.
+    private static long RetainedDeclarationNamesBytes(StatementSyntax statement)
+    {
+        var (original, parameters) = statement switch
+        {
+            FunctionDefinitionStatementSyntax function => (function.OriginalName, function.TypeParameters),
+            ClassDefinitionStatementSyntax type => (type.OriginalName, type.TypeParameters),
+            TypeAliasStatementSyntax alias => (alias.OriginalName, alias.TypeParameters),
+            _ => ((string?)null, (IReadOnlyList<TypeParameterSyntax>?)null)
+        };
+        static long Bytes(string? name) => name is null ? 0 : checked(24L + 2L * name.Length);
+        var bytes = Bytes(original);
+        if (parameters is not null)
+            foreach (var parameter in parameters)
+                bytes = RuntimeMemoryEstimates.SaturatingAdd(bytes, Bytes(parameter.OriginalName));
+        return bytes;
     }
 
     // Retained payload per literal occurrence, mirroring construction charges:

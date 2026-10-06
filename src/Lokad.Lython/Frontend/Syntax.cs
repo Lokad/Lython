@@ -36,9 +36,17 @@ internal sealed record UnpackedTypeExpressionSyntax(ExpressionSyntax Value, Lyth
 
 internal enum TypeParameterKind { TypeVar, TypeVarTuple, ParamSpec }
 internal sealed record TypeParameterSyntax(string Name, TypeParameterKind Kind, ExpressionSyntax? Bound,
-    ExpressionSyntax? Default, bool UnpackDefault, LythonSourceSpan Span);
+    ExpressionSyntax? Default, bool UnpackDefault, LythonSourceSpan Span)
+{
+    public string? OriginalName { get; init; }
+    public string DeclaredName => OriginalName ?? Name;
+}
 internal sealed record TypeAliasStatementSyntax(string Name, IReadOnlyList<TypeParameterSyntax>? TypeParameters,
-    ExpressionSyntax Value, LythonSourceSpan Span) : StatementSyntax(Span);
+    ExpressionSyntax Value, LythonSourceSpan Span) : StatementSyntax(Span)
+{
+    public string? OriginalName { get; init; }
+    public string DeclaredName => OriginalName ?? Name;
+}
 
 internal sealed record AssignmentStatementSyntax(
     string Name,
@@ -319,7 +327,11 @@ internal sealed record FunctionDefinitionStatementSyntax(
     ExpressionSyntax? ReturnAnnotation,
     IReadOnlyList<StatementSyntax> Body,
     LythonSourceSpan Span,
-    IReadOnlyList<TypeParameterSyntax>? TypeParameters = null) : StatementSyntax(Span);
+    IReadOnlyList<TypeParameterSyntax>? TypeParameters = null) : StatementSyntax(Span)
+{
+    public string? OriginalName { get; init; }
+    public string DeclaredName => OriginalName ?? Name;
+}
 
 internal sealed record ClassDefinitionStatementSyntax(
     string Name,
@@ -330,7 +342,11 @@ internal sealed record ClassDefinitionStatementSyntax(
     IReadOnlyList<StatementSyntax> Body,
     LythonSourceSpan Span,
     IReadOnlyList<TypeParameterSyntax>? TypeParameters = null,
-    IReadOnlyList<CallArgumentSyntax>? HeaderArguments = null) : StatementSyntax(Span);
+    IReadOnlyList<CallArgumentSyntax>? HeaderArguments = null) : StatementSyntax(Span)
+{
+    public string? OriginalName { get; init; }
+    public string DeclaredName => OriginalName ?? Name;
+}
 
 internal sealed record ClassKeywordArgumentSyntax(
     string Name,
@@ -738,7 +754,11 @@ internal sealed record LambdaExpressionSyntax(
     LythonSourceSpan Span) : ExpressionSyntax(Span);
 
 internal abstract record PatternSyntax(
-    LythonSourceSpan Span);
+    LythonSourceSpan Span)
+{
+    // Capture validity uses source spellings; stores use transformed names.
+    public string? OriginalBindingName { get; init; }
+}
 
 internal sealed record MatchValuePatternSyntax(
     ExpressionSyntax Expression,

@@ -404,7 +404,7 @@ internal sealed partial class ExecutableScript
                     // transitively free name falls back to a global load and dies once the
                     // definers return. Module functions keep null (globals resolve correctly).
                     _functionParameters is null ? null : _locals.Concat(_closures).Concat(_parentClosureCandidates).Except(_scopeFacts.GlobalNames, StringComparer.Ordinal))
-                    .CompileCodeObject(functionDefinition.Syntax.Name, functionDefinition.Body);
+                    .CompileCodeObject(functionDefinition.Syntax.DeclaredName, functionDefinition.Body);
             }
             catch (ExecutableLoweringFallbackException)
             {

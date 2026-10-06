@@ -104,15 +104,15 @@ internal static class SyntaxValidityDiagnostics
             }
             switch (pattern)
             {
-                case MatchCapturePatternSyntax capture: Add(capture.Name); break;
-                case MatchStarPatternSyntax star: Add(star.Name); break;
-                case MatchAsPatternSyntax alias: Merge(alias.Pattern); Add(alias.Name); break;
+                case MatchCapturePatternSyntax capture: Add(capture.OriginalBindingName ?? capture.Name); break;
+                case MatchStarPatternSyntax star: Add(star.OriginalBindingName ?? star.Name); break;
+                case MatchAsPatternSyntax alias: Merge(alias.Pattern); Add(alias.OriginalBindingName ?? alias.Name); break;
                 case MatchSequencePatternSyntax sequence:
                     foreach (var child in sequence.Items) Merge(child);
                     break;
                 case MatchMappingPatternSyntax mapping:
                     foreach (var child in mapping.Items) Merge(child.Pattern);
-                    Add(mapping.RestName);
+                    Add(mapping.OriginalBindingName ?? mapping.RestName);
                     break;
                 case MatchClassPatternSyntax type:
                     Unique(type.KeywordPatterns.Select(p => p.Name), type.Span, "Repeated class pattern keyword.");

@@ -6,7 +6,8 @@ internal sealed partial class Parser
         "Unsupported named Unicode escape '\\N{...}'; use a Unicode character or numeric '\\u'/'\\U' escapes instead.";
 
     private static string StringLiteralDiagnosticCode(string message)
-        => message == UnsupportedNamedUnicodeEscapeMessage ? "LA2000" : "LA1007";
+        => message == UnsupportedNamedUnicodeEscapeMessage ? "LA2000"
+            : message == PrivateNameExpansionLimitMessage ? "LA0004" : "LA1007";
 
     private static bool TryDecodeStringLiteral(string literal, [MaybeNullWhen(false)] out string value, out string message)
         => TryDecodeStringLiteral(literal, out value, out message, true);

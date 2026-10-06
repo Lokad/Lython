@@ -457,7 +457,7 @@ internal sealed partial class LythonRuntime
         PyFunctionBase function = functionDefinition.GeneratorCode is not null
             ? new PyGeneratorFunction(functionDefinition, context.FunctionClosureContext, defaults, generatorCells)
             : new PyFunction(
-            functionDefinition.Syntax.Name,
+            functionDefinition.Syntax.DeclaredName,
             functionDefinition.Parameters,
             functionDefinition.Body,
             context.FunctionClosureContext,
@@ -556,7 +556,7 @@ internal sealed partial class LythonRuntime
         }
 
         var created = new PyNamedTupleType(
-            classDefinition.Syntax.Name,
+            classDefinition.Syntax.DeclaredName,
             fields,
             defaults,
             definingContext.MemoryGovernor,
@@ -633,7 +633,7 @@ internal sealed partial class LythonRuntime
         try
         {
             type = new PyType(
-                classDefinition.Syntax.Name,
+                classDefinition.Syntax.DeclaredName,
                 resolvedBases,
                 classContext.HasModernTypeDeclarations ? classContext.Variables : new Dictionary<string, object>(classContext.Variables, StringComparer.Ordinal),
                 definingContext.MemoryGovernor,

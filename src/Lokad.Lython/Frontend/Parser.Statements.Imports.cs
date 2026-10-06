@@ -27,8 +27,9 @@ internal sealed partial class Parser
                 return null;
             }
 
+            moduleName = MangleIdentifier(moduleName);
             var boundModuleName = moduleName.Split('.')[0];
-            var bindingName = boundModuleName;
+            var bindingName = MangleIdentifier(boundModuleName);
             var endToken = moduleEndToken;
 
             if (CurrentToken == Token.As)
@@ -88,6 +89,7 @@ internal sealed partial class Parser
             return null;
         }
 
+        moduleName = MangleIdentifier(moduleName);
         if (!IsSupportedImport(moduleName))
         {
             AddDiagnostic("LA1002", $"Unsupported module '{moduleName}'.", moduleStartToken);
@@ -251,7 +253,7 @@ internal sealed partial class Parser
         }
 
         endToken = startToken;
-        var parts = new List<string> { IdentifierText(startToken) };
+        var parts = new List<string> { RawIdentifierText(startToken) };
         while (CurrentToken == Token.Dot)
         {
             ReadToken();
@@ -261,7 +263,7 @@ internal sealed partial class Parser
                 return false;
             }
 
-            parts.Add(IdentifierText(partToken));
+            parts.Add(RawIdentifierText(partToken));
             endToken = partToken;
         }
 

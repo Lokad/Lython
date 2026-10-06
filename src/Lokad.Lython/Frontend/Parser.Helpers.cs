@@ -270,7 +270,79 @@ internal sealed partial class Parser
     private bool TryReadMemberName(out int tokenIndex) => TryReadNameToken(out tokenIndex);
 
     private string IdentifierText(int tokenIndex)
+        => MangleIdentifier(RawIdentifierText(tokenIndex));
+
+    private string RawIdentifierText(int tokenIndex)
         => _tokens.GetString(tokenIndex).Normalize(NormalizationForm.FormKC);
+
+    private const string PrivateNameExpansionLimitMessage = "Private-name expansion exceeds the compilation character limit.";
+
+    private sealed class PrivateNameExpansionBudget
+    {
+        public int Remaining { get; set; } = LythonEngine.MaxPrivateNameExpansionLength;
+        public bool Exhausted { get; set; }
+    }
+
+    // Mangling belongs to the lexical class, including nested functions. Cache
+    // the expanded names so a long class name is shared across repeated uses.
+    private sealed class PrivateNameContext(string className, HashSet<string>? selectiveNames = null)
+    {
+        public string Prefix { get; } = className.TrimStart('_') is { Length: > 0 } name ? "_" + name : string.Empty;
+        public HashSet<string>? SelectiveNames { get; } = selectiveNames;
+        public Dictionary<string, string> Names { get; } = new(StringComparer.Ordinal);
+    }
+
+    private string MangleIdentifier(string name)
+    {
+        if (_privateNames is not { Prefix.Length: > 0 } context ||
+            !name.StartsWith("__", StringComparison.Ordinal) ||
+            name.EndsWith("__", StringComparison.Ordinal) || name.Contains('.') ||
+            context.SelectiveNames is { } selected && !selected.Contains(name)) return name;
+        if (!context.Names.TryGetValue(name, out var mangled))
+        {
+            var length = (long)context.Prefix.Length + name.Length;
+            if (_privateNameExpansion.Exhausted || length > _privateNameExpansion.Remaining)
+            {
+                _privateNameExpansion.Exhausted = true;
+                if (!_diagnostics.Any(d => d.Code == "LA0004"))
+                    AddDiagnostic("LA0004", PrivateNameExpansionLimitMessage, _position);
+                return name;
+            }
+            _privateNameExpansion.Remaining -= (int)length;
+            context.Names[name] = mangled = context.Prefix + name;
+        }
+        return mangled;
+    }
+
+    // Generic class headers mangle their type parameters, but preserve all
+    // other spellings. Collect the complete list before parsing lazy bounds,
+    // which may refer to a parameter declared later in the list.
+    private HashSet<string> CollectTypeParameterNames()
+    {
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        var depth = 0;
+        var expectName = false;
+        for (var i = _position; i < _tokens.Count; i++)
+        {
+            var token = _tokens.Tokens[i].Token;
+            if (token is Token.OpenBracket or Token.OpenParen or Token.OpenBrace)
+            {
+                depth++;
+                if (depth == 1) expectName = true;
+            }
+            else if (token is Token.CloseBracket or Token.CloseParen or Token.CloseBrace)
+            {
+                if (--depth == 0) break;
+            }
+            else if (depth == 1 && token == Token.Comma) expectName = true;
+            else if (depth == 1 && expectName && IsNameToken(token))
+            {
+                names.Add(RawIdentifierText(i));
+                expectName = false;
+            }
+        }
+        return names;
+    }
 
     private static bool IsNameToken(Token token) => token is Token.Identifier or Token.Match or Token.Case;
 

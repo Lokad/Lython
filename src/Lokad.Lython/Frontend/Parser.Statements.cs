@@ -167,7 +167,10 @@ internal sealed partial class Parser
             parameters,
             returnAnnotation,
             body,
-            Merge(SpanOf(defToken), body[^1].Span), typeParameters);
+            Merge(SpanOf(defToken), body[^1].Span), typeParameters)
+        {
+            OriginalName = IdentifierText(nameToken) == RawIdentifierText(nameToken) ? null : RawIdentifierText(nameToken)
+        };
     }
 
     private StatementSyntax? ParseClassDefinition()
@@ -347,40 +350,56 @@ internal sealed partial class Parser
             return null;
         }
 
-        if (!TryParseTypeParameters(out var typeParameters)) return null;
-
-        IReadOnlyList<CallArgumentSyntax> headerArguments = [];
-        if (CurrentToken == Token.OpenParen)
+        var bindingName = IdentifierText(nameToken);
+        var declaredName = RawIdentifierText(nameToken);
+        var enclosingPrivateNames = _privateNames;
+        try
         {
-            var target = new IdentifierExpressionSyntax(IdentifierText(nameToken), SpanOf(nameToken));
-            if (CallPostfixParser.Instance.Parse(this, target) is not CallExpressionSyntax header) return null;
-            headerArguments = header.Arguments;
-        }
-        var bases = headerArguments.Where(argument => argument.Kind == CallArgumentKind.Positional)
-            .Select(argument => argument.Expression).ToArray();
-        var keywordArguments = headerArguments.Where(argument => argument.Kind == CallArgumentKind.Keyword)
-            .Select(argument => new ClassKeywordArgumentSyntax(argument.KeywordName, argument.Expression, argument.Expression.Span)).ToArray();
+            if (CurrentToken == Token.OpenBracket)
+                _privateNames = new PrivateNameContext(declaredName, CollectTypeParameterNames());
+            if (!TryParseTypeParameters(out var typeParameters)) return null;
 
-        if (!TryRead(Token.Colon, out _))
+            IReadOnlyList<CallArgumentSyntax> headerArguments = [];
+            if (CurrentToken == Token.OpenParen)
+            {
+                var target = new IdentifierExpressionSyntax(IdentifierText(nameToken), SpanOf(nameToken));
+                if (CallPostfixParser.Instance.Parse(this, target) is not CallExpressionSyntax header) return null;
+                headerArguments = header.Arguments;
+            }
+            var bases = headerArguments.Where(argument => argument.Kind == CallArgumentKind.Positional)
+                .Select(argument => argument.Expression).ToArray();
+            var keywordArguments = headerArguments.Where(argument => argument.Kind == CallArgumentKind.Keyword)
+                .Select(argument => new ClassKeywordArgumentSyntax(argument.KeywordName, argument.Expression, argument.Expression.Span)).ToArray();
+
+            if (!TryRead(Token.Colon, out _))
+            {
+                AddDiagnostic("LA1103", "Expected ':' after class definition header.", nameToken);
+                return null;
+            }
+
+            _privateNames = new PrivateNameContext(declaredName);
+            var body = ParseSuite("LA1104", "Expected indented block after class definition.");
+            if (body is null)
+            {
+                return null;
+            }
+
+            return new ClassDefinitionStatementSyntax(
+                bindingName,
+                dataclassDecorator,
+                decorators,
+                bases,
+                keywordArguments,
+                body,
+                Merge(SpanOf(classToken), body[^1].Span), typeParameters, headerArguments)
+            {
+                OriginalName = bindingName == declaredName ? null : declaredName
+            };
+        }
+        finally
         {
-            AddDiagnostic("LA1103", "Expected ':' after class definition header.", nameToken);
-            return null;
+            _privateNames = enclosingPrivateNames;
         }
-
-        var body = ParseSuite("LA1104", "Expected indented block after class definition.");
-        if (body is null)
-        {
-            return null;
-        }
-
-        return new ClassDefinitionStatementSyntax(
-            IdentifierText(nameToken),
-            dataclassDecorator,
-            decorators,
-            bases,
-            keywordArguments,
-            body,
-            Merge(SpanOf(classToken), body[^1].Span), typeParameters, headerArguments);
     }
 
     private bool TryParseFunctionParameters(Token terminator, string owner, bool allowAnnotations, out IReadOnlyList<FunctionParameterSyntax> parameters, out int terminatorToken)

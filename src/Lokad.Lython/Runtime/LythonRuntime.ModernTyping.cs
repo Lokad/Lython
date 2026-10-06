@@ -32,13 +32,13 @@ internal sealed partial class LythonRuntime
             var parameter = parameters![i];
             var boundSyntax = parameter.Syntax.Bound;
             while (boundSyntax is ParenthesizedExpressionSyntax parenthesized) boundSyntax = parenthesized.Inner;
-            var variable = new PyTypeParameter(parameter.Syntax.Name, parameter.Syntax.Kind,
+            var variable = new PyTypeParameter(parameter.Syntax.DeclaredName, parameter.Syntax.Kind,
                 parameter.Syntax.Kind != TypeParameterKind.TypeVarTuple,
                 parameter.Bound is null ? null : new(parameter.Bound, scope), boundSyntax is TupleLiteralExpressionSyntax,
                 parameter.Default is null ? null : new(parameter.Default, scope), parameter.Syntax.UnpackDefault, context, parameter.Syntax.Span);
             values[i] = variable;
-            scope.Variables[variable.Name] = variable;
-            if (!ReferenceEquals(scope, closure)) closure.Variables[variable.Name] = variable;
+            scope.Variables[parameter.Syntax.Name] = variable;
+            if (!ReferenceEquals(scope, closure)) closure.Variables[parameter.Syntax.Name] = variable;
         }
         var tuple = values.Length == 0 ? PyTuple.Empty : new PyTuple(values, context.MemoryGovernor, span);
         if (tuple.Count != 0) context.Services.State.CallTemporaries.TrackFreshMutable(tuple, tuple.CommittedStorageBytes, span);
@@ -55,7 +55,7 @@ internal sealed partial class LythonRuntime
     private static void ExecuteTypeAlias(LoweredTypeAliasStatement alias, ExecutionContext context)
     {
         var scope = CreateTypeScope(alias.TypeParameters, context, alias.Span, alias: true);
-        StoreName(alias.Syntax.Name, new PyTypeAlias(alias.Syntax.Name, scope.Parameters, alias.Value, scope.Annotations, alias.Span), context, alias.Span);
+        StoreName(alias.Syntax.Name, new PyTypeAlias(alias.Syntax.DeclaredName, scope.Parameters, alias.Value, scope.Annotations, alias.Span), context, alias.Span);
     }
 
     internal static ValueTask<object> EvaluateTypeExpressionAsync(LoweredExpression expression, ExecutionContext context, bool asynchronous)

@@ -32,7 +32,7 @@ internal sealed partial class LythonRuntime
         foreach (var matchCase in statement.Cases)
         {
             var bindings = new Dictionary<string, object>(StringComparer.Ordinal);
-            if (!TryMatchPattern(matchCase.Pattern, subject, context, bindings))
+            if (!TryMatchRootPattern(matchCase.Pattern, subject, context, bindings))
             {
                 continue;
             }
@@ -73,7 +73,7 @@ internal sealed partial class LythonRuntime
                 };
 
             case MatchCapturePatternSyntax capturePattern:
-                return TryBindPatternName(capturePattern.Name, subject, bindings);
+                return TryBindPatternName(capturePattern.OriginalBindingName ?? capturePattern.Name, subject, bindings);
 
             case MatchWildcardPatternSyntax:
                 return true;
@@ -88,11 +88,11 @@ internal sealed partial class LythonRuntime
                 return TryMatchClassPattern(classPattern, subject, context, bindings);
 
             case MatchStarPatternSyntax starPattern:
-                return starPattern.Name is null || TryBindPatternName(starPattern.Name, subject, bindings);
+                return starPattern.Name is null || TryBindPatternName(starPattern.OriginalBindingName ?? starPattern.Name, subject, bindings);
 
             case MatchAsPatternSyntax asPattern:
                 return TryMatchPattern(asPattern.Pattern, subject, context, bindings)
-                    && TryBindPatternName(asPattern.Name, subject, bindings);
+                    && TryBindPatternName(asPattern.OriginalBindingName ?? asPattern.Name, subject, bindings);
 
             case MatchOrPatternSyntax orPattern:
                 foreach (var candidate in orPattern.Patterns)
@@ -181,7 +181,7 @@ internal sealed partial class LythonRuntime
         }
         if (starPattern.Name is not null &&
             !TryBindPatternName(
-                starPattern.Name,
+                starPattern.OriginalBindingName ?? starPattern.Name,
                 new PyList(starItems, context.MemoryGovernor, pattern.Span),
                 bindings))
         {
@@ -240,7 +240,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            if (!TryBindPatternName(pattern.RestName, rest, bindings))
+            if (!TryBindPatternName(pattern.OriginalBindingName ?? pattern.RestName, rest, bindings))
             {
                 return false;
             }
@@ -384,6 +384,40 @@ internal sealed partial class LythonRuntime
 
         bindings[name] = value;
         return true;
+    }
+
+    private static bool TryMatchRootPattern(PatternSyntax pattern, object subject,
+        ExecutionContext context, Dictionary<string, object> bindings)
+    {
+        if (!TryMatchPattern(pattern, subject, context, bindings)) return false;
+        if (!EnumerateCanonicalPatternBindings(pattern).Any(p => p.SourceName != p.BindingName)) return true;
+        // Distinct source captures can collapse to one mangled binding. Python
+        // stores them in the first OR alternative's canonical capture order.
+        using var scratch = context.MemoryGovernor.ReserveTemporary(checked(64L + 96L * bindings.Count), pattern.Span);
+        var captured = new Dictionary<string, object>(bindings, StringComparer.Ordinal);
+        bindings.Clear();
+        foreach (var (source, binding) in EnumerateCanonicalPatternBindings(pattern))
+            if (captured.TryGetValue(source, out var value)) bindings[binding] = value;
+        return true;
+    }
+
+    private static IEnumerable<(string SourceName, string BindingName)> EnumerateCanonicalPatternBindings(PatternSyntax pattern)
+    {
+        string? own = null;
+        IEnumerable<PatternSyntax> children = [];
+        switch (pattern)
+        {
+            case MatchCapturePatternSyntax capture: own = capture.Name; break;
+            case MatchStarPatternSyntax star: own = star.Name; break;
+            case MatchAsPatternSyntax alias: children = [alias.Pattern]; own = alias.Name; break;
+            case MatchMappingPatternSyntax mapping: children = mapping.Items.Select(p => p.Pattern); own = mapping.RestName; break;
+            case MatchSequencePatternSyntax sequence: children = sequence.Items; break;
+            case MatchClassPatternSyntax type: children = type.PositionalPatterns.Concat(type.KeywordPatterns.Select(p => p.Pattern)); break;
+            case MatchOrPatternSyntax alternatives: children = alternatives.Patterns.Take(1); break;
+        }
+        foreach (var child in children)
+            foreach (var binding in EnumerateCanonicalPatternBindings(child)) yield return binding;
+        if (own is not null) yield return (pattern.OriginalBindingName ?? own, own);
     }
 
     private static bool TryGetPatternClassName(ExpressionSyntax expression, out string className)

@@ -211,7 +211,7 @@ internal sealed partial class LythonRuntime
             .ToArray();
         var loweredBody = LoweredScript.Lower(new ScriptSyntax(statement.Body)).Statements;
         var function = new PyFunction(
-            statement.Name,
+            statement.DeclaredName,
             loweredParameters,
             loweredBody,
             context.FunctionClosureContext,

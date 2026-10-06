@@ -567,6 +567,16 @@ unpackings fail before the suite; duplicate bases and unhandled subclass keyword
 fail after it. Metaclass dispatch remains explicitly unsupported, including through
 `**` options.
 
+Private identifiers inside a class use Python's lexical name mangling, including
+attributes, parameters, imports, nested definitions, closures and scope
+directives. Leading class-name underscores are removed; all-underscore class
+names and names ending in `__` remain unchanged. Nested classes establish their
+own private context; generic class headers transform their type-parameter names
+while preserving other identifiers. Function/class/type-alias/type-parameter
+display names, call keyword labels, class-pattern keyword labels and strings
+passed to attribute APIs retain their source spelling. Pattern capture validity
+uses source spellings before stores apply the private-name transformation.
+
 Match subjects accept unparenthesized tuple expression lists, singleton trailing
 commas and starred unpacking. Operands evaluate once from left to right, with
 unpacking drained before case selection and governed like ordinary tuple displays.
@@ -1861,7 +1871,11 @@ Compilation inputs are bounded and host-mediated. A source unit longer than
 `MaxSourceLength` (1,000,000 characters) fails with an explicit diagnostic,
 as do delimiter nesting beyond `MaxSyntaxNesting` (512) and unary-operator
 nesting beyond `MaxUnaryOperatorNesting` (256); string and comment text does
-not count toward nesting. Sources reach the frontend only through host files,
+not count toward nesting. Distinct expanded private names share cached spellings
+within each lexical class and are bounded collectively by
+`MaxPrivateNameExpansionLength` (8,000,000 characters), including f-string fields;
+excess expansion fails with LA0004 before guest effects. Sources reach the
+frontend only through host files,
 host options, and allowlisted local imports, never from guest execution, so
 compilation load is host-driven by construction.
 

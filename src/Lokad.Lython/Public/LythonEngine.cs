@@ -12,6 +12,9 @@ public sealed class LythonEngine
     /// <summary>The maximum source length accepted by the contained frontend.</summary>
     public const int MaxSourceLength = 1_000_000;
 
+    /// <summary>Maximum total characters in distinct expanded private names during one compilation.</summary>
+    public const int MaxPrivateNameExpansionLength = 8_000_000;
+
     /// <summary>The maximum delimiter nesting accepted by the contained frontend.</summary>
     public const int MaxSyntaxNesting = 512;
 

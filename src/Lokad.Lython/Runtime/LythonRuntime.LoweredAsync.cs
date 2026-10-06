@@ -267,7 +267,7 @@ internal sealed partial class LythonRuntime
             foreach (var matchCase in statement.Cases)
             {
                 var bindings = new Dictionary<string, object>(StringComparer.Ordinal);
-                if (!TryMatchPattern(matchCase.Syntax.Pattern, subject, context, bindings))
+                if (!TryMatchRootPattern(matchCase.Syntax.Pattern, subject, context, bindings))
                     continue;
 
                 foreach (var pair in bindings)

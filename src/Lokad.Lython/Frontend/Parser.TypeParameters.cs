@@ -33,7 +33,10 @@ internal sealed partial class Parser
                 hasDefault = true;
             }
             else if (hasDefault) return Fail("Non-default type parameter follows default type parameter.", nameToken);
-            result.Add(new TypeParameterSyntax(name, kind, bound, defaultValue, unpackDefault, SpanOf(nameToken)));
+            result.Add(new TypeParameterSyntax(name, kind, bound, defaultValue, unpackDefault, SpanOf(nameToken))
+            {
+                OriginalName = name == RawIdentifierText(nameToken) ? null : RawIdentifierText(nameToken)
+            });
             SkipGroupedExpressionTrivia();
             if (!TryRead(Token.Comma, out _)) break;
             SkipGroupedExpressionTrivia();
@@ -60,6 +63,9 @@ internal sealed partial class Parser
             return null;
         }
         var value = ParseExpression();
-        return value is null ? null : new TypeAliasStatementSyntax(IdentifierText(nameToken), parameters, value, Merge(SpanOf(typeToken), value.Span));
+        return value is null ? null : new TypeAliasStatementSyntax(IdentifierText(nameToken), parameters, value, Merge(SpanOf(typeToken), value.Span))
+        {
+            OriginalName = IdentifierText(nameToken) == RawIdentifierText(nameToken) ? null : RawIdentifierText(nameToken)
+        };
     }
 }

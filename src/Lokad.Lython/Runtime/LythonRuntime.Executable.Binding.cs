@@ -239,7 +239,7 @@ internal sealed partial class LythonRuntime
         IReadOnlyList<ExecutableCell?>? localCells)
     {
         var bindings = new Dictionary<string, object>(StringComparer.Ordinal);
-        if (!TryMatchPattern(matchCase.Case.Pattern, subject, context, bindings))
+        if (!TryMatchRootPattern(matchCase.Case.Pattern, subject, context, bindings))
         {
             return false;
         }
@@ -343,14 +343,14 @@ internal sealed partial class LythonRuntime
                     MaterializeExecutableDefaultValues(functionBinding.DefaultValues, context), closureCells)
                 : functionBinding.CodeObject is null
                 ? new PyFunction(
-                    functionBinding.Function.Syntax.Name,
+                    functionBinding.Function.Syntax.DeclaredName,
                     functionBinding.Function.Parameters,
                     functionBinding.Function.Body,
                     context.FunctionClosureContext,
                     BuildDefaultArgumentMap(functionBinding.Function.Parameters, expression => EvaluateLoweredExpression(expression, context)),
                     ScopeDirectiveFactsCollector.ForFunction(functionBinding.Function.Syntax))
                 : new PyExecutableFunction(
-                    functionBinding.Function.Syntax.Name,
+                    functionBinding.Function.Syntax.DeclaredName,
                     functionBinding.Function.Parameters,
                     functionBinding.CodeObject,
                     context.FunctionClosureContext,

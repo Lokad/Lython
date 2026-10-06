@@ -172,7 +172,10 @@ internal sealed partial class Parser
                 return null;
             }
 
-            pattern = new MatchAsPatternSyntax(pattern, name, Merge(pattern.Span, SpanOf(nameToken)));
+            pattern = new MatchAsPatternSyntax(pattern, name, Merge(pattern.Span, SpanOf(nameToken)))
+            {
+                OriginalBindingName = name == RawIdentifierText(nameToken) ? null : RawIdentifierText(nameToken)
+            };
         }
 
         return pattern;
@@ -264,7 +267,10 @@ internal sealed partial class Parser
 
                 return name == "_"
                     ? new MatchWildcardPatternSyntax(identifier.Span)
-                    : new MatchCapturePatternSyntax(name, identifier.Span);
+                    : new MatchCapturePatternSyntax(name, identifier.Span)
+                    {
+                        OriginalBindingName = name == RawIdentifierText(nameToken) ? null : RawIdentifierText(nameToken)
+                    };
             }
 
             if (CurrentToken == Token.OpenParen)
@@ -399,7 +405,10 @@ internal sealed partial class Parser
         var name = IdentifierText(targetToken);
         return name == "_"
             ? new MatchStarPatternSyntax(null, Merge(SpanOf(starToken), SpanOf(targetToken)))
-            : new MatchStarPatternSyntax(name, Merge(SpanOf(starToken), SpanOf(targetToken)));
+            : new MatchStarPatternSyntax(name, Merge(SpanOf(starToken), SpanOf(targetToken)))
+            {
+                OriginalBindingName = name == RawIdentifierText(targetToken) ? null : RawIdentifierText(targetToken)
+            };
     }
 
     private bool ValidateSequenceStarPattern(IReadOnlyList<PatternSyntax> items, int openingToken)
@@ -429,6 +438,7 @@ internal sealed partial class Parser
         var openBrace = ReadToken();
         var items = new List<MatchMappingPatternItemSyntax>();
         string? restName = null;
+        string? originalRestName = null;
 
         if (CurrentToken != Token.CloseBrace)
         {
@@ -444,6 +454,7 @@ internal sealed partial class Parser
                     }
 
                     restName = IdentifierText(restToken);
+                    originalRestName = restName == RawIdentifierText(restToken) ? null : RawIdentifierText(restToken);
                     if (restName == "_")
                     {
                         AddDiagnostic("LA1100", "Wildcard '_' cannot be used as a mapping rest capture.", restToken);
@@ -492,7 +503,10 @@ internal sealed partial class Parser
             return null;
         }
 
-        return new MatchMappingPatternSyntax(items, restName, Merge(SpanOf(openBrace), SpanOf(closeBrace)));
+        return new MatchMappingPatternSyntax(items, restName, Merge(SpanOf(openBrace), SpanOf(closeBrace)))
+        {
+            OriginalBindingName = originalRestName
+        };
     }
 
     private PatternSyntax? ParseClassPattern(ExpressionSyntax classExpression)
@@ -518,7 +532,7 @@ internal sealed partial class Parser
                         return null;
                     }
 
-                    keywordPatterns.Add(new MatchClassKeywordPatternSyntax(IdentifierText(nameToken), keywordPattern));
+                    keywordPatterns.Add(new MatchClassKeywordPatternSyntax(RawIdentifierText(nameToken), keywordPattern));
                 }
                 else
                 {

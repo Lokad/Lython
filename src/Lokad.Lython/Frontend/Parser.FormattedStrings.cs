@@ -4,7 +4,7 @@ internal sealed partial class Parser
 {
     private const string MalformedFormattedStringMessage = "Invalid string literal. Malformed f-string replacement field or unmatched brace.";
 
-    private static bool TryParseFormattedStringLiteral(string prefix, string literal, out IReadOnlyList<FormattedStringPartSyntax> parts, out string message)
+    private bool TryParseFormattedStringLiteral(string prefix, string literal, out IReadOnlyList<FormattedStringPartSyntax> parts, out string message)
     {
         parts = Array.Empty<FormattedStringPartSyntax>();
         message = MalformedFormattedStringMessage;
@@ -16,7 +16,7 @@ internal sealed partial class Parser
         return TryParseFormattedStringContent(prefix, content, allowNestedFormatFields: true, out parts, out message);
     }
 
-    private static bool TryParseFormattedStringContent(
+    private bool TryParseFormattedStringContent(
         string prefix,
         string content,
         bool allowNestedFormatFields,
@@ -119,7 +119,7 @@ internal sealed partial class Parser
         return true;
     }
 
-    private static bool TryParseFormattedStringField(
+    private bool TryParseFormattedStringField(
         string prefix,
         string content,
         int start,
@@ -445,18 +445,20 @@ internal sealed partial class Parser
         return false;
     }
 
-    private static bool TryParseEmbeddedExpression(string expressionText, [MaybeNullWhen(false)] out ExpressionSyntax expression, out string message)
+    private bool TryParseEmbeddedExpression(string expressionText, [MaybeNullWhen(false)] out ExpressionSyntax expression, out string message)
     {
         expression = null;
         message = MalformedFormattedStringMessage;
         // The enclosing syntax pass supplies the real scope, including yield legality.
         var tokens = FormattedStringTokenization.Read("value = " + expressionText + "\n");
         if (tokens.HasInvalidTokens) return false;
-        var frontend = new Parser(tokens).Parse();
+        var frontend = new Parser(tokens) { _privateNames = _privateNames, _privateNameExpansion = _privateNameExpansion }.Parse();
         if (frontend.Script?.Statements is not [AssignmentStatementSyntax assignment] || frontend.Diagnostics.Count != 0)
         {
             if (frontend.Diagnostics.Any(diagnostic => diagnostic.Message == UnsupportedNamedUnicodeEscapeMessage))
                 message = UnsupportedNamedUnicodeEscapeMessage;
+            else if (frontend.Diagnostics.Any(diagnostic => diagnostic.Code == "LA0004"))
+                message = PrivateNameExpansionLimitMessage;
             return false;
         }
 
