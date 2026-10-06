@@ -110,8 +110,8 @@ public sealed class RetainedCodeAccountingTests
     public void TryExceptElseFinallyCountsEveryBranch()
     {
         var body = TopLevel("def f():\n    try:\n        a = 1\n    except ValueError:\n        b = 2\n    else:\n        c = 3\n    finally:\n        d = 4\n");
-        // def + try + four assignment pairs.
-        Assert.Equal(10, LythonRuntime.CountDeferredModuleCode(body));
+        // def + try + exception-header identifier + four assignment pairs.
+        Assert.Equal(11, LythonRuntime.CountDeferredModuleCode(body));
     }
 
     [Fact]
@@ -144,6 +144,22 @@ public sealed class RetainedCodeAccountingTests
         // def + unpacking statement + receiver + index + source value
         // (plain names are strings, not nodes).
         Assert.Equal(5, LythonRuntime.CountDeferredModuleCode(body));
+    }
+
+    [Fact]
+    public void ChainedReceiversCountedOnce()
+    {
+        var body = TopLevel("def f():\n    a[0] = b.value = it\n");
+        // def + chain + two receivers + index + source value.
+        Assert.Equal(6, LythonRuntime.CountDeferredModuleCode(body));
+    }
+
+    [Fact]
+    public void DeferredRootsInUnpackingReceiversCountedOnce()
+    {
+        var body = TopLevel("(lambda: 1)().value, b = it\n");
+        // Only the retained lambda and its body count at module scope.
+        Assert.Equal(2, LythonRuntime.CountDeferredModuleCode(body));
     }
 
     [Fact]

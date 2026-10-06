@@ -633,21 +633,12 @@ internal sealed partial class LythonRuntime
         return bytes;
     }
 
-    // Deferred-root search inside the retained references the shared traversals
-    // skip: unpacking receivers, chained targets and match patterns (whose own
-    // nodes count in full walks). Each is a small closed set; unknown shapes
-    // fail loud below.
+    // Match patterns sit outside the shared expression traversal. Their
+    // embedded expressions participate in deferred-root accounting as well.
     private static (long Nodes, long PayloadBytes) MeasureExtraStatementDeferredRoots(StatementSyntax statement)
     {
         var nodes = 0L;
         var payload = 0L;
-        foreach (var expression in EnumerateExtraStatementExpressions(statement))
-        {
-            var measured = MeasureDeferredRoots(expression);
-            nodes += measured.Nodes;
-            payload = RuntimeMemoryEstimates.SaturatingAdd(payload, measured.PayloadBytes);
-        }
-
         if (statement is MatchStatementSyntax matchStatement)
         {
             foreach (var matchCase in matchStatement.Cases)
@@ -661,137 +652,6 @@ internal sealed partial class LythonRuntime
         return (nodes, payload);
     }
 
-    // Retained expression references beyond the shared direct-expression
-    // traversal: unpacking receivers and chained targets. Annotated,
-    // augmented, subscript, slice and member targets ride the traversal.
-    private static IEnumerable<ExpressionSyntax> EnumerateExtraStatementExpressions(StatementSyntax statement)
-    {
-        switch (statement)
-        {
-            case UnpackingAssignmentStatementSyntax unpacking:
-                foreach (var target in unpacking.Targets)
-                {
-                    foreach (var expression in EnumerateUnpackingTargetExpressions(target))
-                    {
-                        yield return expression;
-                    }
-                }
-
-                break;
-            case ChainedAssignmentStatementSyntax chained:
-                foreach (var target in chained.Targets)
-                {
-                    foreach (var expression in EnumerateAssignmentTargetExpressions(target))
-                    {
-                        yield return expression;
-                    }
-                }
-
-                break;
-            default:
-                break;
-        }
-    }
-
-    private static IEnumerable<ExpressionSyntax> EnumerateAssignmentTargetExpressions(AssignmentTargetSyntax target)
-    {
-        var pending = new Stack<AssignmentTargetSyntax>();
-        pending.Push(target);
-        while (pending.Count > 0)
-        {
-            switch (pending.Pop())
-            {
-                case NameAssignmentTargetSyntax:
-                    break;
-                case SubscriptAssignmentTargetSyntax subscript:
-                    yield return subscript.Target;
-                    yield return subscript.Index;
-                    break;
-                case SliceAssignmentTargetSyntax slice:
-                    yield return slice.Target;
-                    if (slice.Start is not null)
-                    {
-                        yield return slice.Start;
-                    }
-
-                    if (slice.End is not null)
-                    {
-                        yield return slice.End;
-                    }
-
-                    if (slice.Step is not null)
-                    {
-                        yield return slice.Step;
-                    }
-
-                    break;
-                case MemberAssignmentTargetSyntax member:
-                    yield return member.Target;
-                    break;
-                case UnpackingAssignmentTargetGroupSyntax group:
-                    foreach (var nested in group.Targets)
-                    {
-                        foreach (var expression in EnumerateUnpackingTargetExpressions(nested))
-                        {
-                            yield return expression;
-                        }
-                    }
-
-                    break;
-                default:
-                    throw new InvalidOperationException($"Unknown assignment target: {target.GetType().Name}");
-            }
-        }
-    }
-
-    private static IEnumerable<ExpressionSyntax> EnumerateUnpackingTargetExpressions(UnpackingTargetSyntax target)
-    {
-        switch (target)
-        {
-            case UnpackingNameTargetSyntax:
-                break;
-            case UnpackingSubscriptTargetSyntax subscript:
-                yield return subscript.Target;
-                yield return subscript.Index;
-                break;
-            case UnpackingSliceTargetSyntax slice:
-                yield return slice.Target;
-                if (slice.Start is not null)
-                {
-                    yield return slice.Start;
-                }
-
-                if (slice.End is not null)
-                {
-                    yield return slice.End;
-                }
-
-                if (slice.Step is not null)
-                {
-                    yield return slice.Step;
-                }
-
-                break;
-            case UnpackingMemberTargetSyntax member:
-                yield return member.Target;
-                break;
-            case UnpackingNestedTargetSyntax nested:
-                foreach (var item in nested.Items)
-                {
-                    foreach (var expression in EnumerateUnpackingTargetExpressions(item))
-                    {
-                        yield return expression;
-                    }
-                }
-
-                break;
-            default:
-                throw new InvalidOperationException($"Unknown unpacking target: {target.GetType().Name}");
-        }
-    }
-
-    // Deferred-root search inside match patterns, whose nodes count only in full
-    // walks. Embedded expressions route through the same root scan.
     private static (long Nodes, long PayloadBytes) MeasureDeferredRootsInPattern(PatternSyntax root)
     {
         var nodes = 0L;
@@ -935,11 +795,6 @@ internal sealed partial class LythonRuntime
     private static void PushStatementChildren(StatementSyntax statement, Stack<object> pending)
     {
         foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
-        {
-            pending.Push(expression);
-        }
-
-        foreach (var expression in EnumerateExtraStatementExpressions(statement))
         {
             pending.Push(expression);
         }
