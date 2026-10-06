@@ -73,7 +73,7 @@ internal sealed partial class LythonRuntime
             var resolvedBases = AddGenericClassBase(classDefinition, ResolveClassBases(baseTypes, classDefinition.Span, context), context);
             ValidateClassKeywordArguments(classKeywordArguments, classDefinition.Span);
 
-            var classContext = ExecutionContext.CreateClassBody(typeScope.Closure, ScopeDirectiveFactsCollector.ForClass(classDefinition.Syntax));
+            var classContext = ExecutionContext.CreateClassBody(typeScope.Closure, classDefinition.Syntax);
             var classFlow = ExecuteStatements(classDefinition.Body, classContext);
             if (classFlow.Control is not null)
             {
@@ -87,6 +87,7 @@ internal sealed partial class LythonRuntime
 
             AttachGenericClassMetadataAsync(classDefinition, typeScope, classContext, false, baseTypes).GetAwaiter().GetResult();
             var type = CreateLoweredClassType(classDefinition, resolvedBases, baseTypes, classContext, context);
+            if (classContext.ClassCell is { } classCell) classCell.Value = type;
             if (type is PyType defined)
             {
                 InvokeInitSubclass(defined, classKeywordArguments, classDefinition.Span, context);

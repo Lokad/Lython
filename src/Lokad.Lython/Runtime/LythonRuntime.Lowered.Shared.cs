@@ -169,7 +169,7 @@ internal sealed partial class LythonRuntime
                 var producedAsync = new PyGeneratorExpression(
                     generator.Clauses,
                     generator.ItemExpression,
-                    context,
+                    context.FunctionClosureContext,
                     generator.Span,
                     LythonRuntime.ToSequence(outer, generator.Clauses[0].Iterable.Span, context));
                 producedAsync.AttachAsyncOuter(outer);

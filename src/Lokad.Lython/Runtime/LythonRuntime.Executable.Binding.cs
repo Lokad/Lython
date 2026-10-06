@@ -511,21 +511,18 @@ internal sealed partial class LythonRuntime
         }
 
         var frame = context.CurrentExecutableFrame;
-        if (frame is null)
-        {
-            throw RuntimeErrors.NameNotDefined(codeObject.ClosureNames[0], span);
-        }
-
         var cells = new ExecutableCell[codeObject.ClosureNames.Count];
         for (var i = 0; i < codeObject.ClosureNames.Count; i++)
         {
             var name = codeObject.ClosureNames[i];
-            if (!frame.TryGetCell(name, out var cell))
+            ExecutableCell? cell = null;
+            if (frame?.TryGetCell(name, out cell) != true &&
+                !(name == "__class__" && context.TryGetLexicalClassCell(out cell)))
             {
                 throw RuntimeErrors.NameNotDefined(name, span);
             }
 
-            cells[i] = cell;
+            cells[i] = cell.RequireNotNull();
         }
 
         // MG11: captured cells outlive the invocation frame through the new

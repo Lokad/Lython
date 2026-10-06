@@ -6,7 +6,7 @@ internal static class StaticScopeDirectiveDiagnostics
     {
         private readonly List<ScopeDirectiveFacts> _scopes = [];
 
-        public int Depth => _scopes.Count;
+        public int Depth => _scopes.Count(facts => !ReferenceEquals(facts, ClassCellSyntaxFacts.Scope));
 
         public bool Contains(string name)
         {
@@ -39,7 +39,8 @@ internal static class StaticScopeDirectiveDiagnostics
             switch (statement)
             {
                 case ScopeDirectiveStatementSyntax directive:
-                    if (directive.Kind == ScopeDirectiveKind.Nonlocal && enclosingFunctions.Depth == 0)
+                    if (directive.Kind == ScopeDirectiveKind.Nonlocal && enclosingFunctions.Depth == 0 &&
+                        !directive.Names.All(enclosingFunctions.Contains))
                     {
                         context.AddError("LA3201", "`nonlocal` requires an enclosing function scope.", directive.Span);
                     }
@@ -56,7 +57,15 @@ internal static class StaticScopeDirectiveDiagnostics
                     AnalyzeUseBeforeDirective(classDefinition.Body,
                         new HashSet<string>(classFacts.GlobalNames.Concat(classFacts.NonlocalNames), StringComparer.Ordinal),
                         new HashSet<string>(StringComparer.Ordinal), context);
-                    AnalyzeStatements(classDefinition.Body, context, enclosingFunctions, inClassBody: true);
+                    enclosingFunctions.Enter(ClassCellSyntaxFacts.Scope);
+                    try
+                    {
+                        AnalyzeStatements(classDefinition.Body, context, enclosingFunctions, inClassBody: true);
+                    }
+                    finally
+                    {
+                        enclosingFunctions.Leave(ClassCellSyntaxFacts.Scope);
+                    }
                     break;
 
                 case IfStatementSyntax ifStatement:

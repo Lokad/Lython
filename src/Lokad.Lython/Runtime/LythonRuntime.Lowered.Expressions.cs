@@ -127,12 +127,12 @@ internal sealed partial class LythonRuntime
     private static object EvaluateLoweredListComprehension(LoweredListComprehensionExpression comprehension, ExecutionContext context)
     {
         var result = new PyList([], context.MemoryGovernor, comprehension.Span);
-        var scope = new ExecutionContext(context);
+        var scope = ExecutionContext.CreateComprehension(context);
         EvaluateLoweredComprehensionClauses(
             comprehension.Clauses,
             0,
             scope,
-            itemScope => result.Add(RuntimeValue(EvaluateLoweredExpression(comprehension.ItemExpression, itemScope))));
+            itemScope => result.Add(RuntimeValue(EvaluateLoweredExpression(comprehension.ItemExpression, itemScope))), context);
         PropagateComprehensionBindings(scope, context, comprehension.Clauses.Select(clause => clause.Target), comprehension.Span);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
@@ -144,7 +144,7 @@ internal sealed partial class LythonRuntime
     {
         var result = new PySet(context.MemoryGovernor, comprehension.Span);
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, comprehension.Span);
-        var scope = new ExecutionContext(context);
+        var scope = ExecutionContext.CreateComprehension(context);
         EvaluateLoweredComprehensionClauses(
             comprehension.Clauses,
             0,
@@ -155,7 +155,7 @@ internal sealed partial class LythonRuntime
                     EvaluateLoweredExpression(comprehension.ItemExpression, itemScope),
                     comprehension.ItemExpression.Span);
                 result.Add(item);
-            });
+            }, context);
         PropagateComprehensionBindings(scope, context, comprehension.Clauses.Select(clause => clause.Target), comprehension.Span);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
@@ -167,7 +167,7 @@ internal sealed partial class LythonRuntime
     {
         var result = new PyDict(context.MemoryGovernor, comprehension.Span);
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, comprehension.Span);
-        var scope = new ExecutionContext(context);
+        var scope = ExecutionContext.CreateComprehension(context);
         EvaluateLoweredComprehensionClauses(
             comprehension.Clauses,
             0,
@@ -176,7 +176,7 @@ internal sealed partial class LythonRuntime
             {
                 var key = ValidateDictionaryKey(EvaluateLoweredExpression(comprehension.KeyExpression, itemScope), comprehension.KeyExpression.Span);
                 result.SetItem(key, RuntimeValue(EvaluateLoweredExpression(comprehension.ValueExpression, itemScope)));
-            });
+            }, context);
         PropagateComprehensionBindings(scope, context, comprehension.Clauses.Select(clause => clause.Target), comprehension.Span);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
@@ -188,10 +188,11 @@ internal sealed partial class LythonRuntime
         IReadOnlyList<LoweredComprehensionClause> clauses,
         int index,
         ExecutionContext context,
-        Action<ExecutionContext> emit)
+        Action<ExecutionContext> emit,
+        ExecutionContext? outerContext = null)
     {
         var clause = clauses[index];
-        var iterable = EvaluateLoweredExpression(clause.Iterable, context);
+        var iterable = EvaluateLoweredExpression(clause.Iterable, outerContext ?? context);
 
         foreach (var item in ToSequence(iterable, clause.Iterable.Span, context))
         {
@@ -467,13 +468,13 @@ internal sealed partial class LythonRuntime
         var function = new LambdaFunction(
             loweredParameters,
             lambda.Body,
-            context,
+            context.FunctionClosureContext,
             BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)), lambda.GeneratorCode);
         ChargeFunctionValue(context, lambda.Span);
         ChargeDefaultArguments(loweredParameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, lambda.Span);
-        var closureRetentionBytes = ChargeClosureRetention(context, context.MemoryGovernor, lambda.Span);
+        var closureRetentionBytes = ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, lambda.Span);
         TrackFunctionValue(function, loweredParameters.Count(static p => p.DefaultValue is not null), closureRetentionBytes, 0, context, lambda.Span);
-        RetainLocalsForLambda(context);
+        RetainLocalsForLambda(context.FunctionClosureContext);
         return function;
     }
 

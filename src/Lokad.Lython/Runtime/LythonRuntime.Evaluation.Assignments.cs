@@ -245,13 +245,13 @@ internal sealed partial class LythonRuntime
         var function = new LambdaFunction(
             loweredParameters,
             LoweredScript.LowerStandaloneExpression(lambda.Body),
-            context,
+            context.FunctionClosureContext,
             BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)));
         ChargeFunctionValue(context, lambda.Span);
         ChargeDefaultArguments(loweredParameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, lambda.Span);
-        var closureRetentionBytes = ChargeClosureRetention(context, context.MemoryGovernor, lambda.Span);
+        var closureRetentionBytes = ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, lambda.Span);
         TrackFunctionValue(function, loweredParameters.Count(static p => p.DefaultValue is not null), closureRetentionBytes, 0, context, lambda.Span);
-        RetainLocalsForLambda(context);
+        RetainLocalsForLambda(context.FunctionClosureContext);
         return function;
     }
 

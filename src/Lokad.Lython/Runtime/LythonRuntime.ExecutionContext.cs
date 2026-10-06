@@ -67,6 +67,30 @@ internal sealed partial class LythonRuntime
             NonlocalTargets = EmptyNonlocalTargets;
         }
 
+        public static ExecutionContext CreateComprehension(ExecutionContext parent)
+        {
+            var scope = new ExecutionContext(parent);
+            if (parent.IsClassBody)
+            {
+                // Inlined eager comprehensions use ordinary class-suite name
+                // lookup. Functions they create still capture the class cell,
+                // and share the comprehension's changing iteration variables.
+                scope.FunctionClosureContext = new ExecutionContext(parent.FunctionClosureContext, scope.Variables);
+            }
+            return scope;
+        }
+
+        private ExecutionContext(ExecutionContext parent, Dictionary<string, object> variables)
+        {
+            Services = parent.Services;
+            SourcePath = parent.SourcePath;
+            Frame = new ExecutionFrame(parent.Frame, variables);
+            ParentContext = parent;
+            FunctionClosureContext = this;
+            ScopeFacts = ScopeDirectiveFacts.Empty;
+            NonlocalTargets = EmptyNonlocalTargets;
+        }
+
         public ExecutionContext(ExecutionContext parent, ScopeDirectiveFacts scopeFacts)
         {
             Services = parent.Services;
@@ -114,8 +138,31 @@ internal sealed partial class LythonRuntime
             string moduleName)
             => new(template, new ModuleScope(sourcePath, moduleName));
 
-        public static ExecutionContext CreateClassBody(ExecutionContext parent, ScopeDirectiveFacts facts)
-            => new(parent, ClassBodyScope.Instance, facts) { EvaluateModernClassAnnotations = HasTypeParameterScope(parent) };
+        public static ExecutionContext CreateClassBody(ExecutionContext parent, ClassDefinitionStatementSyntax definition)
+        {
+            var context = new ExecutionContext(parent, ClassBodyScope.Instance, ScopeDirectiveFactsCollector.ForClass(definition))
+            {
+                EvaluateModernClassAnnotations = HasTypeParameterScope(parent)
+            };
+            if (!ClassCellSyntaxFacts.RequiresCell(definition)) return context;
+            var closureParent = parent.FunctionClosureContext;
+            var retention = ChargeClosureRetention(closureParent, parent.MemoryGovernor, definition.Span);
+            const long bytes = ClosureContextBaseBytes + ClosureCellSlotBytes + 48L;
+            parent.MemoryGovernor.Reserve(bytes, definition.Span);
+            parent.MemoryGovernor.Commit(bytes);
+            var cellScope = new ExecutionContext(closureParent, ClassCellSyntaxFacts.Scope)
+            {
+                MirrorLocalStores = true,
+                ClosureRetentionCharged = true,
+                ClosureChargedVariableCount = 1
+            };
+            cellScope.Variables["__class__"] = UninitializedLocal;
+            cellScope.ClassCell = new ExecutableCell(UninitializedLocal, cellScope, "__class__") { RetentionCharged = true };
+            context.ClassCell = cellScope.ClassCell;
+            context.FunctionClosureContext = cellScope;
+            parent.Services.State.CallTemporaries.TrackFreshMutable(cellScope, bytes + retention, definition.Span);
+            return context;
+        }
 
         private ExecutionContext(ExecutionContext template, ModuleScope scope)
         {
@@ -135,11 +182,11 @@ internal sealed partial class LythonRuntime
             IsClassBody = true;
             Services = parent.Services;
             SourcePath = parent.SourcePath;
-            Frame = new ExecutionFrame(parent.Frame, new Dictionary<string, object>(StringComparer.Ordinal));
-            ParentContext = parent;
+            ParentContext = parent.IsClassBody ? parent.FunctionClosureContext : parent;
+            Frame = new ExecutionFrame(ParentContext.Frame, new Dictionary<string, object>(StringComparer.Ordinal));
             FunctionClosureContext = parent.FunctionClosureContext;
             ScopeFacts = facts;
-            NonlocalTargets = ResolveNonlocalTargets(parent, facts);
+            NonlocalTargets = ResolveNonlocalTargets(ParentContext, facts);
         }
 
         private readonly record struct ModuleScope(string? SourcePath, string Name);
@@ -181,7 +228,25 @@ internal sealed partial class LythonRuntime
 
         internal int ClosureChargedVariableCount;
 
-        public ExecutionContext FunctionClosureContext { get; }
+        public ExecutionContext FunctionClosureContext { get; private set; }
+        internal ExecutableCell? ClassCell { get; private set; }
+
+        internal bool TryGetLexicalClassCell([MaybeNullWhen(false)] out ExecutableCell cell)
+        {
+            for (var current = this; current is not null; current = current.ParentContext)
+            {
+                if (current.IsClassBody) continue;
+                if (current.ClassCell is { } found)
+                {
+                    cell = found;
+                    return true;
+                }
+                if (current.ScopeFacts.IsGlobal("__class__") || current.ScopeFacts.LocalNames.Contains("__class__") ||
+                    current.FunctionName is not null && current.Variables.ContainsKey("__class__")) break;
+            }
+            cell = null;
+            return false;
+        }
 
         internal ScopeDirectiveFacts ScopeFacts { get; }
 
@@ -203,6 +268,8 @@ internal sealed partial class LythonRuntime
         public PyType? ImplicitSuperAnchorType { get; private set; }
 
         public object? ImplicitSuperReceiver { get; private set; }
+        internal ExecutableCell? ImplicitSuperClassCell { get; private set; }
+        internal bool MissingImplicitSuperClassCell { get; private set; }
 
         public ExecutionLimits Limits => Services.Limits;
 
@@ -230,6 +297,18 @@ internal sealed partial class LythonRuntime
         public void BindImplicitSuper(PyType anchorType, object receiver)
         {
             ImplicitSuperAnchorType = anchorType;
+            ImplicitSuperReceiver = receiver;
+        }
+
+        internal void BindImplicitSuper(ExecutableCell cell, object receiver)
+        {
+            ImplicitSuperClassCell = cell;
+            ImplicitSuperReceiver = receiver;
+        }
+
+        internal void BindUnavailableImplicitSuper(object receiver)
+        {
+            MissingImplicitSuperClassCell = true;
             ImplicitSuperReceiver = receiver;
         }
 

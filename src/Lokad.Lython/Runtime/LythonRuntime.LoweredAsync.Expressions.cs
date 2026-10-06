@@ -162,12 +162,12 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> EvaluateLoweredListComprehensionAsync(LoweredListComprehensionExpression comprehension, ExecutionContext context)
     {
         var result = new PyList([], context.MemoryGovernor, comprehension.Span);
-        var scope = new ExecutionContext(context);
+        var scope = ExecutionContext.CreateComprehension(context);
         await EvaluateLoweredComprehensionClausesAsync(
                 comprehension.Clauses,
                 0,
                 scope,
-                async itemScope => result.Add(RuntimeValue(await EvaluateLoweredExpressionAsync(comprehension.ItemExpression, itemScope).ConfigureAwait(false))))
+                async itemScope => result.Add(RuntimeValue(await EvaluateLoweredExpressionAsync(comprehension.ItemExpression, itemScope).ConfigureAwait(false))), context)
             .ConfigureAwait(false);
         PropagateComprehensionBindings(scope, context, comprehension.Clauses.Select(clause => clause.Target), comprehension.Span);
 
@@ -180,7 +180,7 @@ internal sealed partial class LythonRuntime
     {
         var result = new PySet(context.MemoryGovernor, comprehension.Span);
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, comprehension.Span);
-        var scope = new ExecutionContext(context);
+        var scope = ExecutionContext.CreateComprehension(context);
         await EvaluateLoweredComprehensionClausesAsync(
                 comprehension.Clauses,
                 0,
@@ -191,7 +191,7 @@ internal sealed partial class LythonRuntime
                         await EvaluateLoweredExpressionAsync(comprehension.ItemExpression, itemScope).ConfigureAwait(false),
                         comprehension.ItemExpression.Span);
                     result.Add(item);
-                })
+                }, context)
             .ConfigureAwait(false);
         PropagateComprehensionBindings(scope, context, comprehension.Clauses.Select(clause => clause.Target), comprehension.Span);
 
@@ -204,7 +204,7 @@ internal sealed partial class LythonRuntime
     {
         var result = new PyDict(context.MemoryGovernor, comprehension.Span);
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, comprehension.Span);
-        var scope = new ExecutionContext(context);
+        var scope = ExecutionContext.CreateComprehension(context);
         await EvaluateLoweredComprehensionClausesAsync(
                 comprehension.Clauses,
                 0,
@@ -215,7 +215,7 @@ internal sealed partial class LythonRuntime
                         await EvaluateLoweredExpressionAsync(comprehension.KeyExpression, itemScope).ConfigureAwait(false),
                         comprehension.KeyExpression.Span);
                     result.SetItem(key, RuntimeValue(await EvaluateLoweredExpressionAsync(comprehension.ValueExpression, itemScope).ConfigureAwait(false)));
-                })
+                }, context)
             .ConfigureAwait(false);
         PropagateComprehensionBindings(scope, context, comprehension.Clauses.Select(clause => clause.Target), comprehension.Span);
 
@@ -228,10 +228,11 @@ internal sealed partial class LythonRuntime
         IReadOnlyList<LoweredComprehensionClause> clauses,
         int index,
         ExecutionContext context,
-        Func<ExecutionContext, ValueTask> emit)
+        Func<ExecutionContext, ValueTask> emit,
+        ExecutionContext? outerContext = null)
     {
         var clause = clauses[index];
-        var iterable = await EvaluateLoweredExpressionAsync(clause.Iterable, context).ConfigureAwait(false);
+        var iterable = await EvaluateLoweredExpressionAsync(clause.Iterable, outerContext ?? context).ConfigureAwait(false);
 
         await foreach (var item in ToSequenceAsync(iterable, clause.Iterable.Span, context).ConfigureAwait(false))
         {
@@ -462,13 +463,13 @@ internal sealed partial class LythonRuntime
         var function = new LambdaFunction(
             loweredParameters,
             lambda.Body,
-            context,
+            context.FunctionClosureContext,
             await BuildDefaultArgumentMapAsync(loweredParameters, expression => EvaluateLoweredExpressionAsync(expression, context)).ConfigureAwait(false), lambda.GeneratorCode);
         ChargeFunctionValue(context, lambda.Span);
         ChargeDefaultArguments(loweredParameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, lambda.Span);
-        var closureRetentionBytes = ChargeClosureRetention(context, context.MemoryGovernor, lambda.Span);
+        var closureRetentionBytes = ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, lambda.Span);
         TrackFunctionValue(function, loweredParameters.Count(static p => p.DefaultValue is not null), closureRetentionBytes, 0, context, lambda.Span);
-        RetainLocalsForLambda(context);
+        RetainLocalsForLambda(context.FunctionClosureContext);
         return function;
     }
 

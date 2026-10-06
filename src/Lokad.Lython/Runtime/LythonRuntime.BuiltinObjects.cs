@@ -14,6 +14,16 @@ internal sealed partial class LythonRuntime
     {
         if (arguments.Length == 0)
         {
+            if (context.MissingImplicitSuperClassCell)
+                throw new LythonRuntimeException("RuntimeError", "super(): __class__ cell not found", span);
+            if (context.ImplicitSuperClassCell is { } cell && context.ImplicitSuperReceiver is { } receiver)
+            {
+                if (ReferenceEquals(cell.Value, UninitializedLocal))
+                    throw new LythonRuntimeException("RuntimeError", "super(): empty __class__ cell", span);
+                if (cell.Value is not PyType)
+                    throw new LythonRuntimeException("RuntimeError", "super(): __class__ is not a supported type", span);
+                return Super([cell.Value, receiver], span, context);
+            }
             if (context.ImplicitSuperAnchorType is null || context.ImplicitSuperReceiver is null)
             {
                 throw new LythonRuntimeException("TypeError", "zero-argument super() is only supported inside instance methods, classmethods, and property accessors in Lython.", span);

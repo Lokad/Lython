@@ -24,13 +24,10 @@ internal static class PyFunctionBinding
             }
         }
 
-        if (ownerType is not null &&
-            bindingPlan.Parameters.Count > 0 &&
-            TryGetReceiver(boundArguments, bindingPlan, out var receiver) &&
-            (receiver is PyInstance instance && instance.Type.IsSubtypeOf(ownerType) ||
-             receiver is PyType type && type.IsSubtypeOf(ownerType)))
+        if (bindingPlan.Parameters.Count > 0 && TryGetReceiver(boundArguments, bindingPlan, out var receiver))
         {
-            frame.BindImplicitSuper(ownerType, receiver);
+            if (frame.TryGetLexicalClassCell(out var classCell)) frame.BindImplicitSuper(classCell, receiver);
+            else if (ownerType is not null || closure.TryGetLexicalClassCell(out _)) frame.BindUnavailableImplicitSuper(receiver);
         }
 
         frame.EnterFunctionCall(span);

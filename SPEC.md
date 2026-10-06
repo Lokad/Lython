@@ -577,6 +577,16 @@ display names, call keyword labels, class-pattern keyword labels and strings
 passed to attribute APIs retain their source spelling. Pattern capture validity
 uses source spellings before stores apply the private-name transformation.
 
+Methods, nested closures, lambdas and generator expressions can capture the
+implicit lexical `__class__` cell. It is filled with the defining class before
+`__init_subclass__` and decorators run, so inheritance, decorator replacement
+and later rebinding of the class name do not change that identity. Nonlocal
+stores and deletes share the same cell; reading an empty cell raises NameError.
+Zero-argument `super()` uses the current cell value and the invocation's first
+parameter. Ordinary class-suite name lookup remains separate, including eager
+comprehension expressions; closures created there capture the class cell.
+Shared cells and their retained enclosing contexts remain memory governed.
+
 Match subjects accept unparenthesized tuple expression lists, singleton trailing
 commas and starred unpacking. Operands evaluate once from left to right, with
 unpacking drained before case selection and governed like ordinary tuple displays.
@@ -925,7 +935,8 @@ declares a local binding for the named value. A `nonlocal` directive must bind t
 the nearest enclosing function scope that owns the name, and the same binding
 forms as `global` must target that enclosing scope.
 
-Class scopes do not provide enclosing cells for `nonlocal`. Declared global or
+Class scopes provide the implicit `__class__` cell to enclosed scopes; ordinary
+class members do not provide enclosing cells for `nonlocal`. Declared global or
 nonlocal names do not become class attributes. Ordinary class locals fall back to
 module scope before binding, while free names can resolve enclosing function
 cells; nested classes and methods skip enclosing class namespaces. Directives

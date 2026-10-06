@@ -42,6 +42,8 @@ internal sealed partial class LythonRuntime
                 frame.TryResolveLocalOrClosure(name, out var cellValue)) return cellValue;
             if (nonlocalContext.Variables.TryGetValue(name, out var nonlocalValue))
             {
+                if (name == "__class__" && ReferenceEquals(nonlocalValue, UninitializedLocal))
+                    throw RuntimeErrors.FreeVariableNotAssociated(name, span);
                 return nonlocalValue;
             }
 
@@ -64,7 +66,17 @@ internal sealed partial class LythonRuntime
 
             if (current.Variables.TryGetValue(name, out var value))
             {
+                if (name == "__class__" && ReferenceEquals(value, UninitializedLocal))
+                    throw RuntimeErrors.FreeVariableNotAssociated(name, span);
                 return value;
+            }
+            if (!current.IsClassBody && current.ClassCell is not null && name == "__class__")
+                throw RuntimeErrors.FreeVariableNotAssociated(name, span);
+            if (context.IsAnnotationScope && current.IsClassBody && current.ClassCell is { } classCell && name == "__class__")
+            {
+                if (ReferenceEquals(classCell.Value, UninitializedLocal))
+                    throw RuntimeErrors.FreeVariableNotAssociated(name, span);
+                return classCell.Value;
             }
         }
 
@@ -433,7 +445,7 @@ internal sealed partial class LythonRuntime
         var produced = new PyGeneratorExpression(
             clauses,
             LoweredScript.LowerStandaloneExpression(generator.ItemExpression),
-            context,
+            context.FunctionClosureContext,
             generator.Span,
             outer);
         context.Services.State.CallTemporaries.TrackFreshMutable(produced, PyIteratorBase.IteratorValueBytes);
@@ -451,7 +463,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var item in ToSequence(iterable, clause.Iterable.Span, context))
         {
-            var scope = new ExecutionContext(context);
+            var scope = ExecutionContext.CreateComprehension(context);
             AssignLoopTarget(clause.Target, item, clause.Iterable.Span, scope);
 
             if (clause.Condition is not null &&
