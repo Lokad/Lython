@@ -47,21 +47,28 @@ internal static class FormattedStringTokenization
 
     private static bool IsIdentifierPart(char c) => char.IsLetterOrDigit(c) || c == '_';
 
-    private static bool TryFindEnd(string source, int start, bool formatted, out int end, out int width)
+    internal static bool TryFindEnd(string source, int start, bool formatted, out int end, out int width, int depth = 0)
     {
+        end = start;
+        width = 0;
+        if (depth >= Parser.MaxNestingDepth) return false;
         var quote = source[start];
         width = start + 2 < source.Length && source[start + 1] == quote && source[start + 2] == quote ? 3 : 1;
         for (var i = start + width; i < source.Length; i++)
         {
             if (source[i] == '\\')
             {
-                if (i + 1 < source.Length && (!formatted || source[i + 1] is not '{' and not '}')) i++;
+                if (i + 1 < source.Length && (!formatted || source[i + 1] is not '{' and not '}'))
+                {
+                    i++;
+                    if (source[i] == '\r' && i + 1 < source.Length && source[i + 1] == '\n') i++;
+                }
                 continue;
             }
             if (formatted && source[i] == '{')
             {
                 if (i + 1 < source.Length && source[i + 1] == '{') i++;
-                else if (!Parser.TryFindFormattedStringFieldEnd(source, i + 1, out i)) break;
+                else if (!Parser.TryFindFormattedStringFieldEnd(source, i + 1, out i, depth + 1, quote, width)) break;
                 continue;
             }
             if (source[i] == quote && (width == 1 || (i + 2 < source.Length && source[i + 1] == quote && source[i + 2] == quote)))

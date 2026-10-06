@@ -4,7 +4,7 @@ internal sealed partial class Parser
 {
     private const string MalformedFormattedStringMessage = "Invalid string literal. Malformed f-string replacement field or unmatched brace.";
 
-    private bool TryParseFormattedStringLiteral(string prefix, string literal, out IReadOnlyList<FormattedStringPartSyntax> parts, out string message)
+    private bool TryParseFormattedStringLiteral(string prefix, string literal, int literalStart, out IReadOnlyList<FormattedStringPartSyntax> parts, out string message)
     {
         parts = Array.Empty<FormattedStringPartSyntax>();
         message = MalformedFormattedStringMessage;
@@ -13,12 +13,15 @@ internal sealed partial class Parser
             return false;
         }
 
-        return TryParseFormattedStringContent(prefix, content, allowNestedFormatFields: true, out parts, out message);
+        var quoteWidth = literal.Length >= 3 && literal[0] == literal[1] && literal[0] == literal[2] ? 3 : 1;
+        return TryParseFormattedStringContent(prefix, content, literalStart + quoteWidth, inFormatSpecifier: false, allowNestedFormatFields: true, out parts, out message);
     }
 
     private bool TryParseFormattedStringContent(
         string prefix,
         string content,
+        int contentStart,
+        bool inFormatSpecifier,
         bool allowNestedFormatFields,
         out IReadOnlyList<FormattedStringPartSyntax> parts,
         out string message)
@@ -49,7 +52,7 @@ internal sealed partial class Parser
             }
             if (c == '{')
             {
-                if (i + 1 < content.Length && content[i + 1] == '{')
+                if (!inFormatSpecifier && i + 1 < content.Length && content[i + 1] == '{')
                 {
                     text.Append('{');
                     i++;
@@ -71,6 +74,7 @@ internal sealed partial class Parser
                         prefix,
                         content,
                         i + 1,
+                        contentStart,
                         allowNestedFormatFields,
                         out var end,
                         out var expressionPart,
@@ -92,7 +96,7 @@ internal sealed partial class Parser
 
             if (c == '}')
             {
-                if (i + 1 < content.Length && content[i + 1] == '}')
+                if (!inFormatSpecifier && i + 1 < content.Length && content[i + 1] == '}')
                 {
                     text.Append('}');
                     i++;
@@ -123,6 +127,7 @@ internal sealed partial class Parser
         string prefix,
         string content,
         int start,
+        int contentStart,
         bool allowNestedFormatFields,
         out int end,
         [MaybeNullWhen(false)] out FormattedStringExpressionPartSyntax part,
@@ -145,9 +150,11 @@ internal sealed partial class Parser
                 out var expressionText,
                 out var conversion,
                 out var formatSpecifier,
+                out var expressionOffset,
+                out var formatOffset,
                 out debugText) ||
             expressionText.Length == 0 ||
-            !TryParseEmbeddedExpression(expressionText, out var expression, out message))
+            !TryParseEmbeddedExpression(expressionText, contentStart + start + expressionOffset, out var expression, out message))
         {
             return false;
         }
@@ -160,6 +167,8 @@ internal sealed partial class Parser
                 !TryParseFormattedStringContent(
                     prefix,
                     formatSpecifier,
+                    contentStart + start + formatOffset,
+                    inFormatSpecifier: true,
                     allowNestedFormatFields: false,
                     out formatSpecifierParts,
                     out message))
@@ -189,23 +198,57 @@ internal sealed partial class Parser
         return true;
     }
 
-    internal static bool TryFindFormattedStringFieldEnd(string content, int start, out int end)
+    internal static bool TryFindFormattedStringFieldEnd(string content, int start, out int end, int depth = 0, char? outerQuote = null, int outerQuoteWidth = 0)
     {
         end = -1;
+        if (depth >= MaxNestingDepth) return false;
         var parenDepth = 0;
         var bracketDepth = 0;
         var braceDepth = 0;
+        var format = false;
 
         for (var i = start; i < content.Length; i++)
         {
             var c = content[i];
+            if (format)
+            {
+                if (c == '\\' && i + 1 < content.Length && content[i + 1] is not ('{' or '}'))
+                {
+                    i++;
+                    if (content[i] == '\r' && i + 1 < content.Length && content[i + 1] == '\n') i++;
+                    continue;
+                }
+                if (outerQuoteWidth == 1 && c is '\r' or '\n') return false;
+                if (c == outerQuote && (outerQuoteWidth == 1 ||
+                    i + 2 < content.Length && content[i + 1] == c && content[i + 2] == c)) return false;
+                if (c == '{')
+                {
+                    if (!TryFindFormattedStringFieldEnd(content, i + 1, out i, depth + 1, outerQuote, outerQuoteWidth)) return false;
+                }
+                else if (c == '}')
+                {
+                    end = i;
+                    return true;
+                }
+                continue;
+            }
+            if (c == '#')
+            {
+                FormattedStringLexicalScanner.SkipComment(content, ref i);
+                continue;
+            }
             if (c is '"' or '\'')
             {
-                if (!TrySkipStringLiteral(content, ref i))
+                if (!FormattedStringLexicalScanner.TrySkipString(content, ref i, depth + 1))
                 {
                     return false;
                 }
 
+                continue;
+            }
+            if (c == ':' && parenDepth == 0 && bracketDepth == 0 && braceDepth == 0)
+            {
+                format = true;
                 continue;
             }
 
@@ -261,12 +304,16 @@ internal sealed partial class Parser
         out string expressionText,
         out char? conversion,
         out string? formatSpecifier,
+        out int expressionOffset,
+        out int formatOffset,
         out string? debugText)
     {
         expressionText = string.Empty;
         conversion = null;
         formatSpecifier = null;
         debugText = null;
+        expressionOffset = 0;
+        formatOffset = 0;
 
         if (!TryFindFormattedStringSeparators(field, out var conversionIndex, out var formatIndex))
         {
@@ -279,21 +326,26 @@ internal sealed partial class Parser
                 ? formatIndex
                 : field.Length;
         var expressionSource = field[..expressionEnd];
-        var debugEnd = expressionSource.Length - 1;
-        while (debugEnd >= 0 && char.IsWhiteSpace(expressionSource[debugEnd]))
+        var visibleExpression = FormattedStringLexicalScanner.DebugText(expressionSource, out var debugMarker);
+        var debugEnd = visibleExpression.Length - 1;
+        while (debugEnd >= 0 && FormattedStringLexicalScanner.IsWhitespace(visibleExpression[debugEnd]))
         {
             debugEnd--;
         }
 
         if (debugEnd >= 0 &&
-            expressionSource[debugEnd] == '=' &&
-            (debugEnd == 0 || expressionSource[debugEnd - 1] is not ('=' or '!' or '<' or '>' or ':')))
+            visibleExpression[debugEnd] == '=' &&
+            (debugEnd == 0 || visibleExpression[debugEnd - 1] is not ('=' or '!' or '<' or '>' or ':')))
         {
-            debugText = expressionSource;
-            expressionSource = expressionSource[..debugEnd];
+            debugText = visibleExpression;
+            visibleExpression = visibleExpression[..debugEnd];
+            // Locate the actual debug marker without disturbing source offsets.
+            expressionSource = expressionSource[..debugMarker];
         }
 
-        expressionText = expressionSource.Trim();
+        expressionOffset = expressionSource.Length - expressionSource.TrimStart(FormattedStringLexicalScanner.Whitespace).Length;
+        expressionText = expressionSource.Trim(FormattedStringLexicalScanner.Whitespace);
+        if (visibleExpression.Trim(FormattedStringLexicalScanner.Whitespace).Length == 0) return false;
 
         if (conversionIndex >= 0)
         {
@@ -309,6 +361,16 @@ internal sealed partial class Parser
             }
 
             var afterConversion = conversionIndex + 2;
+            while (afterConversion < field.Length)
+            {
+                if (FormattedStringLexicalScanner.IsWhitespace(field[afterConversion])) afterConversion++;
+                else if (field[afterConversion] == '#')
+                {
+                    FormattedStringLexicalScanner.SkipComment(field, ref afterConversion);
+                    afterConversion++;
+                }
+                else break;
+            }
             if (afterConversion < field.Length)
             {
                 if (field[afterConversion] != ':')
@@ -323,6 +385,7 @@ internal sealed partial class Parser
         if (formatIndex >= 0)
         {
             formatSpecifier = field[(formatIndex + 1)..];
+            formatOffset = formatIndex + 1;
         }
 
         return true;
@@ -339,9 +402,14 @@ internal sealed partial class Parser
         for (var i = 0; i < field.Length; i++)
         {
             var c = field[i];
+            if (c == '#')
+            {
+                FormattedStringLexicalScanner.SkipComment(field, ref i);
+                continue;
+            }
             if (c is '"' or '\'')
             {
-                if (!TrySkipStringLiteral(field, ref i))
+                if (!FormattedStringLexicalScanner.TrySkipString(field, ref i))
                 {
                     return false;
                 }
@@ -405,64 +473,39 @@ internal sealed partial class Parser
         return parenDepth == 0 && bracketDepth == 0 && braceDepth == 0;
     }
 
-    private static bool TrySkipStringLiteral(string text, ref int index)
-    {
-        var quote = text[index];
-        var triple = index + 2 < text.Length && text[index + 1] == quote && text[index + 2] == quote;
-        index += triple ? 3 : 1;
-
-        while (index < text.Length)
-        {
-            if (text[index] == '\\')
-            {
-                index += 2;
-                continue;
-            }
-
-            if (triple)
-            {
-                if (index + 2 < text.Length &&
-                    text[index] == quote &&
-                    text[index + 1] == quote &&
-                    text[index + 2] == quote)
-                {
-                    index += 2;
-                    return true;
-                }
-
-                index++;
-                continue;
-            }
-
-            if (text[index] == quote)
-            {
-                return true;
-            }
-
-            index++;
-        }
-
-        return false;
-    }
-
-    private bool TryParseEmbeddedExpression(string expressionText, [MaybeNullWhen(false)] out ExpressionSyntax expression, out string message)
+    private bool TryParseEmbeddedExpression(string expressionText, int expressionStart, [MaybeNullWhen(false)] out ExpressionSyntax expression, out string message)
     {
         expression = null;
         message = MalformedFormattedStringMessage;
         // The enclosing syntax pass supplies the real scope, including yield legality.
-        var tokens = FormattedStringTokenization.Read("value = " + expressionText + "\n");
+        const string prefix = "value = (";
+        var tokens = FormattedStringTokenization.Read(prefix + expressionText + "\n)\n");
         if (tokens.HasInvalidTokens) return false;
-        var frontend = new Parser(tokens) { _privateNames = _privateNames, _privateNameExpansion = _privateNameExpansion }.Parse();
+        var frontend = new Parser(tokens)
+        {
+            _privateNames = _privateNames,
+            _privateNameExpansion = _privateNameExpansion,
+            _nestingDepth = _nestingDepth + 1,
+            _spanSourceTokens = _spanSourceTokens ?? _tokens,
+            _spanOffset = expressionStart - prefix.Length
+        }.Parse();
         if (frontend.Script?.Statements is not [AssignmentStatementSyntax assignment] || frontend.Diagnostics.Count != 0)
         {
             if (frontend.Diagnostics.Any(diagnostic => diagnostic.Message == UnsupportedNamedUnicodeEscapeMessage))
                 message = UnsupportedNamedUnicodeEscapeMessage;
             else if (frontend.Diagnostics.Any(diagnostic => diagnostic.Code == "LA0004"))
                 message = PrivateNameExpansionLimitMessage;
+            else if (frontend.Diagnostics.Any(diagnostic => diagnostic.Code == "LA0003"))
+                message = SyntaxNestingLimitMessage;
             return false;
         }
 
-        expression = assignment.Expression;
+        expression = assignment.Expression is ParenthesizedExpressionSyntax parenthesized ? parenthesized.Inner : assignment.Expression;
+        if (assignment.Expression is TupleLiteralExpressionSyntax tuple)
+        {
+            (_spanSourceTokens ?? _tokens).LineOfPosition(expressionStart, out var line, out var column);
+            expression = tuple with { Span = new LythonSourceSpan(expressionStart, expressionText.Length, line, column) };
+        }
         return true;
     }
 }

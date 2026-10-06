@@ -260,12 +260,17 @@ internal sealed partial class Parser
 
                 var prefixToken = ReadToken();
                 var stringToken = ReadToken();
+                if (_tokens.Tokens[prefixToken].Start + _tokens.Tokens[prefixToken].Length != _tokens.Tokens[stringToken].Start)
+                {
+                    AddDiagnostic("LA1007", "String prefix must be adjacent to its literal.", prefixToken);
+                    return null;
+                }
                 if (firstToken < 0)
                 {
                     firstToken = prefixToken;
                 }
 
-                if (!TryParseFormattedStringLiteral(prefix, _tokens.GetString(stringToken), out var segmentParts, out var formattedMessage))
+                if (!TryParseFormattedStringLiteral(prefix, _tokens.GetString(stringToken), SpanOf(stringToken).Start, out var segmentParts, out var formattedMessage))
                 {
                     AddDiagnostic(StringLiteralDiagnosticCode(formattedMessage), formattedMessage, prefixToken);
                     return null;

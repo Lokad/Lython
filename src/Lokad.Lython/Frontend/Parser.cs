@@ -13,6 +13,8 @@ internal sealed partial class Parser
     private int _functionDepth;
     private int _unaryOperatorDepth;
     private int _nestingDepth;
+    private LexerResult<Token>? _spanSourceTokens;
+    private int _spanOffset;
     private PrivateNameContext? _privateNames;
     private PrivateNameExpansionBudget _privateNameExpansion = new();
 
@@ -20,6 +22,7 @@ internal sealed partial class Parser
     /// crash probes (descent-heavy shapes overflow near 190 levels on 1MB stacks;
     /// archive/executable builders tolerate less than 600) with at least 2x margin.</summary>
     internal const int MaxNestingDepth = 64;
+    private static readonly string SyntaxNestingLimitMessage = $"Syntax nesting exceeds the maximum of {MaxNestingDepth} levels.";
 
     public Parser(LexerResult<Token> tokens)
     {

@@ -437,6 +437,17 @@ support conversions, format specifications, nested replacement fields inside a
 format specification, and debug expressions within the implemented expression
 subset.
 
+Replacement expressions are implicitly grouped: physical newlines and comments
+are accepted in single-, triple- and raw-prefixed f-strings. Comment punctuation
+does not terminate a field or introduce conversions/specifiers. Quoted strings
+and nested f-strings retain their own lexical rules; format-specifier text keeps
+literal hashes and quotes. Whitespace/comments may follow a conversion character.
+Debug fields omit actual comment contents while retaining surrounding whitespace,
+newlines and hashes inside strings, following the corrected Python 3.13 behavior.
+Embedded expressions retain their locations in the original source. Nested
+formatted expressions share the parser nesting budget; source-size limits and
+the named Unicode-escape exclusion still apply.
+
 ### 8.4 Generator functions
 
 Functions and lambdas containing `yield` or `yield from` return lazy, single-pass

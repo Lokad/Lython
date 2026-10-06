@@ -12,7 +12,7 @@ internal sealed partial class Parser
         {
             AddDiagnostic(
                 "LA0003",
-                $"Syntax nesting exceeds the maximum of {MaxNestingDepth} levels.",
+                SyntaxNestingLimitMessage,
                 tokenIndex);
             return false;
         }
@@ -544,8 +544,9 @@ internal sealed partial class Parser
     private LythonSourceSpan SpanOf(int tokenIndex)
     {
         var token = _tokens.Tokens[tokenIndex];
-        _tokens.LineOfPosition(token.Start, out var line, out var column);
-        return new LythonSourceSpan(token.Start, token.Length, line, column);
+        var start = token.Start + _spanOffset;
+        (_spanSourceTokens ?? _tokens).LineOfPosition(start, out var line, out var column);
+        return new LythonSourceSpan(start, token.Length, line, column);
     }
 
     private LythonSourceSpan Merge(int leftTokenIndex, int rightTokenIndex)

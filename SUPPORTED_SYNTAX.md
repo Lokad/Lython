@@ -21,7 +21,7 @@ implemented or a claim of complete PEP 701 support.
 | Try, raise, assert | Typed/bare handlers, general computed class/tuple headers, grouped/empty/trailing-comma tuples and `as`, `else`/`finally`, chained exceptions, assertions | `exceptions`, `invalid` |
 | With statements | Single, comma-separated or grouped managers; full assignment targets; ordered enter and reverse exit, including binding failures | `with` |
 | Imports, simple statements, blocks | Allowed modules and members, aliases/dotted imports, grouped from-imports, semicolon statements, one-line and indented suites | `imports`, `invalid` |
-| Formatted strings | Adjacent text/formatted literals, escaped braces, conversions/specifiers, nested format fields, quoted expressions and enclosing-quote reuse | `fstrings` |
+| Formatted strings | Adjacent text/formatted literals, escaped braces, conversions/specifiers, nested format fields, implicitly joined multiline fields and lexical comments, debug text, quoted expressions and enclosing-quote reuse | `fstrings` |
 | Match, patterns | Tuple/starred subjects; literal/guard, open/bracketed sequence/star, mapping/rest, class, OR and AS patterns; unique captures, equal OR bindings and enclosing-scope guard assignments, including delayed hosts | `patterns`, `invalid` |
 
 These rows describe the grammar surface. Module inventories, object protocols,

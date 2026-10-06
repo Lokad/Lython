@@ -7,6 +7,7 @@ internal sealed partial class Parser
 
     private static string StringLiteralDiagnosticCode(string message)
         => message == UnsupportedNamedUnicodeEscapeMessage ? "LA2000"
+            : message == SyntaxNestingLimitMessage ? "LA0003"
             : message == PrivateNameExpansionLimitMessage ? "LA0004" : "LA1007";
 
     private static bool TryDecodeStringLiteral(string literal, [MaybeNullWhen(false)] out string value, out string message)
