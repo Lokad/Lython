@@ -34,6 +34,9 @@ Compilation rejects these forms before any guest effects:
 
 - `async def`, `await`, `async for` and `async with`.
 - `except*`.
+- Named Unicode escapes (`\N{...}`) in non-raw text literals and f-string literal
+  text. Numeric Unicode escapes and literal Unicode characters are supported;
+  raw/bytes literals preserve their Python escape behavior.
 
 The generator suspension boundaries listed in SPEC are also compile-time
 exclusions. Guest cleanup requires exhaustion or explicit close; CLR collection

@@ -2,6 +2,12 @@ namespace Lokad.Lython.Frontend;
 
 internal sealed partial class Parser
 {
+    private const string UnsupportedNamedUnicodeEscapeMessage =
+        "Unsupported named Unicode escape '\\N{...}'; use a Unicode character or numeric '\\u'/'\\U' escapes instead.";
+
+    private static string StringLiteralDiagnosticCode(string message)
+        => message == UnsupportedNamedUnicodeEscapeMessage ? "LA2000" : "LA1007";
+
     private static bool TryDecodeStringLiteral(string literal, [MaybeNullWhen(false)] out string value, out string message)
         => TryDecodeStringLiteral(literal, out value, out message, true);
 
@@ -124,6 +130,9 @@ internal sealed partial class Parser
                     builder.Append((char)hex);
                     i += 2;
                     break;
+                case 'N' when decodeUnicodeEscapes:
+                    message = UnsupportedNamedUnicodeEscapeMessage;
+                    return false;
                 case 'u' when decodeUnicodeEscapes:
                     if (!TryReadHexCodePoint(literal, i + 1, 4, end, out var shortCodePoint))
                     {
@@ -302,44 +311,19 @@ internal sealed partial class Parser
         return false;
     }
 
-    private static bool TryDecodeEscapedText(string text, bool isRaw, [MaybeNullWhen(false)] out string value)
+    private static bool TryDecodeEscapedText(string text, bool isRaw, [MaybeNullWhen(false)] out string value, out string message)
     {
         if (isRaw)
         {
             value = text;
+            message = string.Empty;
             return true;
         }
 
-        var builder = new System.Text.StringBuilder(text.Length);
-        for (var i = 0; i < text.Length; i++)
-        {
-            if (text[i] != '\\')
-            {
-                builder.Append(text[i]);
-                continue;
-            }
-
-            if (i + 1 >= text.Length)
-            {
-                value = string.Empty;
-                return false;
-            }
-
-            i++;
-            builder.Append(text[i] switch
-            {
-                '\\' => '\\',
-                '\'' => '\'',
-                '"' => '"',
-                'n' => '\n',
-                'r' => '\r',
-                't' => '\t',
-                _ => text[i],
-            });
-        }
-
-        value = builder.ToString();
-        return true;
+        // This is an already-delimited f-string text segment, so synthetic
+        // triple delimiters let the shared decoder process its body without
+        // interpreting any quotes in the segment as token boundaries.
+        return TryDecodeStringLiteral("\"\"\"" + text + "\"\"\"", out value, out message);
     }
 
 }

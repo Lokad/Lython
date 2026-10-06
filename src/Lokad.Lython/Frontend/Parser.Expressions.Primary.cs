@@ -174,7 +174,7 @@ internal sealed partial class Parser
                 var literal = _tokens.GetString(tokenIndex);
                 if (!TryDecodeStringLiteral(literal, out var value, out var message))
                 {
-                    AddDiagnostic("LA1007", message, tokenIndex);
+                    AddDiagnostic(StringLiteralDiagnosticCode(message), message, tokenIndex);
                     return null;
                 }
 
@@ -197,7 +197,7 @@ internal sealed partial class Parser
                     }
                     if (!TryDecodeStringLiteral(_tokens.GetString(unicodeStringToken), out var value, out var message))
                     {
-                        AddDiagnostic("LA1007", message, unicodeStringToken);
+                        AddDiagnostic(StringLiteralDiagnosticCode(message), message, unicodeStringToken);
                         return null;
                     }
                     if (firstToken < 0) firstToken = unicodePrefixToken;
@@ -223,9 +223,9 @@ internal sealed partial class Parser
                     firstToken = prefixToken;
                 }
 
-                if (!TryParseFormattedStringLiteral(prefix, _tokens.GetString(stringToken), out var segmentParts))
+                if (!TryParseFormattedStringLiteral(prefix, _tokens.GetString(stringToken), out var segmentParts, out var formattedMessage))
                 {
-                    AddDiagnostic("LA1007", "Invalid string literal. Malformed f-string replacement field or unmatched brace.", prefixToken);
+                    AddDiagnostic(StringLiteralDiagnosticCode(formattedMessage), formattedMessage, prefixToken);
                     return null;
                 }
 

@@ -2,24 +2,29 @@ namespace Lokad.Lython.Frontend;
 
 internal sealed partial class Parser
 {
-    private static bool TryParseFormattedStringLiteral(string prefix, string literal, out IReadOnlyList<FormattedStringPartSyntax> parts)
+    private const string MalformedFormattedStringMessage = "Invalid string literal. Malformed f-string replacement field or unmatched brace.";
+
+    private static bool TryParseFormattedStringLiteral(string prefix, string literal, out IReadOnlyList<FormattedStringPartSyntax> parts, out string message)
     {
         parts = Array.Empty<FormattedStringPartSyntax>();
+        message = MalformedFormattedStringMessage;
         if (!TryExtractStringContent(literal, out var content))
         {
             return false;
         }
 
-        return TryParseFormattedStringContent(prefix, content, allowNestedFormatFields: true, out parts);
+        return TryParseFormattedStringContent(prefix, content, allowNestedFormatFields: true, out parts, out message);
     }
 
     private static bool TryParseFormattedStringContent(
         string prefix,
         string content,
         bool allowNestedFormatFields,
-        out IReadOnlyList<FormattedStringPartSyntax> parts)
+        out IReadOnlyList<FormattedStringPartSyntax> parts,
+        out string message)
     {
         parts = Array.Empty<FormattedStringPartSyntax>();
+        message = MalformedFormattedStringMessage;
         var isRaw = prefix.Contains('r', StringComparison.OrdinalIgnoreCase);
 
         var parsedParts = new List<FormattedStringPartSyntax>();
@@ -28,6 +33,20 @@ internal sealed partial class Parser
         for (var i = 0; i < content.Length; i++)
         {
             var c = content[i];
+            if (!isRaw && c == '\\' && i + 1 < content.Length)
+            {
+                if (content[i + 1] == '\\')
+                {
+                    text.Append("\\\\");
+                    i++;
+                    continue;
+                }
+                if (content[i + 1] == 'N')
+                {
+                    message = UnsupportedNamedUnicodeEscapeMessage;
+                    return false;
+                }
+            }
             if (c == '{')
             {
                 if (i + 1 < content.Length && content[i + 1] == '{')
@@ -39,7 +58,7 @@ internal sealed partial class Parser
 
                 if (text.Length > 0)
                 {
-                    if (!TryDecodeEscapedText(text.ToString(), isRaw, out var decodedText))
+                    if (!TryDecodeEscapedText(text.ToString(), isRaw, out var decodedText, out message))
                     {
                         return false;
                     }
@@ -55,7 +74,8 @@ internal sealed partial class Parser
                         allowNestedFormatFields,
                         out var end,
                         out var expressionPart,
-                        out var debugText))
+                        out var debugText,
+                        out message))
                 {
                     return false;
                 }
@@ -87,7 +107,7 @@ internal sealed partial class Parser
 
         if (text.Length > 0)
         {
-            if (!TryDecodeEscapedText(text.ToString(), isRaw, out var decodedText))
+            if (!TryDecodeEscapedText(text.ToString(), isRaw, out var decodedText, out message))
             {
                 return false;
             }
@@ -106,11 +126,13 @@ internal sealed partial class Parser
         bool allowNestedFormatFields,
         out int end,
         [MaybeNullWhen(false)] out FormattedStringExpressionPartSyntax part,
-        out string? debugText)
+        out string? debugText,
+        out string message)
     {
         end = -1;
         part = null;
         debugText = null;
+        message = MalformedFormattedStringMessage;
 
         if (!TryFindFormattedStringFieldEnd(content, start, out end))
         {
@@ -125,7 +147,7 @@ internal sealed partial class Parser
                 out var formatSpecifier,
                 out debugText) ||
             expressionText.Length == 0 ||
-            !TryParseEmbeddedExpression(expressionText, out var expression))
+            !TryParseEmbeddedExpression(expressionText, out var expression, out message))
         {
             return false;
         }
@@ -139,12 +161,19 @@ internal sealed partial class Parser
                     prefix,
                     formatSpecifier,
                     allowNestedFormatFields: false,
-                    out formatSpecifierParts))
+                    out formatSpecifierParts,
+                    out message))
             {
                 return false;
             }
 
             formatSpecifier = null;
+        }
+        else if (formatSpecifier is not null)
+        {
+            if (!TryDecodeEscapedText(formatSpecifier, prefix.Contains('r', StringComparison.OrdinalIgnoreCase), out var decodedSpecifier, out message))
+                return false;
+            formatSpecifier = decodedSpecifier;
         }
 
         if (debugText is not null && conversion is null && formatSpecifier is null && formatSpecifierParts is null)
@@ -416,15 +445,18 @@ internal sealed partial class Parser
         return false;
     }
 
-    private static bool TryParseEmbeddedExpression(string expressionText, [MaybeNullWhen(false)] out ExpressionSyntax expression)
+    private static bool TryParseEmbeddedExpression(string expressionText, [MaybeNullWhen(false)] out ExpressionSyntax expression, out string message)
     {
         expression = null;
+        message = MalformedFormattedStringMessage;
         // The enclosing syntax pass supplies the real scope, including yield legality.
         var tokens = FormattedStringTokenization.Read("value = " + expressionText + "\n");
         if (tokens.HasInvalidTokens) return false;
         var frontend = new Parser(tokens).Parse();
         if (frontend.Script?.Statements is not [AssignmentStatementSyntax assignment] || frontend.Diagnostics.Count != 0)
         {
+            if (frontend.Diagnostics.Any(diagnostic => diagnostic.Message == UnsupportedNamedUnicodeEscapeMessage))
+                message = UnsupportedNamedUnicodeEscapeMessage;
             return false;
         }
 
