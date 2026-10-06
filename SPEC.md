@@ -308,6 +308,8 @@ operations through the configured host.
 
 `import ...`, `import ... as ...`, and `from ... import ...` are supported for
 allowlisted modules and members, including comma-separated dotted imports.
+Import aliases, module components and member names accept contextual soft
+keywords such as `match` and `case`; genuine reserved words remain invalid.
 An unaliased dotted import binds its top-level package; an aliased dotted import
 binds the resolved leaf. Resolving a dotted name loads and caches each allowed
 ancestor, then attaches each child module to its parent package. The runtime
@@ -941,6 +943,8 @@ The supported subset must raise the following exception types for the following 
 ## 10. Scope and Variables
 
 The scope model must follow Python semantics for the supported subset.
+Repeated names in a `global` or `nonlocal` declaration are accepted. Normal
+ordering, enclosing-binding validation and conflicting declarations still apply.
 
 ### 10.1 Required Scope Levels
 

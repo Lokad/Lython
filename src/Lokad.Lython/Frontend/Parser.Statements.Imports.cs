@@ -35,7 +35,7 @@ internal sealed partial class Parser
             if (CurrentToken == Token.As)
             {
                 ReadToken();
-                if (!TryRead(Token.Identifier, out var aliasToken))
+                if (!TryReadNameToken(out var aliasToken))
                 {
                     AddDiagnostic("LA1051", "Expected alias name after 'as'.", _position);
                     return null;
@@ -135,7 +135,7 @@ internal sealed partial class Parser
 
         while (true)
         {
-            if (!TryRead(Token.Identifier, out var memberToken))
+            if (!TryReadNameToken(out var memberToken))
             {
                 AddDiagnostic("LA1054", "Expected imported member name.", _position);
                 return null;
@@ -146,7 +146,7 @@ internal sealed partial class Parser
             if (CurrentToken == Token.As)
             {
                 ReadToken();
-                if (!TryRead(Token.Identifier, out var aliasToken))
+                if (!TryReadNameToken(out var aliasToken))
                 {
                     AddDiagnostic("LA1055", "Expected alias name after 'as'.", _position);
                     return null;
@@ -214,13 +214,10 @@ internal sealed partial class Parser
             }
 
             var name = IdentifierText(nameToken);
-            if (!seen.Add(name))
+            if (seen.Add(name))
             {
-                AddDiagnostic("LA1071", $"Duplicate scope directive name '{name}'.", nameToken);
-                return null;
+                names.Add(name);
             }
-
-            names.Add(name);
             endToken = nameToken;
 
             if (CurrentToken != Token.Comma)
@@ -246,7 +243,7 @@ internal sealed partial class Parser
         startToken = -1;
         endToken = -1;
 
-        if (!TryRead(Token.Identifier, out startToken))
+        if (!TryReadNameToken(out startToken))
         {
             AddDiagnostic(diagnosticCode, diagnosticMessage, anchorToken);
             return false;
@@ -257,7 +254,7 @@ internal sealed partial class Parser
         while (CurrentToken == Token.Dot)
         {
             ReadToken();
-            if (!TryRead(Token.Identifier, out var partToken))
+            if (!TryReadNameToken(out var partToken))
             {
                 AddDiagnostic(diagnosticCode, "Expected module name after '.'.", _position);
                 return false;

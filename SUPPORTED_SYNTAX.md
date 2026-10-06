@@ -20,7 +20,7 @@ implemented or a claim of complete PEP 701 support.
 | Class definitions | Direct/starred bases and keyword/mapping options, decorators, methods, lexical `__class__` cells, `super`, property/static/class methods, lexical private-name mangling with preserved display names; contained dataclass subset | `classes` |
 | Try, raise, assert | Typed/bare handlers, general computed class/tuple headers, grouped/empty/trailing-comma tuples and `as`, `else`/`finally`, chained exceptions, assertions | `exceptions`, `invalid` |
 | With statements | Single, comma-separated or grouped managers; full assignment targets; ordered enter and reverse exit, including binding failures | `with` |
-| Imports, simple statements, blocks | Allowed modules and members, aliases/dotted imports, grouped from-imports, semicolon statements, one-line and indented suites | `imports`, `invalid` |
+| Imports, simple statements, blocks | Allowed modules and members, soft-keyword names/aliases, dotted imports, grouped from-imports, repeated scope-declaration names, semicolon statements, one-line and indented suites | `imports`, `invalid` |
 | Formatted strings | Adjacent text/formatted literals, escaped braces, conversions/specifiers, nested format fields, implicitly joined multiline fields and lexical comments, debug text, quoted expressions and enclosing-quote reuse | `fstrings` |
 | Match, patterns | Tuple/starred subjects; literal/guard, open/bracketed sequence/star, mapping/rest, class, OR and AS patterns; unique captures, equal OR bindings and enclosing-scope guard assignments, including delayed hosts | `patterns`, `invalid` |
 
