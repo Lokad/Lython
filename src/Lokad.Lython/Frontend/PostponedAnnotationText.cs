@@ -24,7 +24,12 @@ internal static class PostponedAnnotationText
         for (var i = 0; i < script.Statements.Count; i++)
         {
             var statement = script.Statements[i];
-            if (i == 0 && statement is ExpressionStatementSyntax { Expression: StringLiteralExpressionSyntax }) continue;
+            if (i == 0 && statement is ExpressionStatementSyntax leading)
+            {
+                var expression = leading.Expression;
+                while (expression is ParenthesizedExpressionSyntax grouped) expression = grouped.Inner;
+                if (expression is StringLiteralExpressionSyntax) continue;
+            }
             if (statement is ImportStatementSyntax { ModuleName: "__future__", ImportedMembers: not null } import)
             {
                 if (beginning) permitted.Add(statement);
