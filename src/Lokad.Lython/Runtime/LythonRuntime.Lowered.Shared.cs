@@ -281,18 +281,99 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<LoweredBlockFlow> ExecuteTryStatementCoreAsync(
         LoweredTryStatement statement,
         ExecutionContext context,
-        LoweredStatementBlockExecutor executeStatements)
+        LoweredStatementBlockExecutor executeStatements,
+        LoweredExpressionEvaluator evaluateExpression)
     {
         ControlSignal? pendingControl = null;
         ReturnSignal? pendingReturn = null;
         LythonRuntimeException? pendingException = null;
 
+        var tryCompleted = false;
         try
         {
-            var tryFlow = await executeStatements(statement.TryBody, context).ConfigureAwait(false);
-            pendingControl = tryFlow.Control;
-            pendingReturn = tryFlow.Return;
-            if (pendingControl is null && pendingReturn is null && statement.ElseBody is not null)
+            try
+            {
+                var tryFlow = await executeStatements(statement.TryBody, context).ConfigureAwait(false);
+                pendingControl = tryFlow.Control;
+                pendingReturn = tryFlow.Return;
+                tryCompleted = true;
+            }
+            catch (ReturnSignal signal)
+            {
+                pendingReturn = signal;
+            }
+            catch (LythonRuntimeException ex)
+            {
+                LoweredExceptClause? matchedClause = null;
+                var headerPreviousException = context.Services.SetCurrentException(CreatePythonExceptionInstance(ex));
+                try
+                {
+                    foreach (var candidate in statement.ExceptClauses)
+                    {
+                        var matches = candidate.ExceptionType is { } header
+                            ? MatchesCaughtExceptionValue(await evaluateExpression(header).ConfigureAwait(false), ex.Identity, context, header.Span)
+                            : MatchesCaughtException(candidate.Syntax.ExceptionTypeNames, candidate.Syntax.ExceptionTypesAreTuple, ex, context, statement.Span);
+                        if (matches)
+                        {
+                            matchedClause = candidate;
+                            break;
+                        }
+                    }
+                }
+                catch (LythonRuntimeException handlerError)
+                {
+                    handlerError.PythonContext ??= CreatePythonExceptionInstance(ex);
+                    pendingException = handlerError;
+                }
+                finally
+                {
+                    context.Services.SetCurrentException(headerPreviousException);
+                }
+
+                if (pendingException is null && matchedClause is not null)
+                {
+                    // Handler suites share the enclosing scope like CPython: only
+                    // the `as` variable is suite-local (deleted below). A child
+                    // context would hide every handler assignment from the code
+                    // after the statement, which the executable engine never does.
+                    var pyException = CreatePythonExceptionInstance(ex);
+                    if (matchedClause.Syntax.ExceptionVariableName is not null)
+                    {
+                        ChargeBoundException(context.MemoryGovernor, statement.Span);
+                        StoreName(matchedClause.Syntax.ExceptionVariableName, pyException, context, statement.Span);
+                    }
+
+                    var previousException = context.Services.SetCurrentException(pyException);
+                    var handlerVariableName = matchedClause.Syntax.ExceptionVariableName;
+                    try
+                    {
+                        var handlerFlow = await executeStatements(matchedClause.Body, context).ConfigureAwait(false);
+                        pendingControl = handlerFlow.Control;
+                        pendingReturn = handlerFlow.Return;
+                    }
+                    catch (LythonRuntimeException error)
+                    {
+                        if (!ReferenceEquals(error.OriginalPythonException, pyException))
+                            error.PythonContext ??= pyException;
+                        throw;
+                    }
+                    finally
+                    {
+                        if (handlerVariableName is not null)
+                        {
+                            _ = DeleteName(handlerVariableName, context, statement.Span);
+                        }
+
+                        context.Services.SetCurrentException(previousException);
+                    }
+                }
+                else if (pendingException is null)
+                {
+                    pendingException = ex;
+                }
+            }
+
+            if (tryCompleted && pendingControl is null && pendingReturn is null && pendingException is null && statement.ElseBody is not null)
             {
                 var elseFlow = await executeStatements(statement.ElseBody, context).ConfigureAwait(false);
                 pendingControl = elseFlow.Control;
@@ -303,61 +384,9 @@ internal sealed partial class LythonRuntime
         {
             pendingReturn = signal;
         }
-        catch (LythonRuntimeException ex)
+        catch (LythonRuntimeException error)
         {
-            LoweredExceptClause? matchedClause = null;
-            try
-            {
-                foreach (var candidate in statement.ExceptClauses)
-                {
-                    if (MatchesCaughtException(candidate.Syntax.ExceptionTypeNames, candidate.Syntax.ExceptionTypesAreTuple, ex, context, statement.Span))
-                    {
-                        matchedClause = candidate;
-                        break;
-                    }
-                }
-            }
-            catch (LythonRuntimeException handlerError)
-            {
-                handlerError.PythonContext ??= CreatePythonExceptionInstance(ex);
-                pendingException = handlerError;
-            }
-
-            if (pendingException is null && matchedClause is not null)
-            {
-                // Handler suites share the enclosing scope like CPython: only
-                // the `as` variable is suite-local (deleted below). A child
-                // context would hide every handler assignment from the code
-                // after the statement, which the executable engine never does.
-                var pyException = CreatePythonExceptionInstance(ex);
-                if (matchedClause.Syntax.ExceptionVariableName is not null)
-                {
-                    ChargeBoundException(context.MemoryGovernor, statement.Span);
-                    StoreName(matchedClause.Syntax.ExceptionVariableName, pyException, context, statement.Span);
-                }
-
-                var previousException = context.Services.SetCurrentException(pyException);
-                var handlerVariableName = matchedClause.Syntax.ExceptionVariableName;
-                try
-                {
-                    var handlerFlow = await executeStatements(matchedClause.Body, context).ConfigureAwait(false);
-                    pendingControl = handlerFlow.Control;
-                    pendingReturn = handlerFlow.Return;
-                }
-                finally
-                {
-                    if (handlerVariableName is not null)
-                    {
-                        _ = DeleteName(handlerVariableName, context, statement.Span);
-                    }
-
-                    context.Services.SetCurrentException(previousException);
-                }
-            }
-            else if (pendingException is null)
-            {
-                pendingException = ex;
-            }
+            pendingException = error;
         }
         finally
         {

@@ -262,6 +262,11 @@ internal static partial class StaticAbstractInterpreter
                     foreach (var exceptClause in tryStatement.ExceptClauses)
                     {
                         var clauseBindings = bindings.Clone();
+                        // The protected body and computed header can mutate a
+                        // retained list before this suite is selected.
+                        clauseBindings.InvalidateMutableSequenceFacts();
+                        if (exceptClause.ExceptionTypeExpression is { } header)
+                            AnalyzeExpression(header, [], clauseBindings);
                         AnalyzeStatements(exceptClause.Body, diagnostics, clauseBindings);
                         exceptBindings = exceptBindings is null
                             ? clauseBindings

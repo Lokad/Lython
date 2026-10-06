@@ -195,7 +195,8 @@ internal sealed record LoweredWithStatement(
 
 internal sealed record LoweredExceptClause(
     ExceptClauseSyntax Syntax,
-    IReadOnlyList<LoweredStatement> Body);
+    IReadOnlyList<LoweredStatement> Body,
+    LoweredExpression? ExceptionType = null);
 
 internal sealed record LoweredTryStatement(
     TryStatementSyntax Syntax,

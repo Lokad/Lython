@@ -842,12 +842,18 @@ The supported subset must support:
 - `finally`
 
 Bare `except`, tuples of exception types, and `else` suites on `try` are
-supported. Named and qualified handler values may resolve to a class or a tuple
-of classes. Empty tuples match nothing; grouping parentheses preserve the value,
+supported. Handler expressions include calls, indexing, attributes, conditionals,
+walrus assignments and dynamic tuples. They evaluate in source order only when
+an exception reaches selection, with that exception active; RunAsync awaits
+header calls and attribute/item protocols. A resulting class or tuple of classes
+is matched with the ordinary exception inheritance rules. Empty tuples match nothing; grouping parentheses preserve the value,
 and a trailing comma creates a tuple. Tuple members are all resolved and
 validated before matching; lists, nested tuples and non-exception classes raise
 `TypeError`. Handler lookup failures bypass sibling handlers, run `finally` and
 propagate to enclosing handlers with the original exception as their context.
+Errors from `else` and handler bodies bypass that try statement's handlers; its
+`finally` still runs with any escaping exception active. Generator headers can
+suspend before matching and binding their alias.
 A named handler matches the named built-in exception class and the
 supported built-in subclasses beneath it. User-defined exception classes are
 not part of the current subset.

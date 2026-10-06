@@ -1,4 +1,3 @@
-using System.Text;
 using Lokad.Parsing.Lexer;
 
 namespace Lokad.Lython.Frontend;
@@ -169,32 +168,14 @@ internal sealed partial class Parser
 
     private StatementSyntax? ParseTryStatement()
     {
-        bool TryReadExceptionTypeName(string diagnosticMessage, out string typeName)
-        {
-            typeName = string.Empty;
-            if (!TryReadNameToken(out var typeToken))
+        static string? ExceptionName(ExpressionSyntax expression)
+            => expression switch
             {
-                AddDiagnostic("LA1045", diagnosticMessage, _position);
-                return false;
-            }
-
-            var qualifiedName = new StringBuilder(IdentifierText(typeToken));
-            while (CurrentToken == Token.Dot)
-            {
-                ReadToken();
-                if (!TryReadNameToken(out var partToken))
-                {
-                    AddDiagnostic("LA1045", "Expected exception type name after '.'.", _position);
-                    return false;
-                }
-
-                qualifiedName.Append('.').Append(IdentifierText(partToken));
-            }
-
-            typeName = qualifiedName.ToString();
-
-            return true;
-        }
+                IdentifierExpressionSyntax identifier => identifier.Name,
+                ParenthesizedExpressionSyntax grouped => ExceptionName(grouped.Inner),
+                MemberExpressionSyntax member when ExceptionName(member.Target) is { } prefix => prefix + "." + member.MemberName,
+                _ => null,
+            };
 
         IReadOnlyList<StatementSyntax>? ParseTrailingSuite(
             string colonDiagnosticCode,
@@ -240,53 +221,29 @@ internal sealed partial class Parser
             }
             IReadOnlyList<string>? exceptionTypes = null;
             var exceptionTypesAreTuple = false;
+            ExpressionSyntax? exceptionTypeExpression = null;
             string? exceptionVariable = null;
             if (CurrentToken != Token.Colon)
             {
-                var parsedTypes = new List<string>();
-                if (CurrentToken == Token.OpenParen)
+                exceptionTypeExpression = ParseExpression();
+                if (exceptionTypeExpression is null)
                 {
-                    ReadToken();
-                    exceptionTypesAreTuple = CurrentToken == Token.CloseParen;
-                    while (CurrentToken != Token.CloseParen)
-                    {
-                        if (!TryReadExceptionTypeName("Expected exception type in except tuple.", out var typeName))
-                        {
-                            return null;
-                        }
-
-                        parsedTypes.Add(typeName);
-                        if (CurrentToken != Token.Comma)
-                        {
-                            break;
-                        }
-
-                        exceptionTypesAreTuple = true;
-                        ReadToken();
-                    }
-
-                    if (!TryRead(Token.CloseParen, out _))
-                    {
-                        AddDiagnostic("LA1045", "Expected ')' after except tuple.", _position);
-                        return null;
-                    }
-                }
-                else if (IsNameToken(CurrentToken))
-                {
-                    if (!TryReadExceptionTypeName("Expected exception type after 'except'.", out var typeName))
-                    {
-                        return null;
-                    }
-
-                    parsedTypes.Add(typeName);
-                }
-                else
-                {
-                    AddDiagnostic("LA1045", "Expected exception type after 'except'.", _position);
+                    AddDiagnostic("LA1045", "Expected exception expression after 'except'.", _position);
                     return null;
                 }
-
-                exceptionTypes = parsedTypes;
+                if (exceptionTypeExpression is AssignmentExpressionSyntax or YieldExpressionSyntax)
+                {
+                    AddDiagnostic("LA1045", "Assignment and yield expressions in an exception header require parentheses.", exceptionTypeExpression.Span);
+                    return null;
+                }
+                var unwrapped = exceptionTypeExpression;
+                while (unwrapped is ParenthesizedExpressionSyntax grouped) unwrapped = grouped.Inner;
+                exceptionTypesAreTuple = unwrapped is TupleLiteralExpressionSyntax;
+                IEnumerable<ExpressionSyntax> items = unwrapped is TupleLiteralExpressionSyntax tuple
+                    ? tuple.Items.Select(item => item.Expression) : [unwrapped];
+                var names = items.Select(ExceptionName).ToArray();
+                exceptionTypes = names.All(name => name is not null)
+                    ? names.Select(name => name!).ToArray() : [];
 
                 if (CurrentToken == Token.As)
                 {
@@ -314,13 +271,13 @@ internal sealed partial class Parser
             }
 
             var clauseSpan = Merge(SpanOf(exceptToken), body[^1].Span);
-            exceptClauses.Add(new ExceptClauseSyntax(exceptionTypes, exceptionVariable, body, clauseSpan, exceptionTypesAreTuple));
+            exceptClauses.Add(new ExceptClauseSyntax(exceptionTypes, exceptionVariable, body, clauseSpan, exceptionTypesAreTuple, exceptionTypeExpression));
             span = Merge(span, body[^1].Span);
         }
 
         for (var clauseIndex = 0; clauseIndex + 1 < exceptClauses.Count; clauseIndex++)
         {
-            if (exceptClauses[clauseIndex].ExceptionTypeNames is null)
+            if (exceptClauses[clauseIndex].ExceptionTypeNames is null && exceptClauses[clauseIndex].ExceptionTypeExpression is null)
             {
                 AddDiagnostic("LA1075", "Default 'except:' must be last.", exceptClauses[clauseIndex].Span);
                 return null;

@@ -241,7 +241,7 @@ internal sealed partial class ExecutableScript
             CompiledClause? CompileOptionalClause(IReadOnlyList<LoweredStatement>? body)
                 => body is null ? null : CompileClause(body);
 
-            void ProtectWithFinally(CompiledClause clause, int finallyBlock)
+            void ProtectWithFinally(CompiledClause clause, CompiledClause cleanup)
             {
                 _regions.Add(new ExecutableExceptionRegion(
                     clause.StartBlock,
@@ -249,9 +249,9 @@ internal sealed partial class ExecutableScript
                     null,
                     null,
                     null,
-                    finallyBlock,
-                    clause.StartBlock,
-                    clause.EndBlock));
+                    cleanup.StartBlock,
+                    cleanup.StartBlock,
+                    cleanup.EndBlock));
             }
 
             var tryClause = CompileClause(statement.TryBody);
@@ -262,37 +262,75 @@ internal sealed partial class ExecutableScript
 
             var afterBlock = CreateBlock();
 
-            // Each handler guards the same range in order; a separate
-            // finally-only region propagates uncaught abrupt completions.
-            foreach (var exceptClause in statement.ExceptClauses)
+            if (statement.ExceptClauses.Any(clause => clause.ExceptionType is not null))
             {
-                var handler = CompileClause(exceptClause.Body);
-                _regions.Add(new ExecutableExceptionRegion(
-                    tryClause.StartBlock,
-                    tryClause.EndBlock,
-                    exceptClause.Syntax.ExceptionTypeNames,
-                    exceptClause.Syntax.ExceptionVariableName,
-                    handler.StartBlock,
-                    null,
-                    handler.StartBlock,
-                    handler.EndBlock,
-                    exceptClause.Syntax.ExceptionTypesAreTuple));
-
-                if (finallyClause is { } handlerCleanup)
+                // Handler selection is executable code: header expressions can
+                // call/await guest protocols and eventually suspend with yield.
+                var selectionStart = CreateBlock();
+                var selectionBlock = selectionStart;
+                foreach (var clause in statement.ExceptClauses)
                 {
-                    // Exceptions raised by a handler still execute the surrounding finally clause.
-                    ProtectWithFinally(handler, handlerCleanup.StartBlock);
+                    var nextHeader = CreateBlock();
+                    if (clause.ExceptionType is { } header)
+                    {
+                        selectionBlock = CompileExpression(header, selectionBlock);
+                        AddInstruction(selectionBlock, ExecutableInstruction.MatchException(header.Span));
+                        AddInstruction(selectionBlock, ExecutableInstruction.JumpIfFalse(nextHeader, header.Span));
+                    }
+                    if (clause.Syntax.ExceptionVariableName is { } variable)
+                        AddInstruction(selectionBlock, ExecutableInstruction.BindException(InternName(variable), clause.Syntax.Span));
+
+                    var handlerExit = CompileStatements(clause.Body, selectionBlock);
+                    if (handlerExit is int exit && !IsTerminated(exit))
+                    {
+                        AddInstruction(exit, ExecutableInstruction.ClearException(
+                            clause.Syntax.ExceptionVariableName is null ? -1 : InternName(clause.Syntax.ExceptionVariableName), clause.Syntax.Span));
+                        AddInstruction(exit, ExecutableInstruction.Jump(finallyClause?.StartBlock ?? afterBlock, statement.Span));
+                    }
+                    selectionBlock = nextHeader;
+                }
+                AddInstruction(selectionBlock, ExecutableInstruction.ReraiseException(statement.Span));
+                var selectionEnd = _blocks.Count - 1;
+                _regions.Add(new ExecutableExceptionRegion(tryClause.StartBlock, tryClause.EndBlock,
+                    null, null, selectionStart, null, selectionStart, selectionEnd));
+                if (finallyClause is { } cleanup)
+                    ProtectWithFinally(new CompiledClause(selectionStart, selectionEnd, null), cleanup);
+            }
+            else
+            {
+                // Each handler guards the same range in order; a separate
+                // finally-only region propagates uncaught abrupt completions.
+                foreach (var exceptClause in statement.ExceptClauses)
+                {
+                    var handler = CompileClause(exceptClause.Body);
+                    _regions.Add(new ExecutableExceptionRegion(
+                        tryClause.StartBlock,
+                        tryClause.EndBlock,
+                        exceptClause.Syntax.ExceptionTypeNames,
+                        exceptClause.Syntax.ExceptionVariableName,
+                        handler.StartBlock,
+                        null,
+                        handler.StartBlock,
+                        handler.EndBlock,
+                        exceptClause.Syntax.ExceptionTypesAreTuple));
+
+                    if (finallyClause is { } handlerCleanup)
+                    {
+                        // Exceptions raised by a handler still execute the surrounding finally clause.
+                        ProtectWithFinally(handler, handlerCleanup);
+                    }
+
+                    if (handler.ExitBlock is int handlerExit && !IsTerminated(handlerExit))
+                    {
+                        AddInstruction(
+                            handlerExit,
+                            ExecutableInstruction.ClearException(
+                                exceptClause.Syntax.ExceptionVariableName is null ? -1 : InternName(exceptClause.Syntax.ExceptionVariableName),
+                                statement.Span));
+                        AddInstruction(handlerExit, ExecutableInstruction.Jump(finallyClause?.StartBlock ?? afterBlock, statement.Span));
+                    }
                 }
 
-                if (handler.ExitBlock is int handlerExit && !IsTerminated(handlerExit))
-                {
-                    AddInstruction(
-                        handlerExit,
-                        ExecutableInstruction.ClearException(
-                            exceptClause.Syntax.ExceptionVariableName is null ? -1 : InternName(exceptClause.Syntax.ExceptionVariableName),
-                            statement.Span));
-                    AddInstruction(handlerExit, ExecutableInstruction.Jump(finallyClause?.StartBlock ?? afterBlock, statement.Span));
-                }
             }
 
             if (finallyClause is { } finallyRegion)
@@ -320,7 +358,7 @@ internal sealed partial class ExecutableScript
                 if (finallyClause is { } cleanup)
                 {
                     // The else suite is outside the except handler but remains inside finally protection.
-                    ProtectWithFinally(success, cleanup.StartBlock);
+                    ProtectWithFinally(success, cleanup);
                 }
 
                 if (success.ExitBlock is int successExit && !IsTerminated(successExit))

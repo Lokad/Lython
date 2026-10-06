@@ -482,6 +482,27 @@ internal sealed partial class LythonRuntime
                     else context.Services.SetCurrentException(null);
                     return false;
 
+                case ExecutableOpCode.MatchException:
+                    var active = context.Services.CurrentException
+                        ?? throw new InvalidOperationException("Exception selection requires an active exception.");
+                    _stack.Push(MatchesCaughtExceptionValue(Pop(_stack, instruction.Span), active.Identity, context, instruction.Span));
+                    return false;
+
+                case ExecutableOpCode.BindException:
+                    var bound = context.Services.CurrentException
+                        ?? throw new InvalidOperationException("Exception binding requires an active exception.");
+                    ChargeBoundException(context.MemoryGovernor, instruction.Span);
+                    var name = codeObject.Names[instruction.NameIndex];
+                    AssignExecutableBoundName(codeObject, locals, localCells, name, bound, context, instruction.Span);
+                    var suite = SavedActiveExceptions().Peek();
+                    context.ActiveHandlerVariables ??= new();
+                    context.ActiveHandlerVariables.Push((name, suite.SuiteStartBlockIndex ?? 0, suite.SuiteEndBlockIndex ?? int.MaxValue));
+                    return false;
+
+                case ExecutableOpCode.ReraiseException:
+                    ThrowReraisedException(instruction.Span, context);
+                    return false;
+
                 case ExecutableOpCode.EndFinally:
                     if (_pendingAbrupt is PendingJump pendingJump) return DeliverJump(pendingJump, instruction.Span);
                     if (_pendingAbrupt is PendingException)
@@ -661,6 +682,9 @@ internal sealed partial class LythonRuntime
                             case ExecutableOpCode.AbruptJump or ExecutableOpCode.JumpIfFalse or
                                  ExecutableOpCode.ChainLink or
                                  ExecutableOpCode.Jump or
+                                 ExecutableOpCode.MatchException or
+                                 ExecutableOpCode.BindException or
+                                 ExecutableOpCode.ReraiseException or
                                  ExecutableOpCode.ClearException or
                                  ExecutableOpCode.EndFinally or
                                  ExecutableOpCode.Return or
@@ -697,6 +721,8 @@ internal sealed partial class LythonRuntime
                     catch (LythonRuntimeException ex)
                     {
                         var previousActive = context.Services.CurrentException;
+                        if (previousActive is not null && !ReferenceEquals(ex.OriginalPythonException, previousActive))
+                            ex.PythonContext ??= previousActive;
                         var previousPending = _pendingAbrupt;
                         _delegation = null;
                         _injectedException = null;

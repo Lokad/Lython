@@ -319,7 +319,8 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(statement.Span);
         try
         {
-            var flow = await ExecuteTryStatementCoreAsync(statement, context, ExecuteStatementsAsync).ConfigureAwait(false);
+            var flow = await ExecuteTryStatementCoreAsync(statement, context, ExecuteStatementsAsync,
+                expression => EvaluateLoweredExpressionAsync(expression, context)).ConfigureAwait(false);
             if (flow.Control is not null)
             {
                 throw flow.Control;

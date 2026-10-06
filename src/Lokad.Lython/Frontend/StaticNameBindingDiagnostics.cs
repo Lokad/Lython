@@ -75,6 +75,7 @@ internal static class StaticNameBindingDiagnostics
     {
         foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
         {
+            if (statement is TryStatementSyntax) continue;
             if (statement is ForStatementSyntax loop && !ReferenceEquals(expression, loop.Iterable)) continue;
             if (statement is WithStatementSyntax manager && !ReferenceEquals(expression, manager.ContextExpression)) continue;
             if (statement is MatchStatementSyntax matchGuardOwner &&
@@ -233,6 +234,8 @@ internal static class StaticNameBindingDiagnostics
                     foreach (var exceptClause in tryStatement.ExceptClauses)
                     {
                         var exceptAssigned = Clone(maybeAssigned);
+                        if (exceptClause.ExceptionTypeExpression is { } header)
+                            AnalyzeExpression(header, context, localNames, exceptAssigned);
                         if (exceptClause.ExceptionVariableName is not null)
                         {
                             exceptAssigned.Add(exceptClause.ExceptionVariableName);

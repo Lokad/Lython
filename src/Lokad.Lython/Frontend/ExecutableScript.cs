@@ -48,6 +48,9 @@ internal enum ExecutableOpCode
     Jump,
     JumpIfFalse,
     ChainLink,
+    MatchException,
+    BindException,
+    ReraiseException,
     ClearException,
     EndFinally,
     Return,
@@ -335,6 +338,15 @@ internal readonly record struct ExecutableInstruction
 
     public static ExecutableInstruction ClearException(int exceptionNameIndex, LythonSourceSpan span)
         => CreateIndexed(ExecutableOpCode.ClearException, new Operand(OperandKind.ExceptionNameIndex, exceptionNameIndex), span);
+
+    public static ExecutableInstruction MatchException(LythonSourceSpan span)
+        => Create(ExecutableOpCode.MatchException, span);
+
+    public static ExecutableInstruction BindException(int nameIndex, LythonSourceSpan span)
+        => CreateIndexed(ExecutableOpCode.BindException, new Operand(OperandKind.NameIndex, nameIndex), span);
+
+    public static ExecutableInstruction ReraiseException(LythonSourceSpan span)
+        => Create(ExecutableOpCode.ReraiseException, span);
 
     public static ExecutableInstruction EndFinally(int targetBlockIndex, LythonSourceSpan span)
         => CreateIndexed(ExecutableOpCode.EndFinally, new Operand(OperandKind.BlockIndex, targetBlockIndex), span);

@@ -47,13 +47,15 @@ internal sealed partial class LythonRuntime
             return original;
         }
 
-        return new PyException(exception.Identity, exception.Message, exception.Payload ?? PyNone.Instance) with
+        var created = new PyException(exception.Identity, exception.Message, exception.Payload ?? PyNone.Instance) with
         {
             Cause = exception.PythonCause,
             Context = exception.PythonContext,
             SuppressContext = exception.SuppressPythonContext,
             ExplicitArgs = exception.PythonExplicitArgs,
         };
+        exception.OriginalPythonException = created;
+        return created;
     }
 
     private static bool MatchesCaughtException(
@@ -73,7 +75,7 @@ internal sealed partial class LythonRuntime
             var caughtType = ResolveCaughtExceptionTypeName(caughtTypeNames[0], context, span);
             if (PyTupleLike.TryGetItems(caughtType, out var tupleItems))
             {
-                return MatchesCaughtExceptionClasses(tupleItems, thrown, context, span);
+                return MatchesCaughtExceptionClasses(tupleItems, thrown.Identity, context, span);
             }
 
             return MatchesExceptionType(RequireCaughtExceptionClass(caughtType, span).ExceptionIdentity, thrown.Identity);
@@ -90,8 +92,14 @@ internal sealed partial class LythonRuntime
             caughtTypes[i] = ResolveCaughtExceptionTypeName(caughtTypeNames[i], context, span);
         }
 
-        return MatchesCaughtExceptionClasses(caughtTypes, thrown, context, span);
+        return MatchesCaughtExceptionClasses(caughtTypes, thrown.Identity, context, span);
     }
+
+    private static bool MatchesCaughtExceptionValue(object caughtType, PythonExceptionIdentity thrown,
+        ExecutionContext context, LythonSourceSpan span)
+        => PyTupleLike.TryGetItems(caughtType, out var tupleItems)
+            ? MatchesCaughtExceptionClasses(tupleItems, thrown, context, span)
+            : MatchesExceptionType(RequireCaughtExceptionClass(caughtType, span).ExceptionIdentity, thrown);
 
     private static object ResolveCaughtExceptionTypeName(string caughtTypeName, ExecutionContext context, LythonSourceSpan span)
     {
@@ -112,7 +120,7 @@ internal sealed partial class LythonRuntime
 
     private static bool MatchesCaughtExceptionClasses(
         IReadOnlyList<object> caughtTypes,
-        LythonRuntimeException thrown,
+        PythonExceptionIdentity thrown,
         ExecutionContext context,
         LythonSourceSpan span)
     {
@@ -127,7 +135,7 @@ internal sealed partial class LythonRuntime
         for (var i = 0; i < caughtTypes.Count; i++)
         {
             context.CheckExecutionBudget(span);
-            if (MatchesExceptionType(((IPythonExceptionType)caughtTypes[i]).ExceptionIdentity, thrown.Identity))
+            if (MatchesExceptionType(((IPythonExceptionType)caughtTypes[i]).ExceptionIdentity, thrown))
                 return true;
         }
 

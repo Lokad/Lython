@@ -279,7 +279,8 @@ internal sealed partial class LythonRuntime
             new LoweredTryStatement(
                 statement,
                 LoweredScript.Lower(new ScriptSyntax(statement.TryBody)).Statements,
-                statement.ExceptClauses.Select(clause => new LoweredExceptClause(clause, LoweredScript.Lower(new ScriptSyntax(clause.Body)).Statements)).ToArray(),
+                statement.ExceptClauses.Select(clause => new LoweredExceptClause(clause, LoweredScript.Lower(new ScriptSyntax(clause.Body)).Statements,
+                    clause.ExceptionTypeExpression is null ? null : LoweredScript.LowerExpression(clause.ExceptionTypeExpression))).ToArray(),
                 statement.ElseBody is null ? null : LoweredScript.Lower(new ScriptSyntax(statement.ElseBody)).Statements,
                 statement.FinallyBody is null ? null : LoweredScript.Lower(new ScriptSyntax(statement.FinallyBody)).Statements),
             context);
@@ -291,7 +292,8 @@ internal sealed partial class LythonRuntime
             ExecutionContext executionContext)
             => new(ExecuteStatements(statements, executionContext));
 
-        var flow = ExecuteTryStatementCoreAsync(statement, context, ExecuteSynchronously).GetAwaiter().GetResult();
+        var flow = ExecuteTryStatementCoreAsync(statement, context, ExecuteSynchronously,
+            expression => new ValueTask<object>(EvaluateLoweredExpression(expression, context))).GetAwaiter().GetResult();
         if (flow.Control is not null)
         {
             throw flow.Control;

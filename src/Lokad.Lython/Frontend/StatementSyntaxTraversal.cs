@@ -116,6 +116,11 @@ internal static class StatementSyntaxTraversal
                 if (raiseStatement.Expression is not null) yield return raiseStatement.Expression;
                 if (raiseStatement.CauseExpression is not null) yield return raiseStatement.CauseExpression;
                 break;
+
+            case TryStatementSyntax tryStatement:
+                foreach (var clause in tryStatement.ExceptClauses)
+                    if (clause.ExceptionTypeExpression is not null) yield return clause.ExceptionTypeExpression;
+                break;
         }
 
         static IEnumerable<ExpressionSyntax> EnumerateTargetExpressions(AssignmentTargetSyntax target)

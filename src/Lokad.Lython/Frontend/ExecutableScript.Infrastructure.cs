@@ -30,7 +30,7 @@ internal sealed partial class ExecutableScript
                 return false;
             }
 
-            return instructions[^1].OpCode is ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone;
+            return instructions[^1].OpCode is ExecutableOpCode.Jump or ExecutableOpCode.AbruptJump or ExecutableOpCode.Return or ExecutableOpCode.ReturnNone or ExecutableOpCode.ReraiseException;
         }
 
         private IReadOnlyList<ExecutableBasicBlock> NormalizeBlocks(IReadOnlyList<int> ordered, IReadOnlyDictionary<int, int> indexMap)
@@ -199,7 +199,8 @@ internal sealed partial class ExecutableScript
                 var last = block.Instructions[^1];
                 if (last.OpCode is not ExecutableOpCode.Jump and
                     not ExecutableOpCode.Return and
-                    not ExecutableOpCode.ReturnNone &&
+                    not ExecutableOpCode.ReturnNone and
+                    not ExecutableOpCode.ReraiseException &&
                     blockIndex + 1 < _blocks.Count)
                 {
                     pending.Push(blockIndex + 1);

@@ -306,6 +306,7 @@ internal static class StaticScopeDirectiveDiagnostics
                 AnalyzeNestedSeen(tryStatement.TryBody, names);
                 foreach (var exceptClause in tryStatement.ExceptClauses)
                 {
+                    if (exceptClause.ExceptionTypeExpression is { } header) CollectSeenNames(header, names);
                     if (exceptClause.ExceptionVariableName is not null) names.Add(exceptClause.ExceptionVariableName);
                     AnalyzeNestedSeen(exceptClause.Body, names);
                 }

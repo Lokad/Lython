@@ -196,6 +196,7 @@ internal static class ScopeDirectiveFactsCollector
                     foreach (var exceptClause in tryStatement.ExceptClauses)
                     {
                         if (exceptClause.ExceptionVariableName is not null) names.Add(exceptClause.ExceptionVariableName);
+                        if (exceptClause.ExceptionTypeExpression is not null) CollectExpressionBindings(exceptClause.ExceptionTypeExpression, names);
                     }
                     break;
 
