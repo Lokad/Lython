@@ -370,7 +370,7 @@ internal sealed partial class Parser
         }
         while (true)
         {
-            if (PeekToken(offset) == Token.OpenBracket)
+            if (PeekToken(offset) is Token.OpenBracket or Token.OpenParen)
             {
                 offset = SkipBalancedTokens(offset);
                 if (offset < 0)
@@ -395,7 +395,7 @@ internal sealed partial class Parser
         while (true)
         {
             var token = PeekToken(offset);
-            if (token is Token.End || token == Token.Assign)
+            if (token is Token.End || token == Token.Assign && depth == 0)
             {
                 return -1;
             }

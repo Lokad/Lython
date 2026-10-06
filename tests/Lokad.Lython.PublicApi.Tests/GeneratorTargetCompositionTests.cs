@@ -285,6 +285,24 @@ public sealed class GeneratorTargetCompositionTests
         }
     }
 
+    [Fact]
+    public async Task UnpackingReceiversIncludeCallsAndKeywordOperands()
+    {
+        await AssertOutput("""
+            events=[]
+            class Box:pass
+            box=Box()
+            def make(flag):
+             events.append(flag)
+             return box
+            def generate():
+             make(flag=(yield 'flag')).value,tail=(7,8)
+             yield box.value,tail,events
+            g=generate()
+            print(next(g),g.send(1))
+            """, "flag (7, 8, [1])\n");
+    }
+
     private static async Task AssertOutput(string source, string expected)
     {
         var compiled = new LythonEngine().Compile(source);
