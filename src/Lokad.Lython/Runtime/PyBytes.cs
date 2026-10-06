@@ -111,25 +111,37 @@ internal sealed class PyBytes : IEquatable<PyBytes>, IPyTruthyValue, IPyIterable
         var builder = _memoryGovernor is null
             ? new GovernedByteBuilder()
             : new GovernedByteBuilder(_memoryGovernor, _allocationSpan);
-        builder.AppendAscii("b'");
+        var quote = _bytes.AsSpan().Contains((byte)'\'') && !_bytes.AsSpan().Contains((byte)'"') ? (byte)'"' : (byte)'\'';
+        builder.AppendAscii("b");
+        builder.Append(quote);
         foreach (var value in _bytes)
         {
-            AppendEscapedByte(builder, value);
+            AppendEscapedByte(builder, value, quote);
         }
 
-        builder.AppendAscii("'");
+        builder.Append(quote);
         return builder.ToPyStringAndRelease();
     }
 
-    private static void AppendEscapedByte(GovernedByteBuilder builder, byte value)
+    private static void AppendEscapedByte(GovernedByteBuilder builder, byte value, byte quote)
     {
         switch (value)
         {
+            case (byte)'\n':
+                builder.AppendAscii("\\n");
+                return;
+            case (byte)'\r':
+                builder.AppendAscii("\\r");
+                return;
+            case (byte)'\t':
+                builder.AppendAscii("\\t");
+                return;
             case (byte)'\\':
                 builder.AppendAscii("\\\\");
                 return;
-            case (byte)'\'':
-                builder.AppendAscii("\\'");
+            case var quoted when quoted == quote:
+                builder.Append((byte)'\\');
+                builder.Append(value);
                 return;
             case (>= 32 and <= 126):
                 builder.Append(value);

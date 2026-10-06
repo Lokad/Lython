@@ -84,16 +84,7 @@ internal sealed partial class Parser
 
                 if (IsBytesStringPrefix(prefix))
                 {
-                    var prefixToken = ReadToken();
-                    var stringToken = ReadToken();
-                    if (!TryDecodeBytesLiteral(_tokens.GetString(stringToken), out var bytes, out var message,
-                        isRaw: prefix.Contains('r') || prefix.Contains('R')))
-                    {
-                        AddDiagnostic("LA1007", message, prefixToken);
-                        return null;
-                    }
-
-                    return new BytesLiteralExpressionSyntax(bytes, Merge(SpanOf(prefixToken), SpanOf(stringToken)));
+                    return ParseBytesLiteralExpression();
                 }
 
                 if (TryGetUnsupportedStringPrefix(prefix, out var unsupportedPrefix))
@@ -144,6 +135,57 @@ internal sealed partial class Parser
 
         AddDiagnostic("LA1000", "Expected expression.", _position);
         return null;
+    }
+
+    private ExpressionSyntax? ParseBytesLiteralExpression()
+    {
+        var firstToken = _position;
+        var lastToken = firstToken;
+        var pieces = new List<byte[]>();
+        var length = 0;
+        while (IsNameToken(CurrentToken) && PeekToken(1) == Token.String &&
+            IsBytesStringPrefix(_tokens.GetString(_position)))
+        {
+            var prefix = _tokens.GetString(_position);
+            var prefixToken = ReadToken();
+            var stringToken = ReadToken();
+            if (_tokens.Tokens[prefixToken].Start + _tokens.Tokens[prefixToken].Length != _tokens.Tokens[stringToken].Start)
+            {
+                AddDiagnostic("LA1007", "String prefix must be adjacent to its literal.", prefixToken);
+                return null;
+            }
+            if (!TryDecodeBytesLiteral(_tokens.GetString(stringToken), out var bytes, out var message,
+                isRaw: prefix.Contains('r') || prefix.Contains('R')))
+            {
+                AddDiagnostic("LA1007", message, prefixToken);
+                return null;
+            }
+            pieces.Add(bytes);
+            length = checked(length + bytes.Length);
+            lastToken = stringToken;
+        }
+        if (CurrentToken == Token.String ||
+            IsNameToken(CurrentToken) && PeekToken(1) == Token.String &&
+            (_tokens.GetString(_position) is "u" or "U" || IsFormattedStringPrefix(_tokens.GetString(_position))))
+        {
+            AddDiagnostic("LA1007", "Invalid string literal. Cannot mix bytes and nonbytes literals.", _position);
+            return null;
+        }
+
+        // Source-length limits bound every piece and the combined constant.
+        // Copy once, keeping implicit concatenation linear in literal size.
+        var combined = pieces[0];
+        if (pieces.Count > 1)
+        {
+            combined = new byte[length];
+            var offset = 0;
+            foreach (var piece in pieces)
+            {
+                piece.CopyTo(combined, offset);
+                offset += piece.Length;
+            }
+        }
+        return new BytesLiteralExpressionSyntax(combined, Merge(SpanOf(firstToken), SpanOf(lastToken)));
     }
 
     // Adjacent literal pieces fold left-to-right exactly like CPython implicit

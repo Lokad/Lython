@@ -9,7 +9,7 @@ implemented or a claim of complete PEP 701 support.
 
 | Grammar family | Supported commitments | Public regression family |
 | --- | --- | --- |
-| Tokens, names, strings | Unicode identifiers with NFKC normalization, soft keywords, numeric separators, raw/bytes/formatted/Unicode-prefixed and triple strings, explicit/implicit joining | `lexical`, `fstrings` |
+| Tokens, names, strings | Unicode identifiers with NFKC normalization, soft keywords, numeric separators, raw/bytes/formatted/Unicode-prefixed and triple strings, adjacent text/bytes concatenation, explicit/implicit joining | `lexical`, `fstrings` |
 | Expressions, comparison, inversion, primary | Arithmetic/bitwise/matrix precedence, complex literals, lazy Boolean operators, comparison chains, conditional and assignment expressions, member access, scalar/slice/tuple-key subscripts | `expressions` |
 | Assignment, star targets, augmented assignment | Names, attributes, subscripts, slices, tuple/list/nested unpacking, one starred leaf per level, chained and augmented stores, expression-list values; name annotations | `assignment` |
 | For/while statements | Full assignment targets, nested tuple/list and starred unpacking, trailing commas, loop `else`, scope-correct `break`/`continue` | `loops`, `invalid` |

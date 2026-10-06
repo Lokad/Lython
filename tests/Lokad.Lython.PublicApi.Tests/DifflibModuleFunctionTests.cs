@@ -167,7 +167,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("[b'--- old\\x0a', b'+++ new\\x0a', b'@@ -1 +1 @@\\x0a', b'-alpha\\x0a', b'+beta\\x0a']", host.ReadText("/out.txt"));
+        Assert.Equal("[b'--- old\\n', b'+++ new\\n', b'@@ -1 +1 @@\\n', b'-alpha\\n', b'+beta\\n']", host.ReadText("/out.txt"));
     }
 
     [Theory]

@@ -410,6 +410,11 @@ are outside the subset and must produce an explicit compilation diagnostic
 before guest effects. Raw literals, bytes literals and escaped backslashes keep
 their Python meanings; unsupported text escapes must not silently corrupt data.
 
+Adjacent bytes literals concatenate at compilation in expressions and literal/
+mapping patterns, across supported prefixes, quoting and line joining. Prefixes
+must touch their literals; mixing bytes and text is a compilation error. The
+combined constant remains source-bounded and subject to execution value limits.
+
 Tuple expression lists may omit parentheses in assignment and augmented-assignment values, `return`
 statements, expression statements, and `for` iterable expressions. Their items
 are evaluated from left to right, a trailing comma produces a one-item tuple,

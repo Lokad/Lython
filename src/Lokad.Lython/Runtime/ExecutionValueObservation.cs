@@ -126,6 +126,7 @@ internal sealed class ExecutionValueObservation
             BigInteger integer => RuntimeMemoryEstimates.EstimateBigIntegerBytes(integer),
             double => 16,
             PyString text => 32L + text.Utf8Bytes.Length,
+            PyBytes bytes => PyBytes.EstimateApproximateBytes(bytes.Length),
             PyList list => EstimateApproximateListBytes(list, visited),
             PyTuple tuple => EstimateApproximateTupleBytes(tuple, visited),
             PyDict dict => EstimateApproximateDictionaryBytes(dict, visited),
