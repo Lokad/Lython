@@ -70,34 +70,36 @@ internal sealed partial class LythonRuntime
             FunctionClosureContext = this;
             ScopeFacts = scopeFacts;
             NonlocalTargets = ResolveNonlocalTargets(parent, scopeFacts);
+        }
 
-            static Dictionary<string, ExecutionContext> ResolveNonlocalTargets(ExecutionContext parent, ScopeDirectiveFacts scopeFacts)
+        private static Dictionary<string, ExecutionContext> ResolveNonlocalTargets(ExecutionContext parent, ScopeDirectiveFacts scopeFacts)
+        {
+            if (scopeFacts.NonlocalNames.Count == 0)
             {
-                if (scopeFacts.NonlocalNames.Count == 0)
-                {
-                    return EmptyNonlocalTargets;
-                }
-
-                var targets = new Dictionary<string, ExecutionContext>(StringComparer.Ordinal);
-                foreach (var name in scopeFacts.NonlocalNames)
-                {
-                    for (var current = parent; current is not null && current.ParentContext is not null; current = current.ParentContext)
-                    {
-                        if (current.ScopeFacts.LocalNames.Contains(name))
-                        {
-                            targets[name] = current;
-                            break;
-                        }
-                    }
-
-                    if (!targets.ContainsKey(name))
-                    {
-                        throw RuntimeErrors.NameNotDefined(name, null);
-                    }
-                }
-
-                return targets;
+                return EmptyNonlocalTargets;
             }
+
+            var targets = new Dictionary<string, ExecutionContext>(StringComparer.Ordinal);
+            foreach (var name in scopeFacts.NonlocalNames)
+            {
+                for (var current = parent; current is not null && current.ParentContext is not null; current = current.ParentContext)
+                {
+                    if (current.IsClassBody) continue;
+                    if (current.ScopeFacts.IsGlobal(name)) break;
+                    if (current.ScopeFacts.LocalNames.Contains(name))
+                    {
+                        targets[name] = current;
+                        break;
+                    }
+                }
+
+                if (!targets.ContainsKey(name))
+                {
+                    throw RuntimeErrors.NameNotDefined(name, null);
+                }
+            }
+
+            return targets;
         }
 
         public static ExecutionContext CreateModule(
@@ -106,8 +108,8 @@ internal sealed partial class LythonRuntime
             string moduleName)
             => new(template, new ModuleScope(sourcePath, moduleName));
 
-        public static ExecutionContext CreateClassBody(ExecutionContext parent)
-            => new(parent, ClassBodyScope.Instance) { EvaluateModernClassAnnotations = HasTypeParameterScope(parent) };
+        public static ExecutionContext CreateClassBody(ExecutionContext parent, ScopeDirectiveFacts facts)
+            => new(parent, ClassBodyScope.Instance, facts) { EvaluateModernClassAnnotations = HasTypeParameterScope(parent) };
 
         private ExecutionContext(ExecutionContext template, ModuleScope scope)
         {
@@ -122,15 +124,16 @@ internal sealed partial class LythonRuntime
             NonlocalTargets = EmptyNonlocalTargets;
         }
 
-        private ExecutionContext(ExecutionContext parent, ClassBodyScope _)
+        private ExecutionContext(ExecutionContext parent, ClassBodyScope _, ScopeDirectiveFacts facts)
         {
+            IsClassBody = true;
             Services = parent.Services;
             SourcePath = parent.SourcePath;
             Frame = new ExecutionFrame(parent.Frame, new Dictionary<string, object>(StringComparer.Ordinal));
             ParentContext = parent;
             FunctionClosureContext = parent.FunctionClosureContext;
-            ScopeFacts = ScopeDirectiveFacts.Empty;
-            NonlocalTargets = EmptyNonlocalTargets;
+            ScopeFacts = facts;
+            NonlocalTargets = ResolveNonlocalTargets(parent, facts);
         }
 
         private readonly record struct ModuleScope(string? SourcePath, string Name);
@@ -153,6 +156,8 @@ internal sealed partial class LythonRuntime
         public ILythonHost Host => Services.Host;
 
         public ExecutionContext? ParentContext { get; }
+        internal bool IsClassBody { get; }
+        internal bool IsAnnotationScope { get; init; }
         internal bool IsTypeParameterScope { get; init; }
         internal bool HasModernTypeDeclarations { get; set; }
         internal bool EvaluateModernClassAnnotations { get; init; }
@@ -206,7 +211,13 @@ internal sealed partial class LythonRuntime
         internal bool TryGetNonlocalTarget(string name, [MaybeNullWhen(false)] out ExecutionContext context)
             => NonlocalTargets.TryGetValue(name, out context);
 
-        internal void EnterExecutableSlots(ExecutableFrameState frame) => CurrentExecutableFrame = frame;
+        internal bool MirrorsExecutableLocals { get; private set; }
+
+        internal void EnterExecutableSlots(ExecutableFrameState frame)
+        {
+            CurrentExecutableFrame = frame;
+            MirrorsExecutableLocals = frame.RequiresLocalVariableMirroring;
+        }
 
         internal void LeaveExecutableSlots(ExecutableFrameState? previous) => CurrentExecutableFrame = previous;
 

@@ -897,18 +897,21 @@ The runtime must support:
 
 ### 10.2 Scope Directives
 
-`global` is supported in module and function bodies. A function-level `global`
+`global` is supported in module, function and class bodies. A `global`
 directive makes reads, writes, deletes, imports, function definitions, class
 definitions, loop targets, unpacking targets, context-manager aliases, exception
 aliases, pattern captures, and assignment expressions bind against module scope.
 
-`nonlocal` is supported in nested function bodies when an enclosing function
+`nonlocal` is supported in nested function and class bodies when an enclosing function
 declares a local binding for the named value. A `nonlocal` directive must bind to
 the nearest enclosing function scope that owns the name, and the same binding
 forms as `global` must target that enclosing scope.
 
-Scope directives inside class bodies are outside the supported subset and must be
-reported explicitly.
+Class scopes do not provide enclosing cells for `nonlocal`. Declared global or
+nonlocal names do not become class attributes. Ordinary class locals fall back to
+module scope before binding, while free names can resolve enclosing function
+cells; nested classes and methods skip enclosing class namespaces. Directives
+must precede uses/assignments and cannot conflict with annotated bindings.
 
 ### 10.3 Principle
 

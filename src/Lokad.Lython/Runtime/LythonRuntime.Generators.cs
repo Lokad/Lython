@@ -49,7 +49,7 @@ internal sealed partial class LythonRuntime
             if (code.CapturedLocalSlots.Count != 0)
             {
                 cells = new ExecutableCell[locals.Length];
-                foreach (var slot in code.CapturedLocalSlots) cells[slot] = new ExecutableCell(locals[slot]);
+                foreach (var slot in code.CapturedLocalSlots) cells[slot] = new ExecutableCell(locals[slot], frame, code.LocalNames[slot]);
             }
             _slots = new ExecutableFrameState(code, locals, cells, closureCells);
             _interpreter = new ExecutableFrameInterpreter(code, frame, locals, cells);

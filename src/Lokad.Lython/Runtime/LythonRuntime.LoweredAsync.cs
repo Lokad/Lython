@@ -71,7 +71,7 @@ internal sealed partial class LythonRuntime
             var resolvedBases = AddGenericClassBase(classDefinition, ResolveClassBases(baseTypes, classDefinition.Span, context), context);
             ValidateClassKeywordArguments(classKeywordArguments, classDefinition.Span);
 
-            var classContext = ExecutionContext.CreateClassBody(typeScope.Closure);
+            var classContext = ExecutionContext.CreateClassBody(typeScope.Closure, ScopeDirectiveFactsCollector.ForClass(classDefinition.Syntax));
             var classFlow = await ExecuteStatementsAsync(classDefinition.Body, classContext).ConfigureAwait(false);
             if (classFlow.Control is not null)
             {

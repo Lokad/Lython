@@ -38,6 +38,8 @@ internal sealed partial class LythonRuntime
 
         if (context.TryGetNonlocalTarget(name, out var nonlocalContext))
         {
+            if (nonlocalContext.CurrentExecutableFrame is { } frame &&
+                frame.TryResolveLocalOrClosure(name, out var cellValue)) return cellValue;
             if (nonlocalContext.Variables.TryGetValue(name, out var nonlocalValue))
             {
                 return nonlocalValue;
@@ -48,6 +50,12 @@ internal sealed partial class LythonRuntime
 
         for (var current = context; current is not null; current = current.ParentContext)
         {
+            if (current.IsClassBody && !ReferenceEquals(current, context) && !context.IsAnnotationScope) continue;
+            if (context.IsClassBody && !ReferenceEquals(current, context) &&
+                context.ScopeFacts.LocalNames.Contains(name) && current.ParentContext is not null) continue;
+            if (!ReferenceEquals(current, context) &&
+                (current.ScopeFacts.IsGlobal(name) || current.ScopeFacts.IsNonlocal(name)))
+                return ResolveName(name, span, current);
             if (current.CurrentExecutableFrame is not null &&
                 current.CurrentExecutableFrame.TryResolveLocalOrClosure(name, out var executableValue))
             {

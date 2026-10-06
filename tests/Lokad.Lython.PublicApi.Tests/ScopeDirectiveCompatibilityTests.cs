@@ -298,7 +298,6 @@ __lython_file.close()
     [InlineData("def f():\n    try:\n        raise ValueError(\"x\")\n    except ValueError as value:\n        pass\n    global value\n", "LA3206")]
     [InlineData("def f():\n    match {\"x\": 1}:\n        case {\"x\": value}:\n            pass\n    global value\n", "LA3206")]
     [InlineData("def f():\n    if (value := 1):\n        pass\n    global value\n", "LA3206")]
-    [InlineData("class C:\n    global value\n", "LA3202")]
     public void InvalidScopeDirectives_ReportStaticDiagnostics(string source, string code)
     {
         var compiled = new LythonEngine().Compile(source);
@@ -309,6 +308,7 @@ __lython_file.close()
 
     [Theory]
     [InlineData("global value\nvalue = 1\n")]
+    [InlineData("class C:\n    global value\n")]
     [InlineData("def f():\n    global match\n    match = 1\n")]
     public void ValidScopeDirectives_Compile(string source)
     {

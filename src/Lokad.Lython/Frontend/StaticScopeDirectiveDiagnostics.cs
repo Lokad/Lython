@@ -4,38 +4,23 @@ internal static class StaticScopeDirectiveDiagnostics
 {
     private sealed class EnclosingFunctionBindings
     {
-        private readonly Dictionary<string, int> _bindingDepths = new(StringComparer.Ordinal);
+        private readonly List<ScopeDirectiveFacts> _scopes = [];
 
-        public int Depth { get; private set; }
+        public int Depth => _scopes.Count;
 
-        public bool Contains(string name) => _bindingDepths.ContainsKey(name);
-
-        public void Enter(ScopeDirectiveFacts facts)
+        public bool Contains(string name)
         {
-            Depth++;
-            foreach (var name in facts.LocalNames)
+            for (var i = _scopes.Count - 1; i >= 0; i--)
             {
-                _bindingDepths[name] = _bindingDepths.GetValueOrDefault(name) + 1;
+                if (_scopes[i].IsGlobal(name)) return false;
+                if (_scopes[i].LocalNames.Contains(name)) return true;
             }
+            return false;
         }
 
-        public void Leave(ScopeDirectiveFacts facts)
-        {
-            foreach (var name in facts.LocalNames)
-            {
-                var remainingDepth = _bindingDepths[name] - 1;
-                if (remainingDepth == 0)
-                {
-                    _bindingDepths.Remove(name);
-                }
-                else
-                {
-                    _bindingDepths[name] = remainingDepth;
-                }
-            }
+        public void Enter(ScopeDirectiveFacts facts) => _scopes.Add(facts);
 
-            Depth--;
-        }
+        public void Leave(ScopeDirectiveFacts facts) => _scopes.RemoveAt(_scopes.Count - 1);
     }
 
     public static void Analyze(StaticAnalysisContext context)
@@ -56,13 +41,9 @@ internal static class StaticScopeDirectiveDiagnostics
                 case ScopeDirectiveStatementSyntax directive:
                     if (directive.Kind == ScopeDirectiveKind.Nonlocal && enclosingFunctions.Depth == 0)
                     {
-                        context.AddError("LA3201", "`nonlocal` is only valid inside a nested function.", directive.Span);
+                        context.AddError("LA3201", "`nonlocal` requires an enclosing function scope.", directive.Span);
                     }
 
-                    if (inClassBody)
-                    {
-                        context.AddError("LA3202", "Scope directives inside class bodies are not supported by Lython.", directive.Span);
-                    }
                     break;
 
                 case FunctionDefinitionStatementSyntax functionDefinition:
@@ -70,6 +51,11 @@ internal static class StaticScopeDirectiveDiagnostics
                     break;
 
                 case ClassDefinitionStatementSyntax classDefinition:
+                    var classFacts = ScopeDirectiveFactsCollector.ForClass(classDefinition);
+                    AnalyzeDirectiveBindings(classFacts, classDefinition.Span, context, enclosingFunctions);
+                    AnalyzeUseBeforeDirective(classDefinition.Body,
+                        new HashSet<string>(classFacts.GlobalNames.Concat(classFacts.NonlocalNames), StringComparer.Ordinal),
+                        new HashSet<string>(StringComparer.Ordinal), context);
                     AnalyzeStatements(classDefinition.Body, context, enclosingFunctions, inClassBody: true);
                     break;
 
@@ -115,10 +101,7 @@ internal static class StaticScopeDirectiveDiagnostics
         EnclosingFunctionBindings enclosingFunctions)
     {
         var facts = ScopeDirectiveFactsCollector.ForFunction(functionDefinition);
-        foreach (var name in facts.GlobalNames.Intersect(facts.NonlocalNames, StringComparer.Ordinal))
-        {
-            context.AddError("LA3203", $"Name '{name}' cannot be declared both global and nonlocal.", functionDefinition.Span);
-        }
+        AnalyzeDirectiveBindings(facts, functionDefinition.Span, context, enclosingFunctions);
 
         var parameterNames = new HashSet<string>(
             functionDefinition.Parameters.Select(static parameter => parameter.Name),
@@ -128,14 +111,6 @@ internal static class StaticScopeDirectiveDiagnostics
             if (parameterNames.Contains(name))
             {
                 context.AddError("LA3204", $"Parameter '{name}' cannot also be declared global or nonlocal.", functionDefinition.Span);
-            }
-        }
-
-        foreach (var name in facts.NonlocalNames)
-        {
-            if (!enclosingFunctions.Contains(name))
-            {
-                context.AddError("LA3205", $"No enclosing function binding exists for nonlocal name '{name}'.", functionDefinition.Span);
             }
         }
 
@@ -150,6 +125,27 @@ internal static class StaticScopeDirectiveDiagnostics
         {
             enclosingFunctions.Leave(facts);
         }
+    }
+
+    private static void AnalyzeDirectiveBindings(
+        ScopeDirectiveFacts facts,
+        LythonSourceSpan span,
+        StaticAnalysisContext context,
+        EnclosingFunctionBindings enclosingFunctions)
+    {
+        foreach (var name in facts.GlobalNames.Intersect(facts.NonlocalNames, StringComparer.Ordinal))
+        {
+            context.AddError("LA3203", $"Name '{name}' cannot be declared both global and nonlocal.", span);
+        }
+
+        foreach (var name in facts.NonlocalNames)
+        {
+            if (!enclosingFunctions.Contains(name))
+            {
+                context.AddError("LA3205", $"No enclosing function binding exists for nonlocal name '{name}'.", span);
+            }
+        }
+
     }
 
     private static void AnalyzeUseBeforeDirective(
@@ -189,14 +185,28 @@ internal static class StaticScopeDirectiveDiagnostics
                 continue;
             }
 
-            CollectSeenNames(statement, seen);
+            CollectSeenNames(statement, seen, directive =>
+            {
+                foreach (var name in directive.Names)
+                    if (directiveNames.Contains(name) && seen.Contains(name))
+                        context.AddError("LA3206", $"Name '{name}' is used or assigned before its scope directive.", directive.Span);
+            }, annotated =>
+            {
+                if (annotated.Target is NameAssignmentTargetSyntax name && directiveNames.Contains(name.Name))
+                    context.AddError("LA3207", $"Declared global or nonlocal name '{name.Name}' cannot be annotated.", annotated.Span);
+            });
         }
     }
 
-    private static void CollectSeenNames(StatementSyntax statement, HashSet<string> names)
+    private static void CollectSeenNames(StatementSyntax statement, HashSet<string> names,
+        Action<ScopeDirectiveStatementSyntax>? validateDirective = null,
+        Action<AnnotatedAssignmentStatementSyntax>? validateAnnotation = null)
     {
         switch (statement)
         {
+            case ScopeDirectiveStatementSyntax directive:
+                validateDirective?.Invoke(directive);
+                break;
             case ImportStatementSyntax importStatement:
                 names.Add(importStatement.BindingName);
                 if (importStatement.ImportedMembers is not null)
@@ -216,12 +226,14 @@ internal static class StaticScopeDirectiveDiagnostics
                 CollectSeenNames(chained.Expression, names);
                 break;
             case AnnotatedAssignmentStatementSyntax annotated:
+                validateAnnotation?.Invoke(annotated);
                 CollectSeenNames(annotated.Target, names);
                 CollectSeenNames(annotated.Annotation, names);
                 if (annotated.Expression is not null) CollectSeenNames(annotated.Expression, names);
                 break;
-            case AugmentedAssignmentStatementSyntax { Target: NameAssignmentTargetSyntax nameTarget }:
+            case AugmentedAssignmentStatementSyntax { Target: NameAssignmentTargetSyntax nameTarget } augmented:
                 names.Add(nameTarget.Name);
+                CollectSeenNames(augmented.Expression, names);
                 break;
             case AugmentedAssignmentStatementSyntax augmented:
                 CollectSeenNames(augmented.Target, names);
@@ -248,6 +260,8 @@ internal static class StaticScopeDirectiveDiagnostics
                 CollectSeenNames(member.Expression, names);
                 break;
             case FunctionDefinitionStatementSyntax functionDefinition:
+                foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(functionDefinition))
+                    CollectSeenNames(expression, names);
                 names.Add(functionDefinition.Name);
                 break;
             case ClassDefinitionStatementSyntax classDefinition:
@@ -258,25 +272,25 @@ internal static class StaticScopeDirectiveDiagnostics
             case ForStatementSyntax forStatement:
                 CollectSeenNames(forStatement.Target, names);
                 CollectSeenNames(forStatement.Iterable, names);
-                AnalyzeNestedSeen(forStatement.Body, names);
-                if (forStatement.ElseStatements is not null) AnalyzeNestedSeen(forStatement.ElseStatements, names);
+                AnalyzeNestedSeen(forStatement.Body, names, validateDirective, validateAnnotation);
+                if (forStatement.ElseStatements is not null) AnalyzeNestedSeen(forStatement.ElseStatements, names, validateDirective, validateAnnotation);
                 break;
             case WithStatementSyntax withStatement:
                 names.UnionWith(withStatement.BoundNames);
                 if (withStatement.Target is not null)
                     foreach (var read in AssignmentTargetFacts.Reads(withStatement.Target)) CollectSeenNames(read, names);
                 CollectSeenNames(withStatement.ContextExpression, names);
-                AnalyzeNestedSeen(withStatement.Body, names);
+                AnalyzeNestedSeen(withStatement.Body, names, validateDirective, validateAnnotation);
                 break;
             case IfStatementSyntax ifStatement:
                 CollectSeenNames(ifStatement.Condition, names);
-                AnalyzeNestedSeen(ifStatement.ThenStatements, names);
-                if (ifStatement.ElseStatements is not null) AnalyzeNestedSeen(ifStatement.ElseStatements, names);
+                AnalyzeNestedSeen(ifStatement.ThenStatements, names, validateDirective, validateAnnotation);
+                if (ifStatement.ElseStatements is not null) AnalyzeNestedSeen(ifStatement.ElseStatements, names, validateDirective, validateAnnotation);
                 break;
             case WhileStatementSyntax whileStatement:
                 CollectSeenNames(whileStatement.Condition, names);
-                AnalyzeNestedSeen(whileStatement.Body, names);
-                if (whileStatement.ElseStatements is not null) AnalyzeNestedSeen(whileStatement.ElseStatements, names);
+                AnalyzeNestedSeen(whileStatement.Body, names, validateDirective, validateAnnotation);
+                if (whileStatement.ElseStatements is not null) AnalyzeNestedSeen(whileStatement.ElseStatements, names, validateDirective, validateAnnotation);
                 break;
             case ExpressionStatementSyntax expressionStatement:
                 CollectSeenNames(expressionStatement.Expression, names);
@@ -287,7 +301,7 @@ internal static class StaticScopeDirectiveDiagnostics
                 {
                     CollectPatternNames(matchCase.Pattern, names);
                     if (matchCase.Guard is not null) CollectSeenNames(matchCase.Guard, names);
-                    AnalyzeNestedSeen(matchCase.Body, names);
+                    AnalyzeNestedSeen(matchCase.Body, names, validateDirective, validateAnnotation);
                 }
                 break;
             case AssertStatementSyntax assertStatement:
@@ -305,28 +319,25 @@ internal static class StaticScopeDirectiveDiagnostics
                 if (raiseStatement.CauseExpression is not null) CollectSeenNames(raiseStatement.CauseExpression, names);
                 break;
             case TryStatementSyntax tryStatement:
-                AnalyzeNestedSeen(tryStatement.TryBody, names);
+                AnalyzeNestedSeen(tryStatement.TryBody, names, validateDirective, validateAnnotation);
                 foreach (var exceptClause in tryStatement.ExceptClauses)
                 {
                     if (exceptClause.ExceptionTypeExpression is { } header) CollectSeenNames(header, names);
                     if (exceptClause.ExceptionVariableName is not null) names.Add(exceptClause.ExceptionVariableName);
-                    AnalyzeNestedSeen(exceptClause.Body, names);
+                    AnalyzeNestedSeen(exceptClause.Body, names, validateDirective, validateAnnotation);
                 }
-                if (tryStatement.ElseBody is not null) AnalyzeNestedSeen(tryStatement.ElseBody, names);
-                if (tryStatement.FinallyBody is not null) AnalyzeNestedSeen(tryStatement.FinallyBody, names);
+                if (tryStatement.ElseBody is not null) AnalyzeNestedSeen(tryStatement.ElseBody, names, validateDirective, validateAnnotation);
+                if (tryStatement.FinallyBody is not null) AnalyzeNestedSeen(tryStatement.FinallyBody, names, validateDirective, validateAnnotation);
                 break;
         }
     }
 
-    private static void AnalyzeNestedSeen(IReadOnlyList<StatementSyntax> statements, HashSet<string> names)
+    private static void AnalyzeNestedSeen(IReadOnlyList<StatementSyntax> statements, HashSet<string> names,
+        Action<ScopeDirectiveStatementSyntax>? validateDirective,
+        Action<AnnotatedAssignmentStatementSyntax>? validateAnnotation)
     {
         foreach (var statement in statements)
-        {
-            if (statement is not FunctionDefinitionStatementSyntax and not ClassDefinitionStatementSyntax)
-            {
-                CollectSeenNames(statement, names);
-            }
-        }
+            CollectSeenNames(statement, names, validateDirective, validateAnnotation);
     }
 
     private static void CollectSeenNames(AssignmentTargetSyntax target, HashSet<string> names)

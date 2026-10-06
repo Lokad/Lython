@@ -223,6 +223,10 @@ internal static class StaticNameBindingDiagnostics
 
             case ClassDefinitionStatementSyntax classDefinition:
                 maybeAssigned.Add(classDefinition.Name);
+                // A class suite can initialize the enclosing function's cells.
+                // Retain these possible assignments rather than rejecting a later
+                // read before the class actually runs.
+                maybeAssigned.UnionWith(ScopeDirectiveFactsCollector.ForClass(classDefinition).NonlocalNames.Intersect(localNames));
                 AnalyzeNestedFunctionDefinitions(classDefinition.Body, context);
                 break;
 

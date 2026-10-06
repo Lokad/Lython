@@ -13,9 +13,33 @@ internal sealed partial class LythonRuntime
 
     internal sealed class ExecutableCell
     {
-        public ExecutableCell(object value) => Value = value;
+        private object _value;
+        private readonly ExecutionContext? _owner;
+        private readonly string? _name;
 
-        public object Value { get; set; }
+        public ExecutableCell(object value, ExecutionContext? owner = null, string? name = null)
+        {
+            _value = value;
+            _owner = owner;
+            _name = name;
+        }
+
+        // Tree-walk methods and executable siblings share the defining frame's
+        // mirrored namespace even after its executable slots have been released.
+        public object Value
+        {
+            get => _owner is { MirrorsExecutableLocals: true } || _owner?.MirrorLocalStores == true
+                ? _owner!.Variables.GetValueOrDefault(_name!, UninitializedLocal) : _value;
+            set
+            {
+                _value = value;
+                if (_owner is { MirrorsExecutableLocals: true } || _owner?.MirrorLocalStores == true)
+                {
+                    if (ReferenceEquals(value, UninitializedLocal)) _owner!.Variables.Remove(_name!);
+                    else _owner!.Variables[_name!] = value;
+                }
+            }
+        }
 
         // MG11: set once a closure owns this cell (first-wins sharing).
         internal bool RetentionCharged;
@@ -39,6 +63,8 @@ internal sealed partial class LythonRuntime
             _localCells = localCells;
             _closureCells = closureCells;
         }
+
+        public bool RequiresLocalVariableMirroring => _codeObject.RequiresLocalVariableMirroring;
 
         public bool TryResolveLocalOrClosure(string name, [MaybeNullWhen(false)] out object value)
         {
@@ -311,7 +337,7 @@ internal sealed partial class LythonRuntime
                 localCells = new ExecutableCell[codeObject.LocalNames.Count];
                 for (var i = 0; i < codeObject.CapturedLocalSlots.Count; i++)
                 {
-                    localCells[codeObject.CapturedLocalSlots[i]] = new ExecutableCell(UninitializedLocal);
+                    localCells[codeObject.CapturedLocalSlots[i]] = new ExecutableCell(UninitializedLocal, context, codeObject.LocalNames[codeObject.CapturedLocalSlots[i]]);
                 }
             }
 

@@ -330,6 +330,13 @@ internal static partial class StaticAbstractInterpreter
                     foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(classDefinition))
                         AnalyzeExpression(expression, diagnostics, bindings);
 
+                    var classFacts = ScopeDirectiveFactsCollector.ForClass(classDefinition);
+                    if (classFacts.GlobalNames.Count != 0 || classFacts.NonlocalNames.Count != 0)
+                    {
+                        foreach (var name in classFacts.GlobalNames.Concat(classFacts.NonlocalNames)) bindings.Remove(name);
+                        bindings.InvalidateMutableSequenceFacts();
+                        return true;
+                    }
                     AnalyzeStatements(classDefinition.Body, diagnostics, bindings.Clone());
                     return true;
 

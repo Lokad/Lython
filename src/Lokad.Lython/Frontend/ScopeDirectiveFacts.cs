@@ -56,6 +56,9 @@ internal static class ScopeDirectiveFactsCollector
         return new ScopeDirectiveFacts(globalNames, nonlocalNames, localNames);
     }
 
+    public static ScopeDirectiveFacts ForClass(ClassDefinitionStatementSyntax definition)
+        => ForFunction([], definition.Body);
+
     public static ScopeDirectiveFacts ForFunction(FunctionDefinitionStatementSyntax functionDefinition)
         => ForFunction(
             functionDefinition.Parameters.Select(parameter => new LoweredFunctionParameter(
@@ -207,8 +210,14 @@ internal static class ScopeDirectiveFactsCollector
                     }
                     break;
 
+                case DeleteStatementSyntax { Target: IdentifierExpressionSyntax deleted }:
+                    names.Add(deleted.Name);
+                    break;
+
                 case FunctionDefinitionStatementSyntax functionDefinition:
                     names.Add(functionDefinition.Name);
+                    foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(functionDefinition))
+                        CollectExpressionBindings(expression, names);
                     continue;
 
                 case ClassDefinitionStatementSyntax classDefinition:
@@ -221,6 +230,9 @@ internal static class ScopeDirectiveFactsCollector
                     CollectExpressionBindings(expressionStatement.Expression, names);
                     break;
             }
+
+            foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
+                CollectExpressionBindings(expression, names);
 
             foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
             {

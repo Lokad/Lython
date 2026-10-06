@@ -71,23 +71,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static object ResolveExecutableName(string name, LythonSourceSpan span, ExecutionContext context)
-    {
-        for (var current = context; current is not null; current = current.ParentContext)
-        {
-            if (current.CurrentExecutableFrame is not null &&
-                current.CurrentExecutableFrame.TryResolveLocalOrClosure(name, out var executableValue))
-            {
-                return executableValue;
-            }
-
-            if (current.Variables.TryGetValue(name, out var value))
-            {
-                return value;
-            }
-        }
-
-        throw RuntimeErrors.NameNotDefined(name, span);
-    }
+        => ResolveName(name, span, context);
 
     private static void PropagatePendingAbrupt(PendingAbruptSignal pending)
     {
@@ -551,7 +535,7 @@ internal sealed partial class LythonRuntime
         var retainedBytes = checked(
             ExecutableCellsArrayBaseBytes +
             ExecutableCellsArraySlotBytes * (long)cells.Length +
-            ClosureCellSlotBytes * (long)uncharged);
+            48L * uncharged);
         context.MemoryGovernor.Reserve(retainedBytes, span);
         context.MemoryGovernor.Commit(retainedBytes);
         // The array travels on the new function value (same lifetime, same first-wins

@@ -12,7 +12,7 @@ internal sealed partial class LythonRuntime
         var bytes = checked(512L + 96L * names);
         parent.MemoryGovernor.Reserve(bytes, span);
         parent.MemoryGovernor.Commit(bytes);
-        var scope = new ExecutionContext(parent) { IsTypeParameterScope = names != 0 };
+        var scope = new ExecutionContext(parent) { IsAnnotationScope = true, IsTypeParameterScope = names != 0 };
         parent.Services.State.CallTemporaries.TrackFreshMutable(scope, bytes, span);
         RetainLocalsForLambda(parent);
         return scope;
