@@ -294,6 +294,17 @@ internal static partial class StaticAbstractInterpreter
         }
     }
 
+    private static void InvalidateDirectiveBindings(IReadOnlyList<StatementSyntax> statements, AbstractState bindings)
+    {
+        foreach (var statement in statements)
+        {
+            if (statement is ScopeDirectiveStatementSyntax directive)
+                foreach (var name in directive.Names) bindings.Remove(name);
+            foreach (var body in StatementSyntaxTraversal.EnumerateChildBodies(statement))
+                InvalidateDirectiveBindings(body, bindings);
+        }
+    }
+
     private sealed class DefinitionStatementAnalyzer : IStatementAnalyzer
     {
         public static readonly DefinitionStatementAnalyzer Instance = new();
@@ -315,6 +326,8 @@ internal static partial class StaticAbstractInterpreter
 
                     if (ScopeDirectiveFactsCollector.ContainsScopeDirective(functionDefinition.Body))
                     {
+                        InvalidateDirectiveBindings(functionDefinition.Body, bindings);
+                        bindings.InvalidateMutableSequenceFacts();
                         return true;
                     }
 

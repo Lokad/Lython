@@ -160,7 +160,7 @@ public sealed class GeneratorDefinitionCompositionTests
     public async Task NestedDefinitionsRespectGlobalAndNonlocalBindings()
     {
         await AssertOutput("""
-            def run():return 0
+            run=None
             class Child:pass
             def outer():
              nested=None
