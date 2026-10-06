@@ -113,14 +113,20 @@ internal sealed partial class ExecutableScript
                     if (annotated.Expression is null)
                     {
                         if (!_generator) throw new ExecutableLoweringFallbackException($"Executable IR lowering does not support annotation-only assignments: {annotated.Assignment.GetType().Name}.");
-                        AddInstruction(currentBlock, ExecutableInstruction.ExecuteFallbackStatement(InternStatementFallback(assignment), assignment.Span));
+                        // Function-local annotations do not evaluate. Attribute
+                        // and item annotation targets still evaluate their reads.
+                        foreach (var read in AssignmentTargetFacts.Reads(annotated.Assignment.Target))
+                        {
+                            currentBlock = CompileExpression(LoweredScript.LowerExpression(read), currentBlock);
+                            AddInstruction(currentBlock, ExecutableInstruction.PopTop(read.Span));
+                        }
                         return currentBlock;
                     }
 
                     if (annotated.Assignment.Target is not NameAssignmentTargetSyntax targetName)
                     {
                         currentBlock = CompileExpression(annotated.Expression, currentBlock);
-                        CompileStoreTarget(annotated.Assignment.Target, annotated.Span, currentBlock);
+                        currentBlock = CompileStoreTarget(annotated.Assignment.Target, annotated.Span, currentBlock);
                         return currentBlock;
                     }
 
@@ -131,6 +137,9 @@ internal sealed partial class ExecutableScript
                 case LoweredAugmentedAssignmentStatement augmented:
                     if (augmented.Target is not LoweredNameAugmentedAssignmentTarget augmentedName)
                     {
+                        if (_generator && (GeneratorSyntaxFacts.ContainsYield(augmented.Expression.Syntax) ||
+                            AssignmentTargetFacts.Reads(augmented.Target.Syntax).Any(GeneratorSyntaxFacts.ContainsYield)))
+                            return CompileSuspendingAugmentedAssignment(augmented, currentBlock);
                         AddInstruction(currentBlock, ExecutableInstruction.ExecuteFallbackStatement(InternStatementFallback(assignment), assignment.Span));
                         return currentBlock;
                     }
@@ -150,26 +159,28 @@ internal sealed partial class ExecutableScript
                             AddInstruction(currentBlock, ExecutableInstruction.Dup(chained.Span));
                         }
 
-                        CompileStoreTarget(chained.Assignment.Targets[i], chained.Span, currentBlock);
+                        currentBlock = CompileStoreTarget(chained.Assignment.Targets[i], chained.Span, currentBlock);
                     }
                     return currentBlock;
 
                 case LoweredUnpackingAssignmentStatement unpacking:
                     currentBlock = CompileExpression(unpacking.Expression, currentBlock);
+                    if (_generator && unpacking.Assignment.Targets.SelectMany(t => AssignmentTargetFacts.Reads(AssignmentTargetFacts.FromUnpacking(t))).Any(GeneratorSyntaxFacts.ContainsYield))
+                        return CompileStoreTarget(new UnpackingAssignmentTargetGroupSyntax(unpacking.Assignment.Targets, unpacking.Span), unpacking.Span, currentBlock);
                     AddInstruction(currentBlock, ExecutableInstruction.AssignUnpackingTargets(InternUnpackingTargets(unpacking.Assignment.Targets, unpacking.Span), unpacking.Span));
                     return currentBlock;
 
                 case LoweredMemberAssignmentStatement member:
                     currentBlock = CompileExpression(member.Expression, currentBlock);
-                    CompileStoreTarget(new MemberAssignmentTargetSyntax(member.Assignment.Target, member.Assignment.MemberName, member.Span), member.Span, currentBlock);
+                    currentBlock = CompileStoreTarget(new MemberAssignmentTargetSyntax(member.Assignment.Target, member.Assignment.MemberName, member.Span), member.Span, currentBlock);
                     return currentBlock;
                 case LoweredSubscriptAssignmentStatement subscript:
                     currentBlock = CompileExpression(subscript.Expression, currentBlock);
-                    CompileStoreTarget(new SubscriptAssignmentTargetSyntax(subscript.Assignment.Target, subscript.Assignment.Index, subscript.Span), subscript.Span, currentBlock);
+                    currentBlock = CompileStoreTarget(new SubscriptAssignmentTargetSyntax(subscript.Assignment.Target, subscript.Assignment.Index, subscript.Span), subscript.Span, currentBlock);
                     return currentBlock;
                 case LoweredSliceAssignmentStatement slice:
                     currentBlock = CompileExpression(slice.Expression, currentBlock);
-                    CompileStoreTarget(new SliceAssignmentTargetSyntax(slice.Assignment.Target, slice.Assignment.Start, slice.Assignment.End, slice.Assignment.Step, slice.Span), slice.Span, currentBlock);
+                    currentBlock = CompileStoreTarget(new SliceAssignmentTargetSyntax(slice.Assignment.Target, slice.Assignment.Start, slice.Assignment.End, slice.Assignment.Step, slice.Span), slice.Span, currentBlock);
                     return currentBlock;
                 default:
                     AddInstruction(currentBlock, ExecutableInstruction.ExecuteFallbackStatement(InternStatementFallback(assignment), assignment.Span));
@@ -177,10 +188,17 @@ internal sealed partial class ExecutableScript
             }
         }
 
-        private void CompileStoreTarget(AssignmentTargetSyntax target, LythonSourceSpan span, int block)
+        private int CompileStoreTarget(AssignmentTargetSyntax target, LythonSourceSpan span, int block)
         {
-            if (target is NameAssignmentTargetSyntax name) CompileStoreBoundName(name.Name, span, block);
-            else AddInstruction(block, ExecutableInstruction.AssignLoopTarget(InternLoopTarget(AssignmentTargetFacts.ToLoop(target), span), span));
+            if (target is NameAssignmentTargetSyntax name)
+            {
+                CompileStoreBoundName(name.Name, span, block);
+                return block;
+            }
+            if (_generator && AssignmentTargetFacts.Reads(target).Any(GeneratorSyntaxFacts.ContainsYield))
+                return CompileSuspendingStoreTarget(target, span, block);
+            AddInstruction(block, ExecutableInstruction.AssignLoopTarget(InternLoopTarget(AssignmentTargetFacts.ToLoop(target), span), span));
+            return block;
         }
 
         private int CompileForStatement(LoweredForStatement statement, int currentBlock)
@@ -196,8 +214,12 @@ internal sealed partial class ExecutableScript
             AddInstruction(currentBlock, ExecutableInstruction.Jump(headBlock, statement.Span));
 
             AddInstruction(headBlock, ExecutableInstruction.ForNext(statement.ElseStatements is null ? exitBlock : elseBlock, statement.Iterable.Span));
-            AddInstruction(headBlock, ExecutableInstruction.AssignLoopTarget(InternLoopTarget(statement.Syntax.Target, statement.Span), statement.Span));
-            AddInstruction(headBlock, ExecutableInstruction.Jump(bodyBlock, statement.Span));
+            var suspendingTarget = _generator && AssignmentTargetFacts.Reads(statement.Syntax.Target).Any(GeneratorSyntaxFacts.ContainsYield);
+            var targetExit = suspendingTarget
+                ? CompileSuspendingLoopTarget(statement.Syntax.Target, statement.Span, headBlock) : headBlock;
+            if (!suspendingTarget)
+                AddInstruction(headBlock, ExecutableInstruction.AssignLoopTarget(InternLoopTarget(statement.Syntax.Target, statement.Span), statement.Span));
+            AddInstruction(targetExit, ExecutableInstruction.Jump(bodyBlock, statement.Span));
 
             _loops.Push(new LoopContext(headBlock, exitBlock, HasIterator: true));
             try
@@ -399,10 +421,7 @@ internal sealed partial class ExecutableScript
             if (statement.Syntax.Target is not null)
             {
                 AddInstruction(bodyBlock, ExecutableInstruction.LoadLocal(enteredSlot, statement.Span));
-                if (statement.Syntax.Target is NameAssignmentTargetSyntax name)
-                    CompileStoreBoundName(name.Name, statement.Span, bodyBlock);
-                else AddInstruction(bodyBlock, ExecutableInstruction.AssignLoopTarget(
-                    InternLoopTarget(AssignmentTargetFacts.ToLoop(statement.Syntax.Target), statement.Span), statement.Span));
+                bodyBlock = CompileStoreTarget(statement.Syntax.Target!, statement.Span, bodyBlock);
             }
             _protectedDepth++;
             int? bodyExit;

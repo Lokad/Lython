@@ -358,17 +358,16 @@ internal sealed partial class Parser
     // commas never split the target list.
     private int SkipUnpackingTargetItem(int offset)
     {
-        if (PeekToken(offset) == Token.OpenParen)
+        if (PeekToken(offset) is Token.OpenParen or Token.OpenBracket)
         {
-            return SkipBalancedTokens(offset);
+            offset = SkipBalancedTokens(offset);
+            if (offset < 0) return -1;
         }
-
-        if (!IsNameToken(PeekToken(offset)))
+        else
         {
-            return -1;
+            if (!IsNameToken(PeekToken(offset))) return -1;
+            offset++;
         }
-
-        offset++;
         while (true)
         {
             if (PeekToken(offset) == Token.OpenBracket)

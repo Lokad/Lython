@@ -1792,12 +1792,12 @@
   {
     "name": "generator-yield-target-index",
     "family": "generators",
-    "status": "unsupported",
-    "source": "def g():\n    a[(yield 1)]=3\n",
-    "standardOutput": "",
+    "status": "supported",
+    "source": "values=[0]\ndef g():\n values[(yield 'index')]=7\n yield values\ngen=g()\nprint(next(gen),gen.send(0))\n",
+    "standardOutput": "index [7]\n",
     "success": true,
     "exceptionType": null,
-    "note": "Explicit suspension boundary"
+    "note": "Receiver/index values survive suspension until ordered assignment."
   },
   {
     "name": "generator-yield-nested-default",

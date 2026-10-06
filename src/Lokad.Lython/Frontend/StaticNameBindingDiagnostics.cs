@@ -76,6 +76,8 @@ internal static class StaticNameBindingDiagnostics
         foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
         {
             if (statement is TryStatementSyntax) continue;
+            if (statement is ChainedAssignmentStatementSyntax chain && !ReferenceEquals(expression, chain.Expression)) continue;
+            if (statement is UnpackingAssignmentStatementSyntax unpack && !ReferenceEquals(expression, unpack.Expression)) continue;
             if (statement is ForStatementSyntax loop && !ReferenceEquals(expression, loop.Iterable)) continue;
             if (statement is WithStatementSyntax manager && !ReferenceEquals(expression, manager.ContextExpression)) continue;
             if (statement is MatchStatementSyntax matchGuardOwner &&
@@ -86,6 +88,8 @@ internal static class StaticNameBindingDiagnostics
                 continue;
             }
 
+            if (statement is AnnotatedAssignmentStatementSyntax localAnnotation &&
+                ReferenceEquals(expression, localAnnotation.Annotation)) continue;
             AnalyzeExpression(expression, context, localNames, maybeAssigned);
         }
 
@@ -109,7 +113,7 @@ internal static class StaticNameBindingDiagnostics
             case ChainedAssignmentStatementSyntax chained:
                 foreach (var target in chained.Targets)
                 {
-                    AddAssignmentTarget(target, maybeAssigned);
+                    AnalyzeLoopStores(AssignmentTargetFacts.ToLoop(target), context, localNames, maybeAssigned);
                 }
                 break;
 
@@ -130,12 +134,7 @@ internal static class StaticNameBindingDiagnostics
 
             case UnpackingAssignmentStatementSyntax unpacking:
                 foreach (var target in unpacking.Targets)
-                {
-                    foreach (var boundName in UnpackingTargetNames(target))
-                    {
-                        maybeAssigned.Add(boundName);
-                    }
-                }
+                    AnalyzeLoopStores(AssignmentTargetFacts.ToLoop(AssignmentTargetFacts.FromUnpacking(target)), context, localNames, maybeAssigned);
                 break;
 
             case WithStatementSyntax withStatement:
@@ -269,45 +268,6 @@ internal static class StaticNameBindingDiagnostics
                     }
                     break;
                 }
-        }
-
-        static void AddAssignmentTarget(AssignmentTargetSyntax target, HashSet<string> maybeAssigned)
-        {
-            switch (target)
-            {
-                case NameAssignmentTargetSyntax nameTarget:
-                    maybeAssigned.Add(nameTarget.Name);
-                    break;
-                case UnpackingAssignmentTargetGroupSyntax unpacking:
-                    foreach (var nested in unpacking.Targets)
-                    {
-                        foreach (var nestedName in UnpackingTargetNames(nested))
-                        {
-                            maybeAssigned.Add(nestedName);
-                        }
-                    }
-                    break;
-            }
-        }
-
-        static IEnumerable<string> UnpackingTargetNames(UnpackingTargetSyntax target)
-        {
-            if (target is UnpackingNameTargetSyntax name)
-            {
-                yield return name.Name;
-                yield break;
-            }
-
-            if (target is UnpackingNestedTargetSyntax nested)
-            {
-                foreach (var nestedItem in nested.Items)
-                {
-                    foreach (var nestedName in UnpackingTargetNames(nestedItem))
-                    {
-                        yield return nestedName;
-                    }
-                }
-            }
         }
 
         static IEnumerable<string> DeleteTargetNames(ExpressionSyntax target)

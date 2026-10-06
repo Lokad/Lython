@@ -179,7 +179,7 @@ internal sealed record UnpackingNestedTargetSyntax(
 
 internal readonly struct UnpackingLayout
 {
-    private UnpackingLayout(int targetCount, int starredTargetIndex)
+    internal UnpackingLayout(int targetCount, int starredTargetIndex)
     {
         TargetCount = targetCount;
         StarredTargetIndex = starredTargetIndex;

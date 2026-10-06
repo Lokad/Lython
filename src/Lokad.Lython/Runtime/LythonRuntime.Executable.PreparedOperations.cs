@@ -131,7 +131,7 @@ internal sealed partial class LythonRuntime
                         : EvaluateLoweredExpression(expression, context), span);
                     SyncExecutableLocalsFromContext(codeObject, locals, localCells, context);
                     break;
-                default: throw new InvalidOperationException("Unknown prepared executable operation: " + operation.GetType().Name);
+                default: await ExecutePreparedTargetOperationAsync(operation, span, asynchronous).ConfigureAwait(false); break;
             }
         }
     }
