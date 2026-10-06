@@ -90,7 +90,10 @@ internal sealed record AnnotatedAssignmentStatementSyntax(
     AssignmentTargetSyntax Target,
     ExpressionSyntax Annotation,
     ExpressionSyntax? Expression,
-    LythonSourceSpan Span) : StatementSyntax(Span);
+    LythonSourceSpan Span) : StatementSyntax(Span)
+{
+    public bool IsSimple { get; init; } = true;
+}
 
 internal sealed record SubscriptAssignmentStatementSyntax(
     ExpressionSyntax Target,

@@ -264,6 +264,7 @@ internal sealed partial class LythonRuntime
             try
             {
                 context = new ExecutionContext(host, options);
+                InitializeModuleAnnotations(script.Syntax.Statements, context);
                 var flow = ExecuteStatements(script.Statements, context);
                 if (flow.Control is BreakSignal or ContinueSignal)
                 {
@@ -593,6 +594,7 @@ internal sealed partial class LythonRuntime
         try
         {
             context = new ExecutionContext(host, options);
+            InitializeModuleAnnotations(script.Syntax.Statements, context);
             // MG25: no initial yield here. Yielding first would abandon the
             // calling thread (in particular the dedicated large stack the
             // public async entry runs on) to the pool before doing any work,

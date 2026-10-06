@@ -312,6 +312,8 @@ internal sealed partial class LythonRuntime
                     {
                         AssignTarget(annotated.Assignment.Target, EvaluateLoweredExpression(annotated.Expression, context), context);
                     }
+                    else EvaluateAnnotationTargetReadsAsync(annotated, context, false).GetAwaiter().GetResult();
+                    StoreModuleAnnotationAsync(annotated, context, false).GetAwaiter().GetResult();
                     StoreModernClassAnnotationAsync(annotated, context, false).GetAwaiter().GetResult();
                     return;
                 case LoweredAugmentedAssignmentStatement augmented:

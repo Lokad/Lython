@@ -443,7 +443,7 @@ Bytes literals and formatted string literals are supported. Formatted strings
 support conversions, format specifications, nested replacement fields inside a
 format specification, and debug expressions within the implemented expression
 subset.
-`!a` applies Python's ASCII-escaped representation (`\\x`, `\\u` and `\\U`),
+`!a` applies Python's ASCII-escaped representation (`\x`, `\u` and `\U`),
 including user `__repr__` results, before applying the format specifier. Field
 values and their `!s`/`!r`/`!a` conversions precede evaluation of dynamic
 specifiers; user hooks await delayed effects in RunAsync. Escaped output and
@@ -957,6 +957,16 @@ Repeated names in a `global` or `nonlocal` declaration are accepted. Normal
 ordering, enclosing-binding validation and conflicting declarations still apply.
 
 ### 10.1 Required Scope Levels
+
+Module variable annotations create `__annotations__` before the first statement
+when any declaration occurs in that module's code, including a conditional
+declaration. Bare-name annotations evaluate after the assigned value and its
+store, then update the current annotation mapping; annotation-only declarations
+leave the variable unbound. Parenthesized names and attribute/item targets
+evaluate annotations without storing an annotation entry. Annotation-only
+attribute/item targets evaluate their receivers and indices without reading the
+item. Function-local annotations remain unevaluated. Metadata and annotation
+protocol calls obey execution limits and await delayed effects in RunAsync.
 
 The runtime must support:
 

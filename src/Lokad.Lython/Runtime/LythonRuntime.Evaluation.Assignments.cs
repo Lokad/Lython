@@ -278,6 +278,9 @@ internal sealed partial class LythonRuntime
         {
             AssignTarget(statement.Target, EvaluateExpression(statement.Expression, context), context);
         }
+        else foreach (var read in AssignmentTargetFacts.Reads(statement.Target)) EvaluateExpression(read, context);
+        StoreModuleAnnotationAsync(new LoweredAnnotatedAssignmentStatement(statement, LoweredScript.LowerExpression(statement.Annotation),
+            null), context, false).GetAwaiter().GetResult();
     }
 
     private static void ExecuteChainedAssignment(ChainedAssignmentStatementSyntax statement, ExecutionContext context)

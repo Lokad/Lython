@@ -46,8 +46,8 @@ internal sealed partial class Parser
             Merge(nameToken, (expression ?? annotation).Span));
     }
 
-    // Parentheses never change the target like CPython. Only single targets
-    // are supported here; tuple and list displays keep the existing diagnostic.
+    // Parentheses preserve the assignment destination but suppress simple-name
+    // annotation metadata. Tuple/list targets remain invalid annotations.
     private StatementSyntax? TryParseComplexAnnotatedAssignmentStatement()
     {
         var startPosition = _position;
@@ -98,7 +98,7 @@ internal sealed partial class Parser
             assignmentTarget,
             annotation,
             expression,
-            Merge(startPosition, (expression ?? annotation).Span));
+            Merge(startPosition, (expression ?? annotation).Span)) { IsSimple = target is IdentifierExpressionSyntax };
     }
 
     private StatementSyntax? TryParsePostfixAssignmentStatement()

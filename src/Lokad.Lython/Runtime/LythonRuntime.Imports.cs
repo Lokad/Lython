@@ -427,9 +427,11 @@ internal sealed partial class LythonRuntime
         // may commit for a module that never exists.
         var lowered = LoweredScript.Lower(frontend.Script).Statements;
         var deferredBytes = ChargeDeferredModuleCode(frontend.Script.Statements, context.MemoryGovernor, span);
+        var moduleContext = ExecutionContext.CreateModule(context, path, moduleName);
+        InitializeModuleAnnotations(frontend.Script.Statements, moduleContext);
         return new PreparedImportedModule(
             lowered,
-            ExecutionContext.CreateModule(context, path, moduleName),
+            moduleContext,
             deferredBytes);
     }
 

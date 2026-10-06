@@ -123,6 +123,11 @@ internal sealed partial class ExecutableScript
                     return currentBlock;
 
                 case LoweredAnnotatedAssignmentStatement annotated:
+                    if (_functionParameters is null)
+                    {
+                        AddInstruction(currentBlock, ExecutableInstruction.ExecuteFallbackStatement(InternStatementFallback(annotated), annotated.Span));
+                        return currentBlock;
+                    }
                     if (annotated.Expression is null)
                     {
                         if (!_generator) throw new ExecutableLoweringFallbackException($"Executable IR lowering does not support annotation-only assignments: {annotated.Assignment.GetType().Name}.");

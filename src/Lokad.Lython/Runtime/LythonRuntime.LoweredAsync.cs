@@ -351,8 +351,10 @@ internal sealed partial class LythonRuntime
                 case LoweredAnnotatedAssignmentStatement annotated:
                     if (annotated.Expression is not null)
                     {
-                        AssignTarget(annotated.Assignment.Target, await EvaluateLoweredExpressionAsync(annotated.Expression, context).ConfigureAwait(false), context);
+                        await AssignTargetAsync(annotated.Target, await EvaluateLoweredExpressionAsync(annotated.Expression, context).ConfigureAwait(false), context).ConfigureAwait(false);
                     }
+                    else await EvaluateAnnotationTargetReadsAsync(annotated, context, true).ConfigureAwait(false);
+                    await StoreModuleAnnotationAsync(annotated, context, true).ConfigureAwait(false);
                     await StoreModernClassAnnotationAsync(annotated, context, true).ConfigureAwait(false);
                     return;
                 case LoweredAugmentedAssignmentStatement augmented:

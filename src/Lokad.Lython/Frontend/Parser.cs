@@ -361,6 +361,11 @@ internal sealed partial class Parser
 
         {
             var startDiagnosticCount = _diagnostics.Count;
+            var annotatedTarget = TryParseComplexAnnotatedAssignmentStatement();
+            if (annotatedTarget is not null || _diagnostics.Count != startDiagnosticCount)
+            {
+                return annotatedTarget;
+            }
             var unsupportedTargetAssignment = TryParseUnsupportedAssignmentTargetStatement();
             if (unsupportedTargetAssignment is not null || _diagnostics.Count != startDiagnosticCount)
             {

@@ -86,7 +86,10 @@ internal sealed record LoweredChainedAssignmentStatement(
 internal sealed record LoweredAnnotatedAssignmentStatement(
     AnnotatedAssignmentStatementSyntax Assignment,
     LoweredExpression Annotation,
-    LoweredExpression? Expression) : LoweredAssignmentStatement(Assignment);
+    LoweredExpression? Expression) : LoweredAssignmentStatement(Assignment)
+{
+    public LoweredStoreTarget Target { get; } = new(Assignment.Target);
+}
 
 internal abstract record LoweredAugmentedAssignmentTarget(
     AssignmentTargetSyntax Syntax)
