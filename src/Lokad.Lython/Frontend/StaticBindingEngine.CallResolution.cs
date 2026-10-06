@@ -9,7 +9,8 @@ internal static partial class StaticBindingEngine
         LythonSourceSpan span,
         out AbstractValue value)
     {
-        if (!TryBindFunctionArguments(summary, arguments, callBindings, out var functionBindings) ||
+        if (GeneratorSyntaxFacts.IsGenerator(summary.Body) ||
+            !TryBindFunctionArguments(summary, arguments, callBindings, out var functionBindings) ||
             !TryInferStraightLineReturn(summary.Body, functionBindings, out var returnValue))
         {
             value = default;
@@ -115,6 +116,7 @@ internal static partial class StaticBindingEngine
     {
         var instance = instanceValue.RequireInstanceSummary();
         if (!instance.Class.Methods.TryGetValue(methodName, out var methodSummary) ||
+            GeneratorSyntaxFacts.IsGenerator(methodSummary.Body) ||
             !TryBindInstanceMethodArguments(methodSummary, instanceValue, arguments, callBindings, out var methodBindings) ||
             !TryInferStraightLineReturn(methodSummary.Body, methodBindings, out value))
         {

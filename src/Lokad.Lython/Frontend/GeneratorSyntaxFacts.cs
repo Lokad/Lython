@@ -76,7 +76,7 @@ internal static class GeneratorSyntaxFacts
             };
             foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression))
                 Expression(child, clauses is null ? function : function && ReferenceEquals(child, clauses[0].Iterable),
-                    expression is ParenthesizedExpressionSyntax);
+                    expression is ParenthesizedExpressionSyntax or FormattedStringExpressionSyntax);
         }
     }
 }

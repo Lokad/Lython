@@ -471,6 +471,7 @@ closing a generator, including delegated user iterators. Cancellation remains
 terminal. Reusing a compiled script creates independent generator state.
 
 Suspension is supported in formatted-string fields and dynamic specifiers,
+including unparenthesized field yields and tuple/starred yielded expression lists,
 starred calls/displays, outermost comprehension iterables, match guards and
 computed exception headers, assignment-target receivers/indices and non-name
 augmented assignments, assert/raise operands and deletion targets. Nested

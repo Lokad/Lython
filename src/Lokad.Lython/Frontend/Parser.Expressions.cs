@@ -127,7 +127,8 @@ internal sealed partial class Parser
         {
             var commaToken = ReadToken();
             endSpan = SpanOf(commaToken);
-            if (CurrentToken is Token.Eol or Token.Semicolon or Token.Dedent or Token.End or Token.Colon)
+            if (CurrentToken is Token.Eol or Token.Semicolon or Token.Dedent or Token.End or Token.Colon or
+                Token.CloseParen or Token.CloseBracket or Token.CloseBrace)
             {
                 break;
             }
