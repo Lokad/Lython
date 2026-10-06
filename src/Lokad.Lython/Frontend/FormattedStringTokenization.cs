@@ -7,8 +7,34 @@ internal static class FormattedStringTokenization
     public static LexerResult<Token> Read(string source)
     {
         char[]? masked = null;
+        var afterBackslash = false;
         for (var i = 0; i < source.Length; i++)
         {
+            if (i == 0 || source[i - 1] == '\n')
+            {
+                var lastReset = -1;
+                for (var end = i; end < source.Length && source[end] is ' ' or '\t' or '\f'; end++)
+                    if (source[end] == '\f') lastReset = end;
+                if (lastReset >= 0)
+                {
+                    masked ??= source.ToCharArray();
+                    // The generic lexer ignores CR when counting indentation.
+                    // A form feed resets the leading indentation accumulated so far.
+                    Array.Fill(masked, '\r', i, lastReset - i + 1);
+                }
+            }
+            if (source[i] == '\f')
+            {
+                // Whitespace after a line-continuation backslash remains invalid.
+                if (!afterBackslash)
+                {
+                    masked ??= source.ToCharArray();
+                    masked[i] = '\r';
+                }
+                continue;
+            }
+            if (source[i] == '\\') afterBackslash = true;
+            else if (source[i] is not ' ' and not '\t') afterBackslash = false;
             if (source[i] == '#')
             {
                 while (i < source.Length && source[i] != '\n') i++;

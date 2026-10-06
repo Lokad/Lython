@@ -386,6 +386,11 @@ and placeholder partial application must fail explicitly.
 
 ### 8.3 Supported Literal Surface
 
+Form feed is whitespace between tokens. In a leading whitespace prefix it resets
+the accumulated indentation; subsequent spaces and tabs determine the indentation.
+Literal and comment contents remain intact, and a form feed after a
+line-continuation backslash does not make that continuation valid.
+
 The supported subset must support exactly the following literal forms:
 
 - decimal integer literals

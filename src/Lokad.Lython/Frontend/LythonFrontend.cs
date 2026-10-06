@@ -304,15 +304,17 @@ internal static class LythonFrontend
             }
 
             var firstNonWhitespace = lineStart;
+            var hasIndentation = false;
             while (firstNonWhitespace < lineEnd &&
-                (source[firstNonWhitespace] == ' ' || source[firstNonWhitespace] == '\t'))
+                source[firstNonWhitespace] is ' ' or '\t' or '\f')
             {
+                hasIndentation = source[firstNonWhitespace] != '\f';
                 firstNonWhitespace++;
             }
 
             if (firstNonWhitespace < lineEnd && source[firstNonWhitespace] != '#')
             {
-                if (firstNonWhitespace > lineStart)
+                if (hasIndentation)
                 {
                     diagnostic = new LythonDiagnostic(
                         Code: "LA1000",
