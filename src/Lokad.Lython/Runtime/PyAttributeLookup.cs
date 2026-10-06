@@ -130,6 +130,55 @@ internal static class PyAttributeLookup
         return false;
     }
 
+    internal static async ValueTask<(bool Found, object Value)> TryResolveInstanceMemberAsync(
+        PyInstance instance, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        if (!instance.Type.TryLookupInMro("__getattribute__", 0, out var rawGetAttribute, out _))
+            return (false, PyNone.Instance);
+        var bound = await BindForInstanceAsync(instance, rawGetAttribute, context, span).ConfigureAwait(false);
+        if (bound is not LythonRuntime.ICallable getAttribute)
+            throw new LythonRuntimeException("TypeError", "__getattribute__ must be callable.", span);
+        try
+        {
+            return (true, await CallableInvocation.InvokeUnaryAsync(getAttribute, PyString.FromString(memberName), span, context).ConfigureAwait(false));
+        }
+        catch (LythonRuntimeException error) when (error.ExceptionType == "AttributeError")
+        {
+            if (!instance.Type.TryLookupInMro("__getattr__", 0, out var rawGetAttr, out _))
+                return (false, PyNone.Instance);
+            var fallback = await BindForInstanceAsync(instance, rawGetAttr, context, span).ConfigureAwait(false);
+            if (fallback is not LythonRuntime.ICallable getAttr)
+                throw new LythonRuntimeException("TypeError", "__getattr__ must be callable.", span);
+            return (true, await CallableInvocation.InvokeUnaryAsync(getAttr, PyString.FromString(memberName), span, context).ConfigureAwait(false));
+        }
+    }
+
+    internal static async ValueTask<(bool Found, object Value)> TryResolveInstanceMemberWithoutGetAttrFallbackAsync(
+        PyInstance instance, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        if (memberName == "__class__") return (true, instance.Type);
+        if (instance.Type.TryLookupInMro(memberName, 0, out var rawValue, out _) &&
+            (rawValue is IPySettableDescriptor ||
+             rawValue is PyInstance descriptorInstance && descriptorInstance.Type.TryLookupInMro("__set__", 0, out _, out _)))
+            return (true, await BindForInstanceAsync(instance, rawValue, context, span).ConfigureAwait(false));
+        if (instance.TryGetOwnAttribute(memberName, out var ownValue)) return (true, ownValue);
+        if (instance.Type.TryLookupInMro(memberName, 0, out rawValue, out _))
+            return (true, await BindForInstanceAsync(instance, rawValue, context, span).ConfigureAwait(false));
+        return LythonRuntime.JsonSubclassSupport.TryGetEngineMember(instance, memberName, context, span, out var engineValue)
+            ? (true, engineValue) : (false, PyNone.Instance);
+    }
+
+    private static async ValueTask<object> BindForInstanceAsync(
+        PyInstance instance, object rawValue, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        if (rawValue is IPyDescriptor descriptor)
+            return await descriptor.GetAsync(instance, instance.Type, context, span).ConfigureAwait(false);
+        if (rawValue is PyInstance descriptorInstance &&
+            TryLookupDescriptorMethod(descriptorInstance, "__get__", context, span, out var callable))
+            return await CallableInvocation.InvokeBinaryAsync(callable, instance, instance.Type, span, context).ConfigureAwait(false);
+        return rawValue;
+    }
+
     // Builtin exception __new__ slots live on the defining type like CPython:
     // most builtins own theirs; the mapped ones inherit the ancestor slot.
     private static readonly IReadOnlyDictionary<string, string> InheritedExceptionNewSlots =

@@ -3,6 +3,8 @@ namespace Lokad.Lython.Runtime;
 internal interface IPyDescriptor
 {
     object Get(object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span);
+    ValueTask<object> GetAsync(object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
+        => new(Get(instance, owner, context, span));
 }
 
 internal interface IClassOwnedMember

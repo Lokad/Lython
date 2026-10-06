@@ -289,7 +289,7 @@ internal sealed partial class Parser
             }
         }
 
-        if (CurrentToken == Token.Star || IsUnpackingAssignmentStart())
+        if (IsUnpackingAssignmentStart())
         {
             return ParseUnpackingAssignmentStatement();
         }

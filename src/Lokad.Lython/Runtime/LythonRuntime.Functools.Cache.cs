@@ -542,6 +542,27 @@ internal sealed partial class LythonRuntime
             }
         }
 
+        public async ValueTask<object> GetAsync(object? instance, PyType owner, ExecutionContext? context, LythonSourceSpan? span)
+        {
+            if (instance is null) return this;
+            if (context is null || span is null)
+                throw new InvalidOperationException("cached_property access requires runtime context.");
+            if (instance is not PyInstance pyInstance)
+                throw new LythonRuntimeException("TypeError", "cached_property can only be accessed on user class instances.", span);
+            if (Name is null)
+                throw new LythonRuntimeException("TypeError", "cached_property has no bound attribute name.", span);
+            if (pyInstance.TryGetOwnAttribute(Name, out var cached)) return cached;
+
+            var resolved = _callable is IPyDescriptor descriptor
+                ? await descriptor.GetAsync(instance, owner, context, span).ConfigureAwait(false)
+                : new PyBoundMethod(instance, _callable);
+            if (resolved is not ICallable callable)
+                throw new LythonRuntimeException("TypeError", "Descriptor target must resolve to a callable.", span);
+            var value = await callable.InvokeAsync([], span, context).ConfigureAwait(false);
+            pyInstance.SetAttribute(Name, value);
+            return value;
+        }
+
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             if (_metadata.TryGetValue(name, out value))

@@ -789,6 +789,20 @@ internal sealed partial class LythonRuntime
 
             throw PyMemberAccess.CreateMissingMemberError(arguments[0].Value, memberName, span, context);
         }
+
+        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length != 2 || arguments[0].IsKeyword || arguments[1].IsKeyword ||
+                !PyStringOps.TryAsString(arguments[1].Value, out var name))
+                throw new LythonRuntimeException("TypeError", "object.__getattribute__(self, name) expects an instance and a string name.", span);
+
+            var memberName = name.AsString();
+            var resolved = arguments[0].Value is PyInstance instance
+                ? await PyAttributeLookup.TryResolveInstanceMemberWithoutGetAttrFallbackAsync(instance, memberName, context, span).ConfigureAwait(false)
+                : await TryResolveRuntimeMemberAsync(arguments[0].Value, memberName, context, span).ConfigureAwait(false);
+            if (resolved.Found) return resolved.Value;
+            throw PyMemberAccess.CreateMissingMemberError(arguments[0].Value, memberName, span, context);
+        }
     }
 
     private sealed class ObjectEqMethod : IPyBindableCallable, INamedRuntimeCallable, IPyDynamicAttributes, IPySlotWrapper, IClassOwnedMember, IPyRenderableValue

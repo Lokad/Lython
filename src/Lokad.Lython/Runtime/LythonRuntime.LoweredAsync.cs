@@ -453,13 +453,14 @@ internal sealed partial class LythonRuntime
 
             case LoweredMemberAugmentedAssignmentTarget member:
                 var memberTarget = await EvaluateLoweredExpressionAsync(member.Receiver, context).ConfigureAwait(false);
-                if (!TryResolveRuntimeMember(memberTarget, member.Target.MemberName, context, member.Span, out var memberValue))
+                var resolvedMember = await TryResolveRuntimeMemberAsync(memberTarget, member.Target.MemberName, context, member.Span).ConfigureAwait(false);
+                if (!resolvedMember.Found)
                 {
                     throw PyMemberAccess.CreateMissingMemberError(memberTarget, member.Target.MemberName, member.Span, context);
                 }
 
                 return new AugmentedAssignmentTargetReference(
-                    memberValue,
+                    resolvedMember.Value,
                     value => SetMemberValue(memberTarget, member.Target.MemberName, value, member.Span, context),
                     async value =>
                     {

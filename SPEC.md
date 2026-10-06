@@ -410,10 +410,14 @@ are outside the subset and must produce an explicit compilation diagnostic
 before guest effects. Raw literals, bytes literals and escaped backslashes keep
 their Python meanings; unsupported text escapes must not silently corrupt data.
 
-Tuple expression lists may omit parentheses in assignment values, `return`
+Tuple expression lists may omit parentheses in assignment and augmented-assignment values, `return`
 statements, expression statements, and `for` iterable expressions. Their items
 are evaluated from left to right, a trailing comma produces a one-item tuple,
 and chained assignment evaluates and shares its final tuple value once.
+Standalone expression lists may begin with a starred item; a comma is required
+to make a tuple. Augmented targets are read once before evaluating the full
+right-hand expression list and are stored only after successful unpacking and
+operator evaluation. Property getters/setters await delayed hosts in RunAsync.
 
 List, tuple, and set displays support iterable unpacking with `*`; dictionary
 displays support mapping unpacking with `**`. Display operands and ordinary

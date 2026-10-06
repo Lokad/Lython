@@ -654,7 +654,7 @@ internal sealed partial class Parser
             return null;
         }
 
-        var expression = ParseExpression();
+        var expression = ParseExpressionList();
         if (expression is null)
         {
             AddDiagnostic("LA1004", "Expected expression on the right side of assignment.", operatorToken);

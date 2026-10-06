@@ -260,6 +260,13 @@ internal sealed partial class LythonRuntime
     internal static async ValueTask<(bool Found, object Value)> TryResolveRuntimeMemberAsync(object target, string member,
         ExecutionContext context, LythonSourceSpan span)
     {
+        if (target is PyInstance instance)
+        {
+            var resolved = await PyAttributeLookup.TryResolveInstanceMemberAsync(instance, member, context, span).ConfigureAwait(false);
+            if (resolved.Found) return resolved;
+            return PyAttributeLookup.TryResolveObjectSlot(target, member, context, span, out var slot)
+                ? (true, slot) : (false, PyNone.Instance);
+        }
         if (target is IPyAsyncDynamicAttributes asynchronous)
         {
             var result = await asynchronous.TryGetMemberAsync(member, context, span).ConfigureAwait(false);
