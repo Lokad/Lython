@@ -323,8 +323,10 @@ internal static class ScopeDirectiveFactsCollector
 
     internal static void CollectExpressionBindings(ExpressionSyntax expression, HashSet<string> names)
     {
-        if (expression is LambdaExpressionSyntax)
+        if (expression is LambdaExpressionSyntax lambda)
         {
+            foreach (var parameter in lambda.Parameters)
+                if (parameter.DefaultValue is not null) CollectExpressionBindings(parameter.DefaultValue, names);
             return;
         }
 

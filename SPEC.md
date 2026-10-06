@@ -462,15 +462,18 @@ terminal. Reusing a compiled script creates independent generator state.
 Suspension is supported in formatted-string fields and dynamic specifiers,
 starred calls/displays, outermost comprehension iterables, match guards and
 computed exception headers, assignment-target receivers/indices and non-name
-augmented assignments, assert/raise operands and deletion targets. Operands and expanded arguments retain their
+augmented assignments, assert/raise operands and deletion targets. Nested
+definition decorators/defaults/annotations, lambda defaults and ordinary class
+headers also suspend in their enclosing generator. Operands and expanded arguments retain their
 execution-memory ownership across send/throw/close. A solitary starred call
 argument is iterated after keywords; mixed positional/starred calls expand each
 star before the following argument. F-string values evaluate before specifiers.
-The current resumable subset still rejects nested definition
-decorators/defaults/annotations or class headers.
-Ordinary forms of these constructs remain available in generator bodies without
-suspension in those positions. Rejection happens during compilation, including
-uncalled bodies. Generator frame/code introspection and implicit execution of
+Function annotations evaluate after all defaults and before decorators are
+applied, exposing their values through `__annotations__`. The contained
+`from __future__ import annotations` mode continues to skip ordinary annotation
+evaluation. Generic annotation scopes reject yield, including in class headers;
+Python-forbidden yield in comprehension bodies and postponed annotations is
+rejected during compilation, including uncalled bodies. Generator frame/code introspection and implicit execution of
 guest cleanup from CLR garbage collection are outside this contained subset;
 use explicit close or exhaust a generator for its Python cleanup.
 

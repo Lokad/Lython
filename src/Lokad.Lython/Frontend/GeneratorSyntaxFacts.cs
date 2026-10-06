@@ -20,6 +20,8 @@ internal static class GeneratorSyntaxFacts
     public static IEnumerable<LythonDiagnostic> Validate(ScriptSyntax script)
     {
         var errors = new List<LythonDiagnostic>();
+        var postponed = script.Statements.OfType<ImportStatementSyntax>().Any(i =>
+            i.ModuleName == "__future__" && i.ImportedMembers?.Any(m => m.Name == "annotations") == true);
         Statements(script.Statements, false);
         return errors;
 
@@ -27,6 +29,19 @@ internal static class GeneratorSyntaxFacts
         {
             foreach (var statement in statements)
             {
+                if (postponed)
+                {
+                    var annotations = statement switch
+                    {
+                        FunctionDefinitionStatementSyntax definition => definition.Parameters.Where(p => p.Annotation is not null)
+                            .Select(p => p.Annotation!).Concat(definition.ReturnAnnotation is null ? [] : new[] { definition.ReturnAnnotation }),
+                        AnnotatedAssignmentStatementSyntax assignment => new[] { assignment.Annotation },
+                        _ => Enumerable.Empty<ExpressionSyntax>(),
+                    };
+                    foreach (var annotation in annotations)
+                        if (ContainsYield(annotation)) errors.Add(new LythonDiagnostic("LA1100",
+                            "Yield expression cannot be used within a postponed annotation.", LythonDiagnosticSeverity.Error, annotation.Span));
+                }
                 foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
                     Expression(expression, function, statement is AssignmentStatementSyntax or ChainedAssignmentStatementSyntax or
                         AnnotatedAssignmentStatementSyntax or UnpackingAssignmentStatementSyntax or AugmentedAssignmentStatementSyntax or ExpressionStatementSyntax or MemberAssignmentStatementSyntax or SubscriptAssignmentStatementSyntax or SliceAssignmentStatementSyntax);

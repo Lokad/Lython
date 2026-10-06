@@ -167,6 +167,7 @@ internal sealed partial class LythonRuntime
             if (statement.ImportedMembers is not null &&
                 ImportsOnlyFutureAnnotations(statement.ImportedMembers))
             {
+                context.PostponedAnnotations = true;
                 return;
             }
 

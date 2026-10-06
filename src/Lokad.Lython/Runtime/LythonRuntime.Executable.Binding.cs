@@ -266,6 +266,12 @@ internal sealed partial class LythonRuntime
         ExecutableCell?[]? localCells,
         ExecutionContext context)
     {
+        if (importBinding.ModuleName == "__future__")
+        {
+            ExecuteImport(new ImportStatementSyntax(importBinding.ModuleName, importBinding.BindingName,
+                importBinding.BoundModuleName, importBinding.ImportedMembers, importBinding.Span), context);
+            return;
+        }
         if (importBinding.ImportedMembers is null)
         {
             var module = ResolveImportedModuleHierarchy(importBinding.ModuleName, context, importBinding.Span);
@@ -314,7 +320,8 @@ internal sealed partial class LythonRuntime
         ExecutableCell?[]? localCells,
         ExecutionContext context)
     {
-        if (functionBinding.Function.TypeParameters is not null || HasTypeParameterScope(context))
+        if (functionBinding.Function.TypeParameters is not null || HasTypeParameterScope(context) ||
+            functionBinding.Function.ReturnAnnotation is not null || functionBinding.Function.Parameters.Any(p => p.Annotation is not null))
         {
             ExecuteLoweredFunctionDefinition(functionBinding.Function, context);
             SyncExecutableLocalsFromContext(codeObject, locals, localCells, context);

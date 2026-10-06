@@ -829,8 +829,8 @@ internal sealed partial class LythonRuntime
         };
     }
 
-    private static LoweredFunctionParameter[] LowerLambdaParameters(LoweredLambdaExpression lambda)
-        => lambda.Lambda.Parameters
+    private static IReadOnlyList<LoweredFunctionParameter> LowerLambdaParameters(LoweredLambdaExpression lambda)
+        => lambda.PreparedParameters ?? lambda.Lambda.Parameters
             .Select(parameter => new LoweredFunctionParameter(
                 parameter.Name,
                 parameter.Kind,

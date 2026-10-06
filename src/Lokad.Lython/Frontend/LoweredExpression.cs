@@ -278,6 +278,7 @@ internal sealed record LoweredLambdaExpression(
     LoweredExpression Body) : LoweredExpression
 {
     public override ExpressionSyntax Syntax => Lambda;
+    public IReadOnlyList<LoweredFunctionParameter>? PreparedParameters { get; init; }
     public ExecutableCodeObject? GeneratorCode { get; } = GeneratorSyntaxFacts.ContainsYield(Lambda.Body)
         ? ExecutableScript.CompileGenerator(Lambda.Parameters.Select(parameter => new LoweredFunctionParameter(
             parameter.Name, parameter.Kind, null, null)).ToArray(),

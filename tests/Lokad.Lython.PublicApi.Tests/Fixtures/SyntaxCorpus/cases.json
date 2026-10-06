@@ -1802,12 +1802,12 @@
   {
     "name": "generator-yield-nested-default",
     "family": "generators",
-    "status": "unsupported",
-    "source": "def g():\n    def f(x=(yield 1)):pass\n",
-    "standardOutput": "",
+    "status": "supported",
+    "source": "def generate():\n def inner(value=(yield 'default')):return value\n yield inner()\ng=generate()\nprint(next(g),g.send(7))\n",
+    "standardOutput": "default 7\n",
     "success": true,
     "exceptionType": null,
-    "note": "Explicit suspension boundary"
+    "note": "Definition inputs run in the enclosing generator and survive suspension."
   },
   {
     "name": "generator-shared-nonlocal",

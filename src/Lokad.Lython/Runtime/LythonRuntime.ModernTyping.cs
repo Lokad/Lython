@@ -119,7 +119,9 @@ internal sealed partial class LythonRuntime
     {
         if (definition.TypeParameters is not null)
             function.TrySetMember("__type_params__", scope.Parameters);
-        if (definition.TypeParameters is null && !HasTypeParameterScope(definingContext)) return;
+        if (definition.TypeParameters is null && !HasTypeParameterScope(definingContext) &&
+            (definingContext.PostponedAnnotations ||
+                definition.ReturnAnnotation is null && definition.Parameters.All(p => p.Annotation is null))) return;
         var annotations = new PyDict(definingContext.MemoryGovernor, definition.Span);
         foreach (var parameter in definition.Parameters)
             if (parameter.Annotation is not null)

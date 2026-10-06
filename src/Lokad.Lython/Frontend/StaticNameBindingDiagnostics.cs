@@ -353,6 +353,8 @@ internal static class StaticNameBindingDiagnostics
                 return;
 
             case LambdaExpressionSyntax lambda:
+                foreach (var parameter in lambda.Parameters)
+                    if (parameter.DefaultValue is not null) AnalyzeExpression(parameter.DefaultValue, context, localNames, maybeAssigned);
                 var lambdaLocalNames = ScopeDirectiveFactsCollector.CollectLambdaLocalNames(lambda);
                 var lambdaAssigned = new HashSet<string>(
                     lambda.Parameters.Select(static parameter => parameter.Name),

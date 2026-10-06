@@ -27,6 +27,9 @@ internal sealed partial class ExecutableScript
             result = block;
             switch (expression)
             {
+                case LoweredLambdaExpression lambda:
+                    result = CompileSuspendingLambda(lambda, block);
+                    return true;
                 case LoweredFormattedStringExpression formatted:
                     result = CompileFormattedParts(formatted.Parts, formatted.Span, block);
                     return true;

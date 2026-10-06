@@ -16,6 +16,12 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
+        private bool? _postponedAnnotations;
+        public bool PostponedAnnotations
+        {
+            get => _postponedAnnotations ?? ParentContext?.PostponedAnnotations ?? false;
+            set => _postponedAnnotations = value;
+        }
         // Resolution tables are built once in ResolveNonlocalTargets; every
         // other path has no nonlocal names, so they share one empty table
         // instead of allocating a dictionary per frame (never mutated:
