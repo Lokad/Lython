@@ -610,7 +610,7 @@ internal sealed partial class LythonRuntime
             Dictionary<string, object> members,
             ExecutionContext context)
         {
-            if (syntax.TypeParameters is not null) return;
+            if (syntax.TypeParameters is not null || context.PostponedAnnotations) return;
             PyDict? annotations = null;
             foreach (var statement in syntax.Body.OfType<AnnotatedAssignmentStatementSyntax>())
             {

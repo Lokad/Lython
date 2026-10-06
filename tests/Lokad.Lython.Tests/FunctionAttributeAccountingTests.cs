@@ -27,8 +27,10 @@ public sealed class FunctionAttributeAccountingTests
         Assert.True(function.TrySetMember("a", PyNone.Instance));
         Assert.True(function.TrySetMember("b", PyNone.Instance));
         Assert.True(function.TrySetMember("c", PyNone.Instance));
-        // Three attribute slots beside the owned definition name (128 + 1).
-        Assert.Equal(3L * 64L + 129L, context.MemoryGovernor.CurrentCommittedBytes);
+        // Three attribute slots beside the owned definition name (128 + 1),
+        // one reclamation entry and the pool's first four pointer slots.
+        Assert.Equal(3L * 64L + 129L + ChargeReclamationPool.EntryChargeBytes + 4L * 8L,
+            context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

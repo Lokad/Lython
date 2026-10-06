@@ -494,8 +494,16 @@ argument is iterated after keywords; mixed positional/starred calls expand each
 star before the following argument. F-string values evaluate before specifiers.
 Function annotations evaluate after all defaults and before decorators are
 applied, exposing their values through `__annotations__`. The contained
-`from __future__ import annotations` mode continues to skip ordinary annotation
-evaluation. Generic annotation scopes reject yield, including in class headers;
+`from __future__ import annotations` mode stores Python 3.13 canonical expression
+strings in function, module and class `__annotations__` without evaluating those
+expressions, including annotations in generic definitions. Private annotation
+keys follow lexical mangling; the expression strings preserve the original
+normalized identifier spellings. Decorators receive completed metadata after
+defaults have evaluated. Unannotated functions expose a stable empty dictionary
+on demand. Future imports must precede ordinary module statements, after an
+optional docstring. Assignment expressions in postponed annotation scopes are
+rejected, with lambda bodies retaining their independent scope.
+Generic annotation scopes reject yield, including in class headers;
 Python-forbidden yield in comprehension bodies and postponed annotations is
 rejected during compilation, including uncalled bodies. Generator frame/code introspection and implicit execution of
 guest cleanup from CLR garbage collection are outside this contained subset;
@@ -507,7 +515,8 @@ use explicit close or exhaust a generator for its Python cleanup.
 bounds/constraints and Python 3.13 type parameter defaults are supported.
 Type parameters live in annotation scopes, remain visible to function bodies,
 and do not leak into the surrounding namespace. Function defaults and
-decorators evaluate outside that scope. Generic annotations evaluate eagerly;
+decorators evaluate outside that scope. Generic annotations evaluate eagerly
+unless the module uses postponed annotations;
 alias values, bounds, constraints and defaults evaluate lazily, cache successful
 results and retry failures. Lazy evaluation awaits host effects in RunAsync.
 Class annotation scopes can read class members and observe later class updates.
@@ -967,6 +976,13 @@ evaluate annotations without storing an annotation entry. Annotation-only
 attribute/item targets evaluate their receivers and indices without reading the
 item. Function-local annotations remain unevaluated. Metadata and annotation
 protocol calls obey execution limits and await delayed effects in RunAsync.
+With postponed annotations, bare names store canonical strings; parenthesized
+names and attribute/item annotations remain unevaluated and store no entry.
+Class dictionaries are initialized before the body, including conditional
+declarations, and updates respect a replacement mapping's item protocol.
+Deleting a class's annotation mapping follows class-name lookup into its module.
+String, collection and memory limits govern exposed annotation metadata, and
+dropped functions reclaim their annotation dictionaries, strings and table slots.
 
 The runtime must support:
 
@@ -1935,7 +1951,9 @@ nesting beyond `MaxUnaryOperatorNesting` (256); string and comment text does
 not count toward nesting. Distinct expanded private names share cached spellings
 within each lexical class and are bounded collectively by
 `MaxPrivateNameExpansionLength` (8,000,000 characters), including f-string fields;
-excess expansion fails with LA0004 before guest effects. Sources reach the
+excess expansion fails with LA0004 before guest effects. Canonical postponed
+annotation text has a separate cumulative limit of 8,000,000 characters per
+source unit; excess expansion fails with LA0005 before guest effects. Sources reach the
 frontend only through host files,
 host options, and allowlisted local imports, never from guest execution, so
 compilation load is host-driven by construction.

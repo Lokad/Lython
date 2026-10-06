@@ -5,7 +5,7 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class AnnotationCompatibilityTests
 {
     [Fact]
-    public void FutureAnnotationsAndModernAnnotationShapes_AreAcceptedAsNoOpMetadata()
+    public void FutureAnnotationsAndModernAnnotationShapes_AreAcceptedAsStringMetadata()
     {
         var source =
             """

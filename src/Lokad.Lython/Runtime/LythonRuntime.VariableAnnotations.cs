@@ -11,7 +11,7 @@ internal sealed partial class LythonRuntime
         var span = statements[0].Span;
         var annotations = new PyDict(context.MemoryGovernor, span);
         context.Services.State.CallTemporaries.TrackFreshMutable(annotations, annotations.CommittedStorageBytes, span);
-        StoreName("__annotations__", annotations, context, span);
+        context.Variables["__annotations__"] = annotations;
 
         static bool ContainsAnnotation(IReadOnlyList<StatementSyntax> body)
             => body.Any(statement => statement is AnnotatedAssignmentStatementSyntax ||
@@ -22,19 +22,37 @@ internal sealed partial class LythonRuntime
     private static async ValueTask StoreModuleAnnotationAsync(LoweredAnnotatedAssignmentStatement statement,
         ExecutionContext context, bool asynchronous)
     {
-        if (context.ParentContext is not null || context.IsClassBody || context.PostponedAnnotations) return;
-        var annotation = await EvaluateTypeExpressionAsync(statement.Annotation, context, asynchronous).ConfigureAwait(false);
+        if (context.ParentContext is not null || context.IsClassBody) return;
+        if (context.PostponedAnnotations && !statement.Assignment.IsSimple) return;
+        var annotation = context.PostponedAnnotations ? CreatePostponedAnnotationValue(statement.Annotation.Syntax, context)
+            : await EvaluateTypeExpressionAsync(statement.Annotation, context, asynchronous).ConfigureAwait(false);
         if (!statement.Assignment.IsSimple || statement.Assignment.Target is not NameAssignmentTargetSyntax name) return;
         var annotations = ResolveName("__annotations__", statement.Span, context);
-        var key = PyString.FromString(name.Name, context.MemoryGovernor, statement.Span);
-        context.Services.State.CallTemporaries.TrackFreshString(key, statement.Span);
+        await StoreAnnotationEntryAsync(annotations, name.Name, annotation, context, statement.Span, asynchronous).ConfigureAwait(false);
+    }
+
+    private static PyString CreatePostponedAnnotationValue(ExpressionSyntax expression, ExecutionContext context)
+    {
+        var text = expression.PostponedAnnotationText ?? throw RuntimeErrors.Runtime("Postponed annotation metadata is unavailable.", expression.Span);
+        var result = PyString.FromString(text, context.MemoryGovernor, expression.Span);
+        context.Services.State.CallTemporaries.TrackFreshString(result, expression.Span);
+        context.ObserveString(result, expression.Span);
+        return result;
+    }
+
+    private static async ValueTask StoreAnnotationEntryAsync(object annotations, string name, object annotation,
+        ExecutionContext context, LythonSourceSpan span, bool asynchronous)
+    {
+        var key = PyString.FromString(name, context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshString(key, span);
+        context.ObserveString(key, span);
         if (annotations is PyDict dictionary && !dictionary.ContainsKey(key))
-            context.ObserveCollectionCount(dictionary.Count + 1, statement.Span);
+            context.ObserveCollectionCount(dictionary.Count + 1, span);
         if (asynchronous)
-            await SetHeaderSubscriptAsync(annotations, key, annotation, statement.Span, context).ConfigureAwait(false);
-        else SetSubscriptValue(annotations, key, annotation, statement.Span, context);
+            await SetHeaderSubscriptAsync(annotations, key, annotation, span, context).ConfigureAwait(false);
+        else SetSubscriptValue(annotations, key, annotation, span, context);
         if (annotations is PyDict stored)
-            context.Services.State.CallTemporaries.TrackGrowth(stored, stored.CommittedStorageBytes, statement.Span);
+            context.Services.State.CallTemporaries.TrackGrowth(stored, stored.CommittedStorageBytes, span);
     }
 
     private static async ValueTask EvaluateAnnotationTargetReadsAsync(LoweredAnnotatedAssignmentStatement statement,

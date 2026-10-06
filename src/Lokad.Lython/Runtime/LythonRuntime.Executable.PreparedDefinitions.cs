@@ -12,7 +12,7 @@ internal sealed partial class LythonRuntime
             switch (operation)
             {
                 case ExecutableAnnotationsEnabled:
-                    _stack.Push(!context.PostponedAnnotations || HasTypeParameterScope(context));
+                    _stack.Push(!context.PostponedAnnotations);
                     break;
                 case ExecutableCreateFunction function:
                     using (var storage = context.MemoryGovernor.ReserveTemporary(256L + 160L * function.Inputs.Count + 128L * function.Definition.Parameters.Count, span))

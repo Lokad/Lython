@@ -615,7 +615,11 @@ internal sealed partial class LythonRuntime
     // boxed magnitude, each beside one shared-cache entry. Floats parse fresh
     // per evaluation and singletons retain nothing, so they carry no payload.
     // Formatted-string text chunks persist inside the retained lowered parts.
-    private static long RetainedLiteralBytes(ExpressionSyntax expression) => expression switch
+    private static long RetainedLiteralBytes(ExpressionSyntax expression) => RuntimeMemoryEstimates.SaturatingAdd(
+        expression.PostponedAnnotationText is { } text ? checked(24L + 2L * text.Length) : 0,
+        RetainedExpressionLiteralBytes(expression));
+
+    private static long RetainedExpressionLiteralBytes(ExpressionSyntax expression) => expression switch
     {
         StringLiteralExpressionSyntax text => RuntimeMemoryEstimates.SaturatingAdd(
             PyString.EstimateApproximateBytes(Encoding.UTF8.GetByteCount(text.Value)),
@@ -918,6 +922,7 @@ internal sealed partial class LythonRuntime
         private readonly ExecutableCodeObject? _generatorCode;
         private readonly FunctionBindingPlan _bindingPlan;
         private readonly ExecutionContext _closure;
+        private PyDict? _annotations;
 
         public LambdaFunction(IReadOnlyList<LoweredFunctionParameter> parameters, LoweredExpression body, ExecutionContext closure, Dictionary<string, object> defaultValues, ExecutableCodeObject? generatorCode = null)
         {
@@ -931,6 +936,17 @@ internal sealed partial class LythonRuntime
         // scope: <lambda>, the nested qualname and the defining module.
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
+            if (name == "__annotations__")
+            {
+                if (_annotations is null)
+                {
+                    var annotations = new PyDict(_closure.MemoryGovernor);
+                    _closure.Services.State.CallTemporaries.TrackFreshMutable(annotations, annotations.CommittedStorageBytes);
+                    _annotations = annotations;
+                }
+                value = _annotations;
+                return true;
+            }
             if (name == "__name__")
             {
                 value = LambdaName;

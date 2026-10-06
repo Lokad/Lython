@@ -120,15 +120,26 @@ internal sealed partial class LythonRuntime
         if (definition.TypeParameters is not null)
             function.TrySetMember("__type_params__", scope.Parameters);
         if (definition.TypeParameters is null && !HasTypeParameterScope(definingContext) &&
-            (definingContext.PostponedAnnotations ||
-                definition.ReturnAnnotation is null && definition.Parameters.All(p => p.Annotation is null))) return;
+            definition.ReturnAnnotation is null && definition.Parameters.All(p => p.Annotation is null)) return;
         var annotations = new PyDict(definingContext.MemoryGovernor, definition.Span);
-        foreach (var parameter in definition.Parameters)
-            if (parameter.Annotation is not null)
-                annotations.SetItem(PyString.FromString(parameter.Name), await EvaluateTypeExpressionAsync(parameter.Annotation, scope.Annotations, asynchronous).ConfigureAwait(false));
-        if (definition.ReturnAnnotation is not null)
-            annotations.SetItem(PyString.FromString("return"), await EvaluateTypeExpressionAsync(definition.ReturnAnnotation, scope.Annotations, asynchronous).ConfigureAwait(false));
         definingContext.Services.State.CallTemporaries.TrackFreshMutable(annotations, annotations.CommittedStorageBytes, definition.Span);
+        // CPython's annotation table visits regular arguments before positional-only
+        // arguments, followed by *args, keyword-only arguments and **kwargs.
+        foreach (var parameter in definition.Parameters.OrderBy(parameter => parameter.Kind switch
+        {
+            FunctionParameterKind.Positional => 0, FunctionParameterKind.PositionalOnly => 1,
+            FunctionParameterKind.VariadicList => 2, FunctionParameterKind.KeywordOnly => 3, _ => 4
+        }))
+            if (parameter.Annotation is not null)
+                await StoreAnnotationEntryAsync(annotations, parameter.Name,
+                    definingContext.PostponedAnnotations ? CreatePostponedAnnotationValue(parameter.Annotation.Syntax, definingContext)
+                        : await EvaluateTypeExpressionAsync(parameter.Annotation, scope.Annotations, asynchronous).ConfigureAwait(false),
+                    definingContext, parameter.Annotation.Span, asynchronous).ConfigureAwait(false);
+        if (definition.ReturnAnnotation is not null)
+            await StoreAnnotationEntryAsync(annotations, "return",
+                definingContext.PostponedAnnotations ? CreatePostponedAnnotationValue(definition.ReturnAnnotation.Syntax, definingContext)
+                    : await EvaluateTypeExpressionAsync(definition.ReturnAnnotation, scope.Annotations, asynchronous).ConfigureAwait(false),
+                definingContext, definition.ReturnAnnotation.Span, asynchronous).ConfigureAwait(false);
         function.TrySetMember("__annotations__", annotations);
     }
 
@@ -147,15 +158,22 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask StoreModernClassAnnotationAsync(LoweredAnnotatedAssignmentStatement statement, ExecutionContext context, bool asynchronous)
     {
-        if (!context.EvaluateModernClassAnnotations || statement.Assignment.Target is not NameAssignmentTargetSyntax name) return;
+        if (!(context.EvaluateModernClassAnnotations || context.IsClassBody && context.PostponedAnnotations) ||
+            !statement.Assignment.IsSimple || statement.Assignment.Target is not NameAssignmentTargetSyntax name) return;
+        var annotation = context.PostponedAnnotations ? CreatePostponedAnnotationValue(statement.Annotation.Syntax, context)
+            : await EvaluateTypeExpressionAsync(statement.Annotation, context, asynchronous).ConfigureAwait(false);
         if (!context.Variables.TryGetValue("__annotations__", out var value))
         {
-            value = new PyDict(context.MemoryGovernor, statement.Span);
-            context.Variables["__annotations__"] = value;
+            if (context.PostponedAnnotations)
+                value = ResolveName("__annotations__", statement.Span, GetGlobalContext(context));
+            else
+            {
+                value = new PyDict(context.MemoryGovernor, statement.Span);
+                context.Variables["__annotations__"] = value;
+                context.Services.State.CallTemporaries.TrackFreshMutable((PyDict)value, ((PyDict)value).CommittedStorageBytes, statement.Span);
+            }
         }
-        var annotations = (PyDict)value;
-        annotations.SetItem(PyString.FromString(name.Name), await EvaluateTypeExpressionAsync(statement.Annotation, context, asynchronous).ConfigureAwait(false));
-        context.Services.State.CallTemporaries.TrackGrowth(annotations, annotations.CommittedStorageBytes, statement.Span);
+        await StoreAnnotationEntryAsync(value, name.Name, annotation, context, statement.Span, asynchronous).ConfigureAwait(false);
     }
 
     private static PyType GetTypingGeneric(ExecutionContext context, LythonSourceSpan span)

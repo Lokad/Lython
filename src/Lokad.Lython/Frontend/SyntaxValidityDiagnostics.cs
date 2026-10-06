@@ -35,6 +35,7 @@ internal static class SyntaxValidityDiagnostics
         }
         diagnostics.AddRange(GeneratorSyntaxFacts.Validate(script));
         diagnostics.AddRange(ModernTypeSyntaxFacts.Validate(script));
+        diagnostics.AddRange(PostponedAnnotationText.Validate(script));
         return diagnostics;
 
         void Error(string message, LythonSourceSpan span)

@@ -291,6 +291,7 @@ static ProbeResult RunPython(string pythonCommand, string source)
     {
         FileName = pythonCommand,
         RedirectStandardInput = true,
+        StandardInputEncoding = new System.Text.UTF8Encoding(false),
         RedirectStandardOutput = true,
         RedirectStandardError = true,
         UseShellExecute = false,

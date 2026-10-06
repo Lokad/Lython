@@ -77,6 +77,14 @@ public sealed class LythonProbeCliTests
     }
 
     [Fact]
+    public void PythonComparisonTransportsLiteralUnicodeAsUtf8()
+    {
+        var report = RunProbeJson("-c", "print('é☃')", "--compare-python");
+        Assert.True(report.GetProperty("Matches").GetBoolean());
+        Assert.Equal("é☃\n", report.GetProperty("Lython").GetProperty("StandardOutput").GetString());
+    }
+
+    [Fact]
     public void SyncCounterpartSucceeds()
     {
         var report = RunProbeJson("-c", "print(40 + 2)");

@@ -6,12 +6,12 @@ namespace Lokad.Lython.Tests;
 public sealed class StackSafetySubsystemTests
 {
     [Fact]
-    public void AnnotationOnlyAssignmentForcesLoweredExecution()
+    public void ModuleAnnotationOnlyAssignmentUsesStatementFallback()
     {
         var frontend = LythonFrontend.Compile("x: int\ndef f():\n return f()\nf()\n");
         var lowered = LoweredScript.Lower(frontend.Script.RequireNotNull());
 
-        var failure = Assert.Throws<ExecutableLoweringFallbackException>(() => ExecutableScript.Compile(lowered));
-        Assert.Contains("annotation-only", failure.Message, StringComparison.Ordinal);
+        var executable = ExecutableScript.Compile(lowered);
+        Assert.IsType<LoweredAnnotatedAssignmentStatement>(Assert.Single(executable.EntryPoint.StatementFallbacks).Statement);
     }
 }

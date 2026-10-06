@@ -10,7 +10,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     // Metadata tables grow one CLR entry per guest attribute name; charge
     // each new key so retained attributes accumulate. The key strings
     // themselves are caller-owned; only the table slot is charged here.
-    // Functions have no attribute delete path, so nothing is released.
+    // Reclamation follows the function's metadata table when it becomes unreachable.
     private const long AttributeSlotBytes = 64;
     private MemoryGovernor? _memoryGovernor;
     private readonly PyString _nameValue;
@@ -24,6 +24,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
     // function pool coupon instead of stranding one string per dropped definition.
     internal long NameCommittedBytes { get; }
     private readonly Dictionary<string, object> _metadata = new(StringComparer.Ordinal);
+    private long _additionalMetadataBytes;
     private readonly ScopeDirectiveFacts _scopeFacts;
 
     protected PyFunctionBase(
@@ -145,6 +146,15 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
             return true;
         }
 
+        if (name == "__annotations__")
+        {
+            var annotations = new PyDict(_closure.MemoryGovernor);
+            _closure.Services.State.CallTemporaries.TrackFreshMutable(annotations, annotations.CommittedStorageBytes);
+            TrySetMember(name, annotations);
+            value = annotations;
+            return true;
+        }
+
         // Absent docstrings report None like CPython (nothing to store); present
         // ones are captured into metadata by CaptureFunctionDocstring.
         if (name == "__doc__")
@@ -258,6 +268,22 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
         {
             _memoryGovernor.Reserve(AttributeSlotBytes, null);
             _memoryGovernor.Commit(AttributeSlotBytes);
+            // The docstring slot belongs to the function's construction coupon.
+            // Later metadata slots share a separate dictionary coupon so dropped
+            // functions also reclaim lazily created or generic annotation state.
+            if (name != "__doc__")
+            {
+                try
+                {
+                    _closure.Services.State.CallTemporaries.TrackGrowth(_metadata, checked(_additionalMetadataBytes + AttributeSlotBytes));
+                    _additionalMetadataBytes += AttributeSlotBytes;
+                }
+                catch
+                {
+                    _memoryGovernor.Release(AttributeSlotBytes);
+                    throw;
+                }
+            }
         }
 
         _metadata[name] = value;

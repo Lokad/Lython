@@ -144,6 +144,8 @@ internal sealed partial class LythonRuntime
             {
                 EvaluateModernClassAnnotations = HasTypeParameterScope(parent)
             };
+            if (context.PostponedAnnotations || context.EvaluateModernClassAnnotations)
+                InitializeModuleAnnotations(definition.Body, context);
             if (!ClassCellSyntaxFacts.RequiresCell(definition)) return context;
             var closureParent = parent.FunctionClosureContext;
             var retention = ChargeClosureRetention(closureParent, parent.MemoryGovernor, definition.Span);

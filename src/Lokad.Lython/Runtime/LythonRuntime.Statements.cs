@@ -200,33 +200,8 @@ internal sealed partial class LythonRuntime
 
     private static void ExecuteFunctionDefinition(FunctionDefinitionStatementSyntax statement, ExecutionContext context)
     {
-        using var decoratorStorage = context.MemoryGovernor.ReserveTemporary(EstimateObjectArrayBytes(statement.Decorators.Count), statement.Span);
-        var decorators = EvaluateDecorators(statement.Decorators.Select(LoweredScript.LowerStandaloneExpression).ToArray(), context);
-        var loweredParameters = statement.Parameters
-            .Select(parameter => new LoweredFunctionParameter(
-                parameter.Name,
-                parameter.Kind,
-                parameter.Annotation is null ? null : LoweredScript.LowerStandaloneExpression(parameter.Annotation),
-                parameter.DefaultValue is null ? null : LoweredScript.LowerStandaloneExpression(parameter.DefaultValue)))
-            .ToArray();
-        var loweredBody = LoweredScript.Lower(new ScriptSyntax(statement.Body)).Statements;
-        var function = new PyFunction(
-            statement.DeclaredName,
-            loweredParameters,
-            loweredBody,
-            context.FunctionClosureContext,
-            BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)),
-            ScopeDirectiveFactsCollector.ForFunction(statement));
-        ChargeFunctionValue(context, statement.Span);
-        ChargeDefaultArguments(loweredParameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, statement.Span);
-        var closureRetentionBytes = ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, statement.Span);
-        var docstringBytes = PyFunctionBase.CaptureFunctionDocstring(function, loweredBody, context, statement.Span);
-        TrackFunctionValue(function, loweredParameters.Count(static p => p.DefaultValue is not null), closureRetentionBytes, docstringBytes, context, statement.Span);
-        StoreName(
-            statement.Name,
-            ApplyDecorators(function, decorators, statement.Span, context),
-            context,
-            statement.Span);
+        ExecuteLoweredFunctionDefinition(
+            (LoweredFunctionDefinitionStatement)LoweredScript.Lower(new ScriptSyntax([statement])).Statements[0], context);
     }
 
     private static void ExecuteClassDefinition(ClassDefinitionStatementSyntax statement, ExecutionContext context)

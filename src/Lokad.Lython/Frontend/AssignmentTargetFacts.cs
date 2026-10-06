@@ -14,14 +14,14 @@ internal static class AssignmentTargetFacts
 
     public static LoopTargetSyntax ToLoop(AssignmentTargetSyntax target) => target switch
     {
-        NameAssignmentTargetSyntax name => new LoopNameTargetSyntax(name.Name),
+        NameAssignmentTargetSyntax name => new LoopNameTargetSyntax(name.Name) { OriginalSpan = name.Span },
         UnpackingAssignmentTargetGroupSyntax group => new LoopTupleTargetSyntax(group.Targets.Select(item =>
-            item.IsStarred ? Starred(FromUnpacking(item)) : ToLoop(FromUnpacking(item))).ToArray()),
+            item.IsStarred ? Starred(FromUnpacking(item)) : ToLoop(FromUnpacking(item))).ToArray()) { OriginalSpan = group.Span },
         _ => new LoopStoreTargetSyntax(target),
     };
 
     public static LoopTargetSyntax Starred(AssignmentTargetSyntax target) => target is NameAssignmentTargetSyntax name
-        ? new LoopStarredTargetSyntax(name.Name) : new LoopStoreTargetSyntax(target, true);
+        ? new LoopStarredTargetSyntax(name.Name) { OriginalSpan = name.Span } : new LoopStoreTargetSyntax(target, true);
 
     public static bool IsStarred(LoopTargetSyntax target)
         => target is LoopStarredTargetSyntax or LoopStoreTargetSyntax { IsStarred: true };

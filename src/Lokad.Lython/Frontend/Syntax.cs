@@ -426,7 +426,12 @@ internal sealed record TryStatementSyntax(
     LythonSourceSpan Span) : StatementSyntax(Span);
 
 internal abstract record ExpressionSyntax(
-    LythonSourceSpan Span);
+    LythonSourceSpan Span)
+{
+    // Filled once by the frontend for annotation roots in future-annotations
+    // modules. Execution copies the text without evaluating the expression.
+    public string? PostponedAnnotationText { get; internal set; }
+}
 
 internal sealed record YieldExpressionSyntax(ExpressionSyntax? Value, bool Delegated,
     LythonSourceSpan Span) : ExpressionSyntax(Span);
@@ -561,13 +566,22 @@ internal sealed record LoopStoreTargetSyntax(
 }
 
 internal sealed record LoopNameTargetSyntax(
-    string Name) : LoopTargetSyntax;
+    string Name) : LoopTargetSyntax
+{
+    public LythonSourceSpan? OriginalSpan { get; init; }
+}
 
 internal sealed record LoopTupleTargetSyntax(
-    IReadOnlyList<LoopTargetSyntax> Items) : LoopTargetSyntax;
+    IReadOnlyList<LoopTargetSyntax> Items) : LoopTargetSyntax
+{
+    public LythonSourceSpan? OriginalSpan { get; init; }
+}
 
 internal sealed record LoopStarredTargetSyntax(
-    string Name) : LoopTargetSyntax;
+    string Name) : LoopTargetSyntax
+{
+    public LythonSourceSpan? OriginalSpan { get; init; }
+}
 
 internal abstract record DictionaryDisplayItemSyntax(
     ExpressionSyntax Key,
