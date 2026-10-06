@@ -36,13 +36,13 @@ internal sealed partial class LythonRuntime
             if (instruction.OpCode == ExecutableOpCode.ExitContextManager)
             {
                 var manager = PopContextManager(_stack, instruction.Span);
-                if (_pendingAbrupt is PendingException { Exception: var exception })
+                if (_pendingAbrupt is PendingException { Exception: var exception } pendingException &&
+                    (pendingException.CleanupId ?? -1) == instruction.CleanupId)
                 {
                     if (await PyContextManagers.ExitAsync(manager, ResolvePythonExceptionType(exception, context),
                         CreatePythonExceptionInstance(exception), PyNone.Instance, instruction.Span, context).ConfigureAwait(false))
                     {
-                        _pendingAbrupt = null;
-                        context.Services.SetCurrentException(_savedActiveExceptions is { Count: > 0 } saves ? saves.Pop().SavedException : null);
+                        RestoreSuppressedCompletion();
                     }
                 }
                 else _ = await PyContextManagers.ExitAsync(manager, PyNone.Instance, PyNone.Instance, PyNone.Instance,

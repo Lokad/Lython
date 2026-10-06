@@ -86,7 +86,7 @@ internal sealed partial class ExecutableScript
                     region.FinallyBlockIndex is int finallyBlock ? indexMap[FinalJumpTarget(finallyBlock)] : null,
                     suiteStart,
                     suiteEnd,
-                    region.ExceptionTypesAreTuple));
+                    region.ExceptionTypesAreTuple, region.CleanupId));
             }
 
             // Runtime unwinding consumes applicable regions from the narrowest

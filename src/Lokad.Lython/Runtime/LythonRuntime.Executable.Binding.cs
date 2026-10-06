@@ -165,6 +165,7 @@ internal sealed partial class LythonRuntime
             if (region.FinallyBlockIndex is int finallyBlock)
             {
                 RestoreExecutableStackForHandler(region, stack, blockEntryStackDepths, span);
+                abrupt.CleanupId = region.CleanupId;
                 pendingAbrupt = abrupt;
                 nextBlockIndex = finallyBlock;
                 matchedRegion = region;

@@ -188,13 +188,19 @@ internal sealed partial class LythonRuntime
 
     // A finally block may delay exactly one abrupt outcome. Distinct variants
     // prevent an impossible empty or multiply-populated pending state.
-    private abstract record PendingAbruptSignal;
+    private abstract record PendingAbruptSignal
+    {
+        public int? CleanupId { get; set; }
+    }
 
     private sealed record PendingException(LythonRuntimeException Exception) : PendingAbruptSignal;
 
     // A pending return carries the value, not a signal object: ordinary returns
     // deliver through this record without ever throwing (see DeliverReturn).
-    private sealed record PendingJump(int TargetBlock, bool DiscardIterator) : PendingAbruptSignal;
+    private sealed record PendingJump(int TargetBlock, bool DiscardIterator) : PendingAbruptSignal
+    {
+        public PendingAbruptSignal? SavedPendingAbrupt { get; set; }
+    }
 
     private sealed record PendingReturn(object Value) : PendingAbruptSignal;
 

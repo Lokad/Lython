@@ -286,7 +286,7 @@ internal sealed partial class ExecutableScript
                     null,
                     cleanup.StartBlock,
                     cleanup.StartBlock,
-                    cleanup.EndBlock));
+                    cleanup.EndBlock, CleanupId: cleanup.StartBlock));
             }
 
             var tryClause = CompileClause(statement.TryBody);
@@ -378,7 +378,7 @@ internal sealed partial class ExecutableScript
                     null,
                     finallyRegion.StartBlock,
                     finallyRegion.StartBlock,
-                    finallyRegion.EndBlock));
+                    finallyRegion.EndBlock, CleanupId: finallyRegion.StartBlock));
             }
 
             if (tryClause.ExitBlock is int tryExit && !IsTerminated(tryExit))
@@ -404,7 +404,7 @@ internal sealed partial class ExecutableScript
 
             if (finallyClause is { ExitBlock: int finallyExit } && !IsTerminated(finallyExit))
             {
-                AddInstruction(finallyExit, ExecutableInstruction.EndFinally(afterBlock, statement.Span));
+                AddInstruction(finallyExit, ExecutableInstruction.EndFinally(afterBlock, statement.Span, finallyClause!.Value.StartBlock));
             }
 
             return afterBlock;
@@ -459,7 +459,7 @@ internal sealed partial class ExecutableScript
                 null,
                 finallyBlock,
                 protectedStart,
-                protectedEnd));
+                protectedEnd, CleanupId: finallyBlock));
 
             if (bodyExit is int bodyBlockExit && !IsTerminated(bodyBlockExit))
             {
@@ -467,8 +467,8 @@ internal sealed partial class ExecutableScript
             }
 
             AddInstruction(finallyBlock, ExecutableInstruction.LoadLocal(managerSlot, statement.Span));
-            AddInstruction(finallyBlock, ExecutableInstruction.ExitContextManager(statement.Span));
-            AddInstruction(finallyBlock, ExecutableInstruction.EndFinally(afterBlock, statement.Span));
+            AddInstruction(finallyBlock, ExecutableInstruction.ExitContextManager(statement.Span, finallyBlock));
+            AddInstruction(finallyBlock, ExecutableInstruction.EndFinally(afterBlock, statement.Span, finallyBlock));
 
             return afterBlock;
         }
@@ -549,17 +549,18 @@ internal sealed partial class ExecutableScript
 
             AddInstruction(currentBlock, ExecutableInstruction.Jump(conditionBlock, statement.Span));
 
+            var conditionEntry = conditionBlock;
             conditionBlock = CompileExpression(statement.Condition, conditionBlock);
             AddInstruction(conditionBlock, ExecutableInstruction.JumpIfFalse(statement.ElseStatements is null ? exitBlock : elseBlock, statement.Condition.Span));
             AddInstruction(conditionBlock, ExecutableInstruction.Jump(bodyBlock, statement.Span));
 
-            _loops.Push(new LoopContext(conditionBlock, exitBlock, HasIterator: false));
+            _loops.Push(new LoopContext(conditionEntry, exitBlock, HasIterator: false));
             try
             {
                 var bodyExit = CompileStatements(statement.Body, bodyBlock);
                 if (bodyExit is int bodyBlockExit && !IsTerminated(bodyBlockExit))
                 {
-                    AddInstruction(bodyBlockExit, ExecutableInstruction.Jump(conditionBlock, statement.Span));
+                    AddInstruction(bodyBlockExit, ExecutableInstruction.Jump(conditionEntry, statement.Span));
                 }
             }
             finally

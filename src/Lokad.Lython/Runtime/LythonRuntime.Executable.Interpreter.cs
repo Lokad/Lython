@@ -83,6 +83,25 @@ internal sealed partial class LythonRuntime
         // live exactly while execution resumes inside its suite. Entries
         // without a suite range are kept, erring toward a stale value rather
         // than dropping a live save.
+        private bool PendingCleanupContains(PendingAbruptSignal? pending, int block)
+        {
+            if (pending?.CleanupId is not int id) return false;
+            for (var i = 0; i < codeObject.ExceptionRegions.Count; i++)
+            {
+                var region = codeObject.ExceptionRegions[i];
+                if (region.CleanupId == id && region.SuiteStartBlockIndex is int start &&
+                    region.SuiteEndBlockIndex is int end && block >= start && block <= end) return true;
+            }
+            return false;
+        }
+
+        private void RestoreSuppressedCompletion()
+        {
+            var saved = _savedActiveExceptions is { Count: > 0 } saves ? saves.Pop() : null;
+            _pendingAbrupt = saved?.SavedPendingAbrupt;
+            context.Services.SetCurrentException(saved?.SavedException);
+        }
+
         private void UnwindAbandonedHandlers(int targetBlockIndex)
         {
             while (_savedActiveExceptions is { Count: > 0 } saves &&
@@ -289,18 +308,15 @@ internal sealed partial class LythonRuntime
                     var exitingManager = PopContextManager(_stack, instruction.Span);
                     // Only exceptions are suppressible. Return/break/continue
                     // are normal exits to __exit__ and remain pending afterward.
-                    if (_pendingAbrupt is PendingException { Exception: var exception })
+                    if (_pendingAbrupt is PendingException { Exception: var exception } pendingException &&
+                        (pendingException.CleanupId ?? -1) == instruction.CleanupId)
                     {
                         if (exitingManager.Exit(
                                 ResolvePythonExceptionType(exception, context),
                                 CreatePythonExceptionInstance(exception),
                                 PyNone.Instance))
                         {
-                            _pendingAbrupt = null;
-                            // Suppression completes the cleanup suite: restore
-                            // the active exception saved on entry.
-                            context.Services.SetCurrentException(
-                                _savedActiveExceptions is { Count: > 0 } saves ? saves.Pop().SavedException : null);
+                            RestoreSuppressedCompletion();
                         }
                     }
                     else
@@ -434,7 +450,9 @@ internal sealed partial class LythonRuntime
 
         private bool DeliverJump(PendingJump jump, LythonSourceSpan span)
         {
-            _pendingAbrupt = null;
+            var previous = ReferenceEquals(_pendingAbrupt, jump) ? jump.SavedPendingAbrupt : _pendingAbrupt;
+            jump.SavedPendingAbrupt = PendingCleanupContains(previous, jump.TargetBlock) ? previous : null;
+            _pendingAbrupt = jump.SavedPendingAbrupt;
             if (TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, jump, span, ref _pendingAbrupt, ref _currentBlockIndex, out _)) return true;
             if (jump.DiscardIterator) _stack.RemoveTail(1);
             UnwindAbandonedHandlers(jump.TargetBlock);
@@ -505,6 +523,12 @@ internal sealed partial class LythonRuntime
                     return false;
 
                 case ExecutableOpCode.EndFinally:
+                    if (_pendingAbrupt is not null && (_pendingAbrupt.CleanupId ?? -1) != instruction.CleanupId)
+                    {
+                        // Normal nested cleanup leaves the outer completion pending.
+                        _currentBlockIndex = instruction.TargetBlockIndex;
+                        return true;
+                    }
                     if (_pendingAbrupt is PendingJump pendingJump) return DeliverJump(pendingJump, instruction.Span);
                     if (_pendingAbrupt is PendingException)
                     {
@@ -750,10 +774,7 @@ internal sealed partial class LythonRuntime
                             var installed = routedToHandler ? context.Services.CurrentException : null;
                             context.Services.SetCurrentException(previousActive);
                             UnwindAbandonedHandlers(_currentBlockIndex);
-                            var retainedPending = routedToHandler &&
-                                _savedActiveExceptions is { Count: > 0 } enclosing &&
-                                enclosing.Peek() is { SuiteStartBlockIndex: int start, SuiteEndBlockIndex: int end } &&
-                                _currentBlockIndex >= start && _currentBlockIndex <= end
+                            var retainedPending = PendingCleanupContains(previousPending, _currentBlockIndex)
                                 ? previousPending : null;
                             SavedActiveExceptions().Push(new ActiveExceptionSave(
                                 context.Services.CurrentException,

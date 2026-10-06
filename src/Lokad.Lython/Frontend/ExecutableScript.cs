@@ -147,6 +147,7 @@ internal readonly record struct ExecutableInstruction
         CallSiteIndex,
         CallCacheIndex,
         ExceptionNameIndex,
+        CleanupId,
     }
 
     private readonly record struct Operand(OperandKind Kind, int Value)
@@ -205,6 +206,7 @@ internal readonly record struct ExecutableInstruction
     public int UnpackingTargetIndex => ReadOperand(_primaryOperand, OperandKind.UnpackingTargetIndex);
     public int CallSiteIndex => ReadOperand(_primaryOperand, OperandKind.CallSiteIndex);
     public int CallCacheIndex => ReadOperand(_secondaryOperand, OperandKind.CallCacheIndex);
+    public int CleanupId => ReadOperand(OpCode == ExecutableOpCode.EndFinally ? _secondaryOperand : _primaryOperand, OperandKind.CleanupId);
     public int ExceptionNameIndex => ReadOperand(_primaryOperand, OperandKind.ExceptionNameIndex);
     public ExecutableSliceParts SliceParts => _sliceParts;
     public ExecutableBinaryOperator BinaryOperator => _binaryOperator;
@@ -284,8 +286,8 @@ internal readonly record struct ExecutableInstruction
     public static ExecutableInstruction EnterContextManager(LythonSourceSpan span)
         => Create(ExecutableOpCode.EnterContextManager, span);
 
-    public static ExecutableInstruction ExitContextManager(LythonSourceSpan span)
-        => Create(ExecutableOpCode.ExitContextManager, span);
+    public static ExecutableInstruction ExitContextManager(LythonSourceSpan span, int cleanupId = -1)
+        => CreateIndexed(ExecutableOpCode.ExitContextManager, new Operand(OperandKind.CleanupId, cleanupId), span);
 
     public static ExecutableInstruction MatchCase(int caseIndex, int failBlockIndex, LythonSourceSpan span)
         => CreateIndexed(
@@ -352,8 +354,9 @@ internal readonly record struct ExecutableInstruction
     public static ExecutableInstruction ReraiseException(LythonSourceSpan span)
         => Create(ExecutableOpCode.ReraiseException, span);
 
-    public static ExecutableInstruction EndFinally(int targetBlockIndex, LythonSourceSpan span)
-        => CreateIndexed(ExecutableOpCode.EndFinally, new Operand(OperandKind.BlockIndex, targetBlockIndex), span);
+    public static ExecutableInstruction EndFinally(int targetBlockIndex, LythonSourceSpan span, int cleanupId = -1)
+        => new(ExecutableOpCode.EndFinally, span, new Operand(OperandKind.BlockIndex, targetBlockIndex),
+            new Operand(OperandKind.CleanupId, cleanupId), default, default, default, default);
 
     public static ExecutableInstruction Return(LythonSourceSpan span)
         => Create(ExecutableOpCode.Return, span);
@@ -371,7 +374,7 @@ internal readonly record struct ExecutableInstruction
             ExecutableOpCode.Jump => Jump(targetBlockIndex, Span),
             ExecutableOpCode.JumpIfFalse => JumpIfFalse(targetBlockIndex, Span),
             ExecutableOpCode.ForNext => ForNext(targetBlockIndex, Span),
-            ExecutableOpCode.EndFinally => EndFinally(targetBlockIndex, Span),
+            ExecutableOpCode.EndFinally => EndFinally(targetBlockIndex, Span, CleanupId),
             _ => throw new InvalidOperationException($"Instruction '{OpCode}' has no target block.")
         };
 
@@ -411,7 +414,8 @@ internal sealed record ExecutableExceptionRegion(
     int? FinallyBlockIndex,
     int? SuiteStartBlockIndex,
     int? SuiteEndBlockIndex,
-    bool ExceptionTypesAreTuple = false);
+    bool ExceptionTypesAreTuple = false,
+    int? CleanupId = null);
 
 internal sealed record ExecutableImportBinding(
     string ModuleName,
