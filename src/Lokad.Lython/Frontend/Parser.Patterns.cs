@@ -8,7 +8,7 @@ internal sealed partial class Parser
     private StatementSyntax? ParseMatchStatement()
     {
         var matchToken = ReadToken();
-        var subject = ParseExpression();
+        var subject = ParseExpressionList(restrictUnpackingOperand: true);
         if (subject is null)
         {
             AddDiagnostic("LA1080", "Expected subject expression after 'match'.", matchToken);

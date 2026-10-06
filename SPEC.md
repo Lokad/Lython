@@ -416,7 +416,7 @@ must touch their literals; mixing bytes and text is a compilation error. The
 combined constant remains source-bounded and subject to execution value limits.
 
 Tuple expression lists may omit parentheses in assignment and augmented-assignment values, `return`
-statements, expression statements, and `for` iterable expressions. Their items
+statements, expression statements, `for` iterable expressions, and `match` subjects. Their items
 are evaluated from left to right, a trailing comma produces a one-item tuple,
 and chained assignment evaluates and shares its final tuple value once.
 Standalone expression lists may begin with a starred item; a comma is required
@@ -548,6 +548,11 @@ Their names do not bind keyword arguments; with **kwargs those names become
 overflow keys. The `u`/`U` prefixes produce ordinary Unicode strings, including
 adjacent literal concatenation. `except*` is outside the current subset.
 This handler syntax must produce an explicit unsupported diagnostic before execution.
+
+Match subjects accept unparenthesized tuple expression lists, singleton trailing
+commas and starred unpacking. Operands evaluate once from left to right, with
+unpacking drained before case selection and governed like ordinary tuple displays.
+A starred subject requires a comma; conditional unpacking operands need grouping.
 
 Successful match-pattern captures are bound in the enclosing scope before the
 guard runs. Guard assignment expressions use that same scope, including function

@@ -90,7 +90,7 @@ internal sealed partial class Parser
         return expression;
     }
 
-    private ExpressionSyntax? ParseExpressionList()
+    private ExpressionSyntax? ParseExpressionList(bool restrictUnpackingOperand = false)
     {
         var firstIsUnpacking = CurrentToken == Token.Star;
         var firstUnpackingSpan = default(LythonSourceSpan?);
@@ -99,7 +99,7 @@ internal sealed partial class Parser
             firstUnpackingSpan = SpanOf(ReadToken());
         }
 
-        var first = ParseExpression();
+        var first = firstIsUnpacking && restrictUnpackingOperand ? ParseBitwiseOrExpression() : ParseExpression();
         if (first is null)
         {
             return null;
@@ -139,7 +139,7 @@ internal sealed partial class Parser
                 unpackingSpan = SpanOf(ReadToken());
             }
 
-            var item = ParseExpression();
+            var item = isUnpacking && restrictUnpackingOperand ? ParseBitwiseOrExpression() : ParseExpression();
             if (item is null)
             {
                 AddDiagnostic("LA1004", "Expected expression after ','.", commaToken);
