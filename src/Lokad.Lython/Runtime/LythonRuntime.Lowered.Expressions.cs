@@ -120,7 +120,8 @@ internal sealed partial class LythonRuntime
                 formatted.Parts,
                 context,
                 formatted.Span,
-                expression => ValueTask.FromResult(EvaluateLoweredExpression(expression, context)))
+                expression => ValueTask.FromResult(EvaluateLoweredExpression(expression, context)),
+                asynchronous: false)
             .GetAwaiter()
             .GetResult();
 

@@ -32,12 +32,14 @@ internal sealed partial class LythonRuntime
                     break;
                 case FormattedStringExpressionPartSyntax expression:
                     var fieldValue = EvaluateExpression(expression.Expression, context);
+                    if (expression.Conversion is { } conversion)
+                        fieldValue = FormatInterpolatedStringPart(fieldValue, conversion, null, context, span);
                     var formatSpecifier = expression.FormatSpecifierParts is null
                         ? expression.FormatSpecifier
                         : EvaluateFormattedStringParts(expression.FormatSpecifierParts, context, span).AsString();
                     builder.Append(PyRendering.OwnJoinItem(FormatInterpolatedStringPart(
                         fieldValue,
-                        expression.Conversion,
+                        null,
                         formatSpecifier,
                         context,
                         span), context));
@@ -82,7 +84,8 @@ internal sealed partial class LythonRuntime
         {
             null => null,
             's' => ToInterpolatedPyString(value, context),
-            'r' or 'a' => ToReprPyString(value, context),
+            'r' => ToReprPyString(value, context),
+            'a' => EscapeNonAsciiPyString(ToReprPyString(value, context), context, span),
             _ => throw new LythonRuntimeException("ValueError", $"Unknown conversion specifier '!{conversion}'.", span)
         };
 
@@ -97,6 +100,41 @@ internal sealed partial class LythonRuntime
             context,
             span);
         return PyString.FromString(formatted, context.MemoryGovernor, span);
+    }
+
+    private static PyString EscapeNonAsciiPyString(PyString text, ExecutionContext context, LythonSourceSpan span)
+    {
+        var input = PyRendering.OwnJoinItem(text, context).Utf8Bytes.Span;
+        var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+        const string hex = "0123456789abcdef";
+        try
+        {
+            for (var offset = 0; offset < input.Length;)
+            {
+                Rune.DecodeFromUtf8(input[offset..], out var rune, out var consumed);
+                offset += consumed;
+                var width = rune.Value <= 0x7f ? 1 : rune.Value <= 0xff ? 4 : rune.Value <= 0xffff ? 6 : 10;
+                if (context.Services.Limits.MaxStringLength is { } limit && builder.Length > limit - width)
+                    throw RuntimeErrors.Runtime($"maximum string length exceeded ({limit})", span);
+                if (rune.Value <= 0x7f)
+                {
+                    builder.Append((byte)rune.Value);
+                    continue;
+                }
+                var digits = rune.Value <= 0xff ? 2 : rune.Value <= 0xffff ? 4 : 8;
+                builder.Append((byte)'\\');
+                builder.Append((byte)(digits == 2 ? 'x' : digits == 4 ? 'u' : 'U'));
+                for (var shift = (digits - 1) * 4; shift >= 0; shift -= 4)
+                    builder.Append((byte)hex[(rune.Value >> shift) & 15]);
+            }
+            var result = builder.ToPyStringAndRelease();
+            context.Services.State.CallTemporaries.TrackFreshString(result, span);
+            return result;
+        }
+        finally
+        {
+            builder.Release();
+        }
     }
 
     private static string FormatInterpolatedStringValue(

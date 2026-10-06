@@ -11,7 +11,8 @@ internal sealed record ExecutableFinishTuple : ExecutableOperation;
 internal sealed record ExecutableStartCall(int ArgumentCount, bool DeferSingleStar) : ExecutableOperation;
 internal sealed record ExecutableAppendCall(CallArgumentForm Form) : ExecutableOperation;
 internal sealed record ExecutableFinishCall(LythonSourceSpan TargetSpan) : ExecutableOperation;
-internal sealed record ExecutableFormatField(char? Conversion, string? FormatSpecifier, bool DynamicSpecifier) : ExecutableOperation;
+internal sealed record ExecutableConvertFormattedValue(char Conversion) : ExecutableOperation;
+internal sealed record ExecutableFormatField(string? FormatSpecifier, bool DynamicSpecifier) : ExecutableOperation;
 internal sealed record ExecutableJoinFormattedParts(int Count) : ExecutableOperation;
 internal sealed record ExecutableCreateComprehension(LoweredExpression Expression) : ExecutableOperation;
 
@@ -85,9 +86,11 @@ internal sealed partial class ExecutableScript
                 else if (part is LoweredFormattedStringExpressionPart field)
                 {
                     block = CompileExpression(field.Expression, block);
+                    if (field.Conversion is { } conversion)
+                        EmitOperation(new ExecutableConvertFormattedValue(conversion), span, block);
                     if (field.FormatSpecifierParts is not null)
                         block = CompileFormattedParts(field.FormatSpecifierParts, span, block);
-                    EmitOperation(new ExecutableFormatField(field.Conversion, field.FormatSpecifier, field.FormatSpecifierParts is not null), span, block);
+                    EmitOperation(new ExecutableFormatField(field.FormatSpecifier, field.FormatSpecifierParts is not null), span, block);
                 }
             }
             EmitOperation(new ExecutableJoinFormattedParts(parts.Count), span, block);

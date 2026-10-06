@@ -156,7 +156,8 @@ internal sealed partial class LythonRuntime
                 formatted.Parts,
                 context,
                 formatted.Span,
-                expression => EvaluateLoweredExpressionAsync(expression, context))
+                expression => EvaluateLoweredExpressionAsync(expression, context),
+                asynchronous: true)
             .ConfigureAwait(false);
 
     private static async ValueTask<object> EvaluateLoweredListComprehensionAsync(LoweredListComprehensionExpression comprehension, ExecutionContext context)

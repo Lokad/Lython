@@ -233,8 +233,8 @@ internal sealed partial class LythonRuntime
 
         public void AppendText(string text) => _builder.AppendString(text);
 
-        public void AppendValue(object value, char? conversion, string? formatSpecifier)
-            => _builder.Append(PyRendering.OwnJoinItem(FormatInterpolatedStringPart(value, conversion, formatSpecifier, _context, _span), _context));
+        public void AppendValue(PyString value)
+            => _builder.Append(PyRendering.OwnJoinItem(value, _context));
 
         public PyString Complete()
         {
@@ -251,7 +251,8 @@ internal sealed partial class LythonRuntime
         IReadOnlyList<LoweredFormattedStringPart> parts,
         ExecutionContext context,
         LythonSourceSpan span,
-        LoweredExpressionEvaluator evaluateExpression)
+        LoweredExpressionEvaluator evaluateExpression,
+        bool asynchronous)
     {
         var builder = new LoweredFormattedStringBuilder(context, span);
         foreach (var part in parts)
@@ -263,17 +264,18 @@ internal sealed partial class LythonRuntime
                     break;
                 case LoweredFormattedStringExpressionPart expression:
                     var value = await evaluateExpression(expression.Expression).ConfigureAwait(false);
+                    if (expression.Conversion is { } conversion)
+                        value = await FormatSuspendedFieldAsync(value, conversion, null, context, span, asynchronous).ConfigureAwait(false);
                     var formatSpecifier = expression.FormatSpecifierParts is null
                         ? expression.FormatSpecifier
                         : (await EvaluateLoweredFormattedStringPartsCoreAsync(
                             expression.FormatSpecifierParts,
                             context,
                             span,
-                            evaluateExpression).ConfigureAwait(false)).AsString();
-                    builder.AppendValue(
-                        value,
-                        expression.Conversion,
-                        formatSpecifier);
+                            evaluateExpression,
+                            asynchronous).ConfigureAwait(false)).AsString();
+                    builder.AppendValue(await FormatSuspendedFieldAsync(
+                        value, null, formatSpecifier, context, span, asynchronous).ConfigureAwait(false));
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown lowered formatted string part: {part.GetType().Name}");

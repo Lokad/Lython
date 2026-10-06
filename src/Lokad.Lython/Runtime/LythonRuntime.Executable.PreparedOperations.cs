@@ -106,10 +106,14 @@ internal sealed partial class LythonRuntime
                     using (var accumulator = (CallExpansion.CallArgumentAccumulator)Pop(_stack, span))
                         PushObserved(await accumulator.InvokeAsync(call.TargetSpan, span, asynchronous).ConfigureAwait(false), span);
                     break;
+                case ExecutableConvertFormattedValue conversion:
+                    PushObserved(await FormatSuspendedFieldAsync(Pop(_stack, span), conversion.Conversion,
+                        null, context, span, asynchronous).ConfigureAwait(false), span);
+                    break;
                 case ExecutableFormatField field:
                     var specifier = field.DynamicSpecifier ? ((PyString)Pop(_stack, span)).AsString() : field.FormatSpecifier;
                     var fieldValue = Pop(_stack, span);
-                    PushObserved(await FormatSuspendedFieldAsync(fieldValue, field.Conversion, specifier, context, span, asynchronous).ConfigureAwait(false), span);
+                    PushObserved(await FormatSuspendedFieldAsync(fieldValue, null, specifier, context, span, asynchronous).ConfigureAwait(false), span);
                     break;
                 case ExecutableJoinFormattedParts join:
                     var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
@@ -189,7 +193,7 @@ internal sealed partial class LythonRuntime
                     : InvokeCallableTarget(hook.Value, span, span, context, () => arguments);
                 if (rendered is not PyString text) throw RuntimeErrors.Type(hookName + " returned non-string", span);
                 if (conversion is null) return text;
-                value = text;
+                value = conversion == 'a' ? EscapeNonAsciiPyString(text, context, span) : text;
                 conversion = null;
             }
         }

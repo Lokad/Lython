@@ -1,4 +1,6 @@
 using System.Numerics;
+using System.Reflection;
+using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
@@ -7,6 +9,17 @@ namespace Lokad.Lython.Tests;
 
 public sealed class RenderingSubsystemTests
 {
+    [Fact]
+    public void RawFormattedAsciiConversionMatchesCompiledExecution()
+    {
+        var frontend = LythonFrontend.Compile("f\"{chr(233)!a:>8}\"");
+        var expression = Assert.IsType<ExpressionStatementSyntax>(Assert.Single(frontend.Script!.Statements)).Expression;
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), null);
+        var method = typeof(LythonRuntime).GetMethod("EvaluateExpression", BindingFlags.NonPublic | BindingFlags.Static)!;
+        var text = Assert.IsType<PyString>(method.Invoke(null, [expression, context]));
+        Assert.Equal("  '\\xe9'", text.AsString());
+    }
+
     [Fact]
     public void RuntimeRendering_SeparatesPythonAndInterpolatedRendering()
     {

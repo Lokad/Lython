@@ -443,6 +443,11 @@ Bytes literals and formatted string literals are supported. Formatted strings
 support conversions, format specifications, nested replacement fields inside a
 format specification, and debug expressions within the implemented expression
 subset.
+`!a` applies Python's ASCII-escaped representation (`\\x`, `\\u` and `\\U`),
+including user `__repr__` results, before applying the format specifier. Field
+values and their `!s`/`!r`/`!a` conversions precede evaluation of dynamic
+specifiers; user hooks await delayed effects in RunAsync. Escaped output and
+intermediate conversions remain governed by string and execution-memory limits.
 
 Replacement expressions are implicitly grouped: physical newlines and comments
 are accepted in single-, triple- and raw-prefixed f-strings. Comment punctuation
