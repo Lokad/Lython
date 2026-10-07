@@ -4,6 +4,10 @@
 
 ## 0.10.0 - release candidate
 
+- Preserve optional XML-reader attributes when loading XLSX declarations, and make CSV readers their own iterators across ordinary iteration and direct next calls.
+- Resolve dataclass helper diagnostics through callable bindings; honor dictionary membership guards and mutable aliases; accept slice assignment when sequence facts are unknown, including direct os.walk pruning.
+- Encode Counter/defaultdict through their governed mappings, support regex match subscripts and Python index selectors, and keep oversized group indices catchable as IndexError.
+- Document the embedder-supplied complete argv contract and extend the exact-package consumer with delayed host acquisition, file publication and final-byte checks.
 - Reject keyword collisions introduced by `**` during argument expansion, including dictionary and Counter constructors; reserve expansion scratch before allocation.
 - Add `json.JSONDecoder`/`JSONEncoder` instances, `raw_decode`, incremental `iterencode`, guest subclass overrides and the `cls` customization path.
 - Sort original JSON dictionary keys before applying `skipkeys`, sharing the order between eager and incremental encoders.

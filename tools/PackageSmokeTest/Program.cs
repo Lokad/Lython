@@ -1,4 +1,5 @@
 using Lokad.Lython;
+using System.Text;
 
 var expectedVersion = args.Single();
 if (typeof(LythonEngine).Assembly.GetName().Version?.ToString(3) != expectedVersion)
@@ -22,13 +23,85 @@ foreach (var result in new[] { compiled.Run(new PureHost()), await compiled.RunA
 }
 Console.WriteLine("Package consumer passed: " + expectedVersion);
 
-sealed class PureHost : ILythonHost
+const string compatibilitySource = """
+    import csv; import json; import re
+    from collections import Counter, defaultdict
+    def field(k, v):
+        return k + v
+    def asdict(value):
+        return value
+    print(field('a', 'b'), asdict(3))
+    reader = csv.reader(['a,b', '1,2'])
+    print(iter(reader) is reader, next(reader), list(reader), next(reader, 'empty'))
+    d = {}
+    key = (1, 2)
+    assert key not in d or d[key] == 3
+    d[key] = 3
+    print(d[key])
+    totals = defaultdict(Counter)
+    totals['sample']['x'] += 2
+    print(json.dumps(totals, sort_keys=True))
+    match = re.search(r'(?P<first>a)(?P<tail>b)?', 'a')
+    print(match[0], match['first'], match[2])
+    try:
+        match.group(10**100)
+    except IndexError:
+        print('IndexError')
+    def generate():
+        yield from (n for n in range(4) if n > 0 if n < 3)
+    print(list(generate()))
+    """;
+var compatibility = engine.Compile(compatibilitySource);
+if (!compatibility.IsValid)
+    throw new Exception(string.Join("; ", compatibility.Diagnostics.Select(d => d.Message)));
+const string compatibilityOutput = "ab 3\nTrue ['a', 'b'] [['1', '2']] empty\n3\n{\"sample\": {\"x\": 2}}\na a None\nIndexError\n[1, 2]\n";
+foreach (var result in new[] { compatibility.Run(new PureHost()), await compatibility.RunAsync(new PureHost()) })
+    RequireOutput(result, compatibilityOutput);
+
+const string fileSource = """
+    import json
+    with open('/input.json') as source:
+        data = json.load(source)
+    with open('/output.json', 'w') as destination:
+        json.dump(data, destination, ensure_ascii=False, sort_keys=True)
+    pending = open('/pending.txt', 'w')
+    pending.write('final 😀 bytes\n')
+    print(data['value'])
+    """;
+var files = engine.Compile(fileSource);
+if (!files.IsValid)
+    throw new Exception(string.Join("; ", files.Diagnostics.Select(d => d.Message)));
+var syncHost = new MemoryHost(delayed: false);
+RequireOutput(files.Run(syncHost), "3\n");
+syncHost.VerifyFiles();
+
+var delayedHost = new MemoryHost(delayed: true);
+using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+var pendingRun = files.RunAsync(delayedHost, new LythonRunOptions { CancellationToken = timeout.Token });
+await delayedHost.ReadStarted.Task.WaitAsync(timeout.Token);
+if (pendingRun.IsCompleted) throw new Exception("RunAsync did not await the paused host read.");
+delayedHost.ReleaseRead.TrySetResult();
+await delayedHost.WriteStarted.Task.WaitAsync(timeout.Token);
+if (pendingRun.IsCompleted) throw new Exception("RunAsync did not await file publication.");
+delayedHost.ReleaseWrite.TrySetResult();
+RequireOutput(await pendingRun.WaitAsync(timeout.Token), "3\n");
+delayedHost.VerifyFiles();
+if (delayedHost.SuspendedOperations < 2) throw new Exception("Delayed consumer did not suspend.");
+Console.WriteLine("Package compatibility and mediated file consumer passed.");
+
+static void RequireOutput(LythonExecutionResult result, string expected)
+{
+    if (!result.Success || result.StandardOutput != expected)
+        throw new Exception("Package consumer failed: " + result.Failure?.Message + " Output: " + result.StandardOutput);
+}
+
+class PureHost : ILythonHost
 {
     public string Cwd => "/";
     public DateTimeOffset LocalNow => DateTimeOffset.UnixEpoch;
     public DateTimeOffset UtcNow => DateTimeOffset.UnixEpoch;
-    public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken) => throw new NotSupportedException();
-    public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken) => throw new NotSupportedException();
+    public virtual ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken) => throw new NotSupportedException();
+    public virtual ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken) => throw new NotSupportedException();
     public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken) => throw new NotSupportedException();
     public ValueTask<bool> ExistsAsync(string path, CancellationToken cancellationToken) => ValueTask.FromResult(false);
     public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken cancellationToken) => throw new NotSupportedException();
@@ -36,5 +109,66 @@ sealed class PureHost : ILythonHost
     public ValueTask RemoveAsync(string path, CancellationToken cancellationToken) => throw new NotSupportedException();
     public ValueTask CopyAsync(string source, string destination, CancellationToken cancellationToken) => throw new NotSupportedException();
     public ValueTask MoveAsync(string source, string destination, CancellationToken cancellationToken) => throw new NotSupportedException();
-    public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken) => ValueTask.FromResult(new LythonPathStat(LythonPathKind.Missing, 0, null));
+    public virtual ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken) => ValueTask.FromResult(new LythonPathStat(LythonPathKind.Missing, 0, null));
+}
+
+sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronousHostCapability
+{
+    public bool CompletesSynchronously => !delayed;
+    private readonly Dictionary<string, byte[]> _files = new(StringComparer.Ordinal)
+    {
+        ["/input.json"] = Encoding.UTF8.GetBytes("{\"value\": 3, \"name\": \"é\"}")
+    };
+    public TaskCompletionSource ReadStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public TaskCompletionSource WriteStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public TaskCompletionSource ReleaseRead { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public TaskCompletionSource ReleaseWrite { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public int SuspendedOperations { get; private set; }
+
+    public override async ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (delayed && !ReleaseRead.Task.IsCompleted)
+        {
+            ReadStarted.TrySetResult();
+            await ReleaseRead.Task.WaitAsync(cancellationToken);
+            SuspendedOperations++;
+        }
+        return _files[path];
+    }
+
+    public override async ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (delayed && !ReleaseWrite.Task.IsCompleted)
+        {
+            WriteStarted.TrySetResult();
+            await ReleaseWrite.Task.WaitAsync(cancellationToken);
+            SuspendedOperations++;
+        }
+        _files[path] = utf8.ToArray();
+    }
+
+    public ValueTask<ReadOnlyMemory<byte>> ReadBytesAsync(string path, CancellationToken cancellationToken)
+        => ReadTextUtf8Async(path, cancellationToken);
+    public ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
+        => WriteTextUtf8Async(path, bytes, cancellationToken);
+
+    public override ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var stat = path == "/"
+            ? new LythonPathStat(LythonPathKind.Directory, 0, null)
+            : _files.TryGetValue(path, out var bytes)
+                ? new LythonPathStat(LythonPathKind.File, bytes.Length, null)
+                : new LythonPathStat(LythonPathKind.Missing, 0, null);
+        return ValueTask.FromResult(stat);
+    }
+
+    public void VerifyFiles()
+    {
+        if (!_files["/output.json"].AsSpan().SequenceEqual("{\"name\": \"é\", \"value\": 3}"u8)
+            || !_files["/pending.txt"].AsSpan().SequenceEqual("final 😀 bytes\n"u8))
+            throw new Exception("Package file publication produced incorrect bytes.");
+    }
 }
