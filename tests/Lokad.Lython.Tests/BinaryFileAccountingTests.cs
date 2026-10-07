@@ -8,6 +8,22 @@ public sealed class BinaryFileAccountingTests
 {
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
 
+    [Fact]
+    public async Task EmptyFilesUseSmallGovernedWindows()
+    {
+        var host = new MockLythonHost();
+        host.SeedBytes("/blob", []);
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 1024 });
+        var handle = await LythonRuntime.ExecutionContext.BinaryFileHandle.OpenAsync("/blob", LythonRuntime.TextFileOperation.Read,
+            context, Span, false);
+        Assert.True(handle.TryGetMember("read", out var method));
+        var result = Assert.IsType<PyBytes>(Assert.IsAssignableFrom<LythonRuntime.ICallable>(method).Invoke([], Span, context));
+        Assert.Equal(0, result.Length);
+        Assert.True(context.MemoryGovernor.PeakCommittedBytes <= 1024);
+        handle.Exit();
+        Assert.Equal(LythonRuntime.ExecutionContext.BinaryFileHandle.ShellBytes, handle.OwnedBytes);
+    }
+
     [Theory]
     [InlineData(200)]
     [InlineData(400)]

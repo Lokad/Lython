@@ -10,7 +10,9 @@ internal sealed partial class LythonRuntime
         internal sealed partial class BinaryFileHandle : IPyAsyncContextManager, IPyIteratorValue,
             IPyAsyncIteratorValue, IPyDynamicAttributes, IPyOwnershipSnapshot, IExecutionFileWriter
         {
-            internal const long ShellBytes = 128;
+            // Covers the handle, its builder and retained array headers beside
+            // payload capacities, which have separate governed charges.
+            internal const long ShellBytes = 256;
             internal const int DefaultWindowBytes = 16 * 1024;
             private readonly ExecutionContext _context;
             private readonly TextFileOperation _operation;
@@ -33,9 +35,9 @@ internal sealed partial class LythonRuntime
                 _context = context;
                 _windowBytes = windowBytes;
                 _position = position;
-                _writeBuffer = new GovernedByteBuilder(context.MemoryGovernor, span);
                 context.MemoryGovernor.Reserve(ShellBytes, span);
                 context.MemoryGovernor.Commit(ShellBytes);
+                _writeBuffer = new GovernedByteBuilder(context.MemoryGovernor, span);
             }
 
             public string Path { get; }
@@ -58,7 +60,7 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("FileNotFoundError", "No such file: " + path, span);
                 if (operation == TextFileOperation.Read && context.Limits.MaxHostReadBytes is { } maximum && stat.Size > maximum)
                     throw RuntimeErrors.Runtime($"host binary read exceeded maximum bytes ({maximum})", span);
-                var window = stat.Size > 0 && stat.Size < DefaultWindowBytes
+                var window = stat.Size < DefaultWindowBytes
                     ? Math.Max(256, (int)stat.Size) : DefaultWindowBytes;
                 var handle = new BinaryFileHandle(path, operation, context, window,
                     operation == TextFileOperation.Append && stat.Exists ? stat.Size : BigInteger.Zero, span);
