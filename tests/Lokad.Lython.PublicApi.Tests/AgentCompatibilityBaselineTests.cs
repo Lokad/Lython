@@ -195,10 +195,10 @@ Path("/repo/input.txt").read_text(errors="surrogateescape")
     [InlineData(
         """
 from pathlib import Path
-Path("/repo/input.bin").read_bytes()
+Path("/repo/input.bin").read_bytes(1)
 """,
-        "LA3047",
-        "is not supported by Lython")]
+        "LA3114",
+        "expects no arguments")]
     [InlineData(
         """
 from pathlib import Path

@@ -63,17 +63,6 @@ internal static class StaticTextIoContractFamily
             return true;
         }
 
-        if (member.MemberName is "write_bytes" or "read_bytes" &&
-            StaticAbstractValueResolver.TryResolveKnownPath(member.Target, bindings))
-        {
-            AddDiagnostic(
-                diagnostics,
-                "LA3047",
-                $"Path.{member.MemberName}(...) is not supported by Lython.",
-                member.Span);
-            return true;
-        }
-
         return false;
     }
 

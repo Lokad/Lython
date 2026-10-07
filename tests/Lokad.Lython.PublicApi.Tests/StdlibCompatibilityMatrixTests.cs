@@ -710,10 +710,10 @@ parser.parse_args(["--lang", 1])
     [InlineData(
         """
 from pathlib import Path
-Path("/repo/out.bin").write_bytes(b"abc")
+Path("/repo/out.bin").write_bytes("abc")
 """,
-        "compile",
-        "is not supported by Lython")]
+        "TypeError",
+        "bytes-like")]
     [InlineData(
         """
 from pathlib import Path

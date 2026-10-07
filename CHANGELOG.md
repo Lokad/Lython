@@ -4,6 +4,7 @@
 
 ## 0.10.0 - release candidate
 
+- Add governed Path.read_bytes/write_bytes through optional host binary methods, with owned read copies, staged publication, byte counts, limits and asynchronous cancellation.
 - Apply Python's conditional Greek final-sigma lowercasing with Unicode 15.1 cased/ignorable context, bounded scans and governed scratch.
 - Release lower/upper casing scratch when conversion is denied, and scan UTF-8 directly with execution budget checks.
 - Add governed structured URL parsing and reassembly, text/byte tuple results, authority properties, lazy port validation, field replacement, codec conversion and a bounded per-execution split cache with guest hash/equality protocols.

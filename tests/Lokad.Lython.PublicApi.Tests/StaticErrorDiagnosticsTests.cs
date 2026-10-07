@@ -213,7 +213,7 @@ Path("/repo/in.bin").read_bytes()
 
         Assert.False(compiled.IsValid);
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3046");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3047");
+        Assert.DoesNotContain(compiled.Diagnostics, d => d.Code == "LA3047");
     }
 
     [Fact]
@@ -324,7 +324,7 @@ same_path.write_bytes(b"abc")
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3061");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3049");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3046");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3047");
+        Assert.DoesNotContain(compiled.Diagnostics, d => d.Code == "LA3047");
     }
 
     [Fact]
@@ -628,7 +628,7 @@ with open("/repo/input.txt", "r") as reader:
 
         Assert.False(compiled.IsValid);
         Assert.Equal(3, compiled.Diagnostics.Count(d => d.Code == "LA3113"));
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3047");
+        Assert.DoesNotContain(compiled.Diagnostics, d => d.Code == "LA3047");
     }
 
     [Fact]
@@ -2023,7 +2023,7 @@ __lython_file.close()
         Assert.False(result.Success);
         Assert.Null(result.Failure);
         Assert.Contains(result.Diagnostics, d => d.Code == "LA3111");
-        Assert.Contains(result.Diagnostics, d => d.Code == "LA3047");
+        Assert.DoesNotContain(result.Diagnostics, d => d.Code == "LA3047");
         Assert.False(host.Stat("/repo/created.txt").Exists);
     }
 

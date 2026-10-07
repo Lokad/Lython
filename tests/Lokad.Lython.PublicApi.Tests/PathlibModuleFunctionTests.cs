@@ -247,10 +247,6 @@ try:
 except NotImplementedError as ex:
     vals.append(ex.type)
 try:
-    Path("docs/a.md").read_bytes()
-except NotImplementedError as ex:
-    vals.append(ex.type)
-try:
     Path("docs/a.md").readlink()
 except NotImplementedError as ex:
     vals.append(ex.type)
@@ -274,7 +270,7 @@ __lython_file.close()
             host);
 
         Assert.True(result.Success, result.Failure?.Message ?? string.Join(" | ", result.Diagnostics.Select(d => d.Message)));
-        Assert.Equal("['a.md']|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError", host.ReadText("/out.txt"));
+        Assert.Equal("['a.md']|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError|NotImplementedError", host.ReadText("/out.txt"));
     }
 
     [Fact]

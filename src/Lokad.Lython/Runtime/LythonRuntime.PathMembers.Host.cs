@@ -304,8 +304,6 @@ internal sealed partial class LythonRuntime
         private sealed class UnsupportedHostPathMemberProvider : IPathMemberProvider
         {
             // N17: hot fixed signatures hoisted per family.
-            private static readonly LythonCallableSignature PathReadBytesSignature = LythonCallableSignature.Create("Path.read_bytes");
-            private static readonly LythonCallableSignature PathWriteBytesSignature = LythonCallableSignature.Create("Path.write_bytes");
             private static readonly LythonCallableSignature PathReadlinkSignature = LythonCallableSignature.Create("Path.readlink");
             private static readonly LythonCallableSignature PathSymlinkToSignature = LythonCallableSignature.Create("Path.symlink_to");
             private static readonly LythonCallableSignature PathHardlinkToSignature = LythonCallableSignature.Create("Path.hardlink_to");
@@ -319,8 +317,6 @@ internal sealed partial class LythonRuntime
                 _ = path;
                 value = name switch
                 {
-                    "read_bytes" => UnsupportedPathMember(PathReadBytesSignature, "Path.read_bytes() is not supported by Lython under the text-only host boundary."),
-                    "write_bytes" => UnsupportedPathMember(PathWriteBytesSignature, "Path.write_bytes(data) is not supported by Lython under the text-only host boundary."),
                     "readlink" => UnsupportedPathMember(PathReadlinkSignature, "Path.readlink() is not supported by Lython because symlink targets are not exposed by the host path model."),
                     "symlink_to" => UnsupportedPathMember(PathSymlinkToSignature, "Path.symlink_to(target, target_is_directory=False) is not supported by Lython because symlink mutation is outside the host path model."),
                     "hardlink_to" => UnsupportedPathMember(PathHardlinkToSignature, "Path.hardlink_to(target) is not supported by Lython because hardlink mutation is outside the host path model."),
@@ -340,6 +336,8 @@ internal sealed partial class LythonRuntime
             private static readonly LythonCallableSignature PathGlobSignature = LythonCallableSignature.Create("Path.glob", ["pattern", "case_sensitive", "recurse_symlinks"], 1);
             private static readonly LythonCallableSignature PathReadTextSignature = LythonCallableSignature.Create("Path.read_text", ["encoding", "errors", "newline"], 0);
             private static readonly LythonCallableSignature PathWriteTextSignature = LythonCallableSignature.Create("Path.write_text", ["text", "encoding", "errors", "newline"], 1);
+            private static readonly LythonCallableSignature PathReadBytesSignature = LythonCallableSignature.Create("Path.read_bytes", []);
+            private static readonly LythonCallableSignature PathWriteBytesSignature = LythonCallableSignature.Create("Path.write_bytes", ["data"], 1);
             private static readonly LythonCallableSignature PathRglobSignature = LythonCallableSignature.Create("Path.rglob", ["pattern", "case_sensitive", "recurse_symlinks"], 1);
             private static readonly LythonCallableSignature PathSamefileSignature = LythonCallableSignature.Create("Path.samefile", ["other_path"]);
             public static readonly HostContentPathMemberProvider Instance = new();
@@ -348,6 +346,14 @@ internal sealed partial class LythonRuntime
             {
                 value = name switch
                 {
+                    "read_bytes" => BoundCallable.Create(
+                        (arguments, span, context) => ReadPathBytesAsync(path.Value.AsString(), span, context, false).GetAwaiter().GetResult(),
+                        PathReadBytesSignature,
+                        (arguments, span, context) => ReadPathBytesAsync(path.Value.AsString(), span, context, true)),
+                    "write_bytes" => BoundCallable.Create(
+                        (arguments, span, context) => WritePathBytesAsync(path.Value.AsString(), arguments[0], span, context, false).GetAwaiter().GetResult(),
+                        PathWriteBytesSignature,
+                        (arguments, span, context) => WritePathBytesAsync(path.Value.AsString(), arguments[0], span, context, true)),
                     "open" => new PathOpenCallable(path.Value.AsString()),
                     "glob" => BoundCallable.Create((arguments, span, context) =>
                     {

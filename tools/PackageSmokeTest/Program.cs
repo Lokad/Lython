@@ -186,6 +186,13 @@ if (!urlCache.IsValid)
 foreach (var result in new[] { urlCache.Run(new PureHost()), await urlCache.RunAsync(new PureHost()) })
     RequireOutput(result, "hash\nbool\nhash\nTrue ('http', 'x', '/package-cache#f', '', '')\nFalse\n");
 
+const string pathByteSource = "from pathlib import Path\np=Path('byte-output.bin')\nprint(p.write_bytes(data=bytes([0,255,10])))\nvalue=p.read_bytes()\nprint(repr(value),len(value),value[1],type(value) is bytes)\nprint(p.write_bytes(b''),repr(p.read_bytes()))\n";
+var pathBytes = engine.Compile(pathByteSource);
+if (!pathBytes.IsValid)
+    throw new Exception(string.Join("; ", pathBytes.Diagnostics.Select(d => d.Message)));
+foreach (var result in new[] { pathBytes.Run(new MemoryHost(delayed: false)), await pathBytes.RunAsync(new MemoryHost(delayed: true)) })
+    RequireOutput(result, "3\nb'\\x00\\xff\\n' 3 255 True\n0 b''\n");
+
 const string fileSource = """
     import json
     with open('/input.json') as source:

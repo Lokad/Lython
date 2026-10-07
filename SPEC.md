@@ -2396,10 +2396,21 @@ This bytes value model exists for ordinary Python value compatibility and for
 contained modules that need binary package payloads, such as OpenXML workbook
 support. It does not make the host boundary binary-shaped by default.
 
-Public text APIs remain text-shaped. `open(...)` binary modes,
-`Path.read_bytes()`, `Path.write_bytes(...)`, and path-byte helper APIs are
-outside the supported public scripting surface unless the host/file API
-contract is explicitly expanded.
+Public text APIs remain text-shaped. `Path.read_bytes()` and
+`Path.write_bytes(data)` use the host's optional binary methods, which reject
+acquisition/publication explicitly when unavailable. read_bytes returns an
+independently owned immutable bytes value; write_bytes accepts bytes and returns
+the number of bytes written. data may be supplied by keyword. Byte helpers
+perform no codec or newline translation and use contained host paths.
+
+Whole-file reads stat before acquisition, preflight host/read and execution
+memory limits, and check actual payload length after acquisition. The host
+buffer and returned copy are governed while both are live. Writes pass a fresh
+staging buffer to the host, hold its charge until publication completes, and
+release staging on success, failure or cancellation. Wrong write types fail
+before any host effect. RunAsync awaits mediated reads/writes and supports
+cancellation while either is pending. Sequential binary open modes remain
+outside the supported inventory.
 
 ---
 
