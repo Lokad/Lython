@@ -51,7 +51,7 @@ internal sealed partial class LythonRuntime
 
     private static object Open(BoundOpenArguments arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var (path, operation, encodingMode, errors, newline, binary) = ParseOpenArguments(arguments, span, context);
+        var (path, operation, encodingMode, errors, newline, binary) = ParseOpenArgumentsAsync(arguments, span, context, false).GetAwaiter().GetResult();
         if (binary) return ExecutionContext.BinaryFileHandle.OpenAsync(path.AsString(), operation, context, span, false).GetAwaiter().GetResult();
         return operation switch
         {
@@ -64,7 +64,7 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> OpenAsync(BoundOpenArguments arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        var (path, operation, encodingMode, errors, newline, binary) = ParseOpenArguments(arguments, span, context);
+        var (path, operation, encodingMode, errors, newline, binary) = await ParseOpenArgumentsAsync(arguments, span, context, true).ConfigureAwait(false);
         if (binary) return await ExecutionContext.BinaryFileHandle.OpenAsync(path.AsString(), operation, context, span, true).ConfigureAwait(false);
         return operation switch
         {
@@ -75,7 +75,7 @@ internal sealed partial class LythonRuntime
         };
     }
 
-    private static TextOpenArguments ParseOpenArguments(BoundOpenArguments boundArguments, LythonSourceSpan span, ExecutionContext context)
+    private static async ValueTask<TextOpenArguments> ParseOpenArgumentsAsync(BoundOpenArguments boundArguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
     {
         var arguments = boundArguments.Values;
         if (boundArguments.Count is < 1 or > 8)
@@ -94,9 +94,9 @@ internal sealed partial class LythonRuntime
             : PyString.FromString("r");
 
         var (operation, binary) = ParseFileOpenMode(mode, "open()", span);
-        if (binary) ValidateBinaryOpenOptions(arguments, 2, "open()", span);
+        if (binary) await ValidateBinaryOpenOptionsAsync(boundArguments, 2, "open()", span, context, asynchronous).ConfigureAwait(false);
 
-        if (boundArguments.Count >= 3)
+        if (!binary && boundArguments.Count >= 3)
         {
             ValidateTextBuffering(arguments[2], "open()", span);
         }

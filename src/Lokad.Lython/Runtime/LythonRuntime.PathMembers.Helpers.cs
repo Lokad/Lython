@@ -311,7 +311,7 @@ internal sealed partial class LythonRuntime
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecutionBudget(span);
-                var (operation, encodingMode, errors, newline, binary) = ParsePathOpenArguments(BindArguments(arguments, span), span);
+                var (operation, encodingMode, errors, newline, binary) = ParsePathOpenArgumentsAsync(BindArguments(arguments, span), span, context, false).GetAwaiter().GetResult();
                 if (binary) return ExecutionContext.BinaryFileHandle.OpenAsync(path, operation, context, span, false).GetAwaiter().GetResult();
                 return OpenTextFile(path, operation, encodingMode, errors, newline, context);
             }
@@ -319,7 +319,7 @@ internal sealed partial class LythonRuntime
             public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecutionBudget(span);
-                var (operation, encodingMode, errors, newline, binary) = ParsePathOpenArguments(BindArguments(arguments, span), span);
+                var (operation, encodingMode, errors, newline, binary) = await ParsePathOpenArgumentsAsync(BindArguments(arguments, span), span, context, true).ConfigureAwait(false);
                 if (binary) return await ExecutionContext.BinaryFileHandle.OpenAsync(path, operation, context, span, true).ConfigureAwait(false);
                 return operation switch
                 {
@@ -351,7 +351,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static PathOpenOptions ParsePathOpenArguments(BoundOpenArguments boundArguments, LythonSourceSpan span)
+        private static async ValueTask<PathOpenOptions> ParsePathOpenArgumentsAsync(BoundOpenArguments boundArguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
             var arguments = boundArguments.Values;
             if (boundArguments.Count > 5)
@@ -368,9 +368,9 @@ internal sealed partial class LythonRuntime
                 : PyString.FromString("r");
 
             var (operation, binary) = ParseFileOpenMode(mode, "Path.open()", span);
-            if (binary) ValidateBinaryOpenOptions(arguments, 1, "Path.open()", span);
+            if (binary) await ValidateBinaryOpenOptionsAsync(boundArguments, 1, "Path.open()", span, context, asynchronous).ConfigureAwait(false);
 
-            if (boundArguments.Count >= 2)
+            if (!binary && boundArguments.Count >= 2)
             {
                 ValidateTextBuffering(arguments[1], "Path.open()", span);
             }

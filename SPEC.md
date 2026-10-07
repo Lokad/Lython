@@ -1158,7 +1158,10 @@ Python-shaped `open(...)` and `pathlib.Path.open(...)` support text handles
 for the same UTF-8, Latin-1 and ASCII codecs and sequential binary handles in
 `rb`, `wb`, `ab` modes (also `br`, `bw`, `ba`). Signatures include `buffering`,
 `encoding`, `errors`, and `newline`; binary mode accepts only None for the three
-text options. `closefd=False`, custom `opener`, descriptors, updating modes and
+text options and checks their types before rejecting non-None values. Explicit
+buffering accepts integers or type-level `__index__` results in the signed
+32-bit range; None raises TypeError and overflow raises OverflowError.
+`closefd=False`, custom `opener`, descriptors, updating modes and
 unbuffered binary handles (`buffering=0`) remain explicitly unsupported.
 Text handles expose `name`, `mode`, `encoding`, `errors`, `closed`,
 `readable()`, `writable()`, `seekable()`, `tell()`, sized
