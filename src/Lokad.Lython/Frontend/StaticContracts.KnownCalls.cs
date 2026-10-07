@@ -372,6 +372,7 @@ internal static partial class StaticContracts
         new(LythonKnownCallableSignatures.FnMatch, "LA3151", "fnmatch.fnmatch(name, pattern) expects two arguments.", StaticReturnShape.Boolean),
         new(LythonKnownCallableSignatures.TextwrapDedent, "LA3151", "textwrap.dedent(text) expects one argument.", StaticReturnShape.String),
         new(LythonKnownCallableSignatures.TextwrapIndent, "LA3151", "textwrap.indent(text, prefix, predicate=None) expects two to three arguments.", StaticReturnShape.String),
+        new(LythonKnownCallableSignatures.HtmlEscape, "LA3151", "html.escape(s, quote=True) expects one to two arguments.", StaticReturnShape.Unknown),
         new(LythonKnownCallableSignatures.FnMatchCase, "LA3151", "fnmatch.fnmatchcase(name, pattern) expects two arguments.", StaticReturnShape.Boolean),
         new(LythonKnownCallableSignatures.FnMatchFilter, "LA3151", "fnmatch.filter(names, pattern) expects two arguments.", StaticReturnShape.ListOfString),
         new(LythonKnownCallableSignatures.FnMatchTranslate, "LA3151", "fnmatch.translate(pattern) expects one argument.", StaticReturnShape.String),

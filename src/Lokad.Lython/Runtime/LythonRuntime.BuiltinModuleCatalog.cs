@@ -73,6 +73,7 @@ internal sealed partial class LythonRuntime
                 ["difflib"] = Module(static _ => DifflibModule.Instance),
                 ["io"] = Module(static _ => IoModule.Instance),
                 ["textwrap"] = Module(static _ => TextwrapModule.Instance),
+                ["html"] = Module(static _ => HtmlModule.Instance),
                 ["json"] = Module(static _ => JsonModule.Instance),
                 ["csv"] = Module(static _ => CsvModule.Instance),
                 ["subprocess"] = Module(static _ => SubprocessModule.Instance, BuiltinModuleCapability.Subprocess),

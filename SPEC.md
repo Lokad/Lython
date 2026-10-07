@@ -1873,6 +1873,20 @@ guest failure and cancellation stop before later callbacks or line pulls and
 release scratch; abandoned output strings are reclaimed. RunAsync awaits
 guest member lookup, line sources, predicates, whitespace hooks and truth hooks.
 
+### 11.19 HTML Text Helpers
+
+`html` exposes `escape(s, quote=True)`. It replaces ampersands before angle
+brackets, and optionally double quotes/apostrophes with `&quot;`/`&#x27;`.
+Unicode is preserved, existing entities are escaped again and unchanged strings
+may retain identity. Native string processing uses governed UTF-8 output and
+scalar-string limits without guest collection storage.
+
+Guest objects follow ordinary chained replace calls in Python order, with
+quote truth testing after the first three replacements. RunAsync awaits member
+lookup, replacement and truth effects. Errors, resource denial and cancellation
+stop later effects; temporary buffers and abandoned results are reclaimed.
+Entity decoding and parser submodules are outside this initial inventory.
+
 ---
 
 ## 12. Host Capability Interface

@@ -147,6 +147,7 @@ The builtin module surface is explicitly allowlisted:
 - `glob`
 - `gzip`
 - `hashlib`
+- `html` (`escape`)
 - `importlib`
 - `itertools`
 - `io` for governed `StringIO` text buffers, `BytesIO` byte buffers and seek constants
@@ -183,6 +184,10 @@ IO base classes, descriptors, exported buffers and subclassing remain deferred.
 whitespace-only lines. `textwrap.indent` preserves Python line endings and
 accepts guest predicates, including delayed effects under `RunAsync`.
 See [SPEC](SPEC.md#1118-small-text-helpers) for the bounded helper inventory.
+
+`html.escape` replaces ampersands, angle brackets and optionally quotes with
+Python's HTML escapes, with governed output and ordinary guest replace/truth
+protocols. See [SPEC](SPEC.md#1119-html-text-helpers) for its inventory.
 
 `pkgutil` follows the same contained model: it discovers builtins and explicitly allowed host-backed `.py` files or package directories, and it does not expose ambient importers or binary resource reads.
 
