@@ -200,7 +200,7 @@ internal sealed partial class LythonRuntime
             return best?.Callable ?? _defaultCallable;
         }
 
-        public ICallable ResolveForType(object typeSpec, LythonSourceSpan span)
+        public ICallable ResolveForType(object typeSpec, LythonSourceSpan span, ExecutionContext context)
         {
             if (!IsSupportedTypeSpecifier(typeSpec))
             {
@@ -212,7 +212,7 @@ internal sealed partial class LythonRuntime
             for (var i = _registrations.Count - 1; i >= 0; i--)
             {
                 var registration = _registrations[i];
-                if (IsSubclassAgainstSingleType(typeSpec, registration.TypeSpec))
+                if (IsSubclassAgainstSingleType(typeSpec, registration.TypeSpec, context))
                 {
                     var distance = GetDispatchTypeDistance(typeSpec, registration.TypeSpec);
                     if (distance < bestDistance)
@@ -436,7 +436,7 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("TypeError", "singledispatch.dispatch(cls) expects one class/type argument.", span);
                 }
 
-                return _owner.ResolveForType(arguments[0].Value, span);
+                return _owner.ResolveForType(arguments[0].Value, span, context);
             }
 
             public PyString RenderPython(PyRenderingContext context)

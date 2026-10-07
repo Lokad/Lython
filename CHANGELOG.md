@@ -4,6 +4,7 @@
 
 ## 0.10.0 - release candidate
 
+- Resolve implicit builtin class identities from the canonical per-run table, preserving type checks, exception roots and singledispatch when guest names shadow object/type or primitive types.
 - Add governed sequential binary open/Path.open handles, ranged reads, byte line iteration, staged writes/append, flush/close, shared execution-end publication, faithful option/size protocols and io.UnsupportedOperation.
 - Add governed Path.read_bytes/write_bytes through optional host binary methods, with owned read copies, staged publication, byte counts, limits and asynchronous cancellation.
 - Apply Python's conditional Greek final-sigma lowercasing with Unicode 15.1 cased/ignorable context, bounded scans and governed scratch.

@@ -261,13 +261,12 @@ internal sealed partial class LythonRuntime
 
     private static object IsSubclass(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        _ = context;
         if (arguments.Length != 2)
         {
             throw new LythonRuntimeException("TypeError", "issubclass(type, base) expects two arguments.", span);
         }
 
-        return IsSubclassOf(arguments[0], arguments[1], span);
+        return IsSubclassOf(arguments[0], arguments[1], span, context);
     }
 
     private static bool IsInstanceOf(object value, object typeSpec, LythonSourceSpan span, ExecutionContext context)
@@ -280,14 +279,14 @@ internal sealed partial class LythonRuntime
         throw new LythonRuntimeException("TypeError", "isinstance() arg 2 must be a type, a tuple of types, or a union", span);
     }
 
-    private static bool IsSubclassOf(object type, object baseSpec, LythonSourceSpan span)
+    private static bool IsSubclassOf(object type, object baseSpec, LythonSourceSpan span, ExecutionContext context)
     {
         if (!IsSupportedTypeSpecifier(type))
         {
             throw new LythonRuntimeException("TypeError", "issubclass() arg 1 must be a class", span);
         }
 
-        if (TryMatchTypeTuple(baseSpec, candidate => IsSubclassAgainstSingleType(type, candidate), out var matched))
+        if (TryMatchTypeTuple(baseSpec, candidate => IsSubclassAgainstSingleType(type, candidate, context), out var matched))
         {
             return matched;
         }
@@ -367,14 +366,14 @@ internal sealed partial class LythonRuntime
     private static bool IsObjectRootType(PyType runtimeType, ExecutionContext context)
         => context.TryGetBuiltin("object", out var objectBase) && ReferenceEquals(runtimeType, objectBase);
 
-    private static bool IsSubclassAgainstSingleType(object type, object baseSpec)
+    private static bool IsSubclassAgainstSingleType(object type, object baseSpec, ExecutionContext context)
     {
         if (type is ExceptionTypeValue exceptionType)
             return baseSpec is ExceptionTypeValue exceptionBase
                 ? MatchesExceptionType(exceptionBase.ExceptionIdentity, exceptionType.ExceptionIdentity)
-                : GetBuiltinTypeName(baseSpec) == "object";
+                : GetBuiltinTypeName(baseSpec, context) == "object";
         if (type is UrllibParseModule.UrlResultType urlType)
-            return ReferenceEquals(type, baseSpec) || GetBuiltinTypeName(baseSpec) is "tuple" or "object";
+            return ReferenceEquals(type, baseSpec) || GetBuiltinTypeName(baseSpec, context) is "tuple" or "object";
         if (type is PyType runtimeSubject)
         {
             if (baseSpec is PyType runtimeBase)
@@ -384,7 +383,7 @@ internal sealed partial class LythonRuntime
 
             if (runtimeSubject.JsonBase != JsonBaseKind.None)
             {
-                var jsonBaseName = GetBuiltinTypeName(baseSpec);
+                var jsonBaseName = GetBuiltinTypeName(baseSpec, context);
                 return runtimeSubject.JsonBase == JsonBaseKind.Encoder
                     ? jsonBaseName is "json.JSONEncoder" or "object"
                     : jsonBaseName is "json.JSONDecoder" or "object";
@@ -395,8 +394,8 @@ internal sealed partial class LythonRuntime
 
         var subjectName = type is PyType subjectType && subjectType.JsonBase != JsonBaseKind.None
             ? subjectType.JsonBase == JsonBaseKind.Encoder ? "json.JSONEncoder" : "json.JSONDecoder"
-            : GetBuiltinTypeName(type);
-        var baseName = GetBuiltinTypeName(baseSpec);
+            : GetBuiltinTypeName(type, context);
+        var baseName = GetBuiltinTypeName(baseSpec, context);
         if (subjectName is null || baseName is null)
         {
             return false;
@@ -693,9 +692,10 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static string? GetBuiltinTypeName(object value) => value switch
+    private static string? GetBuiltinTypeName(object value, ExecutionContext context) => value switch
     {
-        PyType type when type.Name is "object" or "type" => type.Name,
+        PyType type when type.Name is "object" or "type" &&
+            context.TryGetBuiltin(type.Name, out var root) && ReferenceEquals(type, root) => type.Name,
         BuiltinCallable builtin when IsBuiltinTypeName(builtin.Name) => builtin.Name,
         PyBuiltinRuntimeType builtin when IsBuiltinTypeName(builtin.Name) => builtin.Name,
         INamedRuntimeCallable callable when IsBuiltinTypeName(callable.Name) => callable.Name,

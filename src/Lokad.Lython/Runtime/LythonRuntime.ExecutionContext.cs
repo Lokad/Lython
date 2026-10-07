@@ -492,19 +492,10 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
+        // Implicit class identity and builtin base graphs use the run's canonical
+        // table. Guest name resolution belongs to frames and may shadow this table.
         public bool TryGetBuiltin(string name, [MaybeNullWhen(false)] out object value)
-        {
-            for (var current = this; current is not null; current = current.ParentContext)
-            {
-                if (current.Frame.Variables.TryGetValue(name, out value))
-                {
-                    return true;
-                }
-            }
-
-            value = null;
-            return false;
-        }
+            => State.BuiltinVariables.TryGetValue(name, out value);
 
         private static Dictionary<string, object> CreateModuleVariables(
             Dictionary<string, object> builtinVariables,
