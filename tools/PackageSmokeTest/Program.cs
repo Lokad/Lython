@@ -190,8 +190,16 @@ const string pathByteSource = "from pathlib import Path\np=Path('byte-output.bin
 var pathBytes = engine.Compile(pathByteSource);
 if (!pathBytes.IsValid)
     throw new Exception(string.Join("; ", pathBytes.Diagnostics.Select(d => d.Message)));
-foreach (var result in new[] { pathBytes.Run(new MemoryHost(delayed: false)), await pathBytes.RunAsync(new MemoryHost(delayed: true)) })
-    RequireOutput(result, "3\nb'\\x00\\xff\\n' 3 255 True\n0 b''\n");
+RequireOutput(pathBytes.Run(new MemoryHost(delayed: false)), "3\nb'\\x00\\xff\\n' 3 255 True\n0 b''\n");
+var byteHost = new MemoryHost(delayed: true);
+var pendingBytes = pathBytes.RunAsync(byteHost);
+await byteHost.WriteStarted.Task.WaitAsync(TimeSpan.FromSeconds(20));
+byteHost.ReleaseWrite.TrySetResult();
+await byteHost.ReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(20));
+byteHost.ReleaseRead.TrySetResult();
+RequireOutput(await pendingBytes, "3\nb'\\x00\\xff\\n' 3 255 True\n0 b''\n");
+if (byteHost.SuspendedOperations < 2)
+    throw new Exception("Binary package consumer did not suspend during both acquisition and publication.");
 
 const string fileSource = """
     import json
