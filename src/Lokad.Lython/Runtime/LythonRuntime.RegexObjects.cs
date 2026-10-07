@@ -82,7 +82,7 @@ internal sealed partial class LythonRuntime
                     {
                         return arguments[0] switch
                         {
-                            BigInteger integer => ResolveIndexedGroup(match, (int)integer, span),
+                            BigInteger integer => ResolveIndexedGroup(match, ResolveIntegerGroupIndex(match, integer, span), span),
                             int integer => ResolveIndexedGroup(match, integer, span),
                             _ when PyStringOps.TryAsString(arguments[0], out var nameText) => ResolveNamedGroup(match, nameText.AsString(), span),
                             _ => throw new LythonRuntimeException("TypeError", "match.group(index) expects an integer or group name.", span)
@@ -95,7 +95,7 @@ internal sealed partial class LythonRuntime
                         var argument = arguments[i];
                         groups[i] = argument switch
                         {
-                            BigInteger integer => ResolveIndexedGroup(match, (int)integer, span),
+                            BigInteger integer => ResolveIndexedGroup(match, ResolveIntegerGroupIndex(match, integer, span), span),
                             int integer => ResolveIndexedGroup(match, integer, span),
                             _ when PyStringOps.TryAsString(argument, out var nameText) => ResolveNamedGroup(match, nameText.AsString(), span),
                             _ => throw new LythonRuntimeException("TypeError", "match.group(index) expects an integer or group name.", span)
@@ -233,10 +233,8 @@ internal sealed partial class LythonRuntime
         {
             index = group switch
             {
-                BigInteger integer => integer < int.MinValue || integer > int.MaxValue
-                    ? throw new LythonRuntimeException("IndexError", "Regex group index is out of range.", span)
-                    : (int)integer,
-                int integer => integer,
+                BigInteger integer => ResolveIntegerGroupIndex(match, integer, span),
+                int integer => ResolveIntegerGroupIndex(match, integer, span),
                 _ when PyStringOps.TryAsString(group, out var nameText) => match.NamedGroups.TryGetValue(nameText.AsString(), out var namedIndex)
                     ? namedIndex
                     : throw new LythonRuntimeException("IndexError", $"Regex group '{nameText.AsString()}' is not defined.", span),
@@ -254,6 +252,18 @@ internal sealed partial class LythonRuntime
             }
 
             return true;
+        }
+
+        private static int ResolveIntegerGroupIndex(ReMatchObject match, BigInteger index, LythonSourceSpan span)
+        {
+            // Validate the Python integer before narrowing: enormous guest
+            // indices must stay catchable IndexErrors, never CLR overflows.
+            if (index < 0 || index >= match.CaptureSlotCount)
+            {
+                throw new LythonRuntimeException("IndexError", "Regex group index is out of range.", span);
+            }
+
+            return (int)index;
         }
 
         private static object LastIndex(ReMatchObject match)

@@ -538,6 +538,39 @@ __lython_file.close()
     }
 
     [Theory]
+    [InlineData("10**100")]
+    [InlineData("-10**100")]
+    [InlineData("2147483648")]
+    [InlineData("-2147483648")]
+    [InlineData("-2147483649")]
+    [InlineData("2")]
+    [InlineData("-1")]
+    public async Task MatchGroup_InvalidIntegerIndicesRemainCatchable(string index)
+    {
+        var script = new LythonEngine().Compile(
+            """
+            import re
+            def check(match, key):
+                for op in [lambda: match.group(key), lambda: match.group(0, key),
+                           lambda: match.start(key), lambda: match.end(key), lambda: match.span(key)]:
+                    try:
+                        op()
+                    except IndexError:
+                        print('IndexError')
+                    else:
+                        print('unexpected success')
+            check(re.search('(a)', 'a'),
+            """ + index + ")");
+        Assert.True(script.IsValid);
+        var expected = string.Concat(Enumerable.Repeat("IndexError\n", 5));
+        foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(expected, result.StandardOutput);
+        }
+    }
+
+    [Theory]
     [InlineData(
         """
 import re
