@@ -28,6 +28,7 @@ internal static partial class StaticContracts
         "lastindex",
         "lastgroup",
         "group",
+        "__getitem__",
         "groups",
         "groupdict",
         "expand",

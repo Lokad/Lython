@@ -2676,7 +2676,7 @@ if m is not None:
     m.groupdict(default="")
     m.expand(r"\g<word>")
     m.start("word")
-    m.end(group="word")
+    m.end("word")
     m.span("missing")
     m.expand(1)
 

@@ -111,7 +111,8 @@ internal static partial class StaticAbstractValueResolver
             return TryGetIndexedSequenceValue(target, null, subscript.Span, out value);
         }
 
-        if (TryResolveOpenPyxlSubscriptValue(target, subscript, bindings, out value))
+        if (StaticRegexReturnResolver.TryResolveMatchSubscriptReturn(target, subscript.Index, bindings, subscript.Span, out value) ||
+            TryResolveOpenPyxlSubscriptValue(target, subscript, bindings, out value))
         {
             return true;
         }

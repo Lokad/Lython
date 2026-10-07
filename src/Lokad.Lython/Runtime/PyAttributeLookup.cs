@@ -168,7 +168,7 @@ internal static class PyAttributeLookup
             ? (true, engineValue) : (false, PyNone.Instance);
     }
 
-    private static async ValueTask<object> BindForInstanceAsync(
+    internal static async ValueTask<object> BindForInstanceAsync(
         PyInstance instance, object rawValue, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (rawValue is IPyDescriptor descriptor)
@@ -549,7 +549,7 @@ internal static class PyAttributeLookup
             : rawValue;
     }
 
-    private static object BindForInstance(PyInstance instance, object rawValue, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    internal static object BindForInstance(PyInstance instance, object rawValue, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         return TryBindDynamicDescriptor(rawValue, instance, instance.Type, context, span, out var value)
             ? value

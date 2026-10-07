@@ -518,6 +518,11 @@ internal sealed partial class LythonRuntime
 
     internal static object ReadSubscriptValue(object target, object index, LythonSourceSpan span, ExecutionContext context)
     {
+        if (target is ReMatchObject match)
+        {
+            return ReMatchMembers.GetSubscript(match, index, span, context);
+        }
+
         if (target is PyDefaultDict defaultDict)
         {
             return defaultDict.GetOrCreate(ValidateDictionaryKey(index, span), context, span);

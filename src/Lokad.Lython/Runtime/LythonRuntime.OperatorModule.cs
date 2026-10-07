@@ -49,7 +49,7 @@ internal sealed partial class LythonRuntime
                 "le" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorLe, (arguments, span, _) => CompareBool(arguments, span, static (left, right, innerSpan) => PyComparison.Compare(left, right, innerSpan, "<=") <= 0)),
                 "gt" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorGt, (arguments, span, _) => CompareBool(arguments, span, static (left, right, innerSpan) => PyComparison.Compare(left, right, innerSpan, ">") > 0)),
                 "ge" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorGe, (arguments, span, _) => CompareBool(arguments, span, static (left, right, innerSpan) => PyComparison.Compare(left, right, innerSpan, ">=") >= 0)),
-                "getitem" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorGetItem, GetItem),
+                "getitem" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorGetItem, GetItem, GetItemAsync),
                 "setitem" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorSetItem, SetItem),
                 "delitem" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorDelItem, DelItem),
                 "contains" => BuiltinCallable.Create(LythonKnownCallableSignatures.OperatorContains, ContainsValue),
@@ -144,6 +144,25 @@ internal sealed partial class LythonRuntime
                 values[i] = ReadItem(target, _items[i], span, context);
             }
 
+            return new PyTuple(values, context.MemoryGovernor, span);
+        }
+
+        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            if (arguments.Length != 1 || arguments[0].IsKeyword)
+            {
+                throw new LythonRuntimeException("TypeError", "operator.itemgetter(...)(obj) expects one positional argument.", span);
+            }
+            var target = arguments[0].Value;
+            if (_items.Length == 1)
+            {
+                return await ReadItemAsync(target, _items[0], span, context).ConfigureAwait(false);
+            }
+            var values = new object[_items.Length];
+            for (var i = 0; i < _items.Length; i++)
+            {
+                values[i] = await ReadItemAsync(target, _items[i], span, context).ConfigureAwait(false);
+            }
             return new PyTuple(values, context.MemoryGovernor, span);
         }
 
@@ -368,6 +387,14 @@ internal sealed partial class LythonRuntime
 
         return PyIndexing.ReadIndex(target, index, span, context);
     }
+
+    private static ValueTask<object> GetItemAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        => ReadItemAsync(arguments[0], arguments[1], span, context);
+
+    private static ValueTask<object> ReadItemAsync(object target, object index, LythonSourceSpan span, ExecutionContext context)
+        => target is ReMatchObject match
+            ? ReMatchMembers.GetSubscriptAsync(match, index, span, context)
+            : new(ReadItem(target, index, span, context));
 
     private static object DelItem(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {

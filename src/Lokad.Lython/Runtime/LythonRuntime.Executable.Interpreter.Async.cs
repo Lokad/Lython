@@ -99,9 +99,7 @@ internal sealed partial class LythonRuntime
                 case ExecutableOpCode.Subscript:
                     var index = Pop(_stack, instruction.Span);
                     var receiver = Pop(_stack, instruction.Span);
-                    PushObserved(receiver is PyInstance instance ? await GetUserItemAsync(instance, index, context, instruction.Span).ConfigureAwait(false)
-                        : receiver is PyType type && type.TryGetMember("__type_params__", out _) ? await CreateGenericSubscriptAsync(receiver, index, context, instruction.Span, true).ConfigureAwait(false)
-                        : ReadLoweredSubscript(receiver, index, instruction.Span, context), instruction.Span);
+                    PushObserved(await ReadLoweredSubscriptAsync(receiver, index, instruction.Span, context).ConfigureAwait(false), instruction.Span);
                     break;
                 case ExecutableOpCode.Slice:
                     var (sliceStart, sliceEnd, sliceStep) = PopExecutableSliceBounds(_stack, instruction.SliceParts, instruction.Span);

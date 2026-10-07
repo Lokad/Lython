@@ -102,6 +102,7 @@ internal static class StaticRegexReturnResolver
         {
             "group" when arguments.Positional.Count == 0 && arguments.Keywords.Count == 0 => AbstractValue.StringType(call.Span),
             "group" => AbstractValue.Unknown(call.Span),
+            "__getitem__" => AbstractValue.Unknown(call.Span),
             // Group arity is pattern-dependent: an empty-tuple shape wrongly rejects
             // literal indexes into stored groups, mirroring groupdict.
             "groups" => AbstractValue.Unknown(call.Span),
@@ -115,6 +116,23 @@ internal static class StaticRegexReturnResolver
         };
 
         return value.Kind != default;
+    }
+
+    public static bool TryResolveMatchSubscriptReturn(AbstractValue target, ExpressionSyntax key, AbstractState bindings, LythonSourceSpan span, out AbstractValue value)
+    {
+        if (target.Kind is not (AbstractValueKind.RegexMatch or AbstractValueKind.MaybeRegexMatch))
+        {
+            value = default;
+            return false;
+        }
+
+        // Group zero is always text on a successful match; other captures can
+        // be absent. Retain the conservative group() fact for those keys.
+        var isZero = StaticAbstractValueResolver.TryResolve(key, bindings, out var index) &&
+            (TryGetInt32(index, out var integer) && integer == 0 ||
+             index.Kind == AbstractValueKind.Boolean && !index.RequireBoolean());
+        value = isZero ? AbstractValue.StringType(span) : AbstractValue.Unknown(span);
+        return true;
     }
 
     private enum RegexMatchOperation

@@ -1346,6 +1346,15 @@ Compiled pattern objects must expose `search`, `match`, `fullmatch`, `findall`, 
 
 Match objects must expose `re`, `string`, `pos`, `endpos`, `lastindex`, `lastgroup`, `group`, `groups(default=None)`, `groupdict(default=None)`, `expand(template)`, and group-aware `start(group=0)`, `end(group=0)`, and `span(group=0)`.
 
+`match[key]` and `match.__getitem__(key)` select the same capture as
+`match.group(key)`, including the whole match at zero and named captures.
+Unmatched optional captures return `None`. Group selectors accept booleans
+and the type's `__index__` protocol; conversion errors propagate, while invalid
+keys/ranges raise `IndexError`. Match objects remain non-iterable and unsized,
+and do not support sequence slicing. Group selectors for `group`, `start`,
+`end`, `span` and `__getitem__` are positional-only. `RunAsync` awaits guest
+index methods.
+
 The module must expose `re.error`, `re.PatternError`, `re.RegexFlag`, `re.NOFLAG`, `re.ASCII`/`re.A`, `re.IGNORECASE`/`re.I`, `re.UNICODE`/`re.U`, `re.MULTILINE`/`re.M`, `re.DOTALL`/`re.S`, and `re.VERBOSE`/`re.X`. `re.LOCALE`/`re.L` and `re.DEBUG` must fail explicitly under Lython's Unicode-only regex subset.
 
 Bytes patterns and subjects are outside the supported regex surface unless the public bytes model is explicitly expanded. If unsupported regex features are used, the runtime must fail explicitly.

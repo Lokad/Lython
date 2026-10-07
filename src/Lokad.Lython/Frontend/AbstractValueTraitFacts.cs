@@ -63,8 +63,6 @@ internal static class AbstractValueTraitFacts
             AbstractValueKind.Path or
             AbstractValueKind.Module or
             AbstractValueKind.RegexPattern or
-            AbstractValueKind.MaybeRegexMatch or
-            AbstractValueKind.RegexMatch or
             AbstractValueKind.ArgparseParser or
             AbstractValueKind.ArgparseMutuallyExclusiveGroup or
             AbstractValueKind.ArgparseNamespace or
@@ -113,6 +111,9 @@ internal static class AbstractValueTraitFacts
             AbstractValueKind.OpenPyxlPageSetup or
             AbstractValueKind.OpenPyxlColumnDimension or
             AbstractValueKind.OpenPyxlRowDimension => AtomicValue,
+
+            AbstractValueKind.MaybeRegexMatch or AbstractValueKind.RegexMatch =>
+                AtomicValue & ~AbstractValueTraits.DefinitelyNonSubscriptable,
 
             AbstractValueKind.TextFileHandle =>
                 AbstractValueTraits.DefinitelyNonCallable |

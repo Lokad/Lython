@@ -741,6 +741,23 @@ internal sealed partial class LythonRuntime
         return PyIndexing.ReadIndex(target, index, span, context);
     }
 
+    private static async ValueTask<object> ReadLoweredSubscriptAsync(object target, object index, LythonSourceSpan span, ExecutionContext context)
+    {
+        if (target is ReMatchObject match)
+        {
+            return await ReMatchMembers.GetSubscriptAsync(match, index, span, context).ConfigureAwait(false);
+        }
+        if (target is PyInstance instance)
+        {
+            return await GetUserItemAsync(instance, index, context, span).ConfigureAwait(false);
+        }
+        if (target is PyType type && type.TryGetMember("__type_params__", out _))
+        {
+            return await CreateGenericSubscriptAsync(target, index, context, span, true).ConfigureAwait(false);
+        }
+        return ReadLoweredSubscript(target, index, span, context);
+    }
+
     private static object ResolveLoweredMemberValue(
         LoweredMemberExpression member,
         object target,

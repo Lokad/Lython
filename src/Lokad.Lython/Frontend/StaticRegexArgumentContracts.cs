@@ -234,12 +234,12 @@ internal static class StaticRegexArgumentContracts
         {
             var expression = arguments.Positional[i];
             var value = arguments.ResolvePositionalValue(i, bindings);
-            if (IsUnknown(value))
+            if (IsUnknown(value) || value.Kind == AbstractValueKind.UserInstance)
             {
                 continue;
             }
 
-            if (TryGetInt32(value, out var index))
+            if (TryGetGroupIndex(value, out var index))
             {
                 if (summary.CaptureSlotCount.HasValue &&
                     (index < 0 || index >= summary.CaptureSlotCount.Value))
@@ -251,7 +251,7 @@ internal static class StaticRegexArgumentContracts
                 continue;
             }
 
-            if (value.Kind == AbstractValueKind.IntegerType)
+            if (value.Kind is AbstractValueKind.IntegerType or AbstractValueKind.BooleanType)
             {
                 continue;
             }
@@ -305,13 +305,13 @@ internal static class StaticRegexArgumentContracts
             return false;
         }
 
-        if (IsUnknown(value))
+        if (IsUnknown(value) || value.Kind == AbstractValueKind.UserInstance)
         {
             return false;
         }
 
         var summary = receiver.RequireRegexMatchSummary();
-        if (TryGetInt32(value, out var index))
+        if (TryGetGroupIndex(value, out var index))
         {
             if (summary.CaptureSlotCount.HasValue &&
                 (index < 0 || index >= summary.CaptureSlotCount.Value))
@@ -323,7 +323,7 @@ internal static class StaticRegexArgumentContracts
             return false;
         }
 
-        if (value.Kind == AbstractValueKind.IntegerType)
+        if (value.Kind is AbstractValueKind.IntegerType or AbstractValueKind.BooleanType)
         {
             return false;
         }
@@ -350,4 +350,13 @@ internal static class StaticRegexArgumentContracts
         return true;
     }
 
+    private static bool TryGetGroupIndex(AbstractValue value, out int index)
+    {
+        if (value.Kind == AbstractValueKind.Boolean)
+        {
+            index = value.RequireBoolean() ? 1 : 0;
+            return true;
+        }
+        return TryGetInt32(value, out index);
+    }
 }

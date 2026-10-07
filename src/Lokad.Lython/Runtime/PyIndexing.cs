@@ -69,6 +69,11 @@ internal static class PyIndexing
             : PyStructuralGuard.PushAmbient(context, span);
         // Keyed lookups resolve first like CPython, so slice objects serve
         // as dictionary keys instead of slicing the mapping.
+        if (target is LythonRuntime.ReMatchObject match)
+        {
+            return LythonRuntime.ReMatchMembers.GetSubscript(match, index, span, context);
+        }
+
         if (target is PyDict dict)
         {
             return ReadDictIndex(dict, index, span);
@@ -123,6 +128,11 @@ internal static class PyIndexing
 
     public static object ReadSlice(object target, object? start, object? end, object? step, LythonSourceSpan span, LythonRuntime.ExecutionContext? context = null)
     {
+        if (target is LythonRuntime.ReMatchObject)
+        {
+            throw new LythonRuntimeException("IndexError", "no such group", span);
+        }
+
         // Mappings resolve colon slices as keys like CPython, ahead of any
         // bound coercion or sequence slicing.
         if (target is PyDict || target is PyCounter || target is PyDefaultDict || target is PyChainMap)

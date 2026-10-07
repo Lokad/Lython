@@ -163,17 +163,7 @@ internal sealed partial class LythonRuntime
     {
         var target = EvaluateExpression(subscript.Target, context);
         var index = EvaluateExpression(subscript.Index, context);
-        if (target is PyDefaultDict defaultDict)
-        {
-            return defaultDict.GetOrCreate(ValidateDictionaryKey(index, subscript.Span), context, subscript.Span);
-        }
-
-        if (target is PyInstance instance)
-        {
-            return GetUserItem(instance, index, context, subscript.Span);
-        }
-
-        return PyIndexing.ReadIndex(target, CoerceIndexProtocol(index, context, subscript.Span), subscript.Span, context);
+        return ReadSubscriptValue(target, index, subscript.Span, context);
     }
 
     private static object EvaluateSlice(SliceExpressionSyntax slice, ExecutionContext context)
