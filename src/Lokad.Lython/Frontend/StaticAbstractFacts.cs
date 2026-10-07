@@ -379,6 +379,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.Set => "set",
             AbstractValueKind.SetType => "set",
             AbstractValueKind.Path => "pathlib.Path",
+            AbstractValueKind.StringIO => "io.StringIO",
             AbstractValueKind.TextFileHandle => "file",
             AbstractValueKind.Module => $"module '{value.RequireText()}'",
             AbstractValueKind.KnownCallable => $"callable '{value.RequireText()}'",

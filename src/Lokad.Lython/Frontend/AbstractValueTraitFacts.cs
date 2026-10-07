@@ -115,7 +115,7 @@ internal static class AbstractValueTraitFacts
             AbstractValueKind.MaybeRegexMatch or AbstractValueKind.RegexMatch =>
                 AtomicValue & ~AbstractValueTraits.DefinitelyNonSubscriptable,
 
-            AbstractValueKind.TextFileHandle =>
+            AbstractValueKind.StringIO or AbstractValueKind.TextFileHandle =>
                 AbstractValueTraits.DefinitelyNonCallable |
                 AbstractValueTraits.DefinitelyNonSized |
                 AbstractValueTraits.DefinitelyNonSubscriptable,

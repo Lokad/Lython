@@ -2,6 +2,8 @@ namespace Lokad.Lython.Runtime;
 
 internal static partial class LythonKnownCallableSignatures
 {
+    public static readonly LythonCallableSignature IoStringIO = LythonCallableSignature.Create("io.StringIO", ["initial_value", "newline"], requiredCount: 0);
+
     public static readonly LythonCallableSignature OpenPyxlWorkbook = LythonCallableSignature.Create("openpyxl.Workbook", ["write_only", "iso_dates"], requiredCount: 0);
     public static readonly LythonCallableSignature OpenPyxlLoadWorkbook = LythonCallableSignature.Create("openpyxl.load_workbook", ["filename", "read_only", "keep_vba", "data_only", "keep_links", "rich_text"], requiredCount: 1);
     public static readonly LythonCallableSignature OpenPyxlGetColumnLetter = LythonCallableSignature.Create("openpyxl.utils.get_column_letter", ["col_idx"]);

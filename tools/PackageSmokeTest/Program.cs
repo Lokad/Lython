@@ -91,6 +91,29 @@ if (!streams.IsValid)
 foreach (var result in new[] { streams.Run(new PureHost()), await streams.RunAsync(new PureHost()) })
     RequireOutput(result, "43\nNone\n['1\\n', '2\\n']\n43\n3\nFalse\n");
 
+const string memoryStreamSource = """
+    import io, csv, json
+    stream=io.StringIO(newline='')
+    csv.writer(stream,lineterminator='\n').writerows([['é😀',3]])
+    print(repr(stream.getvalue()),stream.tell(),type(stream) is io.StringIO)
+    stream.seek(0)
+    print(next(csv.reader(stream)))
+    with io.StringIO('a😀bc') as value:
+        print(repr(value.read(2)),value.tell())
+        value.seek(0)
+        print(value.write('XY'),repr(value.getvalue()))
+    print(value.closed,value.flush())
+    value=io.StringIO()
+    json.dump({'x':'😀'},value,ensure_ascii=False)
+    value.seek(0)
+    print(json.load(value))
+    """;
+var memoryStreams = engine.Compile(memoryStreamSource);
+if (!memoryStreams.IsValid)
+    throw new Exception(string.Join("; ", memoryStreams.Diagnostics.Select(d => d.Message)));
+foreach (var result in new[] { memoryStreams.Run(new PureHost()), await memoryStreams.RunAsync(new PureHost()) })
+    RequireOutput(result, "'é😀,3\\n' 5 True\n['é😀', '3']\n'a😀' 2\n2 'XYbc'\nTrue None\n{'x': '😀'}\n");
+
 const string fileSource = """
     import json
     with open('/input.json') as source:

@@ -338,6 +338,10 @@ internal static partial class StaticBindingEngine
                 itemValue = default;
                 return false;
 
+            case AbstractValueKind.StringIO:
+                itemValue = AbstractValue.StringType(expression.Span);
+                return true;
+
             case AbstractValueKind.CsvReader:
                 itemValue = AbstractValue.ListOf(AbstractValue.StringType(expression.Span), expression.Span);
                 return true;

@@ -78,7 +78,7 @@ internal static partial class StaticDataModuleContractFamily
         }
 
         if (value.Kind is AbstractValueKind.Unknown or AbstractValueKind.Never or AbstractValueKind.MaybeNone
-            or AbstractValueKind.UserInstance or AbstractValueKind.UserClass)
+            or AbstractValueKind.UserInstance or AbstractValueKind.UserClass or AbstractValueKind.StringIO)
         {
             return false;
         }
@@ -107,7 +107,7 @@ internal static partial class StaticDataModuleContractFamily
         }
 
         if (value.Kind is AbstractValueKind.Unknown or AbstractValueKind.Never or AbstractValueKind.MaybeNone
-            or AbstractValueKind.UserInstance or AbstractValueKind.UserClass)
+            or AbstractValueKind.UserInstance or AbstractValueKind.UserClass or AbstractValueKind.StringIO)
         {
             return false;
         }
@@ -239,7 +239,7 @@ internal static partial class StaticDataModuleContractFamily
     private static bool AnalyzeCsvWriterFileValue(ExpressionSyntax expression, AbstractValue value, bool allowMissing, List<LythonDiagnostic> diagnostics)
     {
         if (value.Kind is AbstractValueKind.Unknown or AbstractValueKind.Never or AbstractValueKind.MaybeNone or
-            AbstractValueKind.UserInstance or AbstractValueKind.UserClass)
+            AbstractValueKind.UserInstance or AbstractValueKind.UserClass or AbstractValueKind.StringIO)
         {
             return false;
         }

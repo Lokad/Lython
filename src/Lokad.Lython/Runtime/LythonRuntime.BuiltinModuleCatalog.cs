@@ -71,6 +71,7 @@ internal sealed partial class LythonRuntime
                 ["filecmp"] = Module(static _ => FilecmpModule.Instance),
                 ["fnmatch"] = Module(static _ => FnMatchModule.Instance),
                 ["difflib"] = Module(static _ => DifflibModule.Instance),
+                ["io"] = Module(static _ => IoModule.Instance),
                 ["json"] = Module(static _ => JsonModule.Instance),
                 ["csv"] = Module(static _ => CsvModule.Instance),
                 ["subprocess"] = Module(static _ => SubprocessModule.Instance, BuiltinModuleCapability.Subprocess),

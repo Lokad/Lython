@@ -1755,6 +1755,48 @@ conflict handlers, non-default prefix character models, parser-wide
 
 ---
 
+### 11.17 In-Memory Text Streams
+
+`io` exposes `StringIO(initial_value='', newline='\n')` and `SEEK_SET=0`,
+`SEEK_CUR=1`, `SEEK_END=2`. Construction accepts text or None, translates the
+initial value as a write would, then starts at position zero. The class has
+stable type/isinstance identity and `_io` module metadata.
+
+Instance methods are read/readline/readlines, write/writelines, getvalue,
+seek/tell/truncate, close/flush, readable/writable/seekable, __iter__/__next__,
+and __enter__/__exit__; method arguments are positional-only. Properties are
+closed, newlines, encoding/errors (None) and line_buffering (False).
+Sizes, positions and write counts use Unicode character counts, including
+non-BMP characters. None and negative read sizes mean unlimited. Positive
+readlines hints stop after the accumulated count exceeds the hint. Iteration
+shares the read cursor. RunAsync awaits type-level __index__ hooks and guest
+writelines sources, retaining written prefixes on later failure.
+
+Newline policies are None, empty string, LF (default), CR and CRLF. None
+normalizes CR/CRLF to LF; empty string preserves text with universal line
+termination; explicit policies select line termination and translate written
+LFs. Universal policies track observed input newline kinds, including initial
+values; separate writes do not combine a terminal CR with the next write's LF.
+Explicit policies report newlines=None. Truncation does not reset this history.
+
+Writes overwrite at the cursor. Seeking past EOF allocates nothing; a nonempty
+write fills gaps with NULs, while empty writes preserve the cursor and value.
+Absolute seeks require nonnegative positions; current/end seeks allow offset
+zero only. Truncate never moves the cursor or extends text. Reads/getvalue
+produce independently governed immutable snapshots. Growth funds old and new
+storage overlap; aliases retain ownership and abandoned values reclaim.
+
+Close is idempotent and discards storage. Closed reads/writes/value/position,
+queries, iteration, newlines and line_buffering raise ValueError; encoding,
+errors and closed remain available. Flush is always a no-op, even after close.
+Context exit closes without suppressing errors. CSV/JSON protocols and print's
+concrete file target compose with these streams. BytesIO, IO base classes,
+descriptors, detach/exported buffers, arbitrary instance attributes, subclassing
+and archive file-object adapters remain outside this initial inventory.
+Existing scalar-string limits apply; this module grants no ambient capability.
+
+---
+
 ## 12. Host Capability Interface
 
 The host interface is a required part of the standalone package design.

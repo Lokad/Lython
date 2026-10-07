@@ -317,7 +317,7 @@ internal static partial class StaticBindingEngine
                         foreach (var name in withStatement.BoundNames) withBindings.Remove(name);
                         if (withStatement.VariableName is not null &&
                             StaticAbstractValueResolver.TryResolve(withStatement.ContextExpression, bindings, out var contextValue) &&
-                            contextValue.Kind == AbstractValueKind.TextFileHandle)
+                            contextValue.Kind is AbstractValueKind.TextFileHandle or AbstractValueKind.StringIO)
                         {
                             withBindings.Set(withStatement.VariableName, contextValue);
                         }

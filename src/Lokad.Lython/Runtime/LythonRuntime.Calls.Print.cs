@@ -83,6 +83,8 @@ internal sealed partial class LythonRuntime
                     case StandardOutputTarget:
                         _ = context.State.Stdout.Flush(span);
                         break;
+                    case StringIOOutputTarget stream:
+                        break;
                     case TextFileOutputTarget file:
                         _ = file.Handle.Flush();
                         break;
@@ -185,6 +187,7 @@ internal sealed partial class LythonRuntime
                         outputTarget = argument.Value switch
                         {
                             PyNone => StandardOutputTarget.Instance,
+                            StringIOObject handle => new StringIOOutputTarget(handle),
                             ExecutionContext.TextFileHandle handle => new TextFileOutputTarget(handle),
                             HostTextOutputHandle handle => new HostOutputTarget(handle),
                             PopenInputStream handle => new PopenInputOutputTarget(handle),
@@ -221,6 +224,9 @@ internal sealed partial class LythonRuntime
                 case StandardOutputTarget:
                     _ = context.State.Stdout.Write(value, span);
                     break;
+                case StringIOOutputTarget stream:
+                    _ = stream.Handle.Write(value, span);
+                    break;
                 case TextFileOutputTarget file:
                     _ = file.Handle.Write(value);
                     break;
@@ -243,6 +249,9 @@ internal sealed partial class LythonRuntime
                 case StandardOutputTarget:
                     _ = await context.State.Stdout.WriteAsync(value, span).ConfigureAwait(false);
                     break;
+                case StringIOOutputTarget stream:
+                    _ = stream.Handle.Write(value, span);
+                    break;
                 case TextFileOutputTarget file:
                     _ = file.Handle.Write(value);
                     break;
@@ -263,6 +272,8 @@ internal sealed partial class LythonRuntime
             {
                 case StandardOutputTarget:
                     _ = await context.State.Stdout.FlushAsync(span).ConfigureAwait(false);
+                    break;
+                case StringIOOutputTarget stream:
                     break;
                 case TextFileOutputTarget file:
                     _ = await file.Handle.FlushAsync().ConfigureAwait(false);
@@ -293,6 +304,8 @@ internal sealed partial class LythonRuntime
         {
             public static StandardOutputTarget Instance { get; } = new();
         }
+
+        private sealed record StringIOOutputTarget(StringIOObject Handle) : PrintOutputTarget;
 
         private sealed record TextFileOutputTarget(ExecutionContext.TextFileHandle Handle) : PrintOutputTarget;
 

@@ -4,6 +4,7 @@
 
 ## 0.10.0 - release candidate
 
+- Add governed io.StringIO with Unicode character positions, Python newline policies, shared-cursor iteration, immutable snapshots and lifecycle APIs; compose with CSV, JSON and print, and await guest index/writelines effects.
 - Resolve callable instances through the type's __call__ slot, await call descriptors under RunAsync, and bind lambdas stored on classes as function descriptors.
 - Support CSV write protocols for text files, mediated standard streams and guest objects; capture write at construction, preserve row/header callback results, await row acquisition and writes, and govern callback-visible row strings.
 - Support JSON text-stream protocols for mediated standard streams and guest read/write objects; stream dump through the selected encoder's iterencode, awaiting guest lookup and callbacks and preserving written prefixes on later failure.

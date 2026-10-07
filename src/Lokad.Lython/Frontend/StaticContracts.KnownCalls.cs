@@ -25,6 +25,7 @@ internal static partial class StaticContracts
         new(LythonKnownCallableSignatures.JsonLoads, "LA3151", "json.loads(s, *, ...) expects one string argument plus supported keyword options."),
         new(LythonKnownCallableSignatures.JsonDump, "LA3151", "json.dump(obj, fp, *, ...) expects an object and text stream with write().", StaticReturnShape.None),
         new(LythonKnownCallableSignatures.JsonDumps, "LA3151", "json.dumps(obj, *, ...) expects one object plus supported keyword options.", StaticReturnShape.String),
+        new(LythonKnownCallableSignatures.IoStringIO, "LA3158", "io.StringIO([initial_value[, newline]]) expects text or None and a supported newline policy.", StaticReturnShape.StringIO),
         new(LythonKnownCallableSignatures.CsvReader, "LA3151", "csv.reader(csvfile[, dialect][, ...]) expects one argument and supported CSV options.", StaticReturnShape.CsvReader),
         new(LythonKnownCallableSignatures.CsvWriter, "LA3151", "csv.writer([fileobj][, dialect][, ...]) expects a text file handle or no file object.", StaticReturnShape.CsvWriter),
         new(LythonKnownCallableSignatures.CsvDictReader, "LA3151", "csv.DictReader(f[, fieldnames][, restkey][, restval][, ...]) expects supported CSV options.", StaticReturnShape.CsvDictReader),

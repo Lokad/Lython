@@ -149,6 +149,7 @@ The builtin module surface is explicitly allowlisted:
 - `hashlib`
 - `importlib`
 - `itertools`
+- `io` for governed `StringIO` text buffers and seek constants
 - `json`
 - `math`
 - `operator`
@@ -168,6 +169,12 @@ The builtin module surface is explicitly allowlisted:
 - `zipfile`
 
 Local script imports are separate from builtin modules. Bare `import helper` can resolve through the host as `helper.py` only when `LythonRunOptions.AllowedLocalModules` contains `helper`, so embedders provide an explicit dependent-script list.
+
+`io.StringIO` provides governed text buffers with Unicode character positions,
+Python newline policies, reads/writes, iteration, snapshots and lifecycle APIs.
+CSV, JSON and `print(file=...)` compose with these buffers without a host
+capability. See [SPEC](SPEC.md#1117-in-memory-text-streams) for the complete
+inventory; BytesIO, IO base classes, descriptors and subclassing remain deferred.
 
 `pkgutil` follows the same contained model: it discovers builtins and explicitly allowed host-backed `.py` files or package directories, and it does not expose ambient importers or binary resource reads.
 

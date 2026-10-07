@@ -25,6 +25,7 @@ internal enum AbstractValueKind
     SetType,
     Path,
     TextFileHandle,
+    StringIO,
     Module,
     KnownCallable,
     RegexPattern,
@@ -251,6 +252,8 @@ internal readonly record struct AbstractValue
     public static AbstractValue ArgparseMutuallyExclusiveGroup(string parserName, LythonSourceSpan span) => new(AbstractValueKind.ArgparseMutuallyExclusiveGroup, new ArgparseGroupPayload(new AbstractArgparseGroupSummary(parserName)), span);
     public static AbstractValue ArgparseNamespace(LythonSourceSpan span) => ArgparseNamespace(new AbstractArgparseNamespaceSummary(new Dictionary<string, AbstractValue>(StringComparer.Ordinal), IsSealed: false), span);
     public static AbstractValue ArgparseNamespace(AbstractArgparseNamespaceSummary summary, LythonSourceSpan span) => new(AbstractValueKind.ArgparseNamespace, new ArgparseNamespacePayload(summary), span);
+    public static AbstractValue StringIO(LythonSourceSpan span) => Marker(AbstractValueKind.StringIO, span);
+
     public static AbstractValue CsvReader(LythonSourceSpan span) => Marker(AbstractValueKind.CsvReader, span);
     public static AbstractValue CsvDictReader(LythonSourceSpan span) => Marker(AbstractValueKind.CsvDictReader, span);
     public static AbstractValue CsvWriter(LythonSourceSpan span) => Marker(AbstractValueKind.CsvWriter, span);

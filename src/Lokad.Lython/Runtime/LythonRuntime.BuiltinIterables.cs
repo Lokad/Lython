@@ -350,6 +350,7 @@ internal sealed partial class LythonRuntime
         {
             if (arguments[0] is IPyIteratorValue iterator)
             {
+                if (iterator is StringIOObject stream) stream.EnsureOpen(span);
                 return iterator;
             }
 

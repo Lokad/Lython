@@ -29,6 +29,7 @@ internal enum StaticReturnShape
     ArgparseParser,
     ArgparseMutuallyExclusiveGroup,
     ArgparseNamespace,
+    StringIO,
     CsvReader,
     CsvDictReader,
     CsvWriter,

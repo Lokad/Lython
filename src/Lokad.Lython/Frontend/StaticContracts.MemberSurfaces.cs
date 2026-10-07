@@ -59,6 +59,8 @@ internal static partial class StaticContracts
         "add_argument",
     };
 
+    private static readonly HashSet<string> StringIOMembers = new(StringComparer.Ordinal) { "read", "readline", "readlines", "write", "writelines", "seek", "tell", "truncate", "getvalue", "close", "flush", "readable", "writable", "seekable", "__iter__", "__next__", "__enter__", "__exit__", "closed", "newlines", "encoding", "errors", "line_buffering" };
+
     private static readonly HashSet<string> CsvReaderMembers = new(StringComparer.Ordinal)
     {
         "line_num",

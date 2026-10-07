@@ -721,6 +721,7 @@ internal sealed partial class LythonRuntime
             "collections.Counter" or
             "collections.deque" or
             "collections.ChainMap" or
+            "io.StringIO" or
             "json.JSONDecoder" or
             "json.JSONEncoder";
     }
@@ -746,6 +747,7 @@ internal sealed partial class LythonRuntime
             "collections.Counter" => value is PyCounter,
             "collections.deque" => value is PyDeque,
             "collections.ChainMap" => value is PyChainMap,
+            "io.StringIO" => value is StringIOObject,
             "json.JSONDecoder" => value is JsonDecoderObject || value is PyInstance { Type.JsonBase: JsonBaseKind.Decoder },
             "json.JSONEncoder" => value is JsonEncoderObject || value is PyInstance { Type.JsonBase: JsonBaseKind.Encoder },
             "set" => value is PySet,
