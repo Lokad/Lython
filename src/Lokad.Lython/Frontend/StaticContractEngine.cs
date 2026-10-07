@@ -250,7 +250,7 @@ internal static class StaticContractEngine
         return StaticContracts.TryGetKnownCallReturn(targetName, call.Span, out value);
     }
 
-    private static bool TryResolveKnownCallableTarget(ExpressionSyntax target, AbstractState bindings, out string targetName)
+    public static bool TryResolveKnownCallableTarget(ExpressionSyntax target, AbstractState bindings, out string targetName)
     {
         if (StaticAbstractValueResolver.TryResolve(target, bindings, out var value) &&
             value.Kind == AbstractValueKind.KnownCallable)

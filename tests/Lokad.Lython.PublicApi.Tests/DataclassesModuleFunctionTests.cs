@@ -4,6 +4,132 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class DataclassesModuleFunctionTests
 {
+    [Theory]
+    [InlineData("field", false)]
+    [InlineData("field", true)]
+    [InlineData("asdict", false)]
+    [InlineData("asdict", true)]
+    [InlineData("astuple", false)]
+    [InlineData("astuple", true)]
+    public async Task OrdinaryFunctionsDoNotAcquireDataclassContracts(string name, bool shadowImport)
+    {
+        var source = (shadowImport ? "from dataclasses import " + name + "\n" : "") +
+            "def " + name + "(k, v):\n    return k + v\n" +
+            "print(" + name + "('a', 'b'))\n";
+        await AssertBothModes(source, "ab\n");
+    }
+
+    [Theory]
+    [InlineData("field")]
+    [InlineData("asdict")]
+    [InlineData("astuple")]
+    public async Task ReassignedModuleDoesNotRetainDataclassContracts(string name)
+    {
+        var source = "import dataclasses\nclass Helpers:\n    def " + name +
+            "(self, k, v):\n        return k + v\ndataclasses = Helpers()\n" +
+            "print(dataclasses." + name + "('a', 'b'))\n";
+        await AssertBothModes(source, "ab\n");
+    }
+
+    [Theory]
+    [InlineData("field")]
+    [InlineData("asdict")]
+    [InlineData("astuple")]
+    public async Task ReassignedHelperDoesNotRetainDataclassContracts(string name)
+    {
+        var source = "from dataclasses import " + name + "\n" +
+            "def combine(k, v):\n    return k + v\n" + name + " = combine\n" +
+            "print(" + name + "('a', 'b'))\n";
+        await AssertBothModes(source, "ab\n");
+    }
+
+    [Fact]
+    public async Task OrdinaryFieldCallProvidesAnOrdinaryDataclassDefault()
+    {
+        await AssertBothModes("""
+            from dataclasses import dataclass
+            def field(k, v):
+                return k + v
+            @dataclass
+            class Box:
+                value: str = field('a', 'b')
+            print(Box(), Box('z'))
+            """, "Box(value='ab') Box(value='z')\n");
+    }
+
+    [Theory]
+    [InlineData("import dataclasses as dc", "dc.field", "dc.asdict", "dc.astuple")]
+    [InlineData("from dataclasses import field as make_field, asdict as to_dict, astuple as to_tuple", "make_field", "to_dict", "to_tuple")]
+    [InlineData("from dataclasses import field, asdict, astuple\nmake_field = field\nto_dict = asdict\nto_tuple = astuple", "make_field", "to_dict", "to_tuple")]
+    public async Task AliasesPreserveFieldOptionsAndHelperContracts(string imports, string field, string asdict, string astuple)
+    {
+        var source = "from dataclasses import dataclass\n" + imports + "\n" +
+            "@dataclass\nclass Box:\n    value: int = " + field + "()\n" +
+            "    keyword: int = " + field + "(default=7, kw_only=True)\n" +
+            "    cached: int = " + field + "(default=9, init=False)\n" +
+            "    items: list = " + field + "(default_factory=list)\n" +
+            "box = Box(1, keyword=8)\nprint(" + asdict + "(box, dict_factory=dict))\n" +
+            "print(" + astuple + "(box, tuple_factory=tuple))\n";
+        await AssertBothModes(source, "{'value': 1, 'keyword': 8, 'cached': 9, 'items': []}\n(1, 8, 9, [])\n");
+    }
+
+    [Theory]
+    [InlineData("import dataclasses as dc", "dc.field(default=1, default_factory=list)", "LA3037")]
+    [InlineData("from dataclasses import field as make_field", "make_field(default_factory=1)", "LA3038")]
+    [InlineData("from dataclasses import asdict as to_dict", "to_dict(None, dict_factory=1)", "LA3039")]
+    [InlineData("import dataclasses as dc", "dc.astuple(None, tuple_factory=1)", "LA3042")]
+    public void InvalidAliasedDataclassCallsKeepTheirDiagnostics(string imports, string call, string code)
+    {
+        var script = new LythonEngine().Compile(imports + "\n" + call);
+        Assert.False(script.IsValid);
+        Assert.Contains(script.Diagnostics, diagnostic => diagnostic.Code == code);
+    }
+
+    [Theory]
+    [InlineData("import dataclasses as dc", "dc.field")]
+    [InlineData("from dataclasses import field as make_field", "make_field")]
+    public void AliasedFieldsKeepStaticDefaultAndConstructorFacts(string imports, string field)
+    {
+        var source = "from dataclasses import dataclass\n" + imports + "\n" +
+            "@dataclass\nclass Box:\n    text: str = " + field + "(default='alpha', kw_only=True)\n" +
+            "    label: str = " + field + "(default='beta', init=False)\n" +
+            "    items: list = " + field + "(default_factory=list)\n" +
+            "box = Box()\nbox.text.find(1)\nbox.label.find(1)\nbox.items.extend(1)\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.False(script.IsValid);
+        Assert.Equal(2, script.Diagnostics.Count(diagnostic => diagnostic.Code == "LA3075"));
+        Assert.Contains(script.Diagnostics, diagnostic => diagnostic.Code == "LA3140");
+    }
+
+    [Theory]
+    [InlineData("import dataclasses as dc", "dc.field", "Box()")]
+    [InlineData("import dataclasses as dc", "dc.field", "Box(1, 2)")]
+    [InlineData("import dataclasses as dc", "dc.field", "Box(1, cached=2)")]
+    [InlineData("from dataclasses import field as make_field", "make_field", "Box()")]
+    [InlineData("from dataclasses import field as make_field", "make_field", "Box(1, 2)")]
+    [InlineData("from dataclasses import field as make_field", "make_field", "Box(1, cached=2)")]
+    public void AliasedFieldsKeepInvalidConstructorDiagnostics(string imports, string field, string call)
+    {
+        var source = "from dataclasses import dataclass\n" + imports + "\n" +
+            "@dataclass\nclass Box:\n    value: int = " + field + "()\n" +
+            "    keyword: int = " + field + "(default=7, kw_only=True)\n" +
+            "    cached: int = " + field + "(default=9, init=False)\n" + call;
+        var script = new LythonEngine().Compile(source);
+        Assert.False(script.IsValid);
+        Assert.Contains(script.Diagnostics, diagnostic => diagnostic.Code == "LA3149");
+    }
+
+    private static async Task AssertBothModes(string source, string expected)
+    {
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(expected, result.StandardOutput);
+        }
+    }
+
     [Fact]
     public void DataclassesModule_HelperFunctions_HaveDirectCoverage()
     {

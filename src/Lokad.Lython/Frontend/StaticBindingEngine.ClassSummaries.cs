@@ -42,9 +42,9 @@ internal static partial class StaticBindingEngine
 
                     var initOnly = IsInitOnlyDataclassField(annotated.Annotation);
                     var hasDefault = TryGetDataclassFieldDefault(annotated.Expression, bindings, out var defaultValue);
-                    var includeInInit = TryGetDataclassFieldInit(annotated.Expression, out var init) ? init : true;
+                    var includeInInit = TryGetDataclassFieldInit(annotated.Expression, bindings, out var init) ? init : true;
                     var keywordOnly = classDefinition.DataclassDecorator.RequireNotNull().KwOnly ||
-                        (TryGetDataclassFieldKeywordOnly(annotated.Expression, out var kwOnly) && kwOnly);
+                        (TryGetDataclassFieldKeywordOnly(annotated.Expression, bindings, out var kwOnly) && kwOnly);
                     fields.Add(new AbstractClassFieldSummary(
                         name.Name,
                         hasDefault ? defaultValue : AbstractValue.Unknown(annotated.Span),
@@ -79,18 +79,18 @@ internal static partial class StaticBindingEngine
             return false;
         }
 
-        if (TryGetDataclassFieldArgument(expression, 0, "default", out var defaultExpression))
+        if (TryGetDataclassFieldArgument(expression, bindings, 0, "default", out var defaultExpression))
         {
             value = StaticAbstractValueResolver.ResolveOrUnknown(defaultExpression, bindings);
             return true;
         }
 
-        if (TryGetDataclassFieldArgument(expression, 1, "default_factory", out var defaultFactoryExpression))
+        if (TryGetDataclassFieldArgument(expression, bindings, 1, "default_factory", out var defaultFactoryExpression))
         {
             return TryGetDataclassDefaultFactoryValue(defaultFactoryExpression, expression.Span, out value);
         }
 
-        if (StaticDataclassFacts.IsFieldCall(expression))
+        if (StaticDataclassFacts.IsFieldCall(expression, bindings))
         {
             value = default;
             return false;
@@ -100,10 +100,10 @@ internal static partial class StaticBindingEngine
         return true;
     }
 
-    private static bool TryGetDataclassFieldInit(ExpressionSyntax? expression, out bool init)
+    private static bool TryGetDataclassFieldInit(ExpressionSyntax? expression, AbstractState bindings, out bool init)
     {
         init = true;
-        if (!TryGetDataclassFieldArgument(expression, 2, "init", out var initExpression))
+        if (!TryGetDataclassFieldArgument(expression, bindings, 2, "init", out var initExpression))
         {
             return false;
         }
@@ -111,10 +111,10 @@ internal static partial class StaticBindingEngine
         return TryGetBooleanLiteral(initExpression, out init);
     }
 
-    private static bool TryGetDataclassFieldKeywordOnly(ExpressionSyntax? expression, out bool keywordOnly)
+    private static bool TryGetDataclassFieldKeywordOnly(ExpressionSyntax? expression, AbstractState bindings, out bool keywordOnly)
     {
         keywordOnly = false;
-        if (!TryGetDataclassFieldArgument(expression, 7, "kw_only", out var keywordOnlyExpression))
+        if (!TryGetDataclassFieldArgument(expression, bindings, 7, "kw_only", out var keywordOnlyExpression))
         {
             return false;
         }
@@ -122,11 +122,11 @@ internal static partial class StaticBindingEngine
         return TryGetBooleanLiteral(keywordOnlyExpression, out keywordOnly);
     }
 
-    private static bool TryGetDataclassFieldArgument(ExpressionSyntax? expression, int position, string keyword, [MaybeNullWhen(false)] out ExpressionSyntax argument)
+    private static bool TryGetDataclassFieldArgument(ExpressionSyntax? expression, AbstractState bindings, int position, string keyword, [MaybeNullWhen(false)] out ExpressionSyntax argument)
     {
         if (expression is CallExpressionSyntax call &&
-            StaticDataclassFacts.IsFieldCall(call) &&
-            StaticCallArguments.TryGetConcreteArguments(call, out var arguments) &&
+            StaticDataclassFacts.IsFieldCall(call, bindings) &&
+            StaticCallArguments.TryGetConcreteArguments(call, bindings, out var arguments) &&
             arguments.TryGetValue(position, keyword, out argument))
         {
             return true;

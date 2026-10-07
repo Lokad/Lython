@@ -10,19 +10,24 @@ internal static class StaticDataclassContractFamily
         List<LythonDiagnostic> diagnostics,
         AbstractState bindings)
     {
-        if (StaticDataclassFacts.IsFieldCall(call))
+        if (!StaticContractEngine.TryResolveKnownCallableTarget(call.Target, bindings, out var targetName))
+        {
+            return false;
+        }
+
+        if (string.Equals(targetName, LythonKnownCallableSignatures.DataclassesField.Name, StringComparison.Ordinal))
         {
             AnalyzeDataclassesFieldCall(arguments, diagnostics, bindings);
             return true;
         }
 
-        if (IsDataclassesAsDictCall(call))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.DataclassesAsDict.Name, StringComparison.Ordinal))
         {
             AnalyzeDataclassesAsDictCall(arguments, diagnostics, bindings);
             return true;
         }
 
-        if (IsDataclassesAsTupleCall(call))
+        if (string.Equals(targetName, LythonKnownCallableSignatures.DataclassesAsTuple.Name, StringComparison.Ordinal))
         {
             AnalyzeDataclassesAsTupleCall(arguments, diagnostics, bindings);
             return true;
@@ -230,14 +235,6 @@ internal static class StaticDataclassContractFamily
 
     private static IEnumerable<AbstractClassFieldSummary> GetVisibleDataclassFields(AbstractClassSummary summary)
         => summary.StoredFields;
-
-    private static bool IsDataclassesAsDictCall(CallExpressionSyntax call)
-        => call.Target is IdentifierExpressionSyntax { Name: "asdict" } or
-            MemberExpressionSyntax { Target: IdentifierExpressionSyntax { Name: "dataclasses" }, MemberName: "asdict" };
-
-    private static bool IsDataclassesAsTupleCall(CallExpressionSyntax call)
-        => call.Target is IdentifierExpressionSyntax { Name: "astuple" } or
-            MemberExpressionSyntax { Target: IdentifierExpressionSyntax { Name: "dataclasses" }, MemberName: "astuple" };
 
     private static void AnalyzeDataclassesFieldCall(ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
