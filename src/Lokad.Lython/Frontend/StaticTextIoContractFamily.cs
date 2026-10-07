@@ -112,7 +112,7 @@ internal static class StaticTextIoContractFamily
         }
 
         StaticKnownCallArgumentChecks.AnalyzeIntegerOrNoneArgument(arguments, 2, "buffering", "open(..., buffering=...) expects an integer or None.", diagnostics, bindings);
-        AnalyzeEncodingArgument(arguments, 3, "encoding", "LA3003", "open(..., encoding=...) must be 'utf-8', 'utf-8-sig', 'latin-1', or None when it is statically known.", "open() only supports encoding='utf-8', 'utf-8-sig', or 'latin-1'.", diagnostics, bindings);
+        AnalyzeEncodingArgument(arguments, 3, "encoding", "LA3003", "open(..., encoding=...) must be 'utf-8', 'utf-8-sig', 'latin-1', 'ascii', or None when it is statically known.", "open() only supports encoding='utf-8', 'utf-8-sig', 'latin-1', or 'ascii'.", diagnostics, bindings);
         AnalyzeErrorsArgument(arguments, 4, "errors", "LA3005", "open(..., errors=...) must be 'strict', 'ignore', 'replace', 'backslashreplace', or None when it is statically known.", "open() only supports text error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
         AnalyzeNewlineArgument(arguments, 5, "newline", "LA3004", "open(..., newline=...) must be None, '', '\\n', '\\r', or '\\r\\n' when it is statically known.", "open() newline must be None, '', '\\n', '\\r', or '\\r\\n'.", diagnostics, bindings);
         StaticKnownCallArgumentChecks.AnalyzeBooleanOrNoneArgument(arguments, 6, "closefd", "open(..., closefd=...) expects a bool or None.", diagnostics, bindings);
@@ -174,8 +174,8 @@ internal static class StaticTextIoContractFamily
             0,
             "encoding",
             "LA3049",
-            "Path.read_text() only supports encoding='utf-8', 'utf-8-sig', or 'latin-1'.",
-            "Path.read_text() only supports encoding='utf-8', 'utf-8-sig', or 'latin-1'.",
+            "Path.read_text() only supports encoding='utf-8', 'utf-8-sig', 'latin-1', or 'ascii'.",
+            "Path.read_text() only supports encoding='utf-8', 'utf-8-sig', 'latin-1', or 'ascii'.",
             diagnostics,
             bindings);
         AnalyzeErrorsArgument(
@@ -214,8 +214,8 @@ internal static class StaticTextIoContractFamily
             1,
             "encoding",
             "LA3053",
-            "Path.write_text() only supports encoding='utf-8', 'utf-8-sig', or 'latin-1'.",
-            "Path.write_text() only supports encoding='utf-8', 'utf-8-sig', or 'latin-1'.",
+            "Path.write_text() only supports encoding='utf-8', 'utf-8-sig', 'latin-1', or 'ascii'.",
+            "Path.write_text() only supports encoding='utf-8', 'utf-8-sig', 'latin-1', or 'ascii'.",
             diagnostics,
             bindings);
         AnalyzeErrorsArgument(
@@ -276,8 +276,8 @@ internal static class StaticTextIoContractFamily
             2,
             "encoding",
             "LA3063",
-            "Path.open() only supports encoding='utf-8', 'utf-8-sig', or 'latin-1'.",
-            "Path.open() only supports encoding='utf-8', 'utf-8-sig', or 'latin-1'.",
+            "Path.open() only supports encoding='utf-8', 'utf-8-sig', 'latin-1', or 'ascii'.",
+            "Path.open() only supports encoding='utf-8', 'utf-8-sig', 'latin-1', or 'ascii'.",
             diagnostics,
             bindings);
         AnalyzeErrorsArgument(

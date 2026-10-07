@@ -501,7 +501,7 @@ with open("/repo/out.txt", "w", -1, "utf-8", "strict", "") as writer:
 open("/repo/input.txt", "r", encoding="utf-16")
 open("/repo/created.txt", "w").write("created")
 """,
-        "open() only supports encoding='utf-8', 'utf-8-sig', or 'latin-1'.")]
+        "open() only supports encoding='utf-8', 'utf-8-sig', 'latin-1', or 'ascii'.")]
     [InlineData(
         """
 open("/repo/input.txt", "r", errors="surrogateescape")
@@ -783,7 +783,7 @@ from pathlib import Path
 Path("/repo/input.txt").read_text(encoding="utf-16")
 """,
         "compile",
-        "only supports encoding='utf-8', 'utf-8-sig', or 'latin-1'")]
+        "only supports encoding='utf-8', 'utf-8-sig', 'latin-1', or 'ascii'")]
     [InlineData(
         """
 from pathlib import Path

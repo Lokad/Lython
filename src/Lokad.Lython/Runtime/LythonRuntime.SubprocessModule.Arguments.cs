@@ -194,7 +194,7 @@ internal sealed partial class LythonRuntime
         return encodingMode switch
         {
             TextEncodingMode.Utf8Bom => LythonSubprocessTextEncoding.Utf8WithSignature,
-            TextEncodingMode.Latin1 => throw new LythonRuntimeException(
+            TextEncodingMode.Latin1 or TextEncodingMode.Ascii => throw new LythonRuntimeException(
                 "ValueError",
                 $"{owner}(...) only supports encoding='utf-8' or 'utf-8-sig' because the subprocess host boundary is UTF-8-shaped.",
                 span),

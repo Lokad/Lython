@@ -574,7 +574,7 @@ internal sealed partial class LythonRuntime
                     return head;
                 }
 
-                if (_encoding != TextEncodingMode.Latin1)
+                if (!IsSingleByteEncoding(_encoding))
                 {
                     var tail = Math.Min(4, head);
                     for (var k = tail; k >= 1; k--)
@@ -607,7 +607,7 @@ internal sealed partial class LythonRuntime
                 // files (and other host failures) surface with no infrastructure
                 // charged, exactly like the prereserve fall-through before them.
                 _context.RegisterHostCall(null);
-                var payload = _encoding == TextEncodingMode.Latin1
+                var payload = IsSingleByteEncoding(_encoding)
                     ? _context.ReadHostBytesRange(_path, _nextOffset, _windowBytes, null)
                     : _context.ReadTextUtf8Range(_path, _nextOffset, _windowBytes, null);
                 EnsureRaw();
@@ -622,7 +622,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 _context.RegisterHostCall(null);
-                var payload = _encoding == TextEncodingMode.Latin1
+                var payload = IsSingleByteEncoding(_encoding)
                     ? await _context.ReadHostBytesRangeAsync(_path, _nextOffset, _windowBytes, null).ConfigureAwait(false)
                     : await _context.ReadTextUtf8RangeAsync(_path, _nextOffset, _windowBytes, null).ConfigureAwait(false);
                 EnsureRaw();
@@ -678,7 +678,25 @@ internal sealed partial class LythonRuntime
                 Debug.Assert(_raw is not null, "window installs from buffered bytes");
                 var source = new ReadOnlySpan<byte>(_raw!, 0, head);
                 string decoded;
-                if (_encoding == TextEncodingMode.Latin1)
+                if (_encoding == TextEncodingMode.Ascii)
+                {
+                    _window = DecodeAsciiText(source, _context, null, _errors, _newline);
+                    _windowCharge = _window.OwnerMemoryGovernor is null ? 0 : _window.CommittedOwnedBytes;
+                    try
+                    {
+                        var decodedCharge = _window.Length == 0 ? 0 : 32L + 2L * _window.Length;
+                        _context.MemoryGovernor.Reserve(decodedCharge, null);
+                        _context.MemoryGovernor.Commit(decodedCharge);
+                        _windowCharge += decodedCharge;
+                        decoded = Encoding.UTF8.GetString(_window.Utf8Bytes.Span);
+                    }
+                    catch
+                    {
+                        ReleaseWindow();
+                        throw;
+                    }
+                }
+                else if (_encoding == TextEncodingMode.Latin1)
                 {
                     decoded = Encoding.UTF8.GetString(DecodeLatin1ToBytes(source, _newline));
                 }
@@ -691,11 +709,14 @@ internal sealed partial class LythonRuntime
                     }
                 }
 
-                var utf8 = Encoding.UTF8.GetBytes(decoded);
-                _window = utf8.Length == 0
-                    ? PyString.Empty
-                    : PyString.FromOwnedUtf8(utf8, _context.MemoryGovernor, null);
-                _windowCharge = utf8.Length == 0 ? 0 : PyString.EstimateApproximateBytes(utf8.Length);
+                if (_encoding != TextEncodingMode.Ascii)
+                {
+                    var utf8 = Encoding.UTF8.GetBytes(decoded);
+                    _window = utf8.Length == 0
+                        ? PyString.Empty
+                        : PyString.FromOwnedUtf8(utf8, _context.MemoryGovernor, null);
+                    _windowCharge = utf8.Length == 0 ? 0 : PyString.EstimateApproximateBytes(utf8.Length);
+                }
                 _decoded = decoded;
                 _windowConsumed = 0;
                 _charConsumed = 0;
@@ -717,7 +738,7 @@ internal sealed partial class LythonRuntime
                 _charConsumed = 0;
             }
 
-            private string TextReadKind() => _encoding == TextEncodingMode.Latin1 ? "binary" : "text";
+            private string TextReadKind() => IsSingleByteEncoding(_encoding) ? "binary" : "text";
         }
     }
 }

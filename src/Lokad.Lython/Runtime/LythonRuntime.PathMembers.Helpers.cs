@@ -431,7 +431,7 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span)
         {
             PyString text;
-            if (encodingMode == TextEncodingMode.Latin1)
+            if (IsSingleByteEncoding(encodingMode))
             {
                 using var payload = ReadGovernedHostBytes(path, context, span);
                 text = DecodeText(payload.Memory, encodingMode, context, span, errors, newline);
@@ -454,7 +454,7 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span)
         {
             PyString text;
-            if (encodingMode == TextEncodingMode.Latin1)
+            if (IsSingleByteEncoding(encodingMode))
             {
                 using var payload = await ReadGovernedHostBytesAsync(path, context, span).ConfigureAwait(false);
                 text = DecodeText(payload.Memory, encodingMode, context, span, errors, newline);
@@ -486,7 +486,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context,
             LythonSourceSpan span)
         {
-            if (encoding == TextEncodingMode.Latin1)
+            if (IsSingleByteEncoding(encoding))
             {
                 context.WriteHostBytes(path, payload, span);
             }
@@ -502,7 +502,7 @@ internal sealed partial class LythonRuntime
             TextEncodingMode encoding,
             ExecutionContext context,
             LythonSourceSpan span)
-            => encoding == TextEncodingMode.Latin1
+            => IsSingleByteEncoding(encoding)
                 ? context.WriteHostBytesAsync(path, payload, span)
                 : context.WriteTextUtf8Async(path, payload, span);
 

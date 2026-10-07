@@ -43,6 +43,7 @@ internal sealed partial class LythonRuntime
             {
                 TextEncodingMode.Utf8Bom => "utf-8-sig",
                 TextEncodingMode.Latin1 => "iso8859-1",
+                TextEncodingMode.Ascii => "ascii",
                 _ => "utf-8"
             };
 
@@ -198,7 +199,7 @@ internal sealed partial class LythonRuntime
                 if (stat.Exists && stat.IsFile && context.Limits.MaxHostReadBytes is { } maxHostReadBytes &&
                     stat.Size > new BigInteger(maxHostReadBytes))
                 {
-                    throw encoding == TextEncodingMode.Latin1
+                    throw IsSingleByteEncoding(encoding)
                         ? RuntimeErrors.Runtime($"host binary read exceeded maximum bytes ({maxHostReadBytes})", null)
                         : RuntimeErrors.Runtime($"host text read exceeded maximum bytes ({maxHostReadBytes})", null);
                 }

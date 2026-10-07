@@ -68,6 +68,11 @@ internal sealed class DelayedLythonHost : ILythonHost
 
     public async ValueTask<ReadOnlyMemory<byte>> ReadBytesAsync(string path, CancellationToken cancellationToken)
     {
+        if (_readPauses.TryGetValue(path, out var paused))
+        {
+            paused.TrySetResult();
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+        }
         await Delay(cancellationToken).ConfigureAwait(false);
         return await _inner.ReadBytesAsync(path, cancellationToken).ConfigureAwait(false);
     }

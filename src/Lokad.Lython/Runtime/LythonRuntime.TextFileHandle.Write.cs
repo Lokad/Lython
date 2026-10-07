@@ -45,7 +45,7 @@ internal sealed partial class LythonRuntime
             {
                 get
                 {
-                    var length = _encoding == TextEncodingMode.Latin1
+                    var length = IsSingleByteEncoding(_encoding)
                         ? _bufferedRuneLength
                         : _buffer.Length;
                     if (_newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
@@ -78,11 +78,11 @@ internal sealed partial class LythonRuntime
                     }
                 }
 
-                if (_encoding == TextEncodingMode.Latin1)
+                if (IsSingleByteEncoding(_encoding))
                 {
-                    var normalizedLength = GetLatin1NormalizedLength();
+                    var normalizedLength = GetSingleByteNormalizedLength();
                     EnsureBufferedLength(normalizedLength);
-                    AppendLatin1Normalized();
+                    AppendSingleByteNormalized();
                     _bufferedRuneLength += normalizedLength;
                     _bufferedLineFeedCount += appendedLineFeedCount;
                     return new BigInteger(inputLength);
@@ -94,16 +94,17 @@ internal sealed partial class LythonRuntime
                 _bufferedLineFeedCount += appendedLineFeedCount;
                 return new BigInteger(inputLength);
 
-                long GetLatin1NormalizedLength()
+                long GetSingleByteNormalizedLength()
                 {
                     var length = 0L;
                     var position = 0;
                     var source = text.Utf8Bytes.Span;
                     for (var offset = 0; offset < source.Length; position++)
                     {
+                        if ((position & 1023) == 0) _context.CheckExecutionBudget(null);
                         _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
                         offset += consumed;
-                        if (rune.Value <= byte.MaxValue)
+                        if (rune.Value <= SingleByteMaximumScalar(_encoding))
                         {
                             length++;
                             continue;
@@ -113,8 +114,8 @@ internal sealed partial class LythonRuntime
                         {
                             TextErrorMode.Ignore => length,
                             TextErrorMode.Replace => checked(length + 1),
-                            TextErrorMode.BackslashReplace => checked(length + (rune.Value <= 0xFFFF ? 6 : 10)),
-                            _ => throw Latin1EncodeError(rune, position, null)
+                            TextErrorMode.BackslashReplace => checked(length + BackslashEscapedRuneLength(rune)),
+                            _ => throw SingleByteEncodeError(rune, position, _encoding, null)
                         };
                     }
 
@@ -130,13 +131,15 @@ internal sealed partial class LythonRuntime
                     }
                 }
 
-                void AppendLatin1Normalized()
+                void AppendSingleByteNormalized()
                 {
                     const string hex = "0123456789abcdef";
                     var source = text.Utf8Bytes.Span;
                     Span<byte> encoded = stackalloc byte[4];
+                    var position = 0;
                     for (var offset = 0; offset < source.Length;)
                     {
+                        if ((position++ & 1023) == 0) _context.CheckExecutionBudget(null);
                         _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
                         offset += consumed;
                         if (rune.Value <= 0x7F)
@@ -145,7 +148,7 @@ internal sealed partial class LythonRuntime
                             continue;
                         }
 
-                        if (rune.Value <= byte.MaxValue)
+                        if (rune.Value <= SingleByteMaximumScalar(_encoding))
                         {
                             var encodedLength = rune.EncodeToUtf8(encoded);
                             _buffer.Append(encoded[..encodedLength]);
@@ -163,9 +166,9 @@ internal sealed partial class LythonRuntime
                             continue;
                         }
 
-                        var digits = rune.Value <= 0xFFFF ? 4 : 8;
+                        var digits = rune.Value <= 0xff ? 2 : rune.Value <= 0xFFFF ? 4 : 8;
                         _buffer.Append((byte)'\\');
-                        _buffer.Append(rune.Value <= 0xFFFF ? (byte)'u' : (byte)'U');
+                        _buffer.Append(rune.Value <= 0xff ? (byte)'x' : rune.Value <= 0xFFFF ? (byte)'u' : (byte)'U');
                         for (var shift = (digits - 1) * 4; shift >= 0; shift -= 4)
                         {
                             _buffer.Append((byte)hex[(rune.Value >> shift) & 0xF]);
@@ -251,7 +254,7 @@ internal sealed partial class LythonRuntime
                     ? PyString.Empty
                     : PyString.FromUtf8(_buffer.WrittenMemory);
                 var payload = EncodeText(text, effectiveEncoding, _errors, _newline, _context, span);
-                var operation = (isAppend, effectiveEncoding == TextEncodingMode.Latin1) switch
+                var operation = (isAppend, IsSingleByteEncoding(effectiveEncoding)) switch
                 {
                     (false, false) => PendingTextFlushOperation.WriteText,
                     (true, false) => PendingTextFlushOperation.AppendText,

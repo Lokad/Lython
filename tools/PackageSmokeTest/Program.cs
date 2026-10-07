@@ -158,6 +158,13 @@ if (!htmlHelpers.IsValid)
 foreach (var result in new[] { htmlHelpers.Run(new PureHost()), await htmlHelpers.RunAsync(new PureHost()) })
     RequireOutput(result, "'\u00e9\ud83d\ude00&lt;&amp;&quot;&#x27;'\n'&\u2242\u0338\u00acit;\u223e\u0333\ufffd\u20ac\ud83d\ude00'\nFalse False True\ncollision\n");
 
+const string asciiCodecSource = "print(repr('\u00e9\ud83d\ude00'.encode('ascii','backslashreplace')))\nprint(repr(b'A\\x80\\xff\\r\\n'.decode('US-ASCII','replace')))\nprint(str(bytes('\u00e9','ascii','ignore'),'ascii')=='')\n";
+var asciiCodecs = engine.Compile(asciiCodecSource);
+if (!asciiCodecs.IsValid)
+    throw new Exception(string.Join("; ", asciiCodecs.Diagnostics.Select(d => d.Message)));
+foreach (var result in new[] { asciiCodecs.Run(new PureHost()), await asciiCodecs.RunAsync(new PureHost()) })
+    RequireOutput(result, "b'\\\\xe9\\\\U0001f600'\n'A\ufffd\ufffd\\r\\n'\nTrue\n");
+
 const string fileSource = """
     import json
     with open('/input.json') as source:

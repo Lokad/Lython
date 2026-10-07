@@ -495,6 +495,7 @@ internal sealed partial class LythonRuntime
         {
             TextEncodingMode.Utf8Bom => "utf-8-sig",
             TextEncodingMode.Latin1 => "iso8859-1",
+            TextEncodingMode.Ascii => "ascii",
             _ => "utf-8",
         };
 
