@@ -4,6 +4,7 @@
 
 ## 0.10.0 - release candidate
 
+- Correct string splitlines for Python's U+001C–U+001E and NEL boundaries, preserving original endings, Unicode byte positions and byte splitlines rules.
 - Correct Python string whitespace classification for isspace, strip variants and whitespace split/rsplit, including U+001C–U+001F and bounded maxsplit; keep byte whitespace separate.
 - Add governed io.BytesIO with opaque byte storage, byte positions, shared-cursor reads/iteration, immutable snapshots, checked seeks and lifecycle APIs; await guest index/writelines effects and preserve cursor/content on resource denial.
 - Apply string-result limits before consuming StringIO input, and keep its private storage outside guest collection item limits.

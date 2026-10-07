@@ -338,7 +338,7 @@ internal static partial class PyStringOps
         return byteIndex;
     }
 
-    private static bool TryGetLineBreakByteLength(ReadOnlySpan<byte> source, int byteIndex, out int lineBreakLength)
+    internal static bool TryGetLineBreakByteLength(ReadOnlySpan<byte> source, int byteIndex, out int lineBreakLength)
     {
         var current = source[byteIndex];
         switch (current)
@@ -346,10 +346,16 @@ internal static partial class PyStringOps
             case (byte)'\n':
             case (byte)'\v':
             case (byte)'\f':
+            case 0x1C:
+            case 0x1D:
+            case 0x1E:
                 lineBreakLength = 1;
                 return true;
             case (byte)'\r':
                 lineBreakLength = byteIndex + 1 < source.Length && source[byteIndex + 1] == (byte)'\n' ? 2 : 1;
+                return true;
+            case 0xC2 when byteIndex + 1 < source.Length && source[byteIndex + 1] == 0x85:
+                lineBreakLength = 2;
                 return true;
             case 0xE2 when byteIndex + 2 < source.Length && source[byteIndex + 1] == 0x80 &&
                            (source[byteIndex + 2] == 0xA8 || source[byteIndex + 2] == 0xA9):
