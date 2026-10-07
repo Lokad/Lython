@@ -326,6 +326,7 @@ internal sealed partial class LythonRuntime
     {
         return typeSpec switch
         {
+            ExceptionTypeValue => true,
             PyType => true,
             PyNamedTupleType => true,
             TimeStructTimeType => true,
@@ -341,8 +342,11 @@ internal sealed partial class LythonRuntime
     {
         return typeSpec switch
         {
+            ExceptionTypeValue exceptionType => value is PyException exception &&
+                MatchesExceptionType(exceptionType.ExceptionIdentity, exception.Identity),
             PyType runtimeType => value switch
             {
+                ExceptionTypeValue => ReferenceEquals(TryGetBuiltinOrNull(context, "type"), runtimeType) || IsObjectRootType(runtimeType, context),
                 PyInstance instance => instance.Type.IsSubtypeOf(runtimeType),
                 PyType typeValue => typeValue.MetaType is not null && typeValue.MetaType.IsSubtypeOf(runtimeType),
                 UrllibParseModule.UrlResultType => ReferenceEquals(TryGetBuiltinOrNull(context, "type"), runtimeType) || IsObjectRootType(runtimeType, context),
@@ -365,6 +369,10 @@ internal sealed partial class LythonRuntime
 
     private static bool IsSubclassAgainstSingleType(object type, object baseSpec)
     {
+        if (type is ExceptionTypeValue exceptionType)
+            return baseSpec is ExceptionTypeValue exceptionBase
+                ? MatchesExceptionType(exceptionBase.ExceptionIdentity, exceptionType.ExceptionIdentity)
+                : GetBuiltinTypeName(baseSpec) == "object";
         if (type is UrllibParseModule.UrlResultType urlType)
             return ReferenceEquals(type, baseSpec) || GetBuiltinTypeName(baseSpec) is "tuple" or "object";
         if (type is PyType runtimeSubject)
