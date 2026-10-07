@@ -1972,6 +1972,14 @@ tab, CR and LF throughout. A detected ASCII scheme is lowercased. A false
 allow_fragments leaves hash characters in the path/query. Byte arguments
 coerce through strict ASCII; mixing nonempty text and byte arguments fails.
 
+Within each execution, urlsplit retains up to 128 results in a governed LRU
+cache. Repeated matching calls return the same result and skip parsing and
+coercion callbacks. Keys preserve argument placement, keyword order, explicit
+defaults and top-level Python types; hashing still runs on each lookup.
+urlparse uses the same split cache after coercion and builds a fresh parse
+result. Guest key equality and equality-result truth protocols await their
+mediated effects under RunAsync; caches never cross execution boundaries.
+
 Results expose scheme, netloc, path, query and fragment; parse results also
 expose params. They compare/hash as tuples, support iteration, indexing,
 plain-tuple slicing and inherited tuple methods, and participate in sequence
@@ -1995,9 +2003,9 @@ use Python's component rules independently of platform URI normalization.
 `urlunsplit(components)` and `urlunparse(components)` accept five-/six-item
 iterables and use the same reassembly as geturl, preserving components while
 eliding empty query/fragment delimiters and applying scheme/authority slash
-rules. Guest hashing, decode/encode, component iteration and truth protocols
+rules. Guest hashing/equality, decode/encode, component iteration and truth protocols
 await their mediated effects under RunAsync. Native component storage, result
-shells, slices, codec conversions, authority properties and output builders
+shells, cache keys/links, slices, codec conversions, authority properties and output builders
 are governed; scans check budgets and denied/abandoned construction releases
 ownership. Networking modules, urljoin, urldefrag and function cache-control
 APIs remain outside this inventory.

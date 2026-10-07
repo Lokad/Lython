@@ -10,6 +10,7 @@ internal sealed class ExecutionState
     internal PyType? TypingGeneric { get; set; }
     internal PyDict? UrlSplitFieldDefaults { get; set; }
     internal PyDict? UrlParseFieldDefaults { get; set; }
+    internal LythonRuntime.UrllibParseModule.UrlSplitCache? UrlSplitCache { get; set; }
     private long _csvPulls;
     private long _boundCalls;
     private readonly ConditionalWeakTable<object, StrongBox<long>> _objectIds = new();

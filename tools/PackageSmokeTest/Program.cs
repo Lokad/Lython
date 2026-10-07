@@ -179,6 +179,13 @@ if (!structuredUrls.IsValid)
 foreach (var result in new[] { structuredUrls.Run(new PureHost()), await structuredUrls.RunAsync(new PureHost()) })
     RequireOutput(result, "('http', 'u:p@EXAMPLE:080', '/a', 'b', 'x=1', 'f') u p example 80 http://u:p@EXAMPLE:080/a;b?x=1#f\n('http', 'Y', '/a', 'b', 'x=1', '') (b'http', b'u:p@EXAMPLE:080', b'/a', b'b', b'x=1', b'f') True\nb'https://X/a?x#f'\nTrue True key\nport\n");
 
+const string urlCacheSource = "import urllib.parse as p\nclass Flag:\n    def __hash__(self):\n        print('hash')\n        return 7\n    def __bool__(self):\n        print('bool')\n        return False\nflag=Flag()\nleft=p.urlsplit('http://x/package-cache#f',allow_fragments=flag)\nright=p.urlsplit('http://x/package-cache#f',allow_fragments=flag)\nprint(left is right,tuple(right))\nprint(p.urlsplit('http://x/package-cache') is p.urlsplit(url='http://x/package-cache'))\n";
+var urlCache = engine.Compile(urlCacheSource);
+if (!urlCache.IsValid)
+    throw new Exception(string.Join("; ", urlCache.Diagnostics.Select(d => d.Message)));
+foreach (var result in new[] { urlCache.Run(new PureHost()), await urlCache.RunAsync(new PureHost()) })
+    RequireOutput(result, "hash\nbool\nhash\nTrue ('http', 'x', '/package-cache#f', '', '')\nFalse\n");
+
 const string fileSource = """
     import json
     with open('/input.json') as source:

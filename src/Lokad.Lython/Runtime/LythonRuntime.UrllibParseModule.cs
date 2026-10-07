@@ -77,6 +77,8 @@ internal sealed partial class LythonRuntime
             private ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
             {
                 context.CheckExecutionBudget(span);
+                if (_operation == UrlOperation.Split)
+                    return CachedUrlSplitAsync(arguments, span, context, asynchronous);
                 var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, _signature, PythonCallableKind.Builtin);
                 var args = bound.Values;
                 if (_operation is UrlOperation.Quote or UrlOperation.QuotePlus or UrlOperation.QuoteBytes && !bound.Assigned[1])
@@ -107,8 +109,7 @@ internal sealed partial class LythonRuntime
                 }
                 return _operation switch
                 {
-                    UrlOperation.Split => ParseUrlAsync(args, span, context, asynchronous, false),
-                    UrlOperation.Parse => ParseUrlAsync(args, span, context, asynchronous, true),
+                    UrlOperation.Parse => ParseUrlAsync(args, span, context, asynchronous),
                     UrlOperation.Unsplit => ReassembleUrlAsync(args[0], span, context, asynchronous, false),
                     UrlOperation.Unparse => ReassembleUrlAsync(args[0], span, context, asynchronous, true),
                     UrlOperation.Quote => QuoteAsync(args, span, context, asynchronous, false),

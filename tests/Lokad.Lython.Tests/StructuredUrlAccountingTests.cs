@@ -60,6 +60,71 @@ public sealed class StructuredUrlAccountingTests
         for (var attempt = 0; attempt < 100; attempt++)
         {
             Consume(context);
+            context.State.UrlSplitCache?.Clear();
+            context.State.UrlSplitCache = null;
+            Sweep(context);
+            Assert.Equal(context.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        }
+    }
+
+    [Fact]
+    public void CacheRetainsAtMost128ResultsAndClearRefundsItsStorage()
+    {
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+            new LythonRunOptions { MaxExecutionMemoryBytes = 512 * 1024 });
+        for (var i = 0; i < 1024; i++)
+        {
+            CacheOne(context, i);
+            if ((i & 31) == 31) Sweep(context);
+            Assert.Equal(Math.Min(i + 1, 128), context.State.UrlSplitCache!.Count);
+        }
+        Assert.Equal(96 + 128 * (80 + 168), context.State.UrlSplitCache!.CommittedBytes);
+        context.State.UrlSplitCache.Clear();
+        context.State.UrlSplitCache = null;
+        Sweep(context);
+        Assert.Equal(context.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void CacheOne(LythonRuntime.ExecutionContext context, int index)
+    {
+        Assert.True(LythonRuntime.UrllibParseModule.Instance.TryGetMember("urlsplit", out var parser));
+        _ = ((LythonRuntime.ICallable)parser).Invoke(
+            [CallArgumentValue.Positional(PyString.FromString("http://x/" + index))], Span, context);
+    }
+
+    [Fact]
+    public void CacheHitsReleaseTransientKeyCopies()
+    {
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        CacheOne(context, 0);
+        Sweep(context);
+        var before = context.MemoryGovernor.CurrentCommittedBytes;
+        for (var i = 0; i < 100; i++)
+        {
+            CacheOne(context, 0);
+            Sweep(context);
+            Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
+            Assert.Equal(1, context.State.UrlSplitCache!.Count);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        }
+    }
+
+    [Theory]
+    [InlineData(700)]
+    [InlineData(800)]
+    [InlineData(900)]
+    public void DeniedCacheInsertionRetainsNoPartialKeyOrCache(long cap)
+    {
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+            new LythonRunOptions { MaxExecutionMemoryBytes = cap });
+        for (var i = 0; i < 20; i++)
+        {
+            var error = Assert.Throws<LythonRuntimeException>(() => CacheOne(context, 0));
+            Assert.Equal("MemoryError", error.ExceptionType);
+            Assert.Null(context.State.UrlSplitCache);
             Sweep(context);
             Assert.Equal(context.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
             Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);

@@ -20,19 +20,50 @@ internal sealed partial class LythonRuntime
         { "", "ftp", "hdl", "prospero", "http", "imap", "https", "shttp", "rtsp", "rtsps", "rtspu", "sip", "sips", "mms", "sftp", "tel" };
 
         private static async ValueTask<object> ParseUrlAsync(object[] args, LythonSourceSpan span,
-            ExecutionContext context, bool asynchronous, bool parameters)
+            ExecutionContext context, bool asynchronous)
         {
-            // urlsplit validates cache keys before entering the parser. The
-            // cache itself is not shared across embedded executions.
-            if (!parameters)
-                foreach (var arg in args) await ValidateUrlHashAsync(arg, span, context, asynchronous).ConfigureAwait(false);
             var textInput = args[0] is PyString;
             if (await TruthAsync(args[1], span, context, asynchronous).ConfigureAwait(false) && (args[1] is PyString) != textInput)
                 throw RuntimeErrors.Type("Cannot mix str and non-str arguments", span);
             var url = await UrlInputAsync(args[0], textInput, span, context, asynchronous).ConfigureAwait(false);
             object schemeValue = textInput ? args[1] : await UrlInputAsync(args[1], false, span, context, asynchronous).ConfigureAwait(false);
-            if (parameters)
-                foreach (var arg in new object[] { url, schemeValue, args[2] }) await ValidateUrlHashAsync(arg, span, context, asynchronous).ConfigureAwait(false);
+            var split = (UrlResult)await CachedUrlSplitAsync(
+                [CallArgumentValue.Positional(url), CallArgumentValue.Positional(schemeValue), CallArgumentValue.Positional(args[2])],
+                span, context, asynchronous).ConfigureAwait(false);
+            var scheme = (PyString)split[0];
+            var path = (PyString)split[2];
+            var param = PyString.Empty;
+            if (UsesParams.Contains(scheme.AsString()))
+            {
+                var source = path.Utf8Bytes;
+                var segment = 0;
+                for (var i = 0; i < source.Length; i++)
+                { if ((i & 1023) == 0) context.CheckExecutionBudget(span); if (source.Span[i] == '/') segment = i + 1; }
+                var semicolon = FindByte(source.Span, (byte)';', segment, source.Length, context, span);
+                if (semicolon >= 0)
+                {
+                    param = OwnedText(source[(semicolon + 1)..], context, span);
+                    path = OwnedText(source[..semicolon], context, span);
+                }
+            }
+            var type = UrlResultType.Get(true, !textInput);
+            context.MemoryGovernor.EnsureCanReserve(64 + PyTuple.EstimateApproximateBytes(type.Fields.Length), span);
+            object[] values = [scheme, split[1], path, param, split[3], split[4]];
+            if (!textInput)
+                for (var i = 0; i < values.Length; i++) values[i] = AsciiBytes((PyString)values[i], context, span);
+            var result = UrlResult.Create(type, values, context, span);
+            GC.KeepAlive(split); GC.KeepAlive(args);
+            return result;
+        }
+
+        private static async ValueTask<object> SplitUrlCoreAsync(object[] args, LythonSourceSpan span,
+            ExecutionContext context, bool asynchronous)
+        {
+            var textInput = args[0] is PyString;
+            if (await TruthAsync(args[1], span, context, asynchronous).ConfigureAwait(false) && (args[1] is PyString) != textInput)
+                throw RuntimeErrors.Type("Cannot mix str and non-str arguments", span);
+            var url = await UrlInputAsync(args[0], textInput, span, context, asynchronous).ConfigureAwait(false);
+            object schemeValue = textInput ? args[1] : await UrlInputAsync(args[1], false, span, context, asynchronous).ConfigureAwait(false);
             var scheme = await UrlInputAsync(schemeValue, true, span, context, asynchronous).ConfigureAwait(false);
             url = CleanUrlText(url, false, context, span);
             scheme = CleanUrlText(scheme, true, context, span);
@@ -81,53 +112,15 @@ internal sealed partial class LythonRuntime
                 length = queryAt;
             }
             ValidateNetloc(netloc, context, span);
-            var param = PyString.Empty;
-            if (parameters && UsesParams.Contains(scheme.AsString()))
-            {
-                var segment = start;
-                for (var i = start; i < length; i++)
-                { if ((i & 1023) == 0) context.CheckExecutionBudget(span); if (source.Span[i] == '/') segment = i + 1; }
-                var semicolon = FindByte(source.Span, (byte)';', segment, length, context, span);
-                if (semicolon >= 0)
-                {
-                    param = OwnedText(source.Slice(semicolon + 1, length - semicolon - 1), context, span);
-                    length = semicolon;
-                }
-            }
             var path = OwnedText(source.Slice(start, length - start), context, span);
-            var type = UrlResultType.Get(parameters, !textInput);
+            var type = UrlResultType.Get(false, !textInput);
             context.MemoryGovernor.EnsureCanReserve(64 + PyTuple.EstimateApproximateBytes(type.Fields.Length), span);
-            object[] values = parameters ? [scheme, netloc, path, param, query, fragment] : [scheme, netloc, path, query, fragment];
+            object[] values = [scheme, netloc, path, query, fragment];
             if (!textInput)
                 for (var i = 0; i < values.Length; i++) values[i] = AsciiBytes((PyString)values[i], context, span);
             var result = UrlResult.Create(type, values, context, span);
             GC.KeepAlive(url); GC.KeepAlive(args);
             return result;
-        }
-
-        private static async ValueTask ValidateUrlHashAsync(object value, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
-        {
-            context.CheckExecutionBudget(span);
-            if (value is PyInstance instance)
-            {
-                if (PyHashProtocols.IsEqWithoutHash(instance)) throw RuntimeErrors.UnhashableType(value, span);
-                if (instance.Type.TryLookupInMro("__hash__", 0, out var slot, out _))
-                {
-                    if (slot is PyNone) throw RuntimeErrors.UnhashableType(value, span);
-                    var bound = asynchronous ? await PyAttributeLookup.BindForInstanceAsync(instance, slot, context, span).ConfigureAwait(false)
-                        : PyAttributeLookup.BindForInstance(instance, slot, context, span);
-                    var hash = await CallAsync(bound, [], span, context, asynchronous).ConfigureAwait(false);
-                    if (!PyNumberOps.TryAsInteger(hash, out _)) throw RuntimeErrors.Type("__hash__ method should return an integer", span);
-                    return;
-                }
-            }
-            if (PyTupleLike.TryGetItems(value, out var items))
-            {
-                using var guard = PyStructuralGuard.EnterSingle(value, span, context);
-                foreach (var item in items) await ValidateUrlHashAsync(item, span, context, asynchronous).ConfigureAwait(false);
-                return;
-            }
-            _ = ComputeBuiltinHash(value, span);
         }
 
         private static async ValueTask<PyString> UrlInputAsync(object value, bool textInput, LythonSourceSpan span,
