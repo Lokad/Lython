@@ -1152,10 +1152,20 @@ For path and text-resource manipulation, scripts must use Python-shaped APIs:
 host-mediated through `ILythonHost`; Lython-specific global filesystem helper
 names are not part of the supported script surface.
 
-`pathlib.Path.read_text(...)` and `Path.write_text(...)` are supported for host-mediated text resources. `encoding` may be `None`, `utf-8`, `utf-8-sig`, the Latin-1 aliases `latin-1`, `latin1`, and `iso-8859-1`, or the ASCII names `ascii`, `646`, `ansi_x3.4_1968`, `ansi_x3.4_1986`, `ansi_x3_4_1968`, `cp367`, `csascii`, `ibm367`, `iso646_us`, `iso_646.irv_1991`, `iso_ir_6`, `us` and `us_ascii` (case-insensitive, with hyphen/space separators normalized to underscores); `errors` may be `None`, `strict`, `ignore`, `replace`, or `backslashreplace`; and `newline` may be `None`, `""`, `"\n"`, `"\r"`, or `"\r\n"`. Other encodings, surrogate error handlers, and unsupported option shapes must fail explicitly. Latin-1 input decodes every byte losslessly, while strict Latin-1 encoding raises `UnicodeEncodeError` for code points outside the byte range. ASCII accepts only bytes/code points 0–127 under strict handling; encoding failures raise `UnicodeEncodeError` and decoding failures raise `UnicodeDecodeError`. Ignore drops invalid units, replace uses `?` for encoding and U+FFFD for decoding, and backslashreplace uses Python `\\x`, `\\u` and `\\U` escapes with lowercase hexadecimal digits. Byte/string conversions preserve newline bytes; mediated file operations apply the selected newline policy. Native scans check execution budgets and preflight output funding; ASCII reader windows fund and release both UTF-8 storage and decoded character scratch. Subprocess text codecs retain their UTF-8/UTF-8-SIG contract.
+`pathlib.Path.read_text(...)` and `Path.write_text(...)` are supported for host-mediated text resources. `encoding` may be `None`, `utf-8`, `utf-8-sig`, the Latin-1 aliases `latin-1`, `latin1`, and `iso-8859-1`, or the ASCII names `ascii`, `646`, `ansi_x3.4_1968`, `ansi_x3.4_1986`, `ansi_x3_4_1968`, `cp367`, `csascii`, `ibm367`, `iso646_us`, `iso_646.irv_1991`, `iso_ir_6`, `us` and `us_ascii` (case-insensitive, with hyphen/space separators normalized to underscores), or Windows-1252 (`cp1252`, `1252`, `windows-1252`, `windows_1252`, `windows 1252`, case-insensitive); `errors` may be `None`, `strict`, `ignore`, `replace`, or `backslashreplace`; and `newline` may be `None`, `""`, `"\n"`, `"\r"`, or `"\r\n"`. Other encodings, surrogate error handlers, and unsupported option shapes must fail explicitly. Latin-1 input decodes every byte losslessly, while strict Latin-1 encoding raises `UnicodeEncodeError` for code points outside the byte range. ASCII accepts only bytes/code points 0–127 under strict handling; encoding failures raise `UnicodeEncodeError` and decoding failures raise `UnicodeDecodeError`. Ignore drops invalid units, replace uses `?` for encoding and U+FFFD for decoding, and backslashreplace uses Python `\\x`, `\\u` and `\\U` escapes with lowercase hexadecimal digits. Byte/string conversions preserve newline bytes; mediated file operations apply the selected newline policy. Native scans check execution budgets and preflight output funding; ASCII reader windows fund and release both UTF-8 storage and decoded character scratch. Subprocess text codecs retain their UTF-8/UTF-8-SIG contract.
+
+Windows-1252 uses a fixed 32-entry mapping for byte values 80–9F hex, with
+Latin-1 mappings elsewhere. Undefined bytes 81/8D/8F/90/9D raise
+UnicodeDecodeError under strict decoding. Unrepresentable scalars raise
+UnicodeEncodeError. Ignore, replace and backslashreplace use the same shared
+error policies as the other codecs. Pure conversions, Path methods, sequential
+text handles, gzip text handles and URL codec helpers share this inventory;
+file transport uses the optional binary host capability. CP1252 reader windows
+fund both their UTF-8 result and decoded character scratch, and release both
+on close or construction failure. No OS code-page provider is consulted.
 
 Python-shaped `open(...)` and `pathlib.Path.open(...)` support text handles
-for the same UTF-8, Latin-1 and ASCII codecs and sequential binary handles in
+for the same UTF-8, Latin-1, ASCII and Windows-1252 codecs and sequential binary handles in
 `rb`, `wb`, `ab` modes (also `br`, `bw`, `ba`). Signatures include `buffering`,
 `encoding`, `errors`, and `newline`; binary mode accepts only None for the three
 text options and checks their types before rejecting non-None values. Explicit
@@ -1976,7 +1986,7 @@ literal. Literal Unicode around percent-decoded ASCII runs is preserved.
 encoding/error options. `quote_from_bytes` accepts bytes. Safe values support
 text, bytes and iterables of integer byte values; `quote_plus` follows Python's
 safe-plus-space addition order when the input contains spaces. Text conversion
-uses the shared UTF-8, Latin-1 and ASCII codec/error inventories and preserves
+uses the shared UTF-8, Latin-1, ASCII and Windows-1252 codec/error inventories and preserves
 newlines. `unquote` accepts text or bytes and returns text; `unquote_plus`
 requires string replacement behavior. `unquote_to_bytes` accepts text or bytes
 and returns opaque bytes, encoding literal text as UTF-8.
@@ -2365,7 +2375,7 @@ Lython is text-first.
 
 Scripts are UTF-8 text.
 
-UTF-8 is the default and canonical text-resource encoding. The supported Latin-1 and ASCII codecs are converted explicitly at the runtime boundary over bounded host byte transport.
+UTF-8 is the default and canonical text-resource encoding. The supported Latin-1, ASCII and Windows-1252 codecs are converted explicitly at the runtime boundary over bounded host byte transport.
 
 The canonical host-I/O boundary for text resources is UTF-8 bytes. A host implementation may internally decode or encode however it likes, but the observable text contract with Lython is UTF-8 interchange rather than host-native string transport. A non-UTF-8 codec must use the separate bounded binary capability and fail explicitly when that optional capability is unavailable; sequential binary file access also requires that explicit optional capability.
 
@@ -2421,8 +2431,8 @@ Lython exposes a limited public `bytes` value model.
 Supported bytes behavior includes:
 
 - bytes literals
-- `bytes([iterable])` plus UTF-8, Latin-1 and ASCII string encoding forms
-- `bytes.decode(...)` and `str.encode(...)` for the supported UTF-8, Latin-1 and ASCII codec policy
+- `bytes([iterable])` plus UTF-8, Latin-1, ASCII and Windows-1252 string encoding forms
+- `bytes.decode(...)` and `str.encode(...)` for the supported UTF-8, Latin-1, ASCII and Windows-1252 codec policy
 - truthiness
 - equality and hashing
 - `len(...)`

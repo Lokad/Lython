@@ -63,6 +63,17 @@ const string compatibilityOutput = "ab 3\nTrue ['a', 'b'] [['1', '2']] empty\n3\
 foreach (var result in new[] { compatibility.Run(new PureHost()), await compatibility.RunAsync(new PureHost()) })
     RequireOutput(result, compatibilityOutput);
 
+const string windows1252Source = """
+    data=bytes([i for i in range(256) if i not in [129,141,143,144,157]])
+    text=data.decode('cp1252')
+    print(len(text),text.encode('cp1252')==data,bytes(text,'cp1252')==data,str(data,'cp1252')==text)
+    """;
+var windows1252 = engine.Compile(windows1252Source);
+if (!windows1252.IsValid)
+    throw new Exception(string.Join("; ", windows1252.Diagnostics.Select(d => d.Message)));
+foreach (var result in new[] { windows1252.Run(new PureHost()), await windows1252.RunAsync(new PureHost()) })
+    RequireOutput(result, "251 True True True\n");
+
 const string streamSource = """
     import csv
     class Writer:

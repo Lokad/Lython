@@ -688,9 +688,11 @@ internal sealed partial class LythonRuntime
                 Debug.Assert(_raw is not null, "window installs from buffered bytes");
                 var source = new ReadOnlySpan<byte>(_raw!, 0, head);
                 string decoded;
-                if (_encoding == TextEncodingMode.Ascii)
+                if (_encoding is TextEncodingMode.Ascii or TextEncodingMode.Windows1252)
                 {
-                    _window = DecodeAsciiText(source, _context, null, _errors, _newline);
+                    _window = _encoding == TextEncodingMode.Ascii
+                        ? DecodeAsciiText(source, _context, null, _errors, _newline)
+                        : DecodeWindows1252Text(source, _context, null, _errors, _newline);
                     _windowCharge = _window.OwnerMemoryGovernor is null ? 0 : _window.CommittedOwnedBytes;
                     try
                     {
@@ -719,7 +721,7 @@ internal sealed partial class LythonRuntime
                     }
                 }
 
-                if (_encoding != TextEncodingMode.Ascii)
+                if (_encoding is not TextEncodingMode.Ascii and not TextEncodingMode.Windows1252)
                 {
                     var utf8 = Encoding.UTF8.GetBytes(decoded);
                     _window = utf8.Length == 0

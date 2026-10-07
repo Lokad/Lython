@@ -57,6 +57,7 @@ internal sealed partial class LythonRuntime
         }
 
         if (StaticTextContractFacts.IsAsciiEncodingName(encodingName)) return TextEncodingMode.Ascii;
+        if (StaticTextContractFacts.IsWindows1252EncodingName(encodingName)) return TextEncodingMode.Windows1252;
 
         throw UnsupportedTextEncoding(owner, span);
     }
@@ -64,7 +65,7 @@ internal sealed partial class LythonRuntime
     private static LythonRuntimeException UnsupportedTextEncoding(string owner, LythonSourceSpan span)
         => new(
             "ValueError",
-            $"{owner} only supports encoding='utf-8', 'utf-8-sig', 'latin-1', or 'ascii'.",
+            $"{owner} only supports encoding='utf-8', 'utf-8-sig', 'latin-1', 'ascii', or 'cp1252'.",
             span);
 
     private static TextErrorMode ParseTextErrors(object value, string owner, LythonSourceSpan span)
@@ -305,9 +306,11 @@ internal sealed partial class LythonRuntime
         TextErrorMode errors,
         TextNewlineMode newline)
     {
-        if (encoding == TextEncodingMode.Ascii)
+        if (encoding is TextEncodingMode.Ascii or TextEncodingMode.Windows1252)
         {
-            var result = DecodeAsciiText(payload.Span, context, span, errors, newline);
+            var result = encoding == TextEncodingMode.Ascii
+                ? DecodeAsciiText(payload.Span, context, span, errors, newline)
+                : DecodeWindows1252Text(payload.Span, context, span, errors, newline);
             if (result.Length != 0) context.Services.State.CallTemporaries.TrackFreshString(result, span);
             return result;
         }
@@ -493,7 +496,7 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            if (rune.Value <= SingleByteMaximumScalar(encoding))
+            if (TryEncodeSingleByteScalar(rune.Value, encoding, out _))
             {
                 byteCount++;
             }
@@ -534,9 +537,9 @@ internal sealed partial class LythonRuntime
                 continue;
             }
 
-            if (rune.Value <= SingleByteMaximumScalar(encoding))
+            if (TryEncodeSingleByteScalar(rune.Value, encoding, out var singleByte))
             {
-                bytes[offset++] = (byte)rune.Value;
+                bytes[offset++] = singleByte;
                 continue;
             }
 
@@ -573,6 +576,8 @@ internal sealed partial class LythonRuntime
         var escaped = rune.Value <= 0xff ? $"\\x{rune.Value:x2}" : rune.Value <= 0xFFFF
             ? $"\\u{rune.Value:x4}"
             : $"\\U{rune.Value:x8}";
+        if (encoding == TextEncodingMode.Windows1252)
+            return new LythonRuntimeException("UnicodeEncodeError", $"'charmap' codec can't encode character '{escaped}' in position {position}: character maps to <undefined>", span);
         return new LythonRuntimeException(
             "UnicodeEncodeError",
             $"'{(encoding == TextEncodingMode.Ascii ? "ascii" : "latin-1")}' codec can't encode character '{escaped}' in position {position}: ordinal not in range({SingleByteMaximumScalar(encoding) + 1})",

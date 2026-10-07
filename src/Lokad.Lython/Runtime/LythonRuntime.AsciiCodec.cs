@@ -6,7 +6,7 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     private static bool IsSingleByteEncoding(TextEncodingMode encoding)
-        => encoding is TextEncodingMode.Latin1 or TextEncodingMode.Ascii;
+        => encoding is TextEncodingMode.Latin1 or TextEncodingMode.Ascii or TextEncodingMode.Windows1252;
 
     private static int SingleByteMaximumScalar(TextEncodingMode encoding)
         => encoding == TextEncodingMode.Ascii ? 127 : 255;

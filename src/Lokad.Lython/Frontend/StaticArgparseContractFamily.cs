@@ -31,7 +31,7 @@ internal static class StaticArgparseContractFamily
             emitted |= AnalyzeIntegerOrNoneArgument(arguments, 1, "bufsize", "argparse.FileType(..., bufsize=...) expects an integer or None.", diagnostics, bindings);
             emitted |= AnalyzeStringOrNoneArgument(arguments, 2, "encoding", "argparse.FileType(..., encoding=...) expects a string or None.", diagnostics, bindings);
             emitted |= AnalyzeStringOrNoneArgument(arguments, 3, "errors", "argparse.FileType(..., errors=...) expects a string or None.", diagnostics, bindings);
-            emitted |= AnalyzeTextEncoding(arguments, 2, "encoding", "argparse.FileType only supports encoding='utf-8', 'utf-8-sig', 'latin-1', or 'ascii'.", diagnostics, bindings);
+            emitted |= AnalyzeTextEncoding(arguments, 2, "encoding", "argparse.FileType only supports encoding='utf-8', 'utf-8-sig', 'latin-1', 'ascii', or 'cp1252'.", diagnostics, bindings);
             emitted |= StaticContractChecks.AnalyzeSupportedTextErrorArgument(arguments, 3, "errors", "LA3151", "argparse.FileType only supports text error handlers 'strict', 'ignore', 'replace', and 'backslashreplace'.", diagnostics, bindings);
             return emitted;
         }

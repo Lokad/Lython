@@ -24,7 +24,15 @@ internal static class StaticTextContractFacts
         => IsUtf8EncodingName(encoding) ||
            IsUtf8SigEncodingName(encoding) ||
            IsLatin1EncodingName(encoding) ||
-           IsAsciiEncodingName(encoding);
+           IsAsciiEncodingName(encoding) ||
+           IsWindows1252EncodingName(encoding);
+
+    public static bool IsWindows1252EncodingName(string encoding)
+        => encoding.Equals("cp1252", StringComparison.OrdinalIgnoreCase) ||
+           encoding.Equals("1252", StringComparison.OrdinalIgnoreCase) ||
+           encoding.Equals("windows-1252", StringComparison.OrdinalIgnoreCase) ||
+           encoding.Equals("windows_1252", StringComparison.OrdinalIgnoreCase) ||
+           encoding.Equals("windows 1252", StringComparison.OrdinalIgnoreCase);
 
     public static bool IsAsciiEncodingName(string encoding)
     {
