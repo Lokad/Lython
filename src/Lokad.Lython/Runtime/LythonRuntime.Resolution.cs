@@ -185,10 +185,12 @@ internal sealed partial class LythonRuntime
             return PyTruthiness.IsTruthy(value);
         }
 
-        var protocol = ResolveTruthinessProtocol(instance, context, span, out var callable);
+        var protocol = ResolveTruthinessSlot(instance, out var rawMember);
         return protocol == TruthinessProtocol.Default
             ? true
-            : InterpretTruthinessResult(protocol, callable.RequireNotNull().Invoke([], span, context), span);
+            : InterpretTruthinessResult(protocol,
+                RequireTruthinessCallable(PyAttributeLookup.BindForInstance(instance, rawMember, context, span), context, span)
+                    .Invoke([], span, context), span);
     }
 
     internal static async ValueTask<bool> IsTruthyAsync(object value, ExecutionContext context, LythonSourceSpan span)
@@ -198,37 +200,39 @@ internal sealed partial class LythonRuntime
             return PyTruthiness.IsTruthy(value);
         }
 
-        var protocol = ResolveTruthinessProtocol(instance, context, span, out var callable);
+        var protocol = ResolveTruthinessSlot(instance, out var rawMember);
         if (protocol == TruthinessProtocol.Default)
         {
             return true;
         }
 
-        var result = await callable.RequireNotNull().InvokeAsync([], span, context).ConfigureAwait(false);
+        var member = await PyAttributeLookup.BindForInstanceAsync(instance, rawMember, context, span).ConfigureAwait(false);
+        var callable = RequireTruthinessCallable(member, context, span);
+        var result = await callable.InvokeAsync([], span, context).ConfigureAwait(false);
         return InterpretTruthinessResult(protocol, result, span);
     }
 
-    private static TruthinessProtocol ResolveTruthinessProtocol(
-        PyInstance instance,
-        ExecutionContext context,
-        LythonSourceSpan span,
-        out ICallable? callable)
+    private static TruthinessProtocol ResolveTruthinessSlot(PyInstance instance, out object rawMember)
     {
-        if (instance.TryGetAttribute("__bool__", context, span, out var boolMember) && boolMember is ICallable boolCallable)
+        // Implicit truth testing consults type slots and preserves __bool__
+        // priority even when its member is invalid, rather than trying __len__.
+        if (instance.Type.TryLookupInMro("__bool__", 0, out var boolMember, out _))
         {
-            callable = boolCallable;
+            rawMember = boolMember;
             return TruthinessProtocol.Boolean;
         }
-
-        if (instance.TryGetAttribute("__len__", context, span, out var lengthMember) && lengthMember is ICallable lengthCallable)
+        if (instance.Type.TryLookupInMro("__len__", 0, out var lengthMember, out _))
         {
-            callable = lengthCallable;
+            rawMember = lengthMember;
             return TruthinessProtocol.Length;
         }
-
-        callable = null;
+        rawMember = PyNone.Instance;
         return TruthinessProtocol.Default;
     }
+
+    private static ICallable RequireTruthinessCallable(object member, ExecutionContext context, LythonSourceSpan span)
+        => member is ICallable callable ? callable
+            : throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(member, context) + "' object is not callable", span);
 
     private static bool InterpretTruthinessResult(TruthinessProtocol protocol, object result, LythonSourceSpan span)
     {
@@ -248,6 +252,9 @@ internal sealed partial class LythonRuntime
         {
             throw new LythonRuntimeException("ValueError", "__len__() should return >= 0", span);
         }
+
+        if (length > long.MaxValue)
+            throw new LythonRuntimeException("OverflowError", "cannot fit '__len__' result into an index-sized integer", span);
 
         return length != 0;
     }
