@@ -74,6 +74,19 @@ if (!windows1252.IsValid)
 foreach (var result in new[] { windows1252.Run(new PureHost()), await windows1252.RunAsync(new PureHost()) })
     RequireOutput(result, "251 True True True\n");
 
+const string utf16Source = """
+    text='A\U0001f600'
+    for encoding in ['utf-16','utf-16-le','utf-16-be']:
+        data=bytes(text,encoding)
+        print(data.hex(),str(data,encoding)==text)
+    print(bytes.fromhex('feff0041').decode('utf-16'),repr(bytes.fromhex('00d8').decode('utf-16-le','replace')))
+    """;
+var utf16 = engine.Compile(utf16Source);
+if (!utf16.IsValid)
+    throw new Exception(string.Join("; ", utf16.Diagnostics.Select(d => d.Message)));
+foreach (var result in new[] { utf16.Run(new PureHost()), await utf16.RunAsync(new PureHost()) })
+    RequireOutput(result, "fffe41003dd800de True\n41003dd800de True\n0041d83dde00 True\nA '\ufffd'\n");
+
 const string streamSource = """
     import csv
     class Writer:
@@ -279,6 +292,39 @@ RequireOutput(await binaryPendingRun.WaitAsync(binaryTimeout.Token), "00ff 410d0
 binaryDelayedHost.VerifyBinaryFiles();
 if (binaryDelayedHost.SuspendedOperations < 2) throw new Exception("Binary consumer did not suspend twice.");
 
+const string utf16FileSource = """
+    from pathlib import Path
+    with open('/utf16-input.bin',encoding='utf-16',newline='') as reader:
+        print(repr(reader.read()))
+    with Path('/utf16-output.bin').open('w',encoding='utf-16') as writer:
+        print(writer.write('A\U0001f600'))
+        writer.flush()
+        writer.write('\u20ac')
+    with open('/utf16-output.bin','a',encoding='utf-16') as writer:
+        writer.write('!')
+    print(Path('/utf16-output.bin').read_bytes().hex())
+    open('/utf16-pending.bin','w',encoding='utf-16').write('')
+    """;
+var utf16Files = engine.Compile(utf16FileSource);
+if (!utf16Files.IsValid)
+    throw new Exception(string.Join("; ", utf16Files.Diagnostics.Select(d => d.Message)));
+const string utf16FileOutput = "'B\u20ac\ud83d\ude00\\r\\n'\n2\nfffe41003dd800deac202100\n";
+var utf16SyncHost = new MemoryHost(delayed: false);
+RequireOutput(utf16Files.Run(utf16SyncHost), utf16FileOutput);
+utf16SyncHost.VerifyUtf16Files();
+var utf16DelayedHost = new MemoryHost(delayed: true);
+using var utf16Timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+var utf16PendingRun = utf16Files.RunAsync(utf16DelayedHost, new LythonRunOptions { CancellationToken = utf16Timeout.Token });
+await utf16DelayedHost.ReadStarted.Task.WaitAsync(utf16Timeout.Token);
+if (utf16PendingRun.IsCompleted) throw new Exception("UTF-16 acquisition did not suspend.");
+utf16DelayedHost.ReleaseRead.TrySetResult();
+await utf16DelayedHost.WriteStarted.Task.WaitAsync(utf16Timeout.Token);
+if (utf16PendingRun.IsCompleted) throw new Exception("UTF-16 publication did not suspend.");
+utf16DelayedHost.ReleaseWrite.TrySetResult();
+RequireOutput(await utf16PendingRun.WaitAsync(utf16Timeout.Token), utf16FileOutput);
+utf16DelayedHost.VerifyUtf16Files();
+if (utf16DelayedHost.SuspendedOperations < 2) throw new Exception("UTF-16 consumer did not suspend twice.");
+
 Console.WriteLine("Package compatibility and mediated file consumer passed.");
 
 static void RequireOutput(LythonExecutionResult result, string expected)
@@ -310,7 +356,8 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
     private readonly Dictionary<string, byte[]> _files = new(StringComparer.Ordinal)
     {
         ["/input.json"] = Encoding.UTF8.GetBytes("{\"value\": 3, \"name\": \"é\"}"),
-        ["/source.bin"] = [0, 255, 65, 13, 10, 66, 10, 101, 110, 100]
+        ["/source.bin"] = [0, 255, 65, 13, 10, 66, 10, 101, 110, 100],
+        ["/utf16-input.bin"] = [0xfe, 0xff, 0, 0x42, 0x20, 0xac, 0xd8, 0x3d, 0xde, 0, 0, 13, 0, 10],
     };
     public TaskCompletionSource ReadStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
     public TaskCompletionSource WriteStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -370,5 +417,12 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
         if (!_files["/output.json"].AsSpan().SequenceEqual("{\"name\": \"é\", \"value\": 3}"u8)
             || !_files["/pending.txt"].AsSpan().SequenceEqual("final 😀 bytes\n"u8))
             throw new Exception("Package file publication produced incorrect bytes.");
+    }
+
+    public void VerifyUtf16Files()
+    {
+        if (!_files["/utf16-output.bin"].AsSpan().SequenceEqual(Convert.FromHexString("fffe41003dd800deac202100"))
+            || !_files["/utf16-pending.bin"].AsSpan().SequenceEqual(new byte[] { 0xff, 0xfe }))
+            throw new Exception("UTF-16 package consumer produced incorrect bytes.");
     }
 }

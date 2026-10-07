@@ -6,7 +6,7 @@ dependencies, documentation and portable symbols, and restores that exact
 artifact into a fresh consumer outside the repository. The consumer exercises
 Compile, Run and RunAsync through only the package reference. It checks core
 syntax, stream/text helpers and representative compatibility fixes, then uses an isolated in-memory
-host to load/dump JSON and verify exact file bytes, including a writer left open
+host to load/dump JSON and verify exact file bytes and UTF-16 endian/BOM/flush/append behavior, including a writer left open
 at successful execution end. Paused reads and writes prove that RunAsync awaits
 host acquisition and publication. Its isolated
 cache and SHA512 comparison ensure the candidate package was consumed.
