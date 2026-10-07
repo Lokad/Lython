@@ -53,9 +53,13 @@ with open("available.json", "w") as handle:
     handle.write(dumps(obj=selected))
 ```
 
-Unlike CPython, where `csv.writer` needs a file object, Lython's `csv.writer()`
-with no file buffers rows in memory; `getvalue()` retrieves the rendered text
-for a later `write`.
+Lython's `csv.writer()` with no destination buffers rows in memory;
+`getvalue()` retrieves the rendered text for a later `write`. With a
+destination, CSV writers accept text files, mediated standard streams and
+guest objects with a callable `write` member. They capture that member once
+at construction; `writerow` and `DictWriter.writeheader` return its result,
+while `writerows` returns `None`. `RunAsync` awaits attribute lookup, row
+iteration and write callbacks.
 
 On the host side, the plumbing is deliberately small:
 

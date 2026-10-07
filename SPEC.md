@@ -1489,13 +1489,32 @@ The object returned by `csv.writer()` without a file object accumulates output i
 - `writer.writerows(rows)`
 - `writer.getvalue()`
 
-The object returned by `csv.writer(fileobj, ...)` must write rows to a Lython writable text file handle. It may also retain the in-memory helper methods for compatibility.
+The object returned by `csv.writer(fileobj, ...)` writes rows through a
+callable `write` member. Destinations include Lython text files, mediated
+standard streams and guest objects. Construction resolves and captures that
+member once through ordinary attribute lookup; missing or noncallable members
+raise `TypeError` before any row is pulled. A descriptor's other exceptions
+propagate. Later rebinding of the destination's `write` does not change the
+captured callback. The no-destination extension also accepts `None` and retains
+its existing history behavior.
 
 The object returned by `csv.DictWriter(fileobj, fieldnames, ...)` must support:
 
 - `writer.writeheader()`
 - `writer.writerow(rowdict)`
 - `writer.writerows(rowdicts)`
+
+`writerow` and `DictWriter.writeheader` return the captured callback's value
+unchanged, including `None` or nonnumeric objects; `writerows` ignores those
+values and returns `None`. Each row is rendered completely before dispatch,
+and a callback failure stops consumption before the next row. Earlier callback
+effects remain visible; a guest callback can itself publish partial output
+before raising. Writers do not flush or close supplied destinations and do not
+retain row history for them; their compatibility `getvalue()` remains empty.
+`RunAsync` awaits destination lookup, DictWriter field-name acquisition,
+row/cell iteration and write callbacks.
+The inventoried scalar cell conversion and dictionary-row restrictions below
+still apply.
 
 The CSV subset must support ordinary scripts using:
 
@@ -1521,7 +1540,10 @@ raises during conversion or reservation is dropped without keeping partial
 state, prior successful rows (including earlier `writerows` rows) stay valid,
 and later rows still write. In-memory history and every escaping `getvalue()`
 result stay governed, so retaining them accumulates charges and excessive
-retention raises `MemoryError`. File-backed writers stream output without
+retention raises `MemoryError`. Callback-visible row strings have durable
+governed ownership, including aliases retained by guest code; abandoned
+strings release through the shared reclamation pool. Cell-array growth and
+rendering scratch are preflighted. File-backed writers stream output without
 retaining row history; buffered output publishes on flush or close, so a
 failed host write leaves no partial row and a run cancelled mid-stream leaves
 no file behind. Oversized fields, records and conversions trip the execution

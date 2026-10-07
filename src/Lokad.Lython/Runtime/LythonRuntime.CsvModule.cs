@@ -45,9 +45,9 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "reader" => BuiltinCallable.Create(LythonKnownCallableSignatures.CsvReader, Reader),
-                "writer" => BuiltinCallable.Create(LythonKnownCallableSignatures.CsvWriter, Writer),
+                "writer" => BuiltinCallable.Create(LythonKnownCallableSignatures.CsvWriter, Writer, WriterAsync),
                 "DictReader" => BuiltinCallable.Create(LythonKnownCallableSignatures.CsvDictReader, DictReader, DictReaderAsync),
-                "DictWriter" => BuiltinCallable.Create(LythonKnownCallableSignatures.CsvDictWriter, DictWriter),
+                "DictWriter" => BuiltinCallable.Create(LythonKnownCallableSignatures.CsvDictWriter, DictWriter, DictWriterAsync),
                 "Error" => new ExceptionTypeValue(ModuleException("csv", "Error")),
                 "QUOTE_MINIMAL" => new BigInteger((int)CsvQuotingMode.Minimal),
                 "QUOTE_ALL" => new BigInteger((int)CsvQuotingMode.All),
@@ -158,40 +158,91 @@ internal sealed partial class LythonRuntime
         {
             context.CheckExecutionBudget(span);
 
-            ExecutionContext.TextFileHandle? file = null;
-            if (arguments.Length > 0 && arguments[0] is not PyNone)
-            {
-                if (arguments[0] is ExecutionContext.TextFileHandle handle)
-                {
-                    file = handle;
-                }
-                else
-                {
-                    throw new LythonRuntimeException("TypeError", "csv.writer(fileobj[, dialect][, ...]) expects a text file handle.", span);
-                }
-            }
-
+            var write = arguments.Length == 0 || arguments[0] is PyNone
+                ? null : ResolveWrite(arguments[0], span, context);
             var options = GetOptions(arguments, CsvOptionArgumentLayout.Standard, span);
-            return new CsvWriterObject(options, file, context.MemoryGovernor, span);
+            return new CsvWriterObject(options, write, context.MemoryGovernor, span);
+        }
+
+        private async ValueTask<object> WriterAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            var write = arguments.Length == 0 || arguments[0] is PyNone
+                ? null : await ResolveWriteAsync(arguments[0], span, context).ConfigureAwait(false);
+            var options = GetOptions(arguments, CsvOptionArgumentLayout.Standard, span);
+            return new CsvWriterObject(options, write, context.MemoryGovernor, span);
         }
 
         private object DictWriter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            if (arguments.Length < 2 || arguments[0] is not ExecutionContext.TextFileHandle file)
+            if (arguments.Length < 2)
             {
-                throw new LythonRuntimeException("TypeError", "csv.DictWriter(fileobj, fieldnames, ...) expects a text file handle and field names.", span);
+                throw new LythonRuntimeException("TypeError", "csv.DictWriter(fileobj, fieldnames, ...) expects a text writer and field names.", span);
             }
 
             var fieldNames = ToCsvFieldNames(arguments[1], "csv.DictWriter(..., fieldnames=...) expects an iterable of strings.", span, context);
-            var restVal = arguments.Length > 2 && arguments[2] is not PyNone ? arguments[2] : PyString.Empty;
             var extrasAction = GetExtrasAction(arguments, 3, span);
+            return CreateDictWriter(arguments, ResolveWrite(arguments[0], span, context), fieldNames, extrasAction, span, context);
+        }
+
+        private async ValueTask<object> DictWriterAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+        {
+            context.CheckExecutionBudget(span);
+            if (arguments.Length < 2)
+            {
+                throw new LythonRuntimeException("TypeError", "csv.DictWriter(fileobj, fieldnames, ...) expects a text writer and field names.", span);
+            }
+
+            var fieldNames = await ToCsvFieldNamesAsync(arguments[1], "csv.DictWriter(..., fieldnames=...) expects an iterable of strings.", span, context).ConfigureAwait(false);
+            var extrasAction = GetExtrasAction(arguments, 3, span);
+            var write = await ResolveWriteAsync(arguments[0], span, context).ConfigureAwait(false);
+            return CreateDictWriter(arguments, write, fieldNames, extrasAction, span, context);
+        }
+
+        private static object CreateDictWriter(object[] arguments, ICallable write, PyString[] fieldNames,
+            CsvExtrasAction extrasAction, LythonSourceSpan span, ExecutionContext context)
+        {
+            var restVal = arguments.Length > 2 && arguments[2] is not PyNone ? arguments[2] : PyString.Empty;
             var options = GetOptions(arguments, CsvOptionArgumentLayout.Dictionary, span);
             // Own the dictionary-writer shell beside the governed writer and field names.
             context.MemoryGovernor.Reserve(64L, span);
             context.MemoryGovernor.Commit(64L);
-            return new CsvDictWriterObject(new CsvWriterObject(options, file, context.MemoryGovernor, span), fieldNames, restVal, extrasAction);
+            return new CsvDictWriterObject(new CsvWriterObject(options, write, context.MemoryGovernor, span), fieldNames, restVal, extrasAction);
         }
+
+        // CPython captures write once at construction. Ordinary attribute lookup
+        // can execute a descriptor; callability itself is a type-slot check.
+        private static ICallable ResolveWrite(object stream, LythonSourceSpan span, ExecutionContext context)
+        {
+            try
+            {
+                return RequireWriteMethod(PyTextStream.ResolveMember(stream, "write", span, context), span);
+            }
+            catch (LythonRuntimeException error) when (MatchesExceptionType(BuiltinException("AttributeError"), error.Identity))
+            {
+                throw MissingWriteMethod(span);
+            }
+        }
+
+        private static async ValueTask<ICallable> ResolveWriteAsync(object stream, LythonSourceSpan span, ExecutionContext context)
+        {
+            try
+            {
+                return RequireWriteMethod(await PyTextStream.ResolveMemberAsync(stream, "write", span, context).ConfigureAwait(false), span);
+            }
+            catch (LythonRuntimeException error) when (MatchesExceptionType(BuiltinException("AttributeError"), error.Identity))
+            {
+                throw MissingWriteMethod(span);
+            }
+        }
+
+        private static ICallable RequireWriteMethod(object value, LythonSourceSpan span)
+            => value is ICallable callable && IsCallable(value)
+                ? callable : throw MissingWriteMethod(span);
+
+        private static LythonRuntimeException MissingWriteMethod(LythonSourceSpan span)
+            => new("TypeError", "argument 1 must have a 'write' method", span);
 
         private static CsvOptions GetOptions(
             object[] arguments,
@@ -331,29 +382,54 @@ internal sealed partial class LythonRuntime
             var chargedCapacity = 0;
             foreach (var item in ToSequence(value, span, context))
             {
-                if (!PyStringOps.TryAsString(item, out var name))
-                {
-                    throw new LythonRuntimeException("TypeError", message, span);
-                }
-
-                if (names.Count == names.Capacity)
-                {
-                    var predicted = names.Capacity == 0 ? 4L : (long)names.Capacity * 2L;
-                    scratch.Grow(checked(16L * (predicted - chargedCapacity)), span);
-                }
-
-                names.Add(name);
-                if (names.Capacity > chargedCapacity)
-                {
-                    scratch.Grow(checked(16L * (names.Capacity - chargedCapacity)), span);
-                    chargedCapacity = names.Capacity;
-                }
+                AddCsvFieldName(names, item, scratch, ref chargedCapacity, message, span);
             }
 
+            return FinishCsvFieldNames(names, context.MemoryGovernor, span);
+        }
+
+        private static async ValueTask<PyString[]> ToCsvFieldNamesAsync(object value, string message, LythonSourceSpan span, ExecutionContext context)
+        {
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var names = new List<PyString>();
+            var chargedCapacity = 0;
+            await foreach (var item in ToSequenceAsync(value, span, context).ConfigureAwait(false))
+            {
+                AddCsvFieldName(names, item, scratch, ref chargedCapacity, message, span);
+            }
+
+            return FinishCsvFieldNames(names, context.MemoryGovernor, span);
+        }
+
+        private static void AddCsvFieldName(List<PyString> names, object item, MemoryGovernor.TemporaryMemoryReservation scratch,
+            ref int chargedCapacity, string message, LythonSourceSpan span)
+        {
+            if (!PyStringOps.TryAsString(item, out var name))
+            {
+                throw new LythonRuntimeException("TypeError", message, span);
+            }
+
+            if (names.Count == names.Capacity)
+            {
+                var predicted = names.Capacity == 0 ? 4L : (long)names.Capacity * 2L;
+                scratch.Grow(checked(16L * (predicted - chargedCapacity)), span);
+            }
+
+            names.Add(name);
+            if (names.Capacity > chargedCapacity)
+            {
+                scratch.Grow(checked(16L * (names.Capacity - chargedCapacity)), span);
+                chargedCapacity = names.Capacity;
+            }
+        }
+
+        private static PyString[] FinishCsvFieldNames(List<PyString> names, MemoryGovernor governor, LythonSourceSpan span)
+        {
+            var owned = checked(32L + 16L * names.Count);
+            governor.EnsureCanReserve(owned, span);
             var result = names.ToArray();
-            var owned = checked(32L + 16L * result.Length);
-            context.MemoryGovernor.Reserve(owned, span);
-            context.MemoryGovernor.Commit(owned);
+            governor.Reserve(owned, span);
+            governor.Commit(owned);
             return result;
         }
 

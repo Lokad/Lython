@@ -238,7 +238,8 @@ internal static partial class StaticDataModuleContractFamily
 
     private static bool AnalyzeCsvWriterFileValue(ExpressionSyntax expression, AbstractValue value, bool allowMissing, List<LythonDiagnostic> diagnostics)
     {
-        if (value.Kind == AbstractValueKind.Unknown)
+        if (value.Kind is AbstractValueKind.Unknown or AbstractValueKind.Never or AbstractValueKind.MaybeNone or
+            AbstractValueKind.UserInstance or AbstractValueKind.UserClass)
         {
             return false;
         }
@@ -260,7 +261,7 @@ internal static partial class StaticDataModuleContractFamily
             return false;
         }
 
-        AddDiagnostic(diagnostics, "LA3067", "csv writer expects a writable text file handle.", expression.Span);
+        AddDiagnostic(diagnostics, "LA3067", "csv writer expects an object with a callable write method.", expression.Span);
         return true;
     }
 

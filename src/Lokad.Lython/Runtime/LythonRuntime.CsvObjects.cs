@@ -177,17 +177,17 @@ internal sealed partial class LythonRuntime
 
     internal sealed class CsvWriterObject
     {
-        public CsvWriterObject(CsvOptions options, ExecutionContext.TextFileHandle? file, MemoryGovernor governor, LythonSourceSpan span)
+        public CsvWriterObject(CsvOptions options, ICallable? writeMethod, MemoryGovernor governor, LythonSourceSpan span)
         {
             // Own the shell beside the governed row history.
             governor.Reserve(128L, span);
             governor.Commit(128L);
             Options = options;
-            File = file;
+            WriteMethod = writeMethod;
         }
 
         public readonly CsvOptions Options;
-        public readonly ExecutionContext.TextFileHandle? File;
+        public readonly ICallable? WriteMethod;
         public readonly List<CsvCell[]> Rows = new();
     }
 
@@ -339,7 +339,11 @@ internal sealed partial class LythonRuntime
 
                     var cells = ToCsvRow(arguments[0], span, context, out var convertedBytes);
                     return WriteRow(writer, cells, span, context, convertedBytes);
-                }, CsvWriterowSignature),
+                }, CsvWriterowSignature, async (arguments, span, context) =>
+                {
+                    var (cells, convertedBytes) = await ToCsvRowAsync(arguments[0], span, context).ConfigureAwait(false);
+                    return await WriteRowAsync(writer, cells, span, context, convertedBytes).ConfigureAwait(false);
+                }),
                 "writerows" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -358,7 +362,21 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNone.Instance;
-                }, CsvWriterowsSignature),
+                }, CsvWriterowsSignature, async (arguments, span, context) =>
+                {
+                    var written = 0;
+                    await foreach (var row in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
+                    {
+                        var (cells, convertedBytes) = await ToCsvRowAsync(row, span, context).ConfigureAwait(false);
+                        await WriteRowAsync(writer, cells, span, context, convertedBytes).ConfigureAwait(false);
+                        if ((++written & 63) == 0)
+                        {
+                            context.CheckExecutionBudget(span);
+                        }
+                    }
+
+                    return PyNone.Instance;
+                }),
                 "getvalue" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 0)
@@ -380,9 +398,37 @@ internal sealed partial class LythonRuntime
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        public static BigInteger WriteRow(CsvWriterObject writer, CsvCell[] row, LythonSourceSpan span, ExecutionContext context, long convertedBytes)
+        public static object WriteRow(CsvWriterObject writer, CsvCell[] row, LythonSourceSpan span, ExecutionContext context, long convertedBytes)
         {
-            if (writer.File is null)
+            var rendered = PrepareRow(writer, row, span, context, convertedBytes);
+            if (writer.WriteMethod is null)
+            {
+                return new BigInteger(rendered.Length);
+            }
+
+            var result = InvokeCallableTarget(writer.WriteMethod, span, span, context,
+                () => [CallArgumentValue.Positional(rendered)]);
+            context.Services.State.CallTemporaries.TrackCallResult(result, span);
+            return result;
+        }
+
+        public static async ValueTask<object> WriteRowAsync(CsvWriterObject writer, CsvCell[] row, LythonSourceSpan span, ExecutionContext context, long convertedBytes)
+        {
+            var rendered = PrepareRow(writer, row, span, context, convertedBytes);
+            if (writer.WriteMethod is null)
+            {
+                return new BigInteger(rendered.Length);
+            }
+
+            var result = await InvokeCallableTargetAsync(writer.WriteMethod, span, span, context,
+                () => ValueTask.FromResult<CallArgumentValue[]>([CallArgumentValue.Positional(rendered)])).ConfigureAwait(false);
+            context.Services.State.CallTemporaries.TrackCallResult(result, span);
+            return result;
+        }
+
+        private static PyString PrepareRow(CsvWriterObject writer, CsvCell[] row, LythonSourceSpan span, ExecutionContext context, long convertedBytes)
+        {
+            if (writer.WriteMethod is null)
             {
                 // In-memory writers retain history for getvalue(); charge the list
                 // slot, the row array and the converted values the history keeps.
@@ -396,17 +442,26 @@ internal sealed partial class LythonRuntime
                 writer.Rows.Add(row);
                 context.MemoryGovernor.Commit(historyCharge);
             }
-            // else: file-backed writers stream output and retain nothing. Either
-            // way the single-row render below is transient: it is covered by a
-            // reservation and dropped after the write.
+            // Intermediate field/row renders remain transient. The final string
+            // can escape through a guest callback, so commit and track its owner.
             using var scratch = context.MemoryGovernor.ReserveTemporary(EstimateRowBytes(row), span);
-            var rendered = RenderCsvDocument([row], writer.Options, trailingTerminator: true, span);
-            if (writer.File is not null)
+            if (writer.WriteMethod is null)
             {
-                return writer.File.Write(rendered);
+                return RenderCsvDocument([row], writer.Options, trailingTerminator: true, span);
             }
 
-            return new BigInteger(rendered.Length);
+            var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
+            try
+            {
+                RenderCsvDocumentInto(builder, [row], writer.Options, trailingTerminator: true, span);
+                var rendered = builder.ToPyStringAndRelease();
+                context.Services.State.CallTemporaries.TrackFreshString(rendered, span);
+                return rendered;
+            }
+            finally
+            {
+                builder.Release();
+            }
         }
 
         private static long PredictHistoryGrowthBytes(List<CsvCell[]> rows)
@@ -446,10 +501,39 @@ internal sealed partial class LythonRuntime
             using var conversion = context.MemoryGovernor.ReserveTemporary(0, span);
             foreach (var cell in ToSequence(row, span, context))
             {
-                cells.Add(ConvertCsvCell(cell, conversion, span, ref convertedBytes));
+                AddCell(cells, cell, conversion, span, context, ref convertedBytes);
             }
 
+            conversion.Grow(16L * cells.Count, span);
             return [.. cells];
+        }
+
+        private static async ValueTask<(CsvCell[] Cells, long ConvertedBytes)> ToCsvRowAsync(object row, LythonSourceSpan span, ExecutionContext context)
+        {
+            var convertedBytes = 0L;
+            var cells = new List<CsvCell>();
+            using var conversion = context.MemoryGovernor.ReserveTemporary(0, span);
+            await foreach (var cell in ToSequenceAsync(row, span, context).ConfigureAwait(false))
+            {
+                AddCell(cells, cell, conversion, span, context, ref convertedBytes);
+            }
+
+            conversion.Grow(16L * cells.Count, span);
+            return ([.. cells], convertedBytes);
+        }
+
+        private static void AddCell(List<CsvCell> cells, object value, MemoryGovernor.TemporaryMemoryReservation scratch,
+            LythonSourceSpan span, ExecutionContext context, ref long convertedBytes)
+        {
+            if (cells.Count == cells.Capacity)
+            {
+                // Fund the new backing array before it overlaps the old array.
+                var capacity = cells.Capacity == 0 ? 4L : 2L * cells.Capacity;
+                scratch.Grow(16L * capacity, span);
+            }
+
+            cells.Add(ConvertCsvCell(value, scratch, span, ref convertedBytes));
+            context.ObserveCollectionCount(cells.Count, span);
         }
 
         internal static CsvCell ConvertCsvCell(object cell, MemoryGovernor.TemporaryMemoryReservation conversion, LythonSourceSpan span, ref long convertedBytes)
@@ -646,13 +730,19 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "csv.DictWriter.writeheader() expects no arguments.", span);
                     }
 
-                    var row = new PyDict();
-                    foreach (var fieldName in writer.FieldNames)
-                    {
-                        row.SetItem(fieldName, fieldName);
-                    }
+                    var row = BuildHeaderRow(writer);
 
                     return CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, BuildKnownFields(writer), row, span, context, out var convertedBytes), span, context, convertedBytes);
+                }, async (arguments, span, context) =>
+                {
+                    if (arguments.Length != 0)
+                    {
+                        throw new LythonRuntimeException("TypeError", "csv.DictWriter.writeheader() expects no arguments.", span);
+                    }
+
+                    var row = BuildHeaderRow(writer);
+                    var cells = ToDictCsvRow(writer, BuildKnownFields(writer), row, span, context, out var convertedBytes);
+                    return await CsvWriterMembers.WriteRowAsync(writer.Writer, cells, span, context, convertedBytes).ConfigureAwait(false);
                 }),
                 "writerow" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -662,7 +752,11 @@ internal sealed partial class LythonRuntime
                     }
 
                     return CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, BuildKnownFields(writer), arguments[0], span, context, out var convertedBytes), span, context, convertedBytes);
-                }, CsvDictWriterowSignature),
+                }, CsvDictWriterowSignature, async (arguments, span, context) =>
+                {
+                    var cells = ToDictCsvRow(writer, BuildKnownFields(writer), arguments[0], span, context, out var convertedBytes);
+                    return await CsvWriterMembers.WriteRowAsync(writer.Writer, cells, span, context, convertedBytes).ConfigureAwait(false);
+                }),
                 "writerows" => BoundCallable.Create((arguments, span, context) =>
                 {
                     if (arguments.Length != 1)
@@ -682,7 +776,22 @@ internal sealed partial class LythonRuntime
                     }
 
                     return PyNone.Instance;
-                }, CsvDictWriterowsSignature),
+                }, CsvDictWriterowsSignature, async (arguments, span, context) =>
+                {
+                    var written = 0;
+                    var known = BuildKnownFields(writer);
+                    await foreach (var row in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
+                    {
+                        var cells = ToDictCsvRow(writer, known, row, span, context, out var convertedBytes);
+                        await CsvWriterMembers.WriteRowAsync(writer.Writer, cells, span, context, convertedBytes).ConfigureAwait(false);
+                        if ((++written & 63) == 0)
+                        {
+                            context.CheckExecutionBudget(span);
+                        }
+                    }
+
+                    return PyNone.Instance;
+                }),
                 _ => MissingMemberValue.Instance
             };
 
@@ -691,6 +800,17 @@ internal sealed partial class LythonRuntime
 
         private static HashSet<object> BuildKnownFields(CsvDictWriterObject writer)
             => new(writer.FieldNames, PyValueComparer.Instance);
+
+        private static PyDict BuildHeaderRow(CsvDictWriterObject writer)
+        {
+            var row = new PyDict();
+            foreach (var fieldName in writer.FieldNames)
+            {
+                row.SetItem(fieldName, fieldName);
+            }
+
+            return row;
+        }
 
         private static CsvCell[] ToDictCsvRow(CsvDictWriterObject writer, HashSet<object> known, object row, LythonSourceSpan span, ExecutionContext context, out long convertedBytes)
         {
@@ -716,8 +836,8 @@ internal sealed partial class LythonRuntime
             // draining through a second list; converted cells ride the same
             // pre-format reservation as plain rows.
             convertedBytes = 0;
+            using var conversion = context.MemoryGovernor.ReserveTemporary(16L * writer.FieldNames.Length, span);
             var array = new CsvCell[writer.FieldNames.Length];
-            using var conversion = context.MemoryGovernor.ReserveTemporary(0, span);
             for (var i = 0; i < writer.FieldNames.Length; i++)
             {
                 array[i] = CsvWriterMembers.ConvertCsvCell(

@@ -58,6 +58,39 @@ const string compatibilityOutput = "ab 3\nTrue ['a', 'b'] [['1', '2']] empty\n3\
 foreach (var result in new[] { compatibility.Run(new PureHost()), await compatibility.RunAsync(new PureHost()) })
     RequireOutput(result, compatibilityOutput);
 
+const string streamSource = """
+    import csv
+    class Writer:
+        def __init__(self):
+            self.parts = []
+        write = lambda self, text: self.parts.append(text) or 42
+    stream = Writer()
+    writer = csv.writer(stream, lineterminator='\n')
+    stream.write = lambda text: -1
+    print(writer.writerow([1]) + 1)
+    print(writer.writerows([[2]]))
+    print(stream.parts)
+    dictionary = csv.DictWriter(Writer(), ['a'], lineterminator='\n')
+    print(dictionary.writeheader() + 1)
+    class Callback:
+        __call__ = lambda self, text: len(text)
+    callback = Callback()
+    callback.__call__ = lambda text: -1
+    class Destination:
+        write = callback
+    print(csv.writer(Destination(), lineterminator='\n').writerow(['é😀']))
+    class Missing:
+        pass
+    missing = Missing()
+    missing.__call__ = lambda: 1
+    print(callable(missing))
+    """;
+var streams = engine.Compile(streamSource);
+if (!streams.IsValid)
+    throw new Exception(string.Join("; ", streams.Diagnostics.Select(d => d.Message)));
+foreach (var result in new[] { streams.Run(new PureHost()), await streams.RunAsync(new PureHost()) })
+    RequireOutput(result, "43\nNone\n['1\\n', '2\\n']\n43\n3\nFalse\n");
+
 const string fileSource = """
     import json
     with open('/input.json') as source:

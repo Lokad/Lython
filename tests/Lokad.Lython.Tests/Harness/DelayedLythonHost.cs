@@ -54,12 +54,14 @@ internal sealed class DelayedLythonHost : ILythonHost
 
     public async ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
     {
+        await PauseWriteIfConfigured(path, cancellationToken).ConfigureAwait(false);
         await Delay(cancellationToken).ConfigureAwait(false);
         await _inner.WriteTextUtf8Async(path, utf8, cancellationToken).ConfigureAwait(false);
     }
 
     public async ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
     {
+        await PauseWriteIfConfigured(path, cancellationToken).ConfigureAwait(false);
         await Delay(cancellationToken).ConfigureAwait(false);
         await _inner.AppendTextUtf8Async(path, utf8, cancellationToken).ConfigureAwait(false);
     }
@@ -98,18 +100,24 @@ internal sealed class DelayedLythonHost : ILythonHost
 
     public async ValueTask WriteBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
     {
+        await PauseWriteIfConfigured(path, cancellationToken).ConfigureAwait(false);
+        await Delay(cancellationToken).ConfigureAwait(false);
+        await _inner.WriteBytesAsync(path, bytes, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async ValueTask PauseWriteIfConfigured(string path, CancellationToken cancellationToken)
+    {
         if (_writePauses.TryGetValue(path, out var paused))
         {
             paused.TrySetResult();
             await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
         }
 
-        await Delay(cancellationToken).ConfigureAwait(false);
-        await _inner.WriteBytesAsync(path, bytes, cancellationToken).ConfigureAwait(false);
     }
 
     public async ValueTask AppendBytesAsync(string path, ReadOnlyMemory<byte> bytes, CancellationToken cancellationToken)
     {
+        await PauseWriteIfConfigured(path, cancellationToken).ConfigureAwait(false);
         await Delay(cancellationToken).ConfigureAwait(false);
         await _inner.AppendBytesAsync(path, bytes, cancellationToken).ConfigureAwait(false);
     }

@@ -38,7 +38,7 @@ __lython_file.close()
         Assert.False(result.Success);
         var failure = result.Failure;
         Assert.Equal("TypeError", failure?.ExceptionType);
-        Assert.Contains("expects a text file handle", failure?.Message, StringComparison.Ordinal);
+        Assert.Contains("must have a 'write' method", failure?.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -378,7 +378,7 @@ csv.Sniffer()
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3067");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3068");
         Assert.Contains(compiled.Diagnostics, d => d.Message.Contains("fieldnames", StringComparison.Ordinal));
-        Assert.Contains(compiled.Diagnostics, d => d.Message.Contains("writable text file handle", StringComparison.Ordinal));
+        Assert.Contains(compiled.Diagnostics, d => d.Message.Contains("callable write method", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Message.Contains("file is not open for writing", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Message.Contains("rowdict", StringComparison.Ordinal));
         Assert.Contains(compiled.Diagnostics, d => d.Message.Contains("register_dialect", StringComparison.Ordinal));
