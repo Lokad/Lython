@@ -78,11 +78,17 @@ internal static partial class PyStringOps
         try
         {
             var source = value.Utf8Bytes.Span;
+            var precedingCased = false;
             for (var offset = 0; offset < source.Length;)
             {
                 PyStructuralGuard.NoteWork();
                 _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
-                builder.AppendString(MapCase(rune, mapping));
+                var mapped = mapping == CaseMapping.Lower && rune.Value == 0x03A3
+                    ? precedingCased && !HasFollowingSigmaCasedRune(source[(offset + consumed)..]) ? "ς" : "σ"
+                    : MapCase(rune, mapping);
+                builder.AppendString(mapped);
+                if (mapping == CaseMapping.Lower && !SigmaPropertyContains(rune.Value, SigmaIgnorableRanges))
+                    precedingCased = SigmaPropertyContains(rune.Value, SigmaCasedRanges);
                 offset += consumed;
             }
             return builder.ToPyStringAndRelease();
