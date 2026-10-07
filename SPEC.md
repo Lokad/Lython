@@ -1918,7 +1918,7 @@ The immutable entity table is embedded in the library and carries its upstream
 license in the package. It requires no filesystem or Python installation.
 `html.parser`, `html.entities` and parser APIs remain unsupported.
 
-### 11.20 URL Quoting And Query Helpers
+### 11.20 URL Parsing, Quoting And Query Helpers
 
 The pure `urllib.parse` module exposes `quote(string, safe='/', encoding=None,
 errors=None)`, `quote_plus(string, safe='', encoding=None, errors=None)`,
@@ -1960,8 +1960,48 @@ Guest item/iteration/string protocols, safe addition, quote_via callbacks,
 truth tests and field-limit comparisons await their effects under `RunAsync`.
 Native scans check execution budgets and govern output, temporary buffers,
 query pairs and grouped values. String limits count Unicode scalars. These
-helpers expose no networking capability. Structured URL parsing/reassembly,
-`urllib.request`, `urllib.error` and `urllib.robotparser` remain unsupported.
+helpers expose no networking capability.
+
+`urlsplit(url, scheme='', allow_fragments=True)` returns a five-component
+`SplitResult` or `SplitResultBytes`; `urlparse` takes the same arguments and
+returns a six-component `ParseResult` or `ParseResultBytes`, splitting params
+only for Python's inventoried params schemes and the final path segment.
+Parsing preserves percent escapes and component spelling. It strips leading
+ASCII C0 controls/spaces, strips both ends of the default scheme, and removes
+tab, CR and LF throughout. A detected ASCII scheme is lowercased. A false
+allow_fragments leaves hash characters in the path/query. Byte arguments
+coerce through strict ASCII; mixing nonempty text and byte arguments fails.
+
+Results expose scheme, netloc, path, query and fragment; parse results also
+expose params. They compare/hash as tuples, support iteration, indexing,
+plain-tuple slicing and inherited tuple methods, and participate in sequence
+and class patterns. The four result classes accept their component fields
+positionally or by name and expose `_fields`, `__match_args__`, `_make` and
+`_field_defaults`. Corresponding text/byte classes share their field metadata;
+mutable defaults are governed and isolated per execution.
+Instances provide `_asdict`, `_replace`, `geturl`, and text-result `encode` /
+byte-result `decode`, using shared codecs and default ASCII/strict conversion.
+Direct construction and replacement preserve field aliases and defer URL
+operations; they do not silently validate or normalize arbitrary field values.
+
+Username/password use the last authority at-sign and the first userinfo colon;
+they preserve percent escapes. Hostnames are lowercased while scoped IPv6
+zone spelling is preserved. Bracket syntax, IPv6/IPvFuture hosts and all
+nineteen Unicode 15.1 NFKC delimiter hazards are checked during parsing.
+Ports validate lazily when accessed: empty ports yield None; non-ASCII digits,
+nonnumeric values and numbers above 65535 raise ValueError. These operations
+use Python's component rules independently of platform URI normalization.
+
+`urlunsplit(components)` and `urlunparse(components)` accept five-/six-item
+iterables and use the same reassembly as geturl, preserving components while
+eliding empty query/fragment delimiters and applying scheme/authority slash
+rules. Guest hashing, decode/encode, component iteration and truth protocols
+await their mediated effects under RunAsync. Native component storage, result
+shells, slices, codec conversions, authority properties and output builders
+are governed; scans check budgets and denied/abandoned construction releases
+ownership. Networking modules, urljoin, urldefrag and function cache-control
+APIs remain outside this inventory.
+
 
 ---
 

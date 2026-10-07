@@ -44,15 +44,19 @@ internal sealed partial class LythonRuntime
             ["urlencode"] = new(LythonKnownCallableSignatures.UrlEncode, UrlOperation.Encode),
             ["parse_qs"] = new(LythonKnownCallableSignatures.UrlParseQs, UrlOperation.ParseQs),
             ["parse_qsl"] = new(LythonKnownCallableSignatures.UrlParseQsl, UrlOperation.ParseQsl),
+            ["urlsplit"] = new(LythonKnownCallableSignatures.UrlSplit, UrlOperation.Split),
+            ["urlparse"] = new(LythonKnownCallableSignatures.UrlParse, UrlOperation.Parse),
+            ["urlunsplit"] = new(LythonKnownCallableSignatures.UrlUnsplit, UrlOperation.Unsplit),
+            ["urlunparse"] = new(LythonKnownCallableSignatures.UrlUnparse, UrlOperation.Unparse),
         };
 
         public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
-            value = Methods.TryGetValue(name, out var method) ? method : MissingMemberValue.Instance;
+            value = Methods.TryGetValue(name, out var method) ? method : UrlResultType.TryFind(name, out var type) ? type : MissingMemberValue.Instance;
             return !ReferenceEquals(value, MissingMemberValue.Instance);
         }
 
-        private enum UrlOperation { Quote, QuotePlus, QuoteBytes, Unquote, UnquotePlus, UnquoteBytes, Encode, ParseQs, ParseQsl }
+        private enum UrlOperation { Quote, QuotePlus, QuoteBytes, Unquote, UnquotePlus, UnquoteBytes, Encode, ParseQs, ParseQsl, Split, Parse, Unsplit, Unparse }
 
         private sealed class UrlMethod : ICallable, INamedRuntimeCallable, IPyDynamicAttributes, IPyRenderableValue, IPyHashableValue
         {
@@ -96,8 +100,17 @@ internal sealed partial class LythonRuntime
                     if (!bound.Assigned[4]) args[4] = ReplaceName;
                     if (!bound.Assigned[6]) args[6] = Ampersand;
                 }
+                if (_operation is UrlOperation.Split or UrlOperation.Parse)
+                {
+                    if (!bound.Assigned[1]) args[1] = PyString.Empty;
+                    if (!bound.Assigned[2]) args[2] = true;
+                }
                 return _operation switch
                 {
+                    UrlOperation.Split => ParseUrlAsync(args, span, context, asynchronous, false),
+                    UrlOperation.Parse => ParseUrlAsync(args, span, context, asynchronous, true),
+                    UrlOperation.Unsplit => ReassembleUrlAsync(args[0], span, context, asynchronous, false),
+                    UrlOperation.Unparse => ReassembleUrlAsync(args[0], span, context, asynchronous, true),
                     UrlOperation.Quote => QuoteAsync(args, span, context, asynchronous, false),
                     UrlOperation.QuotePlus => QuoteAsync(args, span, context, asynchronous, true),
                     UrlOperation.QuoteBytes => QuoteFromBytesAsync(args, span, context, asynchronous),

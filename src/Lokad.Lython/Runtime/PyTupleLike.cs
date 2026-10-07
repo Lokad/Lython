@@ -35,6 +35,9 @@ internal static class PyTupleLike
             case PyTypingNamedTupleObject typingNamedTuple:
                 items = typingNamedTuple;
                 return true;
+            case LythonRuntime.UrllibParseModule.UrlResult urlResult:
+                items = urlResult;
+                return true;
             case LythonRuntime.TimeStructTimeValue structTime:
                 items = structTime;
                 return true;

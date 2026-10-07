@@ -172,6 +172,13 @@ if (!urlHelpers.IsValid)
 foreach (var result in new[] { urlHelpers.Run(new PureHost()), await urlHelpers.RunAsync(new PureHost()) })
     RequireOutput(result, "/%C3%A9%F0%9F%98%80%20a %2F%C3%A9%F0%9F%98%80+a\n'\u00e9\ufffd\ud83d\ude00\u00e9'\nx=a+b&x=%FF\n{b'x': [b'\\xff', b'a b']} [('a', ''), ('a', '\u00e9 \ud83d\ude00')]\nTrue function\n[0, 1, 2]\n");
 
+const string structuredUrlSource = "import urllib.parse as p\nvalue=p.urlparse('HTTP://u:p@EXAMPLE:080/a;b?x=1#f')\nprint(tuple(value),value.username,value.password,value.hostname,value.port,value.geturl())\nprint(tuple(value._replace(netloc='Y',fragment='')),tuple(value.encode()),value.encode().decode()==value)\nprint(p.urlunsplit((b'https',b'X',b'a',b'x',b'f')))\nprint(isinstance(value,tuple),value==tuple(value),{value:'key'}[tuple(value)])\ntry:\n    print(p.urlsplit('http://x:65536').port)\nexcept ValueError:\n    print('port')\n";
+var structuredUrls = engine.Compile(structuredUrlSource);
+if (!structuredUrls.IsValid)
+    throw new Exception(string.Join("; ", structuredUrls.Diagnostics.Select(d => d.Message)));
+foreach (var result in new[] { structuredUrls.Run(new PureHost()), await structuredUrls.RunAsync(new PureHost()) })
+    RequireOutput(result, "('http', 'u:p@EXAMPLE:080', '/a', 'b', 'x=1', 'f') u p example 80 http://u:p@EXAMPLE:080/a;b?x=1#f\n('http', 'Y', '/a', 'b', 'x=1', '') (b'http', b'u:p@EXAMPLE:080', b'/a', b'b', b'x=1', b'f') True\nb'https://X/a?x#f'\nTrue True key\nport\n");
+
 const string fileSource = """
     import json
     with open('/input.json') as source:

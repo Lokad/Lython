@@ -256,6 +256,29 @@ internal sealed partial class LythonRuntime
         Dictionary<string, object> bindings)
     {
         var classValue = TryResolvePatternClassValue(pattern.ClassExpression, context);
+        if (classValue is UrllibParseModule.UrlResultType urlType)
+        {
+            if (subject is not UrllibParseModule.UrlResult result || !ReferenceEquals(result.Type, urlType)) return false;
+            if (pattern.PositionalPatterns.Count > urlType.Fields.Length)
+                throw RuntimeErrors.Type("too many positional URL result subpatterns", pattern.Span);
+            var names = new HashSet<string>(StringComparer.Ordinal);
+            for (var i = 0; i < pattern.PositionalPatterns.Count; i++)
+            {
+                names.Add(urlType.Fields[i]);
+                if (!TryMatchPattern(pattern.PositionalPatterns[i], result[i], context, bindings)) return false;
+            }
+            foreach (var keyword in pattern.KeywordPatterns)
+            {
+                if (!names.Add(keyword.Name)) throw RuntimeErrors.Type("duplicate URL result attribute subpattern", pattern.Span);
+                try
+                {
+                    if (!PyMemberAccess.TryResolve(subject, keyword.Name, context, keyword.Pattern.Span, out var member) ||
+                        !TryMatchPattern(keyword.Pattern, member, context, bindings)) return false;
+                }
+                catch (LythonRuntimeException ex) when (ex.ExceptionType == "AttributeError") { return false; }
+            }
+            return true;
+        }
         if (classValue is PyType runtimeType)
         {
             if (subject is not PyInstance instance || !instance.Type.IsSubtypeOf(runtimeType))
@@ -367,6 +390,9 @@ internal sealed partial class LythonRuntime
                 return true;
             case PyTuple tuple:
                 items = tuple.ToArray();
+                return true;
+            case UrllibParseModule.UrlResult result:
+                items = result;
                 return true;
             default:
                 items = Array.Empty<object>();

@@ -329,6 +329,7 @@ internal sealed partial class LythonRuntime
             PyType => true,
             PyNamedTupleType => true,
             TimeStructTimeType => true,
+            UrllibParseModule.UrlResultType => true,
             BuiltinCallable builtin when IsBuiltinTypeName(builtin.Name) => true,
             PyBuiltinRuntimeType builtinType when IsBuiltinTypeName(builtinType.Name) => true,
             INamedRuntimeCallable namedCallable when IsBuiltinTypeName(namedCallable.Name) => true,
@@ -344,10 +345,12 @@ internal sealed partial class LythonRuntime
             {
                 PyInstance instance => instance.Type.IsSubtypeOf(runtimeType),
                 PyType typeValue => typeValue.MetaType is not null && typeValue.MetaType.IsSubtypeOf(runtimeType),
+                UrllibParseModule.UrlResultType => ReferenceEquals(TryGetBuiltinOrNull(context, "type"), runtimeType) || IsObjectRootType(runtimeType, context),
                 _ => IsObjectRootType(runtimeType, context)
             },
             PyNamedTupleType namedTupleType => value is PyNamedTupleObject namedTuple && ReferenceEquals(namedTuple.Type, namedTupleType),
             TimeStructTimeType => value is TimeStructTimeValue,
+            UrllibParseModule.UrlResultType urlType => value is UrllibParseModule.UrlResult result && ReferenceEquals(result.Type, urlType),
             BuiltinCallable builtin => DoesObjectMatchBuiltinType(builtin.Name, value),
             PyBuiltinRuntimeType builtinType => DoesObjectMatchBuiltinType(builtinType.Name, value),
             INamedRuntimeCallable namedCallable => DoesObjectMatchBuiltinType(namedCallable.Name, value),
@@ -362,6 +365,8 @@ internal sealed partial class LythonRuntime
 
     private static bool IsSubclassAgainstSingleType(object type, object baseSpec)
     {
+        if (type is UrllibParseModule.UrlResultType urlType)
+            return ReferenceEquals(type, baseSpec) || GetBuiltinTypeName(baseSpec) is "tuple" or "object";
         if (type is PyType runtimeSubject)
         {
             if (baseSpec is PyType runtimeBase)
@@ -738,11 +743,12 @@ internal sealed partial class LythonRuntime
             "types.GenericAlias" or "typing._GenericAlias" => value is PyGenericAlias,
             "generator" => value is PyGenerator or PyGeneratorExpression,
             "bool" => value is bool,
+            "type" => value is UrllibParseModule.UrlResultType,
             "int" => value is BigInteger or int or bool,
             "float" => value is double,
             "complex" => value is PyComplex,
             "list" => value is PyList,
-            "tuple" => value is PyTuple or PyNamedTupleObject or PyTypingNamedTupleObject or TimeStructTimeValue,
+            "tuple" => PyTupleLike.TryGetItems(value, out _),
             "dict" => value is PyDict or PyDefaultDict or PyCounter,
             "collections.defaultdict" => value is PyDefaultDict,
             "collections.Counter" => value is PyCounter,

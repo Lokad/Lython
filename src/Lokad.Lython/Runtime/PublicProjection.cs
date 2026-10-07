@@ -50,6 +50,7 @@ internal static class PublicProjection
             PyList list => ProjectList(list, budget, active),
             PyTuple tuple => ProjectTuple(tuple, budget, active),
             LythonRuntime.TimeStructTimeValue structTime => ProjectStructTime(structTime, budget, active),
+            LythonRuntime.UrllibParseModule.UrlResult result => ProjectStructTime(result, budget, active),
             PyDict dict => ProjectDictionary(dict, budget, active),
             PySet set => ProjectSet(set, budget, active),
             LythonRuntime.ReFindAllResult matches => ProjectFindAllResult(matches, budget, active),
@@ -286,7 +287,7 @@ internal static class PublicProjection
         }
     }
 
-    private static object?[] ProjectStructTime(LythonRuntime.TimeStructTimeValue value, ProjectionBudget? budget, HashSet<object> active)
+    private static object?[] ProjectStructTime(IReadOnlyList<object> value, ProjectionBudget? budget, HashSet<object> active)
     {
         EnterContainer(value, active);
         try

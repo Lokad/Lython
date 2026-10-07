@@ -525,7 +525,7 @@ internal sealed partial class LythonRuntime
             value is DictCallable or ZipCallable ||
             value is ReModule.RegexFlagFactory or ZipInfoCallable or ZipFileCallable ||
             value is PathlibModule.PathlibPathType or PyBuiltinRuntimeType ||
-            value is ExceptionTypeValue)
+            value is ExceptionTypeValue or UrllibParseModule.UrlResultType)
         {
             classValue = TryGetBuiltinOrNull(context, "type");
             return classValue is not null;
@@ -558,6 +558,7 @@ internal sealed partial class LythonRuntime
             // than the import registry, so they keep their class without an
             // import; the registry holds the same object, preserving identity.
             TimeStructTimeValue => TimeStructTimeType.Instance,
+            UrllibParseModule.UrlResult result => result.Type,
             LythonRuntime.StatisticsModule.PyNormalDist => TryGetModuleMemberOrNull(context, "statistics", "NormalDist"),
             LythonRuntime.RandomModule.PyRandom => TryGetModuleMemberOrNull(context, "random", "Random"),
             PyZipInfo => TryGetModuleMemberOrNull(context, "zipfile", "ZipInfo"),

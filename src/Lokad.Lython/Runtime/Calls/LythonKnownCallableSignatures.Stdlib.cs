@@ -64,6 +64,10 @@ internal static partial class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature TextwrapIndent = LythonCallableSignature.Create("textwrap.indent", ["text", "prefix", "predicate"], requiredCount: 2);
     public static readonly LythonCallableSignature HtmlEscape = LythonCallableSignature.Create("html.escape", ["s", "quote"], requiredCount: 1);
     public static readonly LythonCallableSignature HtmlUnescape = LythonCallableSignature.Create("html.unescape", ["s"]);
+    public static readonly LythonCallableSignature UrlSplit = LythonCallableSignature.Create("urllib.parse.urlsplit", ["url", "scheme", "allow_fragments"], requiredCount: 1);
+    public static readonly LythonCallableSignature UrlParse = LythonCallableSignature.Create("urllib.parse.urlparse", ["url", "scheme", "allow_fragments"], requiredCount: 1);
+    public static readonly LythonCallableSignature UrlUnsplit = LythonCallableSignature.Create("urllib.parse.urlunsplit", ["components"]);
+    public static readonly LythonCallableSignature UrlUnparse = LythonCallableSignature.Create("urllib.parse.urlunparse", ["components"]);
     public static readonly LythonCallableSignature UrlQuote = LythonCallableSignature.Create("urllib.parse.quote", ["string", "safe", "encoding", "errors"], requiredCount: 1);
     public static readonly LythonCallableSignature UrlQuotePlus = LythonCallableSignature.Create("urllib.parse.quote_plus", ["string", "safe", "encoding", "errors"], requiredCount: 1);
     public static readonly LythonCallableSignature UrlQuoteFromBytes = LythonCallableSignature.Create("urllib.parse.quote_from_bytes", ["bs", "safe"], requiredCount: 1);

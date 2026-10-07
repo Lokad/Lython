@@ -628,6 +628,9 @@ internal sealed partial class LythonRuntime
         public static bool TryGetMember(PyTypingNamedTupleObject namedTuple, string name, [MaybeNullWhen(false)] out object value)
             => TryGetMember(namedTuple, name, namedTuple.Count, namedTuple.GetItem, out value);
 
+        public static bool TryGetMember(UrllibParseModule.UrlResult result, string name, [MaybeNullWhen(false)] out object value)
+            => TryGetMember(result, name, result.Count, result.GetItem, out value);
+
         private static bool TryGetMember(object source, string name, int count, Func<int, object> getItem, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
