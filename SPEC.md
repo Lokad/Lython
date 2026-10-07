@@ -1424,7 +1424,24 @@ The imported module must expose the following JSON helpers:
 - `json.JSONEncoder`
 - `json.JSONDecoder`
 
-`load` and `dump` are text-only and must operate on Lython text file handles. Binary file handles are outside the public file boundary.
+`load` and `dump` use text-stream protocols: Lython text file handles,
+host-mediated `sys.stdin`/`sys.stdout`/`sys.stderr`, and guest objects with
+`read()` returning text or `write(chunk)` are supported. `load` reads once,
+without arguments, before constructing the selected decoder. Binary readers
+remain outside this JSON subset and non-text read results raise `TypeError`.
+Missing/noncallable methods and callback exceptions propagate through ordinary
+attribute/call dispatch. `RunAsync` awaits lookup, reads, encoder pulls and writes,
+including guest methods and descriptors that perform host operations.
+
+`dump` constructs the selected encoder and consumes `iterencode(obj)` lazily,
+resolving and invoking `fp.write(chunk)` for each yielded chunk. It ignores
+write return values and does not call `encode` or flush/close a supplied stream.
+Chunks use the existing incremental encoder's boundaries; their concatenation
+is the encoded document. Custom encoders may choose their own chunks, which
+are passed unchanged to the writer. A callback or encoding failure stops further
+pulls/writes; already written prefixes remain. Text files retain their governed
+staging and close/final-publication policy. Standard streams retain host-call,
+input/output and memory limits, with the usual stdout/stderr capture.
 
 `loads` must support `object_hook`, `object_pairs_hook`, `parse_int`, `parse_float`, and `parse_constant` callbacks at every value position, plus `strict` (when false, literal control characters inside strings are allowed). Invalid JSON text must raise catchable `JSONDecodeError` with `msg`, `doc`, `pos`, `lineno`, and `colno` fields. Positions and prefix end offsets are Python string indices.
 

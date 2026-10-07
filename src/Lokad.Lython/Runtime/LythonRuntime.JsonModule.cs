@@ -169,12 +169,8 @@ internal sealed partial class LythonRuntime
             ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            if (bound.Length < 1 || bound[0] is not ExecutionContext.TextFileHandle file)
-            {
-                throw new LythonRuntimeException("TypeError", "json.load(fp, *, ...) expects a readable text file handle.", span);
-            }
-
-            return DecodeWithClass(file.Read(), ResolveDecoderClass(GetOptional(bound, 1), span), bound, extras, span, context);
+            var text = PyTextStream.ReadAll(bound[0], span, context);
+            return DecodeWithClass(text, ResolveDecoderClass(GetOptional(bound, 1), span), bound, extras, span, context);
         }
 
         private async ValueTask<object> LoadAsync(
@@ -184,12 +180,8 @@ internal sealed partial class LythonRuntime
             ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            if (bound.Length < 1 || bound[0] is not ExecutionContext.TextFileHandle file)
-            {
-                throw new LythonRuntimeException("TypeError", "json.load(fp, *, ...) expects a readable text file handle.", span);
-            }
-
-            return await DecodeWithClassAsync(await file.ReadAsync(-1).ConfigureAwait(false), ResolveDecoderClass(GetOptional(bound, 1), span), bound, extras, span, context).ConfigureAwait(false);
+            var text = await PyTextStream.ReadAllAsync(bound[0], span, context).ConfigureAwait(false);
+            return await DecodeWithClassAsync(text, ResolveDecoderClass(GetOptional(bound, 1), span), bound, extras, span, context).ConfigureAwait(false);
         }
 
         private object Loads(
@@ -229,18 +221,12 @@ internal sealed partial class LythonRuntime
             ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            if (bound.Length < 2 || bound[1] is not ExecutionContext.TextFileHandle file)
+            var chunks = IterateWithClass(bound, extras, span, context);
+            foreach (var chunk in PyIteration.ToSequence(chunks, span, context))
             {
-                throw new LythonRuntimeException("TypeError", "json.dump(obj, fp, *, ...) expects an object and writable text file handle.", span);
+                context.CheckExecutionBudget(span);
+                PyTextStream.Write(bound[1], chunk, span, context);
             }
-
-            var encoded = EncodeWithClass(bound[0], ResolveEncoderClass(GetOptional(bound, 6), span), bound, extras, JsonDumpCallForm.Dump, span, context);
-            if (encoded is not PyString text)
-            {
-                throw new LythonRuntimeException("TypeError", "json.dump() encoder returned a non-string value.", span);
-            }
-
-            _ = file.Write(text);
             return PyNone.Instance;
         }
 
@@ -251,21 +237,27 @@ internal sealed partial class LythonRuntime
             ExecutionContext context)
         {
             context.CheckExecutionBudget(span);
-            if (bound.Length < 2 || bound[1] is not ExecutionContext.TextFileHandle file)
+            var cls = ResolveEncoderClass(GetOptional(bound, 6), span);
+            var forwarded = BuildEncoderForwardArgs(bound, extras, JsonDumpCallForm.Dump).ToArray();
+            var instance = await ((ICallable)cls).InvokeAsync(forwarded, span, context).ConfigureAwait(false);
+            var method = await PyTextStream.ResolveMemberAsync(instance, "iterencode", span, context).ConfigureAwait(false);
+            var chunks = await InvokeCallableTargetAsync(method, span, span, context,
+                () => ValueTask.FromResult<CallArgumentValue[]>([CallArgumentValue.Positional(bound[0])])).ConfigureAwait(false);
+            await foreach (var chunk in PyIteration.ToSequenceAsync(chunks, span, context).ConfigureAwait(false))
             {
-                throw new LythonRuntimeException("TypeError", "json.dump(obj, fp, *, ...) expects an object and writable text file handle.", span);
+                context.CheckExecutionBudget(span);
+                await PyTextStream.WriteAsync(bound[1], chunk, span, context).ConfigureAwait(false);
             }
-
-            var encoded = await EncodeWithClassAsync(bound[0], ResolveEncoderClass(GetOptional(bound, 6), span), bound, extras, JsonDumpCallForm.Dump, span, context).ConfigureAwait(false);
-            if (encoded is not PyString text)
-            {
-                throw new LythonRuntimeException("TypeError", "json.dump() encoder returned a non-string value.", span);
-            }
-
-            // TextFileHandle.Write stages governed output; publication is
-            // awaited by the handle's close/context-exit operation.
-            _ = file.Write(text);
             return PyNone.Instance;
+        }
+
+        private static object IterateWithClass(object[] bound, IReadOnlyList<KeyValuePair<string, object>> extras,
+            LythonSourceSpan span, ExecutionContext context)
+        {
+            var cls = ResolveEncoderClass(GetOptional(bound, 6), span);
+            var instance = ConstructEncoderClass(cls, bound, extras, JsonDumpCallForm.Dump, span, context);
+            var method = PyTextStream.ResolveMember(instance, "iterencode", span, context);
+            return InvokeCallableTarget(method, span, span, context, () => [CallArgumentValue.Positional(bound[0])]);
         }
 
         private object Dumps(

@@ -77,7 +77,8 @@ internal static partial class StaticDataModuleContractFamily
             return false;
         }
 
-        if (value.Kind == AbstractValueKind.Unknown)
+        if (value.Kind is AbstractValueKind.Unknown or AbstractValueKind.Never or AbstractValueKind.MaybeNone
+            or AbstractValueKind.UserInstance or AbstractValueKind.UserClass)
         {
             return false;
         }
@@ -94,7 +95,7 @@ internal static partial class StaticDataModuleContractFamily
             return false;
         }
 
-        AddDiagnostic(diagnostics, "LA3158", "json.load(fp, *, ...) expects a readable text file handle.", expression.Span);
+        AddDiagnostic(diagnostics, "LA3158", "json.load(fp, *, ...) expects a text stream with read().", expression.Span);
         return true;
     }
 
@@ -105,7 +106,8 @@ internal static partial class StaticDataModuleContractFamily
             return false;
         }
 
-        if (value.Kind == AbstractValueKind.Unknown)
+        if (value.Kind is AbstractValueKind.Unknown or AbstractValueKind.Never or AbstractValueKind.MaybeNone
+            or AbstractValueKind.UserInstance or AbstractValueKind.UserClass)
         {
             return false;
         }
@@ -122,7 +124,7 @@ internal static partial class StaticDataModuleContractFamily
             return false;
         }
 
-        AddDiagnostic(diagnostics, "LA3158", "json.dump(obj, fp, *, ...) expects a writable text file handle.", expression.Span);
+        AddDiagnostic(diagnostics, "LA3158", "json.dump(obj, fp, *, ...) expects a text stream with write().", expression.Span);
         return true;
     }
 
