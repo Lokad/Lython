@@ -164,6 +164,7 @@ The builtin module surface is explicitly allowlisted:
 - `statistics`
 - `subprocess` when the host provides a subprocess capability
 - `sys`
+- `textwrap` (`dedent`, `indent`)
 - `time`
 - `typing`
 - `zipfile`
@@ -177,6 +178,11 @@ capability. `io.BytesIO` provides opaque byte buffers with byte positions,
 read/read1/readline/readlines, writes, immutable snapshots and the same lifecycle
 surface. See [SPEC](SPEC.md#1117-in-memory-streams) for the complete inventory;
 IO base classes, descriptors, exported buffers and subclassing remain deferred.
+
+`textwrap.dedent` removes shared ASCII space/tab indentation and normalizes
+whitespace-only lines. `textwrap.indent` preserves Python line endings and
+accepts guest predicates, including delayed effects under `RunAsync`.
+See [SPEC](SPEC.md#1118-small-text-helpers) for the bounded helper inventory.
 
 `pkgutil` follows the same contained model: it discovers builtins and explicitly allowed host-backed `.py` files or package directories, and it does not expose ambient importers or binary resource reads.
 

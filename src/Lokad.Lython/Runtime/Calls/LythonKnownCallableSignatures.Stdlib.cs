@@ -60,6 +60,8 @@ internal static partial class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature Glob1 = LythonCallableSignature.Create("glob.glob1", ["dirname", "pattern"], requiredCount: 2);
 
     public static readonly LythonCallableSignature FnMatch = LythonCallableSignature.Create("fnmatch.fnmatch", ["name", "pattern"]);
+    public static readonly LythonCallableSignature TextwrapDedent = LythonCallableSignature.Create("textwrap.dedent", ["text"]);
+    public static readonly LythonCallableSignature TextwrapIndent = LythonCallableSignature.Create("textwrap.indent", ["text", "prefix", "predicate"], requiredCount: 2);
     public static readonly LythonCallableSignature FnMatchCase = LythonCallableSignature.Create("fnmatch.fnmatchcase", ["name", "pattern"]);
     public static readonly LythonCallableSignature FnMatchFilter = LythonCallableSignature.Create("fnmatch.filter", ["names", "pattern"]);
     public static readonly LythonCallableSignature FnMatchTranslate = LythonCallableSignature.Create("fnmatch.translate", ["pattern"]);

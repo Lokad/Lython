@@ -1843,6 +1843,36 @@ arbitrary instance attributes, instance/class dir, subclassing and archive
 file-object adapters remain outside this inventory. Existing scalar-string
 limits apply to text results; this module grants no ambient capability.
 
+### 11.18 Small Text Helpers
+
+`textwrap` exposes `dedent(text)` and `indent(text, prefix, predicate=None)`.
+Their named arguments follow Python binding. Module discovery lists these
+helpers; wrap, fill, shorten and TextWrapper are explicitly unsupported.
+
+Dedent accepts strings, removes the common exact prefix of ASCII spaces/tabs
+from nonblank lines and normalizes lines containing only those characters.
+Tabs and spaces do not match each other. Its line anchors are LF, preserving
+other whitespace and newline characters. An unchanged result may retain the
+original string identity.
+
+Indent uses Python splitlines boundaries with original endings retained.
+Its default predicate selects lines that are not entirely Python whitespace.
+A supplied predicate receives each line in order and its result undergoes
+ordinary Python truth testing. For guest text objects, the helper calls
+`splitlines(True)`, iterates its result and uses line `isspace()` when the
+predicate is omitted. Empty bytes produce an empty string; nonempty bytes
+are rejected by final string-join validation after applicable callbacks.
+The prefix must be a string when selected. Indent joins prefixes as separate
+items without invoking addition; invalid join items are checked after line
+processing, so a later guest exception takes priority. Unused invalid prefixes
+and predicates retain Python's lazy behavior.
+
+Both helpers use governed UTF-8 output and scalar-string limits. Private line
+processing does not consume guest collection item limits. Resource denial,
+guest failure and cancellation stop before later callbacks or line pulls and
+release scratch; abandoned output strings are reclaimed. RunAsync awaits
+guest member lookup, line sources, predicates, whitespace hooks and truth hooks.
+
 ---
 
 ## 12. Host Capability Interface

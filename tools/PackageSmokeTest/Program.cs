@@ -138,6 +138,19 @@ if (!byteStreams.IsValid)
 foreach (var result in new[] { byteStreams.Run(new PureHost()), await byteStreams.RunAsync(new PureHost()) })
     RequireOutput(result, "True True b'a\\xff\\n'\n3 2 b'a\\xff\\nb' b'a\\xff\\nXY'\n1 b'a\\xff\\nXY\\x00\\x00\\x00'\nb'a\\xff\\nXY\\x00\\x00\\x00z'\nTrue True\nclosed\n");
 
+const string textHelperSource = """
+    import textwrap
+    print(repr(textwrap.dedent('  é😀\n \t\n  b')))
+    print(repr(textwrap.indent('\x1c\x85\xa0\n😀','>')))
+    print('\x1c\x1f'.isspace(),len('a\x1cb\x85c'.splitlines()))
+    print(repr('\u0897\U000f0000'))
+    """;
+var textHelpers = engine.Compile(textHelperSource);
+if (!textHelpers.IsValid)
+    throw new Exception(string.Join("; ", textHelpers.Diagnostics.Select(d => d.Message)));
+foreach (var result in new[] { textHelpers.Run(new PureHost()), await textHelpers.RunAsync(new PureHost()) })
+    RequireOutput(result, "'é😀\\n\\nb'\n'\\x1c\\x85\\xa0\\n>😀'\nTrue 3\n'\\u0897\\U000f0000'\n");
+
 const string fileSource = """
     import json
     with open('/input.json') as source:
