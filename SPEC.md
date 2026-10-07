@@ -1125,6 +1125,17 @@ The builtin environment must include exactly the following builtins and builtin 
 
 No builtin outside this set is supported unless it is explicitly added elsewhere in this specification.
 
+Implicit iteration resolves the type's `__iter__` slot. If that slot is absent,
+an object with a type-level `__getitem__` supports sequence iteration from
+integer index zero. `IndexError` or `StopIteration` permanently exhausts the
+cursor; other errors preserve its index for a later retry. An explicit invalid
+`__iter__`, including `None`, disables fallback. Instance attributes and
+`__getattr__` do not replace implicit slots. `RunAsync` awaits descriptor
+binding and item calls; constructed cursors remain governed execution values.
+Iterator validation checks `__next__` slot presence without evaluating its
+descriptor. Advancement binds that type-level slot once per pull, awaiting
+guest binding and calls under `RunAsync`.
+
 `sorted(iterable, *, key=None, reverse=False)` and `list.sort(...)` must be
 stable, including when `reverse=True`. The key function is evaluated exactly
 once per item before comparisons begin. Comparisons follow Lython's
