@@ -64,6 +64,15 @@ internal static partial class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature TextwrapIndent = LythonCallableSignature.Create("textwrap.indent", ["text", "prefix", "predicate"], requiredCount: 2);
     public static readonly LythonCallableSignature HtmlEscape = LythonCallableSignature.Create("html.escape", ["s", "quote"], requiredCount: 1);
     public static readonly LythonCallableSignature HtmlUnescape = LythonCallableSignature.Create("html.unescape", ["s"]);
+    public static readonly LythonCallableSignature UrlQuote = LythonCallableSignature.Create("urllib.parse.quote", ["string", "safe", "encoding", "errors"], requiredCount: 1);
+    public static readonly LythonCallableSignature UrlQuotePlus = LythonCallableSignature.Create("urllib.parse.quote_plus", ["string", "safe", "encoding", "errors"], requiredCount: 1);
+    public static readonly LythonCallableSignature UrlQuoteFromBytes = LythonCallableSignature.Create("urllib.parse.quote_from_bytes", ["bs", "safe"], requiredCount: 1);
+    public static readonly LythonCallableSignature UrlUnquote = LythonCallableSignature.Create("urllib.parse.unquote", ["string", "encoding", "errors"], requiredCount: 1);
+    public static readonly LythonCallableSignature UrlUnquotePlus = LythonCallableSignature.Create("urllib.parse.unquote_plus", ["string", "encoding", "errors"], requiredCount: 1);
+    public static readonly LythonCallableSignature UrlUnquoteToBytes = LythonCallableSignature.Create("urllib.parse.unquote_to_bytes", ["string"]);
+    public static readonly LythonCallableSignature UrlEncode = LythonCallableSignature.Create("urllib.parse.urlencode", ["query", "doseq", "safe", "encoding", "errors", "quote_via"], requiredCount: 1);
+    public static readonly LythonCallableSignature UrlParseQs = LythonCallableSignature.Create("urllib.parse.parse_qs", ["qs", "keep_blank_values", "strict_parsing", "encoding", "errors", "max_num_fields", "separator"], requiredCount: 1);
+    public static readonly LythonCallableSignature UrlParseQsl = LythonCallableSignature.Create("urllib.parse.parse_qsl", ["qs", "keep_blank_values", "strict_parsing", "encoding", "errors", "max_num_fields", "separator"], requiredCount: 1);
     public static readonly LythonCallableSignature FnMatchCase = LythonCallableSignature.Create("fnmatch.fnmatchcase", ["name", "pattern"]);
     public static readonly LythonCallableSignature FnMatchFilter = LythonCallableSignature.Create("fnmatch.filter", ["names", "pattern"]);
     public static readonly LythonCallableSignature FnMatchTranslate = LythonCallableSignature.Create("fnmatch.translate", ["pattern"]);

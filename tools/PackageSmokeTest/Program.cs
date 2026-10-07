@@ -165,6 +165,13 @@ if (!asciiCodecs.IsValid)
 foreach (var result in new[] { asciiCodecs.Run(new PureHost()), await asciiCodecs.RunAsync(new PureHost()) })
     RequireOutput(result, "b'\\\\xe9\\\\U0001f600'\n'A\ufffd\ufffd\\r\\n'\nTrue\n");
 
+const string urlHelperSource = "import urllib.parse as p\nprint(p.quote('/\u00e9\ud83d\ude00 a'),p.quote_plus('/\u00e9\ud83d\ude00 a'))\nprint(repr(p.unquote('\u00e9%FF\ud83d\ude00%C3%A9',errors='replace')))\nprint(p.urlencode([('x',['a b',b'\\xff']),('y',[])],doseq=True))\nprint(repr(p.parse_qs(b'x=%FF&x=a+b')),repr(p.parse_qsl('a=&a=\u00e9+\ud83d\ude00',keep_blank_values=True)))\nprint(p.quote is p.quote,{p.quote:'function'}[p.quote])\nclass Sequence:\n    def __getitem__(self,index):\n        if index>=3:\n            raise IndexError\n        return index\nprint(list(Sequence()))\n";
+var urlHelpers = engine.Compile(urlHelperSource);
+if (!urlHelpers.IsValid)
+    throw new Exception(string.Join("; ", urlHelpers.Diagnostics.Select(d => d.Message)));
+foreach (var result in new[] { urlHelpers.Run(new PureHost()), await urlHelpers.RunAsync(new PureHost()) })
+    RequireOutput(result, "/%C3%A9%F0%9F%98%80%20a %2F%C3%A9%F0%9F%98%80+a\n'\u00e9\ufffd\ud83d\ude00\u00e9'\nx=a+b&x=%FF\n{b'x': [b'\\xff', b'a b']} [('a', ''), ('a', '\u00e9 \ud83d\ude00')]\nTrue function\n[0, 1, 2]\n");
+
 const string fileSource = """
     import json
     with open('/input.json') as source:

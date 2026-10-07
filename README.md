@@ -168,6 +168,7 @@ The builtin module surface is explicitly allowlisted:
 - `textwrap` (`dedent`, `indent`)
 - `time`
 - `typing`
+- `urllib.parse` for URL quoting and query encoding/parsing
 - `zipfile`
 
 Local script imports are separate from builtin modules. Bare `import helper` can resolve through the host as `helper.py` only when `LythonRunOptions.AllowedLocalModules` contains `helper`, so embedders provide an explicit dependent-script list.
@@ -190,6 +191,12 @@ Python's HTML escapes. `html.unescape` decodes HTML5 names and decimal/hexadecim
 references, including Python's prefix and invalid-code-point rules. Both govern
 output and await guest protocols under `RunAsync`.
 See [SPEC](SPEC.md#1119-html-text-helpers) for the helper inventory.
+
+`urllib.parse` provides governed text/byte percent quoting, unquoting and
+ordered query encoding/parsing. Repeated fields, blank values, `doseq`, safe
+characters and contained codecs follow Python; guest callbacks await host
+effects under `RunAsync`. See [SPEC](SPEC.md#1120-url-quoting-and-query-helpers)
+for the exact inventory.
 
 `pkgutil` follows the same contained model: it discovers builtins and explicitly allowed host-backed `.py` files or package directories, and it does not expose ambient importers or binary resource reads.
 

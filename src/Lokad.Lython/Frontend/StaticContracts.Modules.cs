@@ -462,6 +462,8 @@ internal static partial class StaticContracts
         ["io"] = Members("StringIO", "BytesIO", "SEEK_SET", "SEEK_CUR", "SEEK_END"),
         ["textwrap"] = Members("dedent", "indent"),
         ["html"] = Members("escape", "unescape"),
+        ["urllib"] = Members("parse"),
+        ["urllib.parse"] = Members("quote", "quote_plus", "quote_from_bytes", "unquote", "unquote_plus", "unquote_to_bytes", "urlencode", "parse_qs", "parse_qsl"),
         ["json"] = Members("load", "loads", "dump", "dumps", "JSONDecodeError", "JSONEncoder", "JSONDecoder"),
         ["csv"] = Members("reader", "writer", "DictReader", "DictWriter", "Error", "QUOTE_MINIMAL", "QUOTE_ALL", "QUOTE_NONE", "QUOTE_NONNUMERIC"),
         ["subprocess"] = Members("run", "call", "check_call", "check_output", "CompletedProcess", "CalledProcessError", "SubprocessError", "TimeoutExpired", "Popen", "list2cmdline", "getoutput", "getstatusoutput", "PIPE", "STDOUT", "DEVNULL"),
@@ -473,6 +475,7 @@ internal static partial class StaticContracts
         {
             [new("os", "path")] = "os.path",
             [new("importlib", "util")] = "importlib.util",
+            [new("urllib", "parse")] = "urllib.parse",
             [new("openpyxl", "utils")] = "openpyxl.utils",
             [new("openpyxl", "workbook")] = "openpyxl.workbook",
             [new("openpyxl", "reader")] = "openpyxl.reader",

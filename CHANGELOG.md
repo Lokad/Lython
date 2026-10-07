@@ -4,6 +4,7 @@
 
 ## 0.10.0 - release candidate
 
+- Add governed urllib.parse quoting, percent decoding and ordered query encoding/parsing, including opaque byte fields, callback/option order and asynchronous guest protocols.
 - Support Python sequence iteration through type-level __getitem__ when __iter__ is absent, with permanent exhaustion, retryable failures, async descriptor/item dispatch and governed cursor storage.
 - Fund reader carry buffers before allocation and retain ownership only after the charge commits, preserving the original MemoryError when an open is denied.
 - Add shared ASCII codecs with Python aliases, strict/ignore/replace/backslashreplace behavior, byte-mediated paths and streaming text handles, delayed acquisition/cancellation and governed decoded-window scratch.

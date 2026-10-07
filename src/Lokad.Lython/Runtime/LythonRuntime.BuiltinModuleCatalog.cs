@@ -74,6 +74,8 @@ internal sealed partial class LythonRuntime
                 ["io"] = Module(static _ => IoModule.Instance),
                 ["textwrap"] = Module(static _ => TextwrapModule.Instance),
                 ["html"] = Module(static _ => HtmlModule.Instance),
+                ["urllib"] = Module(static _ => UrllibModule.Instance),
+                ["urllib.parse"] = Module(static _ => UrllibParseModule.Instance),
                 ["json"] = Module(static _ => JsonModule.Instance),
                 ["csv"] = Module(static _ => CsvModule.Instance),
                 ["subprocess"] = Module(static _ => SubprocessModule.Instance, BuiltinModuleCapability.Subprocess),

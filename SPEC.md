@@ -1918,6 +1918,51 @@ The immutable entity table is embedded in the library and carries its upstream
 license in the package. It requires no filesystem or Python installation.
 `html.parser`, `html.entities` and parser APIs remain unsupported.
 
+### 11.20 URL Quoting And Query Helpers
+
+The pure `urllib.parse` module exposes `quote(string, safe='/', encoding=None,
+errors=None)`, `quote_plus(string, safe='', encoding=None, errors=None)`,
+`quote_from_bytes(bs, safe='/')`, `unquote(string, encoding='utf-8',
+errors='replace')`, `unquote_plus` with the same options, and
+`unquote_to_bytes(string)`. Quoting preserves ASCII alphanumerics and `-._~`
+plus the supplied ASCII safe characters. Percent escapes use uppercase hex;
+form quoting changes spaces to plus signs, and form unquoting changes literal
+pluses to spaces. Percent decoding is one pass; malformed escapes remain
+literal. Literal Unicode around percent-decoded ASCII runs is preserved.
+
+`quote` and `quote_plus` accept text or bytes; byte input rejects non-None
+encoding/error options. `quote_from_bytes` accepts bytes. Safe values support
+text, bytes and iterables of integer byte values; `quote_plus` follows Python's
+safe-plus-space addition order when the input contains spaces. Text conversion
+uses the shared UTF-8, Latin-1 and ASCII codec/error inventories and preserves
+newlines. `unquote` accepts text or bytes and returns text; `unquote_plus`
+requires string replacement behavior. `unquote_to_bytes` accepts text or bytes
+and returns opaque bytes, encoding literal text as UTF-8.
+
+`urlencode(query, doseq=False, safe='', encoding=None, errors=None,
+quote_via=quote_plus)` accepts mappings with an `items()` method or a sequence
+of pairs beginning with a tuple. Pair order, repeated keys, scalar rendering,
+byte quoting and sequence-valued `doseq` behavior follow Python. Byte callback
+arguments pass only `(value, safe)`; other values pass their string conversion
+with `(text, safe, encoding, errors)`. An empty query does not call quote_via.
+
+`parse_qsl(qs, keep_blank_values=False, strict_parsing=False, encoding='utf-8',
+errors='replace', max_num_fields=None, separator='&')` returns ordered pairs.
+`parse_qs` accepts the same arguments and groups repeated keys into ordered
+value lists. Text queries produce text fields; byte queries preserve opaque
+byte fields and ignore text codec options. A nonempty text/byte separator may
+contain multiple characters; mixed text/byte separator conversion requires
+ASCII. Strict parsing rejects fields without `=`. Field-count validation
+precedes decoding and output allocation; Python's empty-input fast paths and
+blank-value rules are preserved.
+
+Guest item/iteration/string protocols, safe addition, quote_via callbacks,
+truth tests and field-limit comparisons await their effects under `RunAsync`.
+Native scans check execution budgets and govern output, temporary buffers,
+query pairs and grouped values. String limits count Unicode scalars. These
+helpers expose no networking capability. Structured URL parsing/reassembly,
+`urllib.request`, `urllib.error` and `urllib.robotparser` remain unsupported.
+
 ---
 
 ## 12. Host Capability Interface
