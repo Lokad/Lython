@@ -50,11 +50,16 @@ const string compatibilitySource = """
     def generate():
         yield from (n for n in range(4) if n > 0 if n < 3)
     print(list(generate()))
+    real_object = object
+    class object:
+        pass
+    print(issubclass(ValueError, real_object), issubclass(ValueError, object))
+    print(isinstance(ValueError('x'), real_object), isinstance(ValueError('x'), object))
     """;
 var compatibility = engine.Compile(compatibilitySource);
 if (!compatibility.IsValid)
     throw new Exception(string.Join("; ", compatibility.Diagnostics.Select(d => d.Message)));
-const string compatibilityOutput = "ab 3\nTrue ['a', 'b'] [['1', '2']] empty\n3\n{\"sample\": {\"x\": 2}}\na a None\nIndexError\n[1, 2]\n";
+const string compatibilityOutput = "ab 3\nTrue ['a', 'b'] [['1', '2']] empty\n3\n{\"sample\": {\"x\": 2}}\na a None\nIndexError\n[1, 2]\nTrue False\nTrue False\n";
 foreach (var result in new[] { compatibility.Run(new PureHost()), await compatibility.RunAsync(new PureHost()) })
     RequireOutput(result, compatibilityOutput);
 
