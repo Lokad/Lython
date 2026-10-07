@@ -42,7 +42,11 @@ public sealed class LythonRunOptions
     /// </summary>
     public IReadOnlyDictionary<string, object?>? Globals { get; init; }
 
-    /// <summary>Gets values exposed through <c>sys.argv</c>, excluding the source path.</summary>
+    /// <summary>
+    /// Gets the complete list exposed through <c>sys.argv</c>, including
+    /// <c>argv[0]</c> when supplied by the embedder. No source path is prepended;
+    /// null or an empty list exposes an empty <c>sys.argv</c>.
+    /// </summary>
     public IReadOnlyList<string>? Args { get; init; }
 
     /// <summary>Gets the environment exposed through the mediated <c>os.environ</c> surface.</summary>

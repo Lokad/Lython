@@ -1643,6 +1643,13 @@ arbitrary files/loaders or execute arbitrary loaders must fail explicitly.
 
 Lython exposes a contained `sys` view for ordinary runtime feature checks.
 
+`sys.argv` exposes `LythonRunOptions.Args` verbatim as a governed list of
+strings. The embedder supplies the program name at index zero when desired:
+`Args = ["sample.py", "0"]` exposes `['sample.py', '0']`, independently of
+`SourcePath = "/jobs/sample.py"`. `SourcePath` supplies diagnostic and
+local-import context; it is never prepended to argv. Omitted/null or empty
+`Args` exposes `[]`.
+
 Supported metadata includes `sys.version`, `sys.version_info`,
 `sys.hexversion`, `sys.implementation`, `sys.platform`, `sys.maxsize`,
 `sys.byteorder`, `sys.prefix`, `sys.base_prefix`, `sys.executable`,

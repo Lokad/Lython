@@ -78,6 +78,21 @@ switch (result.State)
 
 The example elides the host implementation on purpose. In practice, `host` is your controlled bridge to files and directories through `ILythonHost`.
 
+The embedder supplies the complete `sys.argv`, including the program name:
+
+```csharp
+var options = new LythonRunOptions
+{
+    Args = ["sample.py", "0"],
+    SourcePath = "/jobs/sample.py"
+};
+var result = engine.Run("import sys\nprint(sys.argv)", host, options);
+// StandardOutput: ['sample.py', '0']\n
+```
+
+`SourcePath` supplies diagnostic and local-import context independently of
+`Args`. Omitting `Args` or supplying an empty list exposes `sys.argv == []`.
+
 ## Python Surface
 
 Lython supports a broad, practical subset of Python. Ordinary control flow, functions, exceptions, collections, comprehensions, strings, regex, classes and dataclasses, structural pattern matching, and host-mediated file/path work are expected to work.
