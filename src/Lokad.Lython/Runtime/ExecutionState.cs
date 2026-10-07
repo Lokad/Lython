@@ -282,22 +282,22 @@ internal sealed class ExecutionState
         }
     }
 
-    // Outstanding text writers opened for writing or appending and not yet
+    // Outstanding file writers opened for writing or appending and not yet
     // closed. Successful execution publishes them (flush + close) instead of
     // silently discarding accepted writes; the registry lives on the shared
     // run state so handles opened under any child scope are covered. Handles
     // unregister on explicit close; a failed close keeps its registration so
     // end-of-run publication can retry it.
-    private readonly List<LythonRuntime.ExecutionContext.TextFileHandle> _openTextWriters = new();
+    private readonly List<IExecutionFileWriter> _openFileWriters = new();
 
-    internal void TrackOpenTextWriter(LythonRuntime.ExecutionContext.TextFileHandle handle)
+    internal void TrackOpenFileWriter(IExecutionFileWriter handle)
     {
-        _openTextWriters.Add(handle);
+        _openFileWriters.Add(handle);
     }
 
-    internal void UntrackOpenTextWriter(LythonRuntime.ExecutionContext.TextFileHandle handle)
+    internal void UntrackOpenFileWriter(IExecutionFileWriter handle)
     {
-        _openTextWriters.Remove(handle);
+        _openFileWriters.Remove(handle);
     }
 
     internal bool CancellationRequested => Limits.CancellationToken.IsCancellationRequested;
@@ -306,20 +306,20 @@ internal sealed class ExecutionState
     // exactly like an implicit close() on each handle, so a publication failure
     // surfaces as a failure rather than silent success. Flushes consume
     // host-call and memory budgets like explicit closes.
-    internal void CloseOpenTextWriters()
+    internal void CloseOpenFileWriters()
     {
-        while (_openTextWriters.Count > 0)
+        while (_openFileWriters.Count > 0)
         {
-            var handle = _openTextWriters[^1];
+            var handle = _openFileWriters[^1];
             handle.Exit();
         }
     }
 
-    internal async ValueTask CloseOpenTextWritersAsync()
+    internal async ValueTask CloseOpenFileWritersAsync()
     {
-        while (_openTextWriters.Count > 0)
+        while (_openFileWriters.Count > 0)
         {
-            var handle = _openTextWriters[^1];
+            var handle = _openFileWriters[^1];
             await handle.ExitAsync().ConfigureAwait(false);
         }
     }
@@ -331,12 +331,12 @@ internal sealed class ExecutionState
     // stall the sweep. Cancellation skips publication entirely (checked by
     // the run entries): a cancelled run leaves no file behind, and host calls
     // against a canceled token would fail anyway.
-    internal void TryCloseOpenTextWriters()
+    internal void TryCloseOpenFileWriters()
     {
-        while (_openTextWriters.Count > 0)
+        while (_openFileWriters.Count > 0)
         {
-            var handle = _openTextWriters[^1];
-            _openTextWriters.RemoveAt(_openTextWriters.Count - 1);
+            var handle = _openFileWriters[^1];
+            _openFileWriters.RemoveAt(_openFileWriters.Count - 1);
             try
             {
                 handle.Exit();
@@ -347,12 +347,12 @@ internal sealed class ExecutionState
         }
     }
 
-    internal async ValueTask TryCloseOpenTextWritersAsync()
+    internal async ValueTask TryCloseOpenFileWritersAsync()
     {
-        while (_openTextWriters.Count > 0)
+        while (_openFileWriters.Count > 0)
         {
-            var handle = _openTextWriters[^1];
-            _openTextWriters.RemoveAt(_openTextWriters.Count - 1);
+            var handle = _openFileWriters[^1];
+            _openFileWriters.RemoveAt(_openFileWriters.Count - 1);
             try
             {
                 await handle.ExitAsync().ConfigureAwait(false);

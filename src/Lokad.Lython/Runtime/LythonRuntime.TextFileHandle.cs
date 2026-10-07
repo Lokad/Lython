@@ -8,7 +8,7 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
-        internal sealed class TextFileHandle : IPyAsyncContextManager, IPyIteratorValue, IPyAsyncIteratorValue
+        internal sealed class TextFileHandle : IPyAsyncContextManager, IPyIteratorValue, IPyAsyncIteratorValue, IExecutionFileWriter
         {
             private TextFileHandle(
                 string path,
@@ -247,7 +247,7 @@ internal sealed partial class LythonRuntime
                     context,
                     encoding,
                     errors);
-                context.Services.State.TrackOpenTextWriter(handle);
+                context.Services.State.TrackOpenFileWriter(handle);
                 return handle;
             }
 
@@ -313,7 +313,7 @@ internal sealed partial class LythonRuntime
 
                 // Only reached after a successful flush: a failed close keeps its
                 // registration so end-of-run publication can retry it.
-                _context.Services.State.UntrackOpenTextWriter(this);
+                _context.Services.State.UntrackOpenFileWriter(this);
                 IsClosed = true;
                 return false;
             }
@@ -338,7 +338,7 @@ internal sealed partial class LythonRuntime
 
                 // Only reached after a successful flush: a failed close keeps its
                 // registration so end-of-run publication can retry it.
-                _context.Services.State.UntrackOpenTextWriter(this);
+                _context.Services.State.UntrackOpenFileWriter(this);
                 IsClosed = true;
                 return false;
             }
@@ -495,7 +495,7 @@ internal sealed partial class LythonRuntime
                     context,
                     encoding,
                     errors);
-                context.Services.State.TrackOpenTextWriter(handle);
+                context.Services.State.TrackOpenFileWriter(handle);
                 return handle;
             }
 
