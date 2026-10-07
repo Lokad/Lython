@@ -636,9 +636,19 @@ internal sealed partial class LythonRuntime
                     return;
                 }
 
-                _raw = new byte[checked(_windowBytes + CarrySlackBytes)];
-                _context.MemoryGovernor.Reserve(_raw.Length, null);
-                _context.MemoryGovernor.Commit(_raw.Length);
+                var length = checked(_windowBytes + CarrySlackBytes);
+                _context.MemoryGovernor.Reserve(length, null);
+                try
+                {
+                    var raw = new byte[length];
+                    _context.MemoryGovernor.Commit(length);
+                    _raw = raw;
+                }
+                catch
+                {
+                    _context.MemoryGovernor.ReleaseReserved(length);
+                    throw;
+                }
             }
 
             private bool AcceptPayload(ReadOnlyMemory<byte> payload)

@@ -4,6 +4,7 @@
 
 ## 0.10.0 - release candidate
 
+- Fund reader carry buffers before allocation and retain ownership only after the charge commits, preserving the original MemoryError when an open is denied.
 - Add shared ASCII codecs with Python aliases, strict/ignore/replace/backslashreplace behavior, byte-mediated paths and streaming text handles, delayed acquisition/cancellation and governed decoded-window scratch.
 - Release raw and decoded reader storage when priming or final handle allocation fails, including asynchronous construction under memory denial.
 - Add bounded html.unescape with the complete embedded HTML5 entity table, faithful named/numeric reference rules, containment/truth protocols, governed output and retained upstream license notices.

@@ -7,6 +7,8 @@ namespace Lokad.Lython.Tests;
 public sealed class TextReaderConstructionAccountingTests
 {
     [Theory]
+    [InlineData(false, 200)]
+    [InlineData(true, 200)]
     [InlineData(false, 4250)]
     [InlineData(true, 4250)]
     [InlineData(false, 4410)]
