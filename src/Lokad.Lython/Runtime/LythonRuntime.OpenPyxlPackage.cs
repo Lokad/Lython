@@ -600,7 +600,7 @@ internal sealed partial class LythonRuntime
             public override int Depth => _inner.Depth;
             public override bool EOF => _inner.EOF;
             public override string GetAttribute(int i) => _inner.GetAttribute(i);
-            public override string GetAttribute(string name) => _inner.GetAttribute(name).RequireNotNull();
+            public override string? GetAttribute(string name) => _inner.GetAttribute(name);
             public override string? GetAttribute(string name, string? namespaceURI) => _inner.GetAttribute(name, namespaceURI);
             public override bool HasValue => _inner.HasValue;
             public override bool IsEmptyElement => _inner.IsEmptyElement;
