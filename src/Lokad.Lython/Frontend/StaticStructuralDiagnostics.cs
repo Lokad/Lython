@@ -150,8 +150,12 @@ internal static partial class StaticStructuralDiagnostics
 
     public static void AnalyzeSliceAssignment(SliceAssignmentStatementSyntax slice, List<LythonDiagnostic> diagnostics, AbstractState bindings)
     {
-        if (!StaticAbstractValueResolver.TryResolve(slice.Target, bindings, out var target))
+        if (!StaticAbstractValueResolver.TryResolve(slice.Target, bindings, out var target) ||
+            target.Kind is AbstractValueKind.Unknown or AbstractValueKind.Never or
+                AbstractValueKind.MaybeNone or AbstractValueKind.UserInstance)
         {
+            // Unknown values may be mutable lists, or instances with a custom
+            // __setitem__ accepting the raw slice. Only reject proven shapes.
             return;
         }
 
