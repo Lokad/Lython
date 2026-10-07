@@ -606,10 +606,15 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "callable(object) expects one argument.", span);
         }
 
-        return arguments[0] is PyInstance instance
-            ? instance.TryGetAttribute("__call__", context, span, out var member) && member is ICallable
-            : arguments[0] is ICallable;
+        return IsCallable(arguments[0]);
     }
+
+    // Python's tp_call presence depends on the type's slot. No ordinary
+    // attribute lookup or descriptor execution is needed for callable().
+    internal static bool IsCallable(object value)
+        => value is PyInstance instance
+            ? instance.Type.TryLookupInMro("__call__", 0, out _, out _)
+            : value is ICallable;
 
     // Single source of truth for hash values: builtin hash() and every
     // __hash__ member funnel through it, so direct calls can never drift

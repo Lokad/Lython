@@ -92,7 +92,8 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        if (!TryGetAttribute("__call__", context, span, out var member) || member is not LythonRuntime.ICallable callable)
+        if (!Type.TryLookupInMro("__call__", 0, out var rawMember, out _) ||
+            PyAttributeLookup.BindForInstance(this, rawMember, context, span) is not LythonRuntime.ICallable callable)
         {
             throw new LythonRuntimeException("TypeError", $"'{Type.Name}' object is not callable", span);
         }
@@ -100,14 +101,15 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
         return callable.Invoke(arguments, span, context);
     }
 
-    public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        if (!TryGetAttribute("__call__", context, span, out var member) || member is not LythonRuntime.ICallable callable)
+        if (!Type.TryLookupInMro("__call__", 0, out var rawMember, out _) ||
+            await PyAttributeLookup.BindForInstanceAsync(this, rawMember, context, span).ConfigureAwait(false) is not LythonRuntime.ICallable callable)
         {
             throw new LythonRuntimeException("TypeError", $"'{Type.Name}' object is not callable", span);
         }
 
-        return callable.InvokeAsync(arguments, span, context);
+        return await callable.InvokeAsync(arguments, span, context).ConfigureAwait(false);
     }
 
     public int GetPyHashCode()
