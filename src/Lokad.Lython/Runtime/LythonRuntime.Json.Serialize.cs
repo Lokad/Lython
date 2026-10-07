@@ -257,6 +257,12 @@ internal sealed partial class LythonRuntime
                 case PyDict dict:
                     await AppendDictionaryAsync(dict).ConfigureAwait(false);
                     return;
+                case PyCounter counter:
+                    await AppendDictionaryAsync(counter.InnerDict).ConfigureAwait(false);
+                    return;
+                case PyDefaultDict defaultDict:
+                    await AppendDictionaryAsync(defaultDict.InnerDict).ConfigureAwait(false);
+                    return;
                 default:
                     if (options.DefaultCallable is not null)
                     {

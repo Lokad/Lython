@@ -648,6 +648,12 @@ internal sealed partial class LythonRuntime
                 case PyDict dict:
                     PushDictFrame(dict, depth);
                     return (true, chunkReady);
+                case PyCounter counter:
+                    PushDictFrame(counter.InnerDict, depth);
+                    return (true, chunkReady);
+                case PyDefaultDict defaultDict:
+                    PushDictFrame(defaultDict.InnerDict, depth);
+                    return (true, chunkReady);
                 default:
                     if (_options.DefaultCallable is null)
                     {
