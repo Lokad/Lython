@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Text;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
@@ -279,7 +280,7 @@ internal static class PyRendering
     {
         if (PyStringOps.TryAsString(value, out var text))
         {
-            return RenderStringLiteral(text.AsString(), context);
+            return RenderStringLiteral(text, context);
         }
 
         return value switch
@@ -320,67 +321,58 @@ internal static class PyRendering
         return builder.ToPyStringAndRelease();
     }
 
-    private static PyString RenderStringLiteral(string text, PyRenderingContext context)
+    private static PyString RenderStringLiteral(PyString text, PyRenderingContext context)
     {
+        var source = text.Utf8Bytes.Span;
         var builder = new GovernedByteBuilder(context.Context.MemoryGovernor);
         // Like CPython, a string holding a single quote but no double quote
         // renders wrapped in double quotes with its singles left bare;
         // strings holding both, neither, or only doubles keep single quotes.
-        var quote = text.IndexOf((char)39) >= 0 && text.IndexOf((char)34) < 0 ? (char)34 : (char)39;
-        builder.Append((byte)quote);
-        for (var i = 0; i < text.Length; i++)
+        var quote = source.IndexOf((byte)'\'') >= 0 && source.IndexOf((byte)'"') < 0 ? (byte)'"' : (byte)'\'';
+        Span<byte> escape = stackalloc byte[10];
+        long nextCheck = 0;
+        try
         {
-            var ch = text[i];
-            if (ch == quote)
+            builder.Append(quote);
+            for (var cursor = 0; cursor < source.Length;)
             {
-                builder.Append((byte)92);
-                builder.Append((byte)quote);
-                continue;
+                if (cursor >= nextCheck)
+                {
+                    context.Context.Services.CheckExecutionBudget(null);
+                    nextCheck = (long)cursor + 1024;
+                }
+                Rune.DecodeFromUtf8(source[cursor..], out var rune, out var width);
+                if (rune.Value == quote)
+                {
+                    builder.Append((byte)'\\');
+                    builder.Append(quote);
+                }
+                else switch (rune.Value)
+                {
+                    case '\\': builder.AppendAscii("\\\\"); break;
+                    case '\n': builder.AppendAscii("\\n"); break;
+                    case '\r': builder.AppendAscii("\\r"); break;
+                    case '\t': builder.AppendAscii("\\t"); break;
+                    default:
+                        if (PyStringOps.IsPrintableRune(rune))
+                            builder.Append(source.Slice(cursor, width));
+                        else
+                        {
+                            var digits = rune.Value <= 0xff ? 2 : rune.Value <= 0xffff ? 4 : 8;
+                            escape[0] = (byte)'\\';
+                            escape[1] = digits == 2 ? (byte)'x' : digits == 4 ? (byte)'u' : (byte)'U';
+                            for (var digit = 0; digit < digits; digit++)
+                                escape[digit + 2] = (byte)"0123456789abcdef"[(rune.Value >> (4 * (digits - digit - 1))) & 15];
+                            builder.Append(escape[..(digits + 2)]);
+                        }
+                        break;
+                }
+                cursor += width;
             }
-
-            switch (ch)
-            {
-                case '\\':
-                    builder.AppendAscii("\\\\");
-                    break;
-                case '\n':
-                    builder.AppendAscii("\\n");
-                    break;
-                case '\r':
-                    builder.AppendAscii("\\r");
-                    break;
-                case '\t':
-                    builder.AppendAscii("\\t");
-                    break;
-                case '\b':
-                    builder.AppendAscii("\\x08");
-                    break;
-                case '\f':
-                    builder.AppendAscii("\\x0c");
-                    break;
-                default:
-                    if (char.IsControl(ch))
-                    {
-                        builder.AppendString(ch <= 0xff ? $"\\x{(int)ch:x2}" : $"\\u{(int)ch:x4}");
-                    }
-                    else if (char.IsHighSurrogate(ch) &&
-                             i + 1 < text.Length &&
-                             char.IsLowSurrogate(text[i + 1]))
-                    {
-                        builder.AppendString(text.Substring(i, 2));
-                        i++;
-                    }
-                    else
-                    {
-                        builder.AppendString(ch.ToString());
-                    }
-
-                    break;
-            }
+            builder.Append(quote);
+            return builder.ToPyStringAndRelease();
         }
-
-        builder.Append((byte)quote);
-        return builder.ToPyStringAndRelease();
+        finally { builder.Release(); }
     }
 
     private static PyString RenderReprTuple(PyTuple tuple, PyRenderingContext context, HashSet<object> activeContainers)

@@ -245,27 +245,12 @@ internal static partial class PyStringOps
 
     public static bool IsPrintable(PyString value)
     {
-        if (value.AsString().Length == 0)
+        if (value.Utf8Bytes.Length == 0)
         {
             return true;
         }
 
-        return CheckAllRunes(value, static rune =>
-        {
-            if (rune.Value == 0x20)
-            {
-                return true;
-            }
-
-            return Rune.GetUnicodeCategory(rune) is not UnicodeCategory.Control
-                and not UnicodeCategory.Format
-                and not UnicodeCategory.Surrogate
-                and not UnicodeCategory.PrivateUse
-                and not UnicodeCategory.OtherNotAssigned
-                and not UnicodeCategory.LineSeparator
-                and not UnicodeCategory.ParagraphSeparator
-                and not UnicodeCategory.SpaceSeparator;
-        });
+        return CheckAllRunes(value, IsPrintableRune);
     }
 
     public static bool IsIdentifier(PyString value)

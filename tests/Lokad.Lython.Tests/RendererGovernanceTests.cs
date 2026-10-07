@@ -11,6 +11,26 @@ namespace Lokad.Lython.Tests;
 /// </summary>
 public sealed class RendererGovernanceTests
 {
+    [Theory]
+    [InlineData(20)] // Denied builder growth.
+    [InlineData(220)] // Denied final string while scratch remains live.
+    public void DeniedStringReprReleasesScratchOnEveryAttempt(long cap)
+    {
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+            new LythonRunOptions { MaxExecutionMemoryBytes = cap });
+        var rendering = new PyRenderingContext(context);
+        var input = PyString.FromString(new string('\u200b', 10));
+        var before = context.MemoryGovernor.CurrentCommittedBytes;
+        for (var attempt = 0; attempt < 100; attempt++)
+        {
+            var error = Assert.Throws<LythonRuntimeException>(() => PyRendering.ToReprPyString(input, rendering));
+            Assert.Equal("MemoryError", error.ExceptionType);
+            Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
+            Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        }
+        Assert.Equal(new string('\u200b', 10), input.AsString());
+    }
+
     [Fact]
     public void JoinRenderedSequenceCommitsExactOutput()
     {
