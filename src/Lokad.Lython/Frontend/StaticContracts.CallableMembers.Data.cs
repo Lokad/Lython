@@ -8,6 +8,10 @@ internal static partial class StaticContracts
     {
         public static readonly StaticCallableContract[] Contracts =
         [
+        new(AbstractValueKind.CsvReader, "__iter__", 0, 0, "LA3151", "csv.reader.__iter__() expects no arguments."),
+        new(AbstractValueKind.CsvReader, "__next__", 0, 0, "LA3151", "csv.reader.__next__() expects no arguments."),
+        new(AbstractValueKind.CsvDictReader, "__iter__", 0, 0, "LA3151", "csv.DictReader.__iter__() expects no arguments."),
+        new(AbstractValueKind.CsvDictReader, "__next__", 0, 0, "LA3151", "csv.DictReader.__next__() expects no arguments."),
         new(AbstractValueKind.Dict, "get", 1, 2, "LA3126", "dict.get(key[, default]) expects one key and an optional default.", parameterNames: ["key", "default"]),
         new(AbstractValueKind.Dict, "keys", 0, 0, "LA3127", "dict.keys() expects no arguments."),
         new(AbstractValueKind.Dict, "values", 0, 0, "LA3128", "dict.values() expects no arguments."),

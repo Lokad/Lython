@@ -3727,6 +3727,17 @@ internal sealed partial class LythonRuntime
                     }
 
                     throw new LythonRuntimeException("StopIteration", "", span);
+                }, static async (receiver, span, context) =>
+                {
+                    var advanced = receiver is IPyAsyncIteratorValue asyncIterator
+                        ? await asyncIterator.TryMoveNextAsync().ConfigureAwait(false)
+                        : receiver.TryMoveNext(out var item) ? PyIterationResult.Yield(item) : PyIterationResult.End;
+                    if (advanced.HasValue)
+                    {
+                        return LythonRuntime.RuntimeValue(advanced.Value);
+                    }
+
+                    throw new LythonRuntimeException("StopIteration", "", span);
                 }),
                 _ => MissingMemberValue.Instance,
             };

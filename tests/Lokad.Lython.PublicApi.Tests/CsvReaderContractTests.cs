@@ -10,6 +10,60 @@ namespace Lokad.Lython.PublicApi.Tests;
 /// </summary>
 public sealed class CsvReaderContractTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReadersAreTheirOwnIteratorsAcrossMixedConsumption(bool dictionary)
+    {
+        var maker = dictionary ? "csv.DictReader" : "csv.reader";
+        var script = new LythonEngine().Compile(
+            "import csv\nr = " + maker + "(['a,b', '1,2', '3,4', '5,6'])\n" +
+            """
+            it = iter(r)
+            print(it is r, iter(r) is it, r.__iter__() is r)
+            print(next(r))
+            print(it.__next__())
+            for row in r:
+                print(row)
+            print(next(r, 'empty'), list(it))
+            try:
+                r.__next__()
+            except StopIteration:
+                print('done')
+            """);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        var expected = dictionary
+            ? "True True True\n{'a': '1', 'b': '2'}\n{'a': '3', 'b': '4'}\n{'a': '5', 'b': '6'}\nempty []\ndone\n"
+            : "True True True\n['a', 'b']\n['1', '2']\n['3', '4']\n['5', '6']\nempty []\ndone\n";
+        foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal(expected, result.StandardOutput);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EmptyReadersHaveNormalIteratorExhaustion(bool dictionary)
+    {
+        var script = new LythonEngine().Compile(
+            "import csv\nr = " + (dictionary ? "csv.DictReader" : "csv.reader") + "([])\n" +
+            """
+            print(iter(r) is r, next(r, 'empty'))
+            try:
+                next(r)
+            except StopIteration:
+                print('done', r.line_num)
+            """);
+        Assert.True(script.IsValid);
+        foreach (var result in new[] { script.Run(new MockLythonHost()), await script.RunAsync(new MockLythonHost()) })
+        {
+            Assert.True(result.Success, result.Failure?.Message);
+            Assert.Equal("True empty\ndone 0\n", result.StandardOutput);
+        }
+    }
+
     [Fact]
     public async Task ReaderIndexingAndLengthAreRejected()
     {

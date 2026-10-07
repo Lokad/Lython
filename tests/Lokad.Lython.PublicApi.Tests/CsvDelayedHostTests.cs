@@ -11,6 +11,66 @@ namespace Lokad.Lython.PublicApi.Tests;
 /// </summary>
 public sealed class CsvDelayedHostTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DirectNextAwaitsDelayedInput(bool dictionary)
+    {
+        var maker = dictionary ? "csv.DictReader" : "csv.reader";
+        var source = "import csv\nwith open('/r.csv') as f:\n    r = " + maker + "(f)\n" +
+            "    print(iter(r) is r)\n    first = r.__next__()\n    second = next(r)\n" +
+            "    print(len(" + (dictionary ? "first['a']" : "second[0]") + "), r.line_num)\n" +
+            "    print(len(list(r)), next(r, 'empty'))\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("; ", script.Diagnostics.Select(d => d.Message)));
+        // Longer than a file-read window: DictReader construction can read its
+        // header, but its direct __next__ must suspend again to finish this row.
+        var fixture = "a,b\n" + new string('x', 100000) + ",2\nlast,3\n";
+        var expected = dictionary ? "True\n100000 3\n0 empty\n" : "True\n100000 2\n1 empty\n";
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 16 * 1024 * 1024 };
+        var host = new MockLythonHost();
+        host.SeedFile("/r.csv", fixture);
+        var sync = script.Run(host, options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal(expected, sync.StandardOutput);
+
+        var delayed = new DelayedLythonHost();
+        delayed.SeedFile("/r.csv", fixture);
+        var asyncResult = await script.RunAsync(delayed, options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal(expected, asyncResult.StandardOutput);
+        Assert.True(delayed.CompletedAsynchronously > 0);
+    }
+
+    [Theory]
+    [InlineData("next(r)")]
+    [InlineData("r.__next__()")]
+    public async Task NextHonorsInFlightHostCancellation(string call)
+    {
+        var script = new LythonEngine().Compile(
+            "import csv\nr = csv.reader(open('/r.csv'))\n" + call);
+        Assert.True(script.IsValid);
+        var host = new DelayedLythonHost();
+        host.SeedFile("/r.csv", "a,b\n");
+        var started = host.PauseReadUntilCancellation("/r.csv");
+        using var cancellation = new CancellationTokenSource();
+        var run = script.RunAsync(host, new LythonRunOptions { CancellationToken = cancellation.Token });
+        try
+        {
+            await started.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(run.IsCompleted);
+        }
+        finally
+        {
+            cancellation.Cancel();
+        }
+
+        var result = await run.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.False(result.Success);
+        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
+        Assert.Contains("execution canceled", result.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
+    }
+
     private static string RowCsv(int rows)
     {
         var content = new StringBuilder("id,pad\n");

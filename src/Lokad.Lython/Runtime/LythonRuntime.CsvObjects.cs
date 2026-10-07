@@ -12,84 +12,9 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    // Reader iteration survives a failed pull: unlike a C# generator, which
-    // faults permanently once an exception escapes it, the cursor below stays
-    // usable so catching a mid-stream error and continuing works like CPython.
-    // Every cursor shares its source position; only the wrapper is per-use.
-    private sealed class CsvReaderCursor(CsvRecordSource records, Func<PyList, object> convert) : IEnumerator<object>
-    {
-        private object? _current;
-
-        public bool MoveNext()
-        {
-            if (!records.TryMoveNext(out var row))
-            {
-                _current = null;
-                return false;
-            }
-
-            _current = convert(row);
-            return true;
-        }
-
-        public object Current => _current!;
-
-        object System.Collections.IEnumerator.Current => Current;
-
-        public void Dispose()
-        {
-            _current = null;
-        }
-
-        public void Reset() => throw new NotSupportedException();
-    }
-
-    private sealed class CsvReaderEnumerable(CsvRecordSource records, Func<PyList, object> convert) : IEnumerable<object>
-    {
-        public IEnumerator<object> GetEnumerator() => new CsvReaderCursor(records, convert);
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-    }
-
-    // Asynchronous twin: each async enumeration gets its own cursor over the
-    // shared source, so simultaneous passes interleave exactly like the
-    // synchronous cursors above.
-    private sealed class CsvReaderAsyncCursor(CsvRecordSource records, Func<PyList, object> convert) : IAsyncEnumerator<object>
-    {
-        private object? _current;
-
-        public async ValueTask<bool> MoveNextAsync()
-        {
-            var row = await records.TryMoveNextAsync().ConfigureAwait(false);
-            if (row is null)
-            {
-                _current = null;
-                return false;
-            }
-
-            _current = convert(row);
-            return true;
-        }
-
-        public object Current => _current!;
-
-        public ValueTask DisposeAsync()
-        {
-            _current = null;
-            return ValueTask.CompletedTask;
-        }
-    }
-
-    private sealed class CsvReaderAsyncEnumerable(CsvRecordSource records, Func<PyList, object> convert) : IAsyncEnumerable<object>
-    {
-        public IAsyncEnumerator<object> GetAsyncEnumerator(CancellationToken cancellationToken = default)
-        {
-            _ = cancellationToken;
-            return new CsvReaderAsyncCursor(records, convert);
-        }
-    }
-
-    internal sealed class CsvReaderObject : IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IEnumerable<object>, IPyAsyncIterableValue
+    // Readers are Python iterators: every access drives the same record source,
+    // and a caught pull error does not permanently fault the reader object.
+    internal sealed class CsvReaderObject : IPyTruthyValue, IPyAsyncIteratorValue, IPyRenderableValue, IEnumerable<object>
     {
         public CsvReaderObject(CsvRecordSource records, MemoryGovernor governor, LythonSourceSpan span)
         {
@@ -110,9 +35,27 @@ internal sealed partial class LythonRuntime
         // pull input.
         public bool IsTruthy() => true;
 
-        public IEnumerable<object> Iterate() => new CsvReaderEnumerable(Records, static row => row);
+        public bool TryMoveNext([MaybeNullWhen(false)] out object value)
+        {
+            if (Records.TryMoveNext(out var row))
+            {
+                value = row;
+                return true;
+            }
 
-        public IAsyncEnumerable<object> IterateAsync() => new CsvReaderAsyncEnumerable(Records, static row => row);
+            value = PyNone.Instance;
+            return false;
+        }
+
+        public async ValueTask<PyIterationResult> TryMoveNextAsync()
+        {
+            var row = await Records.TryMoveNextAsync().ConfigureAwait(false);
+            return row is null ? PyIterationResult.End : PyIterationResult.Yield(row);
+        }
+
+        public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
+
+        public IAsyncEnumerable<object> IterateAsync() => PyIteration.EnumerateAsyncIterator(this);
 
         public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<csv.reader object>");
 
@@ -123,7 +66,7 @@ internal sealed partial class LythonRuntime
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
-    internal sealed class CsvDictReaderObject : IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IEnumerable<object>, IPyAsyncIterableValue
+    internal sealed class CsvDictReaderObject : IPyTruthyValue, IPyAsyncIteratorValue, IPyRenderableValue, IEnumerable<object>
     {
         public CsvDictReaderObject(
             CsvRecordSource rowLists,
@@ -157,9 +100,27 @@ internal sealed partial class LythonRuntime
         // pull input.
         public bool IsTruthy() => true;
 
-        public IEnumerable<object> Iterate() => new CsvReaderEnumerable(Rows, ConvertRow);
+        public bool TryMoveNext([MaybeNullWhen(false)] out object value)
+        {
+            if (Rows.TryMoveNext(out var row))
+            {
+                value = ConvertRow(row);
+                return true;
+            }
 
-        public IAsyncEnumerable<object> IterateAsync() => new CsvReaderAsyncEnumerable(Rows, ConvertRow);
+            value = PyNone.Instance;
+            return false;
+        }
+
+        public async ValueTask<PyIterationResult> TryMoveNextAsync()
+        {
+            var row = await Rows.TryMoveNextAsync().ConfigureAwait(false);
+            return row is null ? PyIterationResult.End : PyIterationResult.Yield(ConvertRow(row));
+        }
+
+        public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
+
+        public IAsyncEnumerable<object> IterateAsync() => PyIteration.EnumerateAsyncIterator(this);
 
         public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<csv.DictReader object>");
 
@@ -261,7 +222,7 @@ internal sealed partial class LythonRuntime
                 _ => MissingMemberValue.Instance
             };
 
-            return !ReferenceEquals(value, MissingMemberValue.Instance);
+            return !ReferenceEquals(value, MissingMemberValue.Instance) || IteratorMembers.TryGetMember(reader, name, out value);
         }
     }
 
@@ -276,7 +237,7 @@ internal sealed partial class LythonRuntime
                 _ => MissingMemberValue.Instance
             };
 
-            return !ReferenceEquals(value, MissingMemberValue.Instance);
+            return !ReferenceEquals(value, MissingMemberValue.Instance) || IteratorMembers.TryGetMember(reader, name, out value);
         }
     }
 
