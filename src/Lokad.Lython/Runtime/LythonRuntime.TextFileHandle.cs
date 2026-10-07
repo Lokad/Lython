@@ -45,6 +45,9 @@ internal sealed partial class LythonRuntime
                 TextEncodingMode.Latin1 => "iso8859-1",
                 TextEncodingMode.Ascii => "ascii",
                 TextEncodingMode.Windows1252 => "cp1252",
+                TextEncodingMode.Utf16 => "utf-16",
+                TextEncodingMode.Utf16LittleEndian => "utf-16-le",
+                TextEncodingMode.Utf16BigEndian => "utf-16-be",
                 _ => "utf-8"
             };
 
@@ -75,6 +78,8 @@ internal sealed partial class LythonRuntime
                 EnsureOpen();
                 return _state switch
                 {
+                    ChunkedTextFileReadState when IsUtf16Encoding(_encoding) => throw new LythonRuntimeException(
+                        "NotImplementedError", "file.tell() decoding-position cookies are unsupported for UTF-16 readers.", null),
                     ChunkedTextFileReadState reader => reader.Position,
                     TextFileWriteState writer => writer.Position,
                     _ => throw new UnreachableException(),
@@ -200,7 +205,7 @@ internal sealed partial class LythonRuntime
                 if (stat.Exists && stat.IsFile && context.Limits.MaxHostReadBytes is { } maxHostReadBytes &&
                     stat.Size > new BigInteger(maxHostReadBytes))
                 {
-                    throw IsSingleByteEncoding(encoding)
+                    throw UsesBinaryTextTransport(encoding)
                         ? RuntimeErrors.Runtime($"host binary read exceeded maximum bytes ({maxHostReadBytes})", null)
                         : RuntimeErrors.Runtime($"host text read exceeded maximum bytes ({maxHostReadBytes})", null);
                 }

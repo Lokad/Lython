@@ -4,6 +4,8 @@
 
 ## 0.10.0 - release candidate
 
+- Add governed UTF-16 native/LE/BE codecs, stateful file BOM publication, split-unit/surrogate/newline reader carry, funded awaited outputs and shared byte/path/gzip/URL composition.
+- Correct quote_plus source-space selection for encoded UTF-16 units and raise LookupError for unknown runtime codec names.
 - Add governed Windows-1252 codecs with a fixed mapping, faithful undefined-byte and scalar errors, shared handlers, binary-mediated text files and owned decoded windows.
 - Resolve implicit builtin class identities from the canonical per-run table, preserving type checks, exception roots and singledispatch when guest names shadow object/type or primitive types.
 - Add governed sequential binary open/Path.open handles, ranged reads, byte line iteration, staged writes/append, flush/close, shared execution-end publication, faithful option/size protocols and io.UnsupportedOperation.

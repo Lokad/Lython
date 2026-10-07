@@ -75,6 +75,8 @@ internal sealed partial class LythonRuntime
                 "tell" => BoundCallable.CreateNoArguments(this, "gzip file.tell", static (receiver, span, _) =>
                 {
                     receiver.EnsureOpen(span);
+                    if (receiver._options.ContentKind == GzipContentKind.Text && IsUtf16Encoding(receiver._options.Encoding))
+                        throw new LythonRuntimeException("NotImplementedError", "gzip file.tell() decoding-position cookies are unsupported for UTF-16 text handles.", span);
                     return new BigInteger(receiver._options.Operation == GzipOperation.Read ? receiver._readCursor : receiver._writeBuffer.Length);
                 }),
                 "seek" => BoundCallable.Create((_, span, _) => throw new LythonRuntimeException("NotImplementedError", "gzip file seek/random access is unsupported by Lython.", span), "gzip file.seek", ["offset", "whence"], 1),

@@ -16,6 +16,9 @@ internal sealed partial class LythonRuntime
         Latin1,
         Ascii,
         Windows1252,
+        Utf16,
+        Utf16LittleEndian,
+        Utf16BigEndian,
     }
 
     private readonly record struct BoundOpenArguments(object[] Values, ArgumentPresence Assigned, int Count)

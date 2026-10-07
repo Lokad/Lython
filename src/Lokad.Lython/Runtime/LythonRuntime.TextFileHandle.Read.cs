@@ -23,13 +23,14 @@ internal sealed partial class LythonRuntime
             internal const int DefaultWindowBytes = 16 * 1024;
             internal const int MinimumWindowBytes = 4 * 1024;
 
-            // Raw carry past one window: an incomplete UTF-8 tail (3 bytes), the
-            // universal-newline carriage-return holdback (1 byte), plus slack.
+            // Raw carry past one window: an incomplete UTF-8 tail plus CR, or
+            // UTF-16's CR unit, high surrogate and odd tail (up to five bytes).
             private const int CarrySlackBytes = 8;
 
             private readonly string _path;
             private readonly ExecutionContext _context;
             private readonly TextEncodingMode _encoding;
+            private TextEncodingMode _decodingEncoding;
             private readonly TextErrorMode _errors;
             private readonly TextNewlineMode _newline;
             private readonly int _windowBytes;
@@ -61,6 +62,7 @@ internal sealed partial class LythonRuntime
                 _path = path;
                 _context = context;
                 _encoding = encoding;
+                _decodingEncoding = encoding;
                 _errors = errors;
                 _newline = newline;
                 _windowBytes = windowBytes;
@@ -534,11 +536,31 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            // Defers the UTF-8-sig preamble decision until three bytes buffer or the
-            // file ends, mirroring whole-buffer stripping (which needs three bytes).
+            // Wait for a complete preamble or EOF: three bytes for UTF-8-sig,
+            // two for native UTF-16. Explicit UTF-16 byte order keeps BOM text.
             private bool EnsureBomDecided()
             {
-                if (_bomChecked || _encoding != TextEncodingMode.Utf8Bom)
+                if (_bomChecked)
+                {
+                    return true;
+                }
+
+                if (_encoding == TextEncodingMode.Utf16)
+                {
+                    if (_rawLength < 2 && !_eof) return false;
+                    ReadOnlySpan<byte> source = _raw is null ? [] : _raw.AsSpan(0, _rawLength);
+                    _decodingEncoding = ResolveUtf16ByteOrder(ref source, _encoding, stream: true, null);
+                    var removed = _rawLength - source.Length;
+                    if (removed != 0)
+                    {
+                        Buffer.BlockCopy(_raw!, removed, _raw!, 0, source.Length);
+                        _rawLength = source.Length;
+                    }
+                    _bomChecked = true;
+                    return true;
+                }
+
+                if (_encoding != TextEncodingMode.Utf8Bom)
                 {
                     _bomChecked = true;
                     return true;
@@ -565,12 +587,24 @@ internal sealed partial class LythonRuntime
             // raw so validation sees whole units exactly like whole-buffer decoding,
             // and a trailing carriage return waits for its pair so split CRLF and
             // lone-CR endings translate identically. Latin-1 needs no unit carry.
-            // At EOF everything flushes, matching truncated-tail handling.
+            // UTF-16 also retains an odd byte and final high surrogate. At EOF
+            // everything flushes, matching truncated-tail error grouping.
             private int DecodeHeadLength()
             {
                 var head = _rawLength;
                 if (_eof)
                 {
+                    return head;
+                }
+
+                if (IsUtf16Encoding(_encoding))
+                {
+                    head &= ~1;
+                    var bigEndian = _decodingEncoding == TextEncodingMode.Utf16BigEndian;
+                    if (head >= 2 && ReadUtf16Unit(_raw!.AsSpan(head - 2), bigEndian) is >= 0xd800 and <= 0xdbff)
+                        head -= 2;
+                    if (head >= 2 && ReadUtf16Unit(_raw!.AsSpan(head - 2), bigEndian) == '\r')
+                        head -= 2;
                     return head;
                 }
 
@@ -607,7 +641,7 @@ internal sealed partial class LythonRuntime
                 // files (and other host failures) surface with no infrastructure
                 // charged, exactly like the prereserve fall-through before them.
                 _context.RegisterHostCall(null);
-                var payload = IsSingleByteEncoding(_encoding)
+                var payload = UsesBinaryTextTransport(_encoding)
                     ? _context.ReadHostBytesRange(_path, _nextOffset, _windowBytes, null)
                     : _context.ReadTextUtf8Range(_path, _nextOffset, _windowBytes, null);
                 EnsureRaw();
@@ -622,7 +656,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 _context.RegisterHostCall(null);
-                var payload = IsSingleByteEncoding(_encoding)
+                var payload = UsesBinaryTextTransport(_encoding)
                     ? await _context.ReadHostBytesRangeAsync(_path, _nextOffset, _windowBytes, null).ConfigureAwait(false)
                     : await _context.ReadTextUtf8RangeAsync(_path, _nextOffset, _windowBytes, null).ConfigureAwait(false);
                 EnsureRaw();
@@ -688,15 +722,18 @@ internal sealed partial class LythonRuntime
                 Debug.Assert(_raw is not null, "window installs from buffered bytes");
                 var source = new ReadOnlySpan<byte>(_raw!, 0, head);
                 string decoded;
-                if (_encoding is TextEncodingMode.Ascii or TextEncodingMode.Windows1252)
+                var ownsDecodedWindow = _encoding is TextEncodingMode.Ascii or TextEncodingMode.Windows1252 || IsUtf16Encoding(_encoding);
+                if (ownsDecodedWindow)
                 {
                     _window = _encoding == TextEncodingMode.Ascii
                         ? DecodeAsciiText(source, _context, null, _errors, _newline)
-                        : DecodeWindows1252Text(source, _context, null, _errors, _newline);
+                        : _encoding == TextEncodingMode.Windows1252
+                            ? DecodeWindows1252Text(source, _context, null, _errors, _newline)
+                            : DecodeUtf16Text(source, _decodingEncoding, _context, null, _errors, _newline);
                     _windowCharge = _window.OwnerMemoryGovernor is null ? 0 : _window.CommittedOwnedBytes;
                     try
                     {
-                        var decodedCharge = _window.Length == 0 ? 0 : 32L + 2L * _window.Length;
+                        var decodedCharge = _window.Length == 0 ? 0 : 32L + 2L * Encoding.UTF8.GetCharCount(_window.Utf8Bytes.Span);
                         _context.MemoryGovernor.Reserve(decodedCharge, null);
                         _context.MemoryGovernor.Commit(decodedCharge);
                         _windowCharge += decodedCharge;
@@ -721,7 +758,7 @@ internal sealed partial class LythonRuntime
                     }
                 }
 
-                if (_encoding is not TextEncodingMode.Ascii and not TextEncodingMode.Windows1252)
+                if (!ownsDecodedWindow)
                 {
                     var utf8 = Encoding.UTF8.GetBytes(decoded);
                     _window = utf8.Length == 0
@@ -750,7 +787,7 @@ internal sealed partial class LythonRuntime
                 _charConsumed = 0;
             }
 
-            private string TextReadKind() => IsSingleByteEncoding(_encoding) ? "binary" : "text";
+            private string TextReadKind() => UsesBinaryTextTransport(_encoding) ? "binary" : "text";
         }
     }
 }

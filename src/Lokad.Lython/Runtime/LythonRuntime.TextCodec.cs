@@ -58,14 +58,20 @@ internal sealed partial class LythonRuntime
 
         if (StaticTextContractFacts.IsAsciiEncodingName(encodingName)) return TextEncodingMode.Ascii;
         if (StaticTextContractFacts.IsWindows1252EncodingName(encodingName)) return TextEncodingMode.Windows1252;
+        switch (StaticTextContractFacts.Utf16EncodingKind(encodingName))
+        {
+            case 1: return TextEncodingMode.Utf16;
+            case 2: return TextEncodingMode.Utf16LittleEndian;
+            case 3: return TextEncodingMode.Utf16BigEndian;
+        }
 
-        throw UnsupportedTextEncoding(owner, span);
+        throw new LythonRuntimeException("LookupError", $"unknown encoding: {encodingName}", span);
     }
 
     private static LythonRuntimeException UnsupportedTextEncoding(string owner, LythonSourceSpan span)
         => new(
             "ValueError",
-            $"{owner} only supports encoding='utf-8', 'utf-8-sig', 'latin-1', 'ascii', or 'cp1252'.",
+            $"{owner} only supports encoding='utf-8', 'utf-8-sig', 'latin-1', 'ascii', 'cp1252', 'utf-16', 'utf-16-le', or 'utf-16-be'.",
             span);
 
     private static TextErrorMode ParseTextErrors(object value, string owner, LythonSourceSpan span)
@@ -304,8 +310,15 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan? span,
         TextErrorMode errors,
-        TextNewlineMode newline)
+        TextNewlineMode newline,
+        bool stream = false)
     {
+        if (IsUtf16Encoding(encoding))
+        {
+            var result = DecodeUtf16Text(payload.Span, encoding, context, span, errors, newline, stream);
+            if (result.Length != 0) context.Services.State.CallTemporaries.TrackFreshString(result, span);
+            return result;
+        }
         if (encoding is TextEncodingMode.Ascii or TextEncodingMode.Windows1252)
         {
             var result = encoding == TextEncodingMode.Ascii
@@ -417,8 +430,10 @@ internal sealed partial class LythonRuntime
         TextErrorMode errors,
         TextNewlineMode newline,
         ExecutionContext context,
-        LythonSourceSpan? span)
+        LythonSourceSpan? span,
+        bool outputAlreadyFunded = false)
     {
+        if (IsUtf16Encoding(encoding)) return EncodeUtf16Text(text, encoding, newline, context, span, outputAlreadyFunded);
         if (IsSingleByteEncoding(encoding))
         {
             return EncodeSingleByte(text, encoding, errors, newline, context, span);

@@ -49,7 +49,7 @@ public sealed class TextLineScanningTests
         Assert.True(StaticTextContractFacts.IsSupportedEncodingName("utf8"));
         Assert.True(StaticTextContractFacts.IsSupportedEncodingName("UTF-8"));
         Assert.True(StaticTextContractFacts.IsSupportedEncodingName("latin1"));
-        Assert.False(StaticTextContractFacts.IsSupportedEncodingName("utf-16"));
+        Assert.False(StaticTextContractFacts.IsSupportedEncodingName("utf-32"));
         Assert.True(StaticTextContractFacts.IsSupportedNewlineName("\r\n"));
         Assert.False(StaticTextContractFacts.IsSupportedNewlineName("\n\n"));
     }

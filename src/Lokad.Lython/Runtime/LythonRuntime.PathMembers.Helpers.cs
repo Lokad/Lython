@@ -437,10 +437,10 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span)
         {
             PyString text;
-            if (IsSingleByteEncoding(encodingMode))
+            if (UsesBinaryTextTransport(encodingMode))
             {
                 using var payload = ReadGovernedHostBytes(path, context, span);
-                text = DecodeText(payload.Memory, encodingMode, context, span, errors, newline);
+                text = DecodeText(payload.Memory, encodingMode, context, span, errors, newline, stream: true);
             }
             else
             {
@@ -460,10 +460,10 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span)
         {
             PyString text;
-            if (IsSingleByteEncoding(encodingMode))
+            if (UsesBinaryTextTransport(encodingMode))
             {
                 using var payload = await ReadGovernedHostBytesAsync(path, context, span).ConfigureAwait(false);
-                text = DecodeText(payload.Memory, encodingMode, context, span, errors, newline);
+                text = DecodeText(payload.Memory, encodingMode, context, span, errors, newline, stream: true);
             }
             else
             {
@@ -482,8 +482,9 @@ internal sealed partial class LythonRuntime
             TextErrorMode errors,
             TextNewlineMode newline,
             ExecutionContext context,
-            LythonSourceSpan span)
-            => EncodeText(text, encodingMode, errors, newline, context, span);
+            LythonSourceSpan span,
+            bool outputAlreadyFunded)
+            => EncodeText(text, encodingMode, errors, newline, context, span, outputAlreadyFunded);
 
         private static void WriteEncodedHostText(
             string path,
@@ -492,7 +493,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context,
             LythonSourceSpan span)
         {
-            if (IsSingleByteEncoding(encoding))
+            if (UsesBinaryTextTransport(encoding))
             {
                 context.WriteHostBytes(path, payload, span);
             }
@@ -508,7 +509,7 @@ internal sealed partial class LythonRuntime
             TextEncodingMode encoding,
             ExecutionContext context,
             LythonSourceSpan span)
-            => IsSingleByteEncoding(encoding)
+            => UsesBinaryTextTransport(encoding)
                 ? context.WriteHostBytesAsync(path, payload, span)
                 : context.WriteTextUtf8Async(path, payload, span);
 

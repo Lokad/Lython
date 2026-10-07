@@ -166,7 +166,7 @@ __lython_file.close()
 from pathlib import Path
 
 path = Path("/repo/input.txt")
-path.read_text(encoding="utf-16")
+path.read_text(encoding="utf-32")
 path.read_text(errors="surrogateescape")
 path.read_text("utf-8", "strict", "extra")
 path.read_text("utf-8", "strict", "", "too-many")

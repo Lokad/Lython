@@ -80,7 +80,8 @@ internal sealed partial class LythonRuntime
                 context,
                 span,
                 options.Errors,
-                options.Newline);
+                options.Newline,
+                stream: true);
             context.ObserveString(text, span);
             return new GzipFileHandle(options, context, new TextReadContent(text), [], dirty: false);
         }
@@ -240,16 +241,16 @@ internal sealed partial class LythonRuntime
                 }
 
                 byte[] encoded;
+                var writeEncoding = _textBomWritten ? _options.Encoding switch
+                {
+                    TextEncodingMode.Utf8Bom => TextEncodingMode.Utf8,
+                    TextEncodingMode.Utf16 => TextEncodingMode.Utf16LittleEndian,
+                    _ => _options.Encoding,
+                } : _options.Encoding;
+                using var reservation = ReserveUtf16Output(text, writeEncoding, _options.Newline, _context, span);
                 try
                 {
-                    var writeEncoding = _options.Encoding == TextEncodingMode.Utf8Bom
-                        ? TextEncodingMode.Utf8
-                        : _options.Encoding;
-                    encoded = EncodeText(text, writeEncoding, _options.Errors, _options.Newline, _context, span);
-                    if (_options.Encoding == TextEncodingMode.Utf8Bom && !_textBomWritten)
-                    {
-                        encoded = [0xef, 0xbb, 0xbf, .. encoded];
-                    }
+                    encoded = EncodeText(text, writeEncoding, _options.Errors, _options.Newline, _context, span, reservation is not null);
                 }
                 catch
                 {
@@ -257,7 +258,7 @@ internal sealed partial class LythonRuntime
                     throw;
                 }
                 AppendWriteBytes(encoded, span);
-                _textBomWritten = _options.Encoding == TextEncodingMode.Utf8Bom || _textBomWritten;
+                _textBomWritten = true;
                 return new BigInteger(text.Length);
             }
 
@@ -496,7 +497,10 @@ internal sealed partial class LythonRuntime
             TextEncodingMode.Utf8Bom => "utf-8-sig",
             TextEncodingMode.Latin1 => "iso8859-1",
             TextEncodingMode.Ascii => "ascii",
-                TextEncodingMode.Windows1252 => "cp1252",
+            TextEncodingMode.Windows1252 => "cp1252",
+            TextEncodingMode.Utf16 => "utf-16",
+            TextEncodingMode.Utf16LittleEndian => "utf-16-le",
+            TextEncodingMode.Utf16BigEndian => "utf-16-be",
             _ => "utf-8",
         };
 

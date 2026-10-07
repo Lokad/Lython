@@ -430,7 +430,8 @@ internal sealed partial class LythonRuntime
                     {
                         var (text, encodingMode, errors, newline) = ParsePathWriteTextArguments(arguments, span);
                         context.ObserveString(text, span);
-                        var payload = EncodePathText(text, encodingMode, errors, newline, context, span);
+                        using var reservation = ReserveUtf16Output(text, encodingMode, newline, context, span);
+                        var payload = EncodePathText(text, encodingMode, errors, newline, context, span, reservation is not null);
                         context.RegisterHostCall(span);
                         WriteEncodedHostText(path.Value.AsString(), payload, encodingMode, context, span);
                         return new BigInteger(text.Length);
@@ -439,7 +440,8 @@ internal sealed partial class LythonRuntime
                     {
                         var (text, encodingMode, errors, newline) = ParsePathWriteTextArguments(arguments, span);
                         context.ObserveString(text, span);
-                        var payload = EncodePathText(text, encodingMode, errors, newline, context, span);
+                        using var reservation = ReserveUtf16Output(text, encodingMode, newline, context, span);
+                        var payload = EncodePathText(text, encodingMode, errors, newline, context, span, reservation is not null);
                         context.RegisterHostCall(span);
                         await WriteEncodedHostTextAsync(path.Value.AsString(), payload, encodingMode, context, span).ConfigureAwait(false);
                         return new BigInteger(text.Length);

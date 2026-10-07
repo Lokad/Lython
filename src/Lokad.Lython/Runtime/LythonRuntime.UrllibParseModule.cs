@@ -144,13 +144,16 @@ internal sealed partial class LythonRuntime
         {
             var input = args[0];
             var safe = args.Length > 1 ? args[1] : plus ? PyString.Empty : Slash;
+            // The fast path depends on source spaces, before encoding: an
+            // encoded 0x20 can instead be part of a UTF-16 code unit.
+            if (plus && (input is PyString noSpaces && noSpaces.Utf8Bytes.Span.IndexOf((byte)' ') < 0 ||
+                         input is PyBytes noByteSpaces && noByteSpaces.Bytes.IndexOf((byte)' ') < 0))
+                plus = false;
             var addSpaceToSafe = plus && safe is PyString or PyBytes;
             // quote_plus first adds a space to a non-string safe value when
             // the input contains spaces. Guest addition may supply new safe
             // bytes, and its failure precedes encoding validation.
-            if (plus && safe is not PyString && safe is not PyBytes &&
-                !(input is PyString noSpaces && noSpaces.Utf8Bytes.Span.IndexOf((byte)' ') < 0) &&
-                !(input is PyBytes noByteSpaces && noByteSpaces.Bytes.IndexOf((byte)' ') < 0))
+            if (plus && safe is not PyString && safe is not PyBytes)
             {
                 safe = asynchronous
                     ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Add, safe, ByteSpace, context, span).ConfigureAwait(false)

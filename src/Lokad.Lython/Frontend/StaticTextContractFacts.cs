@@ -25,7 +25,40 @@ internal static class StaticTextContractFacts
            IsUtf8SigEncodingName(encoding) ||
            IsLatin1EncodingName(encoding) ||
            IsAsciiEncodingName(encoding) ||
-           IsWindows1252EncodingName(encoding);
+           IsWindows1252EncodingName(encoding) || Utf16EncodingKind(encoding) != 0;
+
+    // A finite alias inventory with Python's separator normalization. In
+    // particular utf16le/utf16be are not Python codec names.
+    public static int Utf16EncodingKind(string encoding)
+    {
+        if (encoding.Length > 64) return 0;
+        Span<char> buffer = stackalloc char[32];
+        var length = 0;
+        var separator = false;
+        foreach (var ch in encoding)
+        {
+            if (char.IsAsciiLetterOrDigit(ch))
+            {
+                if (separator && length > 0)
+                {
+                    if (length == buffer.Length) return 0;
+                    buffer[length++] = '_';
+                }
+                if (length == buffer.Length) return 0;
+                buffer[length++] = char.ToLowerInvariant(ch);
+                separator = false;
+            }
+            else if (ch is '_' or '-' or ' ') separator = true;
+            else return 0;
+        }
+        return buffer[..length] switch
+        {
+            "utf16" or "utf_16" or "u16" => 1,
+            "utf_16le" or "utf_16_le" => 2,
+            "utf_16be" or "utf_16_be" => 3,
+            _ => 0,
+        };
+    }
 
     public static bool IsWindows1252EncodingName(string encoding)
         => encoding.Equals("cp1252", StringComparison.OrdinalIgnoreCase) ||

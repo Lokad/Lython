@@ -20,7 +20,10 @@ internal sealed partial class LythonRuntime
             private BigInteger _publishedByteLength;
             private long _bufferedRuneLength;
             private long _bufferedLineFeedCount;
+            private long _bufferedUtf16ByteLength;
             private bool _hasPublishedWrite;
+            private bool _hasWrittenText;
+            private bool _utf16BomWritten;
 
             public TextFileWriteState(
                 string path,
@@ -38,6 +41,7 @@ internal sealed partial class LythonRuntime
                 _errors = errors;
                 _newline = newline;
                 _appendBasePosition = appendBasePosition;
+                _utf16BomWritten = mode == TextFileWriteMode.Append && appendBasePosition > BigInteger.Zero;
                 _buffer = new GovernedByteBuilder(context.MemoryGovernor);
             }
 
@@ -45,18 +49,20 @@ internal sealed partial class LythonRuntime
             {
                 get
                 {
-                    var length = IsSingleByteEncoding(_encoding)
+                    var length = IsUtf16Encoding(_encoding) ? _bufferedUtf16ByteLength : IsSingleByteEncoding(_encoding)
                         ? _bufferedRuneLength
                         : _buffer.Length;
                     if (_newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
                     {
-                        length += _bufferedLineFeedCount;
+                        length += _bufferedLineFeedCount * (IsUtf16Encoding(_encoding) ? 2 : 1);
                     }
 
                     if (Mode == TextFileMode.Write && !_hasPublishedWrite && _encoding == TextEncodingMode.Utf8Bom)
                     {
                         length += 3;
                     }
+                    if (_encoding == TextEncodingMode.Utf16 && _hasWrittenText && !_utf16BomWritten)
+                        length += 2;
 
                     var basePosition = Mode == TextFileMode.Append ? _appendBasePosition : BigInteger.Zero;
                     return basePosition + _publishedByteLength + length;
@@ -90,6 +96,9 @@ internal sealed partial class LythonRuntime
 
                 EnsureBufferedLength(text.Length);
                 _buffer.Append(text);
+                if (IsUtf16Encoding(_encoding))
+                    _bufferedUtf16ByteLength += 2L * Encoding.UTF8.GetCharCount(text.Utf8Bytes.Span);
+                _hasWrittenText = true;
                 _bufferedRuneLength += text.Length;
                 _bufferedLineFeedCount += appendedLineFeedCount;
                 return new BigInteger(inputLength);
@@ -179,7 +188,7 @@ internal sealed partial class LythonRuntime
 
             public void Flush(LythonSourceSpan? span)
             {
-                var pending = PrepareFlush(span);
+                using var pending = PrepareFlush(span);
                 if (pending is null)
                 {
                     return;
@@ -207,7 +216,7 @@ internal sealed partial class LythonRuntime
 
             public async ValueTask FlushAsync(LythonSourceSpan? span)
             {
-                var pending = PrepareFlush(span);
+                using var pending = PrepareFlush(span);
                 if (pending is null)
                 {
                     return;
@@ -237,7 +246,8 @@ internal sealed partial class LythonRuntime
 
             private PendingTextFlush? PrepareFlush(LythonSourceSpan? span)
             {
-                if (_buffer.Length == 0 && (Mode == TextFileMode.Append || _hasPublishedWrite))
+                var needsUtf16Bom = _encoding == TextEncodingMode.Utf16 && _hasWrittenText && !_utf16BomWritten;
+                if (_buffer.Length == 0 && _hasPublishedWrite && !needsUtf16Bom)
                 {
                     return null;
                 }
@@ -250,30 +260,41 @@ internal sealed partial class LythonRuntime
                 var effectiveEncoding = isAppend && _encoding == TextEncodingMode.Utf8Bom
                     ? TextEncodingMode.Utf8
                     : _encoding;
+                if (_encoding == TextEncodingMode.Utf16 && !needsUtf16Bom)
+                    effectiveEncoding = TextEncodingMode.Utf16LittleEndian;
                 var text = _buffer.Length == 0
                     ? PyString.Empty
                     : PyString.FromUtf8(_buffer.WrittenMemory);
-                var payload = EncodeText(text, effectiveEncoding, _errors, _newline, _context, span);
-                var operation = (isAppend, IsSingleByteEncoding(effectiveEncoding)) switch
+                var reservation = ReserveUtf16Output(text, effectiveEncoding, _newline, _context, span);
+                byte[] payload;
+                try { payload = EncodeText(text, effectiveEncoding, _errors, _newline, _context, span, reservation is not null); }
+                catch { reservation?.Dispose(); throw; }
+                var operation = (isAppend, UsesBinaryTextTransport(effectiveEncoding)) switch
                 {
                     (false, false) => PendingTextFlushOperation.WriteText,
                     (true, false) => PendingTextFlushOperation.AppendText,
                     (false, true) => PendingTextFlushOperation.WriteBytes,
                     (true, true) => PendingTextFlushOperation.AppendBytes,
                 };
-                return new PendingTextFlush(payload, operation);
+                return new PendingTextFlush(payload, operation, reservation);
             }
 
             private void CompleteFlush(int byteLength)
             {
                 _publishedByteLength += byteLength;
                 _hasPublishedWrite = true;
+                if (_encoding == TextEncodingMode.Utf16 && _hasWrittenText) _utf16BomWritten = true;
                 _buffer.Release();
                 _bufferedRuneLength = 0;
                 _bufferedLineFeedCount = 0;
+                _bufferedUtf16ByteLength = 0;
             }
 
-            private readonly record struct PendingTextFlush(byte[] Payload, PendingTextFlushOperation Operation);
+            private readonly record struct PendingTextFlush(byte[] Payload, PendingTextFlushOperation Operation,
+                MemoryGovernor.TemporaryMemoryReservation? Reservation) : IDisposable
+            {
+                public void Dispose() => Reservation?.Dispose();
+            }
 
             private enum PendingTextFlushOperation
             {
