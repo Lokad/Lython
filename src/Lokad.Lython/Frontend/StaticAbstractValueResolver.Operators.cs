@@ -4,6 +4,15 @@ internal static partial class StaticAbstractValueResolver
 {
     private static bool TryResolveBinaryAbstractValue(BinaryExpressionSyntax binary, AbstractState bindings, out AbstractValue value)
     {
+        if (binary.Operator is BinaryOperatorSyntax.In or BinaryOperatorSyntax.NotIn &&
+            TryResolve(binary.Left, bindings, out var key) &&
+            TryResolve(binary.Right, bindings, out var dictionary) &&
+            StaticDictionaryFacts.TryContainsKey(dictionary, key, out var contains))
+        {
+            value = AbstractValue.Boolean(binary.Operator == BinaryOperatorSyntax.In ? contains : !contains, binary.Span);
+            return true;
+        }
+
         if (binary.Operator is BinaryOperatorSyntax.Or or BinaryOperatorSyntax.And)
         {
             value = AbstractValue.Join(

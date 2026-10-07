@@ -32,6 +32,21 @@ internal static class StaticConditionRefinements
             return;
         }
 
+        if (condition is BinaryExpressionSyntax
+            {
+                Operator: BinaryOperatorSyntax.In or BinaryOperatorSyntax.NotIn,
+                Right: IdentifierExpressionSyntax dictionary
+            } membership &&
+            (membership.Operator == BinaryOperatorSyntax.In) == assumedTruth &&
+            bindings.TryGet(dictionary.Name, out var dictionaryValue) &&
+            dictionaryValue.Kind == AbstractValueKind.Dict)
+        {
+            // On this path the key exists. Drop an incompatible exact shape
+            // instead of emitting a missing-key error for a guarded read.
+            bindings.Remove(dictionary.Name);
+            return;
+        }
+
         if (condition is ChainedComparisonExpressionSyntax chained &&
             TryApplyChainedLengthComparison(chained, assumedTruth, bindings))
         {

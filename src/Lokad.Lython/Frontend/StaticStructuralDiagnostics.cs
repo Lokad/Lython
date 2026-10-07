@@ -87,28 +87,9 @@ internal static partial class StaticStructuralDiagnostics
         AbstractState bindings)
     {
         if (!StaticAbstractValueResolver.TryResolve(subscript.Index, bindings, out var key) ||
-            !key.IsLiteralLike)
+            !StaticDictionaryFacts.TryContainsKey(target, key, out var contains) || contains)
         {
             return;
-        }
-
-        var pairs = target.RequireDictionaryItems();
-        foreach (var pair in pairs)
-        {
-            if (!pair.Key.IsLiteralLike)
-            {
-                return;
-            }
-
-            if (!TryAbstractValuesEqual(pair.Key, key, out var equal))
-            {
-                return;
-            }
-
-            if (equal)
-            {
-                return;
-            }
         }
 
         AddDiagnostic(
@@ -377,73 +358,6 @@ internal static partial class StaticStructuralDiagnostics
 
     private static long RequiredLength(int index)
         => index >= 0 ? (long)index + 1 : -(long)index;
-
-    private static bool TryAbstractValuesEqual(AbstractValue left, AbstractValue right, out bool equal)
-    {
-        if (left.Kind != right.Kind)
-        {
-            equal = false;
-            return false;
-        }
-
-        switch (left.Kind)
-        {
-            case AbstractValueKind.String:
-            case AbstractValueKind.Integer:
-            case AbstractValueKind.Float:
-            case AbstractValueKind.Boolean:
-                equal = left.HasSamePayload(right);
-                return true;
-
-            case AbstractValueKind.Bytes:
-                equal = (left.RequireBytes()).AsSpan().SequenceEqual(right.RequireBytes());
-                return true;
-
-            case AbstractValueKind.None:
-                equal = true;
-                return true;
-
-            case AbstractValueKind.Tuple:
-                return TrySequenceValuesEqual(
-                    left.RequireSequenceItems(),
-                    right.RequireSequenceItems(),
-                    out equal);
-
-            default:
-                equal = false;
-                return false;
-        }
-    }
-
-    private static bool TrySequenceValuesEqual(
-        IReadOnlyList<AbstractValue> left,
-        IReadOnlyList<AbstractValue> right,
-        out bool equal)
-    {
-        if (left.Count != right.Count)
-        {
-            equal = false;
-            return true;
-        }
-
-        for (var i = 0; i < left.Count; i++)
-        {
-            if (!TryAbstractValuesEqual(left[i], right[i], out var itemEqual))
-            {
-                equal = false;
-                return false;
-            }
-
-            if (!itemEqual)
-            {
-                equal = false;
-                return true;
-            }
-        }
-
-        equal = true;
-        return true;
-    }
 
     private static string DescribeDictionaryKey(AbstractValue key)
         => key.Kind == AbstractValueKind.String

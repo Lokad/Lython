@@ -15,6 +15,17 @@ internal static partial class StaticBindingEngine
             bindings.InvalidateMutableSequenceFacts();
         }
 
+        if (mutatedReceivers.Count != 0 || statement is
+            SubscriptAssignmentStatementSyntax or SliceAssignmentStatementSyntax or
+            MemberAssignmentStatementSyntax or AugmentedAssignmentStatementSyntax or
+            DeleteStatementSyntax or UnpackingAssignmentStatementSyntax or
+            AnnotatedAssignmentStatementSyntax { Target: not NameAssignmentTargetSyntax } ||
+            statement is ChainedAssignmentStatementSyntax chainedMutation &&
+                chainedMutation.Targets.Any(target => target is not NameAssignmentTargetSyntax))
+        {
+            bindings.InvalidateDictionaryFacts();
+        }
+
         switch (statement)
         {
             case ImportStatementSyntax importStatement:

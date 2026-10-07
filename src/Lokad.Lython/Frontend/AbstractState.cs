@@ -124,6 +124,41 @@ internal sealed class AbstractState
         => _values.TryGetValue(name, out var value) &&
            value.Kind is AbstractValueKind.List or AbstractValueKind.ListType or AbstractValueKind.CollectionsDeque;
 
+    public void InvalidateDictionaryFacts()
+    {
+        // Mutable mapping aliases are not tracked. Calls and mutations can
+        // change any reachable mapping, including one captured by a function.
+        foreach (var name in _values.Keys.ToArray())
+        {
+            if (ContainsDictionaryFacts(_values[name]))
+            {
+                Remove(name);
+            }
+        }
+    }
+
+    public static bool ContainsDictionaryFacts(AbstractValue value)
+        => ContainsDictionaryFacts(value, new HashSet<AbstractState>());
+
+    private static bool ContainsDictionaryFacts(AbstractValue value, HashSet<AbstractState> visited)
+        => value.Kind switch
+        {
+            AbstractValueKind.Dict => true,
+            AbstractValueKind.List or AbstractValueKind.Tuple or AbstractValueKind.Set =>
+                value.RequireSequenceItems().Any(item => ContainsDictionaryFacts(item, visited)),
+            AbstractValueKind.ListType or AbstractValueKind.MaybeNone =>
+                ContainsDictionaryFacts(value.RequireNestedValue(), visited),
+            AbstractValueKind.UserInstance =>
+                value.RequireInstanceSummary().Fields.Values.Any(field => ContainsDictionaryFacts(field, visited)),
+            AbstractValueKind.UserClass =>
+                value.RequireClassSummary().Fields.Any(field => ContainsDictionaryFacts(field.DefaultValue, visited)),
+            AbstractValueKind.Function => ContainsCapturedDictionaryFacts(value.RequireFunctionSummary().CapturedBindings, visited),
+            _ => false,
+        };
+
+    private static bool ContainsCapturedDictionaryFacts(AbstractState captured, HashSet<AbstractState> visited)
+        => visited.Add(captured) && captured._values.Values.Any(value => ContainsDictionaryFacts(value, visited));
+
     public void InvalidateMutableSequenceFacts()
     {
         var changed = false;

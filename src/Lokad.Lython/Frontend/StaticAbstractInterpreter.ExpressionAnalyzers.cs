@@ -121,11 +121,25 @@ internal static partial class StaticAbstractInterpreter
                     return true;
 
                 case CallExpressionSyntax call:
+                    var diagnosticsBeforeCall = diagnostics.Count;
                     AnalyzeExpression(call.Target, diagnostics, bindings);
                     AnalyzeCall(call);
                     foreach (var argument in call.Arguments)
                     {
                         AnalyzeExpression(argument.Expression, diagnostics, bindings);
+                    }
+                    if (diagnostics.Count == diagnosticsBeforeCall && StaticBindingEngine.CallMayMutateDictionaryFacts(call, bindings))
+                    {
+                        // Preserve a scalar return (e.g. dict.pop) evaluated
+                        // before mutation. Mapping returns may alias the changed
+                        // input, so their exact key facts cannot be retained.
+                        var resolved = StaticAbstractValueResolver.TryResolve(call, bindings, out var returnValue) &&
+                            !AbstractState.ContainsDictionaryFacts(returnValue);
+                        bindings.InvalidateDictionaryFacts();
+                        if (resolved)
+                        {
+                            bindings.SetCachedAbstractValue(call, AbstractValueResolution.Resolved(returnValue));
+                        }
                     }
                     return true;
 
@@ -262,6 +276,14 @@ internal static partial class StaticAbstractInterpreter
                             var rightBindings = bindings.Clone();
                             StaticConditionRefinements.Apply(binary.Left, continueTruth, rightBindings);
                             AnalyzeExpression(binary.Right, diagnostics, rightBindings);
+                            if (TryResolveConditionTruth(binary.Left, bindings, out _))
+                            {
+                                bindings.ReplaceWith(rightBindings);
+                            }
+                            else
+                            {
+                                bindings.MergeFrom(bindings.Clone(), rightBindings);
+                            }
                         }
                     }
                     else
@@ -291,6 +313,7 @@ internal static partial class StaticAbstractInterpreter
                             conditionalTruth ? conditional.Consequent : conditional.Alternative,
                             diagnostics,
                             selectedBindings);
+                        bindings.ReplaceWith(selectedBindings);
                     }
                     else
                     {
@@ -300,6 +323,7 @@ internal static partial class StaticAbstractInterpreter
                         var alternativeBindings = bindings.Clone();
                         StaticConditionRefinements.Apply(conditional.Condition, assumedTruth: false, alternativeBindings);
                         AnalyzeExpression(conditional.Alternative, diagnostics, alternativeBindings);
+                        bindings.MergeFrom(consequentBindings, alternativeBindings);
                     }
                     return true;
 
