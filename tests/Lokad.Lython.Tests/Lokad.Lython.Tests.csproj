@@ -29,5 +29,6 @@
       Include="..\..\src\Lokad.Lython\**\*.cs"
       Exclude="..\..\src\Lokad.Lython\bin\**;..\..\src\Lokad.Lython\obj\**"
       LinkBase="Production" />
+    <EmbeddedResource Include="..\..\src\Lokad.Lython\Runtime\Text\Data\html5.json" LogicalName="Lokad.Lython.html5.json" />
   </ItemGroup>
 </Project>

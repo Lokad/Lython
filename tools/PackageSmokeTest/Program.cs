@@ -151,6 +151,13 @@ if (!textHelpers.IsValid)
 foreach (var result in new[] { textHelpers.Run(new PureHost()), await textHelpers.RunAsync(new PureHost()) })
     RequireOutput(result, "'é😀\\n\\nb'\n'\\x1c\\x85\\xa0\\n>😀'\nTrue 3\n'\\u0897\\U000f0000'\n");
 
+const string htmlHelperSource = "import html, textwrap\nprint(repr(html.escape(\"\u00e9\ud83d\ude00<&\\\"'\")))\nprint(repr(html.unescape('&amp;&NotEqualTilde;&notit;&acE;&#0;&#128;&#x1f600;&#xFDD0;')))\nclass Truth:\n    def __bool__(self):\n        return False\ntruth = Truth(); truth.__bool__ = lambda: True\nclass Text:\n    def __contains__(self, needle):\n        return truth\ntext = Text(); text.__contains__ = lambda needle: True\nprint(bool(truth), 'x' in text, html.unescape(text) is text)\ntry:\n    textwrap.indent(text='x', *['y'])\nexcept TypeError:\n    print('collision')\n";
+var htmlHelpers = engine.Compile(htmlHelperSource);
+if (!htmlHelpers.IsValid)
+    throw new Exception(string.Join("; ", htmlHelpers.Diagnostics.Select(d => d.Message)));
+foreach (var result in new[] { htmlHelpers.Run(new PureHost()), await htmlHelpers.RunAsync(new PureHost()) })
+    RequireOutput(result, "'\u00e9\ud83d\ude00&lt;&amp;&quot;&#x27;'\n'&\u2242\u0338\u00acit;\u223e\u0333\ufffd\u20ac\ud83d\ude00'\nFalse False True\ncollision\n");
+
 const string fileSource = """
     import json
     with open('/input.json') as source:

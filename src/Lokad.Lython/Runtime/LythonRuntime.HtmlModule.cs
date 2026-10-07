@@ -17,6 +17,9 @@ internal sealed partial class LythonRuntime
                 "escape" => BuiltinCallable.Create(LythonKnownCallableSignatures.HtmlEscape,
                     (args, span, context) => EscapeAsync(args, span, context, false).GetAwaiter().GetResult(),
                     (args, span, context) => EscapeAsync(args, span, context, true)),
+                "unescape" => BuiltinCallable.Create(LythonKnownCallableSignatures.HtmlUnescape,
+                    (args, span, context) => UnescapeAsync(args, span, context, false).GetAwaiter().GetResult(),
+                    (args, span, context) => UnescapeAsync(args, span, context, true)),
                 _ => MissingMemberValue.Instance,
             };
             return !ReferenceEquals(value, MissingMemberValue.Instance);

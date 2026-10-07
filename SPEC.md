@@ -1875,7 +1875,7 @@ guest member lookup, line sources, predicates, whitespace hooks and truth hooks.
 
 ### 11.19 HTML Text Helpers
 
-`html` exposes `escape(s, quote=True)`. It replaces ampersands before angle
+`html` exposes `escape(s, quote=True)` and `unescape(s)`. Escaping replaces ampersands before angle
 brackets, and optionally double quotes/apostrophes with `&quot;`/`&#x27;`.
 Unicode is preserved, existing entities are escaped again and unchanged strings
 may retain identity. Native string processing uses governed UTF-8 output and
@@ -1885,7 +1885,27 @@ Guest objects follow ordinary chained replace calls in Python order, with
 quote truth testing after the first three replacements. RunAsync awaits member
 lookup, replacement and truth effects. Errors, resource denial and cancellation
 stop later effects; temporary buffers and abandoned results are reclaimed.
-Entity decoding and parser submodules are outside this initial inventory.
+
+`unescape` makes one decoding pass, using the complete finite HTML5 name table
+from CPython 3.13.16 (2,231 entries). It honors case-sensitive names, optional
+semicolons where allowed, longest valid prefixes, multi-scalar replacements,
+decimal/hexadecimal references, C1 substitutions and Python's treatment of
+surrogates, out-of-range values and invalid code points. Unknown or malformed
+references remain unchanged. Decimal references exceeding Python's default
+4,300-digit conversion limit raise `ValueError`, including leading zeroes.
+The digit limit is fixed; Lython does not expose ambient Python configuration.
+
+Non-string arguments first undergo the ordinary `& in s` membership test.
+A false result preserves the original object; a true result raises `TypeError`
+when string decoding would begin. RunAsync awaits type-level containment
+descriptors, calls and truth effects in that order, preserving their failures
+before string validation. Native decoding scans UTF-8 with fixed-size name
+scratch and capped numeric accumulation; output uses Unicode scalar limits
+and governed ownership, without guest collection storage.
+
+The immutable entity table is embedded in the library and carries its upstream
+license in the package. It requires no filesystem or Python installation.
+`html.parser`, `html.entities` and parser APIs remain unsupported.
 
 ---
 

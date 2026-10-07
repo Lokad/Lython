@@ -1,0 +1,3 @@
+# Preserve the canonical embedded entity data and upstream license bytes.
+src/Lokad.Lython/Runtime/Text/Data/html5.json -text
+third_party/Python.LICENSE.txt -text -whitespace

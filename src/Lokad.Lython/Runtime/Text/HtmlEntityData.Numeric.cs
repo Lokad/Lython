@@ -1,0 +1,48 @@
+namespace Lokad.Lython.Runtime.Text;
+
+// Derived from CPython 3.13.16; see THIRD_PARTY_NOTICES.md and Python.LICENSE.txt.
+internal static partial class HtmlEntityData
+{
+    internal static bool TryMapInvalidNumericReference(int scalar, out int replacement)
+    {
+        replacement = scalar switch
+        {
+            0x0 => 0xFFFD,
+            0xD => 0xD,
+            0x80 => 0x20AC,
+            0x81 => 0x81,
+            0x82 => 0x201A,
+            0x83 => 0x192,
+            0x84 => 0x201E,
+            0x85 => 0x2026,
+            0x86 => 0x2020,
+            0x87 => 0x2021,
+            0x88 => 0x2C6,
+            0x89 => 0x2030,
+            0x8A => 0x160,
+            0x8B => 0x2039,
+            0x8C => 0x152,
+            0x8D => 0x8D,
+            0x8E => 0x17D,
+            0x8F => 0x8F,
+            0x90 => 0x90,
+            0x91 => 0x2018,
+            0x92 => 0x2019,
+            0x93 => 0x201C,
+            0x94 => 0x201D,
+            0x95 => 0x2022,
+            0x96 => 0x2013,
+            0x97 => 0x2014,
+            0x98 => 0x2DC,
+            0x99 => 0x2122,
+            0x9A => 0x161,
+            0x9B => 0x203A,
+            0x9C => 0x153,
+            0x9D => 0x9D,
+            0x9E => 0x17E,
+            0x9F => 0x178,
+            _ => -1,
+        };
+        return replacement >= 0;
+    }
+}

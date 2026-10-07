@@ -16,7 +16,7 @@ $symbols = Join-Path $OutputDirectory "Lokad.Lython.$version.snupkg"
 $archive = [IO.Compression.ZipFile]::OpenRead($package)
 try {
     $entryNames = @($archive.Entries.FullName)
-    foreach ($required in @('lib/net10.0/Lokad.Lython.dll', 'README.md', 'CHANGELOG.md', 'SUPPORTED_SYNTAX.md', 'SPEC.md', 'LICENSE.txt', 'icon.png')) {
+    foreach ($required in @('lib/net10.0/Lokad.Lython.dll', 'README.md', 'CHANGELOG.md', 'SUPPORTED_SYNTAX.md', 'SPEC.md', 'LICENSE.txt', 'THIRD_PARTY_NOTICES.md', 'third_party/Python.LICENSE.txt', 'icon.png')) {
         if ($required -notin $entryNames) { throw "Package is missing $required." }
     }
     $reader = [IO.StreamReader]::new($archive.GetEntry('Lokad.Lython.nuspec').Open())
