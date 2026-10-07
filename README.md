@@ -149,7 +149,7 @@ The builtin module surface is explicitly allowlisted:
 - `hashlib`
 - `importlib`
 - `itertools`
-- `io` for governed `StringIO` text buffers and seek constants
+- `io` for governed `StringIO` text buffers, `BytesIO` byte buffers and seek constants
 - `json`
 - `math`
 - `operator`
@@ -173,8 +173,10 @@ Local script imports are separate from builtin modules. Bare `import helper` can
 `io.StringIO` provides governed text buffers with Unicode character positions,
 Python newline policies, reads/writes, iteration, snapshots and lifecycle APIs.
 CSV, JSON and `print(file=...)` compose with these buffers without a host
-capability. See [SPEC](SPEC.md#1117-in-memory-text-streams) for the complete
-inventory; BytesIO, IO base classes, descriptors and subclassing remain deferred.
+capability. `io.BytesIO` provides opaque byte buffers with byte positions,
+read/read1/readline/readlines, writes, immutable snapshots and the same lifecycle
+surface. See [SPEC](SPEC.md#1117-in-memory-streams) for the complete inventory;
+IO base classes, descriptors, exported buffers and subclassing remain deferred.
 
 `pkgutil` follows the same contained model: it discovers builtins and explicitly allowed host-backed `.py` files or package directories, and it does not expose ambient importers or binary resource reads.
 

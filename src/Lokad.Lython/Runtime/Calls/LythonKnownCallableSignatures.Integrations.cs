@@ -2,6 +2,7 @@ namespace Lokad.Lython.Runtime;
 
 internal static partial class LythonKnownCallableSignatures
 {
+    public static readonly LythonCallableSignature IoBytesIO = LythonCallableSignature.Create("io.BytesIO", ["initial_bytes"], requiredCount: 0);
     public static readonly LythonCallableSignature IoStringIO = LythonCallableSignature.Create("io.StringIO", ["initial_value", "newline"], requiredCount: 0);
 
     public static readonly LythonCallableSignature OpenPyxlWorkbook = LythonCallableSignature.Create("openpyxl.Workbook", ["write_only", "iso_dates"], requiredCount: 0);

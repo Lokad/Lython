@@ -824,6 +824,7 @@ internal static partial class StaticContracts
             AbstractValueKind.ArgparseNamespace => (value.RequireArgparseNamespaceSummary()).IsSealed
                 ? (value.RequireArgparseNamespaceSummary()).Members.ContainsKey(memberName)
                 : null,
+            AbstractValueKind.BytesIO => BytesIOMembers.Contains(memberName),
             AbstractValueKind.StringIO => StringIOMembers.Contains(memberName),
             AbstractValueKind.CsvReader => CsvReaderMembers.Contains(memberName),
             AbstractValueKind.CsvDictReader => CsvDictReaderMembers.Contains(memberName),

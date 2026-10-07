@@ -44,6 +44,7 @@ internal static partial class StaticContracts
             StaticReturnShape.ArgparseParser => AbstractValue.ArgparseParser(span),
             StaticReturnShape.ArgparseMutuallyExclusiveGroup => AbstractValue.ArgparseMutuallyExclusiveGroup(span),
             StaticReturnShape.ArgparseNamespace => AbstractValue.ArgparseNamespace(span),
+            StaticReturnShape.BytesIO => AbstractValue.BytesIO(span),
             StaticReturnShape.StringIO => AbstractValue.StringIO(span),
             StaticReturnShape.CsvReader => AbstractValue.CsvReader(span),
             StaticReturnShape.CsvDictReader => AbstractValue.CsvDictReader(span),

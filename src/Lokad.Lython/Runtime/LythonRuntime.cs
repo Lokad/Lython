@@ -226,6 +226,9 @@ internal sealed partial class LythonRuntime
     }
 
     internal static PyBytes CreateBytes(byte[] bytes, ExecutionContext context, LythonSourceSpan? span)
+        => CreateBytes(bytes, context.Services, span);
+
+    internal static PyBytes CreateBytes(byte[] bytes, ExecutionServices services, LythonSourceSpan? span)
     {
         if (bytes.Length == 0)
         {
@@ -234,8 +237,8 @@ internal sealed partial class LythonRuntime
 
         // Fresh payloads reclaim through the pool once dropped, like adopted
         // strings; the funnel has no bytes branch, so this choke point owns it.
-        var result = new PyBytes(bytes, context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
+        var result = new PyBytes(bytes, services.MemoryGovernor, span);
+        services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 

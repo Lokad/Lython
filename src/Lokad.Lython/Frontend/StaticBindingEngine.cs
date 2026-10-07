@@ -338,6 +338,10 @@ internal static partial class StaticBindingEngine
                 itemValue = default;
                 return false;
 
+            case AbstractValueKind.BytesIO:
+                itemValue = AbstractValue.BytesType(expression.Span);
+                return true;
+
             case AbstractValueKind.StringIO:
                 itemValue = AbstractValue.StringType(expression.Span);
                 return true;

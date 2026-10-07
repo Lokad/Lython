@@ -14,6 +14,7 @@ internal sealed partial class LythonRuntime
         {
             value = name switch
             {
+                "BytesIO" => BytesIOClass.Instance,
                 "StringIO" => StringIOClass.Instance,
                 "SEEK_SET" => BigInteger.Zero,
                 "SEEK_CUR" => BigInteger.One,

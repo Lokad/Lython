@@ -459,7 +459,7 @@ internal static partial class StaticContracts
         ["re"] = Members("compile", "search", "match", "fullmatch", "findall", "finditer", "sub", "subn", "split", "escape", "purge", "error", "PatternError", "RegexFlag", "Pattern", "Match", "NOFLAG", "IGNORECASE", "I", "UNICODE", "U", "MULTILINE", "M", "DOTALL", "S", "VERBOSE", "X", "ASCII", "A", "LOCALE", "L", "DEBUG"),
         ["fnmatch"] = Members("fnmatch", "fnmatchcase", "filter", "translate"),
         ["difflib"] = Members("IS_LINE_JUNK", "IS_CHARACTER_JUNK", "unified_diff", "context_diff", "ndiff", "restore", "get_close_matches", "diff_bytes", "Differ", "HtmlDiff", "SequenceMatcher"),
-        ["io"] = Members("StringIO", "SEEK_SET", "SEEK_CUR", "SEEK_END"),
+        ["io"] = Members("StringIO", "BytesIO", "SEEK_SET", "SEEK_CUR", "SEEK_END"),
         ["json"] = Members("load", "loads", "dump", "dumps", "JSONDecodeError", "JSONEncoder", "JSONDecoder"),
         ["csv"] = Members("reader", "writer", "DictReader", "DictWriter", "Error", "QUOTE_MINIMAL", "QUOTE_ALL", "QUOTE_NONE", "QUOTE_NONNUMERIC"),
         ["subprocess"] = Members("run", "call", "check_call", "check_output", "CompletedProcess", "CalledProcessError", "SubprocessError", "TimeoutExpired", "Popen", "list2cmdline", "getoutput", "getstatusoutput", "PIPE", "STDOUT", "DEVNULL"),

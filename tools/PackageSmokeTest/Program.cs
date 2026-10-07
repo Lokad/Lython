@@ -114,6 +114,30 @@ if (!memoryStreams.IsValid)
 foreach (var result in new[] { memoryStreams.Run(new PureHost()), await memoryStreams.RunAsync(new PureHost()) })
     RequireOutput(result, "'é😀,3\\n' 5 True\n['é😀', '3']\n'a😀' 2\n2 'XYbc'\nTrue None\n{'x': '😀'}\n");
 
+const string byteStreamSource = """
+    import io
+    with io.BytesIO(b'a\xff\nb') as stream:
+        print(type(stream) is io.BytesIO,iter(stream) is stream,stream.readline())
+        snapshot=stream.getvalue()
+        print(stream.seek(-1,io.SEEK_END),stream.write(b'XY'),snapshot,stream.getvalue())
+        stream.seek(7)
+        print(stream.write(b'\x00'),stream.getvalue())
+        try:
+            stream.writelines([b'z','wrong',b'later'])
+        except TypeError:
+            print(stream.getvalue())
+    print(stream.closed,iter(stream) is stream)
+    try:
+        stream.flush()
+    except ValueError:
+        print('closed')
+    """;
+var byteStreams = engine.Compile(byteStreamSource);
+if (!byteStreams.IsValid)
+    throw new Exception(string.Join("; ", byteStreams.Diagnostics.Select(d => d.Message)));
+foreach (var result in new[] { byteStreams.Run(new PureHost()), await byteStreams.RunAsync(new PureHost()) })
+    RequireOutput(result, "True True b'a\\xff\\n'\n3 2 b'a\\xff\\nb' b'a\\xff\\nXY'\n1 b'a\\xff\\nXY\\x00\\x00\\x00'\nb'a\\xff\\nXY\\x00\\x00\\x00z'\nTrue True\nclosed\n");
+
 const string fileSource = """
     import json
     with open('/input.json') as source:

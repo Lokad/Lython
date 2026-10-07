@@ -14,6 +14,7 @@ internal static partial class StaticContracts
         new(AbstractValueKind.Path, "drive", StaticReturnShape.String),
         new(AbstractValueKind.Path, "root", StaticReturnShape.String),
         new(AbstractValueKind.Path, "anchor", StaticReturnShape.String),
+        new(AbstractValueKind.BytesIO, "closed", StaticReturnShape.Boolean),
         new(AbstractValueKind.StringIO, "closed", StaticReturnShape.Boolean),
         new(AbstractValueKind.StringIO, "newlines", StaticReturnShape.Unknown),
         new(AbstractValueKind.StringIO, "encoding", StaticReturnShape.None),

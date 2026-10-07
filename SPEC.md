@@ -1755,7 +1755,7 @@ conflict handlers, non-default prefix character models, parser-wide
 
 ---
 
-### 11.17 In-Memory Text Streams
+### 11.17 In-Memory Streams
 
 `io` exposes `StringIO(initial_value='', newline='\n')` and `SEEK_SET=0`,
 `SEEK_CUR=1`, `SEEK_END=2`. Construction accepts text or None, translates the
@@ -1790,10 +1790,45 @@ Close is idempotent and discards storage. Closed reads/writes/value/position,
 queries, iteration, newlines and line_buffering raise ValueError; encoding,
 errors and closed remain available. Flush is always a no-op, even after close.
 Context exit closes without suppressing errors. CSV/JSON protocols and print's
-concrete file target compose with these streams. BytesIO, IO base classes,
-descriptors, detach/exported buffers, arbitrary instance attributes, subclassing
-and archive file-object adapters remain outside this initial inventory.
-Existing scalar-string limits apply; this module grants no ambient capability.
+concrete file target compose with these text streams. String-result limits are
+checked before a read advances the cursor. The private backing buffer does not
+use guest collection item limits, so larger text can be written in bounded
+chunks and read in chunks within the scalar-string limit.
+
+`BytesIO(initial_bytes=b'')` accepts bytes or None, including the `initial_bytes`
+keyword, and starts at position zero. Its class has stable type/isinstance
+identity and `_io` module metadata. It exposes the methods above plus read1,
+and the closed property; it has no text encoding or newline properties.
+Arguments to instance methods are positional-only. Data and positions are
+bytes, with no decoding or newline translation. Readline terminates at byte LF
+and preserves CR. None and negative read sizes mean unlimited; positive
+readlines hints stop when the accumulated byte count reaches or exceeds the
+hint. Readlines accepts an integer or None and rejects custom index objects
+without invoking their hooks, checking closed state before the hint. The other
+size/position APIs accept type-level __index__. Read1 behaves like read for this
+in-memory buffer.
+
+Byte writes overwrite, fill nonempty write gaps with zero bytes and return the
+input byte count; an empty write preserves the value and cursor. Absolute
+seeks require nonnegative offsets. Current/end seeks support nonzero offsets,
+clamp a negative resulting position to zero, and reject integer overflow before
+changing the cursor. Seeking past EOF allocates nothing. Truncate never moves
+the cursor or extends the buffer. Reads/getvalue produce independently owned
+immutable bytes, with denial before advancing the cursor. Private byte storage
+uses the memory governor rather than guest collection, text or host-read limits.
+
+BytesIO iteration shares the cursor and iter(closed_stream) still returns the
+stream; reading or advancing it then raises ValueError. Flush checks the closed
+state. Invalid text writes raise TypeError before checking whether it is closed.
+Close releases backing storage, remains idempotent, and leaves existing byte
+snapshots intact. RunAsync awaits index hooks and writelines sources, preserving
+written prefixes and stopping on failure or cancellation.
+
+Only the inventoried class/instance members and module dir discovery are
+supported. IO base classes, descriptors, detach, getbuffer/readinto, memoryview,
+arbitrary instance attributes, instance/class dir, subclassing and archive
+file-object adapters remain outside this inventory. Existing scalar-string
+limits apply to text results; this module grants no ambient capability.
 
 ---
 
