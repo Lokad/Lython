@@ -53,6 +53,26 @@ public sealed class CallBindingSubsystemTests
     }
 
     [Fact]
+    public void BindNamedArguments_RejectsPositionalCollisionWithAnEarlierKeyword()
+    {
+        var ex = Assert.Throws<LythonRuntimeException>(() => CallBinder.BindNamedArguments(
+            [CallArgumentValue.Keyword("first", 2), CallArgumentValue.Positional(1)],
+            Span, OptionalDemoSignature, PythonCallableKind.Builtin));
+        Assert.Equal("TypeError", ex.ExceptionType);
+        Assert.Contains("multiple values", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("first", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void BindNamedArguments_KeepsPositionalSlotsWhenALaterKeywordArrivesFirst()
+    {
+        var result = CallBinder.BindNamedArguments(
+            [CallArgumentValue.Keyword("second", 2), CallArgumentValue.Positional(1)],
+            Span, OptionalDemoSignature, PythonCallableKind.Builtin);
+        Assert.Equal([1, (object)2], result);
+    }
+
+    [Fact]
     public void BindNamedArguments_RejectsUnexpectedKeyword()
     {
         var ex = Assert.Throws<LythonRuntimeException>(() => CallBinder.BindNamedArguments(

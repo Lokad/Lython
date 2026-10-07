@@ -4,6 +4,7 @@
 
 ## 0.10.0 - release candidate
 
+- Reject positional collisions with keywords expanded before star arguments, preserving each argument's original parameter slot instead of silently skipping occupied slots.
 - Add bounded textwrap.dedent/indent with Python indentation and line rules, ordered guest predicates, delayed protocol/truth effects, cancellation and governed output; keep wrapping APIs explicitly unsupported.
 - Match Python 3.13 Unicode printability and repr escaping, including nonprinting separators and astral scalars; render directly from UTF-8 and release scratch on memory denial.
 - Correct string splitlines for Python's U+001C–U+001E and NEL boundaries, preserving original endings, Unicode byte positions and byte splitlines rules.

@@ -163,9 +163,9 @@ internal static class CallBinder
                     throw CallErrors.TooManyPositional(callableKind, callableName, span);
                 }
 
-                while (positionalIndex < assigned.Length && assigned[positionalIndex])
+                if (positionalIndex < assigned.Length && assigned[positionalIndex])
                 {
-                    positionalIndex++;
+                    throw CallErrors.MultipleValues(callableKind, callableName, parameterNames[positionalIndex], span);
                 }
 
                 if (positionalIndex >= bound.Length)
