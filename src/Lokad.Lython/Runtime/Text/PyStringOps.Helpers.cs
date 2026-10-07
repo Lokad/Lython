@@ -164,7 +164,7 @@ internal static partial class PyStringOps
     private static bool ShouldTrim(Rune rune, HashSet<int>? trimRunes)
     {
         return trimRunes is null
-            ? Rune.IsWhiteSpace(rune)
+            ? IsPythonWhitespace(rune)
             : trimRunes.Contains(rune.Value);
     }
 

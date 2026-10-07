@@ -1277,6 +1277,10 @@ The supported subset must support the following string methods:
 - `upper`
 - `format`
 
+String whitespace predicates, default trimming and whitespace split/rsplit use
+Python 3.13's 29 whitespace scalars, including U+001C–U+001F. Explicit trim
+characters and separators retain their own rules; byte whitespace remains ASCII.
+
 The supported subset must support the following list methods:
 
 - `append`

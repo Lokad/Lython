@@ -117,7 +117,7 @@ internal static partial class PyStringOps
         for (var byteIndex = 0; byteIndex < source.Length;)
         {
             Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
-            if (Rune.IsWhiteSpace(rune))
+            if (IsPythonWhitespace(rune))
             {
                 if (partStart >= 0)
                 {
@@ -162,7 +162,7 @@ internal static partial class PyStringOps
         while (startByte < source.Length)
         {
             Rune.DecodeFromUtf8(source[startByte..], out var leadingRune, out var leadingRuneLength);
-            if (!Rune.IsWhiteSpace(leadingRune))
+            if (!IsPythonWhitespace(leadingRune))
             {
                 break;
             }
@@ -189,7 +189,7 @@ internal static partial class PyStringOps
             while (byteIndex < source.Length)
             {
                 Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
-                if (Rune.IsWhiteSpace(rune))
+                if (IsPythonWhitespace(rune))
                 {
                     break;
                 }
@@ -209,7 +209,7 @@ internal static partial class PyStringOps
             while (byteIndex < source.Length)
             {
                 Rune.DecodeFromUtf8(source[byteIndex..], out var rune, out var runeLength);
-                if (!Rune.IsWhiteSpace(rune))
+                if (!IsPythonWhitespace(rune))
                 {
                     break;
                 }
@@ -312,7 +312,7 @@ internal static partial class PyStringOps
         {
             var runeStart = GetPreviousRuneStart(source, endByte);
             Rune.DecodeFromUtf8(source[runeStart..endByte], out var rune, out _);
-            if (!Rune.IsWhiteSpace(rune))
+            if (!IsPythonWhitespace(rune))
             {
                 break;
             }
@@ -341,7 +341,7 @@ internal static partial class PyStringOps
             {
                 var runeStart = GetPreviousRuneStart(source, partStart);
                 Rune.DecodeFromUtf8(source[runeStart..partStart], out var rune, out _);
-                if (Rune.IsWhiteSpace(rune))
+                if (IsPythonWhitespace(rune))
                 {
                     break;
                 }
@@ -363,7 +363,7 @@ internal static partial class PyStringOps
             {
                 var runeStart = GetPreviousRuneStart(source, endByte);
                 Rune.DecodeFromUtf8(source[runeStart..endByte], out var rune, out _);
-                if (!Rune.IsWhiteSpace(rune))
+                if (!IsPythonWhitespace(rune))
                 {
                     break;
                 }

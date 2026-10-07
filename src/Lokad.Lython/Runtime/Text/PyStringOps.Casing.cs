@@ -71,7 +71,7 @@ internal static partial class PyStringOps
 
     public static bool IsSpace(PyString value)
     {
-        return CheckAllRunes(value, static rune => Rune.IsWhiteSpace(rune));
+        return CheckAllRunes(value, static rune => IsPythonWhitespace(rune));
     }
 
     public static PyString Capitalize(PyString value)
