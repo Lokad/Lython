@@ -4,6 +4,7 @@
 
 ## 0.10.0 - release candidate
 
+- Resolve implicit membership through the type's __contains__ slot, bypass instance overrides and attribute interception, await slot descriptors, and reject disabled/noncallable slots explicitly.
 - Add governed html.escape with Python ampersand/quote rules, Unicode scalar limits, ordered guest replace/truth protocols and delayed-host cancellation.
 - Reject positional collisions with keywords expanded before star arguments, preserving each argument's original parameter slot instead of silently skipping occupied slots.
 - Add bounded textwrap.dedent/indent with Python indentation and line rules, ordered guest predicates, delayed protocol/truth effects, cancellation and governed output; keep wrapping APIs explicitly unsupported.

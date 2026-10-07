@@ -1682,9 +1682,11 @@ internal sealed partial class LythonRuntime
         // membership check, so routing it through an async state machine
         // allocates on every sync in even though the sync invoker and
         // truthiness checks below never suspend.
-        if (TryInvokeBinarySpecialMethod(container, "__contains__", candidate, context, span, out var value))
+        if (container is PyInstance instance && instance.Type.TryLookupInMro("__contains__", 0, out var rawMember, out _))
         {
-            return IsTruthy(value, context, span);
+            var member = PyAttributeLookup.BindForInstance(instance, rawMember, context, span);
+            var callable = RequireContainsCallable(instance, rawMember, member, context, span);
+            return IsTruthy(CallableInvocation.InvokeUnary(callable, candidate, span, context), context, span);
         }
 
         using (PyStructuralGuard.PushAmbient(context, span))
@@ -1698,7 +1700,29 @@ internal sealed partial class LythonRuntime
         object candidate,
         ExecutionContext context,
         LythonSourceSpan span)
-        => ContainsCoreAsync(container, candidate, context, span, InvokeBinarySpecialMethodAsync, IsTruthyAsync);
+        => ContainsCoreAsync(container, candidate, context, span, InvokeContainsSpecialMethodAsync, IsTruthyAsync);
+
+    private static async ValueTask<SpecialMethodInvocation> InvokeContainsSpecialMethodAsync(
+        object container, string method, object candidate, ExecutionContext context, LythonSourceSpan span)
+    {
+        // Implicit membership bypasses instance attributes and __getattribute__,
+        // but binds the type's descriptor and awaits its result before invoking it.
+        if (container is not PyInstance instance || !instance.Type.TryLookupInMro(method, 0, out var rawMember, out _))
+            return SpecialMethodInvocation.Missing;
+        var member = await PyAttributeLookup.BindForInstanceAsync(instance, rawMember, context, span).ConfigureAwait(false);
+        var callable = RequireContainsCallable(instance, rawMember, member, context, span);
+        return SpecialMethodInvocation.Invoked(await CallableInvocation.InvokeUnaryAsync(callable, candidate, span, context).ConfigureAwait(false));
+    }
+
+    private static ICallable RequireContainsCallable(PyInstance instance, object rawMember, object member,
+        ExecutionContext context, LythonSourceSpan span)
+    {
+        if (rawMember is PyNone)
+            throw new LythonRuntimeException("TypeError", "'" + instance.Type.Name + "' object is not a container", span);
+        if (member is not ICallable callable)
+            throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(member, context) + "' object is not callable", span);
+        return callable;
+    }
 
     private static async ValueTask<bool> ContainsCoreAsync(
         object container,
