@@ -123,9 +123,17 @@ internal sealed partial class LythonRuntime
                 TextNewlineMode newline)
             {
                 var state = OpenChunkedReader(path, context, encoding, errors, newline);
-                state.Prime();
-                ChargeFileHandleValue(context.MemoryGovernor, null);
-                return new TextFileHandle(path, state, context, encoding, errors);
+                try
+                {
+                    state.Prime();
+                    ChargeFileHandleValue(context.MemoryGovernor, null);
+                    return new TextFileHandle(path, state, context, encoding, errors);
+                }
+                catch
+                {
+                    state.Release();
+                    throw;
+                }
             }
 
             public static async ValueTask<TextFileHandle> ForReadAsync(
@@ -136,9 +144,17 @@ internal sealed partial class LythonRuntime
                 TextNewlineMode newline)
             {
                 var state = await OpenChunkedReaderAsync(path, context, encoding, errors, newline).ConfigureAwait(false);
-                await state.PrimeAsync().ConfigureAwait(false);
-                ChargeFileHandleValue(context.MemoryGovernor, null);
-                return new TextFileHandle(path, state, context, encoding, errors);
+                try
+                {
+                    await state.PrimeAsync().ConfigureAwait(false);
+                    ChargeFileHandleValue(context.MemoryGovernor, null);
+                    return new TextFileHandle(path, state, context, encoding, errors);
+                }
+                catch
+                {
+                    state.Release();
+                    throw;
+                }
             }
 
             // Stats and pre-reserves exactly like the buffered reads this replaces,

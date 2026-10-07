@@ -4,6 +4,7 @@
 
 ## 0.10.0 - release candidate
 
+- Release raw and decoded reader storage when priming or final handle allocation fails, including asynchronous construction under memory denial.
 - Add bounded html.unescape with the complete embedded HTML5 entity table, faithful named/numeric reference rules, containment/truth protocols, governed output and retained upstream license notices.
 - Resolve truth testing through type __bool__/__len__ slots, await their descriptors, preserve invalid __bool__ priority and reject overflowing length results.
 - Resolve implicit membership through the type's __contains__ slot, bypass instance overrides and attribute interception, await slot descriptors, and reject disabled/noncallable slots explicitly.
