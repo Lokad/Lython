@@ -85,17 +85,13 @@ internal static class StaticTextIoContractFamily
             }
             else if (StaticAbstractValueResolver.TryResolveKnownString(modeExpression, bindings, out var modeText))
             {
-                if (modeText.Contains('b', StringComparison.Ordinal))
+                if (modeText.Contains('+', StringComparison.Ordinal))
                 {
-                    AddDiagnostic(diagnostics, "LA3001", "open() only supports text modes; binary modes like 'rb' and 'wb' are unsupported.", modeExpression.Span);
+                    AddDiagnostic(diagnostics, "LA3002", "open() does not support updating file modes such as 'r+'.", modeExpression.Span);
                 }
-                else if (modeText.Contains('+', StringComparison.Ordinal))
+                else if (!IsSupportedTextMode(modeText) && modeText is not ("rb" or "br" or "wb" or "bw" or "ab" or "ba"))
                 {
-                    AddDiagnostic(diagnostics, "LA3002", "open() does not support updating text modes such as 'r+'.", modeExpression.Span);
-                }
-                else if (!IsSupportedTextMode(modeText))
-                {
-                    AddDiagnostic(diagnostics, "LA3002", "open() only supports modes 'r', 'w', and 'a' with optional text marker 't'.", modeExpression.Span);
+                    AddDiagnostic(diagnostics, "LA3002", "open() only supports modes 'r', 'w', and 'a' with optional text marker 't' or binary marker 'b'.", modeExpression.Span);
                 }
             }
         }
@@ -244,17 +240,13 @@ internal static class StaticTextIoContractFamily
             }
             else if (StaticAbstractValueResolver.TryResolveKnownString(modeExpression, bindings, out var modeText))
             {
-                if (modeText.Contains('b', StringComparison.Ordinal))
+                if (modeText.Contains('+', StringComparison.Ordinal))
                 {
-                    AddDiagnostic(diagnostics, "LA3061", "Path.open() only supports text modes; binary modes like 'rb' and 'wb' are unsupported.", modeExpression.Span);
+                    AddDiagnostic(diagnostics, "LA3062", "Path.open() does not support updating file modes such as 'r+'.", modeExpression.Span);
                 }
-                else if (modeText.Contains('+', StringComparison.Ordinal))
+                else if (!IsSupportedTextMode(modeText) && modeText is not ("rb" or "br" or "wb" or "bw" or "ab" or "ba"))
                 {
-                    AddDiagnostic(diagnostics, "LA3062", "Path.open() does not support updating text modes such as 'r+'.", modeExpression.Span);
-                }
-                else if (!IsSupportedTextMode(modeText))
-                {
-                    AddDiagnostic(diagnostics, "LA3062", "Path.open() only supports modes 'r', 'w', and 'a' with optional text marker 't'.", modeExpression.Span);
+                    AddDiagnostic(diagnostics, "LA3062", "Path.open() only supports modes 'r', 'w', and 'a' with optional text marker 't' or binary marker 'b'.", modeExpression.Span);
                 }
             }
         }

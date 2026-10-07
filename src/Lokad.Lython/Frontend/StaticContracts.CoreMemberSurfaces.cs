@@ -798,6 +798,7 @@ internal static partial class StaticContracts
             AbstractValueKind.Ellipsis => false,
             AbstractValueKind.Path => PathMembers.Contains(memberName),
             AbstractValueKind.TextFileHandle => TextFileHandleMembers.Contains(memberName),
+            AbstractValueKind.BinaryFileHandle => memberName is not "encoding" and not "errors" && TextFileHandleMembers.Contains(memberName),
             AbstractValueKind.List or AbstractValueKind.ListType => ListMembers.Contains(memberName),
             AbstractValueKind.Tuple => TupleMembers.Contains(memberName),
             AbstractValueKind.Dict => DictMembers.Contains(memberName),

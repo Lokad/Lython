@@ -1154,11 +1154,47 @@ names are not part of the supported script surface.
 
 `pathlib.Path.read_text(...)` and `Path.write_text(...)` are supported for host-mediated text resources. `encoding` may be `None`, `utf-8`, `utf-8-sig`, the Latin-1 aliases `latin-1`, `latin1`, and `iso-8859-1`, or the ASCII names `ascii`, `646`, `ansi_x3.4_1968`, `ansi_x3.4_1986`, `ansi_x3_4_1968`, `cp367`, `csascii`, `ibm367`, `iso646_us`, `iso_646.irv_1991`, `iso_ir_6`, `us` and `us_ascii` (case-insensitive, with hyphen/space separators normalized to underscores); `errors` may be `None`, `strict`, `ignore`, `replace`, or `backslashreplace`; and `newline` may be `None`, `""`, `"\n"`, `"\r"`, or `"\r\n"`. Other encodings, surrogate error handlers, and unsupported option shapes must fail explicitly. Latin-1 input decodes every byte losslessly, while strict Latin-1 encoding raises `UnicodeEncodeError` for code points outside the byte range. ASCII accepts only bytes/code points 0–127 under strict handling; encoding failures raise `UnicodeEncodeError` and decoding failures raise `UnicodeDecodeError`. Ignore drops invalid units, replace uses `?` for encoding and U+FFFD for decoding, and backslashreplace uses Python `\\x`, `\\u` and `\\U` escapes with lowercase hexadecimal digits. Byte/string conversions preserve newline bytes; mediated file operations apply the selected newline policy. Native scans check execution budgets and preflight output funding; ASCII reader windows fund and release both UTF-8 storage and decoded character scratch. Subprocess text codecs retain their UTF-8/UTF-8-SIG contract.
 
-Python-shaped `open(...)` and `pathlib.Path.open(...)` are supported only as text-handle helpers for the same UTF-8, Latin-1 and ASCII codecs. The signatures include CPython-compatible `buffering`, `encoding`, `errors`, and `newline` slots, while `closefd=False`, custom `opener`, binary modes, and updating modes remain explicitly unsupported. Text handles expose ordinary inspection such as `name`, `mode`, `encoding`, `errors`, `closed`, `readable()`, `writable()`, `seekable()`, `tell()`, sized `read(...)`/`readline(...)`/`readlines(...)`, and iteration. Random access must fail explicitly. Still-open text writers publish at execution end: successful completion (including a top-level return) flushes and closes outstanding writers, so accepted writes are never silently discarded, while a publication failure replaces the outcome instead. When execution fails, publication is still attempted without masking the original error; a cancelled run publishes nothing and leaves no file behind.
+Python-shaped `open(...)` and `pathlib.Path.open(...)` support text handles
+for the same UTF-8, Latin-1 and ASCII codecs and sequential binary handles in
+`rb`, `wb`, `ab` modes (also `br`, `bw`, `ba`). Signatures include `buffering`,
+`encoding`, `errors`, and `newline`; binary mode accepts only None for the three
+text options. `closefd=False`, custom `opener`, descriptors, updating modes and
+unbuffered binary handles (`buffering=0`) remain explicitly unsupported.
+Text handles expose `name`, `mode`, `encoding`, `errors`, `closed`,
+`readable()`, `writable()`, `seekable()`, `tell()`, sized
+`read(...)`/`readline(...)`/`readlines(...)`, write/writelines, flush/close,
+context management and iteration. Binary handles expose the same sequential
+inventory except encoding/errors, with byte positions/counts and bytes results.
+Binary methods accept positional arguments, preserve CR/LF and all byte values,
+and share one cursor between reads and line iteration. `read(-1)` or None drains
+the stream; other negative read lengths raise ValueError. `readline` ends after
+LF, and readlines stops when accumulated bytes exceed a positive hint.
+Wrong-direction operations raise `io.UnsupportedOperation`, inheriting OSError
+and ValueError. Sequential handles report seekable=False; seek and other random
+access operations fail explicitly. Binary read1/readinto/truncate/raw/descriptor
+APIs are outside this inventory.
+
+Readers acquire governed windows through optional ranged host methods. A short
+nonempty window is not EOF; empty windows end the stream. Stat and cumulative
+actual reads enforce host byte limits. The default host range method composes a
+whole-file read; hosts must override it for bounded host acquisition. Binary
+write/writelines stage governed bytes, flush publishes a fresh independent host
+buffer, and later flushes append only the accepted suffix. Append preserves the
+host prefix and creates missing files, including an empty append handle. Native
+append overrides are required for atomic or allocation-bounded host append;
+the public default composes stat/read/write.
+
+Still-open text and binary writers publish at execution end. Successful
+completion, including a top-level return, flushes and closes outstanding writers;
+a publication failure replaces the outcome. Failure still attempts publication
+without masking the original error; cancellation skips it. RunAsync awaits reads,
+publication, guest index hooks and writelines sources. Cancelled pending host
+operations must not publish uncompleted writes. Reference:
+[Python I/O](https://docs.python.org/3.13/library/io.html).
 
 `filecmp.cmp(f1, f2, shallow=True)` compares strings and path-like values through the same contained host path model. A shallow comparison may return from equal file-type, size, and modification-time signatures. Otherwise it compares exact content using bounded host byte reads without exposing those bytes through a script file handle. Missing paths raise `FileNotFoundError`, non-file paths compare unequal, and hosts without the optional binary capability fail explicitly when exact reads are required. `clear_cache()` is a no-op because Lython does not cache comparison results; recursive `dircmp` remains unsupported.
 
-`hashlib` exposes managed, deterministic `md5`, `sha1`, `sha256`, `sha384`, and `sha512` implementations. Constructors and `new(...)` accept bytes-like input and the keyword-only `usedforsecurity` compatibility argument. Hash objects retain governed incremental input and expose `update`, `digest`, `hexdigest`, `copy`, `name`, `digest_size`, and `block_size`; copies independently retain and account for their state. `algorithms_available` and `algorithms_guaranteed` list exactly the supported managed algorithms rather than ambient cryptographic providers. `file_digest(...)` must fail explicitly while generic binary file handles remain outside the scripting surface.
+`hashlib` exposes managed, deterministic `md5`, `sha1`, `sha256`, `sha384`, and `sha512` implementations. Constructors and `new(...)` accept bytes-like input and the keyword-only `usedforsecurity` compatibility argument. Hash objects retain governed incremental input and expose `update`, `digest`, `hexdigest`, `copy`, `name`, `digest_size`, and `block_size`; copies independently retain and account for their state. `algorithms_available` and `algorithms_guaranteed` list exactly the supported managed algorithms rather than ambient cryptographic providers. `file_digest(...)` remains outside the supported helper inventory and must fail explicitly.
 
 The pure `gzip.compress(data, compresslevel=9, *, mtime=...)` and `gzip.decompress(data)` helpers operate only on governed bytes. Compression accepts levels `-1` through `9`, emits deterministic RFC 1952 headers with OS byte `255`, and normalizes omitted or `None` modification times to zero rather than consulting a clock. Decompression accepts concatenated members, validates headers, trailers, CRCs, and uncompressed lengths, and checks the execution-memory budget while expanding so compressed inputs cannot bypass it. Invalid streams raise catchable `gzip.BadGzipFile`, an `OSError` subtype. These helpers perform no host I/O.
 
@@ -1781,6 +1817,9 @@ conflict handlers, non-default prefix character models, parser-wide
 
 ### 11.17 In-Memory Streams
 
+`io.UnsupportedOperation` is a catchable exception inheriting both OSError and
+ValueError. Sequential binary handles use it for unavailable read/write direction.
+
 `io` exposes `StringIO(initial_value='', newline='\n')` and `SEEK_SET=0`,
 `SEEK_CUR=1`, `SEEK_END=2`. Construction accepts text or None, translates the
 initial value as a write would, then starts at position zero. The class has
@@ -2325,7 +2364,7 @@ Scripts are UTF-8 text.
 
 UTF-8 is the default and canonical text-resource encoding. The supported Latin-1 and ASCII codecs are converted explicitly at the runtime boundary over bounded host byte transport.
 
-The canonical host-I/O boundary for text resources is UTF-8 bytes. A host implementation may internally decode or encode however it likes, but the observable text contract with Lython is UTF-8 interchange rather than host-native string transport. A non-UTF-8 codec must use the separate bounded binary capability and fail explicitly when that optional capability is unavailable; this does not expose a generic binary file API to scripts.
+The canonical host-I/O boundary for text resources is UTF-8 bytes. A host implementation may internally decode or encode however it likes, but the observable text contract with Lython is UTF-8 interchange rather than host-native string transport. A non-UTF-8 codec must use the separate bounded binary capability and fail explicitly when that optional capability is unavailable; sequential binary file access also requires that explicit optional capability.
 
 ### 15.2 Newline Behavior
 
@@ -2409,8 +2448,8 @@ buffer and returned copy are governed while both are live. Writes pass a fresh
 staging buffer to the host, hold its charge until publication completes, and
 release staging on success, failure or cancellation. Wrong write types fail
 before any host effect. RunAsync awaits mediated reads/writes and supports
-cancellation while either is pending. Sequential binary open modes remain
-outside the supported inventory.
+cancellation while either is pending. Sequential binary open modes use the
+separate handle inventory described in section 11.
 
 ---
 

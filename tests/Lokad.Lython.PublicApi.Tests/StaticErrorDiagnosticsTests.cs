@@ -17,7 +17,7 @@ open("/repo/in.txt", errors="surrogateescape")
 """);
 
         Assert.False(compiled.IsValid);
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3001");
+        Assert.DoesNotContain(compiled.Diagnostics, d => d.Code == "LA3001");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3003");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3004");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3005");
@@ -56,7 +56,7 @@ subprocess.run(["rg", 1], timeout="fast", check="yes", capture_output="sure")
 
         var result = new LythonEngine().Run(
             """
-open("/repo/out.txt", "rb")
+open("/repo/out.txt", "rb+")
 __lython_file = open("/repo/created.txt", "w")
 __lython_file.write("side effect")
 __lython_file.close()
@@ -65,7 +65,7 @@ __lython_file.close()
 
         Assert.False(result.Success);
         Assert.Null(result.Failure);
-        Assert.Contains(result.Diagnostics, d => d.Code == "LA3001");
+        Assert.Contains(result.Diagnostics, d => d.Code == "LA3002");
         Assert.False(host.Stat("/repo/created.txt").Exists);
     }
 
@@ -299,7 +299,7 @@ Path("/repo/input.txt").open("rb", -1, "utf-16")
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3059");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3031");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3060");
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3061");
+        Assert.DoesNotContain(compiled.Diagnostics, d => d.Code == "LA3061");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3062");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3063");
     }
@@ -321,7 +321,7 @@ same_path.write_bytes(b"abc")
 """);
 
         Assert.False(compiled.IsValid);
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3061");
+        Assert.DoesNotContain(compiled.Diagnostics, d => d.Code == "LA3061");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3049");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3046");
         Assert.DoesNotContain(compiled.Diagnostics, d => d.Code == "LA3047");

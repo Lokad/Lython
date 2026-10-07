@@ -9,12 +9,14 @@ internal sealed partial class LythonRuntime
     private sealed class IoModule : PyModule
     {
         internal static readonly IoModule Instance = new();
+        private static readonly ExceptionTypeValue UnsupportedOperationType = new(ModuleException("io", "UnsupportedOperation"));
         private IoModule() : base("io") { }
         public override bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {
             value = name switch
             {
                 "BytesIO" => BytesIOClass.Instance,
+                "UnsupportedOperation" => UnsupportedOperationType,
                 "StringIO" => StringIOClass.Instance,
                 "SEEK_SET" => BigInteger.Zero,
                 "SEEK_CUR" => BigInteger.One,

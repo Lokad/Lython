@@ -381,7 +381,7 @@ internal static class StaticAbstractFacts
             AbstractValueKind.Path => "pathlib.Path",
             AbstractValueKind.BytesIO => "io.BytesIO",
             AbstractValueKind.StringIO => "io.StringIO",
-            AbstractValueKind.TextFileHandle => "file",
+            AbstractValueKind.TextFileHandle or AbstractValueKind.BinaryFileHandle => "file",
             AbstractValueKind.Module => $"module '{value.RequireText()}'",
             AbstractValueKind.KnownCallable => $"callable '{value.RequireText()}'",
             AbstractValueKind.RegexPattern => "re.Pattern",

@@ -62,6 +62,8 @@ internal sealed class GovernedByteBuilder
 
     public int Length => _length;
 
+    internal long CommittedCapacity => _committedCapacity;
+
     public ReadOnlyMemory<byte> WrittenMemory => _buffer.AsMemory(0, _length);
 
     public ReadOnlySpan<byte> WrittenSpan => _buffer.AsSpan(0, _length);

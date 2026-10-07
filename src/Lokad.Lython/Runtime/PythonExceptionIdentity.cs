@@ -19,6 +19,7 @@ internal readonly record struct PythonExceptionIdentity(string ModuleName, strin
             "FrozenInstanceError" => Module("dataclasses", typeName),
             "BadGzipFile" => Module("gzip", typeName),
             "JSONDecodeError" => Module("json", typeName),
+            "UnsupportedOperation" => Module("io", typeName),
             "StatisticsError" => Module("statistics", typeName),
             "CalledProcessError" or "SubprocessError" or "TimeoutExpired" => Module("subprocess", typeName),
             "BadZipFile" or "BadZipfile" => Module("zipfile", "BadZipFile"),

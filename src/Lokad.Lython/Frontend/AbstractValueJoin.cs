@@ -65,6 +65,7 @@ internal static class AbstractValueJoin
                 AbstractValueKind.SetType => SetOf(Join(left.RequireNestedValue(), right.RequireNestedValue(), span), span),
                 AbstractValueKind.Dict => JoinLiteralDictionaries(left, right, span),
                 AbstractValueKind.TextFileHandle => TextFileHandle(JoinTextFileModes(left.RequireTextFileMode(), right.RequireTextFileMode()), span),
+                AbstractValueKind.BinaryFileHandle => BinaryFileHandle(JoinTextFileModes(left.RequireTextFileMode(), right.RequireTextFileMode()), span),
                 AbstractValueKind.Module => left.HasSamePayload(right) ? left.WithSpan(span) : Unknown(span),
                 AbstractValueKind.KnownCallable => left.HasSamePayload(right) ? left.WithSpan(span) : Unknown(span),
                 AbstractValueKind.RegexPattern => JoinRegexPatterns(left, right, span),

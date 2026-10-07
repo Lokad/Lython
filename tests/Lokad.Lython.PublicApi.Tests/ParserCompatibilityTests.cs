@@ -530,11 +530,11 @@ __lython_file.close()
     {
         var compiled = new LythonEngine().Compile(
             """
-open("/repo/input.txt", "r" "b")
+open("/repo/input.txt", "r" "+")
 """);
 
         Assert.False(compiled.IsValid);
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3001");
+        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3002");
     }
 
     [Theory]

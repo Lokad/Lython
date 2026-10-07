@@ -13,7 +13,7 @@ internal static partial class StaticAbstractValueResolver
         if (call.Target is IdentifierExpressionSyntax { Name: "open" } &&
             StaticCallArguments.TryGetConcreteArguments(call, bindings, out var openArguments))
         {
-            value = AbstractValue.TextFileHandle(TryGetTextFileMode(openArguments, modePosition: 1, "mode"), call.Span);
+            value = ResolveFileHandle(openArguments, modePosition: 1, bindings, call.Span);
             return true;
         }
 
@@ -99,7 +99,7 @@ internal static partial class StaticAbstractValueResolver
             TryResolveKnownPath(pathOpenReceiver, bindings) &&
             StaticCallArguments.TryGetConcreteArguments(call, bindings, out var pathOpenArguments))
         {
-            value = AbstractValue.TextFileHandle(TryGetTextFileMode(pathOpenArguments, modePosition: 0, "mode"), call.Span);
+            value = ResolveFileHandle(pathOpenArguments, modePosition: 0, bindings, call.Span);
             return true;
         }
 
@@ -124,20 +124,22 @@ internal static partial class StaticAbstractValueResolver
         return false;
     }
 
-    private static AbstractTextFileMode TryGetTextFileMode(ConcreteCallArguments arguments, int modePosition, string modeKeyword)
+    private static AbstractValue ResolveFileHandle(ConcreteCallArguments arguments, int modePosition,
+        AbstractState bindings, LythonSourceSpan span)
     {
-        if (!arguments.TryGetValue(modePosition, modeKeyword, out var modeExpression))
+        if (!arguments.TryGetValue(modePosition, "mode", out var expression))
+            return AbstractValue.TextFileHandle(AbstractTextFileMode.Read, span);
+        if (!TryResolveKnownString(expression, bindings, out var mode))
+            return AbstractValue.Unknown(span);
+        var operation = mode switch
         {
-            return AbstractTextFileMode.Read;
-        }
-
-        return modeExpression switch
-        {
-            StringLiteralExpressionSyntax { Value: "r" or "rt" } => AbstractTextFileMode.Read,
-            StringLiteralExpressionSyntax { Value: "w" or "wt" } => AbstractTextFileMode.Write,
-            StringLiteralExpressionSyntax { Value: "a" or "at" } => AbstractTextFileMode.Append,
-            _ => AbstractTextFileMode.Unknown
+            "r" or "rt" or "rb" or "br" => AbstractTextFileMode.Read,
+            "w" or "wt" or "wb" or "bw" => AbstractTextFileMode.Write,
+            "a" or "at" or "ab" or "ba" => AbstractTextFileMode.Append,
+            _ => AbstractTextFileMode.Unknown,
         };
+        return mode.Contains('b', StringComparison.Ordinal)
+            ? AbstractValue.BinaryFileHandle(operation, span) : AbstractValue.TextFileHandle(operation, span);
     }
 
     private static bool TryGetListElementAbstractValue(AbstractValue value, out AbstractValue item)

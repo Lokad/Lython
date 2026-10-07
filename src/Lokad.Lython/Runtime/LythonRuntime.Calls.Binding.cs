@@ -1090,6 +1090,7 @@ internal sealed partial class LythonRuntime
         private static readonly PyString HashlibModuleName = PyString.FromString("hashlib");
         private static readonly PyString ImportlibModuleName = PyString.FromString("importlib");
         private static readonly PyString ItertoolsModuleName = PyString.FromString("itertools");
+        private static readonly PyString IoModuleName = PyString.FromString("io");
         private static readonly PyString JsonModuleName = PyString.FromString("json");
         private static readonly PyString MathModuleName = PyString.FromString("math");
         private static readonly PyString OpenPyxlExceptionsModuleName = PyString.FromString("openpyxl.utils.exceptions");
@@ -1127,6 +1128,7 @@ internal sealed partial class LythonRuntime
             "hashlib" => HashlibModuleName,
             "importlib" => ImportlibModuleName,
             "itertools" => ItertoolsModuleName,
+            "io" => IoModuleName,
             "json" => JsonModuleName,
             "math" => MathModuleName,
             "openpyxl.utils.exceptions" => OpenPyxlExceptionsModuleName,

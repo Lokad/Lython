@@ -12,7 +12,8 @@ internal sealed partial class LythonRuntime
             TextFileOperation Operation,
             TextEncodingMode EncodingMode,
             TextErrorMode Errors,
-            TextNewlineMode Newline);
+            TextNewlineMode Newline,
+            bool Binary);
 
         private readonly record struct PathReadTextOptions(
             TextEncodingMode EncodingMode,
@@ -310,14 +311,16 @@ internal sealed partial class LythonRuntime
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecutionBudget(span);
-                var (operation, encodingMode, errors, newline) = ParsePathOpenArguments(BindArguments(arguments, span), span);
+                var (operation, encodingMode, errors, newline, binary) = ParsePathOpenArguments(BindArguments(arguments, span), span);
+                if (binary) return ExecutionContext.BinaryFileHandle.OpenAsync(path, operation, context, span, false).GetAwaiter().GetResult();
                 return OpenTextFile(path, operation, encodingMode, errors, newline, context);
             }
 
             public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 context.CheckExecutionBudget(span);
-                var (operation, encodingMode, errors, newline) = ParsePathOpenArguments(BindArguments(arguments, span), span);
+                var (operation, encodingMode, errors, newline, binary) = ParsePathOpenArguments(BindArguments(arguments, span), span);
+                if (binary) return await ExecutionContext.BinaryFileHandle.OpenAsync(path, operation, context, span, true).ConfigureAwait(false);
                 return operation switch
                 {
                     TextFileOperation.Read => await LythonRuntime.ExecutionContext.TextFileHandle.ForReadAsync(path, context, encodingMode, errors, newline).ConfigureAwait(false),
@@ -353,7 +356,7 @@ internal sealed partial class LythonRuntime
             var arguments = boundArguments.Values;
             if (boundArguments.Count > 5)
             {
-                throw new LythonRuntimeException("TypeError", "Path.open([mode][, buffering][, encoding][, errors][, newline]) expects supported text-mode options.", span);
+                throw new LythonRuntimeException("TypeError", "Path.open([mode][, buffering][, encoding][, errors][, newline]) expects supported file-mode options.", span);
             }
 
             var mode = boundArguments.Assigned[0]
@@ -363,6 +366,9 @@ internal sealed partial class LythonRuntime
                     _ => throw new LythonRuntimeException("TypeError", "Path.open(mode) expects mode to be a string.", span)
                 }
                 : PyString.FromString("r");
+
+            var (operation, binary) = ParseFileOpenMode(mode, "Path.open()", span);
+            if (binary) ValidateBinaryOpenOptions(arguments, 1, "Path.open()", span);
 
             if (boundArguments.Count >= 2)
             {
@@ -379,7 +385,7 @@ internal sealed partial class LythonRuntime
                 ? ParseTextNewline(arguments[4], "Path.open()", span)
                 : TextNewlineMode.TranslateUniversal;
 
-            return new PathOpenOptions(ParseTextOpenMode(mode, "Path.open()", span), encodingMode, errors, newline);
+            return new PathOpenOptions(operation, encodingMode, errors, newline, binary);
         }
 
         private static PathReadTextOptions ParsePathReadTextArguments(object[] arguments, LythonSourceSpan span)

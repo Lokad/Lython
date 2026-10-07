@@ -25,6 +25,7 @@ internal enum AbstractValueKind
     SetType,
     Path,
     TextFileHandle,
+    BinaryFileHandle,
     StringIO,
     BytesIO,
     Module,
@@ -239,6 +240,7 @@ internal readonly record struct AbstractValue
     public static AbstractValue Dict(IReadOnlyList<KeyValuePair<AbstractValue, AbstractValue>> pairs, LythonSourceSpan span) => new(AbstractValueKind.Dict, new DictionaryPayload(pairs), span);
     public static AbstractValue Path(LythonSourceSpan span) => Marker(AbstractValueKind.Path, span);
     public static AbstractValue TextFileHandle(AbstractTextFileMode mode, LythonSourceSpan span) => new(AbstractValueKind.TextFileHandle, new TextFileModePayload(mode), span);
+    public static AbstractValue BinaryFileHandle(AbstractTextFileMode mode, LythonSourceSpan span) => new(AbstractValueKind.BinaryFileHandle, new TextFileModePayload(mode), span);
     public static AbstractValue Module(string name, LythonSourceSpan span) => new(AbstractValueKind.Module, new TextPayload(name), span);
     public static AbstractValue KnownCallable(string targetName, LythonSourceSpan span) => new(AbstractValueKind.KnownCallable, new TextPayload(targetName), span);
     public static AbstractValue RegexPattern(LythonSourceSpan span) => RegexPattern(CreateUnknownRegexPatternSummary(), span);

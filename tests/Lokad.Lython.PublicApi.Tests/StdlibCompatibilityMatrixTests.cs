@@ -717,10 +717,10 @@ Path("/repo/out.bin").write_bytes("abc")
     [InlineData(
         """
 from pathlib import Path
-Path("/repo/in.txt").open("rb")
+Path("/repo/in.txt").open("rb+")
 """,
         "compile",
-        "binary modes like 'rb' and 'wb' are unsupported")]
+        "does not support updating")]
     [InlineData(
         """
 from pathlib import Path
@@ -762,18 +762,18 @@ parser.add_argument("--lang", choices=1)
     }
 
     [Fact]
-    public void ProvableBuiltinOpenBinaryMode_FailsAtCompileTime()
+    public void ProvableBuiltinOpenUpdateMode_FailsAtCompileTime()
     {
         var result = new LythonEngine().Run(
             """
-with open("/repo/in.txt", "rb") as handle:
+with open("/repo/in.txt", "rb+") as handle:
     handle.read()
 """,
             new MockLythonHost());
 
         Assert.False(result.Success);
         Assert.Null(result.Failure);
-        Assert.Contains(result.Diagnostics, d => d.Message.Contains("binary modes like 'rb' and 'wb' are unsupported", StringComparison.Ordinal));
+        Assert.Contains(result.Diagnostics, d => d.Message.Contains("does not support updating", StringComparison.Ordinal));
     }
 
     [Theory]

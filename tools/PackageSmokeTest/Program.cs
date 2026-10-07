@@ -230,6 +230,39 @@ delayedHost.ReleaseWrite.TrySetResult();
 RequireOutput(await pendingRun.WaitAsync(timeout.Token), "3\n");
 delayedHost.VerifyFiles();
 if (delayedHost.SuspendedOperations < 2) throw new Exception("Delayed consumer did not suspend.");
+const string binaryFileSource = """
+    import io
+    from pathlib import Path
+    with Path('source.bin').open('rb') as reader:
+        print(reader.read(2).hex(),reader.readline().hex(),iter(reader) is reader)
+        print(reader.read().hex(),reader.read().hex())
+    with open('output.bin','wb') as writer:
+        writer.writelines([b'head',bytes([0,255,13,10])])
+    with open('output.bin','ab') as writer:
+        writer.write(b'!')
+    print(Path('output.bin').read_bytes().hex())
+    open('pending.bin','wb').write(b'final')
+    print(issubclass(io.UnsupportedOperation,OSError),issubclass(io.UnsupportedOperation,ValueError))
+    """;
+var binaryFiles = engine.Compile(binaryFileSource);
+if (!binaryFiles.IsValid)
+    throw new Exception(string.Join("; ", binaryFiles.Diagnostics.Select(d => d.Message)));
+var binarySyncHost = new MemoryHost(delayed: false);
+RequireOutput(binaryFiles.Run(binarySyncHost), "00ff 410d0a True\n420a656e64 \n6865616400ff0d0a21\nTrue True\n");
+binarySyncHost.VerifyBinaryFiles();
+var binaryDelayedHost = new MemoryHost(delayed: true);
+using var binaryTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+var binaryPendingRun = binaryFiles.RunAsync(binaryDelayedHost, new LythonRunOptions { CancellationToken = binaryTimeout.Token });
+await binaryDelayedHost.ReadStarted.Task.WaitAsync(binaryTimeout.Token);
+if (binaryPendingRun.IsCompleted) throw new Exception("Binary reader did not suspend.");
+binaryDelayedHost.ReleaseRead.TrySetResult();
+await binaryDelayedHost.WriteStarted.Task.WaitAsync(binaryTimeout.Token);
+if (binaryPendingRun.IsCompleted) throw new Exception("Binary publication did not suspend.");
+binaryDelayedHost.ReleaseWrite.TrySetResult();
+RequireOutput(await binaryPendingRun.WaitAsync(binaryTimeout.Token), "00ff 410d0a True\n420a656e64 \n6865616400ff0d0a21\nTrue True\n");
+binaryDelayedHost.VerifyBinaryFiles();
+if (binaryDelayedHost.SuspendedOperations < 2) throw new Exception("Binary consumer did not suspend twice.");
+
 Console.WriteLine("Package compatibility and mediated file consumer passed.");
 
 static void RequireOutput(LythonExecutionResult result, string expected)
@@ -260,7 +293,8 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
     public bool CompletesSynchronously => !delayed;
     private readonly Dictionary<string, byte[]> _files = new(StringComparer.Ordinal)
     {
-        ["/input.json"] = Encoding.UTF8.GetBytes("{\"value\": 3, \"name\": \"é\"}")
+        ["/input.json"] = Encoding.UTF8.GetBytes("{\"value\": 3, \"name\": \"é\"}"),
+        ["/source.bin"] = [0, 255, 65, 13, 10, 66, 10, 101, 110, 100]
     };
     public TaskCompletionSource ReadStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
     public TaskCompletionSource WriteStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -306,6 +340,13 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
                 ? new LythonPathStat(LythonPathKind.File, bytes.Length, null)
                 : new LythonPathStat(LythonPathKind.Missing, 0, null);
         return ValueTask.FromResult(stat);
+    }
+
+    public void VerifyBinaryFiles()
+    {
+        if (!_files["/output.bin"].AsSpan().SequenceEqual(new byte[] { 104, 101, 97, 100, 0, 255, 13, 10, 33 })
+            || !_files["/pending.bin"].AsSpan().SequenceEqual("final"u8))
+            throw new Exception("Binary package consumer produced incorrect bytes.");
     }
 
     public void VerifyFiles()

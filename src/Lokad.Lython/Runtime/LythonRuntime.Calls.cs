@@ -173,6 +173,7 @@ internal sealed partial class LythonRuntime
             [ModuleException("decimal", "DivisionUndefined")] = [ModuleException("decimal", "InvalidOperation")],
             [ModuleException("gzip", "BadGzipFile")] = [BuiltinException("OSError")],
             [ModuleException("json", "JSONDecodeError")] = [BuiltinException("ValueError")],
+            [ModuleException("io", "UnsupportedOperation")] = [BuiltinException("OSError"), BuiltinException("ValueError")],
             [ModuleException("openpyxl.utils.exceptions", "CellCoordinatesException")] = [BuiltinException("ValueError")],
             [ModuleException("openpyxl.utils.exceptions", "IllegalCharacterError")] = [BuiltinException("ValueError")],
             [ModuleException("openpyxl.utils.exceptions", "InvalidFileException")] = [BuiltinException("Exception")],

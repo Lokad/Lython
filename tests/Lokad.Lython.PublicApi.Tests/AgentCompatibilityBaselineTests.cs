@@ -202,16 +202,16 @@ Path("/repo/input.bin").read_bytes(1)
     [InlineData(
         """
 from pathlib import Path
-Path("/repo/input.bin").open("rb")
+Path("/repo/input.bin").open("rb+")
 """,
-        "LA3061",
-        "binary modes like 'rb' and 'wb' are unsupported")]
+        "LA3062",
+        "does not support updating")]
     [InlineData(
         """
-open("/repo/input.bin", "rb")
+open("/repo/input.bin", "rb+")
 """,
-        "LA3001",
-        "binary modes like 'rb' and 'wb' are unsupported")]
+        "LA3002",
+        "does not support updating")]
     public void IntentionalDivergences_ReportStaticDiagnosticsBeforeHostEffects(
         string source,
         string expectedCode,
