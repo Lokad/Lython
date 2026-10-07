@@ -4,6 +4,7 @@
 
 ## 0.10.0 - release candidate
 
+- Release lower/upper casing scratch when conversion is denied, and scan UTF-8 directly with execution budget checks.
 - Add governed urllib.parse quoting, percent decoding and ordered query encoding/parsing, including opaque byte fields, callback/option order and asynchronous guest protocols.
 - Support Python sequence iteration through type-level __getitem__ when __iter__ is absent, with permanent exhaustion, retryable failures, async descriptor/item dispatch and governed cursor storage.
 - Fund reader carry buffers before allocation and retain ownership only after the charge commits, preserving the original MemoryError when an open is denied.

@@ -75,12 +75,19 @@ internal static partial class PyStringOps
     private static PyString MapCase(PyString value, CaseMapping mapping)
     {
         var builder = CreateBuilder(value, value.Utf8Bytes.Length);
-        foreach (var rune in value.AsString().EnumerateRunes())
+        try
         {
-            builder.AppendString(MapCase(rune, mapping));
+            var source = value.Utf8Bytes.Span;
+            for (var offset = 0; offset < source.Length;)
+            {
+                PyStructuralGuard.NoteWork();
+                _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
+                builder.AppendString(MapCase(rune, mapping));
+                offset += consumed;
+            }
+            return builder.ToPyStringAndRelease();
         }
-
-        return builder.ToPyStringAndRelease();
+        finally { builder.Release(); }
     }
 
     private static string MapCase(Rune rune, CaseMapping mapping)
