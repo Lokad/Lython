@@ -634,7 +634,7 @@ internal sealed partial class LythonRuntime
 
             return literal switch
             {
-                "NaN" => double.NaN,
+                "NaN" => PythonNaN,
                 "Infinity" => double.PositiveInfinity,
                 _ => double.NegativeInfinity,
             };

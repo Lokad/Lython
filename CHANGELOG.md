@@ -4,6 +4,7 @@
 
 ## 0.10.0 - release candidate
 
+- Preserve Python's positive NaN factory constant and explicit negative NaN signs in float, float.fromhex, math.nan and JSON decoding.
 - Add governed UTF-16 native/LE/BE codecs, stateful file BOM publication, split-unit/surrogate/newline reader carry, funded awaited outputs and shared byte/path/gzip/URL composition.
 - Correct quote_plus source-space selection for encoded UTF-16 units and raise LookupError for unknown runtime codec names.
 - Add governed Windows-1252 codecs with a fixed mapping, faithful undefined-byte and scalar errors, shared handlers, binary-mediated text files and owned decoded windows.

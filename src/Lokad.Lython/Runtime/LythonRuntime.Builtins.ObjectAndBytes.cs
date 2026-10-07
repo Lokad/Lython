@@ -121,8 +121,8 @@ internal sealed partial class LythonRuntime
             {
                 "inf" or "+inf" or "infinity" or "+infinity" => double.PositiveInfinity,
                 "-inf" or "-infinity" => double.NegativeInfinity,
-                "nan" or "+nan" => double.NaN,
-                "-nan" => -double.NaN,
+                "nan" or "+nan" => PythonNaN,
+                "-nan" => -PythonNaN,
                 _ => double.Parse(normalized, NumberStyles.Float, CultureInfo.InvariantCulture),
             };
         }

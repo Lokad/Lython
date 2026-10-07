@@ -29,7 +29,7 @@ internal sealed partial class LythonRuntime
                 "e" => Math.E,
                 "tau" => Math.Tau,
                 "inf" => double.PositiveInfinity,
-                "nan" => double.NaN,
+                "nan" => PythonNaN,
                 "sqrt" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathSqrt, Sqrt),
                 "exp" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathExp, Exp),
                 "log" => BuiltinCallable.Create(LythonKnownCallableSignatures.MathLog, Log),

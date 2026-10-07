@@ -25,7 +25,7 @@ internal sealed partial class LythonRuntime
                 ["parse_constant"] = (object?)options.ParseConstant ?? BoundCallable.Create((args, span, ctx) =>
                     (args[0] is PyString text ? text.ToString() : throw new LythonRuntimeException("TypeError", "JSON constant must be a string", span)) switch
                     {
-                        "NaN" => (object)double.NaN,
+                        "NaN" => (object)PythonNaN,
                         "Infinity" => double.PositiveInfinity,
                         "-Infinity" => double.NegativeInfinity,
                         _ => throw new LythonRuntimeException("KeyError", "Unknown JSON constant", span)

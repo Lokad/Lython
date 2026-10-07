@@ -1615,7 +1615,7 @@ internal sealed partial class LythonRuntime
 
         if (lowered is "nan")
         {
-            return double.NaN;
+            return negative ? -PythonNaN : PythonNaN;
         }
 
         var mantissa = BigInteger.Zero;
