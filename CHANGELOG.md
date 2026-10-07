@@ -4,6 +4,7 @@
 
 ## 0.10.0 - release candidate
 
+- Apply string-result limits before consuming StringIO input, and keep its private storage outside guest collection item limits.
 - Add governed io.StringIO with Unicode character positions, Python newline policies, shared-cursor iteration, immutable snapshots and lifecycle APIs; compose with CSV, JSON and print, and await guest index/writelines effects.
 - Resolve callable instances through the type's __call__ slot, await call descriptors under RunAsync, and bind lambdas stored on classes as function descriptors.
 - Support CSV write protocols for text files, mediated standard streams and guest objects; capture write at construction, preserve row/header callback results, await row acquisition and writes, and govern callback-visible row strings.

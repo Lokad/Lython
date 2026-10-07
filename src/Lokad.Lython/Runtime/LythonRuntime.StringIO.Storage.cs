@@ -67,7 +67,7 @@ internal sealed partial class LythonRuntime
             if (_position > int.MaxValue - translated)
                 throw RuntimeErrors.Memory("StringIO buffer exceeds supported storage size", span);
             var end = (int)(_position + translated);
-            _services.ObserveCollectionCount(end, span);
+            _services.CheckExecutionBudget(span);
             EnsureCapacity(end, span);
             if (_position > _length) Array.Clear(_buffer, _length, (int)_position - _length);
             var cursor = (int)_position;
@@ -163,6 +163,8 @@ internal sealed partial class LythonRuntime
 
         private PyString RenderRange(int start, int end, LythonSourceSpan span)
         {
+            if (_services.Limits.MaxStringLength is { } maximum && end - start > maximum)
+                throw RuntimeErrors.Runtime($"maximum string length exceeded ({maximum})", span);
             var builder = new GovernedByteBuilder(_services.MemoryGovernor, span);
             try
             {
