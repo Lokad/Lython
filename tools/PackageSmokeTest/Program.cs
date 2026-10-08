@@ -78,6 +78,12 @@ if (!structScript.IsValid) throw new Exception(string.Join("; ", structScript.Di
 foreach (var result in new[] { structScript.Run(new PureHost()), await structScript.RunAsync(new PureHost()) })
     RequireOutput(result, "23 fd020280003fc00000c004000000000000780361626301 (-3, 514, -0.0, 1.5, -2.5, b'x', b'abc', True)\n7ff8000000000000\nfff8000000000000\n7ff8000000000000\n7ff8000000000000\n3 (1, 2) [(3, 4), (5, 6)] 0\nerror struct True\n");
 
+const string xmlSource = "import xml.etree.ElementTree as ET\ndata='<?xml version=\"1.0\" encoding=\"windows-1252\"?><r a=\"\u20ac\">\u00e9\u20ac</r>'.encode('cp1252')\nroot=ET.fromstring(data)\nprint(root.tag,root.attrib,repr(root.text))\nroot=ET.fromstring('<r xmlns:p=\"https://example.test/ns\">before<p:x n=\"1\">\u03a9\ud83d\ude00</p:x>after<p:x n=\"2\"/></r>'.encode('utf-16'))\nprint(root.tag,repr(root.text),[c.tag for c in root],repr(root[0].tail))\nprint(root.find('p:x',{'p':'https://example.test/ns'}) is root[0],[c.get('n') for c in root.findall('{https://example.test/ns}x')])\nprint(type(root) is ET.Element,ET.ParseError.__module__,ET.ParseError.__bases__[0] is SyntaxError)\nprint(ET.ParseError.__bases__ is ET.ParseError.__bases__)\ntry: ET.fromstring('<r>')\nexcept ET.ParseError as error: print(type(error) is ET.ParseError,isinstance(error,SyntaxError))\n";
+var xmlScript = engine.Compile(xmlSource);
+if (!xmlScript.IsValid) throw new Exception(string.Join("; ", xmlScript.Diagnostics.Select(d => d.Message)));
+foreach (var result in new[] { xmlScript.Run(new PureHost()), await xmlScript.RunAsync(new PureHost()) })
+    RequireOutput(result, "r {'a': '\u20ac'} '\u00e9\u20ac'\nr 'before' ['{https://example.test/ns}x', '{https://example.test/ns}x'] 'after'\nTrue ['1', '2']\nTrue xml.etree.ElementTree True\nTrue\nTrue True\n");
+
 const string windows1252Source = """
     data=bytes([i for i in range(256) if i not in [129,141,143,144,157]])
     text=data.decode('cp1252')
@@ -383,6 +389,26 @@ RequireOutput(await structPendingRun.WaitAsync(structTimeout.Token), structFileO
 structDelayedHost.VerifyStructFiles();
 if (structDelayedHost.SuspendedOperations < 2) throw new Exception("Struct consumer did not suspend twice.");
 
+const string xmlFileSource = "import xml.etree.ElementTree as ET\nimport operator\nfrom pathlib import Path\nclass Index:\n    def __index__(self):\n        with open('/xml-index.txt') as file: value=file.read()\n        print('index',value)\n        return int(value)\nindex=Index()\nindex.__index__=lambda: 0\nroot=ET.fromstring('<r><a>A</a><b>B</b><c>C</c></r>')\nprint(root[index].tag,[element.tag for element in root[:index]])\nprint(operator.getitem(root,index).text)\nPath('/xml-output.txt').write_text(root[index].text)\n";
+var xmlFiles = engine.Compile(xmlFileSource);
+if (!xmlFiles.IsValid) throw new Exception(string.Join("; ", xmlFiles.Diagnostics.Select(d => d.Message)));
+const string xmlFileOutput = "index 1\nindex 1\nb ['a']\nindex 1\nB\nindex 1\n";
+var xmlSyncHost = new MemoryHost(delayed: false);
+RequireOutput(xmlFiles.Run(xmlSyncHost), xmlFileOutput);
+xmlSyncHost.VerifyXmlFiles();
+var xmlDelayedHost = new MemoryHost(delayed: true);
+using var xmlTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+var xmlPendingRun = xmlFiles.RunAsync(xmlDelayedHost, new LythonRunOptions { CancellationToken = xmlTimeout.Token });
+await xmlDelayedHost.ReadStarted.Task.WaitAsync(xmlTimeout.Token);
+if (xmlPendingRun.IsCompleted) throw new Exception("XML index conversion did not suspend.");
+xmlDelayedHost.ReleaseRead.TrySetResult();
+await xmlDelayedHost.WriteStarted.Task.WaitAsync(xmlTimeout.Token);
+if (xmlPendingRun.IsCompleted) throw new Exception("XML result publication did not suspend.");
+xmlDelayedHost.ReleaseWrite.TrySetResult();
+RequireOutput(await xmlPendingRun.WaitAsync(xmlTimeout.Token), xmlFileOutput);
+xmlDelayedHost.VerifyXmlFiles();
+if (xmlDelayedHost.SuspendedOperations < 2) throw new Exception("XML consumer did not suspend twice.");
+
 Console.WriteLine("Package compatibility and mediated file consumer passed.");
 
 static void RequireOutput(LythonExecutionResult result, string expected)
@@ -414,6 +440,7 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
     private readonly Dictionary<string, byte[]> _files = new(StringComparer.Ordinal)
     {
         ["/input.json"] = Encoding.UTF8.GetBytes("{\"value\": 3, \"name\": \"é\"}"),
+        ["/xml-index.txt"] = "1"u8.ToArray(),
         ["/struct-index.txt"] = "514"u8.ToArray(),
         ["/struct-float.txt"] = "1.5"u8.ToArray(),
         ["/struct-truth.txt"] = "yes"u8.ToArray(),
@@ -478,6 +505,12 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
         if (!_files["/output.json"].AsSpan().SequenceEqual("{\"name\": \"é\", \"value\": 3}"u8)
             || !_files["/pending.txt"].AsSpan().SequenceEqual("final 😀 bytes\n"u8))
             throw new Exception("Package file publication produced incorrect bytes.");
+    }
+
+    public void VerifyXmlFiles()
+    {
+        if (!_files["/xml-output.txt"].AsSpan().SequenceEqual("B"u8))
+            throw new Exception("XML package consumer produced incorrect bytes.");
     }
 
     public void VerifyStructFiles()
