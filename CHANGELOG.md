@@ -4,6 +4,8 @@
 
 ## 0.10.0 - release candidate
 
+- Add sequential gzip.GzipFile wrappers over contained filenames and supplied binary objects, lazy metadata/trailer checks, persistent governed compression, sync flush, awaited callbacks, and correct supplied-object ownership.
+- Retain native ownership charges through finalization, expose EOFError/FutureWarning hierarchy, and emit inferred gzip write-mode notices through mediated stderr.
 - Add governed zlib-wrapped byte compression/decompression, exact levels, validated headers/truncation/Adler-32, first-stream trailing behavior and awaited option conversion.
 - Emit a complete final DEFLATE block for empty gzip payloads and filename-backed writers.
 - Measure suite indentation from logical lines, including compound headers whose closing delimiter shares a continuation line.

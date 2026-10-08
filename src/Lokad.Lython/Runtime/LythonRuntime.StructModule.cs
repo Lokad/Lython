@@ -11,7 +11,7 @@ internal sealed partial class LythonRuntime
         internal static readonly StructModule Instance = new();
         private static readonly string[] Members =
             ["pack", "unpack", "calcsize", "iter_unpack", "error", "Struct", "pack_into", "unpack_from"];
-        private static readonly ExceptionTypeValue ErrorType = new(ModuleException("struct", "error"));
+        internal static readonly ExceptionTypeValue ErrorType = new(ModuleException("struct", "error"));
 
         private StructModule() : base("struct") { }
         public override IReadOnlyList<string> ExportedNames => Members;

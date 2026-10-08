@@ -7,11 +7,12 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private sealed class GzipModule : PyModule
+    internal sealed class GzipModule : PyModule
     {
         public static readonly GzipModule Instance = new();
+        private static readonly ExceptionTypeValue BadGzipType = new(ModuleException("gzip", "BadGzipFile"));
 
-        private static readonly string[] Members = ["open", "compress", "decompress", "BadGzipFile"];
+        private static readonly string[] Members = ["open", "GzipFile", "compress", "decompress", "BadGzipFile"];
 
         private GzipModule() : base("gzip")
         {
@@ -26,9 +27,10 @@ internal sealed partial class LythonRuntime
             value = name switch
             {
                 "open" => GzipOpenCallable.Instance,
+                "GzipFile" => GzipFileClass.Instance,
                 "compress" => GzipCompressCallable.Instance,
                 "decompress" => BuiltinCallable.Create(LythonKnownCallableSignatures.GzipDecompress, Decompress),
-                "BadGzipFile" => new ExceptionTypeValue(ModuleException("gzip", "BadGzipFile")),
+                "BadGzipFile" => BadGzipType,
                 _ => MissingMemberValue.Instance,
             };
 

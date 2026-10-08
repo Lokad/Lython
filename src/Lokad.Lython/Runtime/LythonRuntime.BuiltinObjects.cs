@@ -345,7 +345,7 @@ internal sealed partial class LythonRuntime
                 MatchesExceptionType(exceptionType.ExceptionIdentity, exception.Identity),
             PyType runtimeType => value switch
             {
-                ExceptionTypeValue => ReferenceEquals(TryGetBuiltinOrNull(context, "type"), runtimeType) || IsObjectRootType(runtimeType, context),
+                ExceptionTypeValue or GzipFileClass or GzipFileMetaType => ReferenceEquals(TryGetBuiltinOrNull(context, "type"), runtimeType) || IsObjectRootType(runtimeType, context),
                 PyInstance instance => instance.Type.IsSubtypeOf(runtimeType),
                 PyType typeValue => typeValue.MetaType is not null && typeValue.MetaType.IsSubtypeOf(runtimeType),
                 UrllibParseModule.UrlResultType => ReferenceEquals(TryGetBuiltinOrNull(context, "type"), runtimeType) || IsObjectRootType(runtimeType, context),
@@ -402,6 +402,7 @@ internal sealed partial class LythonRuntime
         }
 
         return subjectName == baseName ||
+               subjectName == "abc.ABCMeta" && baseName == "type" ||
                subjectName == "bool" && baseName == "int" ||
                subjectName is "collections.defaultdict" or "collections.Counter" && baseName == "dict" ||
                baseName == "object";
@@ -737,6 +738,8 @@ internal sealed partial class LythonRuntime
             "collections.ChainMap" or
             "io.BytesIO" or
             "io.StringIO" or
+            "gzip.GzipFile" or
+            "abc.ABCMeta" or
             "json.JSONDecoder" or
             "json.JSONEncoder";
     }
@@ -765,6 +768,8 @@ internal sealed partial class LythonRuntime
             "collections.ChainMap" => value is PyChainMap,
             "io.BytesIO" => value is BytesIOObject,
             "io.StringIO" => value is StringIOObject,
+            "gzip.GzipFile" => value is GzipFileObject,
+            "abc.ABCMeta" => value is GzipFileClass,
             "json.JSONDecoder" => value is JsonDecoderObject || value is PyInstance { Type.JsonBase: JsonBaseKind.Decoder },
             "json.JSONEncoder" => value is JsonEncoderObject || value is PyInstance { Type.JsonBase: JsonBaseKind.Encoder },
             "set" => value is PySet,

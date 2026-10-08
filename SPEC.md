@@ -1093,6 +1093,7 @@ The builtin environment must include exactly the following builtins and builtin 
 - `LookupError`
 - `UnicodeError`
 - `Warning`
+- `FutureWarning`
 - `TypeError`
 - `ValueError`
 - `KeyError`
@@ -2214,6 +2215,72 @@ Other wbits values, raw/gzip/automatic mixed framing, preset dictionaries,
 incremental compressobj/decompressobj, public checksum helpers and backend
 version metadata remain outside this inventory. Deferred callables/options
 fail explicitly. File composition uses the existing mediated binary protocols.
+
+### 11.23 Sequential Gzip Binary Wrappers
+
+`gzip.GzipFile(filename=None, mode=None, compresslevel=9, fileobj=None, mtime=None)`
+creates a sequential binary wrapper over a contained filename or an already
+supplied binary object. Filename acquisition uses the optional binary host
+capability. Supplied objects use ordinary guest `read(size)`, `write(bytes)` and
+`flush()` dispatch, including awaited descriptors/calls under RunAsync, and
+remain open when the gzip wrapper closes. Filename-owned raw handles close with
+their wrapper. String and supported path-like filenames preserve their original
+spelling in `name`; host acquisition uses normalized contained paths. Byte paths
+fail explicitly.
+
+Modes `r`/`rb`, `w`/`wb` and `a`/`ab` expose canonical `rb` or `wb` metadata.
+Supplied objects also accept `x`/`xb` as writing; exclusive filename acquisition
+requires an atomic host contract and remains unsupported. Updating and text
+modes fail explicitly. Omitted/None mode uses the supplied object's mode, with
+`rb` as the default when absent. Inferred writing emits Python's FutureWarning
+once per message/category/source location per execution, before writer
+initialization. The notice uses mediated captured stderr and awaits its host
+write under RunAsync. Its filename/line comes from SourcePath and the call span,
+with `<string>` as the fallback; formatting performs no source-file lookup.
+The `warnings` module, filters/custom hooks and unraisable-destructor reporting
+remain separate APIs outside this inventory.
+
+Writers accept levels -1 through 9, with type-level integer conversion and
+original-object equality for the header XFL field. `mtime` uses Python integer
+conversion and unsigned 32-bit framing bounds; out-of-range values raise
+struct.error. Omitted/None modification time comes from the host clock. Header
+FNAME uses a Latin-1 basename with a terminal `.gz` removed; unrepresentable names
+are omitted. This constructor's clock behavior is distinct from gzip.compress's
+contained deterministic default.
+
+The inventoried members are `read`, `readline`, `readlines`, `write`, `writelines`,
+`flush`, `tell`, `close`, `readable`, `writable`, iteration/context handling, and
+`name`, `mode`, `closed`, `fileobj`, plus reader `mtime`. Readers acquire headers
+and metadata lazily; `read(0)` leaves mtime untouched. Concatenated members and
+post-member zero padding are accepted. A small positive read can return data
+before a later read discovers a bad trailer. Truncation raises EOFError; invalid
+headers, CRC or sizes raise gzip.BadGzipFile; malformed DEFLATE raises zlib.error.
+Line-reading/iteration on writers raises io.UnsupportedOperation, while read
+raises OSError. Closed data operations raise ValueError; readable/writable mode
+queries remain available. GzipFile exposes its class/opaque ABCMeta identity;
+this does not expand generic metaclass dispatch or builtin inheritance.
+
+Writes use a governed 32 KiB raw buffer. tell drains this buffer without a
+synchronous compression flush. flush supports Z_SYNC_FLUSH (2), drains pending
+input, exposes the resulting partial member and forwards the supplied stream's
+flush; the trailer appears only at close. Empty flush/final blocks are explicit
+because CLR compression may emit none. Compressed payload packets are backend
+dependent; buffer-drain phases and decompressed data remain Python compatible.
+Filename-backed writers finalize at execution end before their raw handles.
+Closing also follows Python's closed-wrapper behavior if a supplied write fails;
+supplied objects can retain bytes already accepted before failure. Filename
+flush/close publication uses the existing mediated raw-handle contract. This
+streaming wrapper has a separate lifecycle from gzip.open's materializing and
+retryable whole-payload contract.
+
+Persistent native state owns conservative compression/inflation coupons;
+retained windows/builders and exact publication copies fund separately. Close
+releases native state and buffered ownership while retaining the live shell.
+Dropped native owners finalize without guest/host callbacks, and reclamation
+retains their coupons until finalization and subsequent collection complete.
+Input/output loops and zero-output compressed blocks check work/cancellation.
+Seeking, rewinding, descriptors, mutable-buffer readinto APIs, peek/read1 and
+other uninventoried stream methods remain unsupported.
 
 
 ---

@@ -21,7 +21,7 @@ failure = None
 exit_code = None
 try:
     with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
-        exec(compile(source, "<probe>", "exec"), {"__name__": "__main__"})
+        exec(compile(source, "<string>", "exec"), {"__name__": "__main__"})
     success = True
 except BaseException as exception:
     success = False

@@ -107,7 +107,7 @@ internal static partial class StaticContracts
         ["importlib.util"] = Members("find_spec", "resolve_name", "module_from_spec", "spec_from_file_location", "spec_from_loader"),
         ["filecmp"] = Members("cmp", "clear_cache", "dircmp"),
         ["hashlib"] = Members("md5", "sha1", "sha256", "sha384", "sha512", "new", "algorithms_available", "algorithms_guaranteed", "file_digest"),
-        ["gzip"] = Members("open", "compress", "decompress", "BadGzipFile"),
+        ["gzip"] = Members("open", "GzipFile", "compress", "decompress", "BadGzipFile"),
         ["zlib"] = Members("compress", "decompress", "error", "DEFLATED", "MAX_WBITS", "DEF_BUF_SIZE",
             "Z_NO_COMPRESSION", "Z_BEST_SPEED", "Z_BEST_COMPRESSION", "Z_DEFAULT_COMPRESSION",
             "compressobj", "decompressobj", "adler32", "crc32"),

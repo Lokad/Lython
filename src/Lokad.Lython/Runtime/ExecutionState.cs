@@ -11,6 +11,8 @@ internal sealed class ExecutionState
     internal PyType? TypingGeneric { get; set; }
     internal PyDict? UrlSplitFieldDefaults { get; set; }
     internal PyDict? UrlParseFieldDefaults { get; set; }
+    internal PyTuple? GzipFileMetaBases { get; set; }
+    internal PyTuple? GzipFileMetaMro { get; set; }
     internal LythonRuntime.UrllibParseModule.UrlSplitCache? UrlSplitCache { get; set; }
     private long _csvPulls;
     private long _boundCalls;
@@ -48,7 +50,7 @@ internal sealed class ExecutionState
         "len", "sorted", "any", "all", "min", "max", "sum", "abs", "pow", "round", "divmod",
         "bin", "oct", "hex", "chr", "ord", "callable", "hash", "id",
         "range", "enumerate", "zip", "iter", "next", "reversed", "map", "filter", "slice",
-        "BaseException", "Exception", "ArithmeticError", "LookupError", "UnicodeError", "Warning",
+        "BaseException", "Exception", "ArithmeticError", "LookupError", "UnicodeError", "Warning", "FutureWarning",
         "TypeError", "ValueError", "KeyError", "IndexError", "RuntimeError", "EOFError",
         "AssertionError", "ImportError", "ModuleNotFoundError", "NameError", "AttributeError", "SyntaxError",
         "FileNotFoundError", "FileExistsError", "IsADirectoryError", "NotADirectoryError", "PermissionError",
@@ -187,6 +189,34 @@ internal sealed class ExecutionState
     public HostTextOutputHandle Stdout { get; }
 
     public HostTextOutputHandle Stderr { get; }
+
+    private HashSet<(string Filename, int Line, string Category, string Message)>? _shownDefaultWarnings;
+
+    // Default warning action: one notice per message/category/module location.
+    // Entries retain existing filename/message references; 256 B per entry
+    // conservatively covers both old and replacement hash storage at growth.
+    // The registry belongs to this run, so another execution starts afresh.
+    internal bool MarkDefaultWarning(string filename, int line, string category, string message, LythonSourceSpan span)
+    {
+        var key = (filename, line, category, message);
+        if (_shownDefaultWarnings?.Contains(key) == true) return false;
+        var first = _shownDefaultWarnings is null;
+        var charge = first ? 384L : 256L;
+        MemoryGovernor.Reserve(charge, span);
+        try
+        {
+            _shownDefaultWarnings ??= new();
+            _shownDefaultWarnings.Add(key);
+            MemoryGovernor.Commit(charge);
+            return true;
+        }
+        catch
+        {
+            if (first) _shownDefaultWarnings = null;
+            MemoryGovernor.ReleaseReserved(charge);
+            throw;
+        }
+    }
     // id() exposes stable per-run object identity: the same live object
     // keeps its number while distinct live objects get distinct numbers.
     // Numbers are opaque like CPython, but only shared boxes (such as

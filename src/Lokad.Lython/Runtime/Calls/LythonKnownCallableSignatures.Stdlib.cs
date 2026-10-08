@@ -138,6 +138,7 @@ internal static partial class LythonKnownCallableSignatures
     public static readonly LythonCallableSignature StructIterUnpack = LythonCallableSignature.Create("struct.iter_unpack",
         ["format", "buffer"], 2, 2, LythonVariadicParameters.None, 2);
     public static readonly LythonCallableSignature GzipOpen = LythonCallableSignature.Create("gzip.open", ["filename", "mode", "compresslevel", "encoding", "errors", "newline"], requiredCount: 1);
+    public static readonly LythonCallableSignature GzipFile = LythonCallableSignature.Create("gzip.GzipFile", ["filename", "mode", "compresslevel", "fileobj", "mtime"], requiredCount: 0);
 
     public static readonly LythonCallableSignature ZipFile = LythonCallableSignature.Create("zipfile.ZipFile", ["file", "mode", "compression", "allowZip64", "compresslevel", "strict_timestamps", "metadata_encoding"], requiredCount: 1);
     public static readonly LythonCallableSignature ZipIsZipFile = LythonCallableSignature.Create("zipfile.is_zipfile", ["filename"], requiredCount: 1);

@@ -81,6 +81,7 @@ internal sealed partial class LythonRuntime
                 ["LookupError"] = new ExceptionTypeValue("LookupError"),
                 ["UnicodeError"] = new ExceptionTypeValue("UnicodeError"),
                 ["Warning"] = new ExceptionTypeValue("Warning"),
+                ["FutureWarning"] = new ExceptionTypeValue("FutureWarning"),
                 ["TypeError"] = new ExceptionTypeValue("TypeError"),
                 ["ValueError"] = new ExceptionTypeValue("ValueError"),
                 ["KeyError"] = new ExceptionTypeValue("KeyError"),

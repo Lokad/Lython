@@ -18,6 +18,7 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
     private readonly Dictionary<string, string> _writeTextFailures = new(StringComparer.Ordinal);
     private readonly MockTextOutput _stdout = new();
     private readonly MockTextOutput _stderr = new();
+    private ILythonTextOutput? _stderrOverride;
     private MockTextInput? _stdin;
     private readonly MockSubprocessRunner _subprocess = new();
     private ILythonTiming? _timing;
@@ -48,7 +49,9 @@ internal sealed class MockLythonHost : ILythonHost, ILythonSynchronousHostCapabi
 
     public ILythonTextOutput? StandardOutput => _stdout;
 
-    public ILythonTextOutput? StandardError => _stderr;
+    public ILythonTextOutput? StandardError => _stderrOverride ?? _stderr;
+
+    public void SetStandardError(ILythonTextOutput output) => _stderrOverride = output;
 
     public ILythonSubprocessRunner? SubprocessRunner => _subprocess.Enabled ? _subprocess : null;
 

@@ -11,7 +11,7 @@ internal sealed partial class LythonRuntime
     internal sealed class ZlibModule : PyModule
     {
         internal static readonly ZlibModule Instance = new();
-        private static readonly ExceptionTypeValue ErrorType = new(ModuleException("zlib", "error"));
+        internal static readonly ExceptionTypeValue ErrorType = new(ModuleException("zlib", "error"));
         private static readonly string[] Members =
             ["compress", "decompress", "error", "DEFLATED", "MAX_WBITS", "DEF_BUF_SIZE",
              "Z_NO_COMPRESSION", "Z_BEST_SPEED", "Z_BEST_COMPRESSION", "Z_DEFAULT_COMPRESSION",
