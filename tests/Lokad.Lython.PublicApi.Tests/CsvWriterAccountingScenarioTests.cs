@@ -334,34 +334,59 @@ public sealed class CsvWriterAccountingScenarioTests
     [Fact]
     public async Task CancelledWriterowsFailsDeterministically()
     {
-        // MG02: cancellation surfaces mid-stream as an explicit failure with
-        // a partial file prefix, never as budget-shaped or CLR leakage; a
-        // pre-cancelled token fails before any write.
+        // Cancel at a host gate after two rows have been staged. A delayed
+        // timer continuation can otherwise arrive after a fast scan finishes.
+        // Exercise both execution modes and preserve the publication boundary.
         var script = new LythonEngine().Compile("""
             import csv
             handle = open("/out.csv", "w")
             writer = csv.writer(handle)
             i = 0
-            while i < 200000:
+            while i < 4:
                 writer.writerow([i])
                 i = i + 1
+                if i == 2:
+                    print(i)
+                    with open("/cancel.txt") as gate:
+                        gate.read()
             handle.close()
             return i
             """);
         Assert.True(script.IsValid);
-        using var cts = new CancellationTokenSource();
-        var host = new MockLythonHost();
-        var runTask = Task.Run(() => script.Run(host, new LythonRunOptions { CancellationToken = cts.Token }));
-        await Task.Delay(25);
-        cts.Cancel();
-        var result = await runTask;
-        Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
-        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("execution canceled", result.Failure?.Message, StringComparison.Ordinal);
-        // Buffered output publishes only on flush/close, so a run cancelled
-        // mid-stream leaves no file behind (nothing partial to roll back).
-        Assert.Throws<InvalidOperationException>(() => host.ReadText("/out.csv"));
+        foreach (var asynchronous in new[] { false, true })
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            var options = new LythonRunOptions { CancellationToken = cts.Token };
+            LythonExecutionResult result;
+            Func<string> readOutput;
+            if (asynchronous)
+            {
+                var host = new DelayedLythonHost();
+                host.SeedFile("/cancel.txt", "release");
+                var entered = host.PauseReadUntilCancellation("/cancel.txt");
+                var pending = script.RunAsync(host, options);
+                await entered.WaitAsync(cts.Token);
+                Assert.False(pending.IsCompleted);
+                cts.Cancel();
+                result = await pending;
+                readOutput = () => host.ReadText("/out.csv");
+            }
+            else
+            {
+                var files = new MockLythonHost();
+                files.SeedFile("/cancel.txt", "release");
+                var host = new CancelReadHost(files, cts);
+                result = script.Run(host, options);
+                Assert.True(host.CancelReadReached);
+                readOutput = () => files.ReadText("/out.csv");
+            }
+            Assert.False(result.Success);
+            Assert.Equal("2\n", result.StandardOutput);
+            Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
+            Assert.Contains("execution canceled", result.Failure?.Message, StringComparison.Ordinal);
+            // Staged rows have not crossed the flush/close host boundary.
+            Assert.Throws<InvalidOperationException>(readOutput);
+        }
 
         using var preCancelled = new CancellationTokenSource();
         preCancelled.Cancel();
@@ -372,6 +397,34 @@ public sealed class CsvWriterAccountingScenarioTests
         Assert.NotNull(asyncResult.Failure);
         Assert.Equal("RuntimeError", asyncResult.Failure?.ExceptionType);
         Assert.Contains("execution canceled", asyncResult.Failure?.Message, StringComparison.Ordinal);
+    }
+
+    private sealed class CancelReadHost(ILythonHost inner, CancellationTokenSource cancellation)
+        : ILythonHost, ILythonSynchronousHostCapability
+    {
+        public bool CancelReadReached { get; private set; }
+        public bool CompletesSynchronously => inner is ILythonSynchronousHostCapability { CompletesSynchronously: true };
+        public string Cwd => inner.Cwd;
+        public DateTimeOffset LocalNow => inner.LocalNow;
+        public DateTimeOffset UtcNow => inner.UtcNow;
+        public ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken token)
+        {
+            if (path == "/cancel.txt")
+            {
+                CancelReadReached = true;
+                cancellation.Cancel();
+            }
+            return inner.ReadTextUtf8Async(path, token);
+        }
+        public ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> bytes, CancellationToken token) => inner.WriteTextUtf8Async(path, bytes, token);
+        public ValueTask AppendTextUtf8Async(string path, ReadOnlyMemory<byte> bytes, CancellationToken token) => inner.AppendTextUtf8Async(path, bytes, token);
+        public ValueTask<bool> ExistsAsync(string path, CancellationToken token) => inner.ExistsAsync(path, token);
+        public ValueTask<IReadOnlyList<string>> ListDirAsync(string path, CancellationToken token) => inner.ListDirAsync(path, token);
+        public ValueTask MkDirAsync(string path, CancellationToken token) => inner.MkDirAsync(path, token);
+        public ValueTask RemoveAsync(string path, CancellationToken token) => inner.RemoveAsync(path, token);
+        public ValueTask CopyAsync(string source, string destination, CancellationToken token) => inner.CopyAsync(source, destination, token);
+        public ValueTask MoveAsync(string source, string destination, CancellationToken token) => inner.MoveAsync(source, destination, token);
+        public ValueTask<LythonPathStat> StatAsync(string path, CancellationToken token) => inner.StatAsync(path, token);
     }
 
     [Fact]
