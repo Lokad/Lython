@@ -5,6 +5,7 @@
 ## 0.10.0 - release candidate
 
 - Remove the implicit execution-step ceiling; retain enforced opt-in fuel for existing embedders, independent temporary-reclamation cadence, cancellation and default memory/stack/host-call protections.
+- Check cancellation and explicitly requested fuel during every lowered for-loop iteration, including pass-only range loops.
 - Fund regex cache slots only while its bounded capacity grows; eviction reuses existing funding and purge refunds it.
 - Keep returned CSV/text values reclaimable after their source is collected; release abandoned scratch before sweep funding and preserve registry ownership through reentrant exhaustion relief.
 - Add sequential gzip.GzipFile wrappers over contained filenames and supplied binary objects, lazy metadata/trailer checks, persistent governed compression, sync flush, awaited callbacks, and correct supplied-object ownership.

@@ -166,6 +166,9 @@ internal sealed partial class LythonRuntime
             var broke = false;
             foreach (var item in ToSequence(iterable, statement.Iterable.Span, context))
             {
+                // A pass-only body and a builtin range iterator may otherwise
+                // perform no expression, call or allocation checkpoints.
+                context.CheckExecution(statement.Span);
                 AssignLoopTarget(syntax.Target, item, statement.Iterable.Span, context);
                 var bodyFlow = ExecuteStatements(statement.Body, context);
                 if (bodyFlow.Control is ContinueSignal)

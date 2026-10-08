@@ -172,6 +172,7 @@ internal sealed partial class LythonRuntime
             var broke = false;
             await foreach (var item in ToSequenceAsync(iterable, statement.Iterable.Span, context).ConfigureAwait(false))
             {
+                context.CheckExecution(statement.Span);
                 await AssignLoopTargetAsync(syntax.Target, item, statement.Iterable.Span, context).ConfigureAwait(false);
                 var bodyFlow = await ExecuteStatementsAsync(statement.Body, context).ConfigureAwait(false);
                 if (bodyFlow.Control is ContinueSignal)

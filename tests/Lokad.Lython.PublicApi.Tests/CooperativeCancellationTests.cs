@@ -14,6 +14,8 @@ public sealed class CooperativeCancellationTests
         { true, "while True:\n    try:\n        while True:\n            pass\n    except BaseException:\n        pass" },
         { false, "try:\n    while True:\n        pass\nfinally:\n    pass" },
         { true, "try:\n    while True:\n        pass\nfinally:\n    pass" },
+        { false, "for i in range(2147483647):\n    pass" },
+        { true, "for i in range(2147483647):\n    pass" },
     };
 
     [Theory]
@@ -58,6 +60,21 @@ public sealed class CooperativeCancellationTests
     {
         var script = new LythonEngine().Compile("while True:\n    pass");
         var options = new LythonRunOptions { MaxExecutionSteps = 50, DisableDefaultLimits = true };
+        var pending = asynchronous ? script.RunAsync(new MockLythonHost(), options)
+            : Task.Run(() => script.Run(new MockLythonHost(), options));
+        var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.False(result.Success);
+        Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
+        Assert.Contains("maximum execution step count exceeded", result.Failure?.Message ?? "", StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExplicitFuelObservesPassOnlyForIterations(bool asynchronous)
+    {
+        var script = new LythonEngine().Compile("for i in range(1000):\n    pass\nreturn 42");
+        var options = new LythonRunOptions { MaxExecutionSteps = 50 };
         var pending = asynchronous ? script.RunAsync(new MockLythonHost(), options)
             : Task.Run(() => script.Run(new MockLythonHost(), options));
         var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
