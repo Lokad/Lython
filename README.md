@@ -171,6 +171,7 @@ The builtin module surface is explicitly allowlisted:
 - `typing`
 - `urllib.parse` for URL components, quoting and query encoding/parsing
 - `xml.etree.ElementTree` for contained string/byte parsing, read-only Elements, governed attributes and simple child selectors
+- `zlib` for governed in-memory zlib-wrapped compression/decompression with exact levels and validated framing
 - `zipfile`
 
 Local script imports are separate from builtin modules. Bare `import helper` can resolve through the host as `helper.py` only when `LythonRunOptions.AllowedLocalModules` contains `helper`, so embedders provide an explicit dependent-script list.

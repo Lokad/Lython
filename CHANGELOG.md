@@ -4,6 +4,7 @@
 
 ## 0.10.0 - release candidate
 
+- Add governed zlib-wrapped byte compression/decompression, exact levels, validated headers/truncation/Adler-32, first-stream trailing behavior and awaited option conversion.
 - Emit a complete final DEFLATE block for empty gzip payloads and filename-backed writers.
 - Measure suite indentation from logical lines, including compound headers whose closing delimiter shares a continuation line.
 - Add contained ElementTree parsing, independently governed node/text/map aliases, simple namespace-aware child selectors, Python byte-declaration behavior, awaited index conversions and catchable ParseError identity.

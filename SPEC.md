@@ -2170,6 +2170,49 @@ slots and await mediated effects under RunAsync.
 File parse, iterparse, parser customization, tree constructors/mutation,
 serialization and additional traversal helpers fail explicitly.
 
+### 11.22 Zlib-Wrapped Byte Compression
+
+`zlib.compress(data, /, level=-1, wbits=15)` accepts immutable bytes and
+levels -1 or 0–9. Levels select the corresponding native compression level;
+the zlib header, DEFLATE payload and Adler-32 trailer form a complete stream,
+including for empty input. Compressed output is interoperable zlib data;
+identical compressed bytes across backend versions are not promised.
+
+`zlib.decompress(data, /, wbits=15, bufsize=16384)` accepts immutable bytes
+and supports wbits=15 or 0 (window selection from the header). It validates
+the zlib method/window/check bits, final DEFLATE boundary and Adler-32 before
+exposing any output. Malformed input and every truncated stream raise
+the distinct `zlib.error`, deriving from Exception. Error message wording
+is outside this inventory. Unused trailing bytes, including another compressed
+stream, are ignored after the first valid stream.
+
+`bufsize` is a nonnegative allocation hint rather than an output limit;
+bounded 8 KiB reads and governed growth avoid allocating the full requested
+hint. Level/window conversions follow signed 32-bit integer bounds; buffer
+hints follow signed 64-bit bounds. They resolve the type-level `__index__`
+slot and await descriptor/call effects under RunAsync, preserving conversion
+order and guest exceptions. Missing options remain distinct from explicit None.
+
+The finite constants are DEFLATED=8, MAX_WBITS=15, DEF_BUF_SIZE=16384,
+Z_NO_COMPRESSION=0, Z_BEST_SPEED=1, Z_BEST_COMPRESSION=9 and
+Z_DEFAULT_COMPRESSION=-1. Functions expose ordinary builtin callable identity,
+name/module metadata, rendering and identity hashing.
+
+Default native compressor/inflater state, CLR wrappers and bounded I/O buffers
+reserve conservative fixed scratch coupons (512 KiB for compression and
+128 KiB for inflation); empty compression uses a small fixed framing coupon.
+Input is borrowed from its already owned bytes. Builder capacity and the
+exact publication copy fund separately before growth. Native calls operate
+on bounded chunks, and compressed-input cursor pulls also check work and
+cancellation even when blocks emit no output. Failed validation, denial or
+cancellation releases private output and scratch; returned bytes retain only
+their ordinary payload/registry ownership and reclaim when dropped.
+
+Other wbits values, raw/gzip/automatic mixed framing, preset dictionaries,
+incremental compressobj/decompressobj, public checksum helpers and backend
+version metadata remain outside this inventory. Deferred callables/options
+fail explicitly. File composition uses the existing mediated binary protocols.
+
 
 ---
 

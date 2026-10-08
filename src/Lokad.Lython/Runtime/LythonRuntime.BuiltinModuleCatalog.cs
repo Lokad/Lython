@@ -34,6 +34,7 @@ internal sealed partial class LythonRuntime
                 ["os.path"] = Module(static _ => OsPathModule.Instance),
                 ["glob"] = Module(static _ => GlobModule.Instance),
                 ["gzip"] = Module(static _ => GzipModule.Instance),
+                ["zlib"] = Module(static _ => ZlibModule.Instance),
                 ["struct"] = Module(static _ => StructModule.Instance),
                 ["xml"] = Module(static _ => XmlModule.Instance),
                 ["xml.etree"] = Module(static _ => XmlModule.Etree),

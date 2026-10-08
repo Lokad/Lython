@@ -433,6 +433,8 @@ internal static partial class StaticContracts
         new(LythonKnownCallableSignatures.HashlibFileDigest, "LA3151", "hashlib.file_digest(fileobj, digest, *, _bufsize=...) expects two positional arguments."),
         new(LythonKnownCallableSignatures.GzipCompress, "LA3151", "gzip.compress(data[, compresslevel], *, mtime=...) expects one or two positional arguments."),
         new(LythonKnownCallableSignatures.GzipDecompress, "LA3151", "gzip.decompress(data) expects one argument."),
+        new(LythonKnownCallableSignatures.ZlibCompress, "LA3151", "zlib.compress(data, /, level=-1, wbits=15) expects one to three arguments.", StaticReturnShape.Bytes),
+        new(LythonKnownCallableSignatures.ZlibDecompress, "LA3151", "zlib.decompress(data, /, wbits=15, bufsize=16384) expects one to three arguments.", StaticReturnShape.Bytes),
         new(LythonKnownCallableSignatures.StructPack, "LA3151", "struct.pack(format, /, *values) expects a format.", StaticReturnShape.Bytes),
         new(LythonKnownCallableSignatures.StructUnpack, "LA3151", "struct.unpack(format, buffer, /) expects two arguments."),
         new(LythonKnownCallableSignatures.StructCalcsize, "LA3151", "struct.calcsize(format, /) expects one argument.", StaticReturnShape.Integer),

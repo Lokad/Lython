@@ -2,6 +2,12 @@ namespace Lokad.Lython.Runtime;
 
 internal static partial class LythonKnownCallableSignatures
 {
+    public static readonly LythonCallableSignature ZlibCompress =
+        LythonCallableSignature.Create("zlib.compress", ["data", "level", "wbits"], requiredCount: 1,
+            maximumPositionalArgumentCount: 3, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
+    public static readonly LythonCallableSignature ZlibDecompress =
+        LythonCallableSignature.Create("zlib.decompress", ["data", "wbits", "bufsize"], requiredCount: 1,
+            maximumPositionalArgumentCount: 3, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1);
     public static readonly LythonCallableSignature ElementTreeFromString =
         LythonCallableSignature.Create("xml.etree.ElementTree.fromstring", ["text", "parser"], requiredCount: 1);
     public static readonly LythonCallableSignature IoBytesIO = LythonCallableSignature.Create("io.BytesIO", ["initial_bytes"], requiredCount: 0);
