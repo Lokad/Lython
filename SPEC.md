@@ -1530,6 +1530,24 @@ Where the runtime chooses to reject a regex feature that exists in Python, the f
 - the script is using regex syntax outside the supported subset
 - the runtime is rejecting that syntax intentionally
 
+Regex execution must participate in the execution's finite memory and work
+budgets and host cancellation. Compilation, validation, search, candidate
+verification, backtracking and result projection must check work/cancellation
+and admit scratch, mapping, state, capture-stack and result growth before
+allocation. Ownership must release on failure, cancellation, iterator abandonment
+and disposal. `finditer` must discover matches incrementally, preserving Python's
+Unicode scalar progression and same-position empty/nonempty match rules, with
+one retained subject and reusable mapping where necessary.
+
+Current implementation status (2026-10-08): PythonRe 0.2.0 returns an eager
+detailed-match array, has no cancellation-token overload and defaults to an
+infinite match timeout. Lython checks cancellation around backend calls, but
+cannot interrupt their internal work or fully admit their scratch allocation.
+Mixed named/unnamed capture numbering and last-closed-capture metadata also
+require a corrected backend artifact. These are outstanding implementation gaps
+against this specification; the measured cost evidence is recorded in
+[benchmarks/Baselines.md](benchmarks/Baselines.md).
+
 ### 11.8 JSON
 
 This section is normative.

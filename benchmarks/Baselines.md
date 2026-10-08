@@ -1,28 +1,118 @@
 # Benchmark baselines
 
-The scan investigation now has finite size series in `CsvReaderBenchmarks`,
-`TextScanBenchmarks` and `RegexScanBenchmarks`. No new performance baseline is
-claimed for these additions. Run Release BenchmarkDotNet throughput measurements
-before making time or allocation comparisons; individual invocation checks only
-validate the returned work count.
+Release scan baselines recorded **2026-10-08 at 0104bbd1** cover all 39
+CSV, text/XML and regex cases. BenchmarkDotNet 0.15.6 ran out of process on
+Windows 11 (10.0.26200.9448), an Intel Core i7-14700KF (20 physical/28 logical
+cores), .NET 10.0.12 x64 and SDK 10.0.300-preview.0.26177.108. Each case used
+two launches, six warmups and fifteen measured iterations per launch: 1,170
+actual measurements overall. Statistical processing retained 24–30 samples
+per case. The largest 99.9% confidence margin is 8.99% of the mean.
 
-- CSV DictReader retains, discards or stops after one row at 1K, 10K, 20K and
-  100K rows. The 20K case preserves the historical workload. Seeded six-column
-  UTF-8 input occupies 48 bytes per row plus an 18-byte header.
-- Text scans discard or retain 1K, 10K and 100K twelve-byte lines. A separate
-  XML input is one 24-byte element per row plus a 13-byte root wrapper; compare
-  reading that long record with retaining the ElementTree children.
-- Regex scans use `(a)(b)` over 1K, 5K and 10K ASCII matches, separating discarded
-  finditer results from retained findall tuples. Other cases compare a reused
-  compiled pattern, calls that hit the compile cache, and `re.purge()` followed
-  by actual recompilation. Unnamed captures isolate these costs from the pending
-  capture-numbering corrections.
+Reproduce from a short-path checkout to avoid the observed Windows generated
+runner copy failures in deeply nested worktrees:
 
-Seeding and script compilation run outside timed sections. The regex series is
-deliberately modest: the current PythonRe adapter materializes detailed matches
-and has high cumulative allocation growth on this shape. File iteration and
-discarding matches do not establish lazy backend processing or constant live
-memory. Budget/ownership and cancellation controls remain in the test suites.
+```powershell
+dotnet build benchmarks/Lokad.Lython.Benchmarks/Lokad.Lython.Benchmarks.csproj -c Release
+dotnet benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll --filter '*CsvReaderBenchmarks*' '*TextScanBenchmarks*' '*RegexScanBenchmarks*' --job short --launchCount 2 --warmupCount 6 --iterationCount 15 --exporters json
+```
+
+All 39 independent invocation controls returned the expected work counts.
+Each timed operation executes a script through RunAsync with an immediately
+completing host, at the unchanged 1 GiB memory/50 million step defaults. Guest
+script compilation and host fixture seeding occur outside timing. Regex subject
+construction and initial pattern compilation occur inside the timed script;
+the fresh-compilation case also purges and recompiles on every loop iteration.
+No other benchmark ran concurrently, though lightweight inspection and two
+short tool builds occurred during measurement. These results are machine/SDK/GC
+dependent; comparisons with older environments do not establish a regression.
+
+Means and 99.9% confidence margins below are milliseconds. Allocated/op is
+cumulative managed allocation in MiB (1,048,576 bytes), measured separately
+from governor-accounted live memory and RSS. It does not establish peak heap
+usage or a leak. Raw BenchmarkDotNet JSON retains measurement and outlier data.
+
+CSV uses six-column UTF-8 input of 48 bytes per row plus an 18-byte header.
+The historical 20K workload remains alongside 1K/10K/100K cases.
+
+| Operation | Rows/iterations | Mean ± margin (ms) | Allocated/op (MiB) |
+| --- | ---: | ---: | ---: |
+| DictReader retain | 1,000 | 4.920 ± 0.113 | 3.39 |
+| DictReader early break | 1,000 | 0.116 ± 0.002 | 0.10 |
+| DictReader discard | 1,000 | 4.426 ± 0.288 | 3.13 |
+| DictReader retain | 10,000 | 85.956 ± 4.082 | 33.83 |
+| DictReader early break | 10,000 | 0.150 ± 0.013 | 0.10 |
+| DictReader discard | 10,000 | 51.787 ± 1.964 | 29.95 |
+| DictReader retain | 20,000 | 136.011 ± 10.890 | 67.41 |
+| DictReader early break | 20,000 | 0.115 ± 0.002 | 0.10 |
+| DictReader discard | 20,000 | 90.825 ± 4.031 | 58.79 |
+| DictReader retain | 100,000 | 1362.934 ± 36.329 | 326.46 |
+| DictReader early break | 100,000 | 0.114 ± 0.002 | 0.10 |
+| DictReader discard | 100,000 | 492.089 ± 9.668 | 287.07 |
+
+Early break allocates about 0.10 MiB at every fixture size. The 10K timing
+is higher than the other early-break cases; these samples do not establish
+strictly size-independent latency. Full-scan allocations grow approximately
+with row count, with retention and collection also affecting elapsed time.
+
+Text fixtures contain twelve-byte lines. XML input contains one 24-byte element
+per row plus a 13-byte root wrapper. Long-record iteration reads the entire XML
+as one line; ElementTree retains its children.
+
+| Operation | Rows/iterations | Mean ± margin (ms) | Allocated/op (MiB) |
+| --- | ---: | ---: | ---: |
+| Text discard | 1,000 | 0.907 ± 0.015 | 0.79 |
+| Text retain | 1,000 | 0.488 ± 0.017 | 0.31 |
+| Long XML record | 1,000 | 0.139 ± 0.002 | 0.23 |
+| ElementTree retain | 1,000 | 5.459 ± 0.159 | 3.22 |
+| Text discard | 10,000 | 9.936 ± 0.265 | 7.53 |
+| Text retain | 10,000 | 6.903 ± 0.200 | 2.93 |
+| Long XML record | 10,000 | 0.759 ± 0.032 | 1.89 |
+| ElementTree retain | 10,000 | 82.826 ± 3.814 | 31.76 |
+| Text discard | 100,000 | 95.672 ± 2.501 | 73.12 |
+| Text retain | 100,000 | 76.708 ± 4.357 | 28.21 |
+| Long XML record | 100,000 | 6.992 ± 0.147 | 18.45 |
+| ElementTree retain | 100,000 | 1038.660 ± 21.459 | 295.92 |
+
+Regex uses `(a)(b)` and PythonRe 0.2.0. Bulk scans use `ab ` repeated
+N times (3N ASCII bytes). Compilation comparisons perform N searches over
+`ab`, separating one compiled pattern, per-run cache hits and repeated actual
+compilation. Unnamed captures keep this cost investigation independent of the
+pending capture-numbering correction.
+
+| Operation | Rows/iterations | Mean ± margin (ms) | Allocated/op (MiB) |
+| --- | ---: | ---: | ---: |
+| finditer discard | 1,000 | 3.599 ± 0.175 | 7.97 |
+| findall retain tuples | 1,000 | 4.305 ± 0.172 | 18.79 |
+| Compiled pattern reuse | 1,000 | 3.893 ± 0.083 | 3.70 |
+| Compile cache hits | 1,000 | 4.295 ± 0.042 | 4.04 |
+| Purge and compile each iteration | 1,000 | 239.188 ± 6.091 | 173.32 |
+| finditer discard | 5,000 | 28.303 ± 0.402 | 153.39 |
+| findall retain tuples | 5,000 | 44.101 ± 1.076 | 436.41 |
+| Compiled pattern reuse | 5,000 | 20.105 ± 0.654 | 17.59 |
+| Compile cache hits | 5,000 | 24.293 ± 0.436 | 19.34 |
+| Purge and compile each iteration | 5,000 | 1112.905 ± 30.099 | 866.42 |
+| finditer discard | 10,000 | 83.097 ± 3.213 | 592.66 |
+| findall retain tuples | 10,000 | 165.793 ± 3.110 | 1730.91 |
+| Compiled pattern reuse | 10,000 | 40.377 ± 1.768 | 34.75 |
+| Compile cache hits | 10,000 | 41.031 ± 0.894 | 38.26 |
+| Purge and compile each iteration | 10,000 | 2269.215 ± 47.189 | 1732.80 |
+
+Bulk regex allocation grows near quadratically in this finite series:
+finditer reaches 592.66 MiB and findall 1,730.91 MiB at 10K matches. The published
+backend discovers an eager detailed-match array, so discarded guest matches
+do not demonstrate lazy discovery. Cache hits reduce compilation cost but
+leave this bulk-scan cost unresolved.
+
+Separate public-boundary cancellation diagnostics cover both modes, the first
+finditer match and full findall materialization at 10K matches. Four positive
+controls return the expected counts. Four cancellations before the call allocate
+under 6 KiB after the setup checkpoint; four cancellations triggered after at
+least 16 MiB of bulk allocation still incur at least 99.6% of their matching
+positive-control allocation before failing explicitly. These are process-wide
+diagnostics with a monitoring task and a finite watchdog, not throughput or
+latency acceptance tests. Current backend scratch allocation, work budgeting,
+lazy discovery and live cancellation require a backend/API repair. Existing
+ownership, catchable budget-failure and bounded-read controls remain separate.
 
 ZIP archive scaling benchmarks live in `ZipArchiveBenchmarks.cs` (200 mixed
 STORED/DEFLATED entries; append adds 20). Release results below (full
