@@ -310,7 +310,7 @@ internal sealed partial class LythonRuntime
 
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 var (operation, encodingMode, errors, newline, binary) = ParsePathOpenArgumentsAsync(BindArguments(arguments, span), span, context, false).GetAwaiter().GetResult();
                 if (binary) return ExecutionContext.BinaryFileHandle.OpenAsync(path, operation, context, span, false).GetAwaiter().GetResult();
                 return OpenTextFile(path, operation, encodingMode, errors, newline, context);
@@ -318,7 +318,7 @@ internal sealed partial class LythonRuntime
 
             public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 var (operation, encodingMode, errors, newline, binary) = await ParsePathOpenArgumentsAsync(BindArguments(arguments, span), span, context, true).ConfigureAwait(false);
                 if (binary) return await ExecutionContext.BinaryFileHandle.OpenAsync(path, operation, context, span, true).ConfigureAwait(false);
                 return operation switch
@@ -518,7 +518,7 @@ internal sealed partial class LythonRuntime
             context.RegisterHostCall(span);
             foreach (var name in context.HostListDir(root.AsString(), span))
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 var child = OwnPathResult(PathOps.Join(root, PyString.FromString(name)), root, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
                 context.RegisterHostCall(span);
                 var stat = context.HostStat(child.Value.AsString(), span);
@@ -545,7 +545,7 @@ internal sealed partial class LythonRuntime
             var names = await context.HostListDirAsync(root.AsString(), span).ConfigureAwait(false);
             foreach (var name in names)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 var child = OwnPathResult(PathOps.Join(root, PyString.FromString(name)), root, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
                 context.RegisterHostCall(span);
                 var stat = await context.HostStatAsync(child.Value.AsString(), span).ConfigureAwait(false);

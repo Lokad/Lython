@@ -182,7 +182,7 @@ internal sealed partial class LythonRuntime
             var items = new object[parts.Length];
             for (var i = 0; i < parts.Length; i++)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 var part = parts[i];
                 items[i] = part.ValueText is null ? PyNone.Instance : CreateString(part.ValueText, context, span);
             }
@@ -346,7 +346,7 @@ internal sealed partial class LythonRuntime
 
         private static string EvaluateRegexReplacement(RegexReplacementState state, Utf8PythonDetailedMatchData match)
         {
-            state.Context.CheckExecutionBudget(state.Span);
+            state.Context.CheckExecution(state.Span);
             var matchObject = CreateMatchObject(state.Pattern, state.Range, match, state.Context, state.Span);
             var replacementValue = InvokeCallableTarget(
                 state.Replacement,

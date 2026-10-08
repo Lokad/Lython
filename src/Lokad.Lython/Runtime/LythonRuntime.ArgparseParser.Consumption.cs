@@ -318,7 +318,7 @@ internal sealed partial class LythonRuntime
 
                     if ((++scanned & 63) == 0)
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                     }
                 }
                 if (!matched)

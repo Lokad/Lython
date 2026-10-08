@@ -39,7 +39,7 @@ internal sealed partial class LythonRuntime
                 }
                 if (_context is not null && (++_readsSinceCheck & 1023) == 0)
                 {
-                    _context.CheckExecutionBudget(_span);
+                    _context.CheckExecution(_span);
                 }
             }
             return moved;

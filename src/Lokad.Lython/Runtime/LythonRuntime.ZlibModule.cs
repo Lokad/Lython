@@ -94,7 +94,7 @@ internal sealed partial class LythonRuntime
                     ? await IndexValue(bound.Values[2], _compress ? int.MinValue : long.MinValue,
                         _compress ? int.MaxValue : long.MaxValue, context, span, asynchronous).ConfigureAwait(false)
                     : new BigInteger(_compress ? 15 : 16384);
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 if (_compress)
                 {
                     if (first < -1 || first > 9) throw Error("Bad compression level", span);
@@ -144,7 +144,7 @@ internal sealed partial class LythonRuntime
         internal static PyBytes CompressBytes(ReadOnlyMemory<byte> input, int level,
             ExecutionContext context, LythonSourceSpan span)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (input.IsEmpty) return CompressEmpty(level, context, span);
             using var scratch = context.MemoryGovernor.ReserveTemporary(CompressionScratchBytes, span);
             var maximumLength = (long)input.Length + (input.Length >> 12) + (input.Length >> 14) + (input.Length >> 25) + 13;
@@ -157,11 +157,11 @@ internal sealed partial class LythonRuntime
                 {
                     for (var offset = 0; offset < input.Length; offset += Math.Min(ChunkBytes, input.Length - offset))
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                         compressor.Write(input.Span.Slice(offset, Math.Min(ChunkBytes, input.Length - offset)));
                     }
                 }
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 return Publish(output, context, span);
             }
             catch (InvalidDataException ex) { throw Error(ex.Message, span, ex); }
@@ -190,7 +190,7 @@ internal sealed partial class LythonRuntime
 
         internal static PyBytes DecompressBytes(ReadOnlyMemory<byte> input, ExecutionContext context, LythonSourceSpan span)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (input.Length < 2) throw Error("incomplete or truncated stream", span);
             var cmf = input.Span[0];
             var flg = input.Span[1];
@@ -209,7 +209,7 @@ internal sealed partial class LythonRuntime
                 {
                     while (true)
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                         var count = inflater.Read(buffer);
                         if (count == 0) break;
                         if (count > int.MaxValue - output.Length) throw RuntimeErrors.Memory("zlib decompressed output is too large", span);
@@ -224,7 +224,7 @@ internal sealed partial class LythonRuntime
                 if (input.Length - cursor.BytePosition < 4) throw Error("incomplete or truncated stream", span);
                 var checksum = BinaryPrimitives.ReadUInt32BigEndian(input.Span.Slice(cursor.BytePosition, 4));
                 if (((b << 16) | a) != checksum) throw Error("incorrect data check", span);
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 // Python's convenience function returns the first stream and
                 // ignores unused trailing input, including a second zlib stream.
                 return Publish(output, context, span);

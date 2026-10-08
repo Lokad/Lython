@@ -51,7 +51,7 @@ internal sealed partial class LythonRuntime
             var includeQuotes = asynchronous
                 ? await IsTruthyAsync(quote, context, span).ConfigureAwait(false)
                 : IsTruthy(quote, context, span);
-            context.Services.CheckExecutionBudget(span);
+            context.Services.CheckExecution(span);
             if (includeQuotes)
             {
                 result = await ReplaceAsync(result, DoubleQuote, EscapeMask.DoubleQuote, span, context, asynchronous).ConfigureAwait(false);
@@ -74,7 +74,7 @@ internal sealed partial class LythonRuntime
                     () => ValueTask.FromResult(arguments)).ConfigureAwait(false)
                 : InvokeCallableTarget(member, span, span, context, () => arguments);
             context.Services.State.CallTemporaries.TrackCallResult(result, span);
-            context.Services.CheckExecutionBudget(span);
+            context.Services.CheckExecution(span);
             return result;
         }
 
@@ -102,7 +102,7 @@ internal sealed partial class LythonRuntime
                 {
                     if (cursor >= nextCheck)
                     {
-                        services.CheckExecutionBudget(span);
+                        services.CheckExecution(span);
                         nextCheck = (long)cursor + 1024;
                     }
                     Rune.DecodeFromUtf8(source[cursor..], out var rune, out var width);

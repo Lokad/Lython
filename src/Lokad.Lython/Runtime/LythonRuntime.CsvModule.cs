@@ -61,7 +61,7 @@ internal sealed partial class LythonRuntime
 
         private object Reader(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
 
             var options = GetOptions(arguments, CsvOptionArgumentLayout.Standard, span);
             var records = new CsvRecordSource(arguments[0], options, span, context);
@@ -70,7 +70,7 @@ internal sealed partial class LythonRuntime
 
         private object DictReader(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length < 1)
             {
                 throw new LythonRuntimeException("TypeError", "csv.DictReader(f[, fieldnames][, restkey][, restval][, ...]) expects at least one argument.", span);
@@ -114,7 +114,7 @@ internal sealed partial class LythonRuntime
         // Plain reader construction pulls nothing, so it needs no twin.
         private async ValueTask<object> DictReaderAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length < 1)
             {
                 throw new LythonRuntimeException("TypeError", "csv.DictReader(f[, fieldnames][, restkey][, restval][, ...]) expects at least one argument.", span);
@@ -156,7 +156,7 @@ internal sealed partial class LythonRuntime
 
         private object Writer(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
 
             var write = arguments.Length == 0 || arguments[0] is PyNone
                 ? null : ResolveWrite(arguments[0], span, context);
@@ -166,7 +166,7 @@ internal sealed partial class LythonRuntime
 
         private async ValueTask<object> WriterAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var write = arguments.Length == 0 || arguments[0] is PyNone
                 ? null : await ResolveWriteAsync(arguments[0], span, context).ConfigureAwait(false);
             var options = GetOptions(arguments, CsvOptionArgumentLayout.Standard, span);
@@ -175,7 +175,7 @@ internal sealed partial class LythonRuntime
 
         private object DictWriter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length < 2)
             {
                 throw new LythonRuntimeException("TypeError", "csv.DictWriter(fileobj, fieldnames, ...) expects a text writer and field names.", span);
@@ -188,7 +188,7 @@ internal sealed partial class LythonRuntime
 
         private async ValueTask<object> DictWriterAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length < 2)
             {
                 throw new LythonRuntimeException("TypeError", "csv.DictWriter(fileobj, fieldnames, ...) expects a text writer and field names.", span);
@@ -663,7 +663,7 @@ internal sealed partial class LythonRuntime
                 current = _cursor.Current;
             }
 
-            _context.CheckExecutionBudget(_span);
+            _context.CheckExecution(_span);
             if (!PyStringOps.TryAsString(current, out var line))
             {
                 throw new LythonRuntimeException("TypeError", "csv.reader(csvfile) expects an iterable of strings.", _span);
@@ -740,7 +740,7 @@ internal sealed partial class LythonRuntime
             // Parsing, charging and reclamation are synchronous; only line
             // acquisition awaits, so the shared parser sees an identical call
             // sequence either way.
-            _context.CheckExecutionBudget(_span);
+            _context.CheckExecution(_span);
             if (!PyStringOps.TryAsString(current, out var line))
             {
                 throw new LythonRuntimeException("TypeError", "csv.reader(csvfile) expects an iterable of strings.", _span);

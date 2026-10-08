@@ -41,7 +41,7 @@ internal sealed class PyBatchedIterator : PyIteratorBase
             return false;
         }
 
-        _context.CheckExecutionBudget(_span);
+        _context.CheckExecution(_span);
         var buffer = Array.Empty<object>();
         var count = 0;
         while (count < _size && _source.TryMoveNext(out var current))
@@ -57,7 +57,7 @@ internal sealed class PyBatchedIterator : PyIteratorBase
             _context.ObserveCollectionCount(count, _span);
             if ((count & 63) == 0)
             {
-                _context.CheckExecutionBudget(_span);
+                _context.CheckExecution(_span);
             }
         }
 
@@ -88,7 +88,7 @@ internal sealed class PyBatchedIterator : PyIteratorBase
             return PyIterationResult.End;
         }
 
-        _context.CheckExecutionBudget(_span);
+        _context.CheckExecution(_span);
         var buffer = Array.Empty<object>();
         var count = 0;
         while (count < _size)
@@ -110,7 +110,7 @@ internal sealed class PyBatchedIterator : PyIteratorBase
             _context.ObserveCollectionCount(count, _span);
             if ((count & 63) == 0)
             {
-                _context.CheckExecutionBudget(_span);
+                _context.CheckExecution(_span);
             }
         }
 

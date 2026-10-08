@@ -293,7 +293,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length == 0 || arguments[0].IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", "functools.partial(func, ...) expects the first argument to be callable.", span);
@@ -390,7 +390,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length == 0 || arguments[0].IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", "functools.partialmethod(func, ...) expects the first argument to be callable.", span);
@@ -424,7 +424,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var parsed = ParseUpdateWrapperArguments(arguments, span);
             if (parsed.Wrapper is not IPyMutableDynamicAttributes mutableWrapper || parsed.Wrapped is null)
             {
@@ -454,7 +454,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length == 0)
             {
                 throw new LythonRuntimeException("TypeError", "functools.wraps(wrapped[, ...]) expects at least the wrapped callable.", span);

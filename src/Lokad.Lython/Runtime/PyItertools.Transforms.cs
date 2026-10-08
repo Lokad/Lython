@@ -33,7 +33,7 @@ internal sealed class PyAccumulateIterator : PyIteratorBase
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
-        _context.CheckExecutionBudget(_span);
+        _context.CheckExecution(_span);
         if (!_started)
         {
             _started = true;
@@ -71,7 +71,7 @@ internal sealed class PyAccumulateIterator : PyIteratorBase
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
-        _context.CheckExecutionBudget(_span);
+        _context.CheckExecution(_span);
         if (!_started)
         {
             _started = true;
@@ -194,7 +194,7 @@ internal sealed class PyPredicateIterator : PyIteratorBase
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
-        _context.CheckExecutionBudget(_span);
+        _context.CheckExecution(_span);
         if (_done)
         {
             value = PyNone.Instance;
@@ -245,7 +245,7 @@ internal sealed class PyPredicateIterator : PyIteratorBase
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
-        _context.CheckExecutionBudget(_span);
+        _context.CheckExecution(_span);
         if (_done)
         {
             return PyIterationResult.End;
@@ -336,7 +336,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
-        _context.CheckExecutionBudget(_span);
+        _context.CheckExecution(_span);
         if (!_source.TryMoveNext(out var current))
         {
             value = PyNone.Instance;
@@ -363,7 +363,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
             _context.ObserveCollectionCount(collected.Count, _span);
             if ((collected.Count & 63) == 0)
             {
-                _context.CheckExecutionBudget(_span);
+                _context.CheckExecution(_span);
             }
             if (collected.Capacity > chargedCapacity)
             {
@@ -380,7 +380,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
-        _context.CheckExecutionBudget(_span);
+        _context.CheckExecution(_span);
         var (hasValue, current) = await _source.TryMoveNextAsync().ConfigureAwait(false);
         if (!hasValue)
         {

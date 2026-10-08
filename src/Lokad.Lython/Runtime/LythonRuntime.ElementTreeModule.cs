@@ -161,7 +161,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("NotImplementedError", "fromstring only supports parser=None.", span);
             if (args[0] is not PyString and not PyBytes)
                 throw RuntimeErrors.Type("fromstring text must be str or bytes", span);
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             using var graph = new GraphConstruction(context, span);
             // No intermediate DOM. Reserve a conservative bound for the reader's
             // UTF-16 input/token storage, name table, namespace stack and buffers.
@@ -200,7 +200,7 @@ internal sealed partial class LythonRuntime
             {
                 while (reader.Read())
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                     switch (reader.NodeType)
                     {
                         case XmlNodeType.Element:
@@ -212,7 +212,7 @@ internal sealed partial class LythonRuntime
                                 var attributeCount = 0;
                                 do
                                 {
-                                    context.CheckExecutionBudget(span);
+                                    context.CheckExecution(span);
                                     if (reader.NamespaceURI == "http://www.w3.org/2000/xmlns/") continue;
                                     context.ObserveCollectionCount(++attributeCount, span);
                                     attributes.SetItem(graph.Text(ClarkName(reader.NamespaceURI, reader.LocalName)),
@@ -344,7 +344,7 @@ internal sealed partial class LythonRuntime
                 }
                 if (offset != 0 && mode == TextEncodingMode.Utf8Bom) mode = TextEncodingMode.Utf8;
             }
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var decoded = graph.Decode(bytes, mode);
             if (IsUtf16Encoding(mode) && DeclaredEncoding(decoded.AsString().TrimStart('\ufeff')) is { } declared)
             {
@@ -465,7 +465,7 @@ internal sealed partial class LythonRuntime
                     {
                         foreach (Element child in parent.Children)
                         {
-                            context.CheckExecutionBudget(span);
+                            context.CheckExecution(span);
                             if (step != "*" && !child.Tag.AsString().Equals(step, StringComparison.Ordinal)) continue;
                             context.ObserveCollectionCount(next.Count + 1, span);
                             if (next.Count == next.Capacity)
@@ -490,7 +490,7 @@ internal sealed partial class LythonRuntime
             var inClark = false;
             for (var index = 0; index <= path.Length; index++)
             {
-                if ((index & 1023) == 0) context.CheckExecutionBudget(span);
+                if ((index & 1023) == 0) context.CheckExecution(span);
                 if (index < path.Length)
                 {
                     var character = path[index];

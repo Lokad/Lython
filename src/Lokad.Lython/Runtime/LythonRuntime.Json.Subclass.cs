@@ -198,7 +198,7 @@ internal sealed partial class LythonRuntime
 
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 if (_kind == JsonBaseKind.Encoder)
                 {
                     AttachEncoderPeer(_instance, JsonEncoderClass.BindEncoderOptions(arguments, span, context));

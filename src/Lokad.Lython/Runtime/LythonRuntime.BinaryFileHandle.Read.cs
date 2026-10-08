@@ -11,7 +11,7 @@ internal sealed partial class LythonRuntime
             private async ValueTask RefillAsync(LythonSourceSpan? span, bool asynchronous)
             {
                 if (_windowConsumed < _windowLength || _eof) return;
-                _context.CheckExecutionBudget(span);
+                _context.CheckExecution(span);
                 if (_window.Length == 0)
                 {
                     _context.MemoryGovernor.Reserve(_windowBytes, span);
@@ -52,7 +52,7 @@ internal sealed partial class LythonRuntime
                     {
                         await RefillAsync(span, asynchronous).ConfigureAwait(false);
                         if (_eof) break;
-                        _context.CheckExecutionBudget(span);
+                        _context.CheckExecution(span);
                         var count = _windowLength - _windowConsumed;
                         if (size > 0) count = (int)Math.Min(count, size);
                         var ended = false;
@@ -60,7 +60,7 @@ internal sealed partial class LythonRuntime
                         {
                             for (var index = 0; index < count; index++)
                             {
-                                if ((index & 1023) == 0) _context.CheckExecutionBudget(span);
+                                if ((index & 1023) == 0) _context.CheckExecution(span);
                                 if (_window[_windowConsumed + index] == 10)
                                 {
                                     count = index + 1;

@@ -2,9 +2,9 @@ using System.Runtime.InteropServices;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class ExecutionBudgetGuards
+internal sealed class ExecutionGuards
 {
-    public ExecutionBudgetGuards(ExecutionState state)
+    public ExecutionGuards(ExecutionState state)
     {
         State = state;
     }
@@ -13,7 +13,7 @@ internal sealed class ExecutionBudgetGuards
 
     public LythonRuntime.ExecutionLimits Limits => State.Limits;
 
-    public void CheckExecutionBudget(LythonSourceSpan? span)
+    public void CheckExecution(LythonSourceSpan? span)
     {
         Limits.ExecutionStepCount++;
         if ((Limits.ExecutionStepCount & 255) == 0)
@@ -40,7 +40,7 @@ internal sealed class ExecutionBudgetGuards
 
     public void RegisterHostCall(LythonSourceSpan? span)
     {
-        CheckExecutionBudget(span);
+        CheckExecution(span);
 
         Limits.HostCallCount++;
         if (Limits.MaxHostCalls is { } maxHostCalls && Limits.HostCallCount > maxHostCalls)
@@ -51,7 +51,7 @@ internal sealed class ExecutionBudgetGuards
 
     public void EnterFunctionCall(LythonSourceSpan? span)
     {
-        CheckExecutionBudget(span);
+        CheckExecution(span);
         Limits.CurrentRecursionDepth++;
         if (Limits.MaxRecursionDepth is { } maxRecursionDepth &&
             Limits.CurrentRecursionDepth > maxRecursionDepth)
@@ -347,7 +347,7 @@ internal sealed class ExecutionBudgetGuards
 
     public void EnterInterpreterFrame(LythonSourceSpan? span)
     {
-        CheckExecutionBudget(span);
+        CheckExecution(span);
         Limits.CurrentInterpreterDepth++;
         if (Limits.CurrentInterpreterDepth > LythonRuntime.ExecutionLimits.MaxInterpreterDepth)
         {

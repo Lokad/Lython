@@ -97,7 +97,7 @@ internal sealed partial class LythonRuntime
 
             private object GetToken(LythonSourceSpan span)
             {
-                _context.CheckExecutionBudget(span);
+                _context.CheckExecution(span);
                 if (_pushback.First is { } pushed)
                 {
                     _pushback.RemoveFirst();
@@ -132,7 +132,7 @@ internal sealed partial class LythonRuntime
                 // mutate whitespace, quotes, escapes, commenters, and wordchars.
                 while (true)
                 {
-                    _context.CheckExecutionBudget(span);
+                    _context.CheckExecution(span);
                     var next = ReadSymbol();
                     var atEnd = next.Length == 0;
 

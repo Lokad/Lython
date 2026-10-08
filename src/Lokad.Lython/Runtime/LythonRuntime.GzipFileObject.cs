@@ -153,7 +153,7 @@ internal sealed partial class LythonRuntime
             public override void Write(ReadOnlySpan<byte> buffer)
             {
                 if (_discard) return;
-                owner._context.CheckExecutionBudget(owner._creationSpan);
+                owner._context.CheckExecution(owner._creationSpan);
                 owner._output.Append(buffer);
                 owner.Changed();
             }

@@ -59,7 +59,7 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(callSpan);
         try
         {
-            context.CheckExecutionBudget(callSpan);
+            context.CheckExecution(callSpan);
             return RuntimeValue(callable.Invoke(arguments.Expand(), callSpan, context));
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, callSpan, out var translated))
@@ -87,7 +87,7 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(callSpan);
         try
         {
-            context.CheckExecutionBudget(callSpan);
+            context.CheckExecution(callSpan);
             var arguments = await expandArguments().ConfigureAwait(false);
             return RuntimeValue(await callable.InvokeAsync(arguments, callSpan, context).ConfigureAwait(false));
         }
@@ -301,7 +301,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             object result = PreservePresence
                 ? InvokeBoundWithPresence(CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind), span, context)
                 : InvokeBound(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind), span, context);
@@ -311,7 +311,7 @@ internal sealed partial class LythonRuntime
 
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             object result = PreservePresence
                 ? await InvokeBoundWithPresenceAsync(CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind), span, context).ConfigureAwait(false)
                 : await InvokeBoundAsync(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind), span, context).ConfigureAwait(false);
@@ -764,7 +764,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var receiverIndex = -1;
             for (var i = 0; i < arguments.Length; i++)
             {
@@ -926,7 +926,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             foreach (var argument in arguments)
             {
                 if (argument.IsKeyword)
@@ -1113,7 +1113,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             foreach (var argument in arguments)
             {
                 if (argument.IsKeyword)
@@ -1206,7 +1206,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             foreach (var argument in arguments)
             {
                 if (argument.IsKeyword)
@@ -1275,7 +1275,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             foreach (var argument in arguments)
             {
                 if (argument.IsKeyword)
@@ -1350,13 +1350,13 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             return _implementation(arguments, span, context);
         }
 
         public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             return _asyncImplementation is null
                 ? ValueTask.FromResult(_implementation(arguments, span, context))
                 : _asyncImplementation(arguments, span, context);
@@ -2949,7 +2949,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             RejectArguments(arguments, span);
             var result = _implementation(_receiver, span, context);
             context.Services.State.CallTemporaries.TrackCallResult(result, span);
@@ -2958,7 +2958,7 @@ internal sealed partial class LythonRuntime
 
         public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             RejectArguments(arguments, span);
             if (_asyncImplementation is null)
             {
@@ -3024,13 +3024,13 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             return MinMax(arguments, operation, span, context);
         }
 
         public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             return MinMaxAsync(arguments, operation, span, context);
         }
 
@@ -3089,7 +3089,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             return Zip(arguments, span, context);
         }
 
@@ -3162,7 +3162,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var result = (PyDict)Dict(arguments, span, context);
             context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
             return result;
@@ -3170,7 +3170,7 @@ internal sealed partial class LythonRuntime
 
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var result = (PyDict)await DictAsync(arguments, span, context).ConfigureAwait(false);
             context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
             return result;
@@ -3232,13 +3232,13 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             return Open(BindArguments(arguments, span), span, context);
         }
 
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             return await OpenAsync(BindArguments(arguments, span), span, context).ConfigureAwait(false);
         }
 

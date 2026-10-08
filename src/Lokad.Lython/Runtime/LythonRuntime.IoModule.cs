@@ -121,7 +121,7 @@ internal sealed partial class LythonRuntime
 
         private async ValueTask<object> InvokeMemberAsync(string name, object[] args, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             switch (name)
             {
                 case "close": case "__exit__": return Close();

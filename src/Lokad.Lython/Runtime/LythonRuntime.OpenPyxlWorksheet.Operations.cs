@@ -121,7 +121,7 @@ internal sealed partial class LythonRuntime
             {
                 foreach (var pair in dict)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                     SetCellValue(row, ColumnFromAppendKey(pair.Key, span), pair.Value);
                 }
 
@@ -131,7 +131,7 @@ internal sealed partial class LythonRuntime
             var column = 1;
             foreach (var item in ToSequence(arguments[0], span, context))
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 SetCellValue(row, column, item);
                 column++;
             }
@@ -416,7 +416,7 @@ internal sealed partial class LythonRuntime
             var columns = new List<object>();
             for (var column = minColumn; column <= maxColumn; column++)
             {
-                context?.CheckExecutionBudget(span);
+                context?.CheckExecution(span);
                 columns.Add(ColumnTuple(minRow, maxRow, column, valuesOnly, context, span));
             }
 
@@ -429,7 +429,7 @@ internal sealed partial class LythonRuntime
             var rows = new List<object>();
             for (var row = minRow; row <= maxRow; row++)
             {
-                context?.CheckExecutionBudget(span);
+                context?.CheckExecution(span);
                 rows.Add(RowTuple(row, minColumn, maxColumn, valuesOnly, context, span));
             }
 

@@ -54,7 +54,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        context.CheckExecutionBudget(span);
+        context.CheckExecution(span);
         var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context);
         LythonRuntime.ExecutionContext frame;
         try
@@ -91,7 +91,7 @@ internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable
 
     public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        context.CheckExecutionBudget(span);
+        context.CheckExecution(span);
         var boundArguments = LythonRuntime.BindFunctionArguments(arguments, span, _bindingPlan, context);
         LythonRuntime.ExecutionContext frame;
         try

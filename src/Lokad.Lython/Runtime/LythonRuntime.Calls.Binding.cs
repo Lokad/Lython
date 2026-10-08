@@ -987,7 +987,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var boundArguments = BindFunctionArguments(arguments, span, _bindingPlan, context);
 
             ExecutionContext frame;
@@ -1027,7 +1027,7 @@ internal sealed partial class LythonRuntime
 
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var boundArguments = BindFunctionArguments(arguments, span, _bindingPlan, context);
 
             ExecutionContext frame;
@@ -1252,7 +1252,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             for (var i = 0; i < arguments.Length; i++)
             {
                 if (arguments[i].IsKeyword)

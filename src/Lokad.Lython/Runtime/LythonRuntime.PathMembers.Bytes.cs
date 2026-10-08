@@ -34,7 +34,7 @@ internal sealed partial class LythonRuntime
             var copy = new byte[source.Length];
             for (var offset = 0; offset < source.Length; offset += Math.Min(4096, source.Length - offset))
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 var length = Math.Min(4096, source.Length - offset);
                 source.Span.Slice(offset, length).CopyTo(copy.AsSpan(offset, length));
             }
@@ -54,7 +54,7 @@ internal sealed partial class LythonRuntime
             var payload = new byte[bytes.Length];
             for (var offset = 0; offset < bytes.Length; offset += Math.Min(4096, bytes.Length - offset))
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 var length = Math.Min(4096, bytes.Length - offset);
                 bytes.Bytes.Slice(offset, length).CopyTo(payload.AsSpan(offset, length));
             }

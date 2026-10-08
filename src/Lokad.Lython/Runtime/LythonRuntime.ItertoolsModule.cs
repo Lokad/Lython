@@ -61,7 +61,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var positionalCount = 0;
             for (var i = 0; i < arguments.Length; i++)
             {
@@ -129,13 +129,13 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             return _implementation(arguments, span, context);
         }
 
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             return _asyncImplementation is null
                 ? _implementation(arguments, span, context)
                 : await _asyncImplementation(arguments, span, context).ConfigureAwait(false);

@@ -34,7 +34,7 @@ internal sealed class PySequenceIterator : PyIteratorBase
     private async ValueTask<PyIterationResult> AdvanceAsync(bool asynchronous)
     {
         if (_exhausted) return PyIterationResult.End;
-        _context.CheckExecutionBudget(_span);
+        _context.CheckExecution(_span);
         if (_index == long.MaxValue) throw new LythonRuntimeException("OverflowError", "sequence iterator index too large", _span);
         try
         {

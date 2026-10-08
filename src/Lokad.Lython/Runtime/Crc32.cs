@@ -30,7 +30,7 @@ internal static class Crc32
         var crc = uint.MaxValue;
         for (var offset = 0; offset < data.Length; offset += BudgetChunkLength)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var length = Math.Min(BudgetChunkLength, data.Length - offset);
             crc = Update(crc, data.Slice(offset, length));
         }

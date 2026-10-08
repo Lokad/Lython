@@ -357,7 +357,7 @@ internal sealed partial class LythonRuntime
                         WriteRow(writer, ToCsvRow(row, span, context, out var convertedBytes), span, context, convertedBytes);
                         if ((++written & 63) == 0)
                         {
-                            context.CheckExecutionBudget(span);
+                            context.CheckExecution(span);
                         }
                     }
 
@@ -371,7 +371,7 @@ internal sealed partial class LythonRuntime
                         await WriteRowAsync(writer, cells, span, context, convertedBytes).ConfigureAwait(false);
                         if ((++written & 63) == 0)
                         {
-                            context.CheckExecutionBudget(span);
+                            context.CheckExecution(span);
                         }
                     }
 
@@ -771,7 +771,7 @@ internal sealed partial class LythonRuntime
                         CsvWriterMembers.WriteRow(writer.Writer, ToDictCsvRow(writer, known, row, span, context, out var convertedBytes), span, context, convertedBytes);
                         if ((++written & 63) == 0)
                         {
-                            context.CheckExecutionBudget(span);
+                            context.CheckExecution(span);
                         }
                     }
 
@@ -786,7 +786,7 @@ internal sealed partial class LythonRuntime
                         await CsvWriterMembers.WriteRowAsync(writer.Writer, cells, span, context, convertedBytes).ConfigureAwait(false);
                         if ((++written & 63) == 0)
                         {
-                            context.CheckExecutionBudget(span);
+                            context.CheckExecution(span);
                         }
                     }
 

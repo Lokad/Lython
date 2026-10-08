@@ -4240,7 +4240,7 @@ internal sealed partial class LythonRuntime
 
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 SplitUpdateArguments(arguments, span, out var source, out var hasSource, out var keywordItems);
 
                 if (hasSource)
@@ -4261,7 +4261,7 @@ internal sealed partial class LythonRuntime
 
             public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 SplitUpdateArguments(arguments, span, out var source, out var hasSource, out var keywordItems);
 
                 if (hasSource)

@@ -366,7 +366,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             {
                 if ((++work & 63) == 0)
                 {
-                    context.CheckExecutionBudget(useSpan);
+                    context.CheckExecution(useSpan);
                 }
 
                 var entry = candidates[i];
@@ -392,7 +392,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         {
             if ((++work & 63) == 0)
             {
-                context.CheckExecutionBudget(useSpan);
+                context.CheckExecution(useSpan);
             }
 
             if (PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash)
@@ -412,7 +412,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                 // The hit entry already consumed its budget check above.
                 if (i > storeHit && (++work & 63) == 0)
                 {
-                    context.CheckExecutionBudget(useSpan);
+                    context.CheckExecution(useSpan);
                 }
 
                 var pair = storeSnapshot[i];
@@ -451,7 +451,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             // null on context-free paths (identity fast path only then).
             if ((++work & 63) == 0 && context is not null && useSpan is not null)
             {
-                context.CheckExecutionBudget(useSpan);
+                context.CheckExecution(useSpan);
             }
 
             var entry = candidates[i];
@@ -538,7 +538,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             {
                 if ((++work & 63) == 0)
                 {
-                    context.CheckExecutionBudget(useSpan);
+                    context.CheckExecution(useSpan);
                 }
 
                 var entry = candidates[i];
@@ -560,7 +560,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         {
             if ((++work & 63) == 0)
             {
-                context.CheckExecutionBudget(useSpan);
+                context.CheckExecution(useSpan);
             }
 
             if (PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash)
@@ -580,7 +580,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                 // The hit entry already consumed its budget check above.
                 if (i > storeHit && (++work & 63) == 0)
                 {
-                    context.CheckExecutionBudget(useSpan);
+                    context.CheckExecution(useSpan);
                 }
 
                 var pair = storeSnapshot[i];
@@ -641,7 +641,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             // null on context-free paths (identity fast path only then).
             if ((++work & 63) == 0 && context is not null && useSpan is not null)
             {
-                context.CheckExecutionBudget(useSpan);
+                context.CheckExecution(useSpan);
             }
 
             var entry = candidates[i];
@@ -724,7 +724,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             {
                 if ((++work & 63) == 0)
                 {
-                    context.CheckExecutionBudget(useSpan);
+                    context.CheckExecution(useSpan);
                 }
 
                 var entry = candidates[i];
@@ -743,7 +743,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         {
             if ((++work & 63) == 0)
             {
-                context.CheckExecutionBudget(useSpan);
+                context.CheckExecution(useSpan);
             }
 
             if (PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash)
@@ -762,7 +762,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             {
                 if (i > storeHit && (++work & 63) == 0)
                 {
-                    context.CheckExecutionBudget(useSpan);
+                    context.CheckExecution(useSpan);
                 }
 
                 var pair = storeSnapshot[i];
@@ -877,7 +877,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             {
                 if ((++work & 63) == 0)
                 {
-                    context.CheckExecutionBudget(useSpan);
+                    context.CheckExecution(useSpan);
                 }
 
                 var entry = candidates[i];
@@ -896,7 +896,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         {
             if ((++work & 63) == 0)
             {
-                context.CheckExecutionBudget(useSpan);
+                context.CheckExecution(useSpan);
             }
 
             if (PyValueComparer.Instance.GetHashCode(pair.Key) == hash || PyValueComparer.Instance.GetHashCode(pair.Key) == structuralHash)
@@ -915,7 +915,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             {
                 if (i > storeHit && (++work & 63) == 0)
                 {
-                    context.CheckExecutionBudget(useSpan);
+                    context.CheckExecution(useSpan);
                 }
 
                 var pair = storeSnapshot[i];

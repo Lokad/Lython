@@ -289,7 +289,7 @@ internal static class PyStructuralGuard
             return;
         }
 
-        context.CheckExecutionBudget(t_ambientSpan);
+        context.CheckExecution(t_ambientSpan);
     }
 
     internal static void NoteWork(LythonRuntime.ExecutionContext? explicitContext, LythonSourceSpan? explicitSpan)
@@ -306,7 +306,7 @@ internal static class PyStructuralGuard
             return;
         }
 
-        context.CheckExecutionBudget(explicitSpan ?? t_ambientSpan);
+        context.CheckExecution(explicitSpan ?? t_ambientSpan);
     }
 
     internal static void NoteWork(StructuralGuardState state, LythonRuntime.ExecutionContext? explicitContext, LythonSourceSpan? explicitSpan)
@@ -323,7 +323,7 @@ internal static class PyStructuralGuard
             return;
         }
 
-        context.CheckExecutionBudget(explicitSpan ?? t_ambientSpan);
+        context.CheckExecution(explicitSpan ?? t_ambientSpan);
     }
 
     // Test hook: thread-static depth for sync paths (async pair tracking lives

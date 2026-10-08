@@ -198,7 +198,7 @@ internal sealed partial class LythonRuntime
                 context.ObserveCollectionCount(counts.Count, span);
                 if ((counts.Count & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -264,7 +264,7 @@ internal sealed partial class LythonRuntime
                 result[drawn] = RuntimeValue(getAt(MapCountedPosition(cumulative, picked)));
                 if (((drawn + 1) & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -340,7 +340,7 @@ internal sealed partial class LythonRuntime
                 context.ObserveCollectionCount(result.Count, span);
                 if ((result.Count & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -463,7 +463,7 @@ internal sealed partial class LythonRuntime
                 result[drawn] = RuntimeValue(getAt(picked));
                 if (((drawn + 1) & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 

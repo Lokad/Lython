@@ -66,7 +66,7 @@ internal sealed class PyCallableSentinelIterator : PyIteratorBase
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
-        _context.CheckExecutionBudget(_span);
+        _context.CheckExecution(_span);
         var result = LythonRuntime.RuntimeValue(_callable.Invoke([], _span, _context));
         if (PyEquality.AreEqual(result, _sentinel))
         {
@@ -80,7 +80,7 @@ internal sealed class PyCallableSentinelIterator : PyIteratorBase
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
-        _context.CheckExecutionBudget(_span);
+        _context.CheckExecution(_span);
         var result = LythonRuntime.RuntimeValue(await _callable.InvokeAsync([], _span, _context).ConfigureAwait(false));
         if (PyEquality.AreEqual(result, _sentinel))
         {

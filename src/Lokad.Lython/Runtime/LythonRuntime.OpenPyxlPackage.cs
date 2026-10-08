@@ -77,7 +77,7 @@ internal sealed partial class LythonRuntime
                     worksheetPaths.Add(path);
                     var worksheet = new OpenPyxlWorksheet(name) { SourcePath = path };
                     worksheet.AttachMemoryGovernor(context.MemoryGovernor, span);
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                     var sheetDocument = LoadWorksheetCells(
                         session,
                         path,
@@ -147,7 +147,7 @@ internal sealed partial class LythonRuntime
             AddUnsupportedWorkbookRelationshipFeatures(session, unsupported, context, span);
             foreach (var worksheetPath in worksheetPaths)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 AddUnsupportedWorksheetRelationshipFeatures(session, worksheetPath, unsupported, context, span);
             }
 
@@ -195,7 +195,7 @@ internal sealed partial class LythonRuntime
             {
                 if ((++scanned & (ArchiveBudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 var name = NormalizePackagePartName(entry.FullName);
@@ -311,7 +311,7 @@ internal sealed partial class LythonRuntime
             {
                 if ((++scanned & (ArchiveBudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 if (IsRelationshipType(relationship, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/externalLink"))
@@ -385,7 +385,7 @@ internal sealed partial class LythonRuntime
 
                 for (var i = 0; i < workbook.Worksheets.Count; i++)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                     reservation.Grow(EstimateWorksheetOutputBytes(workbook.Worksheets[i]), span);
                     var worksheetPath = $"xl/worksheets/sheet{i + 1}.xml";
                     var worksheetRelationshipPlan = CreateWorksheetRelationshipPlan(workbook.Worksheets[i]);
@@ -479,7 +479,7 @@ internal sealed partial class LythonRuntime
                 {
                     if ((index & 63) == 0)
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                     }
 
                     var entry = directory.Entries[index];
@@ -530,7 +530,7 @@ internal sealed partial class LythonRuntime
                 crc = Crc32.Update(crc, result.AsSpan(offset, read));
 
                 offset += read;
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
             }
 
             // A well-formed entry ends exactly at its declared length; trailing

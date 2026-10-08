@@ -157,7 +157,7 @@ internal sealed partial class LythonRuntime
             context.ObserveCollectionCount(items.Count, span);
             if ((items.Count & 63) == 0)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
             }
         }
 

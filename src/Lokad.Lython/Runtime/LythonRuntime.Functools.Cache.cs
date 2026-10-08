@@ -75,7 +75,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             // N08: explicit key ownership (no global-delta inference, which an
             // exhaustion sweep can perturb through unrelated commitments). The
             // tuple commits at construction; hits and disabled caches release
@@ -119,7 +119,7 @@ internal sealed partial class LythonRuntime
         // dispatch has no async twin, like the N12 module tables).
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var key = BuildCacheKey(arguments, _keyMode, context, span, out var keyCharge);
             if (_maxSize != 0 && _cache.TryGetValue(key, context, span, out var cached))
             {
@@ -367,7 +367,7 @@ internal sealed partial class LythonRuntime
 
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 if (arguments.Length != 0)
                 {
                     throw new LythonRuntimeException("TypeError", "cache_info() expects no arguments.", span);
@@ -393,7 +393,7 @@ internal sealed partial class LythonRuntime
 
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 if (arguments.Length != 0)
                 {
                     throw new LythonRuntimeException("TypeError", "cache_clear() expects no arguments.", span);
@@ -420,7 +420,7 @@ internal sealed partial class LythonRuntime
 
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 if (arguments.Length != 0)
                 {
                     throw new LythonRuntimeException("TypeError", "cache_parameters() expects no arguments.", span);
@@ -447,7 +447,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
             {
                 throw new LythonRuntimeException("TypeError", "functools.cached_property(func) expects one callable argument.", span);

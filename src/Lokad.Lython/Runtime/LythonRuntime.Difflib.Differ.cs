@@ -123,7 +123,7 @@ internal sealed partial class LythonRuntime
                 {
                     if ((++gridWork & (BudgetCheckInterval - 1)) == 0)
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                     }
 
                     var ai = a[i];

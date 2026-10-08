@@ -45,7 +45,7 @@ internal sealed partial class LythonRuntime
             if (_position > Array.MaxLength - bytes.Length)
                 throw RuntimeErrors.Memory("BytesIO buffer exceeds supported storage size", span);
             var end = (int)(_position + bytes.Length);
-            _services.CheckExecutionBudget(span);
+            _services.CheckExecution(span);
             EnsureCapacity(end, span);
             if (_position > _length) Array.Clear(_buffer, _length, (int)_position - _length);
             bytes.Bytes.CopyTo(_buffer.AsSpan((int)_position));
@@ -81,7 +81,7 @@ internal sealed partial class LythonRuntime
             {
                 for (var index = start; index < end; index++)
                 {
-                    if ((index & 1023) == 0) _services.CheckExecutionBudget(span);
+                    if ((index & 1023) == 0) _services.CheckExecution(span);
                     if (_buffer[index] == (byte)'\n') { end = index + 1; break; }
                 }
             }

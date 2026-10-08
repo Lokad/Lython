@@ -333,7 +333,7 @@ internal sealed class PyGenericAlias : IPyDynamicAttributes, IPySubscriptableVal
             if (!union) { builder.AppendString(RenderArgument(Origin, context)); builder.Append((byte)'['); }
             for (var i = 0; i < Arguments.Count; i++)
             {
-                context.Context.CheckExecutionBudget(AllocationSpan);
+                context.Context.CheckExecution(AllocationSpan);
                 if (i != 0) builder.AppendAscii(union ? " | " : ", ");
                 builder.AppendString(union && ReferenceEquals(Arguments[i], PyType.NoneType) ? "None" : RenderArgument(Arguments[i], context));
             }

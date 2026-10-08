@@ -141,7 +141,7 @@ internal static class ZipRecordWriter
         {
             if ((preservedIndex & 63) == 0)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
             }
 
             var source = preserved[preservedIndex];
@@ -164,7 +164,7 @@ internal static class ZipRecordWriter
         {
             if ((index++ & 63) == 0)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
             }
 
             var crc = Crc32.Compute(entry.Data, context, span);
@@ -202,7 +202,7 @@ internal static class ZipRecordWriter
             {
                 if ((i & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 centralOffsets[i] = offset;
@@ -234,7 +234,7 @@ internal static class ZipRecordWriter
             {
                 if ((i & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 AppendCentralEntry(directory, layout[i], results[i], centralOffsets[i], entryZip64[i] ? MergeZip64Extra(layout[i].Extra, layout[i].UncompressedSize, results[i].CompressedSize, centralOffsets[i], span) : layout[i].Extra, entryZip64[i]);
@@ -263,7 +263,7 @@ internal static class ZipRecordWriter
                 {
                     if ((i & 63) == 0)
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                     }
 
                     output.Append(LocalHeader(layout[i], results[i].Crc, layout[i].CompressedPayload.Length, entryZip64[i] ? MergeZip64Extra(layout[i].Extra, layout[i].UncompressedSize, (ulong)layout[i].CompressedPayload.Length, centralOffsets[i], span) : [], entryZip64[i], centralOffsets[i]));

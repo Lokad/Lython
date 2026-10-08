@@ -62,7 +62,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var bound = CallBinder.BindNamedArgumentsWithPresence(
                 arguments, span, LythonKnownCallableSignatures.ZipIsZipFile, PythonCallableKind.Builtin);
             var path = ResolveZipPath(bound.Values[0], context, span, "zipfile.is_zipfile()");
@@ -90,7 +90,7 @@ internal sealed partial class LythonRuntime
 
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var bound = CallBinder.BindNamedArgumentsWithPresence(
                 arguments, span, LythonKnownCallableSignatures.ZipIsZipFile, PythonCallableKind.Builtin);
             var path = ResolveZipPath(bound.Values[0], context, span, "zipfile.is_zipfile()");
@@ -171,7 +171,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var bound = CallBinder.BindNamedArgumentsWithPresence(
                 arguments, span, LythonKnownCallableSignatures.ZipInfo, PythonCallableKind.Builtin);
             var filename = bound.Assigned.Length > 0 && bound.Assigned[0]
@@ -250,14 +250,14 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var request = ParseZipFileArguments(arguments, span, context);
             return OpenZipFile(request, context, span);
         }
 
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var request = ParseZipFileArguments(arguments, span, context);
             return await OpenZipFileAsync(request, context, span).ConfigureAwait(false);
         }
@@ -504,7 +504,7 @@ internal sealed partial class LythonRuntime
         {
             if ((i & 63) == 0)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
             }
 
             infos.Add(PyZipInfo.FromEntry(directory.Entries[i], i, context, span));
@@ -642,7 +642,7 @@ internal sealed partial class LythonRuntime
         {
             if ((i & 63) == 0)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
             }
 
             var entry = directory.Entries[i];

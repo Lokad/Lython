@@ -34,7 +34,7 @@ internal sealed partial class LythonRuntime
             {
                 if ((i & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 result *= i;
@@ -60,7 +60,7 @@ internal sealed partial class LythonRuntime
             {
                 if ((++seen & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 result = BigInteger.GreatestCommonDivisor(result, BigInteger.Abs(ExpectInteger(argument, span, context)));
@@ -77,7 +77,7 @@ internal sealed partial class LythonRuntime
             {
                 if ((++seen & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 var value = BigInteger.Abs(ExpectInteger(argument, span, context));
@@ -127,7 +127,7 @@ internal sealed partial class LythonRuntime
             {
                 if ((i & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 result = result * (n - count + i) / i;
@@ -156,7 +156,7 @@ internal sealed partial class LythonRuntime
             {
                 if ((i & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 result *= n - i;
@@ -227,7 +227,7 @@ internal sealed partial class LythonRuntime
                 context.ObserveCollectionCount(differences.Count, span);
                 if ((differences.Count & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -290,7 +290,7 @@ internal sealed partial class LythonRuntime
                 context.ObserveCollectionCount(differences.Count, span);
                 if ((differences.Count & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -628,7 +628,7 @@ internal sealed partial class LythonRuntime
                 context.ObserveCollectionCount(pairs, span);
                 if ((pairs & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -684,7 +684,7 @@ internal sealed partial class LythonRuntime
                 context.ObserveCollectionCount(pairs, span);
                 if ((pairs & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -745,7 +745,7 @@ internal sealed partial class LythonRuntime
             var y = (x + value / x) >> 1;
             while (y < x)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 x = y;
                 y = (x + value / x) >> 1;
             }

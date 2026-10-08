@@ -118,7 +118,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "JSONEncoder.encode() takes exactly one argument (" + arguments.Length + " given).", span);
             }
 
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             return JsonModule.SerializeJsonText(arguments[0], GetDumpOptions(context, span), context, span);
         }
 
@@ -126,7 +126,7 @@ internal sealed partial class LythonRuntime
         {
             if (arguments.Length != 1)
                 throw new LythonRuntimeException("TypeError", "JSONEncoder.encode() takes exactly one argument (" + arguments.Length + " given).", span);
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             return await JsonModule.SerializeJsonTextAsync(arguments[0], GetDumpOptions(context, span), context, span).ConfigureAwait(false);
         }
 
@@ -137,7 +137,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "JSONEncoder.iterencode() takes exactly one argument (" + arguments.Length + " given).", span);
             }
 
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var iterator = new JsonEncodeIterator(arguments[0], GetDumpOptions(context, span), context, span);
             context.Services.State.CallTemporaries.TrackFreshMutable(iterator, PyIteratorBase.IteratorValueBytes, span);
             return iterator;
@@ -217,7 +217,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             return BindEncoderOptions(arguments, span, context);
         }
 
@@ -404,7 +404,7 @@ internal sealed partial class LythonRuntime
 
         private async ValueTask<PyIterationResult> TryMoveNextCoreAsync(bool asynchronous)
         {
-            _context.CheckExecutionBudget(_span);
+            _context.CheckExecution(_span);
             if (_finished)
             {
                 return PyIterationResult.End;
@@ -416,7 +416,7 @@ internal sealed partial class LythonRuntime
                 var builder = new StringBuilder();
                 while (true)
                 {
-                    _context.CheckExecutionBudget(_span);
+                    _context.CheckExecution(_span);
                     var (advanced, chunkReady) = await AdvanceAsync(builder, charge, asynchronous).ConfigureAwait(false);
                     if (!advanced)
                     {
@@ -599,7 +599,7 @@ internal sealed partial class LythonRuntime
         private async ValueTask<(bool Advanced, bool ChunkReady)> AdvanceValueAsync(object value, int depth, StringBuilder builder, JsonModule.JsonGrowthCharge charge, bool asynchronous, int defaultDepth = 0)
         {
             var chunkReady = false;
-            _context.CheckExecutionBudget(_span);
+            _context.CheckExecution(_span);
             if (depth >= ExecutionLimits.MaxInterpreterDepth || defaultDepth >= ExecutionLimits.MaxInterpreterDepth)
             {
                 throw new LythonRuntimeException(
@@ -623,7 +623,7 @@ internal sealed partial class LythonRuntime
                     chunkReady = true;
                     return (true, chunkReady);
                 case BigInteger integer:
-                    _context.CheckExecutionBudget(_span);
+                    _context.CheckExecution(_span);
                     JsonModule.AppendJsonNumber(builder, integer.ToString(CultureInfo.InvariantCulture), charge, _context, _span);
                     chunkReady = true;
                     return (true, chunkReady);

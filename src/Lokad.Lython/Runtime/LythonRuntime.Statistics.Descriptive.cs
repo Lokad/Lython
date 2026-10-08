@@ -425,7 +425,7 @@ internal sealed partial class LythonRuntime
                 context.ObserveCollectionCount(_count, span);
                 if ((_count & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -1055,7 +1055,7 @@ internal sealed partial class LythonRuntime
                     numerator += diff * diff;
                     if ((++i & 63) == 0)
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                     }
                 }
             }
@@ -1070,7 +1070,7 @@ internal sealed partial class LythonRuntime
                     sumSquares += value * value;
                     if ((++i & 63) == 0)
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                     }
                 }
 
@@ -1316,7 +1316,7 @@ internal sealed partial class LythonRuntime
                 cutPoints.Add(value);
                 if ((i & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -1385,7 +1385,7 @@ internal sealed partial class LythonRuntime
                 cutPoints.Add(value);
                 if ((i & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -1586,7 +1586,7 @@ internal sealed partial class LythonRuntime
 
                 if ((++work & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -1800,7 +1800,7 @@ internal sealed partial class LythonRuntime
                 context.ObserveCollectionCount(values.Count, span);
                 if ((values.Count & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -1854,7 +1854,7 @@ internal sealed partial class LythonRuntime
                 context.ObserveCollectionCount(values.Count, span);
                 if ((values.Count & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -1938,7 +1938,7 @@ internal sealed partial class LythonRuntime
                 context.ObserveCollectionCount(values.Count, span);
                 if ((values.Count & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -1983,7 +1983,7 @@ internal sealed partial class LythonRuntime
                 context.ObserveCollectionCount(values.Count, span);
                 if ((values.Count & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 

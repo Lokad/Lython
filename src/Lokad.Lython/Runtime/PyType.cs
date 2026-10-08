@@ -236,7 +236,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        context.CheckExecutionBudget(span);
+        context.CheckExecution(span);
         if (ReferenceEquals(MetaType, this))
         {
             return InvokeBuiltInType(arguments, span, context);
@@ -289,7 +289,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
 
     public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        context.CheckExecutionBudget(span);
+        context.CheckExecution(span);
         if (ReferenceEquals(MetaType, this))
         {
             return InvokeBuiltInType(arguments, span, context);

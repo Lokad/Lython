@@ -302,7 +302,7 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
                 context.ObserveCollectionCount(Count, span);
                 if ((++added & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
         }
@@ -331,7 +331,7 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
                 context.ObserveCollectionCount(Count, span);
                 if ((++added & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
         }

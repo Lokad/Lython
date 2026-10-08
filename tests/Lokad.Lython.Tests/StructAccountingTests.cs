@@ -46,7 +46,7 @@ public sealed class StructAccountingTests
         {
             Started.TrySetResult();
             try { await new TaskCompletionSource().Task.WaitAsync(context.Limits.CancellationToken); }
-            catch (OperationCanceledException) { context.CheckExecutionBudget(span); throw; }
+            catch (OperationCanceledException) { context.CheckExecution(span); throw; }
             return BigInteger.One;
         }
     }

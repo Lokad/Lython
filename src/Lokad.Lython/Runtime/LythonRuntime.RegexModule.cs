@@ -129,7 +129,7 @@ internal sealed partial class LythonRuntime
 
         private object Compile(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             return RegexCompiler.CreatePattern(arguments, "re.compile(pattern[, flags])", span, context);
         }
 
@@ -144,14 +144,14 @@ internal sealed partial class LythonRuntime
 
         private object FindAll(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var inputs = RegexCompiler.CreatePatternAndRange(arguments, "re.findall(pattern, string[, flags][, pos][, endpos])", span, context);
             return RegexMatcher.CreateFindAllResult(inputs.Pattern, inputs.Range, span, context);
         }
 
         private object FindIter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var inputs = RegexCompiler.CreatePatternAndRange(arguments, "re.finditer(pattern, string[, flags][, pos][, endpos])", span, context);
             // Finditer shells charge per live instance like other iterator factories.
             PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
@@ -168,14 +168,14 @@ internal sealed partial class LythonRuntime
 
         private object Split(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var inputs = RegexCompiler.CreateSplitInputs(arguments, "re.split(pattern, string[, maxsplit][, flags][, pos][, endpos])", span, context);
             return RegexMatcher.ProjectSplitResult(inputs.Pattern.Regex.SplitDetailed(inputs.Range.Segment.Utf8Bytes.Span, inputs.MaxSplit), span, context);
         }
 
         private object Escape(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length != 1 || !PyStringOps.TryAsString(arguments[0], out var text))
             {
                 throw new LythonRuntimeException("TypeError", "re.escape(string) expects one string argument.", span);
@@ -204,7 +204,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context,
             RegexMatchMode mode)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var operationName = mode switch
             {
                 RegexMatchMode.Search => "search",
@@ -240,7 +240,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context,
             RegexSubstitutionMode mode)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var operationName = mode == RegexSubstitutionMode.TextAndCount ? "subn" : "sub";
             var inputs = RegexCompiler.CreateSubstituteInputs(
                 arguments,
@@ -298,7 +298,7 @@ internal sealed partial class LythonRuntime
 
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 var bound = CallBinder.BindNamedArguments(arguments, span, CallSignature, PythonCallableKind.Builtin);
                 if (bound.Length == 0 || ReferenceEquals(bound[0], PyNone.Instance))
                 {

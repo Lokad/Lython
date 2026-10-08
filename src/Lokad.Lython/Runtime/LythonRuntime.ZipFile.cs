@@ -517,7 +517,7 @@ internal sealed partial class LythonRuntime
             {
                 if ((i & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 ExtractPlanned(payload.Memory, plans[i], request.Password, context, span);
@@ -543,7 +543,7 @@ internal sealed partial class LythonRuntime
             {
                 if ((i & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 await ExtractPlannedAsync(payload.Memory, plans[i], request.Password, context, span).ConfigureAwait(false);
@@ -564,7 +564,7 @@ internal sealed partial class LythonRuntime
                     plans.Add(PlanExtraction(ResolveReadTarget(item, span), destination, span));
                     if ((++count & 63) == 0)
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                     }
 
                     context.ObserveCollectionCount(count, span);
@@ -577,7 +577,7 @@ internal sealed partial class LythonRuntime
             {
                 if ((i & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 plans.Add(PlanExtraction(ResolveInfoTarget(_infos[i], span), destination, span));
@@ -686,7 +686,7 @@ internal sealed partial class LythonRuntime
                 current.Append('/').Append(part);
                 if ((++depth & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 context.RegisterHostCall(span);
@@ -720,7 +720,7 @@ internal sealed partial class LythonRuntime
                 current.Append('/').Append(part);
                 if ((++depth & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 context.RegisterHostCall(span);
@@ -1267,7 +1267,7 @@ internal sealed partial class LythonRuntime
                 {
                     ZipDirectoryReader.DecodeDosDateTime(entry.DosTime, entry.DosDate, out var year, out var month, out var day, out var hour, out var minute, out var second);
                     AppendDirectoryRow(builder, entry.Name, FormatPrintDate(year, month, day, hour, minute, second), (long)entry.UncompressedSize);
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 if (_isWriteMode)
@@ -1285,7 +1285,7 @@ internal sealed partial class LythonRuntime
             {
                 ZipDirectoryReader.DecodeDosDateTime(staged.DosTime, staged.DosDate, out var year, out var month, out var day, out var hour, out var minute, out var second);
                 AppendDirectoryRow(builder, staged.Name, FormatPrintDate(year, month, day, hour, minute, second), staged.Data.Length);
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
             }
         }
 
@@ -1335,7 +1335,7 @@ internal sealed partial class LythonRuntime
             // R38: reject over-wide record fields before reserving or mutating,
             // so a failed staging leaves the archive contents untouched.
             ZipRecordWriter.RequireRecordFieldWidths(nameBytes, comment, extra, span);
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             context.ObserveCollectionCount(_staged.Count + 1, span);
             _didModify = true;
             var charge = checked(StagedEntryBaseBytes + data.Length + nameBytes.Length + comment.Length + extra.Length);

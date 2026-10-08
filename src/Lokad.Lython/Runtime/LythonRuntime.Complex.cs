@@ -83,7 +83,7 @@ internal sealed partial class LythonRuntime
         var split = -1;
         for (var i = 1; i < text.Length; i++)
         {
-            if ((i & 255) == 0) context.CheckExecutionBudget(span);
+            if ((i & 255) == 0) context.CheckExecution(span);
             if (text[i] is '+' or '-' && text[i - 1] is not ('e' or 'E')) split = i;
         }
         var real = split < 0 ? 0 : Parse(text[..split]);
@@ -157,7 +157,7 @@ internal sealed partial class LythonRuntime
             var exponent = (int)Math.Abs(rhs.Real); result = Complex.One; var current = lhs;
             while (exponent != 0)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 if ((exponent & 1) != 0) result *= current;
                 exponent >>= 1;
                 if (exponent != 0) current *= current;

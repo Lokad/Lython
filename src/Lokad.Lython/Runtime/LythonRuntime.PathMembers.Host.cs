@@ -363,7 +363,7 @@ internal sealed partial class LythonRuntime
                         context.RegisterHostCall(span);
                         foreach (var name in context.HostListDir(path.Value.AsString(), span))
                         {
-                            context.CheckExecutionBudget(span);
+                            context.CheckExecution(span);
                             if (LythonRuntime.FnMatchModule.MatchSimple(PyString.FromString(name), pattern))
                             {
                                 results.Add(OwnPathResult(PathOps.Join(path.Value, PyString.FromString(name)), path.Value, context.MemoryGovernor, span, context.Services.State.CallTemporaries));
@@ -382,7 +382,7 @@ internal sealed partial class LythonRuntime
                         var names = await context.HostListDirAsync(path.Value.AsString(), span).ConfigureAwait(false);
                         foreach (var name in names)
                         {
-                            context.CheckExecutionBudget(span);
+                            context.CheckExecution(span);
                             if (LythonRuntime.FnMatchModule.MatchSimple(PyString.FromString(name), pattern))
                             {
                                 results.Add(OwnPathResult(PathOps.Join(path.Value, PyString.FromString(name)), path.Value, context.MemoryGovernor, span, context.Services.State.CallTemporaries));

@@ -614,7 +614,7 @@ internal sealed partial class LythonRuntime
                 for (; _instructionIndex < instructions.Count; _instructionIndex++)
                 {
                     var instruction = instructions[_instructionIndex];
-                    context.Services.CheckExecutionBudget(instruction.Span);
+                    context.Services.CheckExecution(instruction.Span);
 
                     try
                     {

@@ -178,7 +178,7 @@ internal sealed partial class LythonRuntime
                 matcher.SetSeq1(candidate, span, context);
                 if ((++work & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 if (matcher.RealQuickRatio() >= cutoff &&
@@ -390,7 +390,7 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(items.Count, span);
                     if ((items.Count & 63) == 0)
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                     }
                 }
 
@@ -449,7 +449,7 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(items.Count, span);
                     if ((items.Count & 63) == 0)
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                     }
                 }
 
@@ -491,7 +491,7 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(items.Count, span);
                     if ((items.Count & 63) == 0)
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                     }
                 }
             }

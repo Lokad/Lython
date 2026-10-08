@@ -88,7 +88,7 @@ internal sealed partial class LythonRuntime
             var crc = _crc;
             for (var offset = 0; offset < data.Length;)
             {
-                _context.CheckExecutionBudget(span);
+                _context.CheckExecution(span);
                 var count = Math.Min(65536, data.Length - offset);
                 _native!.Write(data.Span.Slice(offset, count));
                 crc = Crc32.Update(crc, data.Span.Slice(offset, count));
@@ -120,7 +120,7 @@ internal sealed partial class LythonRuntime
             }
             for (var offset = 0; offset < bytes.Length;)
             {
-                _context.CheckExecutionBudget(span);
+                _context.CheckExecution(span);
                 var count = Math.Min(WriteBufferBytes - _pending.Length, bytes.Length - offset);
                 _pending.Append(bytes.Bytes.Slice(offset, count)); Changed();
                 _position += count;
@@ -136,7 +136,7 @@ internal sealed partial class LythonRuntime
             EnsureOpen(span);
             if (_reading) return;
             await DrainPendingAsync(span, asynchronous).ConfigureAwait(false);
-            _context.CheckExecutionBudget(span);
+            _context.CheckExecution(span);
             if (!_nativeHasInput && !_emptySyncWritten)
             {
                 _output.Append([0,0,0,255,255]); Changed();
@@ -156,7 +156,7 @@ internal sealed partial class LythonRuntime
                 if (!_reading)
                 {
                     await DrainPendingAsync(span, asynchronous).ConfigureAwait(false);
-                    _context.CheckExecutionBudget(span);
+                    _context.CheckExecution(span);
                     if (!_nativeHasInput) WriteEmptyDeflate(_sink!, _level);
                     _native!.Dispose();
                     _native = null;

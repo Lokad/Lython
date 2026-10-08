@@ -49,7 +49,7 @@ internal sealed partial class LythonRuntime
         }
         private async ValueTask<object> InvokeMemberAsync(string name, object[] args, LythonSourceSpan span, bool asynchronous)
         {
-            _context.CheckExecutionBudget(span);
+            _context.CheckExecution(span);
             if (name == "readable") return _reading;
             if (name == "writable") return !_reading;
             if (name is "seek" or "seekable" or "fileno" or "rewind")

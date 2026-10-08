@@ -76,7 +76,7 @@ internal sealed partial class LythonRuntime
                 => InvokeCoreAsync(arguments, span, context, true);
             private ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 if (_operation == UrlOperation.Split)
                     return CachedUrlSplitAsync(arguments, span, context, asynchronous);
                 var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, _signature, PythonCallableKind.Builtin);
@@ -218,7 +218,7 @@ internal sealed partial class LythonRuntime
                 var index = 0;
                 foreach (var b in text.Utf8Bytes.Span)
                 {
-                    if ((index++ & 1023) == 0) context.CheckExecutionBudget(span);
+                    if ((index++ & 1023) == 0) context.CheckExecution(span);
                     if (b < 128) result.Add(b);
                 }
             }
@@ -227,7 +227,7 @@ internal sealed partial class LythonRuntime
                 var index = 0;
                 foreach (var b in bytes.Bytes)
                 {
-                    if ((index++ & 1023) == 0) context.CheckExecutionBudget(span);
+                    if ((index++ & 1023) == 0) context.CheckExecution(span);
                     if (b < 128) result.Add(b);
                 }
             }
@@ -243,7 +243,7 @@ internal sealed partial class LythonRuntime
 
             void Add(object item)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 var number = item switch
                 {
                     BigInteger integer => integer,

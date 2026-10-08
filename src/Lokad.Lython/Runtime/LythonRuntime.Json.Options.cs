@@ -390,7 +390,7 @@ internal sealed partial class LythonRuntime
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
                 _ = arguments;
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 throw new LythonRuntimeException("NotImplementedError", $"{Name} custom classes are not supported by Lython's JSON subset.", span);
             }
 

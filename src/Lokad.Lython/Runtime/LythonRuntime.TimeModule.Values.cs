@@ -55,7 +55,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length != 1 || arguments[0].IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", "time.struct_time() expects one positional sequence argument.", span);
@@ -88,7 +88,7 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(total, span);
                     if ((total & 63) == 0)
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                     }
                 }
 
@@ -106,7 +106,7 @@ internal sealed partial class LythonRuntime
 
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length != 1 || arguments[0].IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", "time.struct_time() expects one positional sequence argument.", span);
@@ -144,7 +144,7 @@ internal sealed partial class LythonRuntime
                     context.ObserveCollectionCount(total, span);
                     if ((total & 63) == 0)
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                     }
                 }
 

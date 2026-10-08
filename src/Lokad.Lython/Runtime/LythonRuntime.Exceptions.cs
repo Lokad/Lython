@@ -88,7 +88,7 @@ internal sealed partial class LythonRuntime
         var caughtTypes = new object[caughtTypeNames.Count];
         for (var i = 0; i < caughtTypes.Length; i++)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             caughtTypes[i] = ResolveCaughtExceptionTypeName(caughtTypeNames[i], context, span);
         }
 
@@ -128,13 +128,13 @@ internal sealed partial class LythonRuntime
         // Nested tuples and lists are not valid members of an except tuple.
         for (var i = 0; i < caughtTypes.Count; i++)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             _ = RequireCaughtExceptionClass(caughtTypes[i], span);
         }
 
         for (var i = 0; i < caughtTypes.Count; i++)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (MatchesExceptionType(((IPythonExceptionType)caughtTypes[i]).ExceptionIdentity, thrown))
                 return true;
         }

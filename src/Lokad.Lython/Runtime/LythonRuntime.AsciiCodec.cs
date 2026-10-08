@@ -20,7 +20,7 @@ internal sealed partial class LythonRuntime
         long length = 0;
         for (var index = 0; index < source.Length; index++)
         {
-            if ((index & 1023) == 0) context.CheckExecutionBudget(span);
+            if ((index & 1023) == 0) context.CheckExecution(span);
             var value = source[index];
             if (value >= 128)
             {
@@ -48,7 +48,7 @@ internal sealed partial class LythonRuntime
         const string hex = "0123456789abcdef";
         for (var index = 0; index < source.Length; index++)
         {
-            if ((index & 1023) == 0) context.CheckExecutionBudget(span);
+            if ((index & 1023) == 0) context.CheckExecution(span);
             var value = source[index];
             if (value < 128)
             {

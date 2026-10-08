@@ -944,7 +944,7 @@ internal sealed partial class LythonRuntime
                 items[filled++] = tuple[j];
                 if ((filled & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 

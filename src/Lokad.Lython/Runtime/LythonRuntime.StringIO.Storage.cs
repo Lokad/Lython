@@ -54,7 +54,7 @@ internal sealed partial class LythonRuntime
             {
                 Rune.DecodeFromUtf8(bytes, out var rune, out var consumed);
                 bytes = bytes[consumed..];
-                if ((count & 1023) == 0) _services.CheckExecutionBudget(span);
+                if ((count & 1023) == 0) _services.CheckExecution(span);
                 count++;
                 var scalar = rune.Value;
                 if (_newline is null && previousCr && scalar == '\n') { previousCr = false; continue; }
@@ -67,7 +67,7 @@ internal sealed partial class LythonRuntime
             if (_position > int.MaxValue - translated)
                 throw RuntimeErrors.Memory("StringIO buffer exceeds supported storage size", span);
             var end = (int)(_position + translated);
-            _services.CheckExecutionBudget(span);
+            _services.CheckExecution(span);
             EnsureCapacity(end, span);
             if (_position > _length) Array.Clear(_buffer, _length, (int)_position - _length);
             var cursor = (int)_position;
@@ -76,7 +76,7 @@ internal sealed partial class LythonRuntime
             {
                 Rune.DecodeFromUtf8(bytes, out var rune, out var consumed);
                 bytes = bytes[consumed..];
-                if ((cursor & 1023) == 0) _services.CheckExecutionBudget(span);
+                if ((cursor & 1023) == 0) _services.CheckExecution(span);
                 var scalar = rune.Value;
                 if (_newline is null && previousCr && scalar == '\n') { previousCr = false; continue; }
                 previousCr = scalar == '\r';
@@ -100,7 +100,7 @@ internal sealed partial class LythonRuntime
             {
                 Rune.DecodeFromUtf8(bytes, out var rune, out var consumed);
                 bytes = bytes[consumed..];
-                if ((index++ & 1023) == 0) _services.CheckExecutionBudget(span);
+                if ((index++ & 1023) == 0) _services.CheckExecution(span);
                 if (cr) { seen |= rune.Value == '\n' ? 4 : 1; cr = false; if (rune.Value == '\n') continue; }
                 if (rune.Value == '\r') cr = true;
                 else if (rune.Value == '\n') seen |= 2;
@@ -136,7 +136,7 @@ internal sealed partial class LythonRuntime
             {
                 for (var index = start; index < end; index++)
                 {
-                    if ((index & 1023) == 0) _services.CheckExecutionBudget(span);
+                    if ((index & 1023) == 0) _services.CheckExecution(span);
                     var scalar = _buffer[index];
                     if (_newline is null or "")
                     {
@@ -171,7 +171,7 @@ internal sealed partial class LythonRuntime
                 Span<byte> encoded = stackalloc byte[4];
                 for (var index = start; index < end; index++)
                 {
-                    if ((index & 1023) == 0) _services.CheckExecutionBudget(span);
+                    if ((index & 1023) == 0) _services.CheckExecution(span);
                     var count = new Rune(_buffer[index]).EncodeToUtf8(encoded);
                     builder.Append(encoded[..count]);
                 }

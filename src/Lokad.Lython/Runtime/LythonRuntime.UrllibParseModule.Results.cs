@@ -44,7 +44,7 @@ internal sealed partial class LythonRuntime
             }
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 var bound = CallBinder.BindNamedArguments(arguments, span, _signature, PythonCallableKind.Builtin);
                 return UrlResult.Create(this, bound, context, span);
             }
@@ -131,7 +131,7 @@ internal sealed partial class LythonRuntime
                 else throw new LythonRuntimeException(_values[1] is PyString or PyBytes ? "TypeError" : "AttributeError", "invalid netloc component", span);
                 var source = memory.Span; var afterAt = 0;
                 for (var i = 0; i < source.Length; i++)
-                { if ((i & 1023) == 0) context.CheckExecutionBudget(span); if (source[i] == '@') afterAt = i + 1; }
+                { if ((i & 1023) == 0) context.CheckExecution(span); if (source[i] == '@') afterAt = i + 1; }
                 if (name is "username" or "password")
                 {
                     if (afterAt == 0) return PyNone.Instance;
@@ -162,7 +162,7 @@ internal sealed partial class LythonRuntime
                     var number = 0; var range = false;
                     for (var i = portStart; i < source.Length; i++)
                     {
-                        if ((i & 1023) == 0) context.CheckExecutionBudget(span);
+                        if ((i & 1023) == 0) context.CheckExecution(span);
                         if (source[i] is < (byte)'0' or > (byte)'9') throw new LythonRuntimeException("ValueError", "Port could not be cast to integer", span);
                         if (!range) { number = number * 10 + source[i] - '0'; range = number > 65535; }
                     }
@@ -177,7 +177,7 @@ internal sealed partial class LythonRuntime
                 context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(raw.Length), span);
                 var lowered = raw.ToArray();
                 for (var i = 0; i < (zone < 0 ? raw.Length : zone); i++)
-                { if ((i & 1023) == 0) context.CheckExecutionBudget(span); if (lowered[i] is >= (byte)'A' and <= (byte)'Z') lowered[i] += 32; }
+                { if ((i & 1023) == 0) context.CheckExecution(span); if (lowered[i] is >= (byte)'A' and <= (byte)'Z') lowered[i] += 32; }
                 var lowerBytes = OwnBytes(lowered, context, span);
                 GC.KeepAlive(host);
                 return lowerBytes;
@@ -229,7 +229,7 @@ internal sealed partial class LythonRuntime
                 => InvokeCoreAsync(arguments, span, context, true);
             private async ValueTask<object> InvokeCoreAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context, bool asynchronous)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 if (method == "_make")
                 {
                     var bound = CallBinder.BindNamedArguments(arguments, span, LythonCallableSignature.Create(type.Name + "._make", ["iterable"]), PythonCallableKind.Method);

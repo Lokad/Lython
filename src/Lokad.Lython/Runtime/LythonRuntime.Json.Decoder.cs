@@ -74,7 +74,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "expected string or bytes-like object, got '" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "'", span);
             }
 
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             return asynchronous
                 ? await JsonModule.Instance.ParseJsonTextAsync(text, Options, context, span).ConfigureAwait(false)
                 : JsonModule.Instance.ParseJsonText(text, Options, context, span);
@@ -99,7 +99,7 @@ internal sealed partial class LythonRuntime
             }
 
             var index = arguments.Length == 2 ? CoerceJsonRawIndex(arguments[1], context, span) : 0L;
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var (value, end) = asynchronous
                 ? await JsonModule.Instance.DecodeJsonRawValueAsync(text, index, Options, context, span).ConfigureAwait(false)
                 : JsonModule.Instance.DecodeJsonRawValue(text, index, Options, context, span);
@@ -178,7 +178,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             return BindDecoderOptions(arguments, span, context);
         }
 

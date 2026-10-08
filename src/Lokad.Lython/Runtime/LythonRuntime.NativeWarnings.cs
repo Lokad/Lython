@@ -12,7 +12,7 @@ internal sealed partial class LythonRuntime
     internal static async ValueTask EmitDefaultWarningAsync(string category, string message,
         ExecutionContext context, LythonSourceSpan span, bool asynchronous)
     {
-        context.CheckExecutionBudget(span);
+        context.CheckExecution(span);
         var filename = context.SourcePath ?? "<string>";
         if (!context.State.MarkDefaultWarning(filename, span.Line, category, message, span)) return;
         // Fund managed formatting independently of the resulting UTF-8 value

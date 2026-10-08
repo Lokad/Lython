@@ -293,7 +293,7 @@ internal sealed partial class LythonRuntime
                 matches += block.Size;
                 if ((++work & (BudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -330,7 +330,7 @@ internal sealed partial class LythonRuntime
 
                 if ((++work & (BudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -390,7 +390,7 @@ internal sealed partial class LythonRuntime
 
                 if ((++work & (BudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -443,7 +443,7 @@ internal sealed partial class LythonRuntime
                 reservation.Grow(BlockBytesPerEntry, span);
                 if ((++work & (BudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 var current = code;
@@ -500,7 +500,7 @@ internal sealed partial class LythonRuntime
                     reservation.Grow(ChainIndexBytesPerElement, span);
                     if ((++work & (BudgetCheckInterval - 1)) == 0)
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                     }
                 }
 
@@ -515,7 +515,7 @@ internal sealed partial class LythonRuntime
 
                         if ((++work & (BudgetCheckInterval - 1)) == 0)
                         {
-                            context.CheckExecutionBudget(span);
+                            context.CheckExecution(span);
                         }
                     }
 
@@ -537,7 +537,7 @@ internal sealed partial class LythonRuntime
 
                         if ((++work & (BudgetCheckInterval - 1)) == 0)
                         {
-                            context.CheckExecutionBudget(span);
+                            context.CheckExecution(span);
                         }
                     }
 
@@ -585,7 +585,7 @@ internal sealed partial class LythonRuntime
                 entry.Value++;
                 if ((++work & (BudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -635,7 +635,7 @@ internal sealed partial class LythonRuntime
                 dict.SetItem(entry.Key, new PyList(entry.Value.Select(index => (object)new BigInteger(index))));
                 if ((++work & 63) == 0)
                 {
-                    _creationContext.CheckExecutionBudget(null);
+                    _creationContext.CheckExecution(null);
                 }
             }
 
@@ -736,7 +736,7 @@ internal sealed partial class LythonRuntime
 
                 if ((++work & (BudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
                 if (range.ALo < match.A && range.BLo < match.B)
                 {
@@ -764,7 +764,7 @@ internal sealed partial class LythonRuntime
             {
                 if ((++collapseWork & (BudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 if (i1 + k1 == block.A && j1 + k1 == block.B)
@@ -853,7 +853,7 @@ internal sealed partial class LythonRuntime
 
                         if ((++work & (BudgetCheckInterval - 1)) == 0)
                         {
-                            context.CheckExecutionBudget(span);
+                            context.CheckExecution(span);
                         }
                     }
 
@@ -862,7 +862,7 @@ internal sealed partial class LythonRuntime
 
                 if ((++work & (BudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -877,7 +877,7 @@ internal sealed partial class LythonRuntime
 
                 if ((++work & (BudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -890,7 +890,7 @@ internal sealed partial class LythonRuntime
 
                 if ((++work & (BudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -905,7 +905,7 @@ internal sealed partial class LythonRuntime
 
                 if ((++work & (BudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -918,7 +918,7 @@ internal sealed partial class LythonRuntime
 
                 if ((++work & (BudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 

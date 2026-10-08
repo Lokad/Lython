@@ -49,7 +49,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var bound = BindArguments(arguments, span);
             var hasWrittenValue = false;
             foreach (var argument in arguments)
@@ -102,7 +102,7 @@ internal sealed partial class LythonRuntime
 
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var bound = BindArguments(arguments, span);
             var hasWrittenValue = false;
             foreach (var argument in arguments)

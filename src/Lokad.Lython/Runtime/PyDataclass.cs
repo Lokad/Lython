@@ -180,7 +180,7 @@ internal static partial class PyDataclass
     {
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var options = DataclassDecoratorSyntax.CreateDefault(span);
             PyType? cls = null;
             var seenCls = false;
@@ -235,7 +235,7 @@ internal static partial class PyDataclass
     {
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not PyType type)
             {
                 throw new LythonRuntimeException("TypeError", "dataclasses.dataclass(...) decorator expects one class argument.", span);
@@ -275,7 +275,7 @@ internal static partial class PyDataclass
     {
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
 
             object? clsName = null;
             object? fieldsArgument = null;
@@ -436,7 +436,7 @@ internal static partial class PyDataclass
                 throw new LythonRuntimeException("TypeError", $"Field name '{name}' is duplicated.", span);
             }
 
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             yield return new MakeDataclassField(name, annotation, defaultValue);
         }
     }
@@ -528,7 +528,7 @@ internal static partial class PyDataclass
     {
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
 
             var seenDefault = false;
             var seenDefaultFactory = false;
@@ -654,7 +654,7 @@ internal static partial class PyDataclass
     {
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
 
             if (arguments.Length == 0 || arguments[0].IsKeyword || arguments[0].Value is not PyInstance instance || instance.Type.DataclassFields is null)
             {

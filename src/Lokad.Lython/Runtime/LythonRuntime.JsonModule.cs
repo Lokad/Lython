@@ -65,7 +65,7 @@ internal sealed partial class LythonRuntime
 
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 SplitArguments(arguments, out var standard, out var extras);
                 var bound = CallBinder.BindNamedArguments(standard, span, _signature, PythonCallableKind.Builtin);
                 var result = _implementation(bound, extras, span, context);
@@ -75,7 +75,7 @@ internal sealed partial class LythonRuntime
 
             public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 SplitArguments(arguments, out var standard, out var extras);
                 var bound = CallBinder.BindNamedArguments(standard, span, _signature, PythonCallableKind.Builtin);
                 var result = _asyncImplementation is null
@@ -168,7 +168,7 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span,
             ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var text = PyTextStream.ReadAll(bound[0], span, context);
             return DecodeWithClass(text, ResolveDecoderClass(GetOptional(bound, 1), span), bound, extras, span, context);
         }
@@ -179,7 +179,7 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span,
             ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var text = await PyTextStream.ReadAllAsync(bound[0], span, context).ConfigureAwait(false);
             return await DecodeWithClassAsync(text, ResolveDecoderClass(GetOptional(bound, 1), span), bound, extras, span, context).ConfigureAwait(false);
         }
@@ -190,7 +190,7 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span,
             ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (bound.Length < 1 || !PyStringOps.TryAsString(bound[0], out var text))
             {
                 throw new LythonRuntimeException("TypeError", "json.loads(s, *, ...) expects a string argument.", span);
@@ -205,7 +205,7 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span,
             ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (bound.Length < 1 || !PyStringOps.TryAsString(bound[0], out var text))
             {
                 throw new LythonRuntimeException("TypeError", "json.loads(s, *, ...) expects a string argument.", span);
@@ -220,11 +220,11 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span,
             ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var chunks = IterateWithClass(bound, extras, span, context);
             foreach (var chunk in PyIteration.ToSequence(chunks, span, context))
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 PyTextStream.Write(bound[1], chunk, span, context);
             }
             return PyNone.Instance;
@@ -236,7 +236,7 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span,
             ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var cls = ResolveEncoderClass(GetOptional(bound, 6), span);
             var forwarded = BuildEncoderForwardArgs(bound, extras, JsonDumpCallForm.Dump).ToArray();
             var instance = await ((ICallable)cls).InvokeAsync(forwarded, span, context).ConfigureAwait(false);
@@ -245,7 +245,7 @@ internal sealed partial class LythonRuntime
                 () => ValueTask.FromResult<CallArgumentValue[]>([CallArgumentValue.Positional(bound[0])])).ConfigureAwait(false);
             await foreach (var chunk in PyIteration.ToSequenceAsync(chunks, span, context).ConfigureAwait(false))
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 await PyTextStream.WriteAsync(bound[1], chunk, span, context).ConfigureAwait(false);
             }
             return PyNone.Instance;
@@ -266,7 +266,7 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span,
             ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (bound.Length < 1)
             {
                 throw new LythonRuntimeException("TypeError", "json.dumps(obj, *, ...) expects one object argument.", span);
@@ -281,7 +281,7 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span,
             ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (bound.Length < 1)
             {
                 throw new LythonRuntimeException("TypeError", "json.dumps(obj, *, ...) expects one object argument.", span);

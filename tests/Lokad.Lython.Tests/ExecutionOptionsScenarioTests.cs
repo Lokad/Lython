@@ -1375,9 +1375,9 @@ text = str(data)
             new MockLythonHost(),
             new LythonRunOptions { MaxExecutionSteps = int.MaxValue });
         context.Limits.ExecutionStepCount = int.MaxValue - 1;
-        context.CheckExecutionBudget(null);
+        context.CheckExecution(null);
         Assert.Equal((long)int.MaxValue, (long)context.Limits.ExecutionStepCount);
-        var failure = Assert.Throws<LythonRuntimeException>(() => context.CheckExecutionBudget(null));
+        var failure = Assert.Throws<LythonRuntimeException>(() => context.CheckExecution(null));
         Assert.Equal("RuntimeError", failure.ExceptionType);
         Assert.Contains("maximum execution step count exceeded", failure.Message, StringComparison.Ordinal);
     }

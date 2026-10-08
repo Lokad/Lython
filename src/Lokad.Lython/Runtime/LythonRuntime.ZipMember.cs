@@ -225,7 +225,7 @@ internal sealed partial class LythonRuntime
                 _context.ObserveCollectionCount(lines.Count, span);
                 if ((lines.Count & 63) == 0)
                 {
-                    _context.CheckExecutionBudget(span);
+                    _context.CheckExecution(span);
                 }
 
                 if (hint > 0 && total > hint)
@@ -497,7 +497,7 @@ internal sealed partial class LythonRuntime
                 AppendBuffer(bytes.Bytes, span);
                 if ((++count & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -508,7 +508,7 @@ internal sealed partial class LythonRuntime
         {
             if ((_writeCalls++ & 63) == 0)
             {
-                _context.CheckExecutionBudget(span);
+                _context.CheckExecution(span);
             }
 
             if (data.Length == 0)

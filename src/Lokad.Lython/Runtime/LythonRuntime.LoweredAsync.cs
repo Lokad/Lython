@@ -335,7 +335,7 @@ internal sealed partial class LythonRuntime
     // stack probe. Execution steps are still counted for every statement.
     private static async ValueTask ExecuteLoweredAssignmentAsync(LoweredAssignmentStatement assignment, ExecutionContext context)
     {
-        context.CheckExecutionBudget(assignment.Span);
+        context.CheckExecution(assignment.Span);
         switch (assignment)
             {
                 case LoweredNameAssignmentStatement simple:

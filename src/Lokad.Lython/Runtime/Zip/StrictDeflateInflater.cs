@@ -177,7 +177,7 @@ internal static class StrictDeflateInflater
         {
             while (true)
             {
-                _context.CheckExecutionBudget(_span);
+                _context.CheckExecution(_span);
                 var final = _bits.ReadBit() == 1;
                 var type = _bits.ReadBits(2);
                 switch (type)
@@ -230,7 +230,7 @@ internal static class StrictDeflateInflater
             _total += length;
             _crc = Crc32.Update(_crc, _output.AsSpan(_crcAnchor, _total - _crcAnchor));
             _crcAnchor = _total;
-            _context.CheckExecutionBudget(_span);
+            _context.CheckExecution(_span);
         }
 
         private void DecodeHuffmanBlock(HuffmanTree literals, HuffmanTree distances)
@@ -284,7 +284,7 @@ internal static class StrictDeflateInflater
                 {
                     _crc = Crc32.Update(_crc, _output.AsSpan(_crcAnchor, _total - _crcAnchor));
                     _crcAnchor = _total;
-                    _context.CheckExecutionBudget(_span);
+                    _context.CheckExecution(_span);
                 }
             }
         }

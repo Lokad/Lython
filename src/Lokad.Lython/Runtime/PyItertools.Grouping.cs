@@ -33,7 +33,7 @@ internal sealed class PyGroupByIterator : PyIteratorBase
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
-        _context.CheckExecutionBudget(_span);
+        _context.CheckExecution(_span);
         _activeGroup?.Drain();
 
         if (!TryReadNext(out var item, out var key))
@@ -55,7 +55,7 @@ internal sealed class PyGroupByIterator : PyIteratorBase
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
-        _context.CheckExecutionBudget(_span);
+        _context.CheckExecution(_span);
         if (_activeGroup is not null)
         {
             await _activeGroup.DrainAsync().ConfigureAwait(false);
@@ -336,7 +336,7 @@ internal sealed class PyTeeSharedState
 
     public bool TryGetNext(int index, [MaybeNullWhen(false)] out object value)
     {
-        _context.CheckExecutionBudget(_span);
+        _context.CheckExecution(_span);
         var ownQueue = _queues[index];
         if (ownQueue.Count > 0)
         {
@@ -382,7 +382,7 @@ internal sealed class PyTeeSharedState
 
     public async ValueTask<PyIterationResult> TryGetNextAsync(int index)
     {
-        _context.CheckExecutionBudget(_span);
+        _context.CheckExecution(_span);
         var ownQueue = _queues[index];
         if (ownQueue.Count > 0)
         {

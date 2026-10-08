@@ -21,7 +21,7 @@ internal sealed partial class LythonRuntime
             var entries = new List<(object OriginalKey, object Value)>(dict.Count);
             foreach (var pair in dict)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 entries.Add((pair.Key, pair.Value));
             }
             entries.Sort((left, right) => PyComparison.Compare(left.OriginalKey, right.OriginalKey, span));
@@ -140,7 +140,7 @@ internal sealed partial class LythonRuntime
                         var index = 0;
                         foreach (var pair in dict)
                         {
-                            context.CheckExecutionBudget(span);
+                            context.CheckExecution(span);
                             if (!IsSupportedJsonObjectKey(pair.Key))
                             {
                                 if (options.SkipKeys)
@@ -213,7 +213,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             charge.Observe(builder.Length);
             if (depth >= ExecutionLimits.MaxInterpreterDepth || defaultDepth >= ExecutionLimits.MaxInterpreterDepth)
             {
@@ -236,7 +236,7 @@ internal sealed partial class LythonRuntime
                     return;
                 case BigInteger integer:
                     // Giant magnitudes render slowly: bracket the conversion itself.
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                     AppendJsonNumber(builder, integer.ToString(CultureInfo.InvariantCulture), charge, context, span);
                     return;
                 case int integer:
@@ -414,7 +414,7 @@ internal sealed partial class LythonRuntime
             charge.Grow(checked((long)options.IndentUnit!.Length * depth));
             for (var i = 0; i < depth; i++)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 builder.Append(options.IndentUnit);
             }
         }
@@ -433,7 +433,7 @@ internal sealed partial class LythonRuntime
                 if ((i & 4095) == 0)
                 {
                     // Long scalars must stay interruptible and budget-checked.
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                     charge.Observe(builder.Length);
                 }
                 var ch = text[i];
@@ -480,7 +480,7 @@ internal sealed partial class LythonRuntime
         // (potentially slow) conversion itself.
         internal static void AppendJsonNumber(StringBuilder builder, string rendered, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             charge.Grow(rendered.Length);
             builder.Append(rendered);
         }

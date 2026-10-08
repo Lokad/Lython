@@ -52,7 +52,7 @@ internal sealed partial class LythonRuntime
         long length = 0;
         for (var index = 0; index < source.Length;)
         {
-            if ((index & 1023) == 0) context.CheckExecutionBudget(span);
+            if ((index & 1023) == 0) context.CheckExecution(span);
             if (TryDecodeUtf16Scalar(source[index..], bigEndian, out var scalar, out var consumed, out var reason))
             {
                 length += new Rune(scalar).Utf8SequenceLength;
@@ -80,7 +80,7 @@ internal sealed partial class LythonRuntime
         const string hex = "0123456789abcdef";
         for (var index = 0; index < source.Length;)
         {
-            if ((index & 1023) == 0) context.CheckExecutionBudget(span);
+            if ((index & 1023) == 0) context.CheckExecution(span);
             if (TryDecodeUtf16Scalar(source[index..], bigEndian, out var scalar, out var consumed, out _))
             {
                 if (scalar == '\r' && newline == TextNewlineMode.TranslateUniversal)
@@ -166,7 +166,7 @@ internal sealed partial class LythonRuntime
         var position = 0;
         for (var index = 0; index < source.Length;)
         {
-            if ((position++ & 1023) == 0) context.CheckExecutionBudget(span);
+            if ((position++ & 1023) == 0) context.CheckExecution(span);
             _ = Rune.DecodeFromUtf8(source[index..], out var rune, out var consumed);
             index += consumed;
             if (rune.Value == '\n' && newline is TextNewlineMode.PreserveCarriageReturn or TextNewlineMode.PreserveCarriageReturnLineFeed)
@@ -205,7 +205,7 @@ internal sealed partial class LythonRuntime
         var position = 0;
         for (var index = 0; index < source.Length;)
         {
-            if ((position++ & 1023) == 0) context.CheckExecutionBudget(span);
+            if ((position++ & 1023) == 0) context.CheckExecution(span);
             _ = Rune.DecodeFromUtf8(source[index..], out var rune, out var consumed);
             index += consumed;
             length += rune.Utf16SequenceLength * 2;

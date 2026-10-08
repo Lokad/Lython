@@ -371,7 +371,7 @@ internal sealed partial class LythonRuntime
                 context.ObserveCollectionCount(pairs, span);
                 if ((pairs & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -397,7 +397,7 @@ internal sealed partial class LythonRuntime
                 context.ObserveCollectionCount(pairs, span);
                 if ((pairs & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -440,7 +440,7 @@ internal sealed partial class LythonRuntime
                 context.ObserveCollectionCount(seen, span);
                 if ((seen & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 var value = ExpectReal(item, "math.fsum", span);
@@ -550,7 +550,7 @@ internal sealed partial class LythonRuntime
                 context.ObserveCollectionCount(seen, span);
                 if ((seen & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 var value = ExpectReal(item, "math.fsum", span);

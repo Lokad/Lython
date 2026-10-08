@@ -14,7 +14,7 @@ internal sealed partial class LythonRuntime
             var hasReference = asynchronous
                 ? await ContainsAsync(args[0], Ampersand, context, span).ConfigureAwait(false)
                 : Contains(args[0], Ampersand, context, span);
-            context.Services.CheckExecutionBudget(span);
+            context.Services.CheckExecution(span);
             if (!hasReference) return args[0];
             throw new LythonRuntimeException("TypeError", "expected string for HTML entity decoding", span);
         }
@@ -33,7 +33,7 @@ internal sealed partial class LythonRuntime
                 {
                     if (cursor >= nextCheck)
                     {
-                        services.CheckExecutionBudget(span);
+                        services.CheckExecution(span);
                         nextCheck = (long)cursor + 1024;
                     }
                     if (source[cursor] == (byte)'&' && TryReadReference(source, cursor, span, services, out var reference))
@@ -113,7 +113,7 @@ internal sealed partial class LythonRuntime
             {
                 var digit = HtmlDigit(source[cursor], hexadecimal);
                 if (digit < 0) break;
-                if (((cursor - start) & 1023) == 0) services.CheckExecutionBudget(span);
+                if (((cursor - start) & 1023) == 0) services.CheckExecution(span);
                 // A capped accumulator avoids arbitrary integer allocation while
                 // still consuming the complete reference and honoring its limits.
                 if (value < 0x110000) value = Math.Min(0x110000, value * (hexadecimal ? 16 : 10) + digit);

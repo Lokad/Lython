@@ -334,7 +334,7 @@ internal sealed partial class LythonRuntime
                             results.Add(InvCdf((double)i / n, span));
                             if ((i & 63) == 0)
                             {
-                                context.CheckExecutionBudget(span);
+                                context.CheckExecution(span);
                             }
                         }
 
@@ -367,7 +367,7 @@ internal sealed partial class LythonRuntime
                             context.ObserveCollectionCount(samples.Count, span);
                             if (((i + 1) & 63) == 0)
                             {
-                                context.CheckExecutionBudget(span);
+                                context.CheckExecution(span);
                             }
                         }
 

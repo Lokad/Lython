@@ -39,7 +39,7 @@ internal sealed partial class LythonRuntime
                     context.MemoryGovernor.Reserve(cellCharge, span);
                     context.MemoryGovernor.Commit(cellCharge);
                     textBytes = 0;
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 // Retained values and formulas scale with their text, so the
@@ -106,7 +106,7 @@ internal sealed partial class LythonRuntime
             {
                 if ((++structured & (ArchiveBudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 var min = ReadPositiveIntAttribute(column, "min", span);
@@ -120,7 +120,7 @@ internal sealed partial class LythonRuntime
                 {
                     if ((++structured & (ArchiveBudgetCheckInterval - 1)) == 0)
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                     }
 
                     ValidateRowColumn(1, index, span);
@@ -134,7 +134,7 @@ internal sealed partial class LythonRuntime
             {
                 if ((++structured & (ArchiveBudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 var rowIndex = ReadPositiveIntAttribute(rowElement, "r", span);
@@ -153,7 +153,7 @@ internal sealed partial class LythonRuntime
             {
                 if ((++structured & (ArchiveBudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 var reference = (string?)mergeCell.Attribute("ref");
@@ -167,7 +167,7 @@ internal sealed partial class LythonRuntime
             {
                 if ((++structured & (ArchiveBudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 var reference = (string?)hyperlink.Attribute("ref");
@@ -262,7 +262,7 @@ internal sealed partial class LythonRuntime
             {
                 if ((++scannedTables & (ArchiveBudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
                 var relationshipId = (string?)tablePart.Attribute(XlsxRelationships + "id");
                 if (relationshipId is null || !worksheetRelationships.TryGetValue(relationshipId, out var target))
@@ -349,7 +349,7 @@ internal sealed partial class LythonRuntime
                     context.MemoryGovernor.Reserve(validationCharge, span);
                     context.MemoryGovernor.Commit(validationCharge);
                     validationTextBytes = 0;
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 var validation = new OpenPyxlDataValidation(
@@ -395,7 +395,7 @@ internal sealed partial class LythonRuntime
                     context.MemoryGovernor.Reserve(formattingCharge, span);
                     context.MemoryGovernor.Commit(formattingCharge);
                     formattingTextBytes = 0;
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 var sqref = (string?)element.Attribute("sqref");
@@ -497,7 +497,7 @@ internal sealed partial class LythonRuntime
                         context.MemoryGovernor.Commit(drawingCharge);
                         drawingTextBytes = 0;
                         childTextBytes = 0;
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                     }
 
                     var childTarget = (string?)relationship.Attribute("Target");
@@ -579,7 +579,7 @@ internal sealed partial class LythonRuntime
                     context.MemoryGovernor.Reserve(commentCharge, span);
                     context.MemoryGovernor.Commit(commentCharge);
                     commentTextBytes = 0;
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 var reference = (string?)comment.Attribute("ref");

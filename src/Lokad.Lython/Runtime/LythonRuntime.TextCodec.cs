@@ -502,7 +502,7 @@ internal sealed partial class LythonRuntime
         var source = text.Utf8Bytes.Span;
         for (var sourceOffset = 0; sourceOffset < source.Length; position++)
         {
-            if ((position & 1023) == 0) context.CheckExecutionBudget(span);
+            if ((position & 1023) == 0) context.CheckExecution(span);
             _ = Rune.DecodeFromUtf8(source[sourceOffset..], out var rune, out var consumed);
             sourceOffset += consumed;
             if (rune.Value == '\n' && newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
@@ -538,7 +538,7 @@ internal sealed partial class LythonRuntime
         position = 0;
         for (var sourceOffset = 0; sourceOffset < source.Length;)
         {
-            if ((position++ & 1023) == 0) context.CheckExecutionBudget(span);
+            if ((position++ & 1023) == 0) context.CheckExecution(span);
             _ = Rune.DecodeFromUtf8(source[sourceOffset..], out var rune, out var consumed);
             sourceOffset += consumed;
             if (rune.Value == '\n' && newline is TextNewlineMode.PreserveCarriageReturn or TextNewlineMode.PreserveCarriageReturnLineFeed)

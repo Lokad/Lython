@@ -108,7 +108,7 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("TypeError", "a bytes-like object is required", span);
                 for (var offset = 0; offset < bytes.Length;)
                 {
-                    _context.CheckExecutionBudget(span);
+                    _context.CheckExecution(span);
                     var count = Math.Min(4096, bytes.Length - offset);
                     _writeBuffer.Append(bytes.Bytes.Slice(offset, count));
                     offset += count;
@@ -129,7 +129,7 @@ internal sealed partial class LythonRuntime
                 var payload = new byte[length];
                 for (var offset = 0; offset < length;)
                 {
-                    _context.CheckExecutionBudget(span);
+                    _context.CheckExecution(span);
                     var count = Math.Min(4096, length - offset);
                     _writeBuffer.WrittenSpan.Slice(offset, count).CopyTo(payload.AsSpan(offset, count));
                     offset += count;

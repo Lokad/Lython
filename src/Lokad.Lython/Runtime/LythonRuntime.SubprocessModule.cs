@@ -70,7 +70,7 @@ internal sealed partial class LythonRuntime
 
     private static object CompletedProcess(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        context.CheckExecutionBudget(span);
+        context.CheckExecution(span);
         if (arguments.Length < 2)
         {
             throw new LythonRuntimeException("TypeError", "subprocess.CompletedProcess(args, returncode, stdout=None, stderr=None) expects args and returncode.", span);
@@ -93,7 +93,7 @@ internal sealed partial class LythonRuntime
 
     private static object List2Cmdline(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        context.CheckExecutionBudget(span);
+        context.CheckExecution(span);
         if (arguments.Length != 1)
         {
             throw new LythonRuntimeException("TypeError", "subprocess.list2cmdline(seq) expects one iterable of strings.", span);

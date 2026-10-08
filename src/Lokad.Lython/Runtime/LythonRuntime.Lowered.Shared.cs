@@ -898,7 +898,7 @@ internal sealed partial class LythonRuntime
         var keywordIndex = 0;
         foreach (var argument in arguments)
         {
-            context.CheckExecutionBudget(definition.Span);
+            context.CheckExecution(definition.Span);
             if (argument.IsPositional) bases[baseIndex++] = argument.Value;
             else
             {

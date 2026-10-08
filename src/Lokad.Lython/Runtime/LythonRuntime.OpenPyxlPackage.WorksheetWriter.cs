@@ -42,7 +42,7 @@ internal sealed partial class LythonRuntime
                 {
                     if ((++serializedCells & (ArchiveBudgetCheckInterval - 1)) == 0)
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                     }
 
                     var address = new CellAddress(rowIndex, column);

@@ -7,13 +7,13 @@ internal sealed class ExecutionServices
     public ExecutionServices(ExecutionState state)
     {
         State = state;
-        BudgetGuards = state.BudgetGuards;
+        Guards = state.Guards;
         ValueObservation = new ExecutionValueObservation(state);
     }
 
     public ExecutionState State { get; }
 
-    public ExecutionBudgetGuards BudgetGuards { get; }
+    public ExecutionGuards Guards { get; }
 
     public ExecutionValueObservation ValueObservation { get; }
 
@@ -25,17 +25,17 @@ internal sealed class ExecutionServices
 
     public MemoryGovernor MemoryGovernor => State.MemoryGovernor;
 
-    public void CheckExecutionBudget(LythonSourceSpan? span) => BudgetGuards.CheckExecutionBudget(span);
+    public void CheckExecution(LythonSourceSpan? span) => Guards.CheckExecution(span);
 
-    public void RegisterHostCall(LythonSourceSpan? span) => BudgetGuards.RegisterHostCall(span);
+    public void RegisterHostCall(LythonSourceSpan? span) => Guards.RegisterHostCall(span);
 
-    public void EnterFunctionCall(LythonSourceSpan? span) => BudgetGuards.EnterFunctionCall(span);
+    public void EnterFunctionCall(LythonSourceSpan? span) => Guards.EnterFunctionCall(span);
 
-    public void LeaveFunctionCall() => BudgetGuards.LeaveFunctionCall();
+    public void LeaveFunctionCall() => Guards.LeaveFunctionCall();
 
-    public void EnterInterpreterFrame(LythonSourceSpan? span) => BudgetGuards.EnterInterpreterFrame(span);
+    public void EnterInterpreterFrame(LythonSourceSpan? span) => Guards.EnterInterpreterFrame(span);
 
-    public void LeaveInterpreterFrame() => BudgetGuards.LeaveInterpreterFrame();
+    public void LeaveInterpreterFrame() => Guards.LeaveInterpreterFrame();
 
     public PyException? SetCurrentException(PyException? exception)
     {
@@ -46,13 +46,13 @@ internal sealed class ExecutionServices
 
     public void ObserveString(PyString text, LythonSourceSpan? span)
     {
-        BudgetGuards.CheckExecutionBudget(span);
+        Guards.CheckExecution(span);
         ValueObservation.ObserveString(text, span);
     }
 
     public void ObserveCollectionCount(int count, LythonSourceSpan? span)
     {
-        BudgetGuards.CheckExecutionBudget(span);
+        Guards.CheckExecution(span);
         ValueObservation.ObserveCollectionCount(count, span);
     }
 

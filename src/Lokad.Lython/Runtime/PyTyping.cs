@@ -53,7 +53,7 @@ internal sealed class PyTypingAlias : IPySubscriptableValue, IPyRenderableValue,
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        context.CheckExecutionBudget(span);
+        context.CheckExecution(span);
         return ShortName switch
         {
             "NamedTuple" => PyTyping.NamedTuple(arguments, span, context),
@@ -167,7 +167,7 @@ internal static class PyTyping
 
     public static object TypeVar(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        context.CheckExecutionBudget(span);
+        context.CheckExecution(span);
         if (!TryGetNamedOrPositional(arguments, 0, "name", out var nameValue) ||
             !PyStringOps.TryAsString(nameValue, out var name))
         {
@@ -185,7 +185,7 @@ internal static class PyTyping
 
     public static object NewType(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        context.CheckExecutionBudget(span);
+        context.CheckExecution(span);
         if (!TryGetNamedOrPositional(arguments, 0, "name", out var nameValue) ||
             !PyStringOps.TryAsString(nameValue, out var name) ||
             !TryGetNamedOrPositional(arguments, 1, "tp", out _))
@@ -202,7 +202,7 @@ internal static class PyTyping
 
     public static object Cast(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        context.CheckExecutionBudget(span);
+        context.CheckExecution(span);
         if (!TryGetNamedOrPositional(arguments, 0, "typ", out _) ||
             !TryGetNamedOrPositional(arguments, 1, "val", out var value) ||
             CountEffectiveArguments(arguments) != 2)
@@ -215,7 +215,7 @@ internal static class PyTyping
 
     public static object GetOrigin(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        context.CheckExecutionBudget(span);
+        context.CheckExecution(span);
         if (!TryGetSingleArgument(arguments, "tp", out var value))
         {
             throw new LythonRuntimeException("TypeError", "typing.get_origin(tp) expects one argument.", span);
@@ -245,7 +245,7 @@ internal static class PyTyping
 
     public static object GetArgs(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        context.CheckExecutionBudget(span);
+        context.CheckExecution(span);
         if (!TryGetSingleArgument(arguments, "tp", out var value))
         {
             throw new LythonRuntimeException("TypeError", "typing.get_args(tp) expects one argument.", span);
@@ -265,7 +265,7 @@ internal static class PyTyping
 
     public static object NamedTuple(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        context.CheckExecutionBudget(span);
+        context.CheckExecution(span);
         if (!TryGetNamedOrPositional(arguments, 0, "typename", out var nameValue) ||
             !PyStringOps.TryAsString(nameValue, out var name))
         {
@@ -280,7 +280,7 @@ internal static class PyTyping
 
     public static object TypedDict(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        context.CheckExecutionBudget(span);
+        context.CheckExecution(span);
         if (!TryGetNamedOrPositional(arguments, 0, "typename", out var nameValue) ||
             !PyStringOps.TryAsString(nameValue, out var name))
         {
@@ -498,7 +498,7 @@ internal static class PyTyping
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (!TryGetSingleArgument(arguments, "value", out var value))
             {
                 throw new LythonRuntimeException("TypeError", $"{Name}(value) expects one argument.", span);
@@ -552,7 +552,7 @@ internal sealed class PyTypingConstructedType : LythonRuntime.ICallable, IPyRend
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        context.CheckExecutionBudget(span);
+        context.CheckExecution(span);
         return Kind == PyTypingConstructedKind.TypedDict
             ? CreateTypedDict(arguments, span, context)
             : CreateNamedTuple(arguments, span, context);
@@ -806,7 +806,7 @@ internal sealed class PyTypingNamedTupleObject : IPySequenceValue, IPyIndexableV
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var values = _owner.ToArray();
             foreach (var argument in arguments)
             {

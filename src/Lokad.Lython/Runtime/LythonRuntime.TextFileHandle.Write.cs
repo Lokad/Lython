@@ -110,7 +110,7 @@ internal sealed partial class LythonRuntime
                     var source = text.Utf8Bytes.Span;
                     for (var offset = 0; offset < source.Length; position++)
                     {
-                        if ((position & 1023) == 0) _context.CheckExecutionBudget(null);
+                        if ((position & 1023) == 0) _context.CheckExecution(null);
                         _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
                         offset += consumed;
                         if (TryEncodeSingleByteScalar(rune.Value, _encoding, out _))
@@ -148,7 +148,7 @@ internal sealed partial class LythonRuntime
                     var position = 0;
                     for (var offset = 0; offset < source.Length;)
                     {
-                        if ((position++ & 1023) == 0) _context.CheckExecutionBudget(null);
+                        if ((position++ & 1023) == 0) _context.CheckExecution(null);
                         _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
                         offset += consumed;
                         if (rune.Value <= 0x7F)

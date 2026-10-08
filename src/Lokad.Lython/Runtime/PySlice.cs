@@ -69,7 +69,7 @@ internal sealed class PySlice : IPyDynamicAttributes, IPyRenderableValue, IPyHas
     {
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
 
             var positionals = 0;
             object? length = null;

@@ -38,7 +38,7 @@
     <None Include="..\..\icon.png" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 
-  <!-- AllowUnsafeBlocks covers only ExecutionBudgetGuards.StackRuler, which reads
+  <!-- AllowUnsafeBlocks covers only ExecutionGuards.StackRuler, which reads
        the current stack address (never dereferenced) because safe C# exposes no
        stack telemetry for the MG25 recursion backstop. -->
   <PropertyGroup>

@@ -52,7 +52,7 @@ internal sealed partial class LythonRuntime
             };
             for (var i = 0; i < bytes.Length; i++)
             {
-                if ((i & 255) == 0) context.CheckExecutionBudget(span);
+                if ((i & 255) == 0) context.CheckExecution(span);
                 if (bytes.Span[i] >= 128)
                     throw new LythonRuntimeException("UnicodeEncodeError", "struct format must be ASCII", span);
                 if (bytes.Span[i] == 0) throw Error("embedded null character", span);
@@ -64,7 +64,7 @@ internal sealed partial class LythonRuntime
             var fields = new FieldCursor(bytes, start);
             while (fields.Next(out var code, out var count, span))
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 if (start == 0 && code is (byte)'n' or (byte)'N' or (byte)'P') throw NativeLayout(span);
                 var width = Width(code, span);
                 try
@@ -131,7 +131,7 @@ internal sealed partial class LythonRuntime
             var offset = 0; var argument = 1;
             while (fields.Next(out var code, out var count, span))
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 if (code == (byte)'x') { offset += (int)count; continue; }
                 if (code is (byte)'s' or (byte)'p')
                 {
@@ -151,7 +151,7 @@ internal sealed partial class LythonRuntime
                 }
                 for (long i = 0; i < count; i++)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                     var value = args[argument++];
                     var width = Width(code, span);
                     ulong bits;
@@ -232,7 +232,7 @@ internal sealed partial class LythonRuntime
             catch (OverflowException) { throw Error("required argument is not a float", span); }
             catch (LythonRuntimeException ex) when (ex.ExceptionType != "MemoryError")
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 throw Error("required argument is not a float", span);
             }
         }
@@ -289,7 +289,7 @@ internal sealed partial class LythonRuntime
             var offset = 0; var index = 0;
             while (fields.Next(out var code, out var count, span))
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 if (code == (byte)'x') { offset += (int)count; continue; }
                 if (code is (byte)'s' or (byte)'p')
                 {
@@ -302,7 +302,7 @@ internal sealed partial class LythonRuntime
                 }
                 for (long i = 0; i < count; i++)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                     var width = Width(code, span);
                     ulong bits = 0;
                     for (var b = 0; b < width; b++)
@@ -386,7 +386,7 @@ internal sealed partial class LythonRuntime
             public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
             {
                 if (_offset == _bytes.Length) { value = null; return false; }
-                _context.CheckExecutionBudget(_span);
+                _context.CheckExecution(_span);
                 value = UnpackRecord(_layout, _bytes.Memory.Slice(_offset, (int)_layout.Size), _context, _span);
                 _offset += (int)_layout.Size;
                 return true;

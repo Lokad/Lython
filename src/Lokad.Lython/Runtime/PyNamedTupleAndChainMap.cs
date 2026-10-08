@@ -79,7 +79,7 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        context.CheckExecutionBudget(span);
+        context.CheckExecution(span);
         var values = new object[_fieldNames.Length];
         var assigned = new bool[_fieldNames.Length];
         var required = _fieldNames.Length - _defaults.Length;
@@ -256,7 +256,7 @@ internal sealed class PyNamedTupleType : LythonRuntime.ICallable, IPyRenderableV
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length != 1 || arguments[0].IsKeyword)
             {
                 throw new LythonRuntimeException("TypeError", $"{_type.Name}._make(iterable) expects one iterable argument.", span);
@@ -374,7 +374,7 @@ internal sealed class TupleGetterGetMethod : LythonRuntime.ICallable, IPyDynamic
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        context.CheckExecutionBudget(span);
+        context.CheckExecution(span);
         foreach (var argument in arguments)
         {
             if (argument.IsKeyword)
@@ -461,7 +461,7 @@ internal sealed class TupleGetterSetMethod : LythonRuntime.ICallable, IPyDynamic
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        context.CheckExecutionBudget(span);
+        context.CheckExecution(span);
         foreach (var argument in arguments)
         {
             if (argument.IsKeyword)
@@ -616,7 +616,7 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length != 0)
             {
                 throw new LythonRuntimeException("TypeError", $"{_owner._type.Name}._asdict() expects no arguments.", span);
@@ -652,7 +652,7 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var values = _owner.ToArray();
             foreach (var argument in arguments)
             {
@@ -996,7 +996,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
                     context?.ObserveCollectionCount(keys.Count, span);
                     if (context is not null && (keys.Count & 63) == 0)
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                     }
                 }
             }
@@ -1043,7 +1043,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
                         context.ObserveCollectionCount(keys.Count, span);
                         if ((keys.Count & 63) == 0)
                         {
-                            context.CheckExecutionBudget(span);
+                            context.CheckExecution(span);
                         }
                     }
                 }
@@ -1257,7 +1257,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var bound = CallBinder.BindNamedArguments(arguments, span, GetCallSignature, PythonCallableKind.Method);
             var key = LythonRuntime.ValidateDictionaryKey(bound[0], span);
             return _owner.GetOrDefault(key, bound.Length == 2 ? bound[1] : PyNone.Instance);
@@ -1272,7 +1272,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var bound = CallBinder.BindNamedArguments(arguments, span, PopCallSignature, PythonCallableKind.Method);
             var key = LythonRuntime.ValidateDictionaryKey(bound[0], span);
             if (_owner.TryPopFirstMap(key, out var found))
@@ -1298,7 +1298,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length != 0)
             {
                 throw new LythonRuntimeException("TypeError", "ChainMap.keys() expects no arguments.", span);
@@ -1320,7 +1320,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length != 0)
             {
                 throw new LythonRuntimeException("TypeError", "ChainMap.values() expects no arguments.", span);
@@ -1342,7 +1342,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length != 0)
             {
                 throw new LythonRuntimeException("TypeError", "ChainMap.items() expects no arguments.", span);
@@ -1364,7 +1364,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length > 1)
             {
                 throw new LythonRuntimeException("TypeError", "ChainMap.new_child([m]) expects zero or one mapping.", span);
@@ -1396,7 +1396,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length != 0)
             {
                 throw new LythonRuntimeException("TypeError", "ChainMap.copy() expects no arguments.", span);
@@ -1422,7 +1422,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var bound = CallBinder.BindNamedArguments(arguments, span, GetItemCallSignature, PythonCallableKind.Method);
             return LythonRuntime.ReadSubscriptValue(_owner, bound[0], span, context);
         }
@@ -1436,7 +1436,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var positional = 0;
             foreach (var argument in arguments)
             {
@@ -1468,7 +1468,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var bound = CallBinder.BindNamedArguments(arguments, span, DeleteItemCallSignature, PythonCallableKind.Method);
             LythonRuntime.DeleteSubscriptValue(_owner, bound[0], span, context);
             return PyNone.Instance;
@@ -1488,7 +1488,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var bound = CallBinder.BindNamedArguments(arguments, span, SetItemCallSignature, PythonCallableKind.Method);
             LythonRuntime.SetSubscriptValue(_owner, bound[0], bound[1], span, context);
             return PyNone.Instance;
@@ -1503,7 +1503,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length != 0)
             {
                 throw new LythonRuntimeException("TypeError", "ChainMap.__len__() expects no arguments.", span);
@@ -1526,7 +1526,7 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var bound = CallBinder.BindNamedArguments(arguments, span, ContainsCallSignature, PythonCallableKind.Method);
             using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
             return PyContainment.Contains(_owner, bound[0], span);

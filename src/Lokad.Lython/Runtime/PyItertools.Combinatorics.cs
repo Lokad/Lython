@@ -283,7 +283,7 @@ internal sealed class PyCountIterator : PyIteratorBase
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
-        _context.CheckExecutionBudget(_span);
+        _context.CheckExecution(_span);
         if (!_started)
         {
             _started = true;
@@ -357,7 +357,7 @@ internal sealed class PyCycleIterator : PyIteratorBase
 
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
-        _context.CheckExecutionBudget(_span);
+        _context.CheckExecution(_span);
         if (!_sourceExhausted)
         {
             if (_source.TryMoveNext(out var current))
@@ -386,7 +386,7 @@ internal sealed class PyCycleIterator : PyIteratorBase
 
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
-        _context.CheckExecutionBudget(_span);
+        _context.CheckExecution(_span);
         if (!_sourceExhausted)
         {
             var (hasValue, current) = await _source.TryMoveNextAsync().ConfigureAwait(false);

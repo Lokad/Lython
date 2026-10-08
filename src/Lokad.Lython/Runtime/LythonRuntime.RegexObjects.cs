@@ -37,7 +37,7 @@ internal sealed partial class LythonRuntime
                 return false;
             }
 
-            _context.CheckExecutionBudget(_span);
+            _context.CheckExecution(_span);
             value = RegexMatcher.CreateMatchObject(_pattern, _range, (Utf8PythonDetailedMatchData)_matches.Current.RequireNotNull(), _context, _span);
             return true;
         }
@@ -467,7 +467,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context,
             Func<Utf8PythonRegex, ReadOnlySpan<byte>, Utf8PythonDetailedMatchData> operation)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length is < 1 or > 3 || !PyStringOps.TryAsString(arguments[0], out var text))
             {
                 throw new LythonRuntimeException("TypeError", "Compiled regex method expects string, optional pos, and optional endpos.", span);
@@ -491,7 +491,7 @@ internal sealed partial class LythonRuntime
 
         private static object ExecuteFindAll(RePatternObject pattern, object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length is < 1 or > 3 || !PyStringOps.TryAsString(arguments[0], out var text))
             {
                 throw new LythonRuntimeException("TypeError", "pattern.findall(string[, pos[, endpos]]) expects a string argument.", span);
@@ -516,7 +516,7 @@ internal sealed partial class LythonRuntime
                     var scalars = new object[result.ScalarValues.Length];
                     for (var i = 0; i < scalars.Length; i++)
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                         scalars[i] = CreateUtf8String(result.ScalarValues[i], context, span);
                     }
                     // Findall items never pass a funnel (see OwnSplitListResult): adopt
@@ -527,7 +527,7 @@ internal sealed partial class LythonRuntime
                     var tuples = new object[result.TupleValues.Length];
                     for (var tupleIndex = 0; tupleIndex < tuples.Length; tupleIndex++)
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                         var tuple = result.TupleValues[tupleIndex];
                         var items = new object[tuple.Length];
                         for (var i = 0; i < tuple.Length; i++)
@@ -546,7 +546,7 @@ internal sealed partial class LythonRuntime
 
         private static object ExecuteFindIter(RePatternObject pattern, object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length is < 1 or > 3 || !PyStringOps.TryAsString(arguments[0], out var text))
             {
                 throw new LythonRuntimeException("TypeError", "pattern.finditer(string[, pos[, endpos]]) expects a string argument.", span);
@@ -568,7 +568,7 @@ internal sealed partial class LythonRuntime
 
         private static object ExecuteSub(RePatternObject pattern, object[] arguments, LythonSourceSpan span, ExecutionContext context, RegexSubstitutionMode mode)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var operationName = mode == RegexSubstitutionMode.TextAndCount ? "pattern.subn" : "pattern.sub";
             if (arguments.Length is < 2 or > 5 || !PyStringOps.TryAsString(arguments[1], out var text))
             {
@@ -598,7 +598,7 @@ internal sealed partial class LythonRuntime
 
         private static object ExecuteSplit(RePatternObject pattern, object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length is < 1 or > 4 || !PyStringOps.TryAsString(arguments[0], out var text))
             {
                 throw new LythonRuntimeException("TypeError", "pattern.split(string[, maxsplit[, pos[, endpos]]]) expects a string and optional maxsplit/pos/endpos.", span);

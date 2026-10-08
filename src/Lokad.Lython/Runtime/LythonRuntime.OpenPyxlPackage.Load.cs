@@ -36,7 +36,7 @@ internal sealed partial class LythonRuntime
                     var blockCharge = (ModelStringBytes * ArchiveBudgetCheckInterval) + textBytes;
                     session.CommitTransientModelCharge(blockCharge);
                     textBytes = 0;
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -88,7 +88,7 @@ internal sealed partial class LythonRuntime
             {
                 if ((++scannedXfs & (ArchiveBudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 var xfId = ReadNonNegativeIntAttribute(xf, "xfId", span);
@@ -129,7 +129,7 @@ internal sealed partial class LythonRuntime
             {
                 if ((++scannedStyles & (ArchiveBudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 if ((string?)cellStyle.Attribute("name") is not { } name)
@@ -229,7 +229,7 @@ internal sealed partial class LythonRuntime
                 styles.Add(read(element));
                 if ((++scanned & (ArchiveBudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
 
@@ -405,7 +405,7 @@ internal sealed partial class LythonRuntime
             {
                 if ((++scanned & (ArchiveBudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 var id = (string?)relationship.Attribute("Id");
@@ -445,7 +445,7 @@ internal sealed partial class LythonRuntime
             {
                 if ((++scanned & (ArchiveBudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 var name = (string?)definedName.Attribute("name");

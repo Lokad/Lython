@@ -58,7 +58,7 @@ internal sealed partial class LythonRuntime
 
         private async ValueTask<(object Value, int EndRune)> DecodeJsonRawValueCoreAsync(PyString document, long idxRune, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, bool asynchronous)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var input = new JsonParseInput(document, document.Utf8Bytes);
             if (idxRune > document.Length)
             {
@@ -113,7 +113,7 @@ internal sealed partial class LythonRuntime
         // the given index.
         private async ValueTask<(object Value, int End)> ReadJsonValueExactAsync(JsonParseInput input, JsonLoadOptions options, ExecutionContext context, LythonSourceSpan span, int depth, int position, bool asynchronous)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var bytes = input.Source;
             if (position >= bytes.Length)
             {
@@ -186,7 +186,7 @@ internal sealed partial class LythonRuntime
             var controls = 0;
             while (end < original.Length)
             {
-                if ((end & 1023) == 0) context.CheckExecutionBudget(span);
+                if ((end & 1023) == 0) context.CheckExecution(span);
                 var current = original[end++];
                 if (current == (byte)'\\')
                 {
@@ -216,7 +216,7 @@ internal sealed partial class LythonRuntime
                 var written = 0;
                 for (var read = 0; read < token.Length; read++)
                 {
-                    if ((read & 1023) == 0) context.CheckExecutionBudget(span);
+                    if ((read & 1023) == 0) context.CheckExecution(span);
                     var current = token.Span[read];
                     if (current == (byte)'\\')
                     {
@@ -256,7 +256,7 @@ internal sealed partial class LythonRuntime
                     var copy = 0;
                     while (read < end && copy < relative)
                     {
-                        if ((read & 1023) == 0) context.CheckExecutionBudget(span);
+                        if ((read & 1023) == 0) context.CheckExecution(span);
                         var current = original[read];
                         var width = current < 0x20 ? 6 : 1;
                         if (copy + width > relative) break;
@@ -336,7 +336,7 @@ internal sealed partial class LythonRuntime
                         throw CreateJsonExpectingError(input, pairKeyStart, JsonIncompleteExpectation.PropertyName, span, context);
                     }
 
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                     var (pairKeyObject, pairKeyEnd) = await ReadJsonValueAsync(input, options, context, span, depth, pairKeyStart, asynchronous).ConfigureAwait(false);
                     if (pairKeyObject is not PyString pairKey)
                     {
@@ -401,7 +401,7 @@ internal sealed partial class LythonRuntime
                     throw CreateJsonExpectingError(input, keyStart, JsonIncompleteExpectation.PropertyName, span, context);
                 }
 
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 var (memberKeyObject, memberKeyEnd) = await ReadJsonValueAsync(input, options, context, span, depth, keyStart, asynchronous).ConfigureAwait(false);
                 if (memberKeyObject is not PyString memberKey)
                 {
@@ -462,7 +462,7 @@ internal sealed partial class LythonRuntime
                     throw CreateJsonExpectingError(input, elementStart, JsonIncompleteExpectation.Value, span, context);
                 }
 
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 var (element, elementEnd) = await ReadJsonValueAsync(input, options, context, span, depth, elementStart, asynchronous).ConfigureAwait(false);
                 result.Add(element);
                 context.ObserveCollectionCount(result.Count, span);
@@ -565,7 +565,7 @@ internal sealed partial class LythonRuntime
             {
                 do
                 {
-                    if ((cursor & 1023) == 0) context.CheckExecutionBudget(span);
+                    if ((cursor & 1023) == 0) context.CheckExecution(span);
                     cursor++;
                 }
                 while (cursor < bytes.Length && bytes[cursor] is >= (byte)'0' and <= (byte)'9');
@@ -586,7 +586,7 @@ internal sealed partial class LythonRuntime
 
                 do
                 {
-                    if ((fraction & 1023) == 0) context.CheckExecutionBudget(span);
+                    if ((fraction & 1023) == 0) context.CheckExecution(span);
                     fraction++;
                 }
                 while (fraction < bytes.Length && bytes[fraction] is >= (byte)'0' and <= (byte)'9');
@@ -609,7 +609,7 @@ internal sealed partial class LythonRuntime
 
                 do
                 {
-                    if ((exponent & 1023) == 0) context.CheckExecutionBudget(span);
+                    if ((exponent & 1023) == 0) context.CheckExecution(span);
                     exponent++;
                 }
                 while (exponent < bytes.Length && bytes[exponent] is >= (byte)'0' and <= (byte)'9');
@@ -669,7 +669,7 @@ internal sealed partial class LythonRuntime
         {
             while (position < bytes.Length && bytes[position] is (byte)' ' or (byte)'\t' or (byte)'\n' or (byte)'\r')
             {
-                if ((position & 1023) == 0) context.CheckExecutionBudget(span);
+                if ((position & 1023) == 0) context.CheckExecution(span);
                 position++;
             }
 

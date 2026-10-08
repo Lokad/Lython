@@ -53,7 +53,7 @@ return matcher.ratio()
         // on windows), and output polling starved under full-suite load, so
         // no timing constant is safe. The hook below cancels synchronously
         // on the run thread inside the third stdout write while 27 matching
-        // rounds remain; the engine observes it at CheckExecutionBudget
+        // rounds remain; the engine observes it at CheckExecution
         // sites inside the matcher loops. Null hook by default elsewhere.
         using var cts = new CancellationTokenSource();
         var host = new MockLythonHost();

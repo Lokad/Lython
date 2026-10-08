@@ -49,7 +49,7 @@ internal sealed partial class LythonRuntime
         long length = 0;
         for (var index = 0; index < source.Length; index++)
         {
-            if ((index & 1023) == 0) context.CheckExecutionBudget(span);
+            if ((index & 1023) == 0) context.CheckExecution(span);
             var value = source[index];
             var scalar = value is >= 128 and < 160 ? Windows1252SpecialScalars[value - 128] : value;
             if (scalar < 0)
@@ -78,7 +78,7 @@ internal sealed partial class LythonRuntime
         const string hex = "0123456789abcdef";
         for (var index = 0; index < source.Length; index++)
         {
-            if ((index & 1023) == 0) context.CheckExecutionBudget(span);
+            if ((index & 1023) == 0) context.CheckExecution(span);
             var value = source[index];
             if (value == '\r' && newline == TextNewlineMode.TranslateUniversal)
             {

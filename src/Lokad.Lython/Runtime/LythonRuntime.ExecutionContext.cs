@@ -810,7 +810,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        public void CheckExecutionBudget(LythonSourceSpan? span) => Services.CheckExecutionBudget(span);
+        public void CheckExecution(LythonSourceSpan? span) => Services.CheckExecution(span);
 
         public void ObserveValue(object value, LythonSourceSpan? span) => Services.ObserveValue(value, span);
 

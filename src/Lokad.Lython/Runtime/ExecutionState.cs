@@ -76,7 +76,7 @@ internal sealed class ExecutionState
     {
         Host = host;
         Limits = LythonRuntime.ExecutionLimits.FromOptions(options);
-        BudgetGuards = new ExecutionBudgetGuards(this);
+        Guards = new ExecutionGuards(this);
         MemoryGovernor = new MemoryGovernor(Limits.MaxExecutionMemoryBytes);
         CallTemporaries = new ChargeReclamationPool(MemoryGovernor);
         MemoryGovernor.LivePoolProvider = LiveReclamationPools;
@@ -138,7 +138,7 @@ internal sealed class ExecutionState
 
     public LythonRuntime.ExecutionLimits Limits { get; }
 
-    public ExecutionBudgetGuards BudgetGuards { get; }
+    public ExecutionGuards Guards { get; }
 
     public MemoryGovernor MemoryGovernor { get; }
 

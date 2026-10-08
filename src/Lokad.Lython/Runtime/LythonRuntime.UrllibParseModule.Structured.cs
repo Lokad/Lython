@@ -38,7 +38,7 @@ internal sealed partial class LythonRuntime
                 var source = path.Utf8Bytes;
                 var segment = 0;
                 for (var i = 0; i < source.Length; i++)
-                { if ((i & 1023) == 0) context.CheckExecutionBudget(span); if (source.Span[i] == '/') segment = i + 1; }
+                { if ((i & 1023) == 0) context.CheckExecution(span); if (source.Span[i] == '/') segment = i + 1; }
                 var semicolon = FindByte(source.Span, (byte)';', segment, source.Length, context, span);
                 if (semicolon >= 0)
                 {
@@ -77,7 +77,7 @@ internal sealed partial class LythonRuntime
                 var valid = true;
                 for (var i = 0; i < colon; i++)
                 {
-                    if ((i & 1023) == 0) context.CheckExecutionBudget(span);
+                    if ((i & 1023) == 0) context.CheckExecution(span);
                     var c = source.Span[i];
                     if (!(IsAsciiAlpha(c) || c is >= (byte)'0' and <= (byte)'9' or (byte)'+' or (byte)'-' or (byte)'.')) { valid = false; break; }
                 }
@@ -92,7 +92,7 @@ internal sealed partial class LythonRuntime
             {
                 var end = start + 2;
                 while (end < length && source.Span[end] is not ((byte)'/' or (byte)'?' or (byte)'#'))
-                { if ((end & 1023) == 0) context.CheckExecutionBudget(span); end++; }
+                { if ((end & 1023) == 0) context.CheckExecution(span); end++; }
                 netloc = OwnedText(source.Slice(start + 2, end - start - 2), context, span);
                 ValidateBrackets(netloc, context, span);
                 start = end;
@@ -144,17 +144,17 @@ internal sealed partial class LythonRuntime
             var source = text.Utf8Bytes;
             var start = 0; var end = source.Length;
             while (start < end && source.Span[start] <= 32)
-            { if ((start & 1023) == 0) context.CheckExecutionBudget(span); start++; }
+            { if ((start & 1023) == 0) context.CheckExecution(span); start++; }
             if (bothEnds)
                 while (end > start && source.Span[end - 1] <= 32)
-                { if ((end & 1023) == 0) context.CheckExecutionBudget(span); end--; }
+                { if ((end & 1023) == 0) context.CheckExecution(span); end--; }
             var builder = new GovernedByteBuilder(context.MemoryGovernor, span);
             try
             {
                 var part = start; var removed = false;
                 for (var i = start; i < end; i++)
                 {
-                    if ((i & 1023) == 0) context.CheckExecutionBudget(span);
+                    if ((i & 1023) == 0) context.CheckExecution(span);
                     if (source.Span[i] is 9 or 10 or 13)
                     { builder.Append(source.Span[part..i]); part = i + 1; removed = true; }
                 }
@@ -170,7 +170,7 @@ internal sealed partial class LythonRuntime
         private static int FindByte(ReadOnlySpan<byte> source, byte value, int start, int end, ExecutionContext context, LythonSourceSpan span)
         {
             for (var i = start; i < end; i++)
-            { if ((i & 1023) == 0) context.CheckExecutionBudget(span); if (source[i] == value) return i; }
+            { if ((i & 1023) == 0) context.CheckExecution(span); if (source[i] == value) return i; }
             return -1;
         }
         private static bool IsAsciiAlpha(byte c) => c is >= (byte)'a' and <= (byte)'z' or >= (byte)'A' and <= (byte)'Z';
@@ -193,7 +193,7 @@ internal sealed partial class LythonRuntime
             var source = netloc.Utf8Bytes.Span;
             for (var i = 0; i < source.Length;)
             {
-                if ((i & 1023) == 0) context.CheckExecutionBudget(span);
+                if ((i & 1023) == 0) context.CheckExecution(span);
                 _ = Rune.DecodeFromUtf8(source[i..], out var rune, out var consumed);
                 if (rune.Value is 0x2047 or 0x2048 or 0x2049 or 0x2100 or 0x2101 or 0x2105 or 0x2106 or 0x2A74 or 0xFE13 or 0xFE16 or 0xFE55 or 0xFE56 or 0xFE5F or 0xFE6B or 0xFF03 or 0xFF0F or 0xFF1A or 0xFF1F or 0xFF20)
                     throw new LythonRuntimeException("ValueError", "netloc contains invalid characters under NFKC normalization", span);
@@ -210,7 +210,7 @@ internal sealed partial class LythonRuntime
             if (open < 0 || close < 0) throw BadBrackets(span);
             var hostStart = 0;
             for (var i = 0; i < source.Length; i++)
-            { if ((i & 1023) == 0) context.CheckExecutionBudget(span); if (source[i] == '@') hostStart = i + 1; }
+            { if ((i & 1023) == 0) context.CheckExecution(span); if (source[i] == '@') hostStart = i + 1; }
             open = FindByte(source, (byte)'[', hostStart, source.Length, context, span);
             ReadOnlySpan<byte> host;
             if (open >= 0)
@@ -229,7 +229,7 @@ internal sealed partial class LythonRuntime
             {
                 var index = 1;
                 while (index < host.Length && IsHex(host[index]))
-                { if ((index & 1023) == 0) context.CheckExecutionBudget(span); index++; }
+                { if ((index & 1023) == 0) context.CheckExecution(span); index++; }
                 if (index == 1 || index + 1 >= host.Length || host[index] != '.' || host[(index + 1)..].IndexOf((byte)'\n') >= 0) throw BadBrackets(span);
                 return;
             }
@@ -392,7 +392,7 @@ internal sealed partial class LythonRuntime
             {
                 var bytes = text.Utf8Bytes;
                 for (var pos = 0; pos < bytes.Length; pos += Math.Min(1024, bytes.Length - pos))
-                { context.CheckExecutionBudget(span); builder.Append(bytes.Span.Slice(pos, Math.Min(1024, bytes.Length - pos))); }
+                { context.CheckExecution(span); builder.Append(bytes.Span.Slice(pos, Math.Min(1024, bytes.Length - pos))); }
             }
         }
 

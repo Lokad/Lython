@@ -14,7 +14,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
             {
                 throw new LythonRuntimeException("TypeError", "functools.singledispatch(func) expects one callable argument.", span);
@@ -42,7 +42,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
             {
                 throw new LythonRuntimeException("TypeError", "functools.singledispatchmethod(func) expects one callable argument.", span);
@@ -93,7 +93,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var dispatchIndex = _methodMode ? 1 : 0;
             if (arguments.Length <= dispatchIndex)
             {
@@ -353,7 +353,7 @@ internal sealed partial class LythonRuntime
 
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 if (arguments.Length == 1 && arguments[0].IsPositional)
                 {
                     if (!IsSupportedTypeSpecifier(arguments[0].Value))
@@ -403,7 +403,7 @@ internal sealed partial class LythonRuntime
 
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
                 {
                     throw new LythonRuntimeException("TypeError", "singledispatch.register(cls)(func) expects one callable argument.", span);
@@ -430,7 +430,7 @@ internal sealed partial class LythonRuntime
 
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 if (arguments.Length != 1 || arguments[0].IsKeyword)
                 {
                     throw new LythonRuntimeException("TypeError", "singledispatch.dispatch(cls) expects one class/type argument.", span);
@@ -492,7 +492,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length == 0)
             {
                 throw new LythonRuntimeException("TypeError", "singledispatchmethod call requires a dispatch argument.", span);
@@ -522,7 +522,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var fillValue = PyString.FromString("...");
             if (arguments.Length > 1)
             {
@@ -565,7 +565,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not ICallable callable)
             {
                 throw new LythonRuntimeException("TypeError", "functools.recursive_repr(...)(func) expects one callable argument.", span);
@@ -597,7 +597,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var key = arguments.Length == 0 ? this : arguments[0].Value;
             if (!_active.Add(key))
             {

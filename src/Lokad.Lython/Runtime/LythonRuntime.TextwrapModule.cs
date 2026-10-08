@@ -46,7 +46,7 @@ internal sealed partial class LythonRuntime
             var normalizeBlankLines = false;
             for (var start = 0; start < source.Length;)
             {
-                services.CheckExecutionBudget(span);
+                services.CheckExecution(span);
                 var end = FindLf(source, start, span, services);
                 var indent = LeadingIndent(source, start, end, span, services);
                 if (indent == end - start)
@@ -64,7 +64,7 @@ internal sealed partial class LythonRuntime
                     var shared = 0;
                     while (shared < marginLength && source[marginStart + shared] == source[start + shared])
                     {
-                        if ((shared & 1023) == 0) services.CheckExecutionBudget(span);
+                        if ((shared & 1023) == 0) services.CheckExecution(span);
                         shared++;
                     }
                     marginLength = shared;
@@ -78,7 +78,7 @@ internal sealed partial class LythonRuntime
             {
                 for (var start = 0; start < source.Length;)
                 {
-                    services.CheckExecutionBudget(span);
+                    services.CheckExecution(span);
                     var end = FindLf(source, start, span, services);
                     var indent = LeadingIndent(source, start, end, span, services);
                     if (indent != end - start) builder.Append(source[(start + marginLength)..end]);
@@ -96,7 +96,7 @@ internal sealed partial class LythonRuntime
             var end = start;
             while (end < source.Length && source[end] != (byte)'\n')
             {
-                if ((end & 1023) == 0) services.CheckExecutionBudget(span);
+                if ((end & 1023) == 0) services.CheckExecution(span);
                 end++;
             }
             return end;
@@ -107,7 +107,7 @@ internal sealed partial class LythonRuntime
             var cursor = start;
             while (cursor < end && source[cursor] is (byte)' ' or (byte)'\t')
             {
-                if ((cursor & 1023) == 0) services.CheckExecutionBudget(span);
+                if ((cursor & 1023) == 0) services.CheckExecution(span);
                 cursor++;
             }
             return cursor - start;
@@ -134,7 +134,7 @@ internal sealed partial class LythonRuntime
                         services.State.CallTemporaries.TrackFreshString(lineText, span);
                         selected = await SelectLineAsync(lineText, predicate, span, context, asynchronous).ConfigureAwait(false);
                     }
-                    services.CheckExecutionBudget(span);
+                    services.CheckExecution(span);
                     if (selected && prefix is not PyString)
                     {
                         invalidItem ??= prefix;
@@ -189,9 +189,9 @@ internal sealed partial class LythonRuntime
 
             async ValueTask AppendLineAsync(object line)
             {
-                services.CheckExecutionBudget(span);
+                services.CheckExecution(span);
                 var selected = await SelectLineAsync(line, predicate, span, context, asynchronous).ConfigureAwait(false);
-                services.CheckExecutionBudget(span);
+                services.CheckExecution(span);
                 if (line is not PyString lineText || (selected && prefix is not PyString))
                     invalidItem = true;
                 else if (!invalidItem)
@@ -251,7 +251,7 @@ internal sealed partial class LythonRuntime
             long nextCheck = start;
             while (cursor < source.Length)
             {
-                if (cursor >= nextCheck) { services.CheckExecutionBudget(span); nextCheck = (long)cursor + 1024; }
+                if (cursor >= nextCheck) { services.CheckExecution(span); nextCheck = (long)cursor + 1024; }
                 if (PyStringOps.TryGetLineBreakByteLength(source, cursor, out var endingBytes))
                 {
                     scalars += source[cursor] == (byte)'\r' && endingBytes == 2 ? 2 : 1;
@@ -271,7 +271,7 @@ internal sealed partial class LythonRuntime
             long nextCheck = 0;
             for (var cursor = 0; cursor < source.Length;)
             {
-                if (cursor >= nextCheck) { services.CheckExecutionBudget(span); nextCheck = (long)cursor + 1024; }
+                if (cursor >= nextCheck) { services.CheckExecution(span); nextCheck = (long)cursor + 1024; }
                 Rune.DecodeFromUtf8(source[cursor..], out _, out var width);
                 count++;
                 cursor += width;

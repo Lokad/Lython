@@ -21,7 +21,7 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             _ = arguments;
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             throw new LythonRuntimeException("NotImplementedError", _message, span);
         }
 
@@ -58,7 +58,7 @@ internal sealed partial class LythonRuntime
         }
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var bound = CallBinder.BindNamedArguments(
                 arguments,
                 span,
@@ -103,7 +103,7 @@ internal sealed partial class LythonRuntime
         }
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var bound = CallBinder.BindNamedArguments(
                 arguments,
                 span,

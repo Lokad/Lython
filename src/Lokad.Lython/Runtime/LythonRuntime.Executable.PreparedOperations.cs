@@ -38,7 +38,7 @@ internal sealed partial class LythonRuntime
 
                     void Add(object item)
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                         if (destination is PyList list) AddListDisplayValue(list, item, span, context);
                         else if (destination is PySet set)
                         {
@@ -82,7 +82,7 @@ internal sealed partial class LythonRuntime
 
                     void Put(object key, object itemValue)
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                         using var ambient = PyStructuralGuard.PushAmbient(context, span);
                         var dictionary = (PyDict)Peek(_stack, span);
                         dictionary.SetItem(ValidateDictionaryKey(key, span), itemValue);

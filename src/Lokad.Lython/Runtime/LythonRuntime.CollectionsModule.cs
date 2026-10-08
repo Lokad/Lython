@@ -189,13 +189,13 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             return _implementation(arguments, span, context);
         }
 
         public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             return _asyncImplementation is null
                 ? ValueTask.FromResult(_implementation(arguments, span, context))
                 : _asyncImplementation(arguments, span, context);
@@ -228,7 +228,7 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             _ = arguments;
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             throw new LythonRuntimeException("NotImplementedError", $"{Name} is not supported by Lython.", span);
         }
 

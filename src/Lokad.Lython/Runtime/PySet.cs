@@ -432,7 +432,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             {
                 if ((++work & 63) == 0)
                 {
-                    context.CheckExecutionBudget(useSpan);
+                    context.CheckExecution(useSpan);
                 }
 
                 var entry = candidates[i];
@@ -450,7 +450,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         {
             if ((++work & 63) == 0)
             {
-                context.CheckExecutionBudget(useSpan);
+                context.CheckExecution(useSpan);
             }
 
             if (PyValueComparer.Instance.GetHashCode(existing) == hash || PyValueComparer.Instance.GetHashCode(existing) == structuralHash)
@@ -469,7 +469,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             {
                 if (i > storeHit && (++work & 63) == 0)
                 {
-                    context.CheckExecutionBudget(useSpan);
+                    context.CheckExecution(useSpan);
                 }
 
                 var existing = storeSnapshot[i];
@@ -579,7 +579,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         {
             if ((++work & 63) == 0)
             {
-                context.CheckExecutionBudget(useSpan);
+                context.CheckExecution(useSpan);
             }
 
             var entry = candidates[i];
@@ -619,7 +619,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             // null on context-free paths (identity fast path only then).
             if ((++work & 63) == 0 && context is not null && useSpan is not null)
             {
-                context.CheckExecutionBudget(useSpan);
+                context.CheckExecution(useSpan);
             }
 
             var entry = candidates[i];
@@ -668,7 +668,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             {
                 if ((++work & 63) == 0)
                 {
-                    context.CheckExecutionBudget(useSpan);
+                    context.CheckExecution(useSpan);
                 }
 
                 var entry = candidates[i];
@@ -687,7 +687,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         {
             if ((++work & 63) == 0)
             {
-                context.CheckExecutionBudget(useSpan);
+                context.CheckExecution(useSpan);
             }
 
             if (PyValueComparer.Instance.GetHashCode(existing) == hash || PyValueComparer.Instance.GetHashCode(existing) == structuralHash)
@@ -706,7 +706,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             {
                 if (i > storeHit && (++work & 63) == 0)
                 {
-                    context.CheckExecutionBudget(useSpan);
+                    context.CheckExecution(useSpan);
                 }
 
                 var existing = storeSnapshot[i];

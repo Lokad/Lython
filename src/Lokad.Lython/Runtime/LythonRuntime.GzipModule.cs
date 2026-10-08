@@ -87,7 +87,7 @@ internal sealed partial class LythonRuntime
                             using var deflate = new DeflateStream(cursor, CompressionMode.Decompress, leaveOpen: true);
                             while (true)
                             {
-                                context.CheckExecutionBudget(span);
+                                context.CheckExecution(span);
                                 var count = deflate.Read(buffer, 0, buffer.Length);
                                 if (count == 0)
                                 {
@@ -192,7 +192,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var options = ParseGzipOpenArguments(arguments, span, context);
             return OpenGzipHandle(options, context, span);
         }
@@ -202,7 +202,7 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span,
             ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             var options = ParseGzipOpenArguments(arguments, span, context);
             return await OpenGzipHandleAsync(options, context, span).ConfigureAwait(false);
         }
@@ -365,7 +365,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             object? data = null;
             object? level = null;
             object? mtime = null;
@@ -688,7 +688,7 @@ internal sealed partial class LythonRuntime
                 return 0;
             }
 
-            if ((BytePosition & 255) == 0) _context?.CheckExecutionBudget(_span);
+            if ((BytePosition & 255) == 0) _context?.CheckExecution(_span);
             buffer[0] = _data.Span[BytePosition++];
             return 1;
         }

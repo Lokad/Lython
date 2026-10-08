@@ -69,12 +69,12 @@ internal sealed partial class LythonRuntime
             _windowPosition = _windowLength = 0;
             while (!_eof)
             {
-                _context.CheckExecutionBudget(span);
+                _context.CheckExecution(span);
                 if (_memberEnded) await ReadTrailerAsync(span, asynchronous).ConfigureAwait(false);
                 if (_native is null && !await ReadHeaderAsync(span, asynchronous).ConfigureAwait(false)) return;
                 while (_windowLength < _window.Length)
                 {
-                    if ((_windowLength & 255) == 0) _context.CheckExecutionBudget(span);
+                    if ((_windowLength & 255) == 0) _context.CheckExecution(span);
                     int count;
                     try
                     {
@@ -108,7 +108,7 @@ internal sealed partial class LythonRuntime
                 {
                     await RefillAsync(span, asynchronous).ConfigureAwait(false);
                     if (_eof) break;
-                    _context.CheckExecutionBudget(span);
+                    _context.CheckExecution(span);
                     var count = _windowLength - _windowPosition;
                     if (size > 0) count = (int)Math.Min(size, count);
                     var ended = false;
@@ -141,7 +141,7 @@ internal sealed partial class LythonRuntime
             {
                 if (Remaining > 0) return true;
                 if (_ended) return false;
-                owner._context.CheckExecutionBudget(span);
+                owner._context.CheckExecution(span);
                 _input = await PyBinaryStream.ReadAsync(owner._stream, count, span, owner._context, asynchronous).ConfigureAwait(false);
                 _position = 0; _ended = _input.Length == 0;
                 return !_ended;
@@ -167,7 +167,7 @@ internal sealed partial class LythonRuntime
             {
                 while (count > 0)
                 {
-                    owner._context.CheckExecutionBudget(span);
+                    owner._context.CheckExecution(span);
                     if (!await AcquireAsync(Math.Min(count, 8192), span, asynchronous).ConfigureAwait(false)) throw GzipEnd(span);
                     var take = Math.Min(count, Remaining);
                     _position += take; _consumed += take; count -= take;
@@ -177,7 +177,7 @@ internal sealed partial class LythonRuntime
             {
                 while (true)
                 {
-                    owner._context.CheckExecutionBudget(span);
+                    owner._context.CheckExecution(span);
                     if (!await AcquireAsync(1, span, asynchronous).ConfigureAwait(false)) return;
                     var value = _input!.Bytes[_position++]; _consumed++;
                     if (value == 0) return;
@@ -187,7 +187,7 @@ internal sealed partial class LythonRuntime
             {
                 while (await AcquireAsync(1, span, asynchronous).ConfigureAwait(false))
                 {
-                    if ((_consumed & 255) == 0) owner._context.CheckExecutionBudget(span);
+                    if ((_consumed & 255) == 0) owner._context.CheckExecution(span);
                     if (_input!.Bytes[_position] != 0) return;
                     _position++; _consumed++;
                 }
@@ -201,14 +201,14 @@ internal sealed partial class LythonRuntime
             public override int Read(Span<byte> buffer)
             {
                 if (buffer.IsEmpty || !AcquireAsync(65536, owner._creationSpan, false).GetAwaiter().GetResult()) return 0;
-                if ((_consumed & 255) == 0) owner._context.CheckExecutionBudget(owner._creationSpan);
+                if ((_consumed & 255) == 0) owner._context.CheckExecution(owner._creationSpan);
                 buffer[0] = _input!.Bytes[_position++]; _consumed++;
                 return 1;
             }
             public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
             {
                 if (buffer.IsEmpty || !await AcquireAsync(65536, owner._creationSpan, true).ConfigureAwait(false)) return 0;
-                if ((_consumed & 255) == 0) owner._context.CheckExecutionBudget(owner._creationSpan);
+                if ((_consumed & 255) == 0) owner._context.CheckExecution(owner._creationSpan);
                 buffer.Span[0] = _input!.Bytes[_position++]; _consumed++;
                 return 1;
             }

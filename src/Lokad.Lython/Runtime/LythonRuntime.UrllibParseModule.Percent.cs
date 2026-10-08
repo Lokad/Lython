@@ -13,7 +13,7 @@ internal sealed partial class LythonRuntime
             long length = 0;
             for (var i = 0; i < source.Length; i++)
             {
-                if ((i & 1023) == 0) context.CheckExecutionBudget(span);
+                if ((i & 1023) == 0) context.CheckExecution(span);
                 length += safe.Contains(source[i]) ? 1 : 3;
             }
             CheckTextLength(length, context, span);
@@ -25,7 +25,7 @@ internal sealed partial class LythonRuntime
             const string hex = "0123456789ABCDEF";
             for (var i = 0; i < source.Length; i++)
             {
-                if ((i & 1023) == 0) context.CheckExecutionBudget(span);
+                if ((i & 1023) == 0) context.CheckExecution(span);
                 var b = source[i];
                 if (plus && b == 32 && safe.Contains(b)) output[offset++] = (byte)'+';
                 else if (safe.Contains(b)) output[offset++] = b;
@@ -55,7 +55,7 @@ internal sealed partial class LythonRuntime
             var length = source.Length;
             for (var i = 0; i < source.Length; i++)
             {
-                if ((i & 1023) == 0) context.CheckExecutionBudget(span);
+                if ((i & 1023) == 0) context.CheckExecution(span);
                 if (IsEscape(source, i)) { length -= 2; i += 2; }
             }
             context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(length), span);
@@ -63,7 +63,7 @@ internal sealed partial class LythonRuntime
             var offset = 0;
             for (var i = 0; i < source.Length; i++)
             {
-                if ((i & 1023) == 0) context.CheckExecutionBudget(span);
+                if ((i & 1023) == 0) context.CheckExecution(span);
                 if (IsEscape(source, i))
                 {
                     output[offset++] = (byte)((Hex(source[i + 1]) << 4) | Hex(source[i + 2]));
@@ -100,13 +100,13 @@ internal sealed partial class LythonRuntime
             {
                 for (var i = 0; i < bytes.Length;)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                     var start = i;
                     if (bytes[i] >= 128)
                     {
                         while (i < bytes.Length && bytes[i] >= 128)
                         {
-                            if ((i & 1023) == 0) context.CheckExecutionBudget(span);
+                            if ((i & 1023) == 0) context.CheckExecution(span);
                             _ = Rune.DecodeFromUtf8(bytes[i..], out _, out var consumed);
                             i += consumed;
                             runes++;
@@ -118,7 +118,7 @@ internal sealed partial class LythonRuntime
                     {
                         while (i < bytes.Length && bytes[i] < 128)
                         {
-                            if ((i & 1023) == 0) context.CheckExecutionBudget(span);
+                            if ((i & 1023) == 0) context.CheckExecution(span);
                             i++;
                         }
                         var unquoted = PercentDecodeBytes(bytes[start..i], context, span);

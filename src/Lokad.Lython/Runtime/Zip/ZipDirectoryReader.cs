@@ -129,7 +129,7 @@ internal static class ZipDirectoryReader
         {
             if ((++scanned & (ScanBudgetChunkBytes - 1)) == 0)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
             }
 
             if (BinaryPrimitives.ReadUInt32LittleEndian(bytes.Slice(offset, 4)) != EndOfCentralDirectorySignature)
@@ -282,7 +282,7 @@ internal static class ZipDirectoryReader
             {
                 if ((++scanned & (BudgetCheckInterval - 1)) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
 
                 entries.Add(ReadCentralEntry(bytes, ref offset, directoryEnd, entries.Count, forceUtf8Names, context, span, ref metadataCharge));

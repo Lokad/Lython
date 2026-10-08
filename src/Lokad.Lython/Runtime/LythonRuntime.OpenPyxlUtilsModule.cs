@@ -186,7 +186,7 @@ internal sealed partial class LythonRuntime
             var columns = new List<object>();
             for (var column = start; column <= end; column++)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 columns.Add(PyString.FromString(ColumnName(column)));
             }
 
@@ -220,7 +220,7 @@ internal sealed partial class LythonRuntime
             var rows = new List<object>();
             for (var row = bounds.MinRow; row <= bounds.MaxRow; row++)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 var cells = new object[bounds.MaxColumn - bounds.MinColumn + 1];
                 for (var column = bounds.MinColumn; column <= bounds.MaxColumn; column++)
                 {
@@ -240,7 +240,7 @@ internal sealed partial class LythonRuntime
             var columns = new List<object>();
             for (var column = bounds.MinColumn; column <= bounds.MaxColumn; column++)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 var cells = new object[bounds.MaxRow - bounds.MinRow + 1];
                 for (var row = bounds.MinRow; row <= bounds.MaxRow; row++)
                 {

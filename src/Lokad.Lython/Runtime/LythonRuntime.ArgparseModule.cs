@@ -205,7 +205,7 @@ internal sealed partial class LythonRuntime
         {
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 return CreateParser(arguments, span, context);
             }
         }
@@ -214,7 +214,7 @@ internal sealed partial class LythonRuntime
         {
             public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 var members = new Dictionary<string, object>(StringComparer.Ordinal);
                 foreach (var argument in arguments)
                 {
@@ -544,7 +544,7 @@ internal sealed partial class LythonRuntime
     {
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (arguments.Length != 1 || arguments[0].IsKeyword || !PyStringOps.TryAsString(arguments[0].Value, out var filename))
             {
                 throw new LythonRuntimeException("TypeError", "argparse.FileType callable expects one filename argument.", span);
@@ -581,7 +581,7 @@ internal sealed partial class LythonRuntime
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             return _implementation(arguments, span, context);
         }
     }

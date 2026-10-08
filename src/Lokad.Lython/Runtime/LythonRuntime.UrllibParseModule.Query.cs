@@ -24,7 +24,7 @@ internal sealed partial class LythonRuntime
             {
                 await foreach (var item in PyIteration.ToSequenceAsync(value, span, context).ConfigureAwait(false))
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                     yield return item;
                 }
             }
@@ -32,7 +32,7 @@ internal sealed partial class LythonRuntime
             {
                 foreach (var item in PyIteration.ToSequence(value, span, context))
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                     yield return item;
                 }
             }
@@ -218,7 +218,7 @@ internal sealed partial class LythonRuntime
             {
                 for (var start = 0; ;)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                     var found = FindSeparator(source.Span, start, delimiter.Span, context, span);
                     var field = source.Slice(start, (found < 0 ? source.Length : found) - start);
                     if (field.Length != 0 || await TruthAsync(args[2], span, context, asynchronous).ConfigureAwait(false))
@@ -260,7 +260,7 @@ internal sealed partial class LythonRuntime
                 context.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
                 foreach (PyTuple pair in list.Iterate())
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                     if (result.TryGetValue(pair[0], out var existing))
                     {
                         var values = (PyList)existing;
@@ -284,7 +284,7 @@ internal sealed partial class LythonRuntime
         {
             for (var i = 0; i < source.Length; i++)
             {
-                if ((i & 1023) == 0) context.CheckExecutionBudget(span);
+                if ((i & 1023) == 0) context.CheckExecution(span);
                 if (source[i] >= 128) throw new LythonRuntimeException(encoding ? "UnicodeEncodeError" : "UnicodeDecodeError",
                     "query separator must be ASCII when mixing strings and bytes", span);
             }
@@ -295,12 +295,12 @@ internal sealed partial class LythonRuntime
         {
             for (var i = start; i <= source.Length - separator.Length; i++)
             {
-                if (((i - start) & 1023) == 0) context.CheckExecutionBudget(span);
+                if (((i - start) & 1023) == 0) context.CheckExecution(span);
                 if (source[i] != separator[0]) continue;
                 var j = 1;
                 for (; j < separator.Length; j++)
                 {
-                    if ((j & 1023) == 0) context.CheckExecutionBudget(span);
+                    if ((j & 1023) == 0) context.CheckExecution(span);
                     if (source[i + j] != separator[j]) break;
                 }
                 if (j == separator.Length) return i;

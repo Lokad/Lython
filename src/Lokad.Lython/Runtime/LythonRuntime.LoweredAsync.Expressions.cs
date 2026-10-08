@@ -13,7 +13,7 @@ internal sealed partial class LythonRuntime
     // Execution steps are still counted for every node (MG25).
     internal static async ValueTask<object> EvaluateLoweredExpressionAsync(LoweredExpression expression, ExecutionContext context)
     {
-        context.CheckExecutionBudget(expression.Span);
+        context.CheckExecution(expression.Span);
         try
         {
             var value = await DispatchLoweredExpressionAsync(

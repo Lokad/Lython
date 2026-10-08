@@ -90,7 +90,7 @@ internal sealed partial class LythonRuntime
         private static async ValueTask<ulong> UrlValueHashAsync(object value, LythonSourceSpan span,
             ExecutionContext context, bool asynchronous)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (value is PyInstance instance)
             {
                 if (PyHashProtocols.IsEqWithoutHash(instance)) throw RuntimeErrors.UnhashableType(value, span);
@@ -141,7 +141,7 @@ internal sealed partial class LythonRuntime
         private static async ValueTask<bool> UrlKeyValueEqualsAsync(object left, object right,
             LythonSourceSpan span, ExecutionContext context, bool asynchronous)
         {
-            context.CheckExecutionBudget(span);
+            context.CheckExecution(span);
             if (ReferenceEquals(left, right)) return true;
             if (PyTupleLike.TryGetItems(left, out var first) && PyTupleLike.TryGetItems(right, out var second))
             {
@@ -183,7 +183,7 @@ internal sealed partial class LythonRuntime
                     var restart = false;
                     for (var entry = _first; entry is not null; entry = entry.Next)
                     {
-                        context.CheckExecutionBudget(span);
+                        context.CheckExecution(span);
                         if (entry.Key.Hash != key.Hash) continue;
                         var equal = await entry.Key.EqualsAsync(key, span, context, asynchronous).ConfigureAwait(false);
                         // A guest equality may evict the key being compared.

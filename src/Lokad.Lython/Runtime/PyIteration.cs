@@ -128,7 +128,7 @@ internal static class PyIteration
             context.ObserveCollectionCount(result.Count, span);
             if ((result.Count & 63) == 0)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
             }
         }
 
@@ -179,7 +179,7 @@ internal static class PyIteration
             context.ObserveCollectionCount(result.Count, span);
             if ((result.Count & 63) == 0)
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
             }
         }
 
@@ -237,7 +237,7 @@ internal static class PyIteration
                 context.ObserveCollectionCount(result.Count, span);
                 if ((result.Count & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
         }
@@ -279,7 +279,7 @@ internal static class PyIteration
                 context.ObserveCollectionCount(result.Count, span);
                 if ((result.Count & 63) == 0)
                 {
-                    context.CheckExecutionBudget(span);
+                    context.CheckExecution(span);
                 }
             }
         }

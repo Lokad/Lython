@@ -48,7 +48,7 @@ internal sealed partial class LythonRuntime
             var first = true;
             foreach (var item in ToSequence(arguments[0], span, context))
             {
-                context.CheckExecutionBudget(span);
+                context.CheckExecution(span);
                 var value = RequireString(item, "shlex.join", span);
                 if (!first)
                 {

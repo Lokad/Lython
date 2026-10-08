@@ -323,7 +323,7 @@ internal static class CallExpansion
         }
         keys.Add(key);
         context.ObserveCollectionCount(keys.Count, span);
-        if (keys.Count % 64 == 0) context.CheckExecutionBudget(span);
+        if (keys.Count % 64 == 0) context.CheckExecution(span);
     }
 
     private static void AppendMappingArgument(ref CallArgumentAccumulator expanded, object key, object value, LythonSourceSpan span)
@@ -509,7 +509,7 @@ internal static class CallExpansion
             if (++_addedSinceBudgetCheck >= BudgetCheckInterval)
             {
                 _addedSinceBudgetCheck = 0;
-                _context.CheckExecutionBudget(span);
+                _context.CheckExecution(span);
             }
         }
 
