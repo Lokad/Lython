@@ -478,6 +478,9 @@ internal sealed partial class LythonRuntime
             {
                 deflate.Write(data);
             }
+            // The CLR stream emits no DEFLATE block when it receives no input.
+            // A complete empty member still needs a final block before its trailer.
+            if (data.IsEmpty) WriteEmptyDeflate(outputStream, compressionLevel);
 
             Span<byte> trailer = stackalloc byte[8];
             BinaryPrimitives.WriteUInt32LittleEndian(trailer[..4], Crc32.Compute(data, context, span));
@@ -506,6 +509,13 @@ internal sealed partial class LythonRuntime
         }
 
         return (int)integer;
+    }
+
+    private static void WriteEmptyDeflate(Stream output, int compressionLevel)
+    {
+        ReadOnlySpan<byte> emptyStored = [1, 0, 0, 255, 255];
+        ReadOnlySpan<byte> emptyFixed = [3, 0];
+        output.Write(compressionLevel == 0 ? emptyStored : emptyFixed);
     }
 
     private static uint ParseModificationTime(object value, LythonSourceSpan span)
@@ -639,10 +649,15 @@ internal sealed partial class LythonRuntime
     private sealed class GzipByteCursorStream : Stream
     {
         private readonly ReadOnlyMemory<byte> _data;
+        private readonly ExecutionContext? _context;
+        private readonly LythonSourceSpan? _span;
 
-        public GzipByteCursorStream(ReadOnlyMemory<byte> data, int position)
+        public GzipByteCursorStream(ReadOnlyMemory<byte> data, int position,
+            ExecutionContext? context = null, LythonSourceSpan? span = null)
         {
             _data = data;
+            _context = context;
+            _span = span;
             BytePosition = position;
         }
 
@@ -661,8 +676,7 @@ internal sealed partial class LythonRuntime
                 return 0;
             }
 
-            buffer[offset] = _data.Span[BytePosition++];
-            return 1;
+            return Read(buffer.AsSpan(offset, count));
         }
 
         public override int Read(Span<byte> buffer)
@@ -672,6 +686,7 @@ internal sealed partial class LythonRuntime
                 return 0;
             }
 
+            if ((BytePosition & 255) == 0) _context?.CheckExecutionBudget(_span);
             buffer[0] = _data.Span[BytePosition++];
             return 1;
         }

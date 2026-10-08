@@ -4,6 +4,7 @@
 
 ## 0.10.0 - release candidate
 
+- Emit a complete final DEFLATE block for empty gzip payloads and filename-backed writers.
 - Measure suite indentation from logical lines, including compound headers whose closing delimiter shares a continuation line.
 - Add contained ElementTree parsing, independently governed node/text/map aliases, simple namespace-aware child selectors, Python byte-declaration behavior, awaited index conversions and catchable ParseError identity.
 - Expose stable, governed direct-base tuples for supported exception type objects.
