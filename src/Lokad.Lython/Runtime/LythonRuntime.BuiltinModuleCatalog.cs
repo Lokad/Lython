@@ -34,6 +34,7 @@ internal sealed partial class LythonRuntime
                 ["os.path"] = Module(static _ => OsPathModule.Instance),
                 ["glob"] = Module(static _ => GlobModule.Instance),
                 ["gzip"] = Module(static _ => GzipModule.Instance),
+                ["struct"] = Module(static _ => StructModule.Instance),
                 ["hashlib"] = Module(static _ => new HashlibModule()),
                 ["importlib"] = Module(static _ => ImportlibModule.Instance),
                 ["importlib.util"] = Module(static _ => ImportlibUtilModule.Instance),

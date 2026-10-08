@@ -146,6 +146,7 @@ The builtin module surface is explicitly allowlisted:
 - `functools`
 - `glob`
 - `gzip`
+- `struct` (standard byte layouts with explicit byte orders; pack/unpack/calcsize and lazy iter_unpack)
 - `hashlib`
 - `html` (`escape`, `unescape`)
 - `importlib`

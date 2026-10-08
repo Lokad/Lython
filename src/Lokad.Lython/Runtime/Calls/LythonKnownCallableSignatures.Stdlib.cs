@@ -129,6 +129,14 @@ internal static partial class LythonKnownCallableSignatures
 
     public static readonly LythonCallableSignature GzipCompress = LythonCallableSignature.Create("gzip.compress", ["data", "compresslevel", "mtime"], requiredCount: 1, maximumPositionalArgumentCount: 2);
     public static readonly LythonCallableSignature GzipDecompress = LythonCallableSignature.Create("gzip.decompress", ["data"]);
+    public static readonly LythonCallableSignature StructPack = LythonCallableSignature.Create("struct.pack",
+        ["format"], 1, ArgumentCountLimit.Unbounded, LythonVariadicParameters.Positional, 1);
+    public static readonly LythonCallableSignature StructUnpack = LythonCallableSignature.Create("struct.unpack",
+        ["format", "buffer"], 2, 2, LythonVariadicParameters.None, 2);
+    public static readonly LythonCallableSignature StructCalcsize = LythonCallableSignature.Create("struct.calcsize",
+        ["format"], 1, 1, LythonVariadicParameters.None, 1);
+    public static readonly LythonCallableSignature StructIterUnpack = LythonCallableSignature.Create("struct.iter_unpack",
+        ["format", "buffer"], 2, 2, LythonVariadicParameters.None, 2);
     public static readonly LythonCallableSignature GzipOpen = LythonCallableSignature.Create("gzip.open", ["filename", "mode", "compresslevel", "encoding", "errors", "newline"], requiredCount: 1);
 
     public static readonly LythonCallableSignature ZipFile = LythonCallableSignature.Create("zipfile.ZipFile", ["file", "mode", "compression", "allowZip64", "compresslevel", "strict_timestamps", "metadata_encoding"], requiredCount: 1);

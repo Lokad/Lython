@@ -1237,6 +1237,28 @@ operations must not publish uncompleted writes. Reference:
 
 `hashlib` exposes managed, deterministic `md5`, `sha1`, `sha256`, `sha384`, and `sha512` implementations. Constructors and `new(...)` accept bytes-like input and the keyword-only `usedforsecurity` compatibility argument. Hash objects retain governed incremental input and expose `update`, `digest`, `hexdigest`, `copy`, `name`, `digest_size`, and `block_size`; copies independently retain and account for their state. `algorithms_available` and `algorithms_guaranteed` list exactly the supported managed algorithms rather than ambient cryptographic providers. `file_digest(...)` remains outside the supported helper inventory and must fail explicitly.
 
+The portable `struct` subset provides positional-only `calcsize(format)`,
+`pack(format, *values)`, `unpack(format, buffer)` and `iter_unpack(format, buffer)`.
+Formats must use `<`, `>`, `=` or `!` for standard fixed sizes without alignment;
+`=` is deterministically little endian, matching Lython's `sys.byteorder`.
+Empty formats are accepted. The supported codes are `x c b B ? h H i I l L q Q e f d s p`,
+including ASCII whitespace and repeat counts without expanding format metadata.
+Formats may be ASCII strings or bytes; buffers and character/string/Pascal
+values use immutable bytes. Integer fields consult type-level `__index__`,
+float fields consult `__float__` then `__index__`, and Boolean fields use Python
+truth slots. RunAsync awaits descriptors and conversion callbacks. Integer
+ranges, IEEE rounding and signed zero/NaN behavior follow Python, including
+canonical half-float NaNs; numeric float conversion errors become `struct.error`
+while integer/truth callback errors propagate. Invalid formats, argument counts,
+ranges and record lengths raise catchable `struct.error`, an Exception subtype.
+Unpack requires exactly one record; iter_unpack validates the multiple once
+and decodes governed tuples lazily through one cursor, exposing a remaining
+length hint. Private packed output stays funded across callback awaits and
+refunds on failure/cancellation. Native ABI formats, pointers/native-width
+integers, the Struct object and offset/writable-buffer APIs fail explicitly.
+Zero-width Pascal unpacking also fails explicitly rather than exposing CPython's
+internal SystemError edge. These functions perform no ambient I/O.
+
 The pure `gzip.compress(data, compresslevel=9, *, mtime=...)` and `gzip.decompress(data)` helpers operate only on governed bytes. Compression accepts levels `-1` through `9`, emits deterministic RFC 1952 headers with OS byte `255`, and normalizes omitted or `None` modification times to zero rather than consulting a clock. Decompression accepts concatenated members, validates headers, trailers, CRCs, and uncompressed lengths, and checks the execution-memory budget while expanding so compressed inputs cannot bypass it. Invalid streams raise catchable `gzip.BadGzipFile`, an `OSError` subtype. These helpers perform no host I/O.
 
 `gzip.open(filename, mode="rb", compresslevel=9, encoding=None, errors=None, newline=None)` uses the optional bounded host binary-file capability and accepts contained strings and path-like values. It exposes sequential read, write, and append handles in binary or text mode, including context management, iteration, flushing, synchronous and asynchronous host parity, the shared contained codec set, and Python newline translation. Reads validate all gzip members before exposing decompressed data. Writes validate and compress the complete governed output before replacing the host file, so a script-side encoding or type failure cannot partially update it; append preserves the existing compressed members and adds a new member. When the body of a gzip `with` block raises an unrelated error after valid writes, the handle still finalizes and publishes those writes while the body error propagates; only validation failures discard staged output. Explicit `close()` publishes staged writes and is idempotent: repeated closes succeed without republishing, and operations on a closed handle fail explicitly. Publication is a single host replacement performed only after the complete payload validates, so a failed `close()` (host error or exhausted budgets) publishes nothing and leaves the handle open with its staged writes, letting a later `close()` retry; a validation failure still discards staged output on close. Archive writers such as the `zipfile` module follow this same close, finalization, and retry policy instead of aborting on every escaping exception. Missing binary host capability fails explicitly. Random access, arbitrary gzip file objects or descriptors, exclusive creation, and update modes remain unsupported rather than escaping host mediation. Flush cost model: only dirty flushes do work -- each one recompresses the retained write history and publishes one host replacement, and each append publication additionally carries the retained compressed prefix, so total compression work and host bytes scale with buffered history times publication count. Flushing without intervening writes is free, staged memory stays governor-bounded, and batching writes with rare flushes keeps the cost near a single publication (measured figures in benchmarks/Baselines.md).

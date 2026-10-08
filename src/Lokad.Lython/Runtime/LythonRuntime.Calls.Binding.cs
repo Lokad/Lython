@@ -1087,6 +1087,7 @@ internal sealed partial class LythonRuntime
         private static readonly PyString FunctoolsModuleName = PyString.FromString("functools");
         private static readonly PyString GlobModuleName = PyString.FromString("glob");
         private static readonly PyString GzipModuleName = PyString.FromString("gzip");
+        private static readonly PyString StructModuleName = PyString.FromString("struct");
         private static readonly PyString HashlibModuleName = PyString.FromString("hashlib");
         private static readonly PyString ImportlibModuleName = PyString.FromString("importlib");
         private static readonly PyString ItertoolsModuleName = PyString.FromString("itertools");
@@ -1125,6 +1126,7 @@ internal sealed partial class LythonRuntime
             "functools" => FunctoolsModuleName,
             "glob" => GlobModuleName,
             "gzip" => GzipModuleName,
+            "struct" => StructModuleName,
             "hashlib" => HashlibModuleName,
             "importlib" => ImportlibModuleName,
             "itertools" => ItertoolsModuleName,
