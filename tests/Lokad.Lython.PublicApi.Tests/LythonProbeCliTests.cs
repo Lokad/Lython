@@ -84,6 +84,68 @@ public sealed class LythonProbeCliTests
         Assert.Equal("é☃\n", report.GetProperty("Lython").GetProperty("StandardOutput").GetString());
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void StandardInputPreservesLiteralUnicode(bool batch, bool asynchronous)
+    {
+        const string source = "text = 'λ😀'\nprint(text, len(text), ord(text[0]), ord(text[1]))\n";
+        // Keep Unicode literal in the JSON too: an ASCII-escaped envelope
+        // would hide a console decoding bug while both interpreters agree.
+        var input = batch ? "[\"" + source.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n") + "\"]" : source;
+        var arguments = new List<string> { SubprocessProbeRunner.FindProbeDll(), "--json" };
+        if (batch) arguments.Add("--batch-json");
+        if (asynchronous) arguments.Add("--async");
+        var run = SubprocessProbeRunner.Run("dotnet", arguments, standardInput: input);
+        Assert.Equal(0, run.ExitCode);
+        Assert.Empty(run.StandardError);
+        using var document = JsonDocument.Parse(run.StandardOutput);
+        var report = document.RootElement;
+        Assert.True(report.GetProperty("Lython").GetProperty("Success").GetBoolean());
+        Assert.Equal("λ😀 2 955 128512\n", report.GetProperty("Lython").GetProperty("StandardOutput").GetString());
+        Assert.Equal(asynchronous, report.GetProperty("Options").GetProperty("Async").GetBoolean());
+    }
+
+    [Fact]
+    public void HumanOutputPreservesLiteralUnicode()
+    {
+        var run = RunProbe("-c", "print('λ😀')");
+        Assert.Equal(0, run.ExitCode);
+        Assert.Empty(run.StandardError);
+        Assert.Contains("λ😀", run.StandardOutput);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SourceFilesUseUtf8AndRejectInvalidBytes(bool invalid)
+    {
+        var path = Path.Combine(Path.GetTempPath(), "lython-probe-" + Guid.NewGuid().ToString("N") + ".py");
+        try
+        {
+            if (invalid) File.WriteAllBytes(path, [0xff]);
+            else File.WriteAllText(path, "print('λ😀')", new System.Text.UTF8Encoding(true));
+            var run = RunProbe(path, "--json");
+            Assert.Equal(invalid ? 2 : 0, run.ExitCode);
+            if (invalid)
+            {
+                Assert.Empty(run.StandardOutput);
+                Assert.Contains("Could not read probe input", run.StandardError);
+            }
+            else
+            {
+                using var document = JsonDocument.Parse(run.StandardOutput);
+                Assert.Equal("λ😀\n", document.RootElement.GetProperty("Lython").GetProperty("StandardOutput").GetString());
+            }
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
     [Fact]
     public void SyncCounterpartSucceeds()
     {

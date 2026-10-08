@@ -1,8 +1,14 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 
 using Lokad.Lython;
+
+// Audit input is UTF-8 on every platform. Windows' default OEM console
+// encoding otherwise corrupts literal source before either engine sees it.
+Console.InputEncoding = new UTF8Encoding(false, throwOnInvalidBytes: true);
+Console.OutputEncoding = new UTF8Encoding(false);
 
 // Single deadline for CPython launch-to-drain: audit snippets are small, so a
 // generous fixed budget bounds hung children without tuning per snippet.
@@ -63,7 +69,7 @@ try
 {
     snippets = ReadSnippets(parsed);
 }
-catch (Exception exception) when (exception is IOException or JsonException or UnauthorizedAccessException)
+catch (Exception exception) when (exception is IOException or JsonException or UnauthorizedAccessException or DecoderFallbackException)
 {
     Console.Error.WriteLine($"Could not read probe input: {exception.Message}");
     return 2;
@@ -218,7 +224,8 @@ static string[] ReadSnippets(ParsedArguments arguments)
 
     if (arguments.File is not null)
     {
-        return [File.ReadAllText(arguments.File)];
+        return [new UTF8Encoding(false, throwOnInvalidBytes: true)
+            .GetString(File.ReadAllBytes(arguments.File)).TrimStart('\uFEFF')];
     }
 
     var input = Console.In.ReadToEnd().TrimStart('\uFEFF');

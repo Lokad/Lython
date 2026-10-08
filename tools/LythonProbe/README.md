@@ -13,6 +13,9 @@ Run a command-line snippet and compare it with the local CPython installation:
 
 Run a source file or pipe plain source on stdin:
 
+Source files, plain/batch stdin and output use UTF-8 on every platform. Invalid
+UTF-8 input is an input error (exit code 2).
+
 ```powershell
 ./tools/LythonProbe/lythonprobe.ps1 probe.py --json
 Get-Content -Raw probe.py | ./tools/LythonProbe/lythonprobe.ps1
