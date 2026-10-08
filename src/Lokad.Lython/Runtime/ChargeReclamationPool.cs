@@ -232,13 +232,13 @@ internal sealed class ChargeReclamationPool
         try
         {
             var released = SweepTier(_young, _old);
-            released += full ? DrainTier(_old) : SweepOldQuantum();
-            if (released > 0)
+            var oldReleased = full ? DrainTier(_old) : SweepOldQuantum();
+            if (oldReleased > 0)
             {
-                _governor.Release(released);
+                _governor.Release(oldReleased);
             }
 
-            return released;
+            return released + oldReleased;
         }
         finally
         {
@@ -397,7 +397,12 @@ internal sealed class ChargeReclamationPool
             tier.RemoveAt(tier.Count - 1);
             if (!entry.Target.TryGetTarget(out _))
             {
-                released += entry.ValueCharge + EntryChargeBytes;
+                // Refund before a later survivor needs promotion capacity.
+                // Detached dead entries are invisible to exhaustion relief,
+                // so deferring this credit can deny an already-funded sweep.
+                var charge = entry.ValueCharge + EntryChargeBytes;
+                _governor.Release(charge);
+                released += charge;
             }
             else if (promoteTo is null)
             {
@@ -407,9 +412,8 @@ internal sealed class ChargeReclamationPool
             else
             {
                 // Fund the old-tier slot before moving: a denial re-queues the entry
-                // in the young tier for the next sweep instead of stranding it, and
-                // releases whatever dead entries were already removed so no reclaimed
-                // charge strands across the exceptional exit.
+                // in the young tier for the next sweep instead of stranding it.
+                // Dead entries have already refunded even on this exceptional exit.
                 try
                 {
                     var fundedGrowth = ReserveTierInsertion(promoteTo, null);
@@ -420,12 +424,6 @@ internal sealed class ChargeReclamationPool
                 catch (LythonRuntimeException)
                 {
                     tier.Add(entry);
-                    if (released > 0)
-                    {
-                        _governor.Release(released);
-                        released = 0;
-                    }
-
                     throw;
                 }
             }

@@ -40,7 +40,10 @@ public sealed class CsvRetainedRowLifetimeTests
         };
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3L * 1024 * 1024 };
         var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
-        Assert.True(result.Success, result.Failure?.Message);
+        Assert.True(result.Success,
+            $"{result.Failure?.ExceptionType}: {result.Failure?.Message}; span={result.Failure?.Span}; " +
+            $"completed={result.StandardOutput.Count(character => character == '\n')}; " +
+            $"peak={result.PeakExecutionMemoryBytes}; denied={result.DeniedReservationBytes}");
         Assert.Equal(new BigInteger(8), result.ReturnValue);
         Assert.Equal(string.Concat(Enumerable.Repeat("retained\n", 8)), result.StandardOutput);
         Assert.True(result.PeakExecutionMemoryBytes <= options.MaxExecutionMemoryBytes!.Value.Bytes);

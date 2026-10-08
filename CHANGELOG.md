@@ -8,6 +8,7 @@
 - Check cancellation and explicitly requested fuel during every lowered for-loop iteration, including pass-only range loops.
 - Observe cancellation through stable-sort comparisons/copy tails and native sorting in statistics, JSON, difflib, directory traversal and protocol snapshots; preserve Python failures and refund sorting scratch.
 - Check shared execution guards through whole-buffer Latin-1 decoding, non-strict UTF-8 decoding and newline rewriting, including mediated stdin and file windows.
+- Refund collected young-tier values before funding live-entry promotion, so reclamation cannot reject a sweep using charges it has already freed.
 - Fund regex cache slots only while its bounded capacity grows; eviction reuses existing funding and purge refunds it.
 - Keep returned CSV/text values reclaimable after their source is collected; release abandoned scratch before sweep funding and preserve registry ownership through reentrant exhaustion relief.
 - Add sequential gzip.GzipFile wrappers over contained filenames and supplied binary objects, lazy metadata/trailer checks, persistent governed compression, sync flush, awaited callbacks, and correct supplied-object ownership.

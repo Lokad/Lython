@@ -415,6 +415,73 @@ public sealed class ChargeReclamationPoolTests
         GC.KeepAlive(youngKeys);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MixedYoungSweepFundsPromotionFromAlreadyCollectedEntries(bool full)
+    {
+        // The two entries and young backing exactly fill the cap. The dead
+        // entry is visited first; its refund must fund the survivor's old slot.
+        var governor = new MemoryGovernor(544);
+        var pool = NewPool(governor);
+        var keys = TrackLive(pool, governor, 2);
+        DropLast(keys);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        Assert.Equal(256, pool.Sweep(full));
+        Assert.Equal(1, pool.Count);
+        Assert.Equal(1, OldCount(pool));
+        Assert.Equal(320, governor.CurrentCommittedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+        Assert.Equal(0, governor.LastDeniedReservationBytes);
+        Assert.Equal(544, governor.PeakAccountedBytes);
+        GC.KeepAlive(keys);
+    }
+
+    [Fact]
+    public void MixedYoungSweepStillDeniesUnfundedLivePromotionAndRefundsExactly()
+    {
+        // A full 64-slot old tier needs 512 bytes of growth. One dead entry
+        // refunds only 256, so this genuine denial must preserve the survivor.
+        var governor = new MemoryGovernor(17920);
+        var pool = NewPool(governor);
+        var oldKeys = TrackLive(pool, governor, 64);
+        pool.Sweep();
+        var youngKeys = TrackLive(pool, governor, 2);
+        DropLast(youngKeys);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        var failure = Assert.Throws<LythonRuntimeException>(() => pool.Sweep());
+        Assert.Equal("MemoryError", failure.ExceptionType);
+        Assert.Equal(65, pool.Count);
+        Assert.Equal(64, OldCount(pool));
+        Assert.Equal(17664, governor.CurrentCommittedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+        Assert.Equal(512, governor.LastDeniedReservationBytes);
+
+        DropAll(oldKeys);
+        DropAll(youngKeys);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        Assert.Equal(65 * 256, pool.Sweep(full: true));
+        Assert.Equal(0, pool.Count);
+        Assert.Equal(pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
+        Assert.Equal(1024, governor.CurrentCommittedBytes);
+        GC.KeepAlive(oldKeys);
+        GC.KeepAlive(youngKeys);
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static void DropLast(List<object> keys)
+    {
+        keys[^1] = null!;
+    }
+
     [Fact]
     public void InstanceAttributeCouponTracksSetsAndRemovals()
     {
