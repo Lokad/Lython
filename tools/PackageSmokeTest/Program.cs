@@ -63,6 +63,21 @@ const string compatibilityOutput = "ab 3\nTrue ['a', 'b'] [['1', '2']] empty\n3\
 foreach (var result in new[] { compatibility.Run(new PureHost()), await compatibility.RunAsync(new PureHost()) })
     RequireOutput(result, compatibilityOutput);
 
+const string structSource = """
+    import struct,math,json,operator
+    data=struct.pack('>bHefds4p?',-3,514,-0.0,1.5,-2.5,b'x',b'abc',True)
+    print(struct.calcsize('>bHefds4p?'),data.hex(),struct.unpack('>bHefds4p?',data))
+    for value in [float('nan'),float.fromhex('-nan'),math.nan,json.loads('NaN')]:
+        print(struct.pack('>d',value).hex())
+    iterator=struct.iter_unpack('<2H',struct.pack('<6H',1,2,3,4,5,6))
+    print(operator.length_hint(iterator),next(iterator),list(iterator),iterator.__length_hint__())
+    print(struct.error.__name__,struct.error.__module__,issubclass(struct.error,Exception))
+    """;
+var structScript = engine.Compile(structSource);
+if (!structScript.IsValid) throw new Exception(string.Join("; ", structScript.Diagnostics.Select(d => d.Message)));
+foreach (var result in new[] { structScript.Run(new PureHost()), await structScript.RunAsync(new PureHost()) })
+    RequireOutput(result, "23 fd020280003fc00000c004000000000000780361626301 (-3, 514, -0.0, 1.5, -2.5, b'x', b'abc', True)\n7ff8000000000000\nfff8000000000000\n7ff8000000000000\n7ff8000000000000\n3 (1, 2) [(3, 4), (5, 6)] 0\nerror struct True\n");
+
 const string windows1252Source = """
     data=bytes([i for i in range(256) if i not in [129,141,143,144,157]])
     text=data.decode('cp1252')
@@ -325,6 +340,49 @@ RequireOutput(await utf16PendingRun.WaitAsync(utf16Timeout.Token), utf16FileOutp
 utf16DelayedHost.VerifyUtf16Files();
 if (utf16DelayedHost.SuspendedOperations < 2) throw new Exception("UTF-16 consumer did not suspend twice.");
 
+const string structFileSource = """
+    import struct
+    from pathlib import Path
+    class Number:
+        def __index__(self):
+            with open('/struct-index.txt') as file: value=file.read()
+            print('index',value)
+            return int(value)
+        def __float__(self):
+            with open('/struct-float.txt') as file: value=file.read()
+            print('float',value)
+            return float(value)
+        def __bool__(self):
+            with open('/struct-truth.txt') as file: value=file.read()
+            print('truth',value)
+            return value=='yes'
+    number=Number()
+    number.__index__=lambda:999
+    number.__float__=lambda:4.0
+    number.__bool__=lambda:False
+    data=struct.pack('>Hf?',number,number,number)
+    print(data.hex(),struct.unpack('>Hf?',data))
+    print(Path('/struct-output.bin').write_bytes(data),Path('/struct-output.bin').read_bytes().hex())
+    """;
+var structFiles = engine.Compile(structFileSource);
+if (!structFiles.IsValid) throw new Exception(string.Join("; ", structFiles.Diagnostics.Select(d => d.Message)));
+const string structFileOutput = "index 514\nfloat 1.5\ntruth yes\n02023fc0000001 (514, 1.5, True)\n7 02023fc0000001\n";
+var structSyncHost = new MemoryHost(delayed: false);
+RequireOutput(structFiles.Run(structSyncHost), structFileOutput);
+structSyncHost.VerifyStructFiles();
+var structDelayedHost = new MemoryHost(delayed: true);
+using var structTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+var structPendingRun = structFiles.RunAsync(structDelayedHost, new LythonRunOptions { CancellationToken = structTimeout.Token });
+await structDelayedHost.ReadStarted.Task.WaitAsync(structTimeout.Token);
+if (structPendingRun.IsCompleted) throw new Exception("Struct conversion did not suspend.");
+structDelayedHost.ReleaseRead.TrySetResult();
+await structDelayedHost.WriteStarted.Task.WaitAsync(structTimeout.Token);
+if (structPendingRun.IsCompleted) throw new Exception("Struct publication did not suspend.");
+structDelayedHost.ReleaseWrite.TrySetResult();
+RequireOutput(await structPendingRun.WaitAsync(structTimeout.Token), structFileOutput);
+structDelayedHost.VerifyStructFiles();
+if (structDelayedHost.SuspendedOperations < 2) throw new Exception("Struct consumer did not suspend twice.");
+
 Console.WriteLine("Package compatibility and mediated file consumer passed.");
 
 static void RequireOutput(LythonExecutionResult result, string expected)
@@ -356,6 +414,9 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
     private readonly Dictionary<string, byte[]> _files = new(StringComparer.Ordinal)
     {
         ["/input.json"] = Encoding.UTF8.GetBytes("{\"value\": 3, \"name\": \"é\"}"),
+        ["/struct-index.txt"] = "514"u8.ToArray(),
+        ["/struct-float.txt"] = "1.5"u8.ToArray(),
+        ["/struct-truth.txt"] = "yes"u8.ToArray(),
         ["/source.bin"] = [0, 255, 65, 13, 10, 66, 10, 101, 110, 100],
         ["/utf16-input.bin"] = [0xfe, 0xff, 0, 0x42, 0x20, 0xac, 0xd8, 0x3d, 0xde, 0, 0, 13, 0, 10],
     };
@@ -417,6 +478,12 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
         if (!_files["/output.json"].AsSpan().SequenceEqual("{\"name\": \"é\", \"value\": 3}"u8)
             || !_files["/pending.txt"].AsSpan().SequenceEqual("final 😀 bytes\n"u8))
             throw new Exception("Package file publication produced incorrect bytes.");
+    }
+
+    public void VerifyStructFiles()
+    {
+        if (!_files["/struct-output.bin"].AsSpan().SequenceEqual(Convert.FromHexString("02023fc0000001")))
+            throw new Exception("Struct package consumer produced incorrect bytes.");
     }
 
     public void VerifyUtf16Files()
