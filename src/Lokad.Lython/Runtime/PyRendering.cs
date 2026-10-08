@@ -496,7 +496,7 @@ internal static class PyRendering
                 rendered.Add(ToReprPyStringCore(item, context, activeContainers));
             }
 
-            rendered.Sort(PyStringOrdinalComparer.Instance);
+            ExecutionSort.Sort(rendered, context.Context, null, PyStringOrdinalComparer.Instance.Compare);
             return JoinRenderedSequence("{", rendered, "}", context);
         }
         finally

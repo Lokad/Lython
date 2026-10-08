@@ -189,7 +189,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            scored.Sort((left, right) =>
+            ExecutionSort.Sort(scored, context, span, (left, right) =>
             {
                 var byScore = right.Score.CompareTo(left.Score);
                 return byScore != 0 ? byScore : PyString.CompareOrdinal(right.Value, left.Value);

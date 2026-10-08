@@ -402,8 +402,8 @@ internal sealed partial class LythonRuntime
                     }
                 }
 
-                directories.Sort(StringComparer.Ordinal);
-                files.Sort(StringComparer.Ordinal);
+                ExecutionSort.Sort(directories, _context, _span, StringComparer.Ordinal.Compare);
+                ExecutionSort.Sort(files, _context, _span, StringComparer.Ordinal.Compare);
                 frame.SetEntries(CreateStringList(directories), CreateStringList(files));
                 return true;
             }
@@ -447,8 +447,8 @@ internal sealed partial class LythonRuntime
                     }
                 }
 
-                directories.Sort(StringComparer.Ordinal);
-                files.Sort(StringComparer.Ordinal);
+                ExecutionSort.Sort(directories, _context, _span, StringComparer.Ordinal.Compare);
+                ExecutionSort.Sort(files, _context, _span, StringComparer.Ordinal.Compare);
                 frame.SetEntries(CreateStringList(directories), CreateStringList(files));
                 return true;
             }

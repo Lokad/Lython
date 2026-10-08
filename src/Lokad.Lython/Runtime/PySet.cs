@@ -427,7 +427,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         var work = 0;
         if (_protocol is not null)
         {
-            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, _memoryGovernor, useSpan, ProtocolEntryBytes);
+            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, _memoryGovernor, useSpan, ProtocolEntryBytes, context);
             for (var i = 0; i < candidates.Length; i++)
             {
                 if ((++work & 63) == 0)
@@ -574,7 +574,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         // (same dispatch set and order as the linear scan). There is no store phase here.
         // Candidate copies preflight only candidates; work checks run where dispatch happens.
         var work = 0;
-        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, _memoryGovernor, useSpan, ProtocolEntryBytes);
+        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, _memoryGovernor, useSpan, ProtocolEntryBytes, context);
         for (var i = 0; i < candidates.Length; i++)
         {
             if ((++work & 63) == 0)
@@ -612,7 +612,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         // (same dispatch set: entry protocol hash only). Snapshotting the candidates keeps
         // mutating guest == safe like every other scan.
         var work = 0;
-        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, hash, builtinOnly: true, _memoryGovernor, useSpan, ProtocolEntryBytes);
+        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, hash, builtinOnly: true, _memoryGovernor, useSpan, ProtocolEntryBytes, context);
         for (var i = 0; i < candidates.Length; i++)
         {
             // N10 part 1: budget non-collision scans too; the context may be
@@ -663,7 +663,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         var work = 0;
         if (_protocol is not null)
         {
-            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, _memoryGovernor, useSpan, ProtocolEntryBytes);
+            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, _memoryGovernor, useSpan, ProtocolEntryBytes, context);
             for (var i = 0; i < candidates.Length; i++)
             {
                 if ((++work & 63) == 0)

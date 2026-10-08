@@ -24,7 +24,7 @@ internal sealed partial class LythonRuntime
                 context.CheckExecution(span);
                 entries.Add((pair.Key, pair.Value));
             }
-            entries.Sort((left, right) => PyComparison.Compare(left.OriginalKey, right.OriginalKey, span));
+            ExecutionSort.Sort(entries, context, span, (left, right) => PyComparison.Compare(left.OriginalKey, right.OriginalKey, span));
             return entries;
         }
 

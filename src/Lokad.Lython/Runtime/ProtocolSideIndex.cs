@@ -58,7 +58,8 @@ internal sealed class ProtocolSideIndex
         bool builtinOnly,
         MemoryGovernor? governor,
         LythonSourceSpan? span,
-        long entryBytes)
+        long entryBytes,
+        LythonRuntime.ExecutionContext? context = null)
         where TEntry : struct, IProtocolSideEntry
     {
         if (entries is null)
@@ -72,6 +73,7 @@ internal sealed class ProtocolSideIndex
             var fallback = new List<TEntry>(entries.Count);
             foreach (var entry in entries)
             {
+                PyStructuralGuard.NoteWork(context, span);
                 if (builtinOnly ? entry.Hash == hash : entry.Hash == hash || entry.StructuralHash == structuralHash)
                 {
                     fallback.Add(entry);
@@ -82,7 +84,7 @@ internal sealed class ProtocolSideIndex
         }
 
         var positions = new HashSet<int>();
-        index.CollectCandidates(hash, structuralHash, positions);
+        index.CollectCandidates(hash, structuralHash, positions, context, span);
         if (positions.Count == 0)
         {
             return [];
@@ -90,10 +92,11 @@ internal sealed class ProtocolSideIndex
 
         governor?.EnsureCanReserve(checked(entryBytes * (long)positions.Count), span);
         var ordered = new List<int>(positions);
-        ordered.Sort();
+        ExecutionSort.Sort(ordered, context, span);
         var snapshot = new List<TEntry>(ordered.Count);
         foreach (var position in ordered)
         {
+            PyStructuralGuard.NoteWork(context, span);
             var entry = entries[position];
             if (builtinOnly ? entry.Hash == hash : entry.Hash == hash || entry.StructuralHash == structuralHash)
             {
@@ -176,12 +179,14 @@ internal sealed class ProtocolSideIndex
 
     // Merges both buckets into one candidate set (positions may repeat across
     // buckets; the set dedups). Pure reads for the caller to snapshot from.
-    public void CollectCandidates(int hash, int structuralHash, HashSet<int> into)
+    public void CollectCandidates(int hash, int structuralHash, HashSet<int> into,
+        LythonRuntime.ExecutionContext? context = null, LythonSourceSpan? span = null)
     {
         if (_buckets.TryGetValue(hash, out var primary))
         {
             foreach (var position in primary)
             {
+                PyStructuralGuard.NoteWork(context, span);
                 _ = into.Add(position);
             }
         }
@@ -190,6 +195,7 @@ internal sealed class ProtocolSideIndex
         {
             foreach (var position in secondary)
             {
+                PyStructuralGuard.NoteWork(context, span);
                 _ = into.Add(position);
             }
         }

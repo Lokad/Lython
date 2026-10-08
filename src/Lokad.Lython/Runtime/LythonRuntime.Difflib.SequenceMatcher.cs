@@ -749,7 +749,7 @@ internal sealed partial class LythonRuntime
                 }
             }
 
-            blocks.Sort(static (left, right) =>
+            ExecutionSort.Sort(blocks, context, span, static (left, right) =>
             {
                 var byA = left.A.CompareTo(right.A);
                 return byA != 0 ? byA : left.B.CompareTo(right.B);

@@ -587,7 +587,7 @@ internal sealed partial class LythonRuntime
             // the two middles with (a+b)/2 value semantics per type.
             using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
             var values = GetNumericObjects(arguments, "statistics.median", span, context, scratch);
-            values.Sort((left, right) => Compare(left, right, span));
+            ExecutionSort.Sort(values, context, span, (left, right) => Compare(left, right, span));
             var middle = values.Count / 2;
             if (values.Count % 2 == 1)
             {
@@ -601,7 +601,7 @@ internal sealed partial class LythonRuntime
         {
             using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
             var values = await GetNumericObjectsAsync(arguments, "statistics.median", span, context, scratch).ConfigureAwait(false);
-            values.Sort((left, right) => Compare(left, right, span));
+            ExecutionSort.Sort(values, context, span, (left, right) => Compare(left, right, span));
             var middle = values.Count / 2;
             if (values.Count % 2 == 1)
             {
@@ -681,7 +681,7 @@ internal sealed partial class LythonRuntime
             // callbacks) and releases on every exit path.
             using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
             var values = GetNumericObjects(arguments, "statistics.median_low", span, context, scratch);
-            values.Sort((left, right) => Compare(left, right, span));
+            ExecutionSort.Sort(values, context, span, (left, right) => Compare(left, right, span));
             return values[(values.Count - 1) / 2];
         }
 
@@ -689,7 +689,7 @@ internal sealed partial class LythonRuntime
         {
             using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
             var values = await GetNumericObjectsAsync(arguments, "statistics.median_low", span, context, scratch).ConfigureAwait(false);
-            values.Sort((left, right) => Compare(left, right, span));
+            ExecutionSort.Sort(values, context, span, (left, right) => Compare(left, right, span));
             return values[(values.Count - 1) / 2];
         }
 
@@ -698,7 +698,7 @@ internal sealed partial class LythonRuntime
             // N07: same caller-scoped lifetime as MedianLow.
             using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
             var values = GetNumericObjects(arguments, "statistics.median_high", span, context, scratch);
-            values.Sort((left, right) => Compare(left, right, span));
+            ExecutionSort.Sort(values, context, span, (left, right) => Compare(left, right, span));
             return values[values.Count / 2];
         }
 
@@ -706,7 +706,7 @@ internal sealed partial class LythonRuntime
         {
             using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
             var values = await GetNumericObjectsAsync(arguments, "statistics.median_high", span, context, scratch).ConfigureAwait(false);
-            values.Sort((left, right) => Compare(left, right, span));
+            ExecutionSort.Sort(values, context, span, (left, right) => Compare(left, right, span));
             return values[values.Count / 2];
         }
 
@@ -756,7 +756,7 @@ internal sealed partial class LythonRuntime
         {
             using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
             var values = GetNumericValuesFromData(arguments, "statistics.median_grouped", span, context, scratch);
-            values.Sort();
+            ExecutionSort.Sort(values, context, span);
             var interval = arguments.Length >= 2 && arguments[1] is not PyNone
                 ? RuntimeArgumentValidation.ExpectReal(arguments[1], "statistics.median_grouped(..., interval=...)", span)
                 : 1.0;
@@ -788,7 +788,7 @@ internal sealed partial class LythonRuntime
         {
             using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
             var values = await GetNumericValuesFromDataAsync(arguments, "statistics.median_grouped", span, context, scratch).ConfigureAwait(false);
-            values.Sort();
+            ExecutionSort.Sort(values, context, span);
             var interval = arguments.Length >= 2 && arguments[1] is not PyNone
                 ? RuntimeArgumentValidation.ExpectReal(arguments[1], "statistics.median_grouped(..., interval=...)", span)
                 : 1.0;
@@ -1287,7 +1287,7 @@ internal sealed partial class LythonRuntime
                 values.Add(ExpectRealForStatistics(original, "statistics.quantiles", span));
             }
 
-            values.Sort();
+            ExecutionSort.Sort(values, context, span);
             var method = arguments.Length >= 3 && arguments[2] is not PyNone
                 ? RuntimeArgumentValidation.ExpectString(arguments[2], "statistics.quantiles(..., method=...)", span)
                 : "exclusive";
@@ -1358,7 +1358,7 @@ internal sealed partial class LythonRuntime
                 values.Add(ExpectRealForStatistics(original, "statistics.quantiles", span));
             }
 
-            values.Sort();
+            ExecutionSort.Sort(values, context, span);
             var method = arguments.Length >= 3 && arguments[2] is not PyNone
                 ? RuntimeArgumentValidation.ExpectString(arguments[2], "statistics.quantiles(..., method=...)", span)
                 : "exclusive";

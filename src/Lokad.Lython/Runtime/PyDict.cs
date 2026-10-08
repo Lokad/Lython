@@ -361,7 +361,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         var work = 0;
         if (_protocol is not null)
         {
-            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, _memoryGovernor, useSpan, ProtocolEntryBytes);
+            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, _memoryGovernor, useSpan, ProtocolEntryBytes, context);
             for (var i = 0; i < candidates.Length; i++)
             {
                 if ((++work & 63) == 0)
@@ -444,7 +444,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         var useSpan = PyStructuralGuard.AmbientSpan ?? _allocationSpan;
         var hash = PyValueComparer.Instance.GetHashCode(key);
         var work = 0;
-        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, hash, builtinOnly: true, _memoryGovernor, useSpan, ProtocolEntryBytes);
+        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, hash, builtinOnly: true, _memoryGovernor, useSpan, ProtocolEntryBytes, context);
         for (var i = 0; i < candidates.Length; i++)
         {
             // N10 part 1: budget non-collision scans too; the context may be
@@ -533,7 +533,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         var work = 0;
         if (_protocol is not null)
         {
-            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, _memoryGovernor, useSpan, ProtocolEntryBytes);
+            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, _memoryGovernor, useSpan, ProtocolEntryBytes, context);
             for (var i = 0; i < candidates.Length; i++)
             {
                 if ((++work & 63) == 0)
@@ -634,7 +634,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         // (same dispatch set: entry protocol hash only). Snapshotting the candidates keeps
         // mutating guest == safe like every other scan.
         var work = 0;
-        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, hash, builtinOnly: true, _memoryGovernor, useSpan, ProtocolEntryBytes);
+        var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, hash, builtinOnly: true, _memoryGovernor, useSpan, ProtocolEntryBytes, context);
         for (var i = 0; i < candidates.Length; i++)
         {
             // N10 part 1: budget non-collision scans too; the context may be
@@ -719,7 +719,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         var work = 0;
         if (_protocol is not null)
         {
-            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, _memoryGovernor, useSpan, ProtocolEntryBytes);
+            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, _memoryGovernor, useSpan, ProtocolEntryBytes, context);
             for (var i = 0; i < candidates.Length; i++)
             {
                 if ((++work & 63) == 0)
@@ -872,7 +872,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         var work = 0;
         if (_protocol is not null)
         {
-            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, _memoryGovernor, useSpan, ProtocolEntryBytes);
+            var candidates = ProtocolSideIndex.SnapshotCandidates(_protocol, _sideIndex, hash, structuralHash, builtinOnly: false, _memoryGovernor, useSpan, ProtocolEntryBytes, context);
             for (var i = 0; i < candidates.Length; i++)
             {
                 if ((++work & 63) == 0)
