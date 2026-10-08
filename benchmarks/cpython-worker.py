@@ -1,17 +1,13 @@
 """Persistent comparison worker; trusted catalog, externally supervised process."""
 
-import argparse
 import contextlib
 import gc
 import hashlib
 import io
 import json
 import os
-import pathlib
-import platform
 import struct
 import sys
-import sysconfig
 import time
 
 PROTOCOL_VERSION = 1
@@ -102,9 +98,12 @@ class BoundedCapture(io.StringIO):
 
 
 def load_manifest(path):
-    if not 0 < path.stat().st_size <= MAX_CATALOG_BYTES:
+    with open(path, 'rb') as catalog_file:
+        if not 0 < os.fstat(catalog_file.fileno()).st_size <= MAX_CATALOG_BYTES:
+            raise ValueError('Invalid comparison catalog size')
+        data = catalog_file.read(MAX_CATALOG_BYTES + 1)
+    if not 0 < len(data) <= MAX_CATALOG_BYTES:
         raise ValueError('Invalid comparison catalog size')
-    data = path.read_bytes()
     catalog = strict_json(data.decode('utf-8', errors='strict'), 64)
     if (type(catalog['schemaVersion']) is not int or catalog['schemaVersion'] != 1
             or type(catalog['catalogVersion']) is not int or catalog['catalogVersion'] != 1):
@@ -168,17 +167,23 @@ def response(case, request_id, status, completed, elapsed=None, actual=None, rea
 
 
 def serve(path, input_stream, output_stream):
+    # Full provenance is untimed in persistent lanes. Keep these heavyweight
+    # metadata imports out of the fresh-process entry.
+    import platform
+    import sysconfig
     if not sys.flags.isolated or not sys.flags.no_site or not gc.isenabled():
         raise ValueError('Launch with -I -S and ordinary enabled cyclic GC')
     catalog_hash, cases = load_manifest(path)
     compiled, verified = {}, set()
     with open(sys.executable, 'rb') as executable:
         executable_hash = hashlib.file_digest(executable, 'sha256').hexdigest()
+    with open(__file__, 'rb') as adapter:
+        adapter_hash = hashlib.file_digest(adapter, 'sha256').hexdigest()
     clock = time.get_clock_info('perf_counter')
     write_frame(output_stream, {
         'protocolVersion': PROTOCOL_VERSION, 'status': 'Ready', 'engine': 'CPython', 'catalogSha256': catalog_hash,
         'catalogVersion': 1, 'processId': os.getpid(), 'version': sys.version, 'executable': sys.executable,
-        'executableSha256': executable_hash, 'adapterSha256': hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest(),
+        'executableSha256': executable_hash, 'adapterSha256': adapter_hash,
         'architecture': platform.machine(), 'platform': platform.platform(), 'flags': repr(sys.flags),
         'paths': sys.path, 'configArgs': sysconfig.get_config_var('CONFIG_ARGS'),
         'debug': bool(sysconfig.get_config_var('Py_DEBUG')), 'freeThreaded': bool(sysconfig.get_config_var('Py_GIL_DISABLED')),
@@ -242,8 +247,47 @@ def serve(path, input_stream, output_stream):
                                                actual=failure.actual, reason=str(failure)))
 
 
+def serve_once(path, output_stream):
+    if not sys.flags.isolated or not sys.flags.no_site or not gc.isenabled():
+        raise ValueError('Launch with -I -S and ordinary enabled cyclic GC')
+    catalog_hash, cases = load_manifest(path)
+    if len(cases) != 1:
+        raise ValueError('A fresh-process payload must contain exactly one case')
+    case = next(iter(cases.values()))
+    completed, actual, reason = 0, None, None
+    try:
+        code = compile_case(case)
+        actual = invoke(code, case)
+        status, completed = 'Equivalent', 1
+    except JobFailure as failure:
+        status, actual, reason = failure.status, failure.actual, str(failure)
+    # Binary and full build/provenance hashes are checked by the parent outside
+    # samples. This path deliberately avoids sysconfig/platform/argparse imports.
+    identity = {
+        'protocolVersion': PROTOCOL_VERSION, 'status': 'Ready', 'engine': 'CPython',
+        'catalogSha256': catalog_hash, 'catalogVersion': 1, 'processId': os.getpid(),
+        'version': sys.version, 'executable': sys.executable, 'isolated': bool(sys.flags.isolated),
+        'noSite': bool(sys.flags.no_site), 'gcEnabled': gc.isenabled(),
+        'gilEnabled': sys._is_gil_enabled() if hasattr(sys, '_is_gil_enabled') else True,
+        'metadataModulesLoaded': [name for name in ('sysconfig', 'platform', 'argparse') if name in sys.modules],
+        'clockFrequency': 1_000_000_000, 'maximumFrameBytes': MAX_FRAME_BYTES,
+        'maximumBatchIterations': MAX_BATCH_ITERATIONS, 'maximumBatchSeconds': MAX_BATCH_SECONDS,
+        'captureByteLimit': MAX_OUTPUT_BYTES}
+    write_frame(output_stream, {'identity': identity,
+        'response': response(case, 1, status, completed, actual=actual, reason=reason)})
+
+
 def main():
     sys.stderr.reconfigure(encoding='utf-8', errors='backslashreplace')
+    if len(sys.argv) == 4 and sys.argv[1:3] == ['--once', '--catalog']:
+        try:
+            serve_once(sys.argv[3], sys.stdout.buffer)
+            return 0
+        except BaseException as failure:
+            print('Comparison once error: ' + type(failure).__name__ + ': ' + str(failure), file=sys.stderr)
+            return 2
+    import argparse
+    import pathlib
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--catalog', type=pathlib.Path, required=True)
     arguments = parser.parse_args()

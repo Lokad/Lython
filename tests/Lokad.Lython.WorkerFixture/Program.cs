@@ -18,7 +18,7 @@ var input = Console.OpenStandardInput();
 var output = Console.OpenStandardOutput();
 var error = Console.OpenStandardError();
 int? childId = null;
-if (mode is "descendant-hang" or "orphan-pipes")
+if (mode is "descendant-hang" or "orphan-pipes" or "once-orphan-pipes")
 {
     var start = new ProcessStartInfo(Environment.ProcessPath!) { UseShellExecute = false, CreateNoWindow = true };
     start.ArgumentList.Add(Assembly.GetExecutingAssembly().Location);
@@ -26,6 +26,36 @@ if (mode is "descendant-hang" or "orphan-pipes")
     var child = Process.Start(start)!;
     childId = child.Id;
     File.WriteAllText(Path.Combine(receipt, "child"), childId.ToString());
+}
+if (mode.StartsWith("once-", StringComparison.Ordinal))
+{
+    if (mode == "once-hang") { await Task.Delay(Timeout.Infinite); return 0; }
+    var identity = new
+    {
+        protocolVersion = 1, status = "Ready", engine = "Fixture", catalogSha256 = args[1], catalogVersion = 1,
+        processId = Environment.ProcessId, clockFrequency = 1000,
+        maximumFrameBytes = 4 * 1024 * 1024, maximumBatchIterations = 1_000_000, maximumBatchSeconds = 60,
+    };
+    var envelope = new
+    {
+        identity,
+        response = new
+        {
+            protocolVersion = 1, requestId = 1, caseId = mode == "once-wrong-case" ? "other" : args[3],
+            status = mode == "once-failure" ? "Failure" : "Equivalent",
+            completedInvocations = mode == "once-two-jobs" ? 2 : mode == "once-failure" ? 0 : 1,
+            elapsedTicks = mode == "once-worker-time" ? (long?)100 : null, clockFrequency = 1000,
+            sourceSha256 = args[4], fixtureSha256 = args[5], expectedOutputSha256 = args[6],
+            actualOutputSha256 = mode == "once-wrong-output" ? new string('0', 64) : mode == "once-failure" ? null : args[6],
+            reason = mode == "once-failure" ? "controlled failure" : null,
+        },
+    };
+    await WriteAsync(envelope);
+    if (mode == "once-two-frames") await WriteAsync(envelope);
+    if (mode == "once-truncated") await output.WriteAsync(new byte[] { 0, 0, 0 });
+    if (mode == "once-stderr-flood") { await error.WriteAsync(new byte[128 * 1024]); await Task.Delay(Timeout.Infinite); }
+    if (mode == "once-stdout-flood") { await output.WriteAsync(new byte[5 * 1024 * 1024]); await Task.Delay(Timeout.Infinite); }
+    return mode == "once-nonzero" ? 7 : 0;
 }
 if (mode == "hang-startup") { await Task.Delay(Timeout.Infinite); return 0; }
 if (mode == "oversize")

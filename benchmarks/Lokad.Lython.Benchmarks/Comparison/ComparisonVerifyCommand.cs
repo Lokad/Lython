@@ -5,20 +5,20 @@ namespace Lokad.Lython.Benchmarks.Comparison;
 
 internal static class ComparisonVerifyCommand
 {
-    public static int Run(string[] arguments)
+    public static int Run(string[] arguments, bool fresh = false)
     {
         var names = new[] { "--catalog", "--dotnet", "--python", "--python-worker", "--out" };
         var options = new Dictionary<string, string>(StringComparer.Ordinal);
         for (var i = 0; i < arguments.Length; i += 2)
         {
             if (i + 1 == arguments.Length || !names.Contains(arguments[i]) || !options.TryAdd(arguments[i], arguments[i + 1]))
-                return Usage();
+                return Usage(fresh);
         }
-        if (options.Count != names.Length) return Usage();
+        if (options.Count != names.Length) return Usage(fresh);
         using var campaign = new CancellationTokenSource(TimeSpan.FromMinutes(10));
         ConsoleCancelEventHandler cancel = (_, eventArgs) => { eventArgs.Cancel = true; campaign.Cancel(); };
         Console.CancelKeyPress += cancel;
-        try { return RunAsync(options, campaign.Token).GetAwaiter().GetResult(); }
+        try { return (fresh ? ComparisonFreshCommand.RunAsync(options, campaign.Token) : RunAsync(options, campaign.Token)).GetAwaiter().GetResult(); }
         catch (Exception failure)
         {
             Console.Error.WriteLine("Comparison verification failed: " + failure.GetType().Name + ": " + failure.Message);
@@ -27,9 +27,9 @@ internal static class ComparisonVerifyCommand
         finally { Console.CancelKeyPress -= cancel; }
     }
 
-    private static int Usage()
+    private static int Usage(bool fresh)
     {
-        Console.Error.WriteLine("Usage: --compare verify --catalog <catalog.json> --dotnet <absolute executable> " +
+        Console.Error.WriteLine("Usage: --compare " + (fresh ? "smoke-fresh" : "verify") + " --catalog <catalog.json> --dotnet <absolute executable> " +
             "--python <absolute executable> --python-worker <cpython-worker.py> --out <receipt.json>");
         return 2;
     }
@@ -144,7 +144,7 @@ internal static class ComparisonVerifyCommand
         }
     }
 
-    private static void ValidateLythonFiles(JsonElement identity, BinaryIdentity adapter, BinaryIdentity library)
+    internal static void ValidateLythonFiles(JsonElement identity, BinaryIdentity adapter, BinaryIdentity library)
     {
         var rows = identity.GetProperty("libraries").EnumerateArray().ToArray();
         foreach (var expected in new[] { adapter, library })
@@ -156,8 +156,8 @@ internal static class ComparisonVerifyCommand
                 throw new InvalidDataException("Loaded Lython runtime file digest differs.");
     }
 
-    private sealed record BinaryIdentity(string Path, string Sha256);
-    private static BinaryIdentity FileIdentity(string path)
+    internal sealed record BinaryIdentity(string Path, string Sha256);
+    internal static BinaryIdentity FileIdentity(string path)
     {
         using var file = File.OpenRead(path);
         return new BinaryIdentity(Path.GetFullPath(path), Convert.ToHexStringLower(SHA256.HashData(file)));

@@ -9,14 +9,16 @@ internal static class ComparisonCatalogCommand
     {
         if (arguments.Length > 0 && arguments[0] == "verify")
             return ComparisonVerifyCommand.Run(arguments[1..]);
-        if (arguments.Length == 3 && arguments[0] == "worker" && arguments[1] == "--catalog")
+        if (arguments.Length > 0 && arguments[0] == "smoke-fresh")
+            return ComparisonVerifyCommand.Run(arguments[1..], fresh: true);
+        if (arguments.Length == 3 && arguments[0] is "worker" or "once" && arguments[1] == "--catalog")
         {
             Console.OutputEncoding = new UTF8Encoding(false);
             try
             {
                 var manifest = ComparisonManifest.Load(arguments[2]);
-                new LythonComparisonWorker(manifest).RunAsync(Console.OpenStandardInput(), Console.OpenStandardOutput())
-                    .GetAwaiter().GetResult();
+                if (arguments[0] == "once") LythonOnceWorker.RunAsync(manifest, Console.OpenStandardOutput()).GetAwaiter().GetResult();
+                else new LythonComparisonWorker(manifest).RunAsync(Console.OpenStandardInput(), Console.OpenStandardOutput()).GetAwaiter().GetResult();
                 return 0;
             }
             catch (Exception failure)
@@ -28,7 +30,7 @@ internal static class ComparisonCatalogCommand
         if (arguments.Length == 0 || arguments[0] != "list"
             || (arguments.Length != 1 && (arguments.Length != 3 || arguments[1] != "--out")))
         {
-            Console.Error.WriteLine("Usage: --compare list [--out <catalog.json>] | worker --catalog <catalog.json> | verify --catalog ... --dotnet ... --python ... --python-worker ... --out ... (sampling driver pending)");
+            Console.Error.WriteLine("Usage: --compare list [--out <catalog.json>] | worker/once --catalog <catalog.json> | verify/smoke-fresh --catalog ... --dotnet ... --python ... --python-worker ... --out ... (sampling driver pending)");
             return 2;
         }
 

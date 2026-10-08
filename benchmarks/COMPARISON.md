@@ -249,7 +249,51 @@ macOS process ownership is currently unsupported.
 The Windows mechanism follows Microsoft's [job object documentation](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects)
 and [process attribute API](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute).
 The Linux launcher uses the documented [`setsid` fork/wait options](https://man7.org/linux/man-pages/man1/setsid.1.html).
-The fresh-process lane and report-eligibility checks remain pending.
+Report-eligibility checks remain pending.
+
+## Fresh-process correctness and timer smoke
+
+The dedicated .NET `--compare once --catalog <one-case.json>` entry and Python
+`-I -S cpython-worker.py --once --catalog <one-case.json>` compile and execute
+exactly one job, write one framed result and exit. They reject multiple-case
+payloads. They keep the same ordinary limits/capture, fresh namespace, complete
+golden output check and success/return/stderr checks as the persistent lanes.
+Each result carries lightweight actual runtime/build identity; full binary
+hashing and heavyweight Python provenance imports stay outside fresh startup.
+The .NET comparison branch does not initialize BenchmarkDotNet.
+
+```text
+<dotnet> <benchmark.dll> --compare smoke-fresh --catalog <catalog.json> --dotnet <absolute-dotnet> --python <absolute-python> --python-worker <cpython-worker.py> --out <receipt.json>
+```
+
+This diagnostic command prepares and retains byte-identical one-case payloads
+before timing. Persistent workers first provide full binary/runtime provenance
+and two untimed semantic checks per case, then shut down. Each selected case
+gets a new Lython process and a new CPython process, sequentially. The same
+parent clock starts before the owned OS launch and stops after complete raw
+stdout/stderr drain and root exit. It includes the common ownership bootstrap,
+runtime/adapter startup, payload reading/parsing/hash checks, compilation, one
+invocation, cheap result checks, result encoding and pipe transport. Parent
+decoding, semantic/identity validation, lifecycle cleanup, full binary hashes
+and receipt writes are outside that clock. Payload/executable/helper/library
+identities are bound to the prepared files and rechecked outside samples.
+
+Only one successful invocation with matching case/fixture/source/output hashes,
+runtime/build identity, a single complete frame, empty stderr and zero exit
+can retain a parent elapsed value. Failure responses have no parent timing
+sample; malformed counts/frames, stale identities and unexpected exits abort
+and checkpoint. Stdout/stderr and owned-process cleanup use the same bounds as
+the persistent supervisor. This smoke has a 65-second launch-to-drain ceiling,
+5-minute case and 10-minute campaign ceilings. It records every completed row
+atomically and retains the prepared payload directory beside the receipt.
+
+OS file caches are retained. The common Windows job or Linux gated-session
+envelope is included, and its relative cost is visible in the controls. There
+is no overhead subtraction and no claim of cold storage. Results remain
+`performanceQualified: false`: one process per engine/case is correctness/timer
+smoke, not repeated-session sampling or a qualified startup ratio. Fresh,
+compilation and warm results remain separate. The qualification commands and
+strict reporting remain under implementation.
 
 ## Sampling and eligibility
 

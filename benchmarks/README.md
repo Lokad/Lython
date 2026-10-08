@@ -6,7 +6,8 @@ The comparative CPython campaign is specified separately in
 [COMPARISON.md](COMPARISON.md). Its primary lane compares warm public Lython
 invocations with warm CPython executions of identical Python source. The
 catalog export, explicit CPython correctness check and supervised comparison smoke
-are available; the sampling and qualification driver is under development.
+are available, together with an exactly-once fresh-process smoke. The sampling
+and qualification driver is under development.
 BenchmarkDotNet results below do not include a
 Python baseline. An explicit, hash-verified Linux toolchain preparation command
 is documented in that contract.

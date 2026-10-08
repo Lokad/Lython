@@ -177,15 +177,19 @@ public sealed class ComparisonWorkerSupervisorTests
         }
     }
 
-    private sealed class Fixture : IDisposable
+    internal sealed class Fixture : IDisposable
     {
         private readonly string _directory = Path.Combine(Path.GetTempPath(), "lython supervisor λ😀 " + Guid.NewGuid().ToString("N"));
         private readonly WorkerLaunch _launch;
+        private readonly string _catalogHash;
+        internal WorkerLaunch Launch => _launch;
         public int RootId => int.Parse(File.ReadAllText(Path.Combine(_directory, "root")));
         public int? ChildId => File.Exists(Path.Combine(_directory, "child"))
             ? int.Parse(File.ReadAllText(Path.Combine(_directory, "child"))) : null;
-        public Fixture(string mode, params string[] arguments)
+        public Fixture(string mode, params string[] arguments) : this(mode, CatalogHash, (IEnumerable<string>)arguments) { }
+        internal Fixture(string mode, string catalogHash, IEnumerable<string> arguments)
         {
+            _catalogHash = catalogHash;
             Directory.CreateDirectory(_directory);
             var root = new DirectoryInfo(AppContext.BaseDirectory);
             while (root is not null && !File.Exists(Path.Combine(root.FullName, "Directory.Build.props"))) root = root.Parent;
@@ -197,10 +201,10 @@ public sealed class ComparisonWorkerSupervisorTests
             var host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
             if (string.IsNullOrEmpty(host)) host = Environment.GetEnvironmentVariable("PATH")!.Split(Path.PathSeparator)
                 .Select(path => Path.Combine(path, hostName)).First(File.Exists);
-            _launch = new WorkerLaunch(Path.GetFullPath(host), new[] { dll, mode, CatalogHash, _directory }.Concat(arguments).ToArray(), root.FullName);
+            _launch = new WorkerLaunch(Path.GetFullPath(host), new[] { dll, mode, catalogHash, _directory }.Concat(arguments).ToArray(), root.FullName);
         }
         public Task<ComparisonWorkerClient> StartAsync(TimeSpan? deadline = null) =>
-            ComparisonWorkerClient.StartAsync(_launch, "Fixture", CatalogHash, startupDeadline: deadline);
+            ComparisonWorkerClient.StartAsync(_launch, "Fixture", _catalogHash, startupDeadline: deadline);
         public void Dispose()
         {
             File.Delete(Path.Combine(_directory, "root"));

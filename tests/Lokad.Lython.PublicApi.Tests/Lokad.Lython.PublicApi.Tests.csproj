@@ -30,6 +30,8 @@
     <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\LythonComparisonWorker.cs" Link="Benchmarks\LythonComparisonWorker.cs" />
     <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\OwnedWorkerProcess.cs" Link="Benchmarks\OwnedWorkerProcess.cs" />
     <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\ComparisonWorkerClient.cs" Link="Benchmarks\ComparisonWorkerClient.cs" />
+    <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\LythonOnceWorker.cs" Link="Benchmarks\LythonOnceWorker.cs" />
+    <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\FreshProcessRunner.cs" Link="Benchmarks\FreshProcessRunner.cs" />
   </ItemGroup>
 
   <ItemGroup>

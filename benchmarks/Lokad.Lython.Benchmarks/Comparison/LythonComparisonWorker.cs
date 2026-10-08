@@ -16,7 +16,7 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest)
 
     public async Task RunAsync(Stream input, Stream output, CancellationToken cancellationToken = default)
     {
-        await ComparisonProtocol.WriteAsync(output, CreateIdentity(), cancellationToken).ConfigureAwait(false);
+        await ComparisonProtocol.WriteAsync(output, CreateIdentity(manifest), cancellationToken).ConfigureAwait(false);
         while (true)
         {
             using var frame = await ComparisonProtocol.ReadAsync(input, cancellationToken).ConfigureAwait(false);
@@ -133,7 +133,7 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest)
             Stopwatch.Frequency, workload.SourceSha256, workload.FixtureSha256, workload.ExpectedOutputSha256,
             actual is null ? null : ComparisonProtocol.Digest(actual), reason);
 
-    private object CreateIdentity()
+    internal static object CreateIdentity(ComparisonManifest manifest, bool includeFileDigests = true)
     {
         var library = typeof(LythonEngine).Assembly;
         var adapter = typeof(LythonComparisonWorker).Assembly;
@@ -155,13 +155,14 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest)
             maximumBatchIterations = ComparisonProtocol.MaximumBatchIterations,
             maximumBatchSeconds = ComparisonProtocol.MaximumBatchSeconds,
             publicLimits = "ordinary defaults; instruction fuel unset; no forced GC",
+            benchmarkDotNetLoaded = AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "BenchmarkDotNet"),
             libraries = new[] { Identity(library), Identity(adapter), Identity(core) },
         };
 
-        static object Identity(Assembly assembly) => new
+        object Identity(Assembly assembly) => new
         {
             path = assembly.Location,
-            sha256 = ComparisonProtocol.Digest(File.ReadAllBytes(assembly.Location)),
+            sha256 = includeFileDigests ? ComparisonProtocol.Digest(File.ReadAllBytes(assembly.Location)) : null,
             version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion,
             configuration = assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration,
             moduleId = assembly.ManifestModule.ModuleVersionId,
