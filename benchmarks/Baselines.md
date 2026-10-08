@@ -18,7 +18,7 @@ dotnet benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Bench
 
 All 39 independent invocation controls returned the expected work counts.
 Each timed operation executes a script through RunAsync with an immediately
-completing host, at the unchanged 1 GiB memory/50 million step defaults. Guest
+completing host, at the then-current 1 GiB memory/50 million step defaults. Guest
 script compilation and host fixture seeding occur outside timing. Regex subject
 construction and initial pattern compilation occur inside the timed script;
 the fresh-compilation case also purges and recompiles on every loop iteration.

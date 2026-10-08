@@ -2446,7 +2446,7 @@ The runtime must allow the embedding host to constrain:
 
 - execution time
 - memory use
-- interpreter work / execution steps
+- optional interpreter work / execution steps for embeddings requiring deterministic fuel
 - recursion depth
 - maximum string size
 - maximum collection size
@@ -2484,17 +2484,15 @@ The runtime must therefore enforce an explicit recursion budget before host stac
 
 If internal implementation strategies introduce additional recursive paths, those paths must be bounded or rewritten so they cannot bypass the script-level recursion limit.
 
-### 14.5 Execution-Step Budget
+### 14.5 Execution Deadlines and Optional Fuel
 
-Interpreter work must be constrainable by an explicit execution-step budget.
+Ordinary execution has no implicit instruction allowance. The embedding application owns its execution deadline and must provide and cancel a token when finite execution time is required. Cancellation checkpoints must remain effective for pure computation, including non-allocating loops that avoid host calls. Memory bounds alone do not terminate such a loop.
 
-This budget exists in addition to cancellation and host-call limits. It must be capable of stopping runaway scripts that:
+The published `MaxExecutionSteps` option remains an enforced opt-in allowance for embedders requiring deterministic fuel; null means no step ceiling, independently of `DisableDefaultLimits`. `DefaultMaxExecutionSteps` retains the historical 50,000,000 value for source compatibility and does not configure an ordinary run. The internal notion of a step is implementation-defined. Fuel accounting runs only when the embedder requests an allowance and must not replace cancellation or govern temporary reclamation cadence.
 
-- loop forever without allocating heavily
-- avoid host calls
-- remain inside pure interpreter work
+Shared execution checkpoints perform cancellation and necessary housekeeping. Temporary reclamation must keep a lightweight cadence even in call-free loops without fuel, so dropped values do not leave stale commitments. Recursion/interpreter-depth and CLR stack-headroom guards, memory preflights, collection/string/read/output bounds, CLR projection funding, and the separate host-call quota remain effective.
 
-The exact internal notion of a “step” is implementation-defined, but it must be stable enough to act as a practical host-protection mechanism.
+Long builtin traversals must observe cancellation at meaningful intervals. Operations that cannot interrupt promptly retain operation-local size, depth, allocation or work safeguards; an outer token does not make an indivisible dependency call interruptible. The PythonRe implementation limitation in section 9 remains separate dependency work. Guest exception handling must not suppress host cancellation indefinitely, and canceled writers retain their cleanup/publication contract.
 
 ### 14.6 Memory Budgets
 

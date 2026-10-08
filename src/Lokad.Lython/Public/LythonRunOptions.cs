@@ -5,7 +5,11 @@ namespace Lokad.Lython;
 /// <summary>Configures one isolated Lython execution and its resource limits.</summary>
 public sealed class LythonRunOptions
 {
-    /// <summary>The default instruction budget.</summary>
+    /// <summary>The historical instruction allowance, retained for source compatibility.</summary>
+    /// <remarks>
+    /// Ordinary execution has no implicit instruction allowance. This value
+    /// applies only when explicitly assigned to <see cref="MaxExecutionSteps"/>.
+    /// </remarks>
     public const int DefaultMaxExecutionSteps = 50_000_000;
 
     /// <summary>The default Python call-depth limit.</summary>
@@ -55,7 +59,8 @@ public sealed class LythonRunOptions
     /// <summary>Gets the logical source path used in diagnostics, imports, and stack frames.</summary>
     public string? SourcePath { get; init; }
 
-    /// <summary>Gets the token that can cancel execution.</summary>
+    /// <summary>Gets the host-controlled token that can cancel execution.</summary>
+    /// <remarks>Supply a cancellable token when the run must have a finite deadline.</remarks>
     public CancellationToken CancellationToken { get; init; }
 
     /// <summary>Gets whether unspecified resource limits are unbounded.</summary>
@@ -67,7 +72,11 @@ public sealed class LythonRunOptions
     /// <summary>Gets the allowlist of host-local module names or paths.</summary>
     public IReadOnlySet<string>? AllowedLocalModules { get; init; }
 
-    /// <summary>Gets the instruction budget override.</summary>
+    /// <summary>Gets an optional instruction allowance for callers requiring deterministic fuel.</summary>
+    /// <remarks>
+    /// Null leaves interpreter work unbounded regardless of <see cref="DisableDefaultLimits"/>.
+    /// Cancellation and other configured resource limits still apply.
+    /// </remarks>
     public LythonCountLimit? MaxExecutionSteps { get; init; }
 
     /// <summary>Gets the Python call-depth override.</summary>

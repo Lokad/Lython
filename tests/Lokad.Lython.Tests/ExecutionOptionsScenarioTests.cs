@@ -42,19 +42,13 @@ while True:
             new MockLythonHost(),
             new LythonRunOptions
             {
-                // No step budget: with the default 50M cap, a fast runner burns
-                // the whole budget before a delayed cancel lands (and vice versa
-                // under load), making the outcome a wall-clock race. This loop
-                // allocates nothing, so unbounded defaults are safe and leave
-                // cancellation as the only possible exit.
-                CancellationToken = cts.Token,
-                DisableDefaultLimits = true
+                CancellationToken = cts.Token
             }));
 
         await Task.Delay(25);
         cts.Cancel();
 
-        var result = await runTask;
+        var result = await runTask.WaitAsync(TimeSpan.FromSeconds(5));
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);
@@ -107,15 +101,13 @@ while True:
     pass
 """,
             new MockLythonHost(),
-            // No step budget (same race as above): unbounded defaults leave
-            // cancellation as the only possible exit for this non-allocating loop.
-            new LythonRunOptions { DisableDefaultLimits = true },
+            new LythonRunOptions(),
             cts.Token);
 
         await Task.Delay(25);
         cts.Cancel();
 
-        var result = await runTask;
+        var result = await runTask.WaitAsync(TimeSpan.FromSeconds(5));
 
         Assert.False(result.Success);
         Assert.NotNull(result.Failure);

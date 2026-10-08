@@ -313,11 +313,13 @@ outcome-specific data.
 The important runtime guarantees are:
 
 - cooperative interruption through `CancellationToken`, with frequent checks across interpreter execution
-- an explicit execution-step budget to stop runaway pure-Python loops
+- an opt-in execution-step allowance for embedders requiring deterministic fuel
 - a recursion limit plus an internal interpreter-stack guard so Python recursion cannot turn into CLR stack overflow
 - conservative in-process size controls for strings, collections, host calls, and execution-memory growth
 
 Unless `DisableDefaultLimits` is set, Lython applies practical defaults, including a 1 GiB execution-memory budget and a separate 1 GiB projection budget. Those guarantees are meant to make Lython safe to embed inside a host process, while keeping the programming model close to ordinary small Python.
+
+Ordinary execution has no implicit step cutoff. Embedders requiring a finite execution deadline must supply a cancellable token and arrange cancellation; memory bounds alone do not stop a non-allocating infinite loop. `MaxExecutionSteps` remains an enforced opt-in allowance for compatibility with existing embedders. `DefaultMaxExecutionSteps` retains its historical numeric value for source compatibility and is applied only when explicitly assigned to that option. Cancellation is cooperative: an in-progress operation must reach a checkpoint, and the regex backend limitation described above still applies.
 
 ## Host Integration
 

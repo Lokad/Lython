@@ -4,6 +4,8 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class ExecutionGuards
 {
+    private int _checkpointsUntilSweep = 256;
+
     public ExecutionGuards(ExecutionState state)
     {
         State = state;
@@ -15,19 +17,15 @@ internal sealed class ExecutionGuards
 
     public void CheckExecution(LythonSourceSpan? span)
     {
-        Limits.ExecutionStepCount++;
-        if ((Limits.ExecutionStepCount & 255) == 0)
+        if (--_checkpointsUntilSweep == 0)
         {
-            // Reclamation cadence for call-free loops: the bound-call path
-            // sweeps separately, but straight-line iteration may never call,
-            // so steps carry their own cadence and dropped temporaries
-            // release instead of accumulating stale commitments. Both
-            // cadences sweep the same pool; the overlap is intentional
-            // (call boundaries remain the fresher sweep point for variadics).
+            // Housekeeping is independent of optional fuel. Call-free loops
+            // still release dropped temporaries; bound calls sweep separately.
+            _checkpointsUntilSweep = 256;
             State.CallTemporaries.Sweep();
         }
         if (Limits.MaxExecutionSteps is { } maxExecutionSteps &&
-            Limits.ExecutionStepCount > maxExecutionSteps)
+            ++Limits.ExecutionStepCount > maxExecutionSteps)
         {
             throw RuntimeErrors.Runtime($"maximum execution step count exceeded ({maxExecutionSteps})", span);
         }

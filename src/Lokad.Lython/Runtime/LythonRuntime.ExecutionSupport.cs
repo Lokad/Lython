@@ -121,6 +121,8 @@ internal sealed partial class LythonRuntime
     public const int StackProbeDepthThreshold = 32;
     public const long StackProbeHeadroomBytes = 96 * 1024;
 
+        // Counts only an explicitly requested allowance. Ordinary execution
+        // uses cancellation and the guard's independent housekeeping cadence.
         public long ExecutionStepCount { get; set; }
 
         public long CurrentRecursionDepth { get; set; }
@@ -135,7 +137,7 @@ internal sealed partial class LythonRuntime
             return new ExecutionLimits
             {
                 CancellationToken = options?.CancellationToken ?? CancellationToken.None,
-                MaxExecutionSteps = NonNegativeOrDefault(options?.MaxExecutionSteps?.Count, useDefaultLimits ? LythonRunOptions.DefaultMaxExecutionSteps : null, nameof(LythonRunOptions.MaxExecutionSteps)),
+                MaxExecutionSteps = NonNegativeOrDefault(options?.MaxExecutionSteps?.Count, null, nameof(LythonRunOptions.MaxExecutionSteps)),
                 MaxRecursionDepth = NonNegativeOrDefault(options?.MaxRecursionDepth?.Count, useDefaultLimits ? LythonRunOptions.DefaultMaxRecursionDepth : null, nameof(LythonRunOptions.MaxRecursionDepth)),
                 MaxHostCalls = NonNegativeOrDefault(options?.MaxHostCalls?.Count, useDefaultLimits ? LythonRunOptions.DefaultMaxHostCalls : null, nameof(LythonRunOptions.MaxHostCalls)),
                 MaxCollectionSize = NonNegativeOrDefault(options?.MaxCollectionSize?.Count, useDefaultLimits ? LythonRunOptions.DefaultMaxCollectionSize : null, nameof(LythonRunOptions.MaxCollectionSize)),
