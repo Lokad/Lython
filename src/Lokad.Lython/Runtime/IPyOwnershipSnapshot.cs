@@ -12,6 +12,15 @@ internal interface IPyOwnershipSnapshot
     bool TrySnapshotOwnership(out long chargeBytes);
 }
 
+// Native resources remain live while their owner awaits finalization. Owners
+// implementing this marker release those resources in a managed finalizer;
+// the reclamation pool must retain their snapshot through that finalizer and
+// reclaim it only after the finalized owner is collected. Finalizers must not
+// call the host or mutate a governor (both belong to the execution thread).
+internal interface IPyFinalizableOwnership : IPyOwnershipSnapshot
+{
+}
+
 internal static class OwnershipSnapshot
 {
     // Shared owned/unowned shape: governed values snapshot their committed

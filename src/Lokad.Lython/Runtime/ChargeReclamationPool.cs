@@ -49,7 +49,7 @@ internal sealed class ChargeReclamationPool
     {
         public ReclamationEntry(object target, long valueCharge)
         {
-            Target = new WeakReference<object>(target);
+            Target = new WeakReference<object>(target, trackResurrection: target is IPyFinalizableOwnership);
             ValueCharge = valueCharge;
         }
 
