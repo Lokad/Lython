@@ -29,26 +29,32 @@ internal static class PyStableSort
             _entries.Add(entry);
         }
 
-        public void Sort(bool reverse, Func<object, object, bool> isLessThan)
+        public void Sort(bool reverse, Func<object, object, bool> isLessThan,
+            LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
         {
+            context.CheckExecution(span);
             if (_entries.Count < 2)
             {
                 return;
             }
 
             var scratch = new Entry[_entries.Count];
-            MergePasses(_entries, scratch, reverse, isLessThan);
+            MergePasses(_entries, scratch, reverse, isLessThan, context, span);
+            context.CheckExecution(span);
         }
 
-        public async ValueTask SortAsync(bool reverse, Func<object, object, ValueTask<bool>> isLessThan)
+        public async ValueTask SortAsync(bool reverse, Func<object, object, ValueTask<bool>> isLessThan,
+            LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
         {
+            context.CheckExecution(span);
             if (_entries.Count < 2)
             {
                 return;
             }
 
             var scratch = new Entry[_entries.Count];
-            await MergePassesAsync(_entries, scratch, reverse, isLessThan).ConfigureAwait(false);
+            await MergePassesAsync(_entries, scratch, reverse, isLessThan, context, span).ConfigureAwait(false);
+            context.CheckExecution(span);
         }
 
         public IEnumerator<object> GetEnumerator()
@@ -68,7 +74,8 @@ internal static class PyStableSort
         List<Entry> entries,
         Entry[] scratch,
         bool reverse,
-        Func<object, object, bool> isLessThan)
+        Func<object, object, bool> isLessThan,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
     {
         var sourceIsEntries = true;
         for (long width = 1; width < entries.Count; width *= 2)
@@ -84,7 +91,7 @@ internal static class PyStableSort
                     (int)Math.Min(offset + width, entries.Count),
                     (int)Math.Min(offset + (2 * width), entries.Count),
                     reverse,
-                    isLessThan);
+                    isLessThan, context, span);
             }
 
             sourceIsEntries = !sourceIsEntries;
@@ -94,6 +101,7 @@ internal static class PyStableSort
         {
             for (var i = 0; i < entries.Count; i++)
             {
+                if ((i & 63) == 0) context.CheckExecution(span);
                 entries[i] = scratch[i];
             }
         }
@@ -103,7 +111,8 @@ internal static class PyStableSort
         List<Entry> entries,
         Entry[] scratch,
         bool reverse,
-        Func<object, object, ValueTask<bool>> isLessThan)
+        Func<object, object, ValueTask<bool>> isLessThan,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
     {
         var sourceIsEntries = true;
         for (long width = 1; width < entries.Count; width *= 2)
@@ -119,7 +128,7 @@ internal static class PyStableSort
                         (int)Math.Min(offset + width, entries.Count),
                         (int)Math.Min(offset + (2 * width), entries.Count),
                         reverse,
-                        isLessThan)
+                        isLessThan, context, span)
                     .ConfigureAwait(false);
             }
 
@@ -130,6 +139,7 @@ internal static class PyStableSort
         {
             for (var i = 0; i < entries.Count; i++)
             {
+                if ((i & 63) == 0) context.CheckExecution(span);
                 entries[i] = scratch[i];
             }
         }
@@ -142,12 +152,15 @@ internal static class PyStableSort
         int middle,
         int end,
         bool reverse,
-        Func<object, object, bool> isLessThan)
+        Func<object, object, bool> isLessThan,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
     {
         var left = start;
         var right = middle;
         for (var output = start; output < end; output++)
         {
+            // Copy tails can run without further comparisons or guest calls.
+            if ((output & 63) == 0) context.CheckExecution(span);
             if (left >= middle)
             {
                 destination[output] = source[right++];
@@ -172,12 +185,14 @@ internal static class PyStableSort
         int middle,
         int end,
         bool reverse,
-        Func<object, object, ValueTask<bool>> isLessThan)
+        Func<object, object, ValueTask<bool>> isLessThan,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
     {
         var left = start;
         var right = middle;
         for (var output = start; output < end; output++)
         {
+            if ((output & 63) == 0) context.CheckExecution(span);
             if (left >= middle)
             {
                 destination[output] = source[right++];

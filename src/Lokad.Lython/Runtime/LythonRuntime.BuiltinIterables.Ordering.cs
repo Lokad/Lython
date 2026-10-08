@@ -337,7 +337,7 @@ internal sealed partial class LythonRuntime
 
             entries.Sort(
                 reverse,
-                (left, right) => IsSortKeyLessThan(left, right, span, context));
+                (left, right) => IsSortKeyLessThan(left, right, span, context), context, span);
             return entries;
         }
         catch
@@ -385,7 +385,7 @@ internal sealed partial class LythonRuntime
 
             await entries.SortAsync(
                     reverse,
-                    (left, right) => IsSortKeyLessThanAsync(left, right, span, context))
+                    (left, right) => IsSortKeyLessThanAsync(left, right, span, context), context, span)
                 .ConfigureAwait(false);
             return entries;
         }

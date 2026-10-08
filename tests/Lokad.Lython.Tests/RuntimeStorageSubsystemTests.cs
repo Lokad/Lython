@@ -236,7 +236,9 @@ public sealed class RuntimeStorageSubsystemTests
     [Fact]
     public void StableSortBuffer_RemainsReservedUntilGovernedResultOwnsItsStorage()
     {
-        var governor = new MemoryGovernor(4096);
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+            new LythonRunOptions { MaxExecutionMemoryBytes = 4096 });
+        var governor = context.MemoryGovernor;
         PyList result;
 
         using (var buffer = new PyStableSort.Buffer(governor, null))
@@ -247,7 +249,7 @@ public sealed class RuntimeStorageSubsystemTests
                 buffer.Add(new PyStableSort.Entry(value, value), null);
             }
 
-            buffer.Sort(reverse: false, static (left, right) => (BigInteger)left < (BigInteger)right);
+            buffer.Sort(reverse: false, static (left, right) => (BigInteger)left < (BigInteger)right, context, null);
 
             Assert.True(governor.CurrentReservedBytes > 0);
             result = new PyList(buffer, governor, null);
