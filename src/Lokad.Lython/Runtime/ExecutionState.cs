@@ -261,9 +261,9 @@ internal sealed class ExecutionState
 
     // Tracks every pool-owning source (CSV readers, text readers) for
     // abandonment reclamation: entries hold the pool and scratch strongly
-    // but the owner weakly, so a dropped source stops contributing charges
-    // once reclaimed while live sources (and everything they keep) are never
-    // touched. The governor also enumerates this registry for exhaustion
+    // but the owner weakly. A dropped source releases its scratch; its pool
+    // stays registered while returned values still need reclamation tracking.
+    // The governor also enumerates this registry for exhaustion
     // relief, so registered pools participate without a second registry.
     internal void RegisterCsvSource(
         LythonRuntime.CsvRecordSource source,
@@ -287,27 +287,46 @@ internal sealed class ExecutionState
     }
 
     // Yields every live reclamation pool, reclaiming abandoned registrations
-    // on the way: dropped owners stop contributing charges while live pools
-    // are returned for sweeping. Fully enumerating also serves the pull
-    // cadence, so there is a single reconciliation path.
+    // on the way: dropped owners release scratch, while returned values keep
+    // their tracking pool until collection. Fully enumerating also serves the
+    // pull cadence, so there is a single reconciliation path.
     internal IEnumerable<ChargeReclamationPool> LiveReclamationPools()
     {
         for (var i = _poolRegistrations.Count - 1; i >= 0; i--)
         {
+            // Promotion funding can reenter this registry and retire other
+            // sources, so an index from before the sweep may no longer exist.
+            i = Math.Min(i, _poolRegistrations.Count - 1);
+            if (i < 0) break;
             var entry = _poolRegistrations[i];
-            if (!entry.Owner.TryGetTarget(out _))
+            if (!entry.Owner.TryGetTarget(out _) && !entry.Pool.IsSweeping)
             {
-                entry.Pool.Sweep(full: true);
-                entry.Pool.ReleaseTierBacking();
-                entry.Scratch?.Dispose();
-                MemoryGovernor.Release(ChargeReclamationPool.EntryChargeBytes);
-                _poolRegistrations[i] = _poolRegistrations[_poolRegistrations.Count - 1];
-                _poolRegistrations.RemoveAt(_poolRegistrations.Count - 1);
+                var firstAbandonment = !entry.Abandoned;
+                if (firstAbandonment)
+                {
+                    // Scratch belongs to the source, so free it before a sweep
+                    // might need promotion capacity under a tight budget.
+                    entry.Scratch?.Dispose();
+                    entry = entry with { Scratch = null, Abandoned = true };
+                    _poolRegistrations[i] = entry;
+                }
+
+                entry.Pool.Sweep(full: firstAbandonment);
+                if (entry.Pool.Count == 0)
+                {
+                    var removeIndex = i < _poolRegistrations.Count
+                        && ReferenceEquals(_poolRegistrations[i].Owner, entry.Owner)
+                        ? i : _poolRegistrations.IndexOf(entry);
+                    if (removeIndex < 0) continue;
+                    entry.Pool.ReleaseTierBacking();
+                    MemoryGovernor.Release(ChargeReclamationPool.EntryChargeBytes);
+                    _poolRegistrations[removeIndex] = _poolRegistrations[_poolRegistrations.Count - 1];
+                    _poolRegistrations.RemoveAt(_poolRegistrations.Count - 1);
+                    continue;
+                }
             }
-            else
-            {
-                yield return entry.Pool;
-            }
+
+            yield return entry.Pool;
         }
 
         yield return CallTemporaries;
@@ -423,7 +442,8 @@ internal sealed class ExecutionState
     private readonly record struct PoolRegistration(
         WeakReference<object> Owner,
         ChargeReclamationPool Pool,
-        MemoryGovernor.TemporaryMemoryReservation? Scratch);
+        MemoryGovernor.TemporaryMemoryReservation? Scratch,
+        bool Abandoned = false);
 
     public bool TryReadRuntimeMemberCache(
         object cacheSite,

@@ -1661,6 +1661,13 @@ The default dialect is:
 - quote character `"`
 - line terminator `\n`
 
+Returned rows and field values may outlive their CSV reader. Collecting the
+reader releases its parser scratch, while the registered reclamation pool
+continues to track surviving values. The pool's tracking and backing remain
+funded until its last values are collected; exhaustion relief also reconciles
+empty abandoned pools before retrying allocation. Dropping a reader must not
+strand charges for values that are dropped later.
+
 Failed rows retain nothing uncharged and leave writers usable: a row that
 raises during conversion or reservation is dropped without keeping partial
 state, prior successful rows (including earlier `writerows` rows) stay valid,

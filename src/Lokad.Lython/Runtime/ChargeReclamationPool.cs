@@ -20,7 +20,8 @@ namespace Lokad.Lython.Runtime;
 // releases those charges through the value itself and commits the
 // replacement, so those paths re-snapshot the pool entry; incremental growth
 // only ever leaves a safe residual behind. Callers own the sweep cadence; an
-// abandoned pool is swept fully with its backing and registration released.
+// abandoned source releases its scratch, while live returned values keep the
+// pool funded until its backing and registration can be released together.
 // Single-threaded like the rest of the runtime.
 internal sealed class ChargeReclamationPool
 {
@@ -44,6 +45,7 @@ internal sealed class ChargeReclamationPool
     private readonly List<ReclamationEntry> _old = new();
     private int _oldCursor;
     private long _backingBytes;
+    private int _sweepDepth;
 
     private sealed class ReclamationEntry
     {
@@ -64,6 +66,11 @@ internal sealed class ChargeReclamationPool
     }
 
     public int Count => _young.Count + _old.Count;
+
+    // A sweep can temporarily detach an entry while funding its promotion.
+    // Exhaustion relief may revisit the source registry during that window;
+    // an empty tier then does not mean the pool can be unregistered.
+    internal bool IsSweeping => _sweepDepth != 0;
 
     // Reports whether a value already owns a reclamation entry, so fresh-value
     // helpers can alias-dedup before committing instead of double-charging a
@@ -221,14 +228,22 @@ internal sealed class ChargeReclamationPool
     // through CommittedBackingBytes and releases on pool abandonment.
     public long Sweep(bool full = false)
     {
-        var released = SweepTier(_young, _old);
-        released += full ? DrainTier(_old) : SweepOldQuantum();
-        if (released > 0)
+        _sweepDepth++;
+        try
         {
-            _governor.Release(released);
-        }
+            var released = SweepTier(_young, _old);
+            released += full ? DrainTier(_old) : SweepOldQuantum();
+            if (released > 0)
+            {
+                _governor.Release(released);
+            }
 
-        return released;
+            return released;
+        }
+        finally
+        {
+            _sweepDepth--;
+        }
     }
 
     // Registers one pooled value transactionally (R08): every stage below is owned

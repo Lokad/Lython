@@ -36,8 +36,8 @@ internal sealed class MemoryGovernor
     // retries once, so garbage pressure fails only when retention is real.
     // Live pools enumerated from the owning run (call temporaries plus
     // registered CSV/file sources) for exhaustion relief. The provider
-    // skips abandoned registrations without retaining them, so no second
-    // registry can grow here.
+    // retains abandoned registrations only while their returned values need
+    // tracking, so no second registry can grow here.
     internal Func<IEnumerable<ChargeReclamationPool>>? LivePoolProvider { get; set; }
 
     // Committed level after the last relief: relief repeats only while
@@ -166,6 +166,13 @@ internal sealed class MemoryGovernor
                 // Same bookkeeping pressure after collecting: keep whatever
                 // this pool already released and let the retry below decide.
             }
+        }
+
+        // A full sweep may have collected the last aliases from an abandoned
+        // source. Reconcile its now-empty registration/backing before deciding
+        // whether the pending allocation fits; those arrays can release too.
+        foreach (var _ in provider())
+        {
         }
     }
 

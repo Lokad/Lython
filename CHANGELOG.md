@@ -4,6 +4,7 @@
 
 ## 0.10.0 - release candidate
 
+- Keep returned CSV/text values reclaimable after their source is collected; release abandoned scratch before sweep funding and preserve registry ownership through reentrant exhaustion relief.
 - Add sequential gzip.GzipFile wrappers over contained filenames and supplied binary objects, lazy metadata/trailer checks, persistent governed compression, sync flush, awaited callbacks, and correct supplied-object ownership.
 - Retain native ownership charges through finalization, expose EOFError/FutureWarning hierarchy, and emit inferred gzip write-mode notices through mediated stderr.
 - Add governed zlib-wrapped byte compression/decompression, exact levels, validated headers/truncation/Adler-32, first-stream trailing behavior and awaited option conversion.
