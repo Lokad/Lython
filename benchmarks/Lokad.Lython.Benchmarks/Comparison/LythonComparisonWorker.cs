@@ -58,7 +58,7 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest)
         try
         {
             // Reuse one compilation and prove fresh state twice before a batch.
-            var script = Compile(workload);
+            var script = _compiled.TryGetValue(workload.Id, out var existing) ? existing : Compile(workload);
             for (; completed < 2; completed++) actual = Invoke(script, workload);
             _compiled[workload.Id] = script;
             _verified.Add(workload.Id);
@@ -142,6 +142,14 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest)
             "TieredCompilation", "TieredPGO", "TC_QuickJit", "TC_QuickJitForLoops", "ReadyToRun" };
         var overrides = variableNames.SelectMany(name => new[] { "DOTNET_" + name, "COMPlus_" + name })
             .Append("DOTNET_PROCESSOR_COUNT").ToDictionary(name => name, Environment.GetEnvironmentVariable);
+        foreach (System.Collections.DictionaryEntry variable in Environment.GetEnvironmentVariables())
+        {
+            var name = (string)variable.Key;
+            if ((name.StartsWith("DOTNET_", StringComparison.OrdinalIgnoreCase) || name.StartsWith("COMPlus_", StringComparison.OrdinalIgnoreCase))
+                && name is not ("DOTNET_ROOT" or "DOTNET_ROOT_X64" or "DOTNET_CLI_TELEMETRY_OPTOUT" or "DOTNET_NOLOGO")
+                && !overrides.ContainsKey(name))
+                overrides.Add(name, "<present>"); // Unknown settings reject the primary profile; do not expose their values.
+        }
         return new
         {
             protocolVersion = ComparisonProtocol.Version, status = "Ready", engine = "Lython",
@@ -165,6 +173,7 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest)
             sha256 = includeFileDigests ? ComparisonProtocol.Digest(File.ReadAllBytes(assembly.Location)) : null,
             version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion,
             configuration = assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration,
+            buildSdk = assembly.GetCustomAttributes<AssemblyMetadataAttribute>().SingleOrDefault(a => a.Key == "BuildSdkVersion")?.Value,
             moduleId = assembly.ManifestModule.ModuleVersionId,
         };
     }

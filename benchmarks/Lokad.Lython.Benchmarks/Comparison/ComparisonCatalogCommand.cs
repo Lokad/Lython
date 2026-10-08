@@ -7,6 +7,9 @@ internal static class ComparisonCatalogCommand
 {
     public static int Run(string[] arguments)
     {
+        if (arguments.Length > 0 && arguments[0] == "check-machine") return ComparisonMachineCommand.Run(arguments[1..]);
+        if (arguments.Length > 0 && arguments[0] == "qualify") return ComparisonQualificationCommand.Run(arguments[1..]);
+        if (arguments.Length > 0 && arguments[0] == "render-report") return ComparisonReportCommand.Run(arguments[1..]);
         if (arguments.Length > 0 && arguments[0] == "verify")
             return ComparisonVerifyCommand.Run(arguments[1..]);
         if (arguments.Length > 0 && arguments[0] == "smoke-fresh")
@@ -30,7 +33,7 @@ internal static class ComparisonCatalogCommand
         if (arguments.Length == 0 || arguments[0] != "list"
             || (arguments.Length != 1 && (arguments.Length != 3 || arguments[1] != "--out")))
         {
-            Console.Error.WriteLine("Usage: --compare list [--out <catalog.json>] | worker/once --catalog <catalog.json> | verify/smoke-fresh --catalog ... --dotnet ... --python ... --python-worker ... --out ... (sampling driver pending)");
+            Console.Error.WriteLine("Usage: --compare list | worker | once | verify | smoke-fresh | check-machine | qualify | render-report (see benchmarks/COMPARISON.md)");
             return 2;
         }
 

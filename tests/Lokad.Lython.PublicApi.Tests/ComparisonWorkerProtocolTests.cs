@@ -7,6 +7,25 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class ComparisonWorkerProtocolTests
 {
+    [Fact]
+    public async Task ReverificationPreservesTheWarmedCompiledScript()
+    {
+        using var catalog = new TestCatalog("print(42)\n", "42\n");
+        var worker = new LythonComparisonWorker(ComparisonManifest.Load(catalog.Path));
+        async Task Verify(int requestId)
+        {
+            using var input = new MemoryStream(); using var output = new MemoryStream();
+            await ComparisonProtocol.WriteAsync(input, Request(catalog.Case, requestId, "verify")); input.Position = 0;
+            await worker.RunAsync(input, output);
+        }
+        await Verify(1);
+        var compiled = (Dictionary<string, LythonCompiledScript>)typeof(LythonComparisonWorker)
+            .GetField("_compiled", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(worker)!;
+        var warmed = compiled[catalog.Case.Id];
+        await Verify(2);
+        Assert.Same(warmed, compiled[catalog.Case.Id]);
+    }
+
     [Theory]
     [InlineData("warm")]
     [InlineData("compile-run")]

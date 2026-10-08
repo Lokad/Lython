@@ -169,10 +169,11 @@ internal static class ComparisonVerifyCommand
         var temporary = path + "." + Guid.NewGuid().ToString("N") + ".partial";
         try
         {
-            File.WriteAllText(temporary, JsonSerializer.Serialize(value, new JsonSerializerOptions
-            { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true }) + "\n", ComparisonProtocol.Utf8);
+            File.WriteAllText(temporary, SerializeAtomic(value), ComparisonProtocol.Utf8);
             File.Move(temporary, path, overwrite: true);
         }
         finally { File.Delete(temporary); }
     }
+    internal static string SerializeAtomic(object value) => JsonSerializer.Serialize(value, new JsonSerializerOptions
+    { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true, NewLine = "\n" }) + "\n";
 }

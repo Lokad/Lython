@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <AssemblyMetadata Include="BuildSdkVersion" Value="$(NETCoreSdkVersion)" />
     <ProjectReference Include="..\..\src\Lokad.Lython\Lokad.Lython.csproj" />
     <PackageReference Include="BenchmarkDotNet" />
   </ItemGroup>

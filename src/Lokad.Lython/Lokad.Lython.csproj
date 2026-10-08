@@ -27,6 +27,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <AssemblyMetadata Include="BuildSdkVersion" Value="$(NETCoreSdkVersion)" />
     <EmbeddedResource Include="Runtime\Text\Data\html5.json" LogicalName="Lokad.Lython.html5.json" />
     <None Include="..\..\THIRD_PARTY_NOTICES.md" Pack="true" PackagePath="\" Visible="false" />
     <None Include="..\..\third_party\Python.LICENSE.txt" Pack="true" PackagePath="third_party\" Visible="false" />

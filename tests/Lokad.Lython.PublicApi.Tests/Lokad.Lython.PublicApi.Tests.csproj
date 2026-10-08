@@ -32,6 +32,14 @@
     <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\ComparisonWorkerClient.cs" Link="Benchmarks\ComparisonWorkerClient.cs" />
     <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\LythonOnceWorker.cs" Link="Benchmarks\LythonOnceWorker.cs" />
     <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\FreshProcessRunner.cs" Link="Benchmarks\FreshProcessRunner.cs" />
+    <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\ComparisonPolicy.cs" Link="Benchmarks\ComparisonPolicy.cs" />
+    <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\QuietMachineProbe.cs" Link="Benchmarks\QuietMachineProbe.cs" />
+    <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\PairedSampler.cs" Link="Benchmarks\PairedSampler.cs" />
+    <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\QualificationEvidence.cs" Link="Benchmarks\QualificationEvidence.cs" />
+    <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\ComparisonVerifyCommand.cs" Link="Benchmarks\ComparisonVerifyCommand.cs" />
+    <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\ComparisonFreshCommand.cs" Link="Benchmarks\ComparisonFreshCommand.cs" />
+    <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\ComparisonReportCommand.cs" Link="Benchmarks\ComparisonReportCommand.cs" />
+    <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\ComparisonQualificationCommand.cs" Link="Benchmarks\ComparisonQualificationCommand.cs" />
   </ItemGroup>
 
   <ItemGroup>

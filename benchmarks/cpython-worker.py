@@ -212,7 +212,10 @@ def serve(path, input_stream, output_stream):
         completed, actual, elapsed = 0, None, None
         try:
             if operation == 'verify':
-                code = compile_case(case)
+                # Post-warmup verification must preserve specialized code.
+                code = compiled.get(case['id'])
+                if code is None:
+                    code = compile_case(case)
                 for _ in range(2):
                     actual = invoke(code, case)
                     completed += 1

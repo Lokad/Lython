@@ -2,8 +2,8 @@
 
 Specification version **1**, established before comparative timing. The catalog
 and explicit correctness check are available. Persistent worker primitives are
-available, including a supervised correctness/timer smoke. Sampling, qualification
-and reports remain under implementation.
+available, including supervised correctness/timer smokes, paired collection,
+machine checks and raw-evidence report rendering.
 No qualified baseline is claimed.
 
 The primary question is how long the same supported Python job takes through a
@@ -249,7 +249,7 @@ macOS process ownership is currently unsupported.
 The Windows mechanism follows Microsoft's [job object documentation](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects)
 and [process attribute API](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute).
 The Linux launcher uses the documented [`setsid` fork/wait options](https://man7.org/linux/man-pages/man1/setsid.1.html).
-Report-eligibility checks remain pending.
+Qualification and reporting apply additional raw-evidence eligibility checks.
 
 ## Fresh-process correctness and timer smoke
 
@@ -292,8 +292,8 @@ envelope is included, and its relative cost is visible in the controls. There
 is no overhead subtraction and no claim of cold storage. Results remain
 `performanceQualified: false`: one process per engine/case is correctness/timer
 smoke, not repeated-session sampling or a qualified startup ratio. Fresh,
-compilation and warm results remain separate. The qualification commands and
-strict reporting remain under implementation.
+compilation and warm results remain separate. Qualification requires the paired
+collection and eligibility checks below.
 
 ## Sampling and eligibility
 
@@ -318,15 +318,75 @@ The initial measurement policy is fixed before timing:
   no winner.
 - Mark Unqualified when either lane's IQR/median exceeds **10%**, AB/BA order
   changes the ratio by more than **10%**, or the ratio interval spans more than
-  **15%** multiplicatively. Cross-session disagreement also requires investigation.
+  **15%** multiplicatively. The largest/smallest independent-session median ratio
+  must also be at most **1.10**.
   Do not weaken thresholds to obtain publishable results. Controls and jobs
   dominated by harness overhead remain visible without a speedup claim.
 
-The implementation must freeze finite invocation/batch/case/campaign deadlines,
+Policy v1 freezes finite invocation/batch/case/campaign deadlines,
 iteration ceilings, case order and protocol size caps in its versioned manifest
 before measurements. A ceiling or interrupted campaign does not relax eligibility.
 Do not force GC or inherit timeit's default cyclic-GC suppression.
 [Python timeit policy](https://docs.python.org/3.13/library/timeit.html#timeit.Timer.timeit).
+
+## Collecting and rendering a campaign
+
+The opt-in commands require explicit absolute executables and the receipt from
+`prepare-reference-linux.sh`. Run from a clean committed repository root using
+the matching Release build. Initial qualification supports the four-core Linux
+x86_64 profile above; correctness smokes remain available on Windows and Linux.
+
+```text
+<dotnet> <benchmark.dll> --compare check-machine --out <machine.json>
+<dotnet> <benchmark.dll> --compare qualify --catalog <catalog.json> --dotnet <absolute-dotnet> --python <absolute-python> --python-worker <cpython-worker.py> --toolchains <toolchains.json> --out <receipt.json> --case loops.integer.large,csv.retain.large --lane warm
+<dotnet> <benchmark.dll> --compare render-report --receipt <receipt.json> --out <report.md>
+```
+
+Use `--compare list` to obtain exact case IDs. `--case all` is the default;
+`--lane` accepts `warm` (default), `compile-run`, `compile` and `fresh-process`.
+The empty and tiny controls always precede selected cases. Each case gets three
+independent sessions, eleven pairs per session, and a reversed 6/5 starting-order
+split in the middle session. Each lane calibrates its own fixed iteration count.
+Post-warmup verification reuses the compiled code, preserving specialization.
+Fresh batches sum parent launch-to-drain times for independent exactly-once
+processes; their individual identities/results remain in the receipt.
+
+Policy/eligibility v1 uses 10,000 intact-pair bootstrap resamples with seed 1729,
+explicit xorshift32/rejection-index sampling and linear `(n-1)*p` quantiles.
+It retains session medians and intervals separately. No aggregate interval is
+computed. The common invocation ceiling is 1,000,000; warmup is capped at twelve
+batches and calibration at eight. Worker deadlines are 30 seconds at startup,
+65 per request/parent batch and five at shutdown; each case has 900 seconds and
+each campaign 24 hours. Receipt reads are capped at 512 MiB to retain the full
+catalog's gates and individual fresh-process observations within a finite bound.
+
+To exclude jobs dominated by invocation overhead, each lane's per-job median
+must exceed ten times the larger of that session's two control medians. Controls
+must themselves pass the timing/quietness checks, and receive absolute times
+without ratio claims. This rule is frozen before the first timing campaign.
+
+The Linux gate retains aggregate CPU counters, paging counters, memory-pressure
+totals and the current cgroup plus ancestor throttling counters. Any observed
+steal, paging, pressure or available throttling increment stops collection.
+Unavailable optional counters are explicitly null; CPU/paging accounting is
+mandatory. Counter regression or changing availability cannot qualify. Kernel
+references: [CPU accounting](https://docs.kernel.org/filesystems/proc.html),
+[pressure totals](https://docs.kernel.org/accounting/psi.html) and
+[cgroup throttling](https://docs.kernel.org/admin-guide/cgroup-v2.html).
+
+The collector checkpoints raw warmup, calibration, gates, pair order, every
+completed/failed batch, correctness checks and provenance atomically. Exit 3
+means noise stopped collection; exit 1 means failure/interruption, and exit 2
+means invalid arguments. A completed collection can contain Unqualified rows.
+Only fully eligible rows expose ratios. The renderer recalculates from raw
+counters, responses and samples; stored eligibility/statistics flags are advisory.
+Partial or changed evidence produces a clearly labeled diagnostic report without
+qualified ratios or winners.
+
+An existing receipt requires `--resume true`. Resumption compares policy, source,
+machine, catalog/case order, toolchains and every input/build digest. It archives
+the previous complete attempt beside the receipt, reuses finished rows only and
+restarts partial sessions. Changed identities require a separate campaign.
 
 ## Evidence and delivery
 

@@ -109,13 +109,16 @@ internal static class FreshProcessRunner
     }
 
     internal static void ValidateIdentity(JsonElement actual, JsonElement expected, ComparisonManifest manifest, int processId)
+        => ValidateIdentity(actual, expected, manifest.Sha256, processId);
+
+    internal static void ValidateIdentity(JsonElement actual, JsonElement expected, string catalogSha256, int processId)
     {
         foreach (var name in new[] { "protocolVersion", "status", "engine", "catalogVersion", "clockFrequency",
             "maximumFrameBytes", "maximumBatchIterations", "maximumBatchSeconds" })
             if (actual.GetProperty(name).GetRawText() != expected.GetProperty(name).GetRawText())
                 throw new InvalidDataException("Fresh worker identity differs: " + name);
         if (actual.GetProperty("processId").GetInt32() != processId
-            || actual.GetProperty("catalogSha256").GetString() != manifest.Sha256)
+            || actual.GetProperty("catalogSha256").GetString() != catalogSha256)
             throw new InvalidDataException("Wrong fresh process or payload identity.");
         if (actual.GetProperty("engine").GetString() == "Lython")
         {
@@ -131,7 +134,7 @@ internal static class FreshProcessRunner
             {
                 if (libraries[i].GetProperty("sha256").ValueKind != JsonValueKind.Null)
                     throw new InvalidDataException("Fresh worker performed a full binary hash inside startup.");
-                foreach (var name in new[] { "path", "moduleId", "version", "configuration" })
+                foreach (var name in new[] { "path", "moduleId", "version", "configuration", "buildSdk" })
                     if (libraries[i].GetProperty(name).GetRawText() != prepared[i].GetProperty(name).GetRawText())
                         throw new InvalidDataException("Fresh Lython library identity differs: " + name);
             }
