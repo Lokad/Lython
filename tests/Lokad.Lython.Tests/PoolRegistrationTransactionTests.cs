@@ -157,25 +157,35 @@ public sealed class PoolRegistrationTransactionTests
         GC.KeepAlive(key);
     }
 
-    // R09: one live and one dead 100 B value (2 x (100 + 128) + 32 backing = 488),
-    // plus 16 B filler on a 520 B budget. The sweep removes the dead entry before
-    // the 32 B live promotion denies; the removed charges must still release and
-    // the live entry stays queued for retry.
+    // R09: a full 32-slot old tier needs 256 B to grow. A dead 100 B value
+    // refunds 228 B including its registry charge, which cannot fund that
+    // growth. The genuine denial must refund the dead entry and keep the live
+    // entry queued; another denial and then a funded retry preserve ownership.
     [Fact]
     public void SweepPromotionDenialReleasesDeadAndKeepsLive()
     {
-        var governor = new MemoryGovernor(520);
+        var governor = new MemoryGovernor(8296);
         var pool = new ChargeReclamationPool(governor);
+        var oldKeys = new List<object>();
+        for (var index = 0; index < 32; index++)
+        {
+            var key = new object();
+            oldKeys.Add(key);
+            governor.Reserve(100, null);
+            governor.Commit(100);
+            pool.Track(key, 100);
+        }
+        pool.Sweep();
         var live = new object();
         governor.Reserve(100, null);
         governor.Commit(100);
         pool.Track(live, 100);
         TrackDeadValue(pool, governor);
-        Assert.Equal(2, pool.Count);
-        Assert.Equal(488, governor.CurrentCommittedBytes);
-        governor.Reserve(16, null);
-        governor.Commit(16);
-        Assert.Equal(504, governor.CurrentCommittedBytes);
+        Assert.Equal(34, pool.Count);
+        Assert.Equal(8264, governor.CurrentCommittedBytes);
+        governor.Reserve(32, null);
+        governor.Commit(32);
+        Assert.Equal(8296, governor.CurrentCommittedBytes);
 
         GC.Collect();
         GC.WaitForPendingFinalizers();
@@ -183,30 +193,31 @@ public sealed class PoolRegistrationTransactionTests
 
         var failure = Assert.Throws<LythonRuntimeException>(() => pool.Sweep());
         Assert.Equal("MemoryError", failure.ExceptionType);
-        Assert.Equal(1, pool.Count);
-        Assert.Equal(276, governor.CurrentCommittedBytes);
+        Assert.Equal(33, pool.Count);
+        Assert.Equal(8068, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
 
         // A second denial without funding strands nothing further.
-        governor.Reserve(244, null);
-        governor.Commit(244);
-        Assert.Equal(520, governor.CurrentCommittedBytes);
+        governor.Reserve(228, null);
+        governor.Commit(228);
+        Assert.Equal(8296, governor.CurrentCommittedBytes);
         var again = Assert.Throws<LythonRuntimeException>(() => pool.Sweep());
         Assert.Equal("MemoryError", again.ExceptionType);
-        Assert.Equal(1, pool.Count);
-        Assert.Equal(520, governor.CurrentCommittedBytes);
+        Assert.Equal(33, pool.Count);
+        Assert.Equal(8296, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
-        governor.Release(244);
+        governor.Release(228);
 
-        // Funded retry promotes the survivor: 100 value + 128 entry + 64 backing.
-        Assert.Equal(276, governor.CurrentCommittedBytes);
-        governor.Release(16);
-        Assert.Equal(260, governor.CurrentCommittedBytes);
+        // Releasing the filler funds promotion; all 33 live values stay charged.
+        Assert.Equal(8068, governor.CurrentCommittedBytes);
+        governor.Release(32);
+        Assert.Equal(8036, governor.CurrentCommittedBytes);
         Assert.Equal(0, pool.Sweep(full: true));
-        Assert.Equal(1, pool.Count);
-        Assert.Equal(292, governor.CurrentCommittedBytes);
+        Assert.Equal(33, pool.Count);
+        Assert.Equal(8292, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
         GC.KeepAlive(live);
+        GC.KeepAlive(oldKeys);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
