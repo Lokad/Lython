@@ -1470,6 +1470,12 @@ The imported module must expose the common Python-shaped regex helpers:
 
 Compiled pattern objects must expose `search`, `match`, `fullmatch`, `findall`, `finditer`, `sub`, `subn`, and `split` with corresponding `pos` and `endpos` range arguments where applicable. They must also expose `pattern`, `flags`, `groups`, and `groupindex`.
 
+`findall` returns an ordinary mutable Python list. Items are whole-match strings
+without captures, strings for one capture, or tuples of strings for multiple
+captures; unmatched captures use empty strings. Results support ordinary list
+type checks and JSON encoding, and project to `List<object?>` with capture tuples
+projected to `object?[]`. Execution and projection memory limits still apply.
+
 Match objects must expose `re`, `string`, `pos`, `endpos`, `lastindex`, `lastgroup`, `group`, `groups(default=None)`, `groupdict(default=None)`, `expand(template)`, and group-aware `start(group=0)`, `end(group=0)`, and `span(group=0)`.
 
 `match[key]` and `match.__getitem__(key)` select the same capture as

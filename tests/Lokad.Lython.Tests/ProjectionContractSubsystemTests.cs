@@ -12,6 +12,6 @@ public sealed class ProjectionContractSubsystemTests
         Assert.Equal("string", PublicProjectionContract.Describe(PyString.FromString("x")));
         Assert.Equal("List<object?>", PublicProjectionContract.Describe(new PyList()));
         Assert.Equal("Dictionary<object, object?>", PublicProjectionContract.Describe(new PyDict()));
-        Assert.Equal("ReFindAllResult", PublicProjectionContract.Describe(new LythonRuntime.ReFindAllResult(new PyList())));
+        Assert.Equal("object?[]", PublicProjectionContract.Describe(new PyTuple([])));
     }
 }

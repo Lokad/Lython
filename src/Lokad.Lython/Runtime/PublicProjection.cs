@@ -53,7 +53,6 @@ internal static class PublicProjection
             LythonRuntime.UrllibParseModule.UrlResult result => ProjectStructTime(result, budget, active),
             PyDict dict => ProjectDictionary(dict, budget, active),
             PySet set => ProjectSet(set, budget, active),
-            LythonRuntime.ReFindAllResult matches => ProjectFindAllResult(matches, budget, active),
             _ => throw new ProjectionException("unsupported runtime value cannot be projected to a public CLR value.")
         };
     }
@@ -258,32 +257,6 @@ internal static class PublicProjection
         finally
         {
             ExitContainer(set, active);
-        }
-    }
-
-    public static LythonRuntime.ReFindAllResult ProjectFindAllResult(LythonRuntime.ReFindAllResult matches)
-        => ProjectFindAllResult(matches, null);
-
-    public static LythonRuntime.ReFindAllResult ProjectFindAllResult(LythonRuntime.ReFindAllResult matches, ProjectionBudget? budget)
-        => ProjectFindAllResult(matches, budget, new HashSet<object>(ReferenceEqualityComparer.Instance));
-
-    private static LythonRuntime.ReFindAllResult ProjectFindAllResult(LythonRuntime.ReFindAllResult matches, ProjectionBudget? budget, HashSet<object> active)
-    {
-        EnterContainer(matches, active);
-        try
-        {
-            budget?.Reserve(32L + (16L * matches.Items.Count));
-            var normalized = new PyList();
-            foreach (var item in matches.Items)
-            {
-                normalized.Add(NormalizeValue(item, budget, active) ?? PyNone.Instance);
-            }
-
-            return new LythonRuntime.ReFindAllResult(normalized);
-        }
-        finally
-        {
-            ExitContainer(matches, active);
         }
     }
 

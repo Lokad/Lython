@@ -53,9 +53,6 @@ internal static class PyMemberAccess
             [typeof(LythonRuntime.CsvDictReaderObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.CsvDictReaderMembers.TryGetMember((LythonRuntime.CsvDictReaderObject)target, memberName, out value),
             [typeof(LythonRuntime.CsvWriterObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.CsvWriterMembers.TryGetMember((LythonRuntime.CsvWriterObject)target, memberName, out value),
             [typeof(LythonRuntime.CsvDictWriterObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.CsvDictWriterMembers.TryGetMember((LythonRuntime.CsvDictWriterObject)target, memberName, out value),
-            // N24: findall results reuse ordinary list member semantics through
-            // the already-governed inner list instead of a regex-only method table.
-            [typeof(LythonRuntime.ReFindAllResult)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.ListMembers.TryGetMember(((LythonRuntime.ReFindAllResult)target).Items, memberName, out value),
             [typeof(LythonRuntime.ReMatchObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.ReMatchMembers.TryGetMember((LythonRuntime.ReMatchObject)target, memberName, out value),
             [typeof(LythonRuntime.JsonEncoderObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.JsonEncoderMembers.TryGetMember((LythonRuntime.JsonEncoderObject)target, memberName, out value),
             [typeof(LythonRuntime.JsonDecoderObject)] = static (object target, string memberName, [MaybeNullWhen(false)] out object value) => LythonRuntime.JsonDecoderMembers.TryGetMember((LythonRuntime.JsonDecoderObject)target, memberName, out value),

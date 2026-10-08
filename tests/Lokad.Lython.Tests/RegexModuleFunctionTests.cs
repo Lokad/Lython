@@ -97,8 +97,8 @@ return re.findall("a.", "abac")
             new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
-        var values = Assert.IsType<LythonRuntime.ReFindAllResult>(result.ReturnValue);
-        Assert.Equal(["ab", "ac"], values.Items.Cast<string>().ToArray());
+        var values = Assert.IsType<List<object?>>(result.ReturnValue);
+        Assert.Equal(["ab", "ac"], values.Cast<string>().ToArray());
     }
 
     [Fact]
@@ -112,8 +112,8 @@ return re.compile("a+").findall("caaab aa")
             new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
-        var values = Assert.IsType<LythonRuntime.ReFindAllResult>(result.ReturnValue);
-        Assert.Equal(["aaa", "aa"], values.Items.Cast<string>().ToArray());
+        var values = Assert.IsType<List<object?>>(result.ReturnValue);
+        Assert.Equal(["aaa", "aa"], values.Cast<string>().ToArray());
     }
 
     [Fact]
@@ -127,8 +127,8 @@ return re.findall("(a)?b", "b ab b")
             new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
-        var values = Assert.IsType<LythonRuntime.ReFindAllResult>(result.ReturnValue);
-        Assert.Equal(["", "a", ""], values.Items.Cast<string>().ToArray());
+        var values = Assert.IsType<List<object?>>(result.ReturnValue);
+        Assert.Equal(["", "a", ""], values.Cast<string>().ToArray());
     }
 
     [Fact]
@@ -142,9 +142,9 @@ return re.findall("(a)|(x)", "axa")
             new MockLythonHost());
 
         Assert.True(result.Success, result.Failure?.Message);
-        var values = Assert.IsType<LythonRuntime.ReFindAllResult>(result.ReturnValue);
+        var values = Assert.IsType<List<object?>>(result.ReturnValue);
         Assert.Collection(
-            values.Items,
+            values,
             item => Assert.Equal(["a", ""], Assert.IsType<object[]>(item).Cast<string>().ToArray()),
             item => Assert.Equal(["", "x"], Assert.IsType<object[]>(item).Cast<string>().ToArray()),
             item => Assert.Equal(["a", ""], Assert.IsType<object[]>(item).Cast<string>().ToArray()));

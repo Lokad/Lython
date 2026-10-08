@@ -57,23 +57,9 @@ internal sealed class ExecutionValueObservation
 
     private void EnforceValueLimits(object value, LythonSourceSpan? span)
     {
-        if (Limits.MaxStringLength is { } maxStringLength)
+        if (value is PyString text)
         {
-            switch (value)
-            {
-                case PyString text when text.Length > maxStringLength:
-                    throw RuntimeErrors.Runtime($"maximum string length exceeded ({maxStringLength})", span);
-                case LythonRuntime.ReFindAllResult matches:
-                    foreach (var item in matches.Items)
-                    {
-                        if (item is PyString pyText && pyText.Length > maxStringLength)
-                        {
-                            throw RuntimeErrors.Runtime($"maximum string length exceeded ({maxStringLength})", span);
-                        }
-                    }
-
-                    break;
-            }
+            EnforceStringLengthLimit(text, span);
         }
 
         if (TryGetCollectionCount(value) is { } count)
@@ -87,7 +73,6 @@ internal sealed class ExecutionValueObservation
         return value switch
         {
             IPyGovernedValue { OwnerMemoryGovernor: not null } => false,
-            LythonRuntime.ReFindAllResult { Items.OwnerMemoryGovernor: not null } => false,
             _ => true
         };
     }
@@ -100,7 +85,6 @@ internal sealed class ExecutionValueObservation
             PyTuple tuple => tuple.Count,
             PyDict dict => dict.Count,
             PySet set => set.Count,
-            LythonRuntime.ReFindAllResult matches => matches.Items.Count,
             _ => (int?)null
         };
     }
@@ -131,7 +115,6 @@ internal sealed class ExecutionValueObservation
             PyTuple tuple => EstimateApproximateTupleBytes(tuple, visited),
             PyDict dict => EstimateApproximateDictionaryBytes(dict, visited),
             PySet set => EstimateApproximateSetBytes(set, visited),
-            LythonRuntime.ReFindAllResult matches => 32 + EstimateApproximateListBytes(matches.Items, visited),
             LythonRuntime.ExecutionContext.TextFileHandle handle => 64 + handle.Path.Length + handle.Mode.Length,
             LythonRuntime.DictKeysView or LythonRuntime.DictValuesView or LythonRuntime.DictItemsView => 64,
             _ => 64
@@ -204,6 +187,6 @@ internal sealed class ExecutionValueObservation
 
     private static bool IsReferenceTracked(object value)
     {
-        return value is PyList or PyTuple or PyDict or PySet or LythonRuntime.ReFindAllResult;
+        return value is PyList or PyTuple or PyDict or PySet;
     }
 }

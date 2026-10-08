@@ -55,7 +55,7 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span)
             => new(pattern, range, context, span);
 
-        internal static ReFindAllResult CreateFindAllResult(
+        internal static PyList CreateFindAllResult(
             RePatternObject pattern,
             RegexSubjectRange range,
             LythonSourceSpan span,
@@ -63,12 +63,17 @@ internal sealed partial class LythonRuntime
         {
             if (!UsesDotStarLazyProgression(pattern))
             {
-                return new ReFindAllResult(RePatternMembers.ProjectFindAllResult(pattern.Regex.FindAllToUtf8(range.Segment.Utf8Bytes.Span), span, context));
+                return RePatternMembers.ProjectFindAllResult(pattern.Regex.FindAllToUtf8(range.Segment.Utf8Bytes.Span), span, context);
             }
 
             var values = CreateDotStarLazyMatches(pattern, range)
-                .Select(match => (object)CreateString(match.Value.ValueText, context, span));
-            return new ReFindAllResult(new PyList(values, context.MemoryGovernor, span));
+                .Select(match =>
+                {
+                    var text = CreateString(match.Value.ValueText, context, span);
+                    context.ObserveString(text, span);
+                    return (object)text;
+                });
+            return OwnSplitListResult(new PyList(values, context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);
         }
 
         internal static IEnumerable<Utf8PythonDetailedMatchData> CreateDetailedFindMatches(

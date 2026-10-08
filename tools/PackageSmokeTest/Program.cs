@@ -64,6 +64,24 @@ const string compatibilityOutput = "ab 3\nTrue ['a', 'b'] [['1', '2']] empty\n3\
 foreach (var result in new[] { compatibility.Run(new PureHost()), await compatibility.RunAsync(new PureHost()) })
     RequireOutput(result, compatibilityOutput);
 
+const string findAllSource = """
+    import re, json
+    values = re.compile('(a)(b)').findall('ab!ab')
+    print(type(values) is list, isinstance(values, list))
+    values.append(('x', 'y'))
+    print(json.dumps({'matches': values}))
+    return values
+    """;
+var findAll = engine.Compile(findAllSource);
+if (!findAll.IsValid) throw new Exception(string.Join("; ", findAll.Diagnostics.Select(d => d.Message)));
+foreach (var result in new[] { findAll.Run(new PureHost()), await findAll.RunAsync(new PureHost()) })
+{
+    RequireOutput(result, "True True\n{\"matches\": [[\"a\", \"b\"], [\"a\", \"b\"], [\"x\", \"y\"]]}\n");
+    if (result.ReturnValue is not List<object?> matches || matches.Count != 3 ||
+        matches[0] is not object?[] captures || !captures.SequenceEqual(new object?[] { "a", "b" }))
+        throw new Exception("Regex findall did not project ordinary CLR lists and capture arrays.");
+}
+
 const string structSource = """
     import struct,math,json,operator
     data=struct.pack('>bHefds4p?',-3,514,-0.0,1.5,-2.5,b'x',b'abc',True)

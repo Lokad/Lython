@@ -518,6 +518,7 @@ internal sealed partial class LythonRuntime
                     {
                         context.CheckExecution(span);
                         scalars[i] = CreateUtf8String(result.ScalarValues[i], context, span);
+                        context.ObserveString((PyString)scalars[i], span);
                     }
                     // Findall items never pass a funnel (see OwnSplitListResult): adopt
                     // the fresh strings and the fresh list here; drops reclaim on sweep.
@@ -533,6 +534,7 @@ internal sealed partial class LythonRuntime
                         for (var i = 0; i < tuple.Length; i++)
                         {
                             items[i] = CreateUtf8String(tuple[i], context, span);
+                            context.ObserveString((PyString)items[i], span);
                         }
 
                         tuples[tupleIndex] = OwnSplitTupleResult(new PyTuple(items, context.MemoryGovernor, span), span, context.Services.State.CallTemporaries);

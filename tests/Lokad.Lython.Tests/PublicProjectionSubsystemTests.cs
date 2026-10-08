@@ -117,19 +117,14 @@ return value
     }
 
     [Fact]
-    public void PublicProjection_ProjectsFindAllResultExplicitly()
+    public void PublicProjection_ProjectsCaptureTuplesInsideOrdinaryLists()
     {
-        var matches = new LythonRuntime.ReFindAllResult(new PyList([
-            PyString.FromString("a"),
-            PyNone.Instance
-        ]));
+        var matches = new PyList([new PyTuple([PyString.FromString("a"), PyString.Empty])]);
 
-        var projected = PublicProjection.ProjectFindAllResult(matches);
+        var projected = Assert.IsType<List<object?>>(PublicProjection.NormalizeValue(matches));
 
-        Assert.Collection(
-            projected.Items,
-            item => Assert.Equal("a", Assert.IsType<string>(item)),
-            item => Assert.Same(PyNone.Instance, item));
+        var captures = Assert.IsType<object?[]>(Assert.Single(projected));
+        Assert.Equal(new object?[] { "a", "" }, captures);
     }
 
     [Fact]

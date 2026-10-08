@@ -4,6 +4,7 @@
 
 ## 0.10.0 - release candidate
 
+- Return ordinary Python lists from regex findall, including normal type identity, mutation, JSON encoding and CLR projection; reclaim discarded lazy-dot-star results.
 - Remove the implicit execution-step ceiling; retain enforced opt-in fuel for existing embedders, independent temporary-reclamation cadence, cancellation and default memory/stack/host-call protections.
 - Check cancellation and explicitly requested fuel during every lowered for-loop iteration, including pass-only range loops.
 - Observe cancellation through stable-sort comparisons/copy tails and native sorting in statistics, JSON, difflib, directory traversal and protocol snapshots; preserve Python failures and refund sorting scratch.
