@@ -152,6 +152,26 @@ internal sealed class ChargeReclamationPool
         }
     }
 
+    // Only for a fresh value in a construction transaction that has exposed
+    // nothing to guest code. The transaction keeps its values strongly alive,
+    // so no sweep can have released these coupons. Tier capacity remains owned
+    // by the pool, exactly as after ordinary pruning.
+    internal void RefundUnpublishedValue(object value)
+    {
+        if (TrackedStorage.TryGetValue(value, out var entry))
+        {
+            if (!_young.Remove(entry) && !_old.Remove(entry))
+                throw new InvalidOperationException("Unpublished value belongs to another reclamation pool.");
+            TrackedStorage.Remove(value);
+            _governor.Release(entry.ValueCharge + EntryChargeBytes);
+            _oldCursor = Math.Min(_oldCursor, _old.Count);
+        }
+        else if (value is IPyOwnershipSnapshot snapshot && snapshot.TrySnapshotOwnership(out var charge))
+        {
+            _governor.Release(charge);
+        }
+    }
+
     // Registers an arbitrary call result for whatever it currently owns.
     // The snapshot rule lives on the value (IPyOwnershipSnapshot) instead of
     // a pool-side concrete-type switch: strings report their construction

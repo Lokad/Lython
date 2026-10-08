@@ -1066,7 +1066,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal sealed class ExceptionTypeValue : ICallable, IPyDynamicAttributes, IPyRenderableValue, IPythonExceptionType, IEquatable<ExceptionTypeValue>
+    internal sealed class ExceptionTypeValue : ICallable, IPyDynamicAttributes, IPyContextualDynamicAttributes, IPyRenderableValue, IPythonExceptionType, IEquatable<ExceptionTypeValue>
     {
         // Builtin module labels form a fixed vocabulary (the exception modules
         // plus every top-level module owning builtin callables), so every known
@@ -1088,6 +1088,7 @@ internal sealed partial class LythonRuntime
         private static readonly PyString GlobModuleName = PyString.FromString("glob");
         private static readonly PyString GzipModuleName = PyString.FromString("gzip");
         private static readonly PyString StructModuleName = PyString.FromString("struct");
+        private static readonly PyString ElementTreeModuleName = PyString.FromString("xml.etree.ElementTree");
         private static readonly PyString HashlibModuleName = PyString.FromString("hashlib");
         private static readonly PyString ImportlibModuleName = PyString.FromString("importlib");
         private static readonly PyString ItertoolsModuleName = PyString.FromString("itertools");
@@ -1127,6 +1128,7 @@ internal sealed partial class LythonRuntime
             "glob" => GlobModuleName,
             "gzip" => GzipModuleName,
             "struct" => StructModuleName,
+            "xml.etree.ElementTree" => ElementTreeModuleName,
             "hashlib" => HashlibModuleName,
             "importlib" => ImportlibModuleName,
             "itertools" => ItertoolsModuleName,
@@ -1172,6 +1174,43 @@ internal sealed partial class LythonRuntime
         // fresh string per read. Only builtin identities reach this type, keeping
         // each cached constant tiny.
         private PyString? _nameValue;
+
+        public bool TryGetMember(string name, ExecutionContext context, LythonSourceSpan span,
+            [MaybeNullWhen(false)] out object value)
+        {
+            if (name != "__bases__") return TryGetMember(name, out value);
+            if (context.Services.State.TryReadExceptionBases(ExceptionIdentity, out var cached))
+            {
+                value = cached;
+                return true;
+            }
+            var identities = ExceptionBaseIdentities.TryGetValue(ExceptionIdentity, out var bases) ? bases : [];
+            using var scratch = context.MemoryGovernor.ReserveTemporary(32L + 8L * Math.Max(1, identities.Length), span);
+            var resolved = new object[Math.Max(1, identities.Length)];
+            if (identities.Length == 0)
+                resolved[0] = TryGetBuiltinOrNull(context, "object")
+                    ?? throw new InvalidOperationException("Missing object type.");
+            else
+                for (var index = 0; index < identities.Length; index++)
+                {
+                    var identity = identities[index];
+                    resolved[index] = identity.IsBuiltin
+                        ? TryGetBuiltinOrNull(context, identity.TypeName)
+                            ?? throw new InvalidOperationException("Missing builtin exception type.")
+                        : TryGetModuleMemberOrNull(context, identity.ModuleName, identity.TypeName)
+                            ?? throw new InvalidOperationException("Missing module exception type.");
+                }
+            var tuple = new PyTuple(resolved, context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(tuple, tuple.CommittedStorageBytes, span);
+            try { context.Services.State.CacheExceptionBases(ExceptionIdentity, tuple, span); }
+            catch
+            {
+                context.Services.State.CallTemporaries.RefundUnpublishedValue(tuple);
+                throw;
+            }
+            value = tuple;
+            return true;
+        }
 
         public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
         {

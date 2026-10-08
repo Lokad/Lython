@@ -728,6 +728,7 @@ internal sealed partial class LythonRuntime
             "datetime.timezone" or
             "datetime.tzinfo" or
             "statistics.NormalDist" or
+            "xml.etree.ElementTree.Element" or
             "random.Random" or
             "zipfile.ZipInfo" or
             "collections.defaultdict" or
@@ -778,6 +779,7 @@ internal sealed partial class LythonRuntime
             "datetime.timezone" => value is PyTimezone,
             "datetime.tzinfo" => value is PyTimezone,
             "statistics.NormalDist" => value is StatisticsModule.PyNormalDist,
+            "xml.etree.ElementTree.Element" => value is ElementTreeModule.Element,
             "zipfile.ZipInfo" => value is PyZipInfo,
             "random.Random" => value is RandomModule.PyRandom,
             _ => false

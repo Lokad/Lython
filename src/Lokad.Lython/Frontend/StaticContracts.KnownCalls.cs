@@ -437,6 +437,7 @@ internal static partial class StaticContracts
         new(LythonKnownCallableSignatures.StructUnpack, "LA3151", "struct.unpack(format, buffer, /) expects two arguments."),
         new(LythonKnownCallableSignatures.StructCalcsize, "LA3151", "struct.calcsize(format, /) expects one argument.", StaticReturnShape.Integer),
         new(LythonKnownCallableSignatures.StructIterUnpack, "LA3151", "struct.iter_unpack(format, buffer, /) expects two arguments."),
+        new(LythonKnownCallableSignatures.ElementTreeFromString, "LA3151", "xml.etree.ElementTree.fromstring(text, parser=None) expects one or two arguments."),
         new(LythonKnownCallableSignatures.GzipOpen, "LA3151", "gzip.open(filename[, mode[, compresslevel[, encoding[, errors[, newline]]]]]) expects one to six arguments."),
         new(LythonKnownCallableSignatures.ZipFile, "LA3151", "zipfile.ZipFile(file[, mode[, compression[, allowZip64[, compresslevel[, strict_timestamps[, metadata_encoding]]]]]]) expects one to seven arguments."),
         new(LythonKnownCallableSignatures.ZipIsZipFile, "LA3151", "zipfile.is_zipfile(filename) expects one argument."),

@@ -4,6 +4,8 @@
 
 ## 0.10.0 - release candidate
 
+- Add contained ElementTree parsing, independently governed node/text/map aliases, simple namespace-aware child selectors, Python byte-declaration behavior, awaited index conversions and catchable ParseError identity.
+- Expose stable, governed direct-base tuples for supported exception type objects.
 - Add governed portable struct packing/unpacking, standard byte orders, IEEE half/single/double fields, Python conversion slots, lazy record cursors and distinct struct.error identity.
 
 - Preserve Python's positive NaN factory constant and explicit negative NaN signs in float, float.fromhex, math.nan and JSON decoding.

@@ -518,6 +518,8 @@ internal sealed partial class LythonRuntime
 
     internal static object ReadSubscriptValue(object target, object index, LythonSourceSpan span, ExecutionContext context)
     {
+        if (target is ElementTreeModule.Element element)
+            return ElementTreeModule.ReadIndexAsync(element, index, context, span, false).GetAwaiter().GetResult();
         if (target is ReMatchObject match)
         {
             return ReMatchMembers.GetSubscript(match, index, span, context);

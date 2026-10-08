@@ -392,7 +392,9 @@ internal sealed partial class LythonRuntime
         => ReadItemAsync(arguments[0], arguments[1], span, context);
 
     private static ValueTask<object> ReadItemAsync(object target, object index, LythonSourceSpan span, ExecutionContext context)
-        => target is ReMatchObject match
+        => target is ElementTreeModule.Element element
+            ? ElementTreeModule.ReadIndexAsync(element, index, context, span, true)
+            : target is ReMatchObject match
             ? ReMatchMembers.GetSubscriptAsync(match, index, span, context)
             : new(ReadItem(target, index, span, context));
 

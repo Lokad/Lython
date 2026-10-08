@@ -6,6 +6,7 @@ namespace Lokad.Lython.Runtime;
 internal sealed class ExecutionState
 {
     private Dictionary<object, RuntimeMemberCacheEntry>? _runtimeMemberCaches;
+    private Dictionary<PythonExceptionIdentity, PyTuple>? _exceptionBaseTuples;
     private readonly List<PoolRegistration> _poolRegistrations = new();
     internal PyType? TypingGeneric { get; set; }
     internal PyDict? UrlSplitFieldDefaults { get; set; }
@@ -15,6 +16,32 @@ internal sealed class ExecutionState
     private long _boundCalls;
     private readonly ConditionalWeakTable<object, StrongBox<long>> _objectIds = new();
     private long _nextObjectId;
+
+    internal bool TryReadExceptionBases(PythonExceptionIdentity identity, [MaybeNullWhen(false)] out PyTuple value)
+    {
+        value = null;
+        return _exceptionBaseTuples is not null && _exceptionBaseTuples.TryGetValue(identity, out value);
+    }
+
+    // Immutable exception metadata has stable tuple identity within a run.
+    // The finite builtin/module exception inventory bounds this cache; entries
+    // own their dictionary slots while the ordinary pool owns tuple backing.
+    internal void CacheExceptionBases(PythonExceptionIdentity identity, PyTuple value, LythonSourceSpan span)
+    {
+        var bytes = _exceptionBaseTuples is null ? 192L : 64L;
+        MemoryGovernor.Reserve(bytes, span);
+        try
+        {
+            _exceptionBaseTuples ??= new();
+            _exceptionBaseTuples.Add(identity, value);
+            MemoryGovernor.Commit(bytes);
+        }
+        catch
+        {
+            MemoryGovernor.ReleaseReserved(bytes);
+            throw;
+        }
+    }
     public static readonly HashSet<string> BuiltinNames =
     [
         "object", "type", "open", "print", "input", "str", "repr", "ascii", "format",

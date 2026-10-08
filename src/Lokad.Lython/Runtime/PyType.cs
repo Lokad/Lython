@@ -391,6 +391,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             PyModule => ModuleType,
             LythonRuntime.RePatternObject => RegexPatternType,
             LythonRuntime.ReMatchObject => RegexMatchType,
+            LythonRuntime.ElementTreeModule.Element => LythonRuntime.ElementTreeModule.ElementType,
             PyTimedelta => PyDateTimeOps.TimedeltaType,
             PyDate => PyDateTimeOps.DateType,
             PyTime => PyDateTimeOps.TimeType,

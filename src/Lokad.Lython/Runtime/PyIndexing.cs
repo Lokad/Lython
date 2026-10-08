@@ -67,6 +67,8 @@ internal static class PyIndexing
         using var _ambientScope = context is null
             ? default(PyStructuralGuard.AmbientScope)
             : PyStructuralGuard.PushAmbient(context, span);
+        if (context is not null && target is LythonRuntime.ElementTreeModule.Element element)
+            return LythonRuntime.ElementTreeModule.ReadIndexAsync(element, index, context, span, false).GetAwaiter().GetResult();
         // Keyed lookups resolve first like CPython, so slice objects serve
         // as dictionary keys instead of slicing the mapping.
         if (target is LythonRuntime.ReMatchObject match)
@@ -128,6 +130,8 @@ internal static class PyIndexing
 
     public static object ReadSlice(object target, object? start, object? end, object? step, LythonSourceSpan span, LythonRuntime.ExecutionContext? context = null)
     {
+        if (context is not null && target is LythonRuntime.ElementTreeModule.Element element)
+            return LythonRuntime.ElementTreeModule.ReadSliceAsync(element, start, end, step, context, span, false).GetAwaiter().GetResult();
         if (target is LythonRuntime.ReMatchObject)
         {
             throw new LythonRuntimeException("IndexError", "no such group", span);

@@ -743,6 +743,8 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<object> ReadLoweredSubscriptAsync(object target, object index, LythonSourceSpan span, ExecutionContext context)
     {
+        if (target is ElementTreeModule.Element element)
+            return await ElementTreeModule.ReadIndexAsync(element, index, context, span, true).ConfigureAwait(false);
         if (target is ReMatchObject match)
         {
             return await ReMatchMembers.GetSubscriptAsync(match, index, span, context).ConfigureAwait(false);

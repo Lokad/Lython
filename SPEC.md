@@ -2112,6 +2112,64 @@ are governed; scans check budgets and denied/abandoned construction releases
 ownership. Networking modules, urljoin, urldefrag and function cache-control
 APIs remain outside this inventory.
 
+### 11.21 Contained ElementTree Parsing
+
+`xml` and `xml.etree` expose their inventoried child modules.
+`xml.etree.ElementTree.fromstring(text, parser=None)` accepts a string or
+immutable bytes and returns one Element. A supplied parser fails explicitly.
+Unicode input is already decoded, so its encoding declaration is ignored.
+Byte input detects UTF-8 and UTF-16 BOMs and BOM-less UTF-16 byte order;
+declarations support UTF-8, UTF-16, Latin-1, ASCII and Windows-1252 using the
+shared governed decoders. Unknown byte encoding names raise LookupError.
+UTF-32 input remains unsupported.
+
+Declaration aliases follow Python's XML parser rules separately from ordinary
+codec aliases: native UTF-8/UTF-16 names are case-insensitive, while UTF-8 aliases
+such as utf8, utf_8, utf-8-sig and cp65001 use a single-byte map accepting ASCII
+and rejecting high bytes. UTF-16 codec aliases and explicit LE/BE declarations
+raise ValueError. Contradictory UTF-16 byte declarations raise ParseError.
+Unicode declarations accept those same names without reinterpreting text.
+Only one leading byte BOM is consumed.
+
+Elements expose `tag`, `text`, `tail`, `attrib`, `get(key, default=None)`,
+child iteration/length/indexing and list-producing slices. Empty text/tail is
+None; whitespace is preserved. Adjacent text, CDATA and text separated by skipped
+comments/processing instructions concatenate. Expanded tags/attribute names
+use Clark notation, and namespace declarations do not appear in attrib.
+The attribute dictionary is shared and mutable; get consults that same map.
+Element field/child mutation, constructors and serialization are later APIs.
+Element truth follows the Python 3.13 child-count behavior; warning reporting
+is outside this inventory.
+
+`find(path, namespaces=None)` returns the first matching Element or None;
+`findall` returns a fresh ordinary list sharing those Elements. Paths support
+relative child-name steps, `.`, whole-step `*`, a trailing child wildcard,
+Clark names and prefix/default namespace dictionaries. Empty paths match
+nothing. Slashes and punctuation inside Clark namespace URIs remain literal.
+Missing prefixes raise SyntaxError when selector resolution is required;
+Python's simple direct-tag path without a namespace map instead matches the
+literal tag. Descendant/parent axes, predicates, namespace wildcards and other
+XPath operators fail explicitly.
+
+Parsing uses the shared contained reader in one pass without an intermediate
+DOM. XML 1.0 syntax, predefined/numeric entities and newline normalization are
+supported. DTDs are prohibited, external resolution is disabled, and element
+depth above 1024 (root depth zero) fails with a controlled ParseError.
+`ParseError` has module identity xml.etree.ElementTree and derives from
+SyntaxError. Supported exception type objects expose stable per-run direct-base
+tuples through `__bases__`. Expat-specific error codes/positions are outside
+this inventory.
+
+Input/parser/stack/selector scratch, node shells, attribute maps, child storage,
+text builders and output lists are governed before growth. Node counts,
+attributes, strings and work obey execution limits. Unpublished graph values
+refund on malformed input, denial or cancellation; pool capacity remains owned
+by the execution. Child, map and text aliases retain their own charges without
+keeping hidden parent links. Integer and slice-bound conversions resolve type
+slots and await mediated effects under RunAsync.
+File parse, iterparse, parser customization, tree constructors/mutation,
+serialization and additional traversal helpers fail explicitly.
+
 
 ---
 

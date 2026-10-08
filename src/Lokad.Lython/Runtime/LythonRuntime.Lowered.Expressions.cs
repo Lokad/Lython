@@ -252,7 +252,9 @@ internal sealed partial class LythonRuntime
             : PyIndexing.ReadSlice(target, start, end, step, span, context);
 
     private static ValueTask<object> ReadSliceValueAsync(object target, object? start, object? end, object? step, LythonSourceSpan span, ExecutionContext context)
-        => target is PyInstance instance
+        => target is ElementTreeModule.Element element
+            ? ElementTreeModule.ReadSliceAsync(element, start, end, step, context, span, true)
+            : target is PyInstance instance
             ? GetUserItemAsync(instance, CreateSliceValue(start, end, step, span, context), context, span)
             : new(PyIndexing.ReadSlice(target, start, end, step, span, context));
 

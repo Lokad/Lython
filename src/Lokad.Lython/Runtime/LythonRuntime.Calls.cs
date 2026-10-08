@@ -173,6 +173,7 @@ internal sealed partial class LythonRuntime
             [ModuleException("decimal", "DivisionUndefined")] = [ModuleException("decimal", "InvalidOperation")],
             [ModuleException("gzip", "BadGzipFile")] = [BuiltinException("OSError")],
             [ModuleException("struct", "error")] = [BuiltinException("Exception")],
+            [ModuleException("xml.etree.ElementTree", "ParseError")] = [BuiltinException("SyntaxError")],
             [ModuleException("json", "JSONDecodeError")] = [BuiltinException("ValueError")],
             [ModuleException("io", "UnsupportedOperation")] = [BuiltinException("OSError"), BuiltinException("ValueError")],
             [ModuleException("openpyxl.utils.exceptions", "CellCoordinatesException")] = [BuiltinException("ValueError")],
@@ -556,6 +557,7 @@ internal sealed partial class LythonRuntime
             PyTimedelta => TryGetModuleMemberOrNull(context, "datetime", "timedelta"),
             PyTimezone => TryGetModuleMemberOrNull(context, "datetime", "timezone"),
             PyPath => TryGetModuleMemberOrNull(context, "pathlib", "Path"),
+            ElementTreeModule.Element => ElementTreeModule.ElementType,
             // Struct-time values resolve through the dedicated singleton rather
             // than the import registry, so they keep their class without an
             // import; the registry holds the same object, preserving identity.
