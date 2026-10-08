@@ -1,5 +1,6 @@
 using Lokad.Lython;
 using System.Text;
+using System.IO.Compression;
 
 var expectedVersion = args.Single();
 if (typeof(LythonEngine).Assembly.GetName().Version?.ToString(3) != expectedVersion)
@@ -435,6 +436,64 @@ RequireOutput(await zlibPendingRun.WaitAsync(zlibTimeout.Token), zlibFileOutput)
 zlibDelayedHost.VerifyZlibFiles();
 if (zlibDelayedHost.SuspendedOperations < 2) throw new Exception("Zlib consumer did not suspend twice.");
 
+const string gzipFileSource = "import gzip,io\nsink=io.BytesIO()\nwriter=gzip.GzipFile(fileobj=sink,mode='wb',compresslevel=1,mtime=0)\nwriter.writelines([b'alpha\\n',b'beta\\n'])\nwriter.flush()\nprint(writer.mode,writer.tell(),writer.closed,sink.closed)\nwriter.close()\ndata=sink.getvalue()\nprint(data[:10].hex(),type(writer) is gzip.GzipFile,type(gzip.GzipFile).__name__)\nsource=io.BytesIO(data)\nreader=gzip.GzipFile(fileobj=source)\nprint(reader.mtime,reader.read(0),reader.mtime,iter(reader) is reader)\nprint(reader.readline(),reader.mtime,list(reader),reader.tell())\nreader.close()\nprint(reader.closed,source.closed,sink.closed)\ntry: gzip.GzipFile(fileobj=io.BytesIO(data[:-1])).read()\nexcept EOFError as error: print(type(error).__name__,isinstance(error,Exception))\n";
+const string gzipFileOutput = "wb 11 False False\n1f8b08000000000004ff True ABCMeta\nNone b'' None True\nb'alpha\\n' 0 [b'beta\\n'] 11\nTrue False False\nEOFError True\n";
+const string gzipFileHostSource = "import gzip,json,struct\nclass Level:\n    def __index__(self):\n        with open('/gzip-index.txt') as file: value=file.read()\n        print('index',value)\n        return int(value)\nlevel=Level()\nlevel.__index__=lambda:9\nraw=json.dumps({'name':'\u00e9\u03a9\ud83d\ude00','count':3},ensure_ascii=False).encode('utf-8')\nwriter=gzip.GzipFile('/gzip-output.gz',mode='wb',compresslevel=level,mtime=0)\nprint(writer.write(struct.pack('>I',len(raw))))\nwriter.writelines([raw[:5],raw[5:]])\nwriter.flush()\nprint(writer.mode,writer.tell(),writer.closed)\nwriter.close()\nwith gzip.GzipFile('/gzip-output.gz') as reader:\n    print(struct.unpack('>I',reader.read(4)),json.loads(reader.read().decode('utf-8')))\nreader=gzip.GzipFile('/gzip-input.gz')\nprint(reader.mtime,reader.read(0),reader.mtime)\nprint(reader.readline(),reader.mtime,list(reader),reader.tell())\nreader.close()\npending=gzip.GzipFile('/gzip-pending.gz',mode='wb',mtime=0)\npending.write(b'pending')\n";
+const string gzipFileHostOutput = "index 1\n4\nwb 36 False\n(32,) {'name': '\u00e9\u03a9\ud83d\ude00', 'count': 3}\nNone b'' None\nb'alpha\\n' 123 [b'beta\\n'] 11\n";
+const string gzipWarningSource = "import gzip,io\nclass Raw:\n    mode='wb'\n    def __init__(self): self.buffer=io.BytesIO()\n    def write(self,data): return self.buffer.write(data)\nfor index in range(2):\n    raw=Raw()\n    writer=gzip.GzipFile(fileobj=raw,mtime=0)\n    writer.write(b'payload')\n    writer.close()\n    print(writer.mode,gzip.decompress(raw.buffer.getvalue()))\n";
+const string gzipWarningOutput = "wb b'payload'\nwb b'payload'\n";
+const string gzipWarningStderr = "/package.py:8: FutureWarning: GzipFile was opened for writing, but this will change in future Python releases.  Specify the mode argument for opening it for writing.\n";
+
+var gzipFile = engine.Compile(gzipFileSource);
+if (!gzipFile.IsValid) throw new Exception(string.Join("; ", gzipFile.Diagnostics.Select(d => d.Message)));
+foreach (var result in new[] { gzipFile.Run(new PureHost()), await gzipFile.RunAsync(new PureHost()) })
+    RequireOutput(result, gzipFileOutput);
+
+var gzipFiles = engine.Compile(gzipFileHostSource);
+if (!gzipFiles.IsValid) throw new Exception(string.Join("; ", gzipFiles.Diagnostics.Select(d => d.Message)));
+var gzipSyncHost = new MemoryHost(delayed: false);
+RequireOutput(gzipFiles.Run(gzipSyncHost), gzipFileHostOutput);
+gzipSyncHost.VerifyGzipFiles();
+var gzipDelayedHost = new MemoryHost(delayed: true);
+using var gzipTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+var gzipPendingRun = gzipFiles.RunAsync(gzipDelayedHost, new LythonRunOptions { CancellationToken = gzipTimeout.Token });
+await gzipDelayedHost.ReadStarted.Task.WaitAsync(gzipTimeout.Token);
+if (gzipPendingRun.IsCompleted || gzipDelayedHost.FirstReadPath != "/gzip-index.txt")
+    throw new Exception("Gzip level conversion did not await the paused host read.");
+gzipDelayedHost.ReleaseRead.TrySetResult();
+await gzipDelayedHost.WriteStarted.Task.WaitAsync(gzipTimeout.Token);
+if (gzipPendingRun.IsCompleted || gzipDelayedHost.FirstWritePath != "/gzip-output.gz")
+    throw new Exception("Gzip flush did not await the paused host publication.");
+gzipDelayedHost.ReleaseWrite.TrySetResult();
+RequireOutput(await gzipPendingRun.WaitAsync(gzipTimeout.Token), gzipFileHostOutput);
+gzipDelayedHost.VerifyGzipFiles();
+if (gzipDelayedHost.SuspendedOperations < 2) throw new Exception("Gzip consumer did not suspend twice.");
+
+var gzipWarnings = engine.Compile(gzipWarningSource);
+if (!gzipWarnings.IsValid) throw new Exception(string.Join("; ", gzipWarnings.Diagnostics.Select(d => d.Message)));
+var warningSyncHost = new WarningHost(delayed: false);
+var warningOptions = new LythonRunOptions { SourcePath = "/package.py" };
+var warningSyncResult = gzipWarnings.Run(warningSyncHost, warningOptions);
+RequireOutput(warningSyncResult, gzipWarningOutput);
+warningSyncHost.VerifyWarning(warningSyncResult, gzipWarningStderr);
+var warningDelayedHost = new WarningHost(delayed: true);
+using var warningTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+var warningPendingRun = gzipWarnings.RunAsync(warningDelayedHost,
+    new LythonRunOptions { SourcePath = "/package.py", CancellationToken = warningTimeout.Token });
+await warningDelayedHost.Output.Started.Task.WaitAsync(warningTimeout.Token);
+if (warningPendingRun.IsCompleted) throw new Exception("Gzip warning did not await mediated stderr.");
+warningDelayedHost.Output.Release.TrySetResult();
+var warningAsyncResult = await warningPendingRun.WaitAsync(warningTimeout.Token);
+RequireOutput(warningAsyncResult, gzipWarningOutput);
+warningDelayedHost.VerifyWarning(warningAsyncResult, gzipWarningStderr);
+if (!warningDelayedHost.Output.CompletedAsynchronously)
+    throw new Exception("Gzip warning output did not suspend.");
+var warningRejectedHost = new WarningHost(delayed: true);
+var warningRejected = gzipWarnings.Run(warningRejectedHost, warningOptions);
+if (warningRejected.Success || warningRejected.Failure?.ExceptionType != "RuntimeError"
+    || warningRejectedHost.Output.Writes != 0 || warningRejected.StandardError != "")
+    throw new Exception("Synchronous execution did not reject asynchronous warning output before writing.");
+
 Console.WriteLine("Package compatibility and mediated file consumer passed.");
 
 static void RequireOutput(LythonExecutionResult result, string expected)
@@ -446,6 +505,7 @@ static void RequireOutput(LythonExecutionResult result, string expected)
 class PureHost : ILythonHost
 {
     public string Cwd => "/";
+    public virtual ILythonTextOutput? StandardError => null;
     public DateTimeOffset LocalNow => DateTimeOffset.UnixEpoch;
     public DateTimeOffset UtcNow => DateTimeOffset.UnixEpoch;
     public virtual ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken) => throw new NotSupportedException();
@@ -467,6 +527,8 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
     {
         ["/input.json"] = Encoding.UTF8.GetBytes("{\"value\": 3, \"name\": \"é\"}"),
         ["/zlib-index.txt"] = "1"u8.ToArray(),
+        ["/gzip-index.txt"] = "1"u8.ToArray(),
+        ["/gzip-input.gz"] = Convert.FromHexString("1f8b08007b00000002ff4bcc29c848e44a4a2d49e402006e50306e0b000000"),
         ["/xml-index.txt"] = "1"u8.ToArray(),
         ["/struct-index.txt"] = "514"u8.ToArray(),
         ["/struct-float.txt"] = "1.5"u8.ToArray(),
@@ -479,12 +541,15 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
     public TaskCompletionSource ReleaseRead { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
     public TaskCompletionSource ReleaseWrite { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
     public int SuspendedOperations { get; private set; }
+    public string? FirstReadPath { get; private set; }
+    public string? FirstWritePath { get; private set; }
 
     public override async ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (delayed && !ReleaseRead.Task.IsCompleted)
         {
+            FirstReadPath = path;
             ReadStarted.TrySetResult();
             await ReleaseRead.Task.WaitAsync(cancellationToken);
             SuspendedOperations++;
@@ -497,6 +562,7 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
         cancellationToken.ThrowIfCancellationRequested();
         if (delayed && !ReleaseWrite.Task.IsCompleted)
         {
+            FirstWritePath = path;
             WriteStarted.TrySetResult();
             await ReleaseWrite.Task.WaitAsync(cancellationToken);
             SuspendedOperations++;
@@ -534,6 +600,28 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
             throw new Exception("Package file publication produced incorrect bytes.");
     }
 
+    public void VerifyGzipFiles()
+    {
+        VerifyGzipMember("/gzip-output.gz", "1f8b08080000000000ff", "gzip-output",
+            Convert.FromHexString("000000207b226e616d65223a2022c3a9cea9f09f9880222c2022636f756e74223a20337d"));
+        VerifyGzipMember("/gzip-pending.gz", "1f8b08080000000002ff", "gzip-pending", "pending"u8.ToArray());
+    }
+
+    private void VerifyGzipMember(string path, string headerHex, string filename, byte[] expected)
+    {
+        var data = _files[path];
+        var name = Encoding.Latin1.GetBytes(filename + "\0");
+        if (!data.AsSpan(0, 10).SequenceEqual(Convert.FromHexString(headerHex))
+            || !data.AsSpan(10, name.Length).SequenceEqual(name))
+            throw new Exception("Gzip package consumer produced an incorrect header: " + path);
+        using var input = new MemoryStream(data);
+        using var decoder = new GZipStream(input, CompressionMode.Decompress);
+        using var decoded = new MemoryStream();
+        decoder.CopyTo(decoded);
+        if (!decoded.ToArray().AsSpan().SequenceEqual(expected))
+            throw new Exception("Gzip package consumer produced incorrect final decoded bytes: " + path);
+    }
+
     public void VerifyZlibFiles()
     {
         if (!_files["/zlib-output.bin"].AsSpan().SequenceEqual(Convert.FromHexString("7b226e616d65223a2022c3a9cea9f09f9880222c2022636f756e74223a20337d")))
@@ -558,4 +646,45 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
             || !_files["/utf16-pending.bin"].AsSpan().SequenceEqual(new byte[] { 0xff, 0xfe }))
             throw new Exception("UTF-16 package consumer produced incorrect bytes.");
     }
+}
+
+sealed class WarningHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronousHostCapability
+{
+    public bool CompletesSynchronously => true;
+    public WarningOutput Output { get; } = new(delayed);
+    public override ILythonTextOutput StandardError => Output;
+
+    public void VerifyWarning(LythonExecutionResult result, string expected)
+    {
+        if (result.StandardError != expected || Encoding.UTF8.GetString(Output.Payload) != expected
+            || Output.Writes != 1)
+            throw new Exception("Gzip package consumer emitted an incorrect or duplicate warning.");
+    }
+}
+
+sealed class WarningOutput(bool delayed) : ILythonTextOutput, ILythonSynchronousHostCapability
+{
+    public bool CompletesSynchronously => !delayed;
+    public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public byte[] Payload { get; private set; } = [];
+    public int Writes { get; private set; }
+    public bool CompletedAsynchronously { get; private set; }
+
+    public async ValueTask WriteUtf8Async(ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        Writes++;
+        Payload = utf8.ToArray();
+        Started.TrySetResult();
+        if (delayed)
+        {
+            await Release.Task.WaitAsync(cancellationToken);
+            CompletedAsynchronously = true;
+        }
+        if (!Payload.AsSpan().SequenceEqual(utf8.Span))
+            throw new Exception("Warning payload changed while its host write was suspended.");
+    }
+
+    public ValueTask FlushAsync(CancellationToken cancellationToken) => ValueTask.CompletedTask;
 }

@@ -11,6 +11,14 @@ at successful execution end. Paused reads and writes prove that RunAsync awaits
 host acquisition and publication. Its isolated
 cache and SHA512 comparison ensure the candidate package was consumed.
 
+The gzip gate exercises sequential supplied-stream ownership and lazy reading,
+then pauses host reads inside compression-level conversion and host writes
+during filename-owned flush. It checks framing and final decoded bytes with an
+independent .NET decoder, including an unclosed wrapper finalized at successful
+execution end. The native FutureWarning control verifies exact captured and
+host stderr, same-location suppression, real asynchronous output suspension and
+synchronous rejection before an asynchronous write begins.
+
 Versions in the library project identify the next unpublished release
 candidate. Do not reuse a published NuGet version or publish Debug outputs.
 Keep assembly/file versions and package notes aligned with the candidate,
