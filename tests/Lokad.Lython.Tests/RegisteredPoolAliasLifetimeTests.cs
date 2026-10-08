@@ -75,6 +75,58 @@ public sealed class RegisteredPoolAliasLifetimeTests
         Assert.Equal(0, context.MemoryGovernor.CurrentAccountedBytes);
     }
 
+    [Fact]
+    public void ExhaustionEnumerationReachesCollectedValuesBeforeFundingPromotion()
+    {
+        // A retained source alias fills its pool; another pool has a collected
+        // 512-byte temporary. Its refund can fund the requested 128 bytes.
+        // Enumerating the sources must not spend promotion headroom first.
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+            new LythonRunOptions { MaxExecutionMemoryBytes = 1984 });
+        var (alias, owner, pool) = CreateRegisteredAlias(context.State, false, scratchBytes: 0);
+        var dead = DropCallTemporary(context.State);
+        Collect();
+        Assert.False(owner.TryGetTarget(out _));
+        Assert.False(dead.TryGetTarget(out _));
+        Assert.Equal(1984, context.MemoryGovernor.CurrentCommittedBytes);
+
+        context.MemoryGovernor.Reserve(128, null);
+
+        Assert.Equal(128, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.Equal(1344, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(1, pool.Count);
+        context.MemoryGovernor.ReleaseReserved(128);
+        GC.KeepAlive(alias);
+    }
+
+    [Fact]
+    public void ExhaustionEnumerationStillDeniesWhenAllAliasChargesAreLive()
+    {
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+            new LythonRunOptions { MaxExecutionMemoryBytes = 1312 });
+        var (alias, owner, pool) = CreateRegisteredAlias(context.State, false, scratchBytes: 0);
+        Collect();
+        Assert.False(owner.TryGetTarget(out _));
+
+        var failure = Assert.Throws<LythonRuntimeException>(() => context.MemoryGovernor.Reserve(128, null));
+
+        Assert.Equal("MemoryError", failure.ExceptionType);
+        Assert.Equal(1312, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.Equal(1, pool.Count);
+        GC.KeepAlive(alias);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static WeakReference<object> DropCallTemporary(ExecutionState state)
+    {
+        var value = new object();
+        state.MemoryGovernor.Reserve(512, null);
+        state.MemoryGovernor.Commit(512);
+        state.CallTemporaries.Track(value, 512);
+        return new WeakReference<object>(value);
+    }
+
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void DropManyAliasesAfterOwnerDies(ExecutionState state)
     {

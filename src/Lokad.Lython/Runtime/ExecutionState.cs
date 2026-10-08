@@ -79,7 +79,9 @@ internal sealed class ExecutionState
         Guards = new ExecutionGuards(this);
         MemoryGovernor = new MemoryGovernor(Limits.MaxExecutionMemoryBytes);
         CallTemporaries = new ChargeReclamationPool(MemoryGovernor);
-        MemoryGovernor.LivePoolProvider = LiveReclamationPools;
+        // Relief must enumerate every pool before funding any promotion:
+        // another pool may contain collected charges that fund the request.
+        MemoryGovernor.LivePoolProvider = () => LiveReclamationPools(sweepAbandoned: false);
         RandomState = new PyRandomState();
         DecimalContext = PyDecimalContext.Default();
         DisableLocalModuleImports = options?.DisableLocalModuleImports ?? false;
@@ -290,7 +292,7 @@ internal sealed class ExecutionState
     // on the way: dropped owners release scratch, while returned values keep
     // their tracking pool until collection. Fully enumerating also serves the
     // pull cadence, so there is a single reconciliation path.
-    internal IEnumerable<ChargeReclamationPool> LiveReclamationPools()
+    internal IEnumerable<ChargeReclamationPool> LiveReclamationPools(bool sweepAbandoned = true)
     {
         for (var i = _poolRegistrations.Count - 1; i >= 0; i--)
         {
@@ -311,7 +313,10 @@ internal sealed class ExecutionState
                     _poolRegistrations[i] = entry;
                 }
 
-                entry.Pool.Sweep(full: firstAbandonment);
+                // The governor owns full sweeps and collection during relief.
+                // Enumeration there only releases abandoned scratch/empty
+                // registrations, so it cannot deny on promotion first.
+                if (sweepAbandoned) entry.Pool.Sweep(full: firstAbandonment);
                 if (entry.Pool.Count == 0)
                 {
                     var removeIndex = i < _poolRegistrations.Count
