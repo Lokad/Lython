@@ -2,7 +2,8 @@
 
 Specification version **1**, established before comparative timing. The catalog
 and explicit correctness check are available. Persistent worker primitives are
-available; the supervised driver, sampling and reports remain under implementation.
+available, including a supervised correctness/timer smoke. Sampling, qualification
+and reports remain under implementation.
 No qualified baseline is claimed.
 
 The primary question is how long the same supported Python job takes through a
@@ -205,8 +206,50 @@ provenance hashing is outside all persistent timed lanes.
 The ordinary public suite covers namespace reset/code reuse, Unicode, malformed
 or truncated frames, wrong hashes, replayed IDs, count ceilings, unsupported
 syntax and wrong output of equal length. These checks have no separately installed
-Python or timing-performance threshold dependency. Full process supervision and
-report-eligibility checks remain pending.
+Python or timing-performance threshold dependency. Controlled subprocess fixtures
+also exercise deadlines, cancellation, stderr flooding, invalid replies, nonzero
+exits, and descendants holding pipes after the worker root exits.
+
+## Supervised correctness and timer smoke
+
+Build Release and export the catalog first. Supply both interpreter executables
+explicitly; the supervisor does not install or search for a reference interpreter:
+
+```text
+<dotnet> <benchmark.dll> --compare verify --catalog <catalog.json> --dotnet <absolute-dotnet> --python <absolute-python> --python-worker <cpython-worker.py> --out <receipt.json>
+```
+
+This command checks every case twice before and after two-invocation diagnostic
+batches in the warm, compile-run and compile lanes. It validates the catalog,
+loaded adapter/library/runtime digests, CPython executable/helper digests, normal
+GC/GIL mode, reply sequence, case/input/output hashes, counts and clocks. It checks
+complete clean shutdown and writes an atomic receipt after each case and on
+failure/interruption. Receipts always have `performanceQualified: false`; there
+is no warmup, quietness gate, sampling qualification or speedup report yet.
+
+One 10-minute campaign deadline contains common 30-second startup, 65-second
+request, 5-second shutdown and 5-minute case deadlines. Writes, reads and validation share each
+request deadline. Stdout frames are capped at 4 MiB with at most one expected
+reply queued; stderr is drained concurrently and capped at 64 KiB. Malformed,
+unsolicited, truncated, inconsistent or failed timed results cannot become samples.
+Cancellation and errors stop owned processes and join the I/O operations/pumps.
+
+Windows workers enter a job atomically at creation, inherit only the three pipe
+handles, and have no breakaway flag. Linux uses `/usr/bin/setsid --fork --wait`
+and a fixed `/bin/sh` bootstrap: a private gate holds the session leader until
+the parent checks its PID, session/group and parent relationship, then executes
+the explicit worker with positional arguments. Both approaches can stop owned
+descendants even after the root exits. The Windows job is checked empty; the
+Linux launcher is reaped, and killed orphan descendants may briefly await PID1
+reaping. Cleanup never searches process names or terminates unrelated processes.
+These are lifecycle controls for trusted fixtures; they do not provide a guest
+security boundary against a process deliberately escaping its Linux session.
+macOS process ownership is currently unsupported.
+
+The Windows mechanism follows Microsoft's [job object documentation](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects)
+and [process attribute API](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute).
+The Linux launcher uses the documented [`setsid` fork/wait options](https://man7.org/linux/man-pages/man1/setsid.1.html).
+The fresh-process lane and report-eligibility checks remain pending.
 
 ## Sampling and eligibility
 

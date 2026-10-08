@@ -7,6 +7,8 @@ internal static class ComparisonCatalogCommand
 {
     public static int Run(string[] arguments)
     {
+        if (arguments.Length > 0 && arguments[0] == "verify")
+            return ComparisonVerifyCommand.Run(arguments[1..]);
         if (arguments.Length == 3 && arguments[0] == "worker" && arguments[1] == "--catalog")
         {
             Console.OutputEncoding = new UTF8Encoding(false);
@@ -26,7 +28,7 @@ internal static class ComparisonCatalogCommand
         if (arguments.Length == 0 || arguments[0] != "list"
             || (arguments.Length != 1 && (arguments.Length != 3 || arguments[1] != "--out")))
         {
-            Console.Error.WriteLine("Usage: --compare list [--out <catalog.json>] | worker --catalog <catalog.json> (supervised workers; timing driver pending)");
+            Console.Error.WriteLine("Usage: --compare list [--out <catalog.json>] | worker --catalog <catalog.json> | verify --catalog ... --dotnet ... --python ... --python-worker ... --out ... (sampling driver pending)");
             return 2;
         }
 

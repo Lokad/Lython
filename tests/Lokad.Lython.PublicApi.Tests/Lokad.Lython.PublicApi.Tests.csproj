@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/Lokad.Lython/Lokad.Lython.csproj" />
+    <ProjectReference Include="../Lokad.Lython.WorkerFixture/Lokad.Lython.WorkerFixture.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <!--
@@ -27,6 +28,8 @@
     <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\WorkloadCatalog.cs" Link="Benchmarks\WorkloadCatalog.cs" />
     <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\ComparisonProtocol.cs" Link="Benchmarks\ComparisonProtocol.cs" />
     <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\LythonComparisonWorker.cs" Link="Benchmarks\LythonComparisonWorker.cs" />
+    <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\OwnedWorkerProcess.cs" Link="Benchmarks\OwnedWorkerProcess.cs" />
+    <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\ComparisonWorkerClient.cs" Link="Benchmarks\ComparisonWorkerClient.cs" />
   </ItemGroup>
 
   <ItemGroup>

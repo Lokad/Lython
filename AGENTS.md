@@ -15,6 +15,9 @@ semantics, and unsupported behavior should fail explicitly.
   compile into the test assembly).
 - `tests/Lokad.Lython.PublicApi.Tests/`: public-boundary suite against the
   built library.
+- `tests/Lokad.Lython.WorkerFixture/`: controlled subprocess faults for the
+  benchmark supervisor tests. It builds automatically with the public suite
+  for the matching configuration and needs no separately installed Python.
 - `benchmarks/Lokad.Lython.Benchmarks/`: BenchmarkDotNet benchmarks.
 - `tools/LythonProbe/`: CLI for independent, pure compatibility probes through
   Lython's public API. It accepts `-c`, a `.py` file, plain stdin, or batch JSON;
