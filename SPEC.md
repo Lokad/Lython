@@ -918,6 +918,7 @@ The supported subset must support at least the following exception classes:
 - `KeyError`
 - `IndexError`
 - `RuntimeError`
+- `EOFError`
 
 The supported subset must support:
 
@@ -1097,6 +1098,7 @@ The builtin environment must include exactly the following builtins and builtin 
 - `KeyError`
 - `IndexError`
 - `RuntimeError`
+- `EOFError`
 - `AssertionError`
 - `ImportError`
 - `ModuleNotFoundError`

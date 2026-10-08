@@ -86,6 +86,7 @@ internal sealed partial class LythonRuntime
                 ["KeyError"] = new ExceptionTypeValue("KeyError"),
                 ["IndexError"] = new ExceptionTypeValue("IndexError"),
                 ["RuntimeError"] = new ExceptionTypeValue("RuntimeError"),
+                ["EOFError"] = new ExceptionTypeValue("EOFError"),
                 ["AssertionError"] = new ExceptionTypeValue("AssertionError"),
                 ["ImportError"] = new ExceptionTypeValue("ImportError"),
                 ["ModuleNotFoundError"] = new ExceptionTypeValue("ModuleNotFoundError"),

@@ -125,6 +125,7 @@ internal sealed partial class LythonRuntime
             [BuiltinException("ArithmeticError")] = [BuiltinException("Exception")],
             [BuiltinException("AssertionError")] = [BuiltinException("Exception")],
             [BuiltinException("AttributeError")] = [BuiltinException("Exception")],
+            [BuiltinException("EOFError")] = [BuiltinException("Exception")],
             [BuiltinException("ImportError")] = [BuiltinException("Exception")],
             [BuiltinException("LookupError")] = [BuiltinException("Exception")],
             [BuiltinException("MemoryError")] = [BuiltinException("Exception")],
