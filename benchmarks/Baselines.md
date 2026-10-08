@@ -1,5 +1,29 @@
 # Benchmark baselines
 
+The scan investigation now has finite size series in `CsvReaderBenchmarks`,
+`TextScanBenchmarks` and `RegexScanBenchmarks`. No new performance baseline is
+claimed for these additions. Run Release BenchmarkDotNet throughput measurements
+before making time or allocation comparisons; individual invocation checks only
+validate the returned work count.
+
+- CSV DictReader retains, discards or stops after one row at 1K, 10K, 20K and
+  100K rows. The 20K case preserves the historical workload. Seeded six-column
+  UTF-8 input occupies 48 bytes per row plus an 18-byte header.
+- Text scans discard or retain 1K, 10K and 100K twelve-byte lines. A separate
+  XML input is one 24-byte element per row plus a 13-byte root wrapper; compare
+  reading that long record with retaining the ElementTree children.
+- Regex scans use `(a)(b)` over 1K, 5K and 10K ASCII matches, separating discarded
+  finditer results from retained findall tuples. Other cases compare a reused
+  compiled pattern, calls that hit the compile cache, and `re.purge()` followed
+  by actual recompilation. Unnamed captures isolate these costs from the pending
+  capture-numbering corrections.
+
+Seeding and script compilation run outside timed sections. The regex series is
+deliberately modest: the current PythonRe adapter materializes detailed matches
+and has high cumulative allocation growth on this shape. File iteration and
+discarding matches do not establish lazy backend processing or constant live
+memory. Budget/ownership and cancellation controls remain in the test suites.
+
 ZIP archive scaling benchmarks live in `ZipArchiveBenchmarks.cs` (200 mixed
 STORED/DEFLATED entries; append adds 20). Release results below (full
 BenchmarkDotNet runs, .NET 10, Windows 10.0.26200 x64, 2026-09-09, 9d5b827);
