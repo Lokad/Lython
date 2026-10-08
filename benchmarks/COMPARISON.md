@@ -1,8 +1,9 @@
 # Lython and CPython comparison contract
 
 Specification version **1**, established before comparative timing. The catalog
-and explicit correctness check are available. Persistent workers, timing and
-reports remain under implementation; no qualified baseline is claimed.
+and explicit correctness check are available. Persistent worker primitives are
+available; the supervised driver, sampling and reports remain under implementation.
+No qualified baseline is claimed.
 
 The primary question is how long the same supported Python job takes through a
 warm public Lython invocation and a warm CPython invocation on the same machine.
@@ -168,6 +169,44 @@ checker runs trusted fixtures and should have an external finite watchdog.
 Transport must preserve explicit UTF-8 bytes and verify received source/fixture
 hashes. Agreement between interpreters alone is insufficient: if both receive
 the same corrupt source, only an independent expected output catches it.
+
+## Worker protocol
+
+The .NET entry point `--compare worker --catalog <catalog.json>` and the maintained
+`cpython-worker.py --catalog <catalog.json>` implement the same persistent protocol.
+Launch Python explicitly with `-I -S`. These are internal supervised worker entry
+points for trusted fixtures; an external process watchdog is required. They do
+not yet constitute a qualification command or a fresh-process measurement lane.
+
+Protocol version 1 uses a four-byte big-endian byte length followed by strict
+UTF-8 JSON, capped at 4 MiB per frame. Catalog files are capped at 64 MiB and
+256 cases. Startup validates every source/fixture/golden digest and emits a Ready
+frame with the catalog hash and actual runtime/binary/clock identities. Requests
+have increasing positive 32-bit IDs, a protocol version and an operation:
+
+- `verify`: case ID and all three hashes; compile once and check complete output
+  twice with fresh invocation state. Only an Equivalent result admits batches.
+- `batch`: the same identity, lane (`warm`, `compile-run` or `compile`) and a
+  positive count capped at 1,000,000. Internal monotonic clocks exclude protocol
+  traffic, output hashing and response encoding. Counts and ticks/frequency are
+  returned for successfully completed batches. Mismatch/denial/failure retains
+  completed counts for diagnostics, invalidates the case and returns no elapsed
+  sample.
+- `quit`: acknowledge Closed and exit. Clean EOF differs from a truncated frame.
+
+The internal 60-second batch ceiling is checked between jobs. A stuck individual
+job or stalled pipe still requires the external watchdog, which will be provided
+by the driver. Loop/count/deadline checks are included in batch time and visible
+through invocation controls. Python's adapter bounds each captured stream at
+16 MiB; this capture cap does not provide a guest memory/work governor. Neither
+adapter disables GC or adds optional Lython instruction fuel. Worker startup
+provenance hashing is outside all persistent timed lanes.
+
+The ordinary public suite covers namespace reset/code reuse, Unicode, malformed
+or truncated frames, wrong hashes, replayed IDs, count ceilings, unsupported
+syntax and wrong output of equal length. These checks have no separately installed
+Python or timing-performance threshold dependency. Full process supervision and
+report-eligibility checks remain pending.
 
 ## Sampling and eligibility
 

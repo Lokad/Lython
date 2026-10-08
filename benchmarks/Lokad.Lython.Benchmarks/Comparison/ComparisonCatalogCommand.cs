@@ -7,10 +7,26 @@ internal static class ComparisonCatalogCommand
 {
     public static int Run(string[] arguments)
     {
+        if (arguments.Length == 3 && arguments[0] == "worker" && arguments[1] == "--catalog")
+        {
+            Console.OutputEncoding = new UTF8Encoding(false);
+            try
+            {
+                var manifest = ComparisonManifest.Load(arguments[2]);
+                new LythonComparisonWorker(manifest).RunAsync(Console.OpenStandardInput(), Console.OpenStandardOutput())
+                    .GetAwaiter().GetResult();
+                return 0;
+            }
+            catch (Exception failure)
+            {
+                Console.Error.WriteLine("Comparison worker error: " + failure.GetType().Name + ": " + failure.Message);
+                return 2;
+            }
+        }
         if (arguments.Length == 0 || arguments[0] != "list"
             || (arguments.Length != 1 && (arguments.Length != 3 || arguments[1] != "--out")))
         {
-            Console.Error.WriteLine("Usage: --compare list [--out <catalog.json>] (catalog only; timing driver pending)");
+            Console.Error.WriteLine("Usage: --compare list [--out <catalog.json>] | worker --catalog <catalog.json> (supervised workers; timing driver pending)");
             return 2;
         }
 
