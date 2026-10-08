@@ -321,6 +321,8 @@ Unless `DisableDefaultLimits` is set, Lython applies practical defaults, includi
 
 Ordinary execution has no implicit step cutoff. Embedders requiring a finite execution deadline must supply a cancellable token and arrange cancellation; memory bounds alone do not stop a non-allocating infinite loop. `MaxExecutionSteps` remains an enforced opt-in allowance for compatibility with existing embedders. `DefaultMaxExecutionSteps` retains its historical numeric value for source compatibility and is applied only when explicitly assigned to that option. Cancellation is cooperative: an in-progress operation must reach a checkpoint, and the regex backend limitation described above still applies.
 
+Cancellation checks surround bounded CLR/native conversion and parsing calls; those calls finish before the next checkpoint. Host implementations remain responsible for honoring their token during their own operations.
+
 ## Host Integration
 
 `ILythonHost` is the authority boundary of the runtime. Core filesystem and clock operations stay small:

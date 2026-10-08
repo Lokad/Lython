@@ -2492,7 +2492,7 @@ The published `MaxExecutionSteps` option remains an enforced opt-in allowance fo
 
 Shared execution checkpoints perform cancellation and necessary housekeeping. Temporary reclamation must keep a lightweight cadence even in call-free loops without fuel, so dropped values do not leave stale commitments. Recursion/interpreter-depth and CLR stack-headroom guards, memory preflights, collection/string/read/output bounds, CLR projection funding, and the separate host-call quota remain effective.
 
-Long builtin traversals must observe cancellation at meaningful intervals. Operations that cannot interrupt promptly retain operation-local size, depth, allocation or work safeguards; an outer token does not make an indivisible dependency call interruptible. The PythonRe implementation limitation in section 9 remains separate dependency work. Guest exception handling must not suppress host cancellation indefinitely, and canceled writers retain their cleanup/publication contract.
+Long builtin traversals must observe cancellation at meaningful intervals. Operations that cannot interrupt promptly retain operation-local size, depth, allocation or work safeguards; an outer token does not make an indivisible dependency call interruptible. Bounded CLR/native conversion and parsing calls finish before the next checkpoint; host implementations must honor the token during their own operations. The PythonRe implementation limitation in section 11.7 remains separate dependency work. Guest exception handling must not suppress host cancellation indefinitely, and canceled writers retain their cleanup/publication contract.
 
 ### 14.6 Memory Budgets
 
