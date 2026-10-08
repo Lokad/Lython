@@ -4,6 +4,7 @@
 
 ## 0.10.0 - release candidate
 
+- Fund regex cache slots only while its bounded capacity grows; eviction reuses existing funding and purge refunds it.
 - Keep returned CSV/text values reclaimable after their source is collected; release abandoned scratch before sweep funding and preserve registry ownership through reentrant exhaustion relief.
 - Add sequential gzip.GzipFile wrappers over contained filenames and supplied binary objects, lazy metadata/trailer checks, persistent governed compression, sync flush, awaited callbacks, and correct supplied-object ownership.
 - Retain native ownership charges through finalization, expose EOFError/FutureWarning hierarchy, and emit inferred gzip write-mode notices through mediated stderr.

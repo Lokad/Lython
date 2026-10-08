@@ -51,7 +51,10 @@ internal sealed class RegexPatternCache
         MemoryGovernor? governor,
         LythonSourceSpan? span)
     {
-        if (governor is not null)
+        // Eviction replaces an already-funded slot. Only growing the cache
+        // needs new capacity funding; charging every miss strands slot charges
+        // and can prevent a full cache from replacing its least-recent entry.
+        if (governor is not null && _entries.Count < MaxEntries)
         {
             try
             {
