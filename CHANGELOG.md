@@ -7,6 +7,7 @@
 - Return ordinary Python lists from regex findall, including normal type identity, mutation, JSON encoding and CLR projection; reclaim discarded lazy-dot-star results.
 - Remove the implicit execution-step ceiling; retain enforced opt-in fuel for existing embedders, independent temporary-reclamation cadence, cancellation and default memory/stack/host-call protections.
 - Check cancellation and explicitly requested fuel during every lowered for-loop iteration, including pass-only range loops.
+- Observe cancellation and opt-in fuel during shared built-in iteration, including sum, any/all and min/max over primitive iterators; retain list self-extension snapshots and dispose canceled cursors.
 - Observe cancellation through stable-sort comparisons/copy tails and native sorting in statistics, JSON, difflib, directory traversal and protocol snapshots; preserve Python failures and refund sorting scratch.
 - Check shared execution guards through whole-buffer Latin-1 decoding, non-strict UTF-8 decoding and newline rewriting, including mediated stdin and file windows.
 - Refund collected young-tier values before funding live-entry promotion, so reclamation cannot reject a sweep using charges it has already freed.

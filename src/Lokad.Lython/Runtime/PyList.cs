@@ -224,6 +224,11 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
 
     public void AddRange(IEnumerable<object> values)
     {
+        if (values is PyIteration.CheckedSequence { Source: PyList or IPyListStorage or IReadOnlyCollection<object> } checkedSequence)
+        {
+            values = checkedSequence.Source;
+        }
+
         if (values is PyList sourceList)
         {
             // Snapshot the source (which may be this list) so extending appends
@@ -286,6 +291,11 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
 
     internal void AddRange(IEnumerable<object> values, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
+        if (values is PyIteration.CheckedSequence { Source: PyList or IPyListStorage or IReadOnlyCollection<object> } checkedSequence)
+        {
+            values = checkedSequence.Source;
+        }
+
         if (values is IReadOnlyCollection<object> || values is PyList || values is IPyListStorage)
         {
             AddRange(values);

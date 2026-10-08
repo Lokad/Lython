@@ -9,7 +9,7 @@ internal static class PyIteration
 
     /// <summary>Resolves the Python iteration protocol for arbitrary values, including user-defined <c>__iter__</c>.</summary>
     public static IEnumerable<object> ToSequence(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => value switch
+        => WithCheckpoints(value switch
         {
             PyInstance instance => new PyUserIterator(instance, context, span).Iterate(),
             // ChainMap iteration snapshots merged keys eagerly with lifetime
@@ -26,7 +26,53 @@ internal static class PyIteration
                 itemsView.Owner.BuildOwnedKeySnapshot(context, span),
                 span),
             _ => GetSyncEnumerable(value, span),
-        };
+        }, span, context);
+
+    // Bulk materializers inspect known-size/list sources to reserve their
+    // backing storage and snapshot self-extension. Keep that source identity
+    // available instead of hiding it in a compiler-generated iterator.
+    private static IEnumerable<object> WithCheckpoints(
+        IEnumerable<object> source, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => source is IReadOnlyCollection<object> collection
+            ? new CheckedCollection(collection, span, context)
+            : new CheckedSequence(source, span, context);
+
+    internal class CheckedSequence(
+        IEnumerable<object> source, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        : IEnumerable<object>
+    {
+        internal IEnumerable<object> Source => source;
+        public IEnumerator<object> GetEnumerator() => EnumerateChecked(source, span, context).GetEnumerator();
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    private sealed class CheckedCollection(
+        IReadOnlyCollection<object> source, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        : CheckedSequence(source, span, context), IReadOnlyCollection<object>
+    {
+        public int Count => source.Count;
+    }
+
+    private static IEnumerable<object> EnumerateChecked(
+        IEnumerable<object> sequence, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        using var enumerator = sequence.GetEnumerator();
+        var movesUntilCheckpoint = 0;
+        while (true)
+        {
+            // Primitive iterables do not enter guest calls. Check before the
+            // first pull and every 64 pulls, including non-materializing
+            // consumers such as sum, any/all and min/max.
+            if (movesUntilCheckpoint-- == 0)
+            {
+                movesUntilCheckpoint = 63;
+                context.CheckExecution(span);
+            }
+
+            if (!enumerator.MoveNext()) yield break;
+            yield return enumerator.Current;
+        }
+    }
 
     public static IAsyncEnumerable<object> ToSequenceAsync(object value, LythonSourceSpan span)
         => EnumerateCursorAsync(Cursor.Create(value, span));
@@ -36,51 +82,10 @@ internal static class PyIteration
         => value switch
         {
             PyInstance instance => EnumerateUserIteratorAsync(instance, context, span),
-            // Same owned shapes as the sync router above; snapshot construction
-            // and key lookups are pure memory work, so no host reads are driven.
-            PyChainMap chainMap => EnumerateOwnedSnapshotAsync(chainMap.BuildOwnedKeySnapshot(context, span)),
-            ChainMapKeysView keysView => EnumerateOwnedSnapshotAsync(keysView.Owner.BuildOwnedKeySnapshot(context, span)),
-            ChainMapValuesView valuesView => EnumerateOwnedValuesAsync(
-                valuesView.Owner,
-                valuesView.Owner.BuildOwnedKeySnapshot(context, span),
-                span),
-            ChainMapItemsView itemsView => EnumerateOwnedItemsAsync(
-                itemsView.Owner,
-                itemsView.Owner.BuildOwnedKeySnapshot(context, span),
-                span),
-            _ => EnumerateCursorAsync(Cursor.Create(value, span)),
+            // Context-aware cursors retain the same owned ChainMap shapes as
+            // the sync router and checkpoint primitive pulls in both modes.
+            _ => EnumerateCursorAsync(Cursor.Create(value, span, context)),
         };
-
-    private static async IAsyncEnumerable<object> EnumerateOwnedSnapshotAsync(List<object> snapshot)
-    {
-        await Task.CompletedTask.ConfigureAwait(false);
-        foreach (var key in snapshot)
-        {
-            yield return key;
-        }
-    }
-
-    private static async IAsyncEnumerable<object> EnumerateOwnedValuesAsync(PyChainMap owner, List<object> snapshotKeys, LythonSourceSpan span)
-    {
-        await Task.CompletedTask.ConfigureAwait(false);
-        foreach (var key in snapshotKeys)
-        {
-            yield return owner.GetLiveValue(key);
-        }
-    }
-
-    private static async IAsyncEnumerable<object> EnumerateOwnedItemsAsync(PyChainMap owner, List<object> snapshotKeys, LythonSourceSpan span)
-    {
-        await Task.CompletedTask.ConfigureAwait(false);
-        var governor = owner.OwnerMemoryGovernor;
-        foreach (var key in snapshotKeys)
-        {
-            var value = owner.GetLiveValue(key);
-            yield return governor is null
-                ? PyTuple.FromOwnedArray([key, value])
-                : PyTuple.FromOwnedArray([key, value], governor, null);
-        }
-    }
 
     /// <summary>Materializes an arbitrary iterable in asynchronous execution, resolving user-defined <c>__iter__</c>.</summary>
     public static async ValueTask<List<object>> MaterializeAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -303,8 +308,15 @@ internal static class PyIteration
         // R08: both __iter__ resolution and __next__ advancement await real
         // suspension instead of routing through the synchronous protocol.
         var iterator = await PyUserIterator.CreateAsync(instance, context, span).ConfigureAwait(false);
+        var movesUntilCheckpoint = 0;
         while (true)
         {
+            // __iter__ may return a primitive iterator with no guest __next__.
+            if (movesUntilCheckpoint-- == 0)
+            {
+                movesUntilCheckpoint = 63;
+                context.CheckExecution(span);
+            }
             var (hasValue, value) = await iterator.TryMoveNextAsync().ConfigureAwait(false);
             if (!hasValue)
             {
@@ -385,19 +397,18 @@ internal static class PyIteration
         private readonly object _value;
         private readonly LythonSourceSpan _span;
         private readonly PyUserIterator? _userIterator;
+        private readonly LythonRuntime.ExecutionContext? _context;
+        private int _movesUntilCheckpoint;
         private IEnumerator<object>? _syncEnumerator;
         private IAsyncEnumerator<object>? _asyncEnumerator;
 
-        private Cursor(object value, LythonSourceSpan span)
-            : this(value, span, null)
-        {
-        }
-
-        private Cursor(object value, LythonSourceSpan span, PyUserIterator? userIterator)
+        private Cursor(object value, LythonSourceSpan span, PyUserIterator? userIterator = null,
+            LythonRuntime.ExecutionContext? context = null)
         {
             _value = value;
             _span = span;
             _userIterator = userIterator;
+            _context = context;
         }
 
         public static Cursor Create(object value, LythonSourceSpan span)
@@ -411,7 +422,7 @@ internal static class PyIteration
         {
             if (value is PyInstance instance)
             {
-                return new Cursor(value, span, new PyUserIterator(instance, context, span));
+                return new Cursor(value, span, new PyUserIterator(instance, context, span), context);
             }
 
             // ChainMap cursors enumerate owned snapshots (see ToSequence above)
@@ -419,38 +430,44 @@ internal static class PyIteration
             // holding unowned merge scratch.
             if (value is PyChainMap chainMap)
             {
-                return new Cursor(chainMap.BuildOwnedKeySnapshot(context, span), span);
+                return new Cursor(chainMap.BuildOwnedKeySnapshot(context, span), span, context: context);
             }
 
             if (value is ChainMapKeysView keysView)
             {
-                return new Cursor(keysView.Owner.BuildOwnedKeySnapshot(context, span), span);
+                return new Cursor(keysView.Owner.BuildOwnedKeySnapshot(context, span), span, context: context);
             }
 
             if (value is ChainMapValuesView valuesView)
             {
                 return new Cursor(
                     PyChainMap.EnumerateOwnedValues(valuesView.Owner, valuesView.Owner.BuildOwnedKeySnapshot(context, span), span),
-                    span);
+                    span, context: context);
             }
 
             if (value is ChainMapItemsView itemsView)
             {
                 return new Cursor(
                     PyChainMap.EnumerateOwnedItems(itemsView.Owner, itemsView.Owner.BuildOwnedKeySnapshot(context, span), span),
-                    span);
+                    span, context: context);
             }
 
             _ = GetSyncEnumerable(value, span);
-            return new Cursor(value, span);
+            return new Cursor(value, span, context: context);
         }
 
         public static async ValueTask<Cursor> CreateAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
             => value is PyInstance instance
-                ? new Cursor(value, span, await PyUserIterator.CreateAsync(instance, context, span).ConfigureAwait(false))
+                ? new Cursor(value, span, await PyUserIterator.CreateAsync(instance, context, span).ConfigureAwait(false), context)
                 : Create(value, span, context);
 
         public bool TryMoveNext([MaybeNullWhen(false)] out object value)
+        {
+            CheckExecution();
+            return TryMoveNextCore(out value);
+        }
+
+        private bool TryMoveNextCore([MaybeNullWhen(false)] out object value)
         {
             if (_userIterator is not null)
             {
@@ -475,6 +492,7 @@ internal static class PyIteration
 
         public async ValueTask<PyIterationResult> TryMoveNextAsync()
         {
+            CheckExecution();
             if (_userIterator is not null)
             {
                 return await _userIterator.TryMoveNextAsync().ConfigureAwait(false);
@@ -503,9 +521,18 @@ internal static class PyIteration
                 return PyIterationResult.End;
             }
 
-            return TryMoveNext(out var syncValue)
+            return TryMoveNextCore(out var syncValue)
                 ? PyIterationResult.Yield(syncValue)
                 : PyIterationResult.End;
+        }
+
+        private void CheckExecution()
+        {
+            if (_context is not null && _movesUntilCheckpoint-- == 0)
+            {
+                _movesUntilCheckpoint = 63;
+                _context.CheckExecution(_span);
+            }
         }
 
         public void Dispose()
