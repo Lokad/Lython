@@ -494,6 +494,41 @@ if (warningRejected.Success || warningRejected.Failure?.ExceptionType != "Runtim
     || warningRejectedHost.Output.Writes != 0 || warningRejected.StandardError != "")
     throw new Exception("Synchronous execution did not reject asynchronous warning output before writing.");
 
+const string csvAliasLifetimeSource = """
+    import csv
+    completed=0
+    for index in range(8):
+        with open('/pool-csv.txt') as file:
+            rows=list(csv.reader(file))
+        assert len(rows)==1001
+        print('retained')
+        rows=None
+        file=None
+        completed+=1
+    return completed
+    """;
+var csvAliasLifetime = engine.Compile(csvAliasLifetimeSource);
+if (!csvAliasLifetime.IsValid) throw new Exception(string.Join("; ", csvAliasLifetime.Diagnostics.Select(d => d.Message)));
+var csvAliasSyncHost = new MemoryHost(delayed: false, collectRetainedRows: true);
+var csvAliasOptions = new LythonRunOptions { MaxExecutionMemoryBytes = 3L * 1024 * 1024 };
+var csvAliasSyncResult = csvAliasLifetime.Run(csvAliasSyncHost, csvAliasOptions);
+RequireOutput(csvAliasSyncResult, string.Concat(Enumerable.Repeat("retained\n", 8)));
+if (csvAliasSyncResult.ReturnValue?.ToString() != "8" || csvAliasSyncHost.RetainedCollections != 8)
+    throw new Exception("CSV alias package consumer did not complete all collection/drop cycles.");
+var csvAliasDelayedHost = new MemoryHost(delayed: true, collectRetainedRows: true);
+using var csvAliasTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+var csvAliasPendingRun = csvAliasLifetime.RunAsync(csvAliasDelayedHost,
+    new LythonRunOptions { MaxExecutionMemoryBytes = 3L * 1024 * 1024, CancellationToken = csvAliasTimeout.Token });
+await csvAliasDelayedHost.ReadStarted.Task.WaitAsync(csvAliasTimeout.Token);
+if (csvAliasPendingRun.IsCompleted || csvAliasDelayedHost.FirstReadPath != "/pool-csv.txt")
+    throw new Exception("CSV alias package consumer did not await paused acquisition.");
+csvAliasDelayedHost.ReleaseRead.TrySetResult();
+var csvAliasAsyncResult = await csvAliasPendingRun.WaitAsync(csvAliasTimeout.Token);
+RequireOutput(csvAliasAsyncResult, string.Concat(Enumerable.Repeat("retained\n", 8)));
+if (csvAliasAsyncResult.ReturnValue?.ToString() != "8" || csvAliasDelayedHost.RetainedCollections != 8
+    || csvAliasDelayedHost.SuspendedOperations < 1)
+    throw new Exception("CSV alias package consumer failed its suspended collection/drop control.");
+
 Console.WriteLine("Package compatibility and mediated file consumer passed.");
 
 static void RequireOutput(LythonExecutionResult result, string expected)
@@ -506,6 +541,7 @@ class PureHost : ILythonHost
 {
     public string Cwd => "/";
     public virtual ILythonTextOutput? StandardError => null;
+    public virtual ILythonTextOutput? StandardOutput => null;
     public DateTimeOffset LocalNow => DateTimeOffset.UnixEpoch;
     public DateTimeOffset UtcNow => DateTimeOffset.UnixEpoch;
     public virtual ValueTask<ReadOnlyMemory<byte>> ReadTextUtf8Async(string path, CancellationToken cancellationToken) => throw new NotSupportedException();
@@ -520,11 +556,15 @@ class PureHost : ILythonHost
     public virtual ValueTask<LythonPathStat> StatAsync(string path, CancellationToken cancellationToken) => ValueTask.FromResult(new LythonPathStat(LythonPathKind.Missing, 0, null));
 }
 
-sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronousHostCapability
+sealed class MemoryHost(bool delayed, bool collectRetainedRows = false) : PureHost, ILythonHost, ILythonSynchronousHostCapability
 {
     public bool CompletesSynchronously => !delayed;
+    private readonly CollectingOutput? _collectingOutput = collectRetainedRows ? new() : null;
+    public override ILythonTextOutput? StandardOutput => _collectingOutput;
+    public int RetainedCollections => _collectingOutput?.Collections ?? 0;
     private readonly Dictionary<string, byte[]> _files = new(StringComparer.Ordinal)
     {
+        ["/pool-csv.txt"] = Encoding.UTF8.GetBytes("a,b,c,d,e,f\n" + string.Concat(Enumerable.Repeat("1,2,3,4,5,6\n", 1000))),
         ["/input.json"] = Encoding.UTF8.GetBytes("{\"value\": 3, \"name\": \"é\"}"),
         ["/zlib-index.txt"] = "1"u8.ToArray(),
         ["/gzip-index.txt"] = "1"u8.ToArray(),
@@ -686,5 +726,24 @@ sealed class WarningOutput(bool delayed) : ILythonTextOutput, ILythonSynchronous
             throw new Exception("Warning payload changed while its host write was suspended.");
     }
 
+    public ValueTask FlushAsync(CancellationToken cancellationToken) => ValueTask.CompletedTask;
+}
+
+sealed class CollectingOutput : ILythonTextOutput, ILythonSynchronousHostCapability
+{
+    private readonly StringBuilder _capture = new();
+    public bool CompletesSynchronously => true;
+    public int Collections { get; private set; }
+    public ValueTask WriteUtf8Async(ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        _capture.Append(Encoding.UTF8.GetString(utf8.Span));
+        if (_capture.ToString().EndsWith("retained\n", StringComparison.Ordinal))
+        {
+            Collections++;
+            GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+        }
+        return ValueTask.CompletedTask;
+    }
     public ValueTask FlushAsync(CancellationToken cancellationToken) => ValueTask.CompletedTask;
 }
