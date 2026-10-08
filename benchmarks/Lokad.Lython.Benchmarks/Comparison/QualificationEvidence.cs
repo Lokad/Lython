@@ -10,8 +10,8 @@ internal sealed record FreshEvidence(bool Lython, int BatchRequestId, FreshProce
 internal sealed class QualificationSession
 {
     public SamplingSession Sampling { get; set; } = new();
-    public JsonElement LythonIdentity { get; set; }
-    public JsonElement PythonIdentity { get; set; }
+    public JsonElement LythonIdentity { get; set; } = JsonSerializer.SerializeToElement<object?>(null);
+    public JsonElement PythonIdentity { get; set; } = JsonSerializer.SerializeToElement<object?>(null);
     public List<VerificationEvidence> Verification { get; set; } = [];
     public List<FreshEvidence> Fresh { get; set; } = [];
     public bool Closed { get; set; }
@@ -128,8 +128,8 @@ internal static class QualificationEvidence
             || row.Sessions.Select(s => s.Sampling.Id).Distinct(StringComparer.Ordinal).Count() != ComparisonPolicy.Sessions)
             reasons.Add("Three distinct complete independent sessions are required.");
         foreach (var engine in new[] { "LythonIdentity", "PythonIdentity" })
-            if (row.Sessions.Select(s => (engine == "LythonIdentity" ? s.LythonIdentity : s.PythonIdentity)
-                .TryGetProperty("processId", out var pid) ? pid.GetInt32() : 0).Where(pid => pid > 0).Distinct().Count() != ComparisonPolicy.Sessions)
+            if (row.Sessions.Select(s => ProcessId(engine == "LythonIdentity" ? s.LythonIdentity : s.PythonIdentity))
+                .Where(pid => pid > 0).Distinct().Count() != ComparisonPolicy.Sessions)
                 reasons.Add("Independent worker process identities are missing or repeated.");
         var statistics = new List<SessionStatistics>();
         foreach (var session in row.Sessions)
@@ -156,6 +156,8 @@ internal static class QualificationEvidence
                     reasons.Add("Job is dominated by the invocation control in session " + (i + 1) + ".");
         }
         return new(reasons.Count == 0 ? "Qualified" : "Unqualified", reasons.Distinct(StringComparer.Ordinal).ToArray(), [.. statistics]);
+        static int ProcessId(JsonElement identity) => identity.ValueKind == JsonValueKind.Object
+            && identity.TryGetProperty("processId", out var pid) && pid.TryGetInt32(out var value) ? value : 0;
     }
 
     public static bool CompleteCampaign(QualificationReceipt receipt)

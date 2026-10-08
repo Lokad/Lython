@@ -151,6 +151,24 @@ public sealed class ComparisonSamplingTests
         Assert.DoesNotContain("overall speedup: 2", report);
     }
 
+    [Fact]
+    public async Task CheckpointBeforeWorkerStartupSerializesAndRendersAsIncomplete()
+    {
+        var receipt = await ReceiptAsync(); receipt.State = "Running";
+        receipt.Cases[0].State = "Running"; receipt.Cases[0].Sessions = [new QualificationSession()];
+        var path = Path.Combine(Path.GetTempPath(), "lython-pending-" + Guid.NewGuid().ToString("N") + ".json");
+        try
+        {
+            ComparisonVerifyCommand.WriteAtomic(path, receipt);
+            var restored = ComparisonReportCommand.ReadReceipt(path);
+            Assert.Equal(JsonValueKind.Null, restored.Cases[0].Sessions[0].LythonIdentity.ValueKind);
+            Assert.Equal(JsonValueKind.Null, restored.Cases[0].Sessions[0].PythonIdentity.ValueKind);
+            var report = ComparisonReportCommand.Render(restored, "test");
+            Assert.Contains("Partial or invalid evidence", report); Assert.DoesNotContain("| Qualified |", report);
+        }
+        finally { File.Delete(path); }
+    }
+
     [Theory]
     [InlineData("partial")]
     [InlineData("dirty")]
