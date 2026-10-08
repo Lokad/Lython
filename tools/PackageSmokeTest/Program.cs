@@ -84,6 +84,12 @@ if (!xmlScript.IsValid) throw new Exception(string.Join("; ", xmlScript.Diagnost
 foreach (var result in new[] { xmlScript.Run(new PureHost()), await xmlScript.RunAsync(new PureHost()) })
     RequireOutput(result, "r {'a': '\u20ac'} '\u00e9\u20ac'\nr 'before' ['{https://example.test/ns}x', '{https://example.test/ns}x'] 'after'\nTrue ['1', '2']\nTrue xml.etree.ElementTree True\nTrue\nTrue True\n");
 
+const string zlibSource = "import zlib,gzip,struct\nfor data in [\n    b'',b'hello hello',bytes(range(256))]:\n    encoded=zlib.compress(data,level=7)\n    print(encoded[0],encoded[1]>>6,zlib.decompress(encoded)==data)\nprint(gzip.decompress(gzip.compress(b'',mtime=0)))\nframe=struct.pack('>I',4)+zlib.compress(b'four')\nprint(struct.unpack('>I',frame[:4]),zlib.decompress(frame[4:]+b'unused'))\nprint(zlib.compress.__name__,type(zlib.compress).__name__,zlib.error.__bases__[0] is Exception)\nfor data in [b'bad',zlib.compress(b'one')[:-1]]:\n    try: zlib.decompress(data)\n    except zlib.error as error: print(type(error) is zlib.error)\n";
+var zlibScript = engine.Compile(zlibSource);
+if (!zlibScript.IsValid) throw new Exception(string.Join("; ", zlibScript.Diagnostics.Select(d => d.Message)));
+foreach (var result in new[] { zlibScript.Run(new PureHost()), await zlibScript.RunAsync(new PureHost()) })
+    RequireOutput(result, "120 3 True\n120 3 True\n120 3 True\nb''\n(4,) b'four'\ncompress builtin_function_or_method True\nTrue\nTrue\n");
+
 const string windows1252Source = """
     data=bytes([i for i in range(256) if i not in [129,141,143,144,157]])
     text=data.decode('cp1252')
@@ -409,6 +415,26 @@ RequireOutput(await xmlPendingRun.WaitAsync(xmlTimeout.Token), xmlFileOutput);
 xmlDelayedHost.VerifyXmlFiles();
 if (xmlDelayedHost.SuspendedOperations < 2) throw new Exception("XML consumer did not suspend twice.");
 
+const string zlibFileSource = "import zlib,json,struct\nfrom pathlib import Path\nclass Index:\n    def __init__(self,label,value):\n        self.label=label\n        self.value=value\n    def __index__(self):\n        with open('/zlib-index.txt') as file: seed=file.read()\n        print('index',self.label,seed)\n        return self.value\nlevel=Index('level',1)\nlevel.__index__=lambda: 9\ncompressed=bytes.fromhex('789cab56ca4bcc4d55b252503abcf2dcca0ff3673428e9282825e797e69500058d6b01d3f90c4c')\nraw=zlib.decompress(compressed,Index('window',15),Index('buffer',1))\nprint(json.loads(raw.decode('utf-8')))\nagain=zlib.compress(raw,level,Index('window',15))\nframe=struct.pack('>I',len(raw))+again\nprint(struct.unpack('>I',frame[:4]),zlib.decompress(frame[4:])==raw)\nprint(Path('/zlib-output.bin').write_bytes(zlib.decompress(frame[4:])))\n";
+var zlibFiles = engine.Compile(zlibFileSource);
+if (!zlibFiles.IsValid) throw new Exception(string.Join("; ", zlibFiles.Diagnostics.Select(d => d.Message)));
+const string zlibFileOutput = "index window 1\nindex buffer 1\n{'name': '\u00e9\u03a9\ud83d\ude00', 'count': 3}\nindex level 1\nindex window 1\n(32,) True\n32\n";
+var zlibSyncHost = new MemoryHost(delayed: false);
+RequireOutput(zlibFiles.Run(zlibSyncHost), zlibFileOutput);
+zlibSyncHost.VerifyZlibFiles();
+var zlibDelayedHost = new MemoryHost(delayed: true);
+using var zlibTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+var zlibPendingRun = zlibFiles.RunAsync(zlibDelayedHost, new LythonRunOptions { CancellationToken = zlibTimeout.Token });
+await zlibDelayedHost.ReadStarted.Task.WaitAsync(zlibTimeout.Token);
+if (zlibPendingRun.IsCompleted) throw new Exception("Zlib option conversion did not suspend.");
+zlibDelayedHost.ReleaseRead.TrySetResult();
+await zlibDelayedHost.WriteStarted.Task.WaitAsync(zlibTimeout.Token);
+if (zlibPendingRun.IsCompleted) throw new Exception("Zlib publication did not suspend.");
+zlibDelayedHost.ReleaseWrite.TrySetResult();
+RequireOutput(await zlibPendingRun.WaitAsync(zlibTimeout.Token), zlibFileOutput);
+zlibDelayedHost.VerifyZlibFiles();
+if (zlibDelayedHost.SuspendedOperations < 2) throw new Exception("Zlib consumer did not suspend twice.");
+
 Console.WriteLine("Package compatibility and mediated file consumer passed.");
 
 static void RequireOutput(LythonExecutionResult result, string expected)
@@ -440,6 +466,7 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
     private readonly Dictionary<string, byte[]> _files = new(StringComparer.Ordinal)
     {
         ["/input.json"] = Encoding.UTF8.GetBytes("{\"value\": 3, \"name\": \"é\"}"),
+        ["/zlib-index.txt"] = "1"u8.ToArray(),
         ["/xml-index.txt"] = "1"u8.ToArray(),
         ["/struct-index.txt"] = "514"u8.ToArray(),
         ["/struct-float.txt"] = "1.5"u8.ToArray(),
@@ -505,6 +532,12 @@ sealed class MemoryHost(bool delayed) : PureHost, ILythonHost, ILythonSynchronou
         if (!_files["/output.json"].AsSpan().SequenceEqual("{\"name\": \"é\", \"value\": 3}"u8)
             || !_files["/pending.txt"].AsSpan().SequenceEqual("final 😀 bytes\n"u8))
             throw new Exception("Package file publication produced incorrect bytes.");
+    }
+
+    public void VerifyZlibFiles()
+    {
+        if (!_files["/zlib-output.bin"].AsSpan().SequenceEqual(Convert.FromHexString("7b226e616d65223a2022c3a9cea9f09f9880222c2022636f756e74223a20337d")))
+            throw new Exception("Zlib package consumer produced incorrect bytes.");
     }
 
     public void VerifyXmlFiles()
