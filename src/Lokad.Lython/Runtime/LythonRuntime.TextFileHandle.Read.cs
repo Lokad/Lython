@@ -747,14 +747,14 @@ internal sealed partial class LythonRuntime
                 }
                 else if (_encoding == TextEncodingMode.Latin1)
                 {
-                    decoded = Encoding.UTF8.GetString(DecodeLatin1ToBytes(source, _newline));
+                    decoded = Encoding.UTF8.GetString(DecodeLatin1ToBytes(source, _newline, _context.State.Guards, null));
                 }
                 else
                 {
-                    decoded = DecodeUtf8ToString(source, _errors, null);
+                    decoded = DecodeUtf8ToString(source, _errors, null, _context.State.Guards);
                     if (_newline == TextNewlineMode.TranslateUniversal)
                     {
-                        decoded = NormalizeNewlineString(decoded);
+                        decoded = NormalizeNewlineString(decoded, _context.State.Guards);
                     }
                 }
 

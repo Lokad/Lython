@@ -238,10 +238,11 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan? span,
         TextErrorMode errors,
         TextNewlineMode newline)
-        => DecodeUtf8Text(utf8, context.MemoryGovernor, span, errors, newline);
+        => DecodeUtf8Text(utf8, context.MemoryGovernor, span, errors, newline, context.State.Guards);
 
-    internal static PyString DecodeUtf8Text(ReadOnlyMemory<byte> utf8, MemoryGovernor governor, LythonSourceSpan? span)
-        => DecodeUtf8Text(utf8, governor, span, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal);
+    internal static PyString DecodeUtf8Text(ReadOnlyMemory<byte> utf8, MemoryGovernor governor,
+        LythonSourceSpan? span, ExecutionGuards? guards = null)
+        => DecodeUtf8Text(utf8, governor, span, TextErrorMode.Strict, TextNewlineMode.TranslateUniversal, guards);
 
     internal static PyString DecodeUtf8Text(ReadOnlyMemory<byte> utf8, MemoryGovernor governor, LythonSourceSpan? span, TextErrorMode errors)
         => DecodeUtf8Text(utf8, governor, span, errors, TextNewlineMode.TranslateUniversal);
@@ -251,8 +252,10 @@ internal sealed partial class LythonRuntime
         MemoryGovernor governor,
         LythonSourceSpan? span,
         TextErrorMode errors,
-        TextNewlineMode newline)
+        TextNewlineMode newline,
+        ExecutionGuards? guards = null)
     {
+        guards?.CheckExecution(span);
         if (utf8.Length == 0)
         {
             return PyString.Empty;
@@ -263,6 +266,7 @@ internal sealed partial class LythonRuntime
             try
             {
                 _ = StrictUtf8.GetCharCount(utf8.Span);
+                guards?.CheckExecution(span);
             }
             catch (DecoderFallbackException ex)
             {
@@ -291,8 +295,8 @@ internal sealed partial class LythonRuntime
             governor.EnsureCanReserve(32L + utf8.Length, span);
         }
 
-        var decoded = DecodeUtf8ToString(utf8.Span, errors, span);
-        decoded = newline == TextNewlineMode.TranslateUniversal ? NormalizeNewlineString(decoded) : decoded;
+        var decoded = DecodeUtf8ToString(utf8.Span, errors, span, guards);
+        decoded = newline == TextNewlineMode.TranslateUniversal ? NormalizeNewlineString(decoded, guards, span) : decoded;
         return decoded.Length == 0
             ? PyString.Empty
             : PyString.FromString(decoded, governor, span);
@@ -350,7 +354,7 @@ internal sealed partial class LythonRuntime
         // transient before decoding so an undersized budget fails before the
         // host-sized allocation, matching the previous gate-first order.
         context.MemoryGovernor.EnsureCanReserve(PyString.EstimateApproximateBytes(checked(2 * payload.Length)), span);
-        var utf8 = DecodeLatin1ToBytes(payload.Span, newline);
+        var utf8 = DecodeLatin1ToBytes(payload.Span, newline, context.State.Guards, span);
         context.MemoryGovernor.EnsureCanReserve(PyString.EstimateApproximateBytes(utf8.Length), span);
         return PyString.FromOwnedUtf8(utf8, context.MemoryGovernor, span);
     }
@@ -360,11 +364,14 @@ internal sealed partial class LythonRuntime
     // carry, only the universal-newline carriage-return holdback applied by
     // the caller. Chunked readers reuse this so latin-1 cannot drift from
     // whole-buffer decoding.
-    private static byte[] DecodeLatin1ToBytes(ReadOnlySpan<byte> source, TextNewlineMode newline)
+    private static byte[] DecodeLatin1ToBytes(ReadOnlySpan<byte> source, TextNewlineMode newline,
+        ExecutionGuards guards, LythonSourceSpan? span)
     {
         var outputLength = 0;
+        var work = 0;
         for (var i = 0; i < source.Length; i++)
         {
+            if ((work++ & 1023) == 0) guards.CheckExecution(span);
             if (newline == TextNewlineMode.TranslateUniversal && source[i] == (byte)'\r')
             {
                 if (i + 1 < source.Length && source[i + 1] == (byte)'\n')
@@ -381,8 +388,10 @@ internal sealed partial class LythonRuntime
 
         var utf8 = new byte[outputLength];
         var offset = 0;
+        work = 0;
         for (var i = 0; i < source.Length; i++)
         {
+            if ((work++ & 1023) == 0) guards.CheckExecution(span);
             var value = source[i];
             if (newline == TextNewlineMode.TranslateUniversal && value == (byte)'\r')
             {
@@ -433,6 +442,7 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan? span,
         bool outputAlreadyFunded = false)
     {
+        context.CheckExecution(span);
         if (IsUtf16Encoding(encoding)) return EncodeUtf16Text(text, encoding, newline, context, span, outputAlreadyFunded);
         if (IsSingleByteEncoding(encoding))
         {
@@ -443,8 +453,10 @@ internal sealed partial class LythonRuntime
         var newlineExpansion = 0;
         if (newline == TextNewlineMode.PreserveCarriageReturnLineFeed)
         {
+            var work = 0;
             foreach (var value in source)
             {
+                if ((work++ & 1023) == 0) context.CheckExecution(span);
                 if (value == (byte)'\n')
                 {
                     newlineExpansion++;
@@ -471,8 +483,10 @@ internal sealed partial class LythonRuntime
             return bytes;
         }
 
+        var copyWork = 0;
         foreach (var value in source)
         {
+            if ((copyWork++ & 1023) == 0) context.CheckExecution(span);
             if (value != (byte)'\n')
             {
                 bytes[offset++] = value;
@@ -599,7 +613,8 @@ internal sealed partial class LythonRuntime
             span);
     }
 
-    private static string DecodeUtf8ToString(ReadOnlySpan<byte> utf8, TextErrorMode errors, LythonSourceSpan? span)
+    private static string DecodeUtf8ToString(ReadOnlySpan<byte> utf8, TextErrorMode errors,
+        LythonSourceSpan? span, ExecutionGuards? guards = null)
     {
         if (errors == TextErrorMode.Strict)
         {
@@ -614,8 +629,10 @@ internal sealed partial class LythonRuntime
         }
 
         var builder = new StringBuilder(utf8.Length);
+        var work = 0;
         for (var i = 0; i < utf8.Length;)
         {
+            if ((work++ & 1023) == 0) guards?.CheckExecution(span);
             if (TryDecodeUtf8Rune(utf8[i..], out var rune, out var validLength, out var invalidLength))
             {
                 builder.Append(rune.ToString());
@@ -741,7 +758,8 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static string NormalizeNewlineString(string text)
+    private static string NormalizeNewlineString(string text, ExecutionGuards? guards = null,
+        LythonSourceSpan? span = null)
     {
         if (!text.Contains('\r', StringComparison.Ordinal))
         {
@@ -749,8 +767,10 @@ internal sealed partial class LythonRuntime
         }
 
         var builder = new StringBuilder(text.Length);
+        var work = 0;
         for (var i = 0; i < text.Length; i++)
         {
+            if ((work++ & 1023) == 0) guards?.CheckExecution(span);
             if (text[i] == '\r')
             {
                 if (i + 1 < text.Length && text[i + 1] == '\n')
