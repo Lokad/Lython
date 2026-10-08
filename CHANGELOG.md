@@ -4,6 +4,7 @@
 
 ## 0.10.0 - release candidate
 
+- Measure suite indentation from logical lines, including compound headers whose closing delimiter shares a continuation line.
 - Add contained ElementTree parsing, independently governed node/text/map aliases, simple namespace-aware child selectors, Python byte-declaration behavior, awaited index conversions and catchable ParseError identity.
 - Expose stable, governed direct-base tuples for supported exception type objects.
 - Add governed portable struct packing/unpacking, standard byte orders, IEEE half/single/double fields, Python conversion slots, lazy record cursors and distinct struct.error identity.

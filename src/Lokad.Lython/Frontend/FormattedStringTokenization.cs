@@ -8,6 +8,7 @@ internal static class FormattedStringTokenization
     {
         char[]? masked = null;
         var afterBackslash = false;
+        var delimiterDepth = 0;
         for (var i = 0; i < source.Length; i++)
         {
             if (i == 0 || source[i - 1] == '\n')
@@ -37,7 +38,26 @@ internal static class FormattedStringTokenization
             else if (source[i] is not ' ' and not '\t') afterBackslash = false;
             if (source[i] == '#')
             {
+                var commentStart = i;
                 while (i < source.Length && source[i] != '\n') i++;
+                if (delimiterDepth > 0)
+                {
+                    masked ??= source.ToCharArray();
+                    // A joined newline must not let the generic comment rule
+                    // consume the following physical line.
+                    Array.Fill(masked, ' ', commentStart, i - commentStart);
+                    if (i < source.Length) masked[i] = '\r';
+                }
+                continue;
+            }
+            if (source[i] == '\n' && delimiterDepth > 0 &&
+                (i == 0 || source[i - 1] != '\\'))
+            {
+                masked ??= source.ToCharArray();
+                // Python measures indentation at the start of the logical line.
+                // Preserve offsets while hiding joined physical newlines from
+                // the generic indentation lexer.
+                masked[i] = '\r';
                 continue;
             }
             var prefixLength = 0;
@@ -60,9 +80,18 @@ internal static class FormattedStringTokenization
                     i = end - 1;
                     continue;
                 }
+                // Leave malformed literal newlines visible to the string lexer.
+                // They are not joined newlines in the surrounding expression.
+                break;
             }
-            if (source[i] is '\'' or '"' && TryFindEnd(source, i, formatted: false, out var plainEnd, out _))
+            if (source[i] is '\'' or '"')
+            {
+                if (!TryFindEnd(source, i, formatted: false, out var plainEnd, out _)) break;
                 i = plainEnd - 1;
+                continue;
+            }
+            if (source[i] is '(' or '[' or '{') delimiterDepth++;
+            else if (source[i] is ')' or ']' or '}' && delimiterDepth > 0) delimiterDepth--;
         }
         var lexed = new ReflectionTokenReader<Token>().ReadAllTokens(masked is null ? source : new string(masked));
         if (masked is null) return lexed;
