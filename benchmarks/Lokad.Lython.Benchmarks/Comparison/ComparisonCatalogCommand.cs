@@ -33,7 +33,7 @@ internal static class ComparisonCatalogCommand
         }
         if (arguments.Length == 0 || arguments[0] != "list")
         {
-            Console.Error.WriteLine("Usage: --compare list | worker | once | verify | smoke-fresh | check-machine | qualify | render-report (see benchmarks/COMPARISON.md)");
+            Console.Error.WriteLine("Usage: --compare list | worker | once | verify | smoke-fresh | micro | check-machine | qualify | render-report (see benchmarks/COMPARISON.md)");
             return 2;
         }
 

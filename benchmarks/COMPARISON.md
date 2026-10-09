@@ -12,6 +12,11 @@ completed in 2m13s. Its separate CPU profile identifies interpreter dispatch
 as the leading design investigation; strict stability checks still withhold
 qualified comparative multipliers.
 
+The [first synchronous dispatch improvement](results/2026-10-09-sync-dispatch/README.md)
+used two short collections of about seven seconds each. Their diagnostic medians
+show 13.4–14.0% less time on the 16,384-iteration loop, with correctness checks
+passing and milestone qualification deferred.
+
 Ordinary improvement rounds use the short `micro` command below. Full lanes
 are reserved for occasional declared milestones, with their existing ten-minute
 cap and qualification rules. Microbenchmarks provide diagnostic feedback in
