@@ -1,10 +1,24 @@
 # Lython and CPython comparison contract
 
-Specification version **1**, established before comparative timing. The catalog
+Specification version **2**, established before the shortened comparative run. The catalog
 and explicit correctness check are available. Persistent worker primitives are
 available, including supervised correctness/timer smokes, paired collection,
 machine checks and raw-evidence report rendering.
 No qualified baseline is claimed.
+
+The primary run has a hard **10-minute wall budget per lane**, including
+preparation, verification, noise waits, retries and worker cleanup. Build and
+install toolchains beforehand; render reports offline afterward. Four lanes
+therefore consume at most **40 minutes** of VM collection. Policy v1's full
+131-case run was stopped because its sampling schedule took hours per lane;
+its partial evidence is retained separately and is not mixed with v2.
+
+The quick profile selects **12 workloads plus two controls** before timing:
+integer loops at medium/large scale, keyword calls, stable sort, tuple-key
+dictionaries, generator drain, supplementary Unicode scanning, ASCII text
+pipeline, JSON roundtrip, retained CSV rows, XML selection and zlib. The full
+131-case catalog remains a correctness suite; this smaller baseline cannot
+establish broad scaling or coverage of every supported library.
 
 The primary question is how long the same supported Python job takes through a
 warm public Lython invocation and a warm CPython invocation on the same machine.
@@ -299,16 +313,16 @@ collection and eligibility checks below.
 
 The initial measurement policy is fixed before timing:
 
-- Five one-second idle CPU windows: at most **3% median / 5% maximum** background
+- One half-second idle CPU window: at most **3% median / 5% maximum** background
   activity. Settle and recheck between every pair. Unsupported accounting cannot
-  qualify; busy runs checkpoint and stop. Record steal time, throttling, paging
+  qualify; an affected case is excluded without rerunning it. Record steal time, throttling, paging
   and memory pressure where observable. No tests, builds or other campaigns run
   on the VM during collection.
-- Warm persistent workers for at least **32 successful invocations and one second**.
+- Warm workers for at least **8 successful invocations and 100 ms**.
   Keep normal .NET tiering and CPython specialization. Calibrate the lanes
-  independently, using two confirming batches of at least **40 ms**; retain only
-  measured batches lasting at least **20 ms**. Record counts and ceilings.
-- **11 sequential paired batches**, balanced alternating AB/BA, in at least
+  independently, using two confirming batches of at least **10 ms**; retain only
+  measured batches lasting at least **5 ms**. Record counts and ceilings.
+- **7 sequential paired batches**, balanced alternating AB/BA, in at least
   **three independent worker sessions**. Balance starting order between sessions.
   Retain all samples and session identities, including slow or failed attempts.
 - Record absolute per-invocation medians. Ratio is CPython time / Lython time.
@@ -323,7 +337,7 @@ The initial measurement policy is fixed before timing:
   Do not weaken thresholds to obtain publishable results. Controls and jobs
   dominated by harness overhead remain visible without a speedup claim.
 
-Policy v1 freezes finite invocation/batch/case/campaign deadlines,
+Policy/eligibility v2 freezes finite invocation/batch/case/campaign deadlines,
 iteration ceilings, case order and protocol size caps in its versioned manifest
 before measurements. A ceiling or interrupted campaign does not relax eligibility.
 Do not force GC or inherit timeit's default cyclic-GC suppression.
@@ -338,26 +352,31 @@ x86_64 profile above; correctness smokes remain available on Windows and Linux.
 
 ```text
 <dotnet> <benchmark.dll> --compare check-machine --out <machine.json>
-<dotnet> <benchmark.dll> --compare qualify --catalog <catalog.json> --dotnet <absolute-dotnet> --python <absolute-python> --python-worker <cpython-worker.py> --toolchains <toolchains.json> --out <receipt.json> --case loops.integer.large,csv.retain.large --lane warm
+<dotnet> <benchmark.dll> --compare list --profile quick --out <catalog.json>
+<dotnet> <benchmark.dll> --compare qualify --catalog <catalog.json> --dotnet <absolute-dotnet> --python <absolute-python> --python-worker <cpython-worker.py> --toolchains <toolchains.json> --out <receipt.json> --case quick --lane warm
 <dotnet> <benchmark.dll> --compare render-report --receipt <receipt.json> --out <report.md>
 ```
 
-Use `--compare list` to obtain exact case IDs. `--case all` is the default;
+Use `--compare list` to obtain all correctness case IDs, or `--profile quick`
+for the fixed 14-case timing manifest. `--case quick` is the default;
+explicit `all` or comma-separated selections retain the same ten-minute ceiling.
 `--lane` accepts `warm` (default), `compile-run`, `compile` and `fresh-process`.
 The empty and tiny controls always precede selected cases. Each case gets three
-independent sessions, eleven pairs per session, and a reversed 6/5 starting-order
+independent sessions, seven pairs per session, and a reversed 4/3 starting-order
 split in the middle session. Each lane calibrates its own fixed iteration count.
 Post-warmup verification reuses the compiled code, preserving specialization.
 Fresh batches sum parent launch-to-drain times for independent exactly-once
 processes; their individual identities/results remain in the receipt.
 
-Policy/eligibility v1 uses 10,000 intact-pair bootstrap resamples with seed 1729,
+Policy/eligibility v2 uses 10,000 intact-pair bootstrap resamples with seed 1729,
 explicit xorshift32/rejection-index sampling and linear `(n-1)*p` quantiles.
 It retains session medians and intervals separately. No aggregate interval is
 computed. The common invocation ceiling is 1,000,000; warmup is capped at twelve
 batches and calibration at eight. Worker deadlines are 30 seconds at startup,
-65 per request/parent batch and five at shutdown; each case has 900 seconds and
-each campaign 24 hours. Receipt reads are capped at 512 MiB to retain the full
+65 per request/parent batch and five at shutdown, further bounded by the remaining
+case/lane time; each case has **45 seconds** and each lane has **600 seconds**.
+Ten seconds are reserved for cleanup. The original start time is retained on
+resumption, and over-budget evidence cannot qualify. Receipt reads are capped at 512 MiB to retain the full
 catalog's gates and individual fresh-process observations within a finite bound.
 
 To exclude jobs dominated by invocation overhead, each lane's per-job median
@@ -374,9 +393,22 @@ references: [CPU accounting](https://docs.kernel.org/filesystems/proc.html),
 [pressure totals](https://docs.kernel.org/accounting/psi.html) and
 [cgroup throttling](https://docs.kernel.org/admin-guide/cgroup-v2.html).
 
+`run-comparison-linux.sh` runs one lane with at most three attempts and a
+five-second wait after initial/final noise. The original wall deadline includes
+all attempts. Run it in a dedicated systemd service with `RuntimeMaxSec=600`,
+`TimeoutStopSec=0` and `KillMode=control-group`; this hard limit also covers
+stuck processes and descendants. Supply absolute .NET/Python/toolchain paths,
+an output directory, a common VM lock file and the lane name as positional
+arguments. Collect lanes sequentially, with no builds/tests/transfers during
+timing, then render receipts offline. Do not extend the budget after a timeout.
+
+Shorter warmup may leave runtime specialization in progress, and seven pairs
+provide less statistical evidence. Stability, semantic and overhead thresholds
+are retained; the smaller run may legitimately produce more exclusions.
+
 The collector checkpoints raw warmup, calibration, gates, pair order, every
 completed/failed batch, correctness checks and provenance atomically. Exit 3
-means noise stopped collection; exit 1 means failure/interruption, and exit 2
+means initial/final noise stopped the attempt; exit 1 means failure/interruption, and exit 2
 means invalid arguments. A completed collection can contain Unqualified rows.
 Only fully eligible rows expose ratios. The renderer recalculates from raw
 counters, responses and samples; stored eligibility/statistics flags are advisory.

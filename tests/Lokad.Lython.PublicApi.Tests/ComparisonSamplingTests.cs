@@ -7,6 +7,38 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class ComparisonSamplingTests
 {
     [Fact]
+    public void QuickCatalogRetainsIndependentGoldensAndTheTwoInvocationControls()
+    {
+        var full = WorkloadCatalog.Create().ToDictionary(w => w.Id);
+        var quick = ComparisonPolicy.QuickCaseIds.Select(id => full[id]).ToArray();
+        Assert.Equal(14, quick.Length);
+        Assert.Equal(quick.Length, quick.Select(w => w.Id).Distinct().Count());
+        Assert.All(quick.Take(2), w => Assert.Equal("control", w.Category));
+        Assert.All(quick.Skip(2), w => Assert.NotEqual("control", w.Category));
+        Assert.All(quick, w => Assert.Equal(w.ExpectedOutputSha256, ComparisonProtocol.Digest(w.ExpectedOutput)));
+        Assert.Contains(quick, w => w.Id == "loops.integer.medium");
+        Assert.Contains(quick, w => w.Id == "loops.integer.large");
+    }
+
+    [Fact]
+    public async Task LaneBudgetCoversRetriesAndOverBudgetEvidenceCannotQualify()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var start = now.AddSeconds(-500);
+        Assert.Equal(TimeSpan.FromSeconds(90), ComparisonQualificationCommand.RemainingCollectionTime(start, now));
+        Assert.Throws<InvalidDataException>(() => ComparisonQualificationCommand.RemainingCollectionTime(now.AddSeconds(-590), now));
+        Assert.Throws<InvalidDataException>(() => ComparisonQualificationCommand.RemainingCollectionTime(now.AddSeconds(1), now));
+        var previous = await ReceiptAsync();
+        previous.State = "Busy"; previous.Started = now.AddSeconds(-601);
+        var next = NextAttempt(previous);
+        Assert.Throws<InvalidDataException>(() => ComparisonQualificationCommand.RestoreForResume(previous, next));
+        Assert.All(next.Cases, row => Assert.Empty(row.Sessions));
+        previous.State = "Completed"; previous.Updated = now;
+        Assert.False(QualificationEvidence.CompleteCampaign(previous));
+        Assert.DoesNotContain("| Qualified |", ComparisonReportCommand.Render(previous, "test"));
+    }
+
+    [Fact]
     public void StablePairsHaveExactKnownRatioAndDeterministicInterval()
     {
         var pairs = Pairs(i => (.001, .002));
@@ -19,7 +51,7 @@ public sealed class ComparisonSamplingTests
     [Fact]
     public void IntervalCrossingParityHasNoWinner()
     {
-        var result = ComparisonStatistics.Evaluate(Pairs(i => (.001, .001 * (1 + (i - 5) * .002))), true);
+        var result = ComparisonStatistics.Evaluate(Pairs(i => (.001, .001 * (1 + (i - ComparisonPolicy.Pairs / 2) * .002))), true);
         Assert.True(result.Qualified); Assert.Equal("No winner", result.Winner);
     }
 
@@ -45,9 +77,9 @@ public sealed class ComparisonSamplingTests
     }
 
     [Fact]
-    public void PairOrderingReversesTheSixFiveSplitAcrossIndependentSessions()
+    public void PairOrderingReversesTheFourThreeSplitAcrossIndependentSessions()
     {
-        Assert.Equal(new[] { 6, 5, 6 }, Enumerable.Range(0, 3).Select(s => Enumerable.Range(0, 11).Count(p => ComparisonPolicy.LythonFirst(s, p))));
+        Assert.Equal(new[] { 4, 3, 4 }, Enumerable.Range(0, 3).Select(s => Enumerable.Range(0, ComparisonPolicy.Pairs).Count(p => ComparisonPolicy.LythonFirst(s, p))));
         Assert.Equal(2.5, ComparisonStatistics.Quantile(new[] { 4d, 1d, 3d, 2d }, .5));
         Assert.Equal(1.75, ComparisonStatistics.Quantile(new[] { 4d, 1d, 3d, 2d }, .25));
     }
@@ -88,10 +120,10 @@ public sealed class ComparisonSamplingTests
     }
 
     [Fact]
-    public void QuietGateRequiresFiveFullWindowsAndAcceptsExplicitlyUnavailableOptionalCounters()
+    public void QuietGateRequiresCompleteWindowsAndAcceptsExplicitlyUnavailableOptionalCounters()
     {
         Assert.True(Quiet().Quiet);
-        Assert.False(QuietMachineProbe.Evaluate(Quiet().Windows.Take(4)).Quiet);
+        Assert.False(QuietMachineProbe.Evaluate(Quiet().Windows.Take(ComparisonPolicy.IdleWindows - 1)).Quiet);
         var windows = Quiet().Windows;
         windows[0] = windows[0] with { After = windows[0].After with { Timestamp = windows[0].Before.Timestamp + 999 } };
         Assert.False(QuietMachineProbe.Evaluate(windows).Quiet);
@@ -104,9 +136,9 @@ public sealed class ComparisonSamplingTests
         await PairedSampler.RunAsync(trace, (left, count, _) => Task.FromResult(Response(count, count * (left ? .01 : .02))),
             new FakeMachine(), () => checkpoints++, default, _ => { hookCalled = true; Assert.Empty(trace.LythonCalibration); return Task.CompletedTask; });
         Assert.True(hookCalled); Assert.Equal("Measured", trace.State); Assert.True(trace.Statistics!.Qualified);
-        Assert.Equal(11, trace.Pairs.Count); Assert.Equal(5, trace.Pairs.Count(p => p.LythonFirst));
-        Assert.Equal(trace.LythonWarmup.Count + trace.PythonWarmup.Count + trace.LythonCalibration.Count + trace.PythonCalibration.Count + 22, trace.Attempts.Count);
-        Assert.True(checkpoints >= 16); Assert.True(PairedSampler.Evaluate(trace, true).Qualified);
+        Assert.Equal(ComparisonPolicy.Pairs, trace.Pairs.Count); Assert.Equal(3, trace.Pairs.Count(p => p.LythonFirst));
+        Assert.Equal(trace.LythonWarmup.Count + trace.PythonWarmup.Count + trace.LythonCalibration.Count + trace.PythonCalibration.Count + 2 * ComparisonPolicy.Pairs, trace.Attempts.Count);
+        Assert.True(checkpoints >= ComparisonPolicy.Pairs + 7); Assert.True(PairedSampler.Evaluate(trace, true).Qualified);
     }
 
     [Fact]
@@ -253,6 +285,7 @@ public sealed class ComparisonSamplingTests
         ComparisonQualificationCommand.RestoreForResume(previous, next);
 
         Assert.Same(previous.Cases[0], next.Cases[0]);
+        Assert.Equal(previous.Started, next.Started);
         Assert.True(ReferenceEquals(excluded, next.Cases[1]), "Finished exclusion proof must be retained.");
         Assert.Equal("BudgetDenied", next.Cases[1].Sessions[0].Sampling.Attempts[0].Batch.Response.Status);
         Assert.Same(excluded.Payload, next.Cases[1].Payload);
@@ -396,7 +429,7 @@ public sealed class ComparisonSamplingTests
 
     internal static QuietEvidence Quiet()
     {
-        return QuietMachineProbe.Evaluate(Enumerable.Range(0, 5).Select(i => QuietMachineProbe.Compare(Snapshot(i * 1000, (ulong)i * 100), Snapshot((i + 1) * 1000, (ulong)(i + 1) * 100))));
+        return QuietMachineProbe.Evaluate(Enumerable.Range(0, ComparisonPolicy.IdleWindows).Select(i => QuietMachineProbe.Compare(Snapshot(i * 1000, (ulong)i * 100), Snapshot((i + 1) * 1000, (ulong)(i + 1) * 100))));
     }
     internal static MachineSnapshot Snapshot(long timestamp, ulong idle) => new(DateTimeOffset.UnixEpoch, timestamp * 1_000_000, 1_000_000_000,
         [0, 0, 0, idle, 0, 0, 0, 0], new(StringComparer.Ordinal)
@@ -404,7 +437,7 @@ public sealed class ComparisonSamplingTests
             ["memory.full.total_us"] = null, ["throttled:/sys/fs/cgroup"] = null }, "/");
     private static WorkerResponse Response(int count, double seconds) => new(1, 1, "test", "Completed", count, (long)Math.Round(seconds * 1_000_000_000),
         1_000_000_000, "source", "fixture", "expected", "expected", null);
-    private static List<TimedPair> Pairs(Func<int, (double Left, double Right)> times) => Enumerable.Range(0, 11)
+    private static List<TimedPair> Pairs(Func<int, (double Left, double Right)> times) => Enumerable.Range(0, ComparisonPolicy.Pairs)
         .Select(i => new TimedPair(i, ComparisonPolicy.LythonFirst(0, i), times(i).Left, times(i).Right)).ToList();
     private sealed class FakeMachine : ISamplingMachine
     {
@@ -424,6 +457,7 @@ public sealed class ComparisonSamplingTests
         var next = JsonSerializer.Deserialize<QualificationReceipt>(JsonSerializer.Serialize(previous, ComparisonProtocol.JsonOptions),
             ComparisonProtocol.JsonOptions)!;
         next.Id = Guid.NewGuid().ToString("N");
+        next.Started = DateTimeOffset.UtcNow;
         next.State = "Running";
         next.Cases = next.Cases.Select(row => new QualificationCase { Workload = row.Workload }).ToList();
         next.After = null;
@@ -446,7 +480,7 @@ public sealed class ComparisonSamplingTests
             memInfo = "MemTotal: 16384000 kB\n", clockSource = "tsc", product = "VM", virtualizationVendor = "Microsoft",
             governor = (string?)null, osRelease = "Ubuntu", swaps = "Filename Type Size Used Priority", cgroup = "0::/", allowedCpus = "0-3", hostname = "test", bootId = "test" });
         var files = new[] { "/library", "/adapter", "/core", "/python", "/helper" }.Select(p => new ComparisonVerifyCommand.BinaryIdentity(p, hash)).ToList();
-        var receipt = new QualificationReceipt { SchemaVersion = 1, ProtocolVersion = 1, PolicyVersion = 1, EligibilityVersion = 1,
+        var receipt = new QualificationReceipt { SchemaVersion = 1, ProtocolVersion = 1, PolicyVersion = ComparisonPolicy.Version, EligibilityVersion = ComparisonPolicy.EligibilityVersion,
             Id = Guid.NewGuid().ToString("N"), Started = DateTimeOffset.UtcNow, Updated = DateTimeOffset.UtcNow,
             State = "Completed", Lane = lane, Policy = QualificationEvidence.Json(ComparisonPolicy.Describe()), PolicySha256 = QualificationEvidence.PolicyHash,
             Before = source, After = source, Files = files, FilesAfter = files.ToList(), Machine = machine, MachineAfter = machine,

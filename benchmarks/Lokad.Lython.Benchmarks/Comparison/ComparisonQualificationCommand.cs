@@ -14,13 +14,14 @@ internal static class ComparisonQualificationCommand
         for (var i = 0; i < arguments.Length; i += 2)
             if (i + 1 == arguments.Length || !allowed.Contains(arguments[i]) || !options.TryAdd(arguments[i], arguments[i + 1])) return Usage();
         if (required.Any(n => !options.ContainsKey(n))) return Usage();
-        options.TryAdd("--case", "all"); options.TryAdd("--lane", "warm");
+        options.TryAdd("--case", "quick"); options.TryAdd("--lane", "warm");
         if (options["--lane"] is not ("warm" or "compile-run" or "compile" or "fresh-process")
             || options.TryGetValue("--resume", out var resume) && resume != "true") return Usage();
-        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(ComparisonPolicy.CampaignDeadlineSeconds));
+        var started = DateTimeOffset.UtcNow;
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(ComparisonPolicy.CampaignDeadlineSeconds - ComparisonPolicy.CleanupReserveSeconds));
         ConsoleCancelEventHandler cancel = (_, e) => { e.Cancel = true; deadline.Cancel(); };
         Console.CancelKeyPress += cancel;
-        try { return RunAsync(options, deadline.Token).GetAwaiter().GetResult(); }
+        try { return RunAsync(options, started, deadline).GetAwaiter().GetResult(); }
         catch (Exception failure) { Console.Error.WriteLine("Qualification failed: " + failure.GetType().Name + ": " + failure.Message); return 1; }
         finally { Console.CancelKeyPress -= cancel; }
     }
@@ -29,12 +30,13 @@ internal static class ComparisonQualificationCommand
     {
         Console.Error.WriteLine("Usage: --compare qualify --catalog <catalog.json> --dotnet <absolute-dotnet> --python <absolute-python> " +
             "--python-worker <cpython-worker.py> --toolchains <toolchains.json> --out <receipt.json> " +
-            "[--case <all|comma-separated-ids>] [--lane <warm|compile-run|compile|fresh-process>] [--resume true]");
+            "[--case <quick|all|comma-separated-ids>] [--lane <warm|compile-run|compile|fresh-process>] [--resume true]");
         return 2;
     }
 
-    private static async Task<int> RunAsync(Dictionary<string, string> options, CancellationToken cancellationToken)
+    private static async Task<int> RunAsync(Dictionary<string, string> options, DateTimeOffset started, CancellationTokenSource deadline)
     {
+        var cancellationToken = deadline.Token;
         if (!OperatingSystem.IsLinux()) throw new PlatformNotSupportedException("The frozen qualification profile requires Linux x86_64.");
         var catalog = Path.GetFullPath(options["--catalog"]); var output = Path.GetFullPath(options["--out"]);
         var helper = Path.GetFullPath(options["--python-worker"]); var toolchainPath = Path.GetFullPath(options["--toolchains"]);
@@ -45,7 +47,12 @@ internal static class ComparisonQualificationCommand
         var root = await QualificationEvidence.CaptureAsync("/usr/bin/git", ["rev-parse", "--show-toplevel"], cancellationToken).ConfigureAwait(false);
         if (Path.GetFullPath(root) != Environment.CurrentDirectory) throw new ArgumentException("Run qualification from the clean repository root.");
         var manifest = ComparisonManifest.Load(catalog);
-        var requested = options["--case"] == "all" ? manifest.Cases.Keys.ToArray() : options["--case"].Split(',');
+        var requested = options["--case"] switch
+        {
+            "all" => manifest.Cases.Keys.ToArray(),
+            "quick" => ComparisonPolicy.QuickCaseIds,
+            _ => options["--case"].Split(','),
+        };
         if (requested.Any(id => !manifest.Cases.ContainsKey(id))) throw new ArgumentException("An explicitly selected case is absent from the catalog.");
         var ids = new[] { "control.empty.control", "control.tiny.control" }.Concat(requested).Distinct(StringComparer.Ordinal).ToArray();
         var cases = ids.Select(id => manifest.Cases.TryGetValue(id, out var value) ? value : throw new ArgumentException("Both controls must be present in the catalog.")).ToArray();
@@ -71,7 +78,7 @@ internal static class ComparisonQualificationCommand
         {
             SchemaVersion = 1, ProtocolVersion = ComparisonProtocol.Version, PolicyVersion = ComparisonPolicy.Version,
             EligibilityVersion = ComparisonPolicy.EligibilityVersion, Policy = QualificationEvidence.Json(ComparisonPolicy.Describe()),
-            PolicySha256 = QualificationEvidence.PolicyHash, Id = Guid.NewGuid().ToString("N"), Started = DateTimeOffset.UtcNow,
+            PolicySha256 = QualificationEvidence.PolicyHash, Id = Guid.NewGuid().ToString("N"), Started = started,
             Lane = options["--lane"], CatalogSha256 = manifest.Sha256, Before = before, Machine = machine, Toolchains = toolchains,
             RuntimeConfig = ComparisonReportCommand.ReadJson(Path.ChangeExtension(assembly, ".runtimeconfig.json")),
             Files = files, Cases = cases.Select(w => new QualificationCase { Workload = w }).ToList(),
@@ -82,6 +89,7 @@ internal static class ComparisonQualificationCommand
         {
             var previous = ComparisonReportCommand.ReadReceipt(output);
             RestoreForResume(previous, receipt);
+            deadline.CancelAfter(RemainingCollectionTime(receipt.Started, DateTimeOffset.UtcNow));
             // Preserve the complete previous attempt beside the receipt. Reuse
             // finished measurements and exclusions; partial sessions restart.
             var archive = output + ".attempt-" + previous.Updated.UtcTicks + ".json";
@@ -108,73 +116,84 @@ internal static class ComparisonQualificationCommand
                     payload = ComparisonManifest.Load(payloadPath);
                     row.Payload = FileIdentity(payloadPath);
                 }
-                for (var index = 0; index < ComparisonPolicy.Sessions; index++)
+                try
                 {
-                    var session = new QualificationSession { Sampling = new SamplingSession { Index = index } };
-                    row.Sessions.Add(session); Checkpoint();
-                    ComparisonWorkerClient? left = null, right = null;
-                    try
+                    for (var index = 0; index < ComparisonPolicy.Sessions; index++)
                     {
-                        await OpenAsync().ConfigureAwait(false);
-                        session.LythonIdentity = left!.Identity; session.PythonIdentity = right!.Identity;
-                        await VerifyAsync("before", caseDeadline.Token).ConfigureAwait(false);
-                        if (receipt.Lane == "fresh-process") await CloseAsync().ConfigureAwait(false);
-                        var nextRequest = 0;
-                        await PairedSampler.RunAsync(session.Sampling, BatchAsync, new LinuxSamplingMachine(), Checkpoint,
-                            caseDeadline.Token, ct => VerifyAsync("after-warmup", ct)).ConfigureAwait(false);
-                        if (session.Sampling.State == "Measured") await VerifyAsync("after", caseDeadline.Token).ConfigureAwait(false);
-                        await CloseAsync().ConfigureAwait(false); session.Closed = true;
-                        CheckFiles(); Checkpoint();
-
-                        async Task<WorkerResponse> BatchAsync(bool lython, int count, CancellationToken ct)
+                        var session = new QualificationSession { Sampling = new SamplingSession { Index = index } };
+                        row.Sessions.Add(session); Checkpoint();
+                        ComparisonWorkerClient? left = null, right = null;
+                        try
                         {
-                            if (receipt.Lane != "fresh-process") return await (lython ? left! : right!).BatchAsync(row.Workload, receipt.Lane, count, ct).ConfigureAwait(false);
-                            var request = ++nextRequest; long ticks = 0;
-                            using var batchDeadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
-                            batchDeadline.CancelAfter(ComparisonWorkerClient.RequestDeadline);
-                            for (var job = 0; job < count; job++)
+                            await OpenAsync().ConfigureAwait(false);
+                            session.LythonIdentity = left!.Identity; session.PythonIdentity = right!.Identity;
+                            await VerifyAsync("before", caseDeadline.Token).ConfigureAwait(false);
+                            if (receipt.Lane == "fresh-process") await CloseAsync().ConfigureAwait(false);
+                            var nextRequest = 0;
+                            await PairedSampler.RunAsync(session.Sampling, BatchAsync, new LinuxSamplingMachine(), Checkpoint,
+                                caseDeadline.Token, ct => VerifyAsync("after-warmup", ct)).ConfigureAwait(false);
+                            if (session.Sampling.State == "Measured") await VerifyAsync("after", caseDeadline.Token).ConfigureAwait(false);
+                            await CloseAsync().ConfigureAwait(false); session.Closed = true;
+                            CheckFiles(); Checkpoint();
+
+                            async Task<WorkerResponse> BatchAsync(bool lython, int count, CancellationToken ct)
                             {
-                                if (FileIdentity(payloadPath!).Sha256 != payload!.Sha256) throw new InvalidDataException("Prepared one-case payload changed.");
-                                var observation = await FreshProcessRunner.RunAsync(lython
-                                    ? new(dotnet, [assembly, "--compare", "once", "--catalog", payloadPath!], root)
-                                    : new(python, ["-I", "-S", helper, "--once", "--catalog", payloadPath!], root), payload!,
-                                    lython ? session.LythonIdentity : session.PythonIdentity, batchDeadline.Token).ConfigureAwait(false);
-                                session.Fresh.Add(new(lython, request, observation));
-                                if (observation.Status != "Equivalent") return observation.Response with { RequestId = request, ElapsedTicks = null };
-                                ticks = checked(ticks + observation.ElapsedTicks!.Value);
+                                if (receipt.Lane != "fresh-process") return await (lython ? left! : right!).BatchAsync(row.Workload, receipt.Lane, count, ct).ConfigureAwait(false);
+                                var request = ++nextRequest; long ticks = 0;
+                                using var batchDeadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                                batchDeadline.CancelAfter(ComparisonWorkerClient.RequestDeadline);
+                                for (var job = 0; job < count; job++)
+                                {
+                                    if (FileIdentity(payloadPath!).Sha256 != payload!.Sha256) throw new InvalidDataException("Prepared one-case payload changed.");
+                                    var observation = await FreshProcessRunner.RunAsync(lython
+                                        ? new(dotnet, [assembly, "--compare", "once", "--catalog", payloadPath!], root)
+                                        : new(python, ["-I", "-S", helper, "--once", "--catalog", payloadPath!], root), payload!,
+                                        lython ? session.LythonIdentity : session.PythonIdentity, batchDeadline.Token).ConfigureAwait(false);
+                                    session.Fresh.Add(new(lython, request, observation));
+                                    if (observation.Status != "Equivalent") return observation.Response with { RequestId = request, ElapsedTicks = null };
+                                    ticks = checked(ticks + observation.ElapsedTicks!.Value);
+                                }
+                                return new(ComparisonProtocol.Version, request, row.Workload.Id, "Completed", count, ticks, Stopwatch.Frequency,
+                                    row.Workload.SourceSha256, row.Workload.FixtureSha256, row.Workload.ExpectedOutputSha256, row.Workload.ExpectedOutputSha256, null);
                             }
-                            return new(ComparisonProtocol.Version, request, row.Workload.Id, "Completed", count, ticks, Stopwatch.Frequency,
-                                row.Workload.SourceSha256, row.Workload.FixtureSha256, row.Workload.ExpectedOutputSha256, row.Workload.ExpectedOutputSha256, null);
+                        }
+                        finally
+                        {
+                            if (left is not null) await left.DisposeAsync().ConfigureAwait(false);
+                            if (right is not null) await right.DisposeAsync().ConfigureAwait(false);
+                        }
+
+                        async Task OpenAsync()
+                        {
+                            left = await ComparisonWorkerClient.StartAsync(new(dotnet, [assembly, "--compare", "worker", "--catalog", catalog], root), "Lython", manifest.Sha256, caseDeadline.Token).ConfigureAwait(false);
+                            right = await ComparisonWorkerClient.StartAsync(new(python, ["-I", "-S", helper, "--catalog", catalog], root), "CPython", manifest.Sha256, caseDeadline.Token).ConfigureAwait(false);
+                            QualificationEvidence.ValidateProfile(left.Identity, right.Identity, before, toolchains);
+                            ValidateLythonFiles(left.Identity, FileIdentity(assembly), FileIdentity(typeof(LythonEngine).Assembly.Location));
+                            CheckFiles();
+                        }
+                        async Task VerifyAsync(string phase, CancellationToken ct)
+                        {
+                            if (left is null) await OpenAsync().ConfigureAwait(false);
+                            var l = await left!.VerifyAsync(row.Workload, ct).ConfigureAwait(false);
+                            var r = await right!.VerifyAsync(row.Workload, ct).ConfigureAwait(false);
+                            session.Verification.Add(new(phase, l, r)); Checkpoint();
+                            if (l.Status != "Equivalent" || r.Status != "Equivalent") throw new InvalidDataException("Semantic verification failed: " + row.Workload.Id + " / " + phase);
+                            if (receipt.Lane == "fresh-process") await CloseAsync().ConfigureAwait(false);
+                        }
+                        async Task CloseAsync()
+                        {
+                            if (left is not null) { await left.CloseAsync(caseDeadline.Token).ConfigureAwait(false); await left.DisposeAsync().ConfigureAwait(false); left = null; }
+                            if (right is not null) { await right.CloseAsync(caseDeadline.Token).ConfigureAwait(false); await right.DisposeAsync().ConfigureAwait(false); right = null; }
                         }
                     }
-                    finally
-                    {
-                        if (left is not null) await left.DisposeAsync().ConfigureAwait(false);
-                        if (right is not null) await right.DisposeAsync().ConfigureAwait(false);
-                    }
-
-                    async Task OpenAsync()
-                    {
-                        left = await ComparisonWorkerClient.StartAsync(new(dotnet, [assembly, "--compare", "worker", "--catalog", catalog], root), "Lython", manifest.Sha256, caseDeadline.Token).ConfigureAwait(false);
-                        right = await ComparisonWorkerClient.StartAsync(new(python, ["-I", "-S", helper, "--catalog", catalog], root), "CPython", manifest.Sha256, caseDeadline.Token).ConfigureAwait(false);
-                        QualificationEvidence.ValidateProfile(left.Identity, right.Identity, before, toolchains);
-                        ValidateLythonFiles(left.Identity, FileIdentity(assembly), FileIdentity(typeof(LythonEngine).Assembly.Location));
-                        CheckFiles();
-                    }
-                    async Task VerifyAsync(string phase, CancellationToken ct)
-                    {
-                        if (left is null) await OpenAsync().ConfigureAwait(false);
-                        var l = await left!.VerifyAsync(row.Workload, ct).ConfigureAwait(false);
-                        var r = await right!.VerifyAsync(row.Workload, ct).ConfigureAwait(false);
-                        session.Verification.Add(new(phase, l, r)); Checkpoint();
-                        if (l.Status != "Equivalent" || r.Status != "Equivalent") throw new InvalidDataException("Semantic verification failed: " + row.Workload.Id + " / " + phase);
-                        if (receipt.Lane == "fresh-process") await CloseAsync().ConfigureAwait(false);
-                    }
-                    async Task CloseAsync()
-                    {
-                        if (left is not null) { await left.CloseAsync(caseDeadline.Token).ConfigureAwait(false); await left.DisposeAsync().ConfigureAwait(false); left = null; }
-                        if (right is not null) { await right.CloseAsync(caseDeadline.Token).ConfigureAwait(false); await right.DisposeAsync().ConfigureAwait(false); right = null; }
-                    }
+                }
+                catch (Exception noise) when (noise is PairedSampler.QuietGateException or PairedSampler.NoiseGateException)
+                {
+                    row.State = "Unqualified";
+                    row.Reason = noise.Message;
+                    Checkpoint();
+                    Console.WriteLine($"Excluded {row.Workload.Id}: {noise.Message}; continuing without retrying this case.");
+                    continue;
                 }
                 row.State = row.Sessions.All(s => s.Sampling.State == "Measured") ? "Measured" : "Unqualified";
                 row.Reason = row.State == "Unqualified" ? string.Join(" | ", row.Sessions.Select(s => s.Sampling.Reason).Where(r => r is not null)) : null;
@@ -225,6 +244,8 @@ internal static class ComparisonQualificationCommand
             || QualificationEvidence.MachineFingerprint(previous.Machine) != QualificationEvidence.MachineFingerprint(receipt.Machine)
             || !previous.Cases.Select(c => c.Workload).SequenceEqual(receipt.Cases.Select(c => c.Workload)))
             throw new InvalidDataException("Resume requires identical versions, source, policy, case order, machine, toolchains and every file digest.");
+        _ = RemainingCollectionTime(previous.Started, DateTimeOffset.UtcNow);
+        receipt.Started = previous.Started;
         for (var i = 0; i < receipt.Cases.Count; i++)
             if (Finished(previous.Cases[i])) receipt.Cases[i] = previous.Cases[i];
     }
@@ -233,4 +254,12 @@ internal static class ComparisonQualificationCommand
         => receipt.Cases.Where(row => !Finished(row));
 
     private static bool Finished(QualificationCase row) => row.State is "Measured" or "Unqualified";
+
+    internal static TimeSpan RemainingCollectionTime(DateTimeOffset started, DateTimeOffset now)
+    {
+        if (started == default || started > now) throw new InvalidDataException("Invalid campaign start time.");
+        var remaining = started.AddSeconds(ComparisonPolicy.CampaignDeadlineSeconds - ComparisonPolicy.CleanupReserveSeconds) - now;
+        if (remaining <= TimeSpan.Zero) throw new InvalidDataException("The original ten-minute lane budget is exhausted; resumption cannot reset it.");
+        return remaining;
+    }
 }

@@ -125,7 +125,7 @@ internal static class QuietMachineProbe
         var reasons = windows.SelectMany(w => w.Reasons).Distinct(StringComparer.Ordinal).ToList();
         if (windows.Length != ComparisonPolicy.IdleWindows || windows.Any(w => w.Seconds < ComparisonPolicy.IdleWindowSeconds
             || !double.IsFinite(w.BusyPercent) || w.BusyPercent is < 0 or > 100 || !w.Clean))
-            reasons.Add("Five complete clean one-second idle windows are required.");
+            reasons.Add($"{ComparisonPolicy.IdleWindows} complete clean idle window(s) of at least {ComparisonPolicy.IdleWindowSeconds} seconds are required.");
         if (windows.Length != 0 && (ComparisonStatistics.Quantile(windows.Select(w => w.BusyPercent), .5) > ComparisonPolicy.MaximumMedianBusyPercent
             || windows.Max(w => w.BusyPercent) > ComparisonPolicy.MaximumBusyPercent))
             reasons.Add("Idle CPU exceeds three-percent median or five-percent maximum.");

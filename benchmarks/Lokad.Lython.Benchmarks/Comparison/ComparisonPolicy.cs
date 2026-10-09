@@ -4,21 +4,21 @@ namespace Lokad.Lython.Benchmarks.Comparison;
 // version bump; a failed campaign is not a reason to weaken its eligibility.
 internal static class ComparisonPolicy
 {
-    public const int Version = 1;
-    public const int EligibilityVersion = 1;
+    public const int Version = 2;
+    public const int EligibilityVersion = 2;
     public const int Sessions = 3;
-    public const int Pairs = 11;
-    public const int IdleWindows = 5;
-    public const double IdleWindowSeconds = 1;
-    public const double SettleSeconds = 1;
+    public const int Pairs = 7;
+    public const int IdleWindows = 1;
+    public const double IdleWindowSeconds = .5;
+    public const double SettleSeconds = .05;
     public const double MaximumMedianBusyPercent = 3;
     public const double MaximumBusyPercent = 5;
-    public const int MinimumWarmupInvocations = 32;
-    public const double MinimumWarmupSeconds = 1;
+    public const int MinimumWarmupInvocations = 8;
+    public const double MinimumWarmupSeconds = .1;
     public const int MaximumWarmupBatches = 12;
     public const int MaximumCalibrationBatches = 8;
-    public const double CalibrationSeconds = .040;
-    public const double MinimumBatchSeconds = .020;
+    public const double CalibrationSeconds = .010;
+    public const double MinimumBatchSeconds = .005;
     public const double MaximumIqrFraction = .10;
     public const double MaximumOrderFactor = 1.10;
     public const double MaximumIntervalFactor = 1.15;
@@ -26,8 +26,21 @@ internal static class ComparisonPolicy
     public const double MaximumControlFraction = .10;
     public const int BootstrapResamples = 10_000;
     public const uint BootstrapSeed = 1729;
-    public const int CaseDeadlineSeconds = 900;
-    public const int CampaignDeadlineSeconds = 24 * 60 * 60;
+    public const int CaseDeadlineSeconds = 45;
+    public const int CampaignDeadlineSeconds = 600;
+    public const int CleanupReserveSeconds = 10;
+
+    // Chosen by workload coverage before timing, never by observed ratios.
+    // The full 131-case correctness catalog remains available separately.
+    public static readonly string[] QuickCaseIds =
+    [
+        "control.empty.control", "control.tiny.control",
+        "loops.integer.medium", "loops.integer.large", "calls.keyword.medium",
+        "lists.stable-sort.medium", "dicts.tuple-key-update.medium", "generators.drain.medium",
+        "strings.scan-supplementary.medium", "strings.pipeline-ascii.medium",
+        "json.transform-roundtrip.medium", "csv.retain.medium", "xml.parse-select.medium",
+        "compression.zlib.medium",
+    ];
 
     public static object Describe() => new
     {
@@ -35,7 +48,10 @@ internal static class ComparisonPolicy
         MaximumMedianBusyPercent, MaximumBusyPercent, MinimumWarmupInvocations, MinimumWarmupSeconds,
         MaximumWarmupBatches, MaximumCalibrationBatches, CalibrationSeconds, MinimumBatchSeconds,
         MaximumIqrFraction, MaximumOrderFactor, MaximumIntervalFactor, MaximumSessionFactor, MaximumControlFraction,
-        BootstrapResamples, BootstrapSeed, CaseDeadlineSeconds, CampaignDeadlineSeconds,
+        BootstrapResamples, BootstrapSeed, CaseDeadlineSeconds, CampaignDeadlineSeconds, CleanupReserveSeconds,
+        defaultCaseIds = QuickCaseIds,
+        budget = "600 seconds per lane including setup and all retries; ten seconds reserved for cleanup",
+        interference = "exclude the affected case without rerunning it; initial/final noise stops the attempt",
         maximumBatchIterations = ComparisonProtocol.MaximumBatchIterations,
         maximumReceiptBytes = ComparisonReportCommand.MaximumReceiptBytes,
         requestDeadlineSeconds = ComparisonWorkerClient.RequestDeadline.TotalSeconds,
@@ -51,7 +67,7 @@ internal static class ComparisonPolicy
     {
         if (session is < 0 or >= Sessions || pair is < 0 or >= Pairs) throw new ArgumentOutOfRangeException();
         // Odd pair counts differ by one; reverse the starting engine in the
-        // next independent session. Record the actual 6/5 order counts.
+        // next independent session. Record the actual 4/3 order counts.
         return ((session + pair) & 1) == 0;
     }
 }
@@ -69,7 +85,7 @@ internal static class ComparisonStatistics
         if (!evidenceComplete) reasons.Add("Incomplete semantic/provenance/warmup/calibration/quietness evidence.");
         if (pairs.Count != ComparisonPolicy.Pairs || pairs.Select(p => p.Index).Distinct().Count() != pairs.Count
             || pairs.Any(p => p.Index < 0 || p.Index >= ComparisonPolicy.Pairs))
-            reasons.Add("Expected eleven distinct indexed pairs.");
+            reasons.Add($"Expected {ComparisonPolicy.Pairs} distinct indexed pairs.");
         if (pairs.Count == 0 || pairs.Any(p => !Positive(p.LythonSeconds) || !Positive(p.PythonSeconds)))
             return new(false, [.. reasons, "Invalid or missing per-invocation times."], 0, 0, 0, 0, null, null, null, 0, "Unqualified");
         var left = pairs.Select(p => p.LythonSeconds).ToArray();
@@ -130,7 +146,7 @@ internal static class ComparisonStatistics
     private static bool Positive(double value) => double.IsFinite(value) && value > 0;
 
     // Explicit xorshift32 and rejection sampling, not System.Random. The
-    // algorithm/seed, intact-pair resampling and quantiles are policy v1.
+    // algorithm/seed, intact-pair resampling and quantiles are versioned policy.
     private struct BootstrapGenerator(uint state)
     {
         public int Index(int count)

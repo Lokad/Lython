@@ -169,6 +169,7 @@ internal static class QualificationEvidence
                 || receipt.PolicySha256 != PolicyHash || ComparisonProtocol.Digest(CanonicalJson(receipt.Policy)) != PolicyHash
                 || receipt.State != "Completed" || receipt.Before != receipt.After || receipt.Before.Status.Length != 0
                 || !Guid.TryParseExact(receipt.Id, "N", out _) || receipt.Started == default || receipt.Updated < receipt.Started
+                || receipt.Updated - receipt.Started > TimeSpan.FromSeconds(ComparisonPolicy.CampaignDeadlineSeconds)
                 || receipt.Files.Count == 0 || receipt.FilesAfter is null || !receipt.Files.SequenceEqual(receipt.FilesAfter)
                 || receipt.Files.Any(f => !f.Path.StartsWith("/", StringComparison.Ordinal) || f.Sha256.Length != 64
                     || f.Sha256.Any(c => !char.IsAsciiHexDigitLower(c)))

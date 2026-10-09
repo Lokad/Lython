@@ -30,22 +30,31 @@ internal static class ComparisonCatalogCommand
                 return 2;
             }
         }
-        if (arguments.Length == 0 || arguments[0] != "list"
-            || (arguments.Length != 1 && (arguments.Length != 3 || arguments[1] != "--out")))
+        if (arguments.Length == 0 || arguments[0] != "list")
         {
             Console.Error.WriteLine("Usage: --compare list | worker | once | verify | smoke-fresh | check-machine | qualify | render-report (see benchmarks/COMPARISON.md)");
             return 2;
         }
 
-        var workloads = WorkloadCatalog.Create();
-        if (arguments.Length == 1)
+        var options = new Dictionary<string, string>(StringComparer.Ordinal);
+        for (var i = 1; i < arguments.Length; i += 2)
+            if (i + 1 == arguments.Length || arguments[i] is not ("--out" or "--profile")
+                || !options.TryAdd(arguments[i], arguments[i + 1])) return ListUsage();
+        if (options.TryGetValue("--profile", out var profile) && profile is not ("quick" or "full")) return ListUsage();
+        IReadOnlyList<ComparisonWorkload> workloads = WorkloadCatalog.Create();
+        if (profile == "quick")
+        {
+            var all = workloads.ToDictionary(w => w.Id, StringComparer.Ordinal);
+            workloads = ComparisonPolicy.QuickCaseIds.Select(id => all[id]).ToArray();
+        }
+        if (!options.TryGetValue("--out", out var destination))
         {
             foreach (var workload in workloads)
                 Console.WriteLine($"{workload.Id}\t{workload.Category}\t{workload.Size}\t{Encoding.UTF8.GetByteCount(workload.Source)} source bytes");
             return 0;
         }
 
-        var path = Path.GetFullPath(arguments[2]);
+        var path = Path.GetFullPath(destination);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         var json = JsonSerializer.Serialize(new
         {
@@ -68,5 +77,11 @@ internal static class ComparisonCatalogCommand
         }
         Console.WriteLine($"Wrote {workloads.Count} correctness candidates to {path}; no timings collected.");
         return 0;
+    }
+
+    private static int ListUsage()
+    {
+        Console.Error.WriteLine("Usage: --compare list [--profile <full|quick>] [--out <catalog.json>]");
+        return 2;
     }
 }
