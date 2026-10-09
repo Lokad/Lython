@@ -4,8 +4,8 @@ namespace Lokad.Lython.Benchmarks.Comparison;
 // version bump; a failed campaign is not a reason to weaken its eligibility.
 internal static class ComparisonPolicy
 {
-    public const int Version = 5;
-    public const int EligibilityVersion = 5;
+    public const int Version = 6;
+    public const int EligibilityVersion = 6;
     public const int Sessions = 3;
     public const int Pairs = 7;
     public const int IdleWindows = 1;
@@ -20,8 +20,8 @@ internal static class ComparisonPolicy
     public const double FreshMinimumWarmupSeconds = .1;
     public const int MaximumWarmupBatches = 12;
     public const int MaximumCalibrationBatches = 8;
-    public const double CalibrationSeconds = .010;
-    public const double MinimumBatchSeconds = .005;
+    public const double CalibrationSeconds = .025;
+    public const double MinimumBatchSeconds = .020;
     public const double MaximumIqrFraction = .10;
     public const double MaximumOrderFactor = 1.10;
     public const double MaximumIntervalFactor = 1.15;
@@ -75,7 +75,16 @@ internal static class ComparisonPolicy
         aggregateInterval = "none; session observations are not pooled",
         crossSession = "largest/smallest qualified session median ratio <= 1.10",
         noise = "no observed steal, paging, memory-pressure or observable cgroup-throttle increments",
-        controls = "both empty and tiny controls precede cases; each lane's case median must exceed ten times its larger control median",
+        controls = "both empty and tiny controls must qualify in every lane; warm/compile-run case medians must exceed ten times the larger control median; compile/fresh-process qualify the total declared boundary without a control floor; no subtraction",
+    };
+
+    // Compiler setup and process startup are intentional work in their own
+    // lanes. The execution lanes additionally exclude entry-dominated jobs.
+    public static bool RequiresControlFloor(string lane) => lane switch
+    {
+        "warm" or "compile-run" => true,
+        "compile" or "fresh-process" => false,
+        _ => throw new InvalidDataException("Unknown sampling lane."),
     };
 
     public static (int Invocations, double Seconds) Warmup(string lane) => lane switch

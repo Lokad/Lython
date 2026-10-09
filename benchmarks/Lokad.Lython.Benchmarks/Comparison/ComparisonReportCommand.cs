@@ -61,6 +61,9 @@ internal static class ComparisonReportCommand
             "and fresh namespaces without an equivalent in-process governor. Imports keep their source positions. " +
             "Fresh-process samples include parent-observed owned launch through pipe drain and exit, with OS file caches retained. " +
             "Invocation controls are visible and never subtracted.").AppendLine();
+        builder.AppendLine(receipt.Lane is "compile" or "fresh-process"
+            ? "Compilation and fresh-process lanes qualify the total declared boundary, including compiler setup or process startup. Both controls must qualify; no ten-times-control floor applies."
+            : "Execution lanes require each engine's case median to exceed ten times its larger qualified control median.").AppendLine();
         builder.AppendLine("The supervisor alone uses DOTNET_TieredCompilation=0 to avoid its background compiler contaminating idle checks; " +
             "the override is removed before every worker launch. Both engines retain the recorded ordinary worker profiles.").AppendLine();
         if (receipt.Reason is not null) builder.AppendLine("Campaign reason: " + Escape(receipt.Reason)).AppendLine();

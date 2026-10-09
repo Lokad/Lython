@@ -151,6 +151,7 @@ internal static class QualificationEvidence
             if (control is null) { reasons.Add("Required invocation control is missing: " + controlId); continue; }
             var assessment = Assess(receipt, control);
             if (assessment.Status != "Control") { reasons.Add("Invocation control did not qualify: " + controlId); continue; }
+            if (!ComparisonPolicy.RequiresControlFloor(receipt.Lane)) continue;
             for (var i = 0; i < statistics.Count && i < assessment.Sessions.Length; i++)
                 if (statistics[i].LythonMedianSeconds * ComparisonPolicy.MaximumControlFraction <= assessment.Sessions[i].LythonMedianSeconds
                     || statistics[i].PythonMedianSeconds * ComparisonPolicy.MaximumControlFraction <= assessment.Sessions[i].PythonMedianSeconds)
