@@ -1,6 +1,6 @@
 # Lython and CPython comparison contract
 
-Specification version **5**, established before the targeted core-loop run. The catalog
+Specification version **6**, prepared prospectively for a future milestone. The catalog
 and explicit correctness check are available. Persistent worker primitives are
 available, including supervised correctness/timer smokes, paired collection,
 machine checks and raw-evidence report rendering.
@@ -401,6 +401,26 @@ gate. Parent-clock evidence must prove its duration. The noise, stability,
 overhead and sampling thresholds remain unchanged; earlier receipts retain their
 original exclusions and must be rendered with their original revision.
 
+Policy v6 is prospective milestone preparation. Two separately bounded control
+diagnostics lasted **13.28 and 13.38 seconds**. Fixed batches around 31–33 ms
+kept Lython's control IQR/median at 2–4%; some shorter batches exceeded 10%.
+This supports longer batches, without attributing every historical failure or
+qualifying a campaign. Calibration now requires two confirming **25 ms** batches,
+and measured batches must last **20 ms**. The noise and statistical thresholds,
+ordinary workers, two-second pause and 45/600-second deadlines are retained.
+See [the control audit](results/2026-10-09-control-batches/README.md).
+
+The same version corrects the control floor for the declared measurement boundary.
+Warm and compile-run jobs still must exceed ten times both qualified controls.
+Compilation and fresh-process jobs qualify their **total boundary**, including
+compiler setup or process startup. Those costs are intentional work in these
+lanes. Both controls must still qualify and stay visible, with no subtraction.
+All semantic, provenance, quietness and statistical requirements apply to every
+lane. Existing v4/v5 receipts retain their original exclusions; they cannot be
+requalified by a v6 renderer. A new milestone must freeze its producer and
+manifest before collection. Ordinary improvement rounds still use seconds-long
+microbenchmarks; this policy revision does not require a full lane.
+
 ## Sampling and eligibility
 
 The measurement policy is fixed before timing:
@@ -415,8 +435,8 @@ The measurement policy is fixed before timing:
   recorded lane to its warmup evidence; fresh preparation cannot qualify a
   persistent session.
   Keep normal .NET tiering and CPython specialization. Calibrate the lanes
-  independently, using two confirming batches of at least **10 ms**; retain only
-  measured batches lasting at least **5 ms**. Record counts and ceilings.
+  independently, using two confirming batches of at least **25 ms**; retain only
+  measured batches lasting at least **20 ms**. Record counts and ceilings.
 - **7 sequential paired batches**, balanced alternating AB/BA, in at least
   **three independent worker sessions**. Balance starting order between sessions.
   Retain all samples and session identities, including slow or failed attempts.
@@ -429,10 +449,10 @@ The measurement policy is fixed before timing:
   changes the ratio by more than **10%**, or the ratio interval spans more than
   **15%** multiplicatively. The largest/smallest independent-session median ratio
   must also be at most **1.10**.
-  Do not weaken thresholds to obtain publishable results. Controls and jobs
-  dominated by harness overhead remain visible without a speedup claim.
+  Do not weaken thresholds to obtain publishable results. Controls remain visible
+  without a speedup claim. Execution jobs below the control floor remain excluded.
 
-Policy/eligibility v5 freezes finite invocation/batch/case/campaign deadlines,
+Policy/eligibility v6 freezes finite invocation/batch/case/campaign deadlines,
 iteration ceilings, case order and protocol size caps in its versioned manifest
 before measurements. A ceiling or interrupted campaign does not relax eligibility.
 Do not force GC or inherit timeit's default cyclic-GC suppression.
@@ -464,7 +484,7 @@ Post-warmup verification reuses the compiled code, preserving specialization.
 Fresh batches sum parent launch-to-drain times for independent exactly-once
 processes; their individual identities/results remain in the receipt.
 
-Policy/eligibility v5 uses 10,000 intact-pair bootstrap resamples with seed 1729,
+Policy/eligibility v6 uses 10,000 intact-pair bootstrap resamples with seed 1729,
 explicit xorshift32/rejection-index sampling and linear `(n-1)*p` quantiles.
 It retains session medians and intervals separately. No aggregate interval is
 computed. The common invocation ceiling is 1,000,000; warmup is capped at twelve
@@ -475,10 +495,12 @@ Ten seconds are reserved for cleanup. The original start time is retained on
 resumption, and over-budget evidence cannot qualify. Receipt reads are capped at 512 MiB to retain the full
 catalog's gates and individual fresh-process observations within a finite bound.
 
-To exclude jobs dominated by invocation overhead, each lane's per-job median
-must exceed ten times the larger of that session's two control medians. Controls
-must themselves pass the timing/quietness checks, and receive absolute times
-without ratio claims. This rule is frozen before the first timing campaign.
+To exclude execution jobs dominated by invocation overhead, warm and compile-run
+per-job medians must exceed ten times the larger of that session's two control
+medians for each engine. Compilation and fresh-process lanes qualify the total
+declared boundary without this floor. Both controls must pass all eligibility
+checks in every lane, and receive absolute times without ratio claims. No control
+time is subtracted. These rules are frozen before a new milestone campaign.
 
 The Linux gate retains aggregate CPU counters, paging counters, memory-pressure
 totals and the current cgroup plus ancestor throttling counters. Any observed
@@ -500,8 +522,9 @@ Collect lanes sequentially, with no builds/tests/transfers during
 timing, then render receipts offline. Do not extend the budget after a timeout.
 
 Runtime specialization can still be in progress, and seven pairs
-provide less statistical evidence. Stability, semantic and overhead thresholds
-are retained; the smaller run may legitimately produce more exclusions.
+provide less statistical evidence. Stability and semantic thresholds are retained;
+execution lanes retain their control floor. The smaller run may legitimately
+produce more exclusions.
 
 The collector checkpoints raw warmup, calibration, gates, pair order, every
 completed/failed batch, correctness checks and provenance atomically. Exit 3

@@ -282,6 +282,92 @@ public sealed class ComparisonSamplingTests
     }
 
     [Theory]
+    [InlineData("warm", "Unqualified")]
+    [InlineData("compile-run", "Unqualified")]
+    [InlineData("compile", "Qualified")]
+    [InlineData("fresh-process", "Qualified")]
+    public async Task ControlFloorDependsOnTheDeclaredMeasurementBoundary(string lane, string expected)
+    {
+        var receipt = await ReceiptAsync(lane, dominatedByControl: true);
+        Assert.True(QualificationEvidence.CompleteCampaign(receipt));
+        Assert.All(receipt.Cases.Take(2), control => Assert.Equal("Control", QualificationEvidence.Assess(receipt, control).Status));
+        var assessment = QualificationEvidence.Assess(receipt, receipt.Cases[2]);
+        Assert.All(assessment.Sessions, session => Assert.True(session.Qualified));
+        Assert.Equal(expected, assessment.Status);
+        var report = ComparisonReportCommand.Render(receipt, "test");
+        if (expected == "Qualified")
+        {
+            Assert.Contains("total declared boundary", report);
+            Assert.Contains("no ten-times-control floor applies", report);
+            Assert.Contains("| Qualified |", report);
+        }
+        else
+        {
+            Assert.Contains(assessment.Reasons, reason => reason.Contains("dominated by the invocation control"));
+            Assert.Contains("ten times its larger qualified control median", report);
+            Assert.DoesNotContain("| Qualified |", report);
+        }
+    }
+
+    [Theory]
+    [InlineData("warm", "missing")]
+    [InlineData("compile-run", "missing")]
+    [InlineData("compile", "missing")]
+    [InlineData("fresh-process", "missing")]
+    [InlineData("warm", "noise")]
+    [InlineData("compile-run", "noise")]
+    [InlineData("compile", "noise")]
+    [InlineData("fresh-process", "noise")]
+    public async Task EveryLaneStillRequiresBothQualifiedControls(string lane, string defect)
+    {
+        var receipt = await ReceiptAsync(lane);
+        var row = receipt.Cases[2];
+        if (defect == "missing")
+        {
+            receipt.Cases.RemoveAt(0);
+            receipt.RequestedCaseIds = receipt.Cases.Select(c => c.Workload.Id).ToArray();
+        }
+        else receipt.Cases[0].Sessions[0].Sampling.Gates[0].Windows[0].After.NoiseCounters["pgmajfault"] = 1;
+        Assert.True(QualificationEvidence.CompleteCampaign(receipt));
+        var assessment = QualificationEvidence.Assess(receipt, row);
+        Assert.Equal("Unqualified", assessment.Status);
+        Assert.Contains(assessment.Reasons, reason => reason.Contains("control", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain("| Qualified |", ComparisonReportCommand.Render(receipt, "test"));
+    }
+
+    [Fact]
+    public async Task MeasuredBatchesBelowTwentyMillisecondsCannotQualify()
+    {
+        var trace = new SamplingSession();
+        await PairedSampler.RunAsync(trace, (_, count, _) => Task.FromResult(Response(count, count * .025)), new FakeMachine(), () => { }, default);
+        Assert.True(PairedSampler.Evaluate(trace, true).Qualified);
+        var pair = trace.Pairs[0];
+        trace.Pairs[0] = pair with { Lython = pair.Lython with { Response = pair.Lython.Response with { ElapsedTicks = 19_000_000 } } };
+        RebuildAttempts(trace);
+        Assert.False(PairedSampler.Evaluate(trace, true).Qualified);
+    }
+
+    [Theory]
+    [InlineData("policy")]
+    [InlineData("eligibility")]
+    [InlineData("manifest")]
+    public async Task EarlierPoliciesCannotBeRequalifiedUnderTheNewPolicy(string defect)
+    {
+        var receipt = await ReceiptAsync("fresh-process");
+        if (defect == "policy") receipt.PolicyVersion = 5;
+        else if (defect == "eligibility") receipt.EligibilityVersion = 5;
+        else
+        {
+            var policy = JsonNode.Parse(receipt.Policy.GetRawText())!;
+            policy["MinimumBatchSeconds"] = .005;
+            receipt.Policy = QualificationEvidence.Json(policy);
+        }
+        Assert.False(QualificationEvidence.CompleteCampaign(receipt));
+        Assert.Equal("Unqualified", QualificationEvidence.Assess(receipt, receipt.Cases[2]).Status);
+        Assert.DoesNotContain("| Qualified |", ComparisonReportCommand.Render(receipt, "test"));
+    }
+
+    [Theory]
     [InlineData("warm")]
     [InlineData("compile-run")]
     [InlineData("compile")]
@@ -601,7 +687,7 @@ public sealed class ComparisonSamplingTests
         return next;
     }
 
-    private static async Task<QualificationReceipt> ReceiptAsync(string lane = "warm")
+    private static async Task<QualificationReceipt> ReceiptAsync(string lane = "warm", bool dominatedByControl = false)
     {
         var source = new SourceEvidence(new string('a', 40), "", "10.0.401"); var hash = new string('b', 64);
         var py = QualificationEvidence.Json(new { version = "3.13.16 test", executable = "/python", sha256 = hash,
@@ -655,8 +741,9 @@ public sealed class ComparisonSamplingTests
                     workload.ExpectedOutputSha256, lane == "compile" && seconds is not null ? null : workload.ExpectedOutputSha256, null);
                 void Verify(string phase) => session.Verification.Add(new(phase, Make(2, null), Make(2, null)));
                 Verify("before");
-                var perJob = lane == "fresh-process" ? workload.Category == "control" ? .025 : .5
-                    : workload.Category == "control" ? .00001 : .001;
+                var controlSeconds = lane == "fresh-process" ? .025 : .00001;
+                var perJob = workload.Category == "control" ? controlSeconds
+                    : dominatedByControl ? controlSeconds * 2 : lane == "fresh-process" ? .5 : .001;
                 await PairedSampler.RunAsync(session.Sampling, (l, count, _) =>
                 {
                     var response = Make(count, perJob * count * (l ? 1 : 2));
