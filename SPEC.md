@@ -840,6 +840,13 @@ In particular, this includes:
 - return-value behavior
 - recursion behavior for supported functions
 
+Bindings anywhere in a function determine its local names throughout that
+function. An accepted script that reads or deletes an uninitialized function
+local raises `UnboundLocalError`, a `NameError` subtype; an uninitialized free
+variable raises `NameError`. Module and class namespace lookup retain their
+Python behavior. Existing static diagnostics still reject statically certain
+reads before assignment.
+
 Function features not specified here remain unsupported. Any future additions must be implemented faithfully or rejected explicitly.
 
 ### 9.6 Collections
@@ -933,6 +940,8 @@ The supported subset must support at least the following exception classes:
 - `IndexError`
 - `RuntimeError`
 - `EOFError`
+- `NameError`
+- `UnboundLocalError`
 
 The supported subset must support:
 

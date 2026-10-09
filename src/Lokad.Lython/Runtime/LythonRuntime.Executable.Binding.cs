@@ -12,7 +12,9 @@ internal sealed partial class LythonRuntime
         var value = locals[slot];
         if (ReferenceEquals(value, UninitializedLocal))
         {
-            throw RuntimeErrors.NameNotDefined(codeObject.LocalNames[slot], span);
+            throw codeObject.IsFunctionScope
+                ? RuntimeErrors.UnboundLocalVariable(codeObject.LocalNames[slot], span)
+                : RuntimeErrors.NameNotDefined(codeObject.LocalNames[slot], span);
         }
 
         return value;

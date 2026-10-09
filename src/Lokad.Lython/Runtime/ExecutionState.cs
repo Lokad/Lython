@@ -52,7 +52,7 @@ internal sealed class ExecutionState
         "range", "enumerate", "zip", "iter", "next", "reversed", "map", "filter", "slice",
         "BaseException", "Exception", "ArithmeticError", "LookupError", "UnicodeError", "Warning", "FutureWarning",
         "TypeError", "ValueError", "KeyError", "IndexError", "RuntimeError", "EOFError",
-        "AssertionError", "ImportError", "ModuleNotFoundError", "NameError", "AttributeError", "SyntaxError",
+        "AssertionError", "ImportError", "ModuleNotFoundError", "NameError", "UnboundLocalError", "AttributeError", "SyntaxError",
         "FileNotFoundError", "FileExistsError", "IsADirectoryError", "NotADirectoryError", "PermissionError",
         "TimeoutError", "IOError", "EnvironmentError", "OSError", "StopIteration",
         "ZeroDivisionError", "NotImplementedError", "RecursionError", "MemoryError",

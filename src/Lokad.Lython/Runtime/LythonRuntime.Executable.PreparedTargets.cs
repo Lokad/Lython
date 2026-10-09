@@ -87,7 +87,7 @@ internal sealed partial class LythonRuntime
         {
             case NameAssignmentTargetSyntax name:
                 if (!DeleteName(name.Name, context, span))
-                    throw new LythonRuntimeException("NameError", $"name '{name.Name}' is not defined", span);
+                    throw MissingDeletedName(name.Name, context, span);
                 break;
             case MemberAssignmentTargetSyntax member:
                 var receiver = reads[member.Target];

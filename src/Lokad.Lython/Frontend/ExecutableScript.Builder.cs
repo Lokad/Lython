@@ -77,6 +77,14 @@ internal sealed partial class ExecutableScript
         {
             _scopeFacts = ScopeDirectiveFactsCollector.ForLoweredStatements(_functionParameters, statements);
             CollectLocals(statements);
+            if (_functionParameters is not null)
+            {
+                // Binding anywhere in a function makes the name local throughout
+                // that function, including bindings in unexecuted loop/try bodies.
+                // Append after parameter collection to preserve argument slots.
+                foreach (var localName in _scopeFacts.LocalNames.Order(StringComparer.Ordinal))
+                    InternLocal(localName);
+            }
 
             var entryBlock = CreateBlock();
             var exitBlock = CompileStatements(statements, entryBlock);
@@ -126,7 +134,8 @@ internal sealed partial class ExecutableScript
                 _matchCases.ToArray(),
                 _statementFallbacks.ToArray(),
                 _expressionFallbacks.ToArray(),
-                requiresLocalVariableMirroring);
+                requiresLocalVariableMirroring,
+                isFunctionScope: _functionParameters is not null);
 
             int[] CollectCapturedLocalSlots()
             {

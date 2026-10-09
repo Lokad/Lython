@@ -493,7 +493,8 @@ internal sealed class ExecutableCodeObject
         IReadOnlyList<ExecutableMatchCaseBinding> matchCases,
         IReadOnlyList<ExecutableStatementFallback> statementFallbacks,
         IReadOnlyList<ExecutableExpressionFallback> expressionFallbacks,
-        bool requiresLocalVariableMirroring)
+        bool requiresLocalVariableMirroring,
+        bool isFunctionScope)
     {
         Name = name;
         Constants = constants;
@@ -518,6 +519,7 @@ internal sealed class ExecutableCodeObject
         StatementFallbacks = statementFallbacks;
         ExpressionFallbacks = expressionFallbacks;
         RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
+        IsFunctionScope = isFunctionScope;
     }
 
     public string Name { get; }
@@ -565,4 +567,6 @@ internal sealed class ExecutableCodeObject
     public IReadOnlyList<ExecutableExpressionFallback> ExpressionFallbacks { get; }
 
     public bool RequiresLocalVariableMirroring { get; }
+
+    public bool IsFunctionScope { get; }
 }

@@ -130,6 +130,7 @@ internal sealed partial class LythonRuntime
             [BuiltinException("LookupError")] = [BuiltinException("Exception")],
             [BuiltinException("MemoryError")] = [BuiltinException("Exception")],
             [BuiltinException("NameError")] = [BuiltinException("Exception")],
+            [BuiltinException("UnboundLocalError")] = [BuiltinException("NameError")],
             [BuiltinException("OSError")] = [BuiltinException("Exception")],
             [BuiltinException("RuntimeError")] = [BuiltinException("Exception")],
             [BuiltinException("StopIteration")] = [BuiltinException("Exception")],

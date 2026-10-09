@@ -47,7 +47,7 @@ internal sealed partial class LythonRuntime
                 return nonlocalValue;
             }
 
-            throw RuntimeErrors.NameNotDefined(name, span);
+            throw RuntimeErrors.FreeVariableNotAssociated(name, span);
         }
 
         for (var current = context; current is not null; current = current.ParentContext)
@@ -69,6 +69,12 @@ internal sealed partial class LythonRuntime
                 if (name == "__class__" && ReferenceEquals(value, UninitializedLocal))
                     throw RuntimeErrors.FreeVariableNotAssociated(name, span);
                 return value;
+            }
+            if (current.FunctionName is not null && current.ScopeFacts.LocalNames.Contains(name))
+            {
+                throw ReferenceEquals(current, context)
+                    ? RuntimeErrors.UnboundLocalVariable(name, span)
+                    : RuntimeErrors.FreeVariableNotAssociated(name, span);
             }
             if (!current.IsClassBody && current.ClassCell is not null && name == "__class__")
                 throw RuntimeErrors.FreeVariableNotAssociated(name, span);
@@ -98,6 +104,13 @@ internal sealed partial class LythonRuntime
 
         return removed;
     }
+
+    private static LythonRuntimeException MissingDeletedName(string name, ExecutionContext context, LythonSourceSpan span)
+        => context.TryGetNonlocalTarget(name, out _)
+            ? RuntimeErrors.FreeVariableNotAssociated(name, span)
+            : context.FunctionName is not null && context.ScopeFacts.LocalNames.Contains(name)
+                ? RuntimeErrors.UnboundLocalVariable(name, span)
+                : RuntimeErrors.NameNotDefined(name, span);
 
     internal static ExecutionContext ResolveNameStorageContext(string name, ExecutionContext context, LythonSourceSpan span)
     {

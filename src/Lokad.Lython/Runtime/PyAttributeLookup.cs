@@ -188,6 +188,7 @@ internal static class PyAttributeLookup
             ["ImportError"] = "Exception",
             ["ModuleNotFoundError"] = "Exception",
             ["NameError"] = "Exception",
+            ["UnboundLocalError"] = "Exception",
             ["AttributeError"] = "Exception",
             ["SyntaxError"] = "Exception",
             ["StopIteration"] = "Exception",

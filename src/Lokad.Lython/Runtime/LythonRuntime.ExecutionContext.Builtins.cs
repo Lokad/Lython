@@ -92,6 +92,7 @@ internal sealed partial class LythonRuntime
                 ["ImportError"] = new ExceptionTypeValue("ImportError"),
                 ["ModuleNotFoundError"] = new ExceptionTypeValue("ModuleNotFoundError"),
                 ["NameError"] = new ExceptionTypeValue("NameError"),
+                ["UnboundLocalError"] = new ExceptionTypeValue("UnboundLocalError"),
                 ["AttributeError"] = new ExceptionTypeValue("AttributeError"),
                 ["SyntaxError"] = new ExceptionTypeValue("SyntaxError"),
                 ["FileNotFoundError"] = new ExceptionTypeValue("FileNotFoundError"),

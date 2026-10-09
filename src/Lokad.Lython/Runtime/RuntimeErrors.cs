@@ -151,6 +151,9 @@ internal static class RuntimeErrors
     public static LythonRuntimeException NameNotDefined(string name, LythonSourceSpan? span)
         => new("NameError", $"name '{name}' is not defined", span);
 
+    public static LythonRuntimeException UnboundLocalVariable(string name, LythonSourceSpan? span)
+        => new("UnboundLocalError", $"cannot access local variable '{name}' where it is not associated with a value", span);
+
     public static LythonRuntimeException FreeVariableNotAssociated(string name, LythonSourceSpan? span)
         => new("NameError", $"cannot access free variable '{name}' where it is not associated with a value in enclosing scope", span);
 
