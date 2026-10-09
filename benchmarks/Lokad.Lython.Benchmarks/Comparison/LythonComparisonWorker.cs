@@ -138,18 +138,6 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest)
         var library = typeof(LythonEngine).Assembly;
         var adapter = typeof(LythonComparisonWorker).Assembly;
         var core = typeof(object).Assembly;
-        var variableNames = new[] { "gcServer", "GCHeapCount", "GCHeapHardLimit", "GCHeapHardLimitPercent",
-            "TieredCompilation", "TieredPGO", "TC_QuickJit", "TC_QuickJitForLoops", "ReadyToRun" };
-        var overrides = variableNames.SelectMany(name => new[] { "DOTNET_" + name, "COMPlus_" + name })
-            .Append("DOTNET_PROCESSOR_COUNT").ToDictionary(name => name, Environment.GetEnvironmentVariable);
-        foreach (System.Collections.DictionaryEntry variable in Environment.GetEnvironmentVariables())
-        {
-            var name = (string)variable.Key;
-            if ((name.StartsWith("DOTNET_", StringComparison.OrdinalIgnoreCase) || name.StartsWith("COMPlus_", StringComparison.OrdinalIgnoreCase))
-                && name is not ("DOTNET_ROOT" or "DOTNET_ROOT_X64" or "DOTNET_CLI_TELEMETRY_OPTOUT" or "DOTNET_NOLOGO")
-                && !overrides.ContainsKey(name))
-                overrides.Add(name, "<present>"); // Unknown settings reject the primary profile; do not expose their values.
-        }
         return new
         {
             protocolVersion = ComparisonProtocol.Version, status = "Ready", engine = "Lython",
@@ -158,7 +146,7 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest)
             runtimeVersion = Environment.Version.ToString(), architecture = RuntimeInformation.ProcessArchitecture.ToString(),
             platform = RuntimeInformation.OSDescription, processorCount = Environment.ProcessorCount,
             serverGc = GCSettings.IsServerGC, gcLatencyMode = GCSettings.LatencyMode.ToString(),
-            runtimeOverrides = overrides, clockFrequency = Stopwatch.Frequency, clockHighResolution = Stopwatch.IsHighResolution,
+            runtimeOverrides = RuntimeOverrides(), clockFrequency = Stopwatch.Frequency, clockHighResolution = Stopwatch.IsHighResolution,
             maximumFrameBytes = ComparisonProtocol.MaximumFrameBytes,
             maximumBatchIterations = ComparisonProtocol.MaximumBatchIterations,
             maximumBatchSeconds = ComparisonProtocol.MaximumBatchSeconds,
@@ -176,6 +164,23 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest)
             buildSdk = assembly.GetCustomAttributes<AssemblyMetadataAttribute>().SingleOrDefault(a => a.Key == "BuildSdkVersion")?.Value,
             moduleId = assembly.ManifestModule.ModuleVersionId,
         };
+    }
+
+    internal static readonly string[] RuntimeOverrideNames = new[] { "gcServer", "GCHeapCount", "GCHeapHardLimit", "GCHeapHardLimitPercent",
+        "TieredCompilation", "TieredPGO", "TC_QuickJit", "TC_QuickJitForLoops", "ReadyToRun" }
+        .SelectMany(name => new[] { "DOTNET_" + name, "COMPlus_" + name }).Append("DOTNET_PROCESSOR_COUNT").ToArray();
+
+    internal static Dictionary<string, string?> RuntimeOverrides()
+    {
+        var overrides = RuntimeOverrideNames.ToDictionary(name => name, Environment.GetEnvironmentVariable);
+        foreach (System.Collections.DictionaryEntry variable in Environment.GetEnvironmentVariables())
+        {
+            var name = (string)variable.Key;
+            if ((name.StartsWith("DOTNET_", StringComparison.OrdinalIgnoreCase) || name.StartsWith("COMPlus_", StringComparison.OrdinalIgnoreCase))
+                && name is not ("DOTNET_ROOT" or "DOTNET_ROOT_X64" or "DOTNET_CLI_TELEMETRY_OPTOUT" or "DOTNET_NOLOGO")
+                && !overrides.ContainsKey(name)) overrides.Add(name, "<present>");
+        }
+        return overrides;
     }
 
     private sealed class WorkerJobException(string status, string message, string? actualOutput = null) : Exception(message)

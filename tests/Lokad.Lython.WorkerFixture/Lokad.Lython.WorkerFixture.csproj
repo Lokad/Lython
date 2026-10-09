@@ -3,4 +3,7 @@
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../benchmarks/Lokad.Lython.Benchmarks/Comparison/OwnedWorkerProcess.cs" Link="OwnedWorkerProcess.cs" />
+  </ItemGroup>
 </Project>

@@ -38,6 +38,8 @@ internal static class ComparisonQualificationCommand
     {
         var cancellationToken = deadline.Token;
         if (!OperatingSystem.IsLinux()) throw new PlatformNotSupportedException("The frozen qualification profile requires Linux x86_64.");
+        var supervisorOverrides = QualificationEvidence.Json(LythonComparisonWorker.RuntimeOverrides());
+        QualificationEvidence.ValidateSupervisorOverrides(supervisorOverrides);
         var catalog = Path.GetFullPath(options["--catalog"]); var output = Path.GetFullPath(options["--out"]);
         var helper = Path.GetFullPath(options["--python-worker"]); var toolchainPath = Path.GetFullPath(options["--toolchains"]);
         var dotnet = options["--dotnet"]; var python = options["--python"];
@@ -81,6 +83,7 @@ internal static class ComparisonQualificationCommand
             PolicySha256 = QualificationEvidence.PolicyHash, Id = Guid.NewGuid().ToString("N"), Started = started,
             Lane = options["--lane"], CatalogSha256 = manifest.Sha256, Before = before, Machine = machine, Toolchains = toolchains,
             RuntimeConfig = ComparisonReportCommand.ReadJson(Path.ChangeExtension(assembly, ".runtimeconfig.json")),
+            SupervisorOverrides = supervisorOverrides,
             Files = files, Cases = cases.Select(w => new QualificationCase { Workload = w }).ToList(),
             RequestedCaseIds = ids, CatalogCaseCount = manifest.Cases.Count,
         };
@@ -146,8 +149,8 @@ internal static class ComparisonQualificationCommand
                                 {
                                     if (FileIdentity(payloadPath!).Sha256 != payload!.Sha256) throw new InvalidDataException("Prepared one-case payload changed.");
                                     var observation = await FreshProcessRunner.RunAsync(lython
-                                        ? new(dotnet, [assembly, "--compare", "once", "--catalog", payloadPath!], root)
-                                        : new(python, ["-I", "-S", helper, "--once", "--catalog", payloadPath!], root), payload!,
+                                        ? new(dotnet, [assembly, "--compare", "once", "--catalog", payloadPath!], root, RemoveSupervisorTieringOverride: true)
+                                        : new(python, ["-I", "-S", helper, "--once", "--catalog", payloadPath!], root, RemoveSupervisorTieringOverride: true), payload!,
                                         lython ? session.LythonIdentity : session.PythonIdentity, batchDeadline.Token).ConfigureAwait(false);
                                     session.Fresh.Add(new(lython, request, observation));
                                     if (observation.Status != "Equivalent") return observation.Response with { RequestId = request, ElapsedTicks = null };
@@ -165,8 +168,8 @@ internal static class ComparisonQualificationCommand
 
                         async Task OpenAsync()
                         {
-                            left = await ComparisonWorkerClient.StartAsync(new(dotnet, [assembly, "--compare", "worker", "--catalog", catalog], root), "Lython", manifest.Sha256, caseDeadline.Token).ConfigureAwait(false);
-                            right = await ComparisonWorkerClient.StartAsync(new(python, ["-I", "-S", helper, "--catalog", catalog], root), "CPython", manifest.Sha256, caseDeadline.Token).ConfigureAwait(false);
+                            left = await ComparisonWorkerClient.StartAsync(new(dotnet, [assembly, "--compare", "worker", "--catalog", catalog], root, RemoveSupervisorTieringOverride: true), "Lython", manifest.Sha256, caseDeadline.Token).ConfigureAwait(false);
+                            right = await ComparisonWorkerClient.StartAsync(new(python, ["-I", "-S", helper, "--catalog", catalog], root, RemoveSupervisorTieringOverride: true), "CPython", manifest.Sha256, caseDeadline.Token).ConfigureAwait(false);
                             QualificationEvidence.ValidateProfile(left.Identity, right.Identity, before, toolchains);
                             ValidateLythonFiles(left.Identity, FileIdentity(assembly), FileIdentity(typeof(LythonEngine).Assembly.Location));
                             CheckFiles();
@@ -239,6 +242,7 @@ internal static class ComparisonQualificationCommand
             || previous.CatalogSha256 != receipt.CatalogSha256 || previous.CatalogCaseCount != receipt.CatalogCaseCount
             || !previous.RequestedCaseIds.SequenceEqual(receipt.RequestedCaseIds) || previous.Before != receipt.Before || previous.Lane != receipt.Lane
             || !JsonElement.DeepEquals(previous.RuntimeConfig, receipt.RuntimeConfig)
+            || !JsonElement.DeepEquals(previous.SupervisorOverrides, receipt.SupervisorOverrides)
             || QualificationEvidence.CanonicalJson(previous.Toolchains) != QualificationEvidence.CanonicalJson(receipt.Toolchains)
             || !previous.Files.SequenceEqual(receipt.Files)
             || QualificationEvidence.MachineFingerprint(previous.Machine) != QualificationEvidence.MachineFingerprint(receipt.Machine)

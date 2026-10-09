@@ -4,8 +4,8 @@ namespace Lokad.Lython.Benchmarks.Comparison;
 // version bump; a failed campaign is not a reason to weaken its eligibility.
 internal static class ComparisonPolicy
 {
-    public const int Version = 2;
-    public const int EligibilityVersion = 2;
+    public const int Version = 3;
+    public const int EligibilityVersion = 3;
     public const int Sessions = 3;
     public const int Pairs = 7;
     public const int IdleWindows = 1;
@@ -52,6 +52,7 @@ internal static class ComparisonPolicy
         defaultCaseIds = QuickCaseIds,
         budget = "600 seconds per lane including setup and all retries; ten seconds reserved for cleanup",
         interference = "exclude the affected case without rerunning it; initial/final noise stops the attempt",
+        supervisor = "DOTNET_TieredCompilation=0 for the supervisor alone; removed before every persistent/once worker launch",
         maximumBatchIterations = ComparisonProtocol.MaximumBatchIterations,
         maximumReceiptBytes = ComparisonReportCommand.MaximumReceiptBytes,
         requestDeadlineSeconds = ComparisonWorkerClient.RequestDeadline.TotalSeconds,

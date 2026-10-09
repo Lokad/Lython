@@ -2,9 +2,19 @@ using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
+using Lokad.Lython.Benchmarks.Comparison;
 
 // Deliberately controlled process faults, with no Python installation needed.
 // This executable is a test build dependency, never a runtime package input.
+if (args[0] == "echo-environment")
+{
+    Console.Write(JsonSerializer.Serialize(new
+    {
+        tiering = Environment.GetEnvironmentVariable("DOTNET_TieredCompilation"),
+        pgo = Environment.GetEnvironmentVariable("COMPlus_TieredPGO"),
+    }));
+    return 0;
+}
 if (args[0] == "child")
 {
     await Task.Delay(Timeout.Infinite);
@@ -18,6 +28,26 @@ var input = Console.OpenStandardInput();
 var output = Console.OpenStandardOutput();
 var error = Console.OpenStandardError();
 int? childId = null;
+JsonElement? childEnvironment = null;
+if (mode == "environment-parent")
+{
+    // Set overrides only in this controlled subprocess, never in the shared
+    // test host. Exercise the actual Linux bootstrap environment inheritance.
+    Environment.SetEnvironmentVariable("DOTNET_TieredCompilation", "0");
+    Environment.SetEnvironmentVariable("COMPlus_TieredPGO", "1");
+    using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+    await using var child = await OwnedWorkerProcess.StartAsync(new(Environment.ProcessPath!,
+        [Assembly.GetExecutingAssembly().Location, "echo-environment"], Environment.CurrentDirectory,
+        RemoveSupervisorTieringOverride: args[3] == "clear"), deadline.Token);
+    child.Input.Dispose();
+    using var stdout = new StreamReader(child.Output);
+    using var stderr = new StreamReader(child.Error);
+    var readOutput = stdout.ReadToEndAsync(deadline.Token);
+    var readError = stderr.ReadToEndAsync(deadline.Token);
+    await Task.WhenAll(readOutput, readError, child.Exit).WaitAsync(deadline.Token);
+    if (child.Exit.Result != 0 || readError.Result.Length != 0) throw new InvalidDataException("Environment child failed.");
+    childEnvironment = JsonDocument.Parse(readOutput.Result).RootElement.Clone();
+}
 if (mode is "descendant-hang" or "orphan-pipes" or "once-orphan-pipes")
 {
     var start = new ProcessStartInfo(Environment.ProcessPath!) { UseShellExecute = false, CreateNoWindow = true };
@@ -79,7 +109,7 @@ await WriteAsync(new
     processId = mode == "wrong-pid" ? 1 : Environment.ProcessId,
     clockFrequency = mode == "wrong-clock" ? 0 : 1000,
     maximumFrameBytes = 4 * 1024 * 1024, maximumBatchIterations = 1_000_000, maximumBatchSeconds = 60,
-    childId, echoedArguments = args.Skip(3).ToArray(),
+    childId, childEnvironment, echoedArguments = args.Skip(3).ToArray(),
 });
 if (mode == "stderr-flood")
 {

@@ -8,7 +8,8 @@ using Microsoft.Win32.SafeHandles;
 
 namespace Lokad.Lython.Benchmarks.Comparison;
 
-internal sealed record WorkerLaunch(string Executable, IReadOnlyList<string> Arguments, string WorkingDirectory);
+internal sealed record WorkerLaunch(string Executable, IReadOnlyList<string> Arguments, string WorkingDirectory,
+    bool RemoveSupervisorTieringOverride = false);
 
 // Trusted benchmark workers only. Ownership is established before worker code
 // runs, and survives the root exiting while a descendant still holds a pipe.
@@ -35,6 +36,8 @@ internal sealed class OwnedWorkerProcess : IAsyncDisposable
             || launch.Arguments.Count > 64 || launch.Arguments.Any(a => a.Contains('\0')))
             throw new ArgumentException("Use an existing explicit executable, working directory and bounded structured arguments.");
         cancellationToken.ThrowIfCancellationRequested();
+        if (launch.RemoveSupervisorTieringOverride && !OperatingSystem.IsLinux())
+            throw new PlatformNotSupportedException("The isolated qualification supervisor currently requires Linux.");
         var owned = new OwnedWorkerProcess();
         try
         {
@@ -63,6 +66,10 @@ internal sealed class OwnedWorkerProcess : IAsyncDisposable
             UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = launch.WorkingDirectory,
             RedirectStandardInput = true, RedirectStandardOutput = true, RedirectStandardError = true,
         };
+        // Qualification's supervisor disables its own background tiering.
+        // Both engines keep their ordinary runtime environment, including
+        // exactly-once launches. Other overrides remain visible/rejected.
+        if (launch.RemoveSupervisorTieringOverride) start.Environment.Remove("DOTNET_TieredCompilation");
         // --fork --wait keeps a parent we can reap. The gated session leader
         // publishes its PID before exec; positional parameters carry all data.
         foreach (var argument in new[] { "--fork", "--wait", "/bin/sh", "-c",

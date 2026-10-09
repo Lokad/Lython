@@ -1,6 +1,6 @@
 # Lython and CPython comparison contract
 
-Specification version **2**, established before the shortened comparative run. The catalog
+Specification version **3**, established before the shortened comparative run. The catalog
 and explicit correctness check are available. Persistent worker primitives are
 available, including supervised correctness/timer smokes, paired collection,
 machine checks and raw-evidence report rendering.
@@ -11,7 +11,7 @@ preparation, verification, noise waits, retries and worker cleanup. Build and
 install toolchains beforehand; render reports offline afterward. Four lanes
 therefore consume at most **40 minutes** of VM collection. Policy v1's full
 131-case run was stopped because its sampling schedule took hours per lane;
-its partial evidence is retained separately and is not mixed with v2.
+its partial evidence is retained separately and is not mixed with the current profile.
 
 The quick profile selects **12 workloads plus two controls** before timing:
 integer loops at medium/large scale, keyword calls, stable sort, tuple-key
@@ -309,6 +309,21 @@ smoke, not repeated-session sampling or a qualified startup ratio. Fresh,
 compilation and warm results remain separate. Qualification requires the paired
 collection and eligibility checks below.
 
+The qualification **supervisor alone** is launched with
+`DOTNET_TieredCompilation=0`. A bounded thread-CPU diagnostic found its background
+tiered compiler using 240 ms during a failed half-second idle check; the workers
+made no CPU progress during that window. Both persistent and exactly-once worker
+launches remove this one inherited variable, so Lython retains normal tiering/PGO
+and CPython retains its normal GC/GIL. Other overrides remain visible and reject
+qualification. The receipt records and validates the supervisor override set,
+binds it on resumption, and distinguishes it from the workers' default profiles.
+Microsoft documents this [compilation setting](https://learn.microsoft.com/en-us/dotnet/core/runtime-config/compilation).
+
+Policy v3 changes the supervisor only. The v2 trial's noise exclusions remain
+preserved separately; the selected jobs, seven-pair sampling, warmup, statistical
+thresholds and 600-second lane budget remain unchanged. Do not mix policies or
+reuse a v2 exclusion as a v3 qualified measurement.
+
 ## Sampling and eligibility
 
 The initial measurement policy is fixed before timing:
@@ -337,7 +352,7 @@ The initial measurement policy is fixed before timing:
   Do not weaken thresholds to obtain publishable results. Controls and jobs
   dominated by harness overhead remain visible without a speedup claim.
 
-Policy/eligibility v2 freezes finite invocation/batch/case/campaign deadlines,
+Policy/eligibility v3 freezes finite invocation/batch/case/campaign deadlines,
 iteration ceilings, case order and protocol size caps in its versioned manifest
 before measurements. A ceiling or interrupted campaign does not relax eligibility.
 Do not force GC or inherit timeit's default cyclic-GC suppression.
@@ -353,7 +368,7 @@ x86_64 profile above; correctness smokes remain available on Windows and Linux.
 ```text
 <dotnet> <benchmark.dll> --compare check-machine --out <machine.json>
 <dotnet> <benchmark.dll> --compare list --profile quick --out <catalog.json>
-<dotnet> <benchmark.dll> --compare qualify --catalog <catalog.json> --dotnet <absolute-dotnet> --python <absolute-python> --python-worker <cpython-worker.py> --toolchains <toolchains.json> --out <receipt.json> --case quick --lane warm
+env DOTNET_TieredCompilation=0 <dotnet> <benchmark.dll> --compare qualify --catalog <catalog.json> --dotnet <absolute-dotnet> --python <absolute-python> --python-worker <cpython-worker.py> --toolchains <toolchains.json> --out <receipt.json> --case quick --lane warm
 <dotnet> <benchmark.dll> --compare render-report --receipt <receipt.json> --out <report.md>
 ```
 
@@ -368,7 +383,7 @@ Post-warmup verification reuses the compiled code, preserving specialization.
 Fresh batches sum parent launch-to-drain times for independent exactly-once
 processes; their individual identities/results remain in the receipt.
 
-Policy/eligibility v2 uses 10,000 intact-pair bootstrap resamples with seed 1729,
+Policy/eligibility v3 uses 10,000 intact-pair bootstrap resamples with seed 1729,
 explicit xorshift32/rejection-index sampling and linear `(n-1)*p` quantiles.
 It retains session medians and intervals separately. No aggregate interval is
 computed. The common invocation ceiling is 1,000,000; warmup is capped at twelve

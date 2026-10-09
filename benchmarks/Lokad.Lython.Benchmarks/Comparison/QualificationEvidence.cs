@@ -45,6 +45,7 @@ internal sealed class QualificationReceipt
     public JsonElement? MachineAfter { get; set; }
     public JsonElement Toolchains { get; set; }
     public JsonElement RuntimeConfig { get; set; }
+    public JsonElement SupervisorOverrides { get; set; } = JsonSerializer.SerializeToElement<object?>(null);
     public List<BinaryIdentity> Files { get; set; } = [];
     public List<BinaryIdentity>? FilesAfter { get; set; }
     public List<QualificationCase> Cases { get; set; } = [];
@@ -183,6 +184,7 @@ internal static class QualificationEvidence
                 || receipt.Cases.Select(c => c.Workload.Id).Distinct(StringComparer.Ordinal).Count() != receipt.Cases.Count)
                 return false;
             var canonical = WorkloadCatalog.Create().ToDictionary(c => c.Id, StringComparer.Ordinal);
+            ValidateSupervisorOverrides(receipt.SupervisorOverrides);
             return receipt.Cases.All(row => canonical.TryGetValue(row.Workload.Id, out var workload) && workload == row.Workload);
         }
         catch (Exception failure) when (failure is InvalidOperationException or KeyNotFoundException or NullReferenceException or InvalidDataException or ArgumentException)
@@ -312,6 +314,16 @@ internal static class QualificationEvidence
             ("System.Reflection.Metadata.MetadataUpdater.IsSupported" or "System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization")
             || p.Value.ValueKind != JsonValueKind.False))
             throw new InvalidDataException("Primary qualification cannot use runtimeconfig GC/tiering/PGO or other tuning overrides.");
+    }
+
+    public static void ValidateSupervisorOverrides(JsonElement overrides)
+    {
+        if (overrides.ValueKind != JsonValueKind.Object
+            || overrides.EnumerateObject().Count() != LythonComparisonWorker.RuntimeOverrideNames.Length
+            || overrides.EnumerateObject().Any(p => !LythonComparisonWorker.RuntimeOverrideNames.Contains(p.Name))
+            || overrides.GetProperty("DOTNET_TieredCompilation").GetString() != "0"
+            || overrides.EnumerateObject().Any(p => p.Name != "DOTNET_TieredCompilation" && p.Value.ValueKind != JsonValueKind.Null))
+            throw new InvalidDataException("Start the supervisor with DOTNET_TieredCompilation=0 and no other runtime overrides; workers retain their defaults.");
     }
 
     // Read-only provenance commands use the same bounded owned process envelope

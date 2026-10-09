@@ -38,6 +38,31 @@ public sealed class ComparisonSamplingTests
         Assert.DoesNotContain("| Qualified |", ComparisonReportCommand.Render(previous, "test"));
     }
 
+    [Theory]
+    [InlineData("missing")]
+    [InlineData("tiered")]
+    [InlineData("gc")]
+    [InlineData("worker")]
+    public async Task SupervisorIsolationIsRequiredAndCannotJustifyWorkerTuning(string defect)
+    {
+        var receipt = await ReceiptAsync();
+        if (defect == "missing") receipt.SupervisorOverrides = JsonSerializer.SerializeToElement<object?>(null);
+        else if (defect == "worker")
+        {
+            var worker = JsonNode.Parse(receipt.Cases[2].Sessions[0].LythonIdentity.GetRawText())!;
+            worker["runtimeOverrides"]!["DOTNET_TieredCompilation"] = "0";
+            receipt.Cases[2].Sessions[0].LythonIdentity = QualificationEvidence.Json(worker);
+        }
+        else
+        {
+            var supervisor = JsonNode.Parse(receipt.SupervisorOverrides.GetRawText())!;
+            supervisor[defect == "tiered" ? "DOTNET_TieredCompilation" : "DOTNET_gcServer"] = "1";
+            receipt.SupervisorOverrides = QualificationEvidence.Json(supervisor);
+        }
+        Assert.Equal("Unqualified", QualificationEvidence.Assess(receipt, receipt.Cases[2]).Status);
+        Assert.DoesNotContain("| Qualified |", ComparisonReportCommand.Render(receipt, "test"));
+    }
+
     [Fact]
     public void StablePairsHaveExactKnownRatioAndDeterministicInterval()
     {
@@ -313,6 +338,7 @@ public sealed class ComparisonSamplingTests
     [InlineData("toolchains")]
     [InlineData("lane")]
     [InlineData("runtime-config")]
+    [InlineData("supervisor")]
     public async Task IncompatibleResumeRejectsBeforeCopyingAnyFinishedProof(string defect)
     {
         var previous = await ReceiptAsync();
@@ -357,6 +383,7 @@ public sealed class ComparisonSamplingTests
             config["runtimeOptions"]!["configProperties"]!["System.Runtime.TieredCompilation"] = false;
             previous.RuntimeConfig = QualificationEvidence.Json(config);
         }
+        if (defect == "supervisor") previous.SupervisorOverrides = QualificationEvidence.Json(new { DOTNET_TieredCompilation = "1" });
 
         Assert.Throws<InvalidDataException>(() => ComparisonQualificationCommand.RestoreForResume(previous, next));
         for (var index = 0; index < freshRows.Length; index++)
@@ -489,6 +516,9 @@ public sealed class ComparisonSamplingTests
         {"runtimeOptions":{"tfm":"net10.0","framework":{"name":"Microsoft.NETCore.App","version":"10.0.0"},
         "configProperties":{"System.Reflection.Metadata.MetadataUpdater.IsSupported":false,"System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization":false}}}
         """).RootElement.Clone();
+        var supervisorOverrides = LythonComparisonWorker.RuntimeOverrideNames.ToDictionary(name => name, _ => (string?)null);
+        supervisorOverrides["DOTNET_TieredCompilation"] = "0";
+        receipt.SupervisorOverrides = QualificationEvidence.Json(supervisorOverrides);
         var freshProcessId = 1000;
         foreach (var workload in WorkloadCatalog.Create().Where(w => w.Id is "control.empty.control" or "control.tiny.control" or "loops.integer.large"))
         {

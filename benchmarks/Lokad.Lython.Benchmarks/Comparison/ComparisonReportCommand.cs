@@ -51,7 +51,7 @@ internal static class ComparisonReportCommand
         builder.AppendLine($"Lane: `{Escape(receipt.Lane)}`. Revision: `{Escape(receipt.Before?.Revision ?? "missing")}`. " +
             $"Policy/eligibility: {receipt.PolicyVersion}/{receipt.EligibilityVersion}. Receipt SHA-256: `{Escape(receiptSha256)}`.").AppendLine();
         builder.AppendLine($"Scope: {receipt.RequestedCaseIds.Length} selected cases from {receipt.CatalogCaseCount} manifest cases. " +
-            "Policy v2 limits each lane to ten minutes including retries. The quick profile covers twelve workloads and two controls, " +
+            "Policy v3 limits each lane to ten minutes including retries. The quick profile covers twelve workloads and two controls, " +
             "with shortened warmup and seven pairs in each of three independent sessions; it is a limited baseline.").AppendLine();
         builder.AppendLine("Ratio means CPython time / Lython time; values above one favor Lython. " +
             "Intervals are fixed-seed paired-bootstrap 95% intervals within one session. " +
@@ -60,6 +60,8 @@ internal static class ComparisonReportCommand
             "and fresh namespaces without an equivalent in-process governor. Imports keep their source positions. " +
             "Fresh-process samples include parent-observed owned launch through pipe drain and exit, with OS file caches retained. " +
             "Invocation controls are visible and never subtracted.").AppendLine();
+        builder.AppendLine("The supervisor alone uses DOTNET_TieredCompilation=0 to avoid its background compiler contaminating idle checks; " +
+            "the override is removed before every worker launch. Both engines retain the recorded ordinary worker profiles.").AppendLine();
         if (receipt.Reason is not null) builder.AppendLine("Campaign reason: " + Escape(receipt.Reason)).AppendLine();
         builder.AppendLine("| Workload | Category | Scale | Session | Status | Lython µs/job | CPython µs/job | CPython/Lython [95% interval] | Winner |");
         builder.AppendLine("| --- | --- | --- | ---: | --- | ---: | ---: | --- | --- |");

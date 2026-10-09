@@ -40,7 +40,7 @@ for attempt in 1 2 3; do
   printf 'LANE=%s ATTEMPT=%s REMAINING_COLLECTION_SECONDS=%s\n' "$lane" "$attempt" "$remaining"
   set +e
   /usr/bin/timeout --signal=INT --kill-after=5s "${remaining}s" \
-    "$dotnet" "$assembly" --compare qualify --catalog "$catalog" --dotnet "$dotnet" --python "$python" \
+    /usr/bin/env DOTNET_TieredCompilation=0 "$dotnet" "$assembly" --compare qualify --catalog "$catalog" --dotnet "$dotnet" --python "$python" \
       --python-worker "$helper" --toolchains "$toolchains" --out "$notes/$lane.json" \
       --case quick --lane "$lane" "${resume[@]}" > "$notes/$lane-attempt-$attempt.log" 2>&1
   result=$?

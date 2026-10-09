@@ -6,6 +6,22 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class ComparisonWorkerSupervisorTests
 {
+    [Theory]
+    [InlineData("clear")]
+    [InlineData("inherit")]
+    public async Task SupervisorTieringIsRemovedOnlyFromExplicitQualificationWorkerLaunches(string mode)
+    {
+        if (!OperatingSystem.IsLinux()) return; // Qualification is Linux-only.
+        using var fixture = new Fixture("environment-parent", mode);
+        await using var worker = await fixture.StartAsync();
+        var environment = worker.Identity.GetProperty("childEnvironment");
+        Assert.Equal(mode == "clear" ? null : "0", environment.GetProperty("tiering").GetString());
+        Assert.Equal("1", environment.GetProperty("pgo").GetString());
+        await worker.CloseAsync();
+        Assert.True(worker.CleanupCompleted);
+        await AssertExitedAsync(fixture.RootId);
+    }
+
     private static readonly ComparisonWorkload Case = new("fixture", "control", "control", "test", 1,
         "print('λ😀')\n", "{\"size\":1,\"text\":null}", "λ😀\n");
     private static readonly string CatalogHash = new('a', 64);
