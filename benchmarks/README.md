@@ -9,6 +9,9 @@ catalog export, explicit CPython correctness check and supervised comparison smo
 are available, together with an exactly-once fresh-process smoke. Opt-in machine
 checks, paired collection with strict eligibility, checkpoint resumption and
 raw-evidence report rendering are documented in the comparison contract.
+The [2026-10-09 run](results/2026-10-09-quick/README.md) finished the four lanes in
+14m57s total, within ten minutes per lane. It records absolute timings and all
+exclusions; no workload ratio qualified.
 BenchmarkDotNet results below do not include a
 Python baseline. An explicit, hash-verified Linux toolchain preparation command
 is documented in that contract.

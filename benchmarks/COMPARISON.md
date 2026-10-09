@@ -4,7 +4,9 @@ Specification version **4**, established before the shortened comparative run. T
 and explicit correctness check are available. Persistent worker primitives are
 available, including supervised correctness/timer smokes, paired collection,
 machine checks and raw-evidence report rendering.
-No qualified baseline is claimed.
+The [2026-10-09 bounded run](results/2026-10-09-quick/README.md) completed all four
+lanes within ten minutes each. Its raw-evidence review found no qualified
+workload ratios; a qualified baseline remains pending.
 
 The primary run has a hard **10-minute wall budget per lane**, including
 preparation, verification, noise waits, retries and worker cleanup. Build and
