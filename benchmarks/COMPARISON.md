@@ -49,6 +49,12 @@ registrations reduced pipeline medians by 65–67% and split/count by 63–66% i
 7–8-second collections. These remain diagnostic results; the next full milestone
 is deferred.
 
+The [module completion experiment](results/2026-10-09-module-completion/README.md)
+used six collections of about seven seconds each. Direct synchronous completion
+helped empty and tiny controls modestly, but the integer loop took slightly
+longer in both repetitions, so that candidate remains isolated. An independent
+writer publication cleanup correction is retained; no full lane was collected.
+
 ## Short improvement rounds
 
 Build the old and candidate benchmark workers in Release before timing. The
