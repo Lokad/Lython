@@ -23,6 +23,12 @@ seven-second collections, and rejected direct loop-name storage after inconsiste
 results. Every collection is retained. A separate operator-fallback correctness
 fix preserves the measured integer guard.
 
+The [bound loop-name compiler change](results/2026-10-09-bound-loop-names/README.md)
+showed 20.2–22.4% less loop time in two collections of about seven seconds each
+against a baseline with the same independently tested function-scope fix.
+Simple targets reuse existing bound stores; complete outputs and checkpoints
+remain checked. Both receipts are retained, with milestone qualification pending.
+
 Ordinary improvement rounds use the short `micro` command below. Full lanes
 are reserved for occasional declared milestones, with their existing ten-minute
 cap and qualification rules. Microbenchmarks provide diagnostic feedback in

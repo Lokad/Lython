@@ -16,6 +16,8 @@ public sealed class BoundLoopNameStorageTests
     [InlineData("for i in range(5):\n try:\n  if i == 1: continue\n  if i == 3: break\n finally:\n  saved = i\nreturn str([i, saved])", "[3, 3]")]
     [InlineData("i = 10\nvalues = [i for i in [1, 2]]\nreturn str([i, values])", "[10, [1, 2]]")]
     [InlineData("class C:\n for i in [7, 8]: pass\nreturn str(C.i)", "8")]
+    [InlineData("def update():\n global i\n i = 50\nvalues = []\nfor i in [1, 2]:\n update()\n values.append(i)\nreturn str(values)", "[50, 50]")]
+    [InlineData("def outer():\n def update():\n  nonlocal i\n  i = 50\n values = []\n for i in [1, 2]:\n  update()\n  values.append(i)\n return values\nreturn str(outer())", "[50, 50]")]
     public async Task NamesKeepTheirScopeAndNamespaceBehavior(string source, string expected)
     {
         var script = new LythonEngine().Compile(source);
