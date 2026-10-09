@@ -69,6 +69,11 @@ is claimed. Pipeline medians changed in opposite directions. Preserve those
 results and investigate the second repetition's higher candidate time rather
 than attributing it to external interference or dismissing it as noise.
 The remaining loop and string-processing gap to CPython still requires work.
+The separate [pipeline allocation and generated-code diagnostics](../2026-10-09-pipeline-diagnostics/README.md)
+retain both timing receipts, find almost identical fixed-count managed
+allocation, and confirm eliminated transfer copies. They leave the slower
+pipeline repetition unexplained and identify split construction/registration
+as the next prospective target.
 
 ## Correctness and reproduction
 
