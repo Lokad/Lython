@@ -17,6 +17,12 @@ used two short collections of about seven seconds each. Their diagnostic medians
 show 13.4–14.0% less time on the 16,384-iteration loop, with correctness checks
 passing and milestone qualification deferred.
 
+The [subsequent short experiments](results/2026-10-09-integer-addition/README.md)
+accepted guarded exact integer addition after 10.7–14.1% less loop time in two
+seven-second collections, and rejected direct loop-name storage after inconsistent
+results. Every collection is retained. A separate operator-fallback correctness
+fix preserves the measured integer guard.
+
 Ordinary improvement rounds use the short `micro` command below. Full lanes
 are reserved for occasional declared milestones, with their existing ten-minute
 cap and qualification rules. Microbenchmarks provide diagnostic feedback in
