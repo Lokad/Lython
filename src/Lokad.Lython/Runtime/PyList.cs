@@ -474,14 +474,20 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
             return;
         }
 
-        // Compact survivors forward, then drop the tail: no scratch arrays,
-        // only the retained backing store moves. The compaction permutes held
-        // references, so adoption refcounts are untouched by it.
+        // Release deleted identities before compaction overwrites their slots.
+        // Moving survivors does not change their adoption refcounts; the old
+        // tail contains copied survivors as well as deleted values, so dropping
+        // it must only clear storage, without releasing those identities again.
+        var committedBefore = CommittedStorageBytes;
         var count = Count;
         var destination = 0;
         for (var source = 0; source < count; source++)
         {
-            if (!bounds.Contains(source))
+            if (bounds.Contains(source))
+            {
+                ReleaseOutgoing(_items[source]);
+            }
+            else
             {
                 if (destination != source)
                 {
@@ -494,8 +500,10 @@ internal sealed class PyList : IMutablePySequenceValue, IMutablePyIndexableValue
 
         if (destination < count)
         {
-            RemoveRange(destination, count - destination);
+            _items.RemoveRangeAt(destination, count - destination);
         }
+
+        NoteGrowth(committedBefore);
     }
 
     public void SetSlice(PyIndexing.SliceBounds bounds, IReadOnlyList<object> values, LythonSourceSpan span)

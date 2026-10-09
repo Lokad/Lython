@@ -187,6 +187,79 @@ public sealed class AdoptedScalarCouponTests
             governor.CurrentCommittedBytes - before);
     }
 
+    [Theory]
+    [InlineData(0, 5, 2)]
+    [InlineData(4, -1, -2)]
+    public void ListSteppedDeletionReleasesRemovedIdentities(int start, int end, int step)
+    {
+        var governor = new MemoryGovernor(65536);
+        var pool = new ChargeReclamationPool(governor);
+        var items = Enumerable.Range(0, 5).Select(i => (object)new BigInteger(i)).ToArray();
+        var list = new PyList(items, governor);
+        var backing = list.CommittedStorageBytes - 5 * AdoptedScalarCoupons.CouponBytes;
+        pool.TrackFreshMutable(list, list.CommittedStorageBytes);
+
+        list.DeleteSlice(new PyIndexing.SliceBounds(start, end, step));
+        Assert.Equal(2, list.Count);
+        Assert.Same(items[1], list[0]);
+        Assert.Same(items[3], list[1]);
+        list.RemoveAt(0);
+        list.RemoveAt(0);
+
+        Assert.Empty(list);
+        Assert.Equal(backing, list.CommittedStorageBytes);
+        Assert.Equal(backing, PooledCharge(pool, list));
+        Assert.Equal(backing + ChargeReclamationPool.EntryChargeBytes + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+    }
+
+    [Fact]
+    public void ListSteppedDeletionReleasesRemovedIdentitiesWithArrayStorage()
+    {
+        var governor = new MemoryGovernor(65536);
+        var pool = new ChargeReclamationPool(governor);
+        var items = Enumerable.Range(0, 32).Select(i => (object)new BigInteger(i)).ToArray();
+        var list = new PyList(items, governor);
+        var backing = list.CommittedStorageBytes - items.Length * AdoptedScalarCoupons.CouponBytes;
+        pool.TrackFreshMutable(list, list.CommittedStorageBytes);
+
+        list.DeleteSlice(new PyIndexing.SliceBounds(0, items.Length, 2));
+        Assert.Equal(16, list.Count);
+        for (var index = 0; index < list.Count; index++) Assert.Same(items[index * 2 + 1], list[index]);
+        while (list.Count != 0) list.RemoveAt(0);
+
+        Assert.Equal(backing, list.CommittedStorageBytes);
+        Assert.Equal(backing, PooledCharge(pool, list));
+        Assert.Equal(backing + ChargeReclamationPool.EntryChargeBytes + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+    }
+
+    [Fact]
+    public void ListSteppedDeletionPreservesSurvivingAliasRefcounts()
+    {
+        var governor = new MemoryGovernor(65536);
+        var pool = new ChargeReclamationPool(governor);
+        object removed = new BigInteger(1);
+        object kept = new BigInteger(2);
+        var list = new PyList(new object[] { removed, kept, removed, kept, new BigInteger(3) }, governor);
+        var backing = list.CommittedStorageBytes - 3 * AdoptedScalarCoupons.CouponBytes;
+        pool.TrackFreshMutable(list, list.CommittedStorageBytes);
+
+        list.DeleteSlice(new PyIndexing.SliceBounds(0, 5, 2));
+        Assert.Equal(2, list.Count);
+        Assert.Same(kept, list[0]);
+        Assert.Same(kept, list[1]);
+        Assert.Equal(backing + AdoptedScalarCoupons.CouponBytes, list.CommittedStorageBytes);
+        Assert.Equal(list.CommittedStorageBytes, PooledCharge(pool, list));
+        list.RemoveAt(0);
+        Assert.Equal(backing + AdoptedScalarCoupons.CouponBytes, list.CommittedStorageBytes);
+        list.RemoveAt(0);
+        Assert.Equal(backing, list.CommittedStorageBytes);
+        Assert.Equal(backing, PooledCharge(pool, list));
+        Assert.Equal(backing + ChargeReclamationPool.EntryChargeBytes + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+    }
+
     [Fact]
     public void SetDuplicateAddAdoptsOnce()
     {
