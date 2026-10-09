@@ -723,6 +723,10 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
+        if (op == AugmentedAssignmentOperatorSyntax.Add &&
+            currentValue is BigInteger leftInteger && right is BigInteger rightInteger)
+            return AddExactIntegers(leftInteger, rightInteger, context, span);
+
         if (op == AugmentedAssignmentOperatorSyntax.MatrixMultiply) return EvaluateMatrixInPlaceAsync(currentValue, right, context, span, false).GetAwaiter().GetResult();
         var inPlaceMethod = op switch
         {

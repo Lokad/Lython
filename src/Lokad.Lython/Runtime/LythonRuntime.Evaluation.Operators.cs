@@ -39,6 +39,9 @@ internal sealed partial class LythonRuntime
 
     private static object EvaluateAdd(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {
+        if (left is BigInteger leftInteger && right is BigInteger rightInteger)
+            return AddExactIntegers(leftInteger, rightInteger, context, span);
+
         if (left is PyComplex || right is PyComplex) return EvaluateComplexBinary(BinaryOperatorSyntax.Add, left, right, context, span);
         if (left is PyDecimal || right is PyDecimal)
         {
@@ -163,6 +166,21 @@ internal sealed partial class LythonRuntime
     // numeric path below.
     private static object AddCounters(PyCounter leftCounter, PyCounter rightCounter, LythonSourceSpan span, ExecutionContext context)
         => BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => AddCounterCounts(lhs, rhs, span, leftCounter.OwnerMemoryGovernor ?? rightCounter.OwnerMemoryGovernor, context.Services.State.CallTemporaries), keepPositiveOnly: true, span, context);
+
+    // Boxed BigInteger is an exact built-in int, so neither operand can supply
+    // user operator methods. Keep one result box and the existing ownership and
+    // overflow funnel while avoiding generalized collection/numeric dispatch.
+    private static object AddExactIntegers(BigInteger left, BigInteger right, ExecutionContext context, LythonSourceSpan span)
+    {
+        try
+        {
+            return OwnHeapInteger(left + right, context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+        }
+        catch (OverflowException ex)
+        {
+            throw new LythonRuntimeException("OverflowError", ex.Message, span);
+        }
+    }
 
     private static object SubtractCounters(PyCounter leftCounter, PyCounter rightCounter, LythonSourceSpan span, ExecutionContext context)
         => BuildCounterBinaryResult(leftCounter, rightCounter, (lhs, rhs) => SubtractCounterCounts(lhs, rhs, span, leftCounter.OwnerMemoryGovernor ?? rightCounter.OwnerMemoryGovernor, context.Services.State.CallTemporaries), keepPositiveOnly: true, span, context);

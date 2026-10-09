@@ -41,6 +41,9 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
+        if (op == BinaryOperatorSyntax.Add && left is BigInteger leftInteger && right is BigInteger rightInteger)
+            return AddExactIntegers(leftInteger, rightInteger, context, span);
+
         if (op == BinaryOperatorSyntax.MatrixMultiply) return EvaluateMatrixMultiplyAsync(left, right, context, span, false).GetAwaiter().GetResult();
         if (op == BinaryOperatorSyntax.BitwiseOr && TryTypeUnion(left, right, context, span, out var union)) return union;
         if (TryEvaluateNumericProtocol(op, left, right, context, span, out var protocolResult))
@@ -71,6 +74,9 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan span)
     {
+        if (op == BinaryOperatorSyntax.Add && left is BigInteger leftInteger && right is BigInteger rightInteger)
+            return AddExactIntegers(leftInteger, rightInteger, context, span);
+
         if (op == BinaryOperatorSyntax.MatrixMultiply) return await EvaluateMatrixMultiplyAsync(left, right, context, span, true).ConfigureAwait(false);
         if (op == BinaryOperatorSyntax.BitwiseOr && TryTypeUnion(left, right, context, span, out var union)) return union;
         var protocol = await EvaluateNumericProtocolAsync(op, left, right, context, span).ConfigureAwait(false);
