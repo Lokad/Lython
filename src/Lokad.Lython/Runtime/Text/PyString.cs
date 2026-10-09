@@ -21,6 +21,11 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
     private int _hashCode;
     private bool _hashCodeComputed;
 
+    // Keep the registration beside its governed value. The entry points back
+    // weakly, so the pool can still reclaim the string without an additional
+    // process-wide ephemeron table entry for every split item.
+    internal ChargeReclamationPool.ReclamationEntry? ReclamationEntry { get; set; }
+
     private PyString(byte[] utf8)
     {
         _utf8 = utf8;

@@ -36,8 +36,9 @@ internal sealed class ChargeReclamationPool
     // live/quantum sweeps.
     private const int OldQuantum = 4096;
 
-    // Pooled values with a pending entry. Untracked values cost one lookup
-    // and no entry on the notifying paths.
+    // Strings carry their pending entry directly, avoiding an additional weak
+    // table handle per split item. Other pooled values use this identity table.
+    // Both paths keep the target weak and the same conservative registry charge.
     private static readonly ConditionalWeakTable<object, ReclamationEntry> TrackedStorage = new();
 
     private readonly MemoryGovernor _governor;
@@ -47,7 +48,7 @@ internal sealed class ChargeReclamationPool
     private long _backingBytes;
     private int _sweepDepth;
 
-    private sealed class ReclamationEntry
+    internal sealed class ReclamationEntry
     {
         public ReclamationEntry(object target, long valueCharge)
         {
@@ -79,16 +80,51 @@ internal sealed class ChargeReclamationPool
 
     // Reference-identity ownership probe for container adoption (N06):
     // containers cannot thread a pool reference through every mutation path,
-    // so they ask the shared table directly. Tracked values stay under their
+    // so they ask the shared registration directly. Tracked values stay under their
     // existing owner; only untracked scalars earn container coupons.
-    internal static bool IsTrackedValue(object value) => TrackedStorage.TryGetValue(value, out _);
+    internal static bool IsTrackedValue(object value) => TryGetEntry(value, out _);
+
+    private static bool TryGetEntry(object value, [NotNullWhen(true)] out ReclamationEntry? entry)
+    {
+        if (value is PyString text)
+        {
+            entry = text.ReclamationEntry;
+            return entry is not null;
+        }
+
+        return TrackedStorage.TryGetValue(value, out entry);
+    }
+
+    private static void PublishEntry(object value, ReclamationEntry entry)
+    {
+        if (value is PyString text)
+        {
+            text.ReclamationEntry = entry;
+        }
+        else
+        {
+            TrackedStorage.Add(value, entry);
+        }
+    }
+
+    private static void RemoveEntry(object value)
+    {
+        if (value is PyString text)
+        {
+            text.ReclamationEntry = null;
+        }
+        else
+        {
+            TrackedStorage.Remove(value);
+        }
+    }
 
     // Re-snapshots a pooled value whose backing charges were released and
     // recommitted through the value itself, so a later sweep releases exactly
     // the current backing. Untracked values cost one lookup and no entry.
     public static void NotifyStorageReplaced(object value, long currentCharge)
     {
-        if (TrackedStorage.TryGetValue(value, out var entry))
+        if (TryGetEntry(value, out var entry))
         {
             entry.ValueCharge = currentCharge;
         }
@@ -104,7 +140,7 @@ internal sealed class ChargeReclamationPool
 
     // Registers a governed string for its exact construction charge; shared
     // empties and unowned values carry no charge and stay untracked. The
-    // shared table keys by reference identity, so value-equal but distinct
+    // registration belongs to the string identity, so value-equal but distinct
     // strings track (and release) independently through this same path.
     public void TrackString(PyString value, LythonSourceSpan? span = null)
     {
@@ -165,11 +201,11 @@ internal sealed class ChargeReclamationPool
     // by the pool, exactly as after ordinary pruning.
     internal void RefundUnpublishedValue(object value)
     {
-        if (TrackedStorage.TryGetValue(value, out var entry))
+        if (TryGetEntry(value, out var entry))
         {
             if (!_young.Remove(entry) && !_old.Remove(entry))
                 throw new InvalidOperationException("Unpublished value belongs to another reclamation pool.");
-            TrackedStorage.Remove(value);
+            RemoveEntry(value);
             _governor.Release(entry.ValueCharge + EntryChargeBytes);
             _oldCursor = Math.Min(_oldCursor, _old.Count);
         }
@@ -251,7 +287,7 @@ internal sealed class ChargeReclamationPool
     // and publishes no mark, and a funded retry registers cleanly.
     private void TrackCore(object value, long valueCharge, LythonSourceSpan? span = null)
     {
-        if (TrackedStorage.TryGetValue(value, out _))
+        if (TryGetEntry(value, out _))
         {
             return;
         }
@@ -275,9 +311,9 @@ internal sealed class ChargeReclamationPool
             var published = false;
             try
             {
-                TrackedStorage.Add(value, entry);
-                _young.Add(entry);
+                PublishEntry(value, entry);
                 published = true;
+                _young.Add(entry);
                 CommitTierInsertion(_young, fundedGrowth, capacityBefore, span);
             }
             catch
@@ -312,7 +348,7 @@ internal sealed class ChargeReclamationPool
 
     private void UnpublishEntry(object value, ReclamationEntry entry)
     {
-        TrackedStorage.Remove(value);
+        RemoveEntry(value);
         // The entry was appended last with no interleaving publication on this
         // single-threaded runtime; fall back to a linear remove defensively.
         if (_young.Count > 0 && ReferenceEquals(_young[_young.Count - 1], entry))
