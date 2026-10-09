@@ -7,7 +7,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Runtime.ExceptionServices;
 using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Utf8Regex.PythonRe;
@@ -334,36 +333,12 @@ internal sealed partial class LythonRuntime
     // same way for its synchronous prefix. Unexpected failures marshal
     // back with their original stack preserved.
     private const int SyncExecutionStackBytes = 16 * 1024 * 1024;
+    private static readonly ExecutionThreads SyncExecutionThreads = new(
+        SyncExecutionStackBytes, Math.Clamp(Environment.ProcessorCount, 1, 8), TimeSpan.FromSeconds(30));
 
     private static LythonExecutionResult RunOnDedicatedStack(Func<LythonExecutionResult> runner)
     {
-        LythonExecutionResult? result = null;
-        ExceptionDispatchInfo? failure = null;
-        var thread = new Thread(
-            () =>
-            {
-                try
-                {
-                    result = runner();
-                }
-                catch (Exception ex)
-                {
-                    failure = ExceptionDispatchInfo.Capture(ex);
-                }
-            },
-            SyncExecutionStackBytes)
-        {
-            IsBackground = true,
-            Name = "Lython sync execution",
-        };
-        thread.Start();
-        thread.Join();
-        if (failure is not null)
-        {
-            failure.Throw();
-        }
-
-        return result ?? throw new InvalidOperationException("Lython sync execution ended without a result.");
+        return SyncExecutionThreads.Run(runner);
     }
 
     // Async counterpart of the dedicated-stack hop above: the synchronous

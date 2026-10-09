@@ -9,6 +9,9 @@ namespace Lokad.Lython;
 /// drive prefixes. Implementations must still map them beneath their contained root,
 /// honor cancellation, avoid ambient process-wide state, and report unsupported
 /// operations explicitly.
+/// Callbacks may run on reused runtime threads or async continuation threads;
+/// implementations must not depend on thread identity or thread-local state
+/// surviving between executions.
 /// </remarks>
 public interface ILythonHost
 {
