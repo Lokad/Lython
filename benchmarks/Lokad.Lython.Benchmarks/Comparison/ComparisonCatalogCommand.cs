@@ -9,6 +9,7 @@ internal static class ComparisonCatalogCommand
     {
         if (arguments.Length > 0 && arguments[0] == "check-machine") return ComparisonMachineCommand.Run(arguments[1..]);
         if (arguments.Length > 0 && arguments[0] == "qualify") return ComparisonQualificationCommand.Run(arguments[1..]);
+        if (arguments.Length > 0 && arguments[0] == "micro") return ComparisonMicroCommand.Run(arguments[1..]);
         if (arguments.Length > 0 && arguments[0] == "render-report") return ComparisonReportCommand.Run(arguments[1..]);
         if (arguments.Length > 0 && arguments[0] == "verify")
             return ComparisonVerifyCommand.Run(arguments[1..]);

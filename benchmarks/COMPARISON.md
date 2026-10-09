@@ -12,6 +12,43 @@ completed in 2m13s. Its separate CPU profile identifies interpreter dispatch
 as the leading design investigation; strict stability checks still withhold
 qualified comparative multipliers.
 
+Ordinary improvement rounds use the short `micro` command below. Full lanes
+are reserved for occasional declared milestones, with their existing ten-minute
+cap and qualification rules. Microbenchmarks provide diagnostic feedback in
+seconds; they do not run idle gates, establish a qualified speedup or replace
+correctness checks.
+
+## Short improvement rounds
+
+Build the old and candidate benchmark workers in Release before timing. The
+short command reuses one identical precompiled case in old Lython, candidate
+Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
+golden-output checks, one second of warmup per worker, a two-second settling
+pause and seven rotating-order batches calibrated to 25 ms. It records every
+response, loaded worker identity and before/after input hashes. Its table reports
+per-job medians and interpolated IQR/median; no confidence interval or certified
+multiplier is claimed. Compilation, transport and output hashing stay outside
+the worker timer, as in the warm lane.
+
+```text
+<dotnet> <candidate-benchmark.dll> --compare micro --catalog <catalog.json>
+  --dotnet <absolute-dotnet> --baseline-worker <old-benchmark.dll>
+  --python <absolute-python> --python-worker <cpython-worker.py>
+  --out <new-micro.json> [--case <id>]
+```
+
+The default case is `loops.integer.large`. Select an existing case explicitly
+when testing another hypothesis. These jobs should last seconds. Collection has
+a 15-second deadline; allow another 15 seconds for owned-worker cleanup. On the
+VM, enforce the complete **30-second hard limit** with a dedicated systemd service
+using `RuntimeMaxSec=30`, `TimeoutStopSec=0` and `KillMode=control-group`.
+[run-micro-linux.sh](run-micro-linux.sh) supplies the shared VM lease and the
+core-loop manifest. It takes absolute dotnet/Python paths, the old worker DLL,
+a new evidence directory, the lease path and an optional case ID. The supervisor
+alone disables its tiered compilation; every worker removes that override.
+Build, test and transfer beforehand; preserve partial/failed receipts. Never
+overwrite a receipt or automatically repeat a noisy diagnostic to pick a winner.
+
 The primary run has a hard **10-minute wall budget per lane**, including
 preparation, verification, noise waits, retries and worker cleanup. Build and
 install toolchains beforehand; render reports offline afterward. Four lanes
