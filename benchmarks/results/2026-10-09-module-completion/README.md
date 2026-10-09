@@ -73,6 +73,18 @@ after two completed reads. A similar earlier failure is retained in the local
 plan. This recurrence reopened the lifetime investigation; focused passes
 do not establish its cause or justify changing the budget.
 
+The first delivery's Ubuntu Release CI also reproduced that CSV failure after
+four reads (128 bytes denied, peak 3,145,688); Windows CI and all 9,052 local
+Debug tests passed. A separate deterministic governor regression then showed
+that new allocation commits can be overlooked when releases keep the committed
+total flat or lower. The retry gate now records successful commits since relief,
+while repeated pinned denials without new commits still fail fast. Two before/after
+regressions and a pinned-denial guard check cover this correction. Budgets,
+ownership charges and sweep rules are unchanged. This demonstrated defect is
+corrected independently; its connection to the intermittent CSV failure remains
+unproven. A declared denial-snapshot observation captured no failure, and its
+instrumented passing run is not evidence that C05 was fixed.
+
 ## Reproduction and evidence
 
 Run `--compare list --profile quick --out catalog.json` from the Release

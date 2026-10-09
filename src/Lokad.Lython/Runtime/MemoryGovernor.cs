@@ -40,10 +40,11 @@ internal sealed class MemoryGovernor
     // tracking, so no second registry can grow here.
     internal Func<IEnumerable<ChargeReclamationPool>>? LivePoolProvider { get; set; }
 
-    // Committed level after the last relief: relief repeats only while
-    // retention keeps growing, so pinned workloads fail fast instead of
-    // paying a collection per caught trip.
-    private long _committedAtLastReclaim;
+    // Successful allocation progress since the last relief. Net committed
+    // bytes may stay flat or fall while replacements allocate and old values
+    // become collectible. Repeated pinned denials without a new commit still
+    // fail fast instead of paying a collection per caught trip.
+    private bool _hasCommittedSinceReclaim;
 
     // Reentrancy guard: sweeps may themselves reserve (tier promotion funds its
     // old-tier slot), so a denial inside relief fails fast instead of re-entering
@@ -69,7 +70,7 @@ internal sealed class MemoryGovernor
                 throw RuntimeErrors.Memory($"execution memory budget exceeded ({maxAccountedBytes})", span);
             }
 
-            if (CurrentCommittedBytes > _committedAtLastReclaim && !_inExhaustionRelief)
+            if (_hasCommittedSinceReclaim && !_inExhaustionRelief)
             {
                 _inExhaustionRelief = true;
                 try
@@ -79,9 +80,10 @@ internal sealed class MemoryGovernor
                 finally
                 {
                     _inExhaustionRelief = false;
+                    // Promotion commits made by relief itself do not warrant
+                    // another attempt when the pending allocation still fails.
+                    _hasCommittedSinceReclaim = false;
                 }
-
-                _committedAtLastReclaim = CurrentCommittedBytes;
             }
             nextReserved = AddChecked(CurrentReservedBytes, bytes, span);
             nextAccounted = AddChecked(nextReserved, CurrentCommittedBytes, span);
@@ -224,6 +226,7 @@ internal sealed class MemoryGovernor
         var committed = Math.Min(bytes, CurrentReservedBytes);
         CurrentReservedBytes -= committed;
         CurrentCommittedBytes = checked(CurrentCommittedBytes + committed);
+        if (committed > 0) _hasCommittedSinceReclaim = true;
 
         if (CurrentCommittedBytes > PeakCommittedBytes)
         {
