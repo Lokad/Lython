@@ -135,20 +135,81 @@ public sealed class ComparisonSamplingTests
         Assert.Equal(1_000_000, PairedSampler.NextCount(1_000_000, .001, .040, true));
     }
 
-    [Fact]
-    public async Task ReportRecomputesQualificationAndSurvivesIndentedReceiptRoundTrip()
+    [Theory]
+    [InlineData("warm")]
+    [InlineData("compile-run")]
+    [InlineData("compile")]
+    [InlineData("fresh-process")]
+    public async Task ReportRecomputesQualificationAndSurvivesIndentedReceiptRoundTrip(string lane)
     {
-        var receipt = await ReceiptAsync();
+        var receipt = await ReceiptAsync(lane);
         Assert.True(QualificationEvidence.CompleteCampaign(receipt));
         Assert.Equal("Qualified", QualificationEvidence.Assess(receipt, receipt.Cases[2]).Status);
         receipt.Cases[2].Sessions[0].Sampling.Statistics = receipt.Cases[2].Sessions[0].Sampling.Statistics! with
         { Ratio = 99, RatioLower = 98, RatioUpper = 100 };
         var roundtrip = JsonSerializer.Deserialize<QualificationReceipt>(JsonSerializer.Serialize(receipt,
             new JsonSerializerOptions(ComparisonProtocol.JsonOptions) { WriteIndented = true }), ComparisonProtocol.JsonOptions)!;
-        Assert.Equal("Qualified", QualificationEvidence.Assess(roundtrip, roundtrip.Cases[2]).Status);
+        var assessment = QualificationEvidence.Assess(roundtrip, roundtrip.Cases[2]);
+        Assert.True(assessment.Status == "Qualified", string.Join(" | ", assessment.Reasons));
         var report = ComparisonReportCommand.Render(roundtrip, new string('b', 64));
         Assert.Contains("2.000 [2.000, 2.000]", report); Assert.Contains("Control", report);
         Assert.DoesNotContain("overall speedup: 2", report);
+    }
+
+    [Theory]
+    [InlineData("parent-clock")]
+    [InlineData("once-request")]
+    [InlineData("repeated-process")]
+    [InlineData("process-id")]
+    [InlineData("missing-job")]
+    [InlineData("extra-job")]
+    [InlineData("elapsed-total")]
+    [InlineData("payload")]
+    [InlineData("runtime")]
+    [InlineData("output")]
+    [InlineData("job-count")]
+    public async Task InvalidFreshProcessEvidenceCannotPublishARatio(string defect)
+    {
+        var receipt = await ReceiptAsync("fresh-process");
+        var row = receipt.Cases[2];
+        var session = row.Sessions[0];
+        var first = session.Fresh[0];
+        var observation = first.Observation;
+        if (defect == "parent-clock")
+            session.Fresh[0] = first with { Observation = observation with { ClockFrequency = 1 } };
+        if (defect == "once-request")
+            session.Fresh[0] = first with { Observation = observation with { Response = observation.Response with { RequestId = 2 } } };
+        if (defect == "repeated-process")
+        {
+            var identity = JsonNode.Parse(session.Fresh[1].Observation.Identity.GetRawText())!;
+            identity["processId"] = observation.Identity.GetProperty("processId").GetInt32();
+            session.Fresh[1] = session.Fresh[1] with
+            { Observation = session.Fresh[1].Observation with { Identity = QualificationEvidence.Json(identity) } };
+        }
+        if (defect == "process-id")
+        {
+            var identity = JsonNode.Parse(observation.Identity.GetRawText())!;
+            identity["processId"] = 0;
+            session.Fresh[0] = first with { Observation = observation with { Identity = QualificationEvidence.Json(identity) } };
+        }
+        if (defect == "missing-job") session.Fresh.RemoveAt(0);
+        if (defect == "extra-job") session.Fresh.Add(first);
+        if (defect == "elapsed-total")
+            session.Fresh[0] = first with { Observation = observation with { ElapsedTicks = observation.ElapsedTicks + 1 } };
+        if (defect == "payload") row.Payload = row.Payload! with { Sha256 = new string('c', 64) };
+        if (defect == "runtime")
+        {
+            var identity = JsonNode.Parse(observation.Identity.GetRawText())!;
+            identity["runtimeVersion"] = "0.0.0";
+            session.Fresh[0] = first with { Observation = observation with { Identity = QualificationEvidence.Json(identity) } };
+        }
+        if (defect == "output")
+            session.Fresh[0] = first with { Observation = observation with { Response = observation.Response with { ActualOutputSha256 = new string('c', 64) } } };
+        if (defect == "job-count")
+            session.Fresh[0] = first with { Observation = observation with { Response = observation.Response with { CompletedInvocations = 2 } } };
+        receipt.PerformanceQualified = true;
+        Assert.Equal("Unqualified", QualificationEvidence.Assess(receipt, row).Status);
+        Assert.DoesNotContain("| Qualified |", ComparisonReportCommand.Render(receipt, "test"));
     }
 
     [Fact]
@@ -254,7 +315,7 @@ public sealed class ComparisonSamplingTests
         public MachineSnapshot Read() { _read++; return Snapshot(_read * 100, (ulong)_read * 10); }
     }
 
-    private static async Task<QualificationReceipt> ReceiptAsync()
+    private static async Task<QualificationReceipt> ReceiptAsync(string lane = "warm")
     {
         var source = new SourceEvidence(new string('a', 40), "", "10.0.401"); var hash = new string('b', 64);
         var py = QualificationEvidence.Json(new { version = "3.13.16 test", executable = "/python", sha256 = hash,
@@ -267,16 +328,20 @@ public sealed class ComparisonSamplingTests
         var files = new[] { "/library", "/adapter", "/core", "/python", "/helper" }.Select(p => new ComparisonVerifyCommand.BinaryIdentity(p, hash)).ToList();
         var receipt = new QualificationReceipt { SchemaVersion = 1, ProtocolVersion = 1, PolicyVersion = 1, EligibilityVersion = 1,
             Id = Guid.NewGuid().ToString("N"), Started = DateTimeOffset.UtcNow, Updated = DateTimeOffset.UtcNow,
-            State = "Completed", Lane = "warm", Policy = QualificationEvidence.Json(ComparisonPolicy.Describe()), PolicySha256 = QualificationEvidence.PolicyHash,
+            State = "Completed", Lane = lane, Policy = QualificationEvidence.Json(ComparisonPolicy.Describe()), PolicySha256 = QualificationEvidence.PolicyHash,
             Before = source, After = source, Files = files, FilesAfter = files.ToList(), Machine = machine, MachineAfter = machine,
             Toolchains = tools, CatalogSha256 = hash, InitialGate = Quiet(), FinalGate = Quiet(), CatalogCaseCount = WorkloadCatalog.Create().Count };
         receipt.RuntimeConfig = JsonDocument.Parse("""
         {"runtimeOptions":{"tfm":"net10.0","framework":{"name":"Microsoft.NETCore.App","version":"10.0.0"},
         "configProperties":{"System.Reflection.Metadata.MetadataUpdater.IsSupported":false,"System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization":false}}}
         """).RootElement.Clone();
+        var freshProcessId = 1000;
         foreach (var workload in WorkloadCatalog.Create().Where(w => w.Id is "control.empty.control" or "control.tiny.control" or "loops.integer.large"))
         {
             var row = new QualificationCase { Workload = workload, State = "Measured" }; receipt.Cases.Add(row);
+            if (lane == "fresh-process")
+                row.Payload = new("/inputs/" + workload.Id + ".json", ComparisonProtocol.Digest(ComparisonVerifyCommand.SerializeAtomic(new
+                { schemaVersion = 1, catalogVersion = WorkloadCatalog.Version, cases = new[] { workload } })));
             for (var index = 0; index < 3; index++)
             {
                 var left = QualificationEvidence.Json(new { protocolVersion = 1, status = "Ready", engine = "Lython", catalogVersion = 1, catalogSha256 = hash,
@@ -285,22 +350,50 @@ public sealed class ComparisonSamplingTests
                     serverGc = false, gcLatencyMode = "Interactive", clockHighResolution = true, runtimeOverrides = new { DOTNET_PROCESSOR_COUNT = (string?)null },
                     publicLimits = "ordinary defaults; instruction fuel unset; no forced GC",
                     clockFrequency = 1_000_000_000L, maximumBatchIterations = 1_000_000, maximumBatchSeconds = 60, maximumFrameBytes = 4194304,
-                    libraries = files.Take(3).Select(f => new { path = f.Path, sha256 = f.Sha256, configuration = "Release", buildSdk = "10.0.401", version = f.Path == "/core" ? "10.0.12+core" : "1+" + source.Revision }) });
+                    libraries = files.Take(3).Select(f => new { path = f.Path, sha256 = f.Sha256, moduleId = "11111111-1111-1111-1111-111111111111",
+                        configuration = "Release", buildSdk = "10.0.401", version = f.Path == "/core" ? "10.0.12+core" : "1+" + source.Revision }) });
                 var rightNode = JsonNode.Parse(left.GetRawText())!.AsObject();
                 rightNode["engine"] = "CPython"; rightNode["architecture"] = "x86_64"; rightNode["clockMonotonic"] = true;
                 rightNode["processId"] = 101 + 2 * index;
                 rightNode["gcEnabled"] = true; rightNode["gilEnabled"] = true; rightNode["debug"] = false; rightNode["freeThreaded"] = false;
                 rightNode["version"] = "3.13.16 test"; rightNode["executable"] = "/python"; rightNode["executableSha256"] = hash;
                 rightNode["adapterSha256"] = hash; rightNode["configArgs"] = "--enable-optimizations --with-lto"; rightNode["flags"] = "isolated=1 no_site=1 ignore_environment=1";
+                rightNode["captureByteLimit"] = 16 * 1024 * 1024;
                 var session = new QualificationSession { Closed = true, LythonIdentity = left, PythonIdentity = QualificationEvidence.Json(rightNode), Sampling = new() { Index = index } };
                 row.Sessions.Add(session); var request = 0;
                 WorkerResponse Make(int count, double? seconds) => new(1, ++request, workload.Id, seconds is null ? "Equivalent" : "Completed", count,
                     seconds is null ? null : (long)Math.Round(seconds.Value * 1e9), 1_000_000_000, workload.SourceSha256, workload.FixtureSha256,
-                    workload.ExpectedOutputSha256, workload.ExpectedOutputSha256, null);
+                    workload.ExpectedOutputSha256, lane == "compile" && seconds is not null ? null : workload.ExpectedOutputSha256, null);
                 void Verify(string phase) => session.Verification.Add(new(phase, Make(2, null), Make(2, null)));
                 Verify("before");
-                var perJob = workload.Category == "control" ? .00001 : .001;
-                await PairedSampler.RunAsync(session.Sampling, (l, count, _) => Task.FromResult(Make(count, perJob * count * (l ? 1 : 2))), new FakeMachine(), () => { }, default,
+                var perJob = lane == "fresh-process" ? workload.Category == "control" ? .025 : .5
+                    : workload.Category == "control" ? .00001 : .001;
+                await PairedSampler.RunAsync(session.Sampling, (l, count, _) =>
+                {
+                    var response = Make(count, perJob * count * (l ? 1 : 2));
+                    if (lane == "fresh-process")
+                    {
+                        for (var job = 0; job < count; job++)
+                        {
+                            var identity = JsonNode.Parse((l ? session.LythonIdentity : session.PythonIdentity).GetRawText())!;
+                            identity["catalogSha256"] = row.Payload!.Sha256;
+                            identity["processId"] = ++freshProcessId;
+                            if (l)
+                                foreach (var library in identity["libraries"]!.AsArray()) library!["sha256"] = null;
+                            else
+                            {
+                                identity.AsObject().Remove("executableSha256");
+                                identity.AsObject().Remove("adapterSha256");
+                                identity["isolated"] = true;
+                                identity["noSite"] = true;
+                            }
+                            var once = response with { RequestId = 1, Status = "Equivalent", CompletedInvocations = 1, ElapsedTicks = null };
+                            session.Fresh.Add(new(l, response.RequestId, new("Equivalent", (long)Math.Round(perJob * (l ? 1 : 2) * 1e9),
+                                1_000_000_000, once, QualificationEvidence.Json(identity))));
+                        }
+                    }
+                    return Task.FromResult(response);
+                }, new FakeMachine(), () => { }, default,
                     _ => { Verify("after-warmup"); return Task.CompletedTask; });
                 Verify("after");
             }

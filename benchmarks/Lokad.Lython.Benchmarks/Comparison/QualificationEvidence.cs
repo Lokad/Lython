@@ -260,9 +260,12 @@ internal static class QualificationEvidence
                     var observations = session.Fresh.Where(f => f.Lython == attempt.Lython && f.BatchRequestId == attempt.Batch.Response.RequestId).ToArray();
                     if (observations.Length != attempt.Batch.RequestedIterations
                         || observations.Any(f => f.Observation.Status != "Equivalent" || f.Observation.ElapsedTicks <= 0
+                            || f.Observation.ClockFrequency != parentFrequency || f.Observation.Response.RequestId != 1
                             || !Semantic(f.Observation.Response, workload, "Equivalent", 1,
                                 (f.Lython ? left : right).GetProperty("clockFrequency").GetInt64()))
                         || observations.Sum(f => f.Observation.ElapsedTicks!.Value) != attempt.Batch.Response.ElapsedTicks) return false;
+                    var processIds = observations.Select(f => f.Observation.Identity.GetProperty("processId").GetInt32()).ToArray();
+                    if (processIds.Any(id => id <= 0) || processIds.Distinct().Count() != processIds.Length) return false;
                     foreach (var fresh in observations)
                         FreshProcessRunner.ValidateIdentity(fresh.Observation.Identity, fresh.Lython ? left : right, expectedPayload,
                             fresh.Observation.Identity.GetProperty("processId").GetInt32());

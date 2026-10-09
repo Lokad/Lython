@@ -60,6 +60,7 @@ public sealed class FreshProcessTests
     [InlineData("gc")]
     [InlineData("hash")]
     [InlineData("benchmark-loader")]
+    [InlineData("overrides")]
     public void AChangedRuntimeBuildOrStartupEnvelopeCannotBecomeAFreshSample(string change)
     {
         using var catalog = new Catalog();
@@ -69,6 +70,7 @@ public sealed class FreshProcessTests
         else if (change == "module") actual["libraries"]![0]!["moduleId"] = Guid.Empty.ToString();
         else if (change == "gc") actual["serverGc"] = !prepared.GetProperty("serverGc").GetBoolean();
         else if (change == "hash") actual["libraries"]![0]!["sha256"] = new string('a', 64);
+        else if (change == "overrides") actual["runtimeOverrides"]!["DOTNET_PROCESSOR_COUNT"] = "1";
         else actual["benchmarkDotNetLoaded"] = true;
         var element = JsonSerializer.SerializeToElement(actual);
         Assert.Throws<InvalidDataException>(() => FreshProcessRunner.ValidateIdentity(element, prepared, catalog.Manifest, Environment.ProcessId));

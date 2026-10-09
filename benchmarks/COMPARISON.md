@@ -383,6 +383,12 @@ counters, responses and samples; stored eligibility/statistics flags are advisor
 Partial or changed evidence produces a clearly labeled diagnostic report without
 qualified ratios or winners.
 
+Fresh-process reporting verifies each job's parent clock, once-request ID,
+output and payload identity, distinct positive process IDs within each batch,
+and the exact sum of individual launch-to-drain times. Runtime identities are
+compared as JSON values, so saving an indented receipt preserves equivalent
+options while changed runtime options still invalidate the sample.
+
 An existing receipt requires `--resume true`. Resumption compares policy, source,
 machine, catalog/case order, toolchains and every input/build digest. It archives
 the previous complete attempt beside the receipt, reuses finished rows only and

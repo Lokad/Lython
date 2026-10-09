@@ -115,7 +115,7 @@ internal static class FreshProcessRunner
     {
         foreach (var name in new[] { "protocolVersion", "status", "engine", "catalogVersion", "clockFrequency",
             "maximumFrameBytes", "maximumBatchIterations", "maximumBatchSeconds" })
-            if (actual.GetProperty(name).GetRawText() != expected.GetProperty(name).GetRawText())
+            if (!JsonElement.DeepEquals(actual.GetProperty(name), expected.GetProperty(name)))
                 throw new InvalidDataException("Fresh worker identity differs: " + name);
         if (actual.GetProperty("processId").GetInt32() != processId
             || actual.GetProperty("catalogSha256").GetString() != catalogSha256)
@@ -125,7 +125,7 @@ internal static class FreshProcessRunner
             if (actual.GetProperty("benchmarkDotNetLoaded").GetBoolean())
                 throw new InvalidDataException("Fresh comparison startup initialized BenchmarkDotNet.");
             foreach (var name in new[] { "runtimeVersion", "processorCount", "serverGc", "gcLatencyMode", "runtimeOverrides", "publicLimits" })
-                if (actual.GetProperty(name).GetRawText() != expected.GetProperty(name).GetRawText())
+                if (!JsonElement.DeepEquals(actual.GetProperty(name), expected.GetProperty(name)))
                     throw new InvalidDataException("Fresh Lython runtime differs: " + name);
             var libraries = actual.GetProperty("libraries").EnumerateArray().ToArray();
             var prepared = expected.GetProperty("libraries").EnumerateArray().ToArray();
@@ -135,14 +135,14 @@ internal static class FreshProcessRunner
                 if (libraries[i].GetProperty("sha256").ValueKind != JsonValueKind.Null)
                     throw new InvalidDataException("Fresh worker performed a full binary hash inside startup.");
                 foreach (var name in new[] { "path", "moduleId", "version", "configuration", "buildSdk" })
-                    if (libraries[i].GetProperty(name).GetRawText() != prepared[i].GetProperty(name).GetRawText())
+                    if (!JsonElement.DeepEquals(libraries[i].GetProperty(name), prepared[i].GetProperty(name)))
                         throw new InvalidDataException("Fresh Lython library identity differs: " + name);
             }
         }
         else if (actual.GetProperty("engine").GetString() == "CPython")
         {
             foreach (var name in new[] { "version", "executable", "gcEnabled", "gilEnabled", "captureByteLimit" })
-                if (actual.GetProperty(name).GetRawText() != expected.GetProperty(name).GetRawText())
+                if (!JsonElement.DeepEquals(actual.GetProperty(name), expected.GetProperty(name)))
                     throw new InvalidDataException("Fresh CPython runtime differs: " + name);
             if (!actual.GetProperty("isolated").GetBoolean() || !actual.GetProperty("noSite").GetBoolean()
                 || actual.TryGetProperty("executableSha256", out _) || actual.TryGetProperty("adapterSha256", out _))
