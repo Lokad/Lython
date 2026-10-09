@@ -81,20 +81,12 @@ internal static class ComparisonQualificationCommand
         if (options.ContainsKey("--resume"))
         {
             var previous = ComparisonReportCommand.ReadReceipt(output);
-            if (previous.State == "Completed") throw new InvalidDataException("A completed campaign cannot be resumed.");
-            if (previous.PolicySha256 != receipt.PolicySha256 || QualificationEvidence.CanonicalJson(previous.Policy) != QualificationEvidence.CanonicalJson(receipt.Policy)
-                || previous.CatalogSha256 != receipt.CatalogSha256 || previous.Before != before || previous.Lane != receipt.Lane
-                || QualificationEvidence.CanonicalJson(previous.Toolchains) != QualificationEvidence.CanonicalJson(toolchains) || !previous.Files.SequenceEqual(files)
-                || QualificationEvidence.MachineFingerprint(previous.Machine) != QualificationEvidence.MachineFingerprint(machine)
-                || !previous.Cases.Select(c => c.Workload).SequenceEqual(cases))
-                throw new InvalidDataException("Resume requires identical source, policy, case order, machine, toolchains and every file digest.");
+            RestoreForResume(previous, receipt);
             // Preserve the complete previous attempt beside the receipt. Reuse
-            // only finished rows; partial sessions start again and remain here.
+            // finished measurements and exclusions; partial sessions restart.
             var archive = output + ".attempt-" + previous.Updated.UtcTicks + ".json";
             if (File.Exists(archive)) throw new IOException("Previous-attempt archive already exists.");
             WriteAtomic(archive, previous);
-            for (var i = 0; i < receipt.Cases.Count; i++)
-                if (previous.Cases[i].State == "Measured") receipt.Cases[i] = previous.Cases[i];
         }
         else if (File.Exists(output)) throw new IOException("Receipt already exists; choose a new path or explicitly resume.");
         void Checkpoint() { receipt.Updated = DateTimeOffset.UtcNow; WriteAtomic(output, receipt); }
@@ -103,9 +95,8 @@ internal static class ComparisonQualificationCommand
         {
             receipt.InitialGate = await QuietMachineProbe.CheckAsync(cancellationToken).ConfigureAwait(false); Checkpoint();
             if (!receipt.InitialGate.Quiet) throw new PairedSampler.QuietGateException(receipt.InitialGate);
-            foreach (var row in receipt.Cases)
+            foreach (var row in PendingCases(receipt))
             {
-                if (row.State == "Measured") continue;
                 using var caseDeadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 caseDeadline.CancelAfter(TimeSpan.FromSeconds(ComparisonPolicy.CaseDeadlineSeconds));
                 row.State = "Running"; Checkpoint();
@@ -218,4 +209,28 @@ internal static class ComparisonQualificationCommand
             await QualificationEvidence.CaptureAsync("/usr/bin/git", ["status", "--porcelain", "--untracked-files=normal"], cancellationToken).ConfigureAwait(false),
             await QualificationEvidence.CaptureAsync(dotnet, ["--version"], cancellationToken).ConfigureAwait(false));
     }
+
+    internal static void RestoreForResume(QualificationReceipt previous, QualificationReceipt receipt)
+    {
+        if (previous.State is not ("Running" or "Busy" or "Failed" or "Interrupted"))
+            throw new InvalidDataException("Only an unfinished campaign can be resumed.");
+        if (previous.SchemaVersion != receipt.SchemaVersion || previous.ProtocolVersion != receipt.ProtocolVersion
+            || previous.PolicyVersion != receipt.PolicyVersion || previous.EligibilityVersion != receipt.EligibilityVersion
+            || previous.PolicySha256 != receipt.PolicySha256 || QualificationEvidence.CanonicalJson(previous.Policy) != QualificationEvidence.CanonicalJson(receipt.Policy)
+            || previous.CatalogSha256 != receipt.CatalogSha256 || previous.CatalogCaseCount != receipt.CatalogCaseCount
+            || !previous.RequestedCaseIds.SequenceEqual(receipt.RequestedCaseIds) || previous.Before != receipt.Before || previous.Lane != receipt.Lane
+            || !JsonElement.DeepEquals(previous.RuntimeConfig, receipt.RuntimeConfig)
+            || QualificationEvidence.CanonicalJson(previous.Toolchains) != QualificationEvidence.CanonicalJson(receipt.Toolchains)
+            || !previous.Files.SequenceEqual(receipt.Files)
+            || QualificationEvidence.MachineFingerprint(previous.Machine) != QualificationEvidence.MachineFingerprint(receipt.Machine)
+            || !previous.Cases.Select(c => c.Workload).SequenceEqual(receipt.Cases.Select(c => c.Workload)))
+            throw new InvalidDataException("Resume requires identical versions, source, policy, case order, machine, toolchains and every file digest.");
+        for (var i = 0; i < receipt.Cases.Count; i++)
+            if (Finished(previous.Cases[i])) receipt.Cases[i] = previous.Cases[i];
+    }
+
+    internal static IEnumerable<QualificationCase> PendingCases(QualificationReceipt receipt)
+        => receipt.Cases.Where(row => !Finished(row));
+
+    private static bool Finished(QualificationCase row) => row.State is "Measured" or "Unqualified";
 }

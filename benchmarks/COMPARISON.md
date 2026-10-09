@@ -391,8 +391,11 @@ options while changed runtime options still invalidate the sample.
 
 An existing receipt requires `--resume true`. Resumption compares policy, source,
 machine, catalog/case order, toolchains and every input/build digest. It archives
-the previous complete attempt beside the receipt, reuses finished rows only and
-restarts partial sessions. Changed identities require a separate campaign.
+the previous complete attempt beside the receipt, preserves finished
+measurements and exclusions, and restarts partial sessions. An excluded row is
+not rerun to improve eligibility after a later noise stop. Schema/protocol/policy
+versions, requested scope and effective runtime configuration must also match.
+Changed identities require a separate campaign.
 
 ## Evidence and delivery
 

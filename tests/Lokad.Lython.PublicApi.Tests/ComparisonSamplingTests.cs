@@ -231,6 +231,110 @@ public sealed class ComparisonSamplingTests
     }
 
     [Theory]
+    [InlineData("warm")]
+    [InlineData("fresh-process")]
+    public async Task ResumeRetainsFinishedMeasurementsAndFailuresAndRestartsPartialRows(string lane)
+    {
+        var previous = await ReceiptAsync(lane);
+        previous.State = "Busy";
+        var excluded = previous.Cases[1];
+        excluded.State = "Unqualified";
+        var failure = new SamplingSession();
+        await PairedSampler.RunAsync(failure, (_, count, _) => Task.FromResult(new WorkerResponse(ComparisonProtocol.Version,
+            1, excluded.Workload.Id, "BudgetDenied", 0, null, 1_000_000_000, excluded.Workload.SourceSha256,
+            excluded.Workload.FixtureSha256, excluded.Workload.ExpectedOutputSha256, null, "Memory budget exceeded.")),
+            new FakeMachine(), () => { }, default);
+        excluded.Sessions[0].Sampling = failure;
+        previous.Cases[2].State = "Running";
+        previous.Cases[2].Sessions.RemoveAt(2);
+        var next = NextAttempt(previous);
+        var restarted = next.Cases[2];
+
+        ComparisonQualificationCommand.RestoreForResume(previous, next);
+
+        Assert.Same(previous.Cases[0], next.Cases[0]);
+        Assert.True(ReferenceEquals(excluded, next.Cases[1]), "Finished exclusion proof must be retained.");
+        Assert.Equal("BudgetDenied", next.Cases[1].Sessions[0].Sampling.Attempts[0].Batch.Response.Status);
+        Assert.Same(excluded.Payload, next.Cases[1].Payload);
+        Assert.Same(restarted, Assert.Single(ComparisonQualificationCommand.PendingCases(next)));
+        Assert.Empty(restarted.Sessions);
+        Assert.Equal(2, previous.Cases[2].Sessions.Count);
+    }
+
+    [Theory]
+    [InlineData("completed")]
+    [InlineData("state")]
+    [InlineData("schema")]
+    [InlineData("protocol")]
+    [InlineData("policy-version")]
+    [InlineData("eligibility-version")]
+    [InlineData("policy-digest")]
+    [InlineData("policy-body")]
+    [InlineData("catalog-digest")]
+    [InlineData("catalog-count")]
+    [InlineData("requested-order")]
+    [InlineData("case-order")]
+    [InlineData("source")]
+    [InlineData("files")]
+    [InlineData("machine")]
+    [InlineData("toolchains")]
+    [InlineData("lane")]
+    [InlineData("runtime-config")]
+    public async Task IncompatibleResumeRejectsBeforeCopyingAnyFinishedProof(string defect)
+    {
+        var previous = await ReceiptAsync();
+        previous.State = "Busy";
+        var next = NextAttempt(previous);
+        var freshRows = next.Cases.ToArray();
+        if (defect == "completed") previous.State = "Completed";
+        if (defect == "state") previous.State = "unknown";
+        if (defect == "schema") previous.SchemaVersion++;
+        if (defect == "protocol") previous.ProtocolVersion++;
+        if (defect == "policy-version") previous.PolicyVersion++;
+        if (defect == "eligibility-version") previous.EligibilityVersion++;
+        if (defect == "policy-digest") previous.PolicySha256 = new string('c', 64);
+        if (defect == "policy-body")
+        {
+            var policy = JsonNode.Parse(previous.Policy.GetRawText())!;
+            policy["maximumIqrFraction"] = .99;
+            previous.Policy = QualificationEvidence.Json(policy);
+        }
+        if (defect == "catalog-digest") previous.CatalogSha256 = new string('c', 64);
+        if (defect == "catalog-count") previous.CatalogCaseCount--;
+        if (defect == "requested-order") Array.Reverse(previous.RequestedCaseIds);
+        if (defect == "case-order") previous.Cases.Reverse();
+        if (defect == "source") previous.Before = previous.Before with { Status = " M runtime.cs" };
+        if (defect == "files") previous.Files[0] = previous.Files[0] with { Sha256 = new string('c', 64) };
+        if (defect == "machine")
+        {
+            var machine = JsonNode.Parse(previous.Machine.GetRawText())!;
+            machine["cgroup"] = "0::/different-execution-scope";
+            previous.Machine = QualificationEvidence.Json(machine);
+        }
+        if (defect == "toolchains")
+        {
+            var toolchains = JsonNode.Parse(previous.Toolchains.GetRawText())!;
+            toolchains["python"]!["version"] = "3.13.99 test";
+            previous.Toolchains = QualificationEvidence.Json(toolchains);
+        }
+        if (defect == "lane") previous.Lane = "compile";
+        if (defect == "runtime-config")
+        {
+            var config = JsonNode.Parse(previous.RuntimeConfig.GetRawText())!;
+            config["runtimeOptions"]!["configProperties"]!["System.Runtime.TieredCompilation"] = false;
+            previous.RuntimeConfig = QualificationEvidence.Json(config);
+        }
+
+        Assert.Throws<InvalidDataException>(() => ComparisonQualificationCommand.RestoreForResume(previous, next));
+        for (var index = 0; index < freshRows.Length; index++)
+        {
+            Assert.Same(freshRows[index], next.Cases[index]);
+            Assert.Equal("Pending", next.Cases[index].State);
+            Assert.Empty(next.Cases[index].Sessions);
+        }
+    }
+
+    [Theory]
     [InlineData("partial")]
     [InlineData("dirty")]
     [InlineData("policy")]
@@ -313,6 +417,22 @@ public sealed class ComparisonSamplingTests
             return Task.FromResult(QuietMachineProbe.Evaluate(gate.Windows));
         }
         public MachineSnapshot Read() { _read++; return Snapshot(_read * 100, (ulong)_read * 10); }
+    }
+
+    private static QualificationReceipt NextAttempt(QualificationReceipt previous)
+    {
+        var next = JsonSerializer.Deserialize<QualificationReceipt>(JsonSerializer.Serialize(previous, ComparisonProtocol.JsonOptions),
+            ComparisonProtocol.JsonOptions)!;
+        next.Id = Guid.NewGuid().ToString("N");
+        next.State = "Running";
+        next.Cases = next.Cases.Select(row => new QualificationCase { Workload = row.Workload }).ToList();
+        next.After = null;
+        next.FilesAfter = null;
+        next.MachineAfter = null;
+        next.InitialGate = null;
+        next.FinalGate = null;
+        next.PerformanceQualified = false;
+        return next;
     }
 
     private static async Task<QualificationReceipt> ReceiptAsync(string lane = "warm")
