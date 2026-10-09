@@ -7,6 +7,10 @@ machine checks and raw-evidence report rendering.
 The [2026-10-09 bounded run](results/2026-10-09-quick/README.md) completed all four
 lanes within ten minutes each. Its raw-evidence review found no qualified
 workload ratios; a qualified baseline remains pending.
+The [focused basic-loop investigation](results/2026-10-09-core-loop/README.md)
+completed in 2m13s. Its separate CPU profile identifies interpreter dispatch
+as the leading design investigation; strict stability checks still withhold
+qualified comparative multipliers.
 
 The primary run has a hard **10-minute wall budget per lane**, including
 preparation, verification, noise waits, retries and worker cleanup. Build and

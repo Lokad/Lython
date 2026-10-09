@@ -1,0 +1,600 @@
+{
+  "traceEventVersion": "3.2.8.0",
+  "samples": 10833,
+  "noStacks": 0,
+  "unknownLeaves": 1321,
+  "lythonStacks": 10526,
+  "first": 29.499662,
+  "last": 14966.57398,
+  "eventsLost": 0,
+  "counts": {
+    "Universal.System/ProcessMapping": 624,
+    "Universal.System/ProcessMappingMetadata": 51,
+    "Universal.System/ProcessSymbol": 2215,
+    "Universal.System/ExistingProcess": 1,
+    "Microsoft-Windows-DotNETRuntime/YieldProcessorMeasurement": 12,
+    "Microsoft-Windows-DotNETRuntime/AppDomainResourceManagement/ThreadCreated": 3431,
+    "Microsoft-Windows-DotNETRuntime/TieredCompilation/Pause": 7,
+    "Universal.Events/cpu": 10833,
+    "Microsoft-Windows-DotNETRuntime/TieredCompilation/Resume": 7,
+    "Microsoft-Windows-DotNETRuntime/TieredCompilation/BackgroundJitStart": 76,
+    "Microsoft-Windows-DotNETRuntime/TieredCompilation/BackgroundJitStop": 76,
+    "Microsoft-Windows-DotNETRuntime/Thread/Creating": 3493,
+    "Microsoft-Windows-DotNETRuntime/ThreadPoolWorkerThread/Wait": 70,
+    "Microsoft-Windows-DotNETRuntime/GC/FinalizersStart": 231,
+    "Microsoft-Windows-DotNETRuntime/GC/FinalizersStop": 231,
+    "Microsoft-Windows-DotNETRuntime/Thread/Running": 3429,
+    "Microsoft-Windows-DotNETRuntime/Exception/Start": 3354,
+    "Microsoft-Windows-DotNETRuntime/ExceptionCatch/Start": 3330,
+    "Microsoft-Windows-DotNETRuntime/ExceptionCatch/Stop": 3317,
+    "Microsoft-Windows-DotNETRuntime/Exception/Stop": 3308,
+    "Microsoft-Windows-DotNETRuntime/GC/SuspendEEStart": 227,
+    "Microsoft-Windows-DotNETRuntime/GC/SuspendEEStop": 227,
+    "Microsoft-Windows-DotNETRuntime/GC/Triggered": 227,
+    "Microsoft-Windows-DotNETRuntime/GC/Start": 227,
+    "Microsoft-Windows-DotNETRuntime/GC/CommittedUsage": 440,
+    "Microsoft-Windows-DotNETRuntime/GC/MarkWithType": 1588,
+    "Microsoft-Windows-DotNETRuntime/GC/GlobalHeapHistory": 225,
+    "Microsoft-Windows-DotNETRuntime/GC/PerHeapHistory": 222,
+    "Microsoft-Windows-DotNETRuntime/GC/Stop": 206,
+    "Microsoft-Windows-DotNETRuntime/GC/HeapStats": 201,
+    "Microsoft-Windows-DotNETRuntime/GC/RestartEEStart": 188,
+    "Microsoft-Windows-DotNETRuntime/GC/RestartEEStop": 171,
+    "Microsoft-Windows-DotNETRuntime/Method/UnloadVerbose": 12,
+    "Microsoft-Windows-DotNETRuntime/GC/FreeSegment": 10,
+    "Microsoft-Windows-DotNETRuntime/GC/CreateSegment": 11,
+    "Microsoft-Windows-DotNETRuntime/ThreadPoolWorkerThreadAdjustment/Sample": 6,
+    "Microsoft-Windows-DotNETRuntime/ThreadPoolWorkerThread/Start": 1,
+    "Microsoft-Windows-DotNETRuntime/ThreadPoolWorkerThreadAdjustment/Adjustment": 3,
+    "Universal.System/ProcessExit": 1
+  },
+  "exceptions": {
+    "ReturnSignal": 3354
+  },
+  "leaf": [
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutableFrameInterpreter\u002B\u003CExecuteCoreAsync\u003Ed__58::MoveNext()",
+      "samples": 4266,
+      "percent": 39.37967322071449
+    },
+    {
+      "name": "[unresolved] libcoreclr.so",
+      "samples": 890,
+      "percent": 8.215637404227822
+    },
+    {
+      "name": "Lokad.Lython.Runtime.ExecutionGuards::CheckExecution(class Lokad.Lython.LythonSourceSpan)",
+      "samples": 551,
+      "percent": 5.086310348010708
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime::ResolveName(string,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext)",
+      "samples": 495,
+      "percent": 4.569371365272778
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutableFrameInterpreter::ExecuteValueOperation(valuetype Lokad.Lython.Frontend.ExecutableInstruction)",
+      "samples": 479,
+      "percent": 4.42167451306194
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003CAssignLoopTargetCoreAsync\u003Ed__1666::MoveNext()",
+      "samples": 465,
+      "percent": 4.2924397673774575
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime::EvaluateAdd(object,object,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan,string)",
+      "samples": 329,
+      "percent": 3.0370165235853412
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutableFrameInterpreter::ExecuteStackTransfer(valuetype Lokad.Lython.Frontend.ExecutableInstruction)",
+      "samples": 278,
+      "percent": 2.5662328071632974
+    },
+    {
+      "name": "[unresolved] ",
+      "samples": 201,
+      "percent": 1.855441705898643
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime::OwnFreshInteger(object,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.Runtime.ChargeReclamationPool,class Lokad.Lython.LythonSourceSpan)",
+      "samples": 195,
+      "percent": 1.800055386319579
+    },
+    {
+      "name": "[unresolved] libclrjit.so",
+      "samples": 191,
+      "percent": 1.7631311732668697
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime::EvaluateAugmentedAssignment(object,object,valuetype Lokad.Lython.Frontend.AugmentedAssignmentOperatorSyntax,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)",
+      "samples": 184,
+      "percent": 1.6985138004246285
+    },
+    {
+      "name": "System.Runtime.CompilerServices.CastHelpers::StelemRef(object[],native int,object)",
+      "samples": 168,
+      "percent": 1.5508169482137912
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutableValueStack::Push(object)",
+      "samples": 163,
+      "percent": 1.5046616818979046
+    },
+    {
+      "name": "Lokad.Lython.Runtime.Numbers.PyNumberOps::TryAsNumber(object,valuetype Lokad.Lython.Runtime.Numbers.PyNumber\u0026)",
+      "samples": 160,
+      "percent": 1.4769685221083726
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002BStatisticsModule::TryAddNormalDist(object,object,class Lokad.Lython.LythonSourceSpan,object\u0026)",
+      "samples": 151,
+      "percent": 1.3938890427397765
+    },
+    {
+      "name": "Lokad.Lython.Runtime.PyRange\u002B\u003CIterate\u003Ed__22::MoveNext()",
+      "samples": 145,
+      "percent": 1.3385027231607127
+    },
+    {
+      "name": "System.Runtime.CompilerServices.AsyncMethodBuilderCore::Start(!!0\u0026)",
+      "samples": 132,
+      "percent": 1.2184990307394075
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutableFrameInterpreter::ExecuteControlFlow(valuetype Lokad.Lython.Frontend.ExecutableInstruction)",
+      "samples": 108,
+      "percent": 0.9969537524231514
+    },
+    {
+      "name": "System.Numerics.BigInteger::.ctor(int64)",
+      "samples": 84,
+      "percent": 0.7754084741068956
+    },
+    {
+      "name": "trace_event_dyn_try_get_ref",
+      "samples": 80,
+      "percent": 0.7384842610541863
+    },
+    {
+      "name": "Lokad.Lython.Runtime.PyIteration\u002B\u003CEnumerateChecked\u003Ed__5::MoveNext()",
+      "samples": 78,
+      "percent": 0.7200221545278316
+    },
+    {
+      "name": "Lokad.Lython.Runtime.ExecutionValueObservation::EstimateApproximateValueBytesCore(object,class [System.Collections]System.Collections.Generic.HashSet\u00601\u003Cobject\u003E)",
+      "samples": 76,
+      "percent": 0.701560048001477
+    },
+    {
+      "name": "Lokad.Lython.Runtime.MemoryGovernor::EnsureCanReserve(int64,class Lokad.Lython.LythonSourceSpan)",
+      "samples": 70,
+      "percent": 0.646173728422413
+    },
+    {
+      "name": "__tls_get_addr",
+      "samples": 63,
+      "percent": 0.5815563555801717
+    },
+    {
+      "name": "System.String::GetNonRandomizedHashCode()",
+      "samples": 61,
+      "percent": 0.563094249053817
+    },
+    {
+      "name": "Lokad.Lython.Runtime.ExecutionValueObservation::EstimateApproximateValueBytes(object)",
+      "samples": 50,
+      "percent": 0.46155266315886645
+    },
+    {
+      "name": "Lokad.Lython.Runtime.ExecutionValueObservation::TryGetCollectionCount(object)",
+      "samples": 47,
+      "percent": 0.43385950336933443
+    },
+    {
+      "name": "Lokad.Lython.Runtime.PyTupleLike::TryGetItems(object,class [System.Runtime]System.Collections.Generic.IReadOnlyList\u00601\u003Cobject\u003E\u0026)",
+      "samples": 46,
+      "percent": 0.42462845010615713
+    },
+    {
+      "name": "Lokad.Lython.Runtime.ExecutionValueObservation::EnforceValueLimits(object,class Lokad.Lython.LythonSourceSpan)",
+      "samples": 44,
+      "percent": 0.40616634357980247
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime::MapExecutableAugmented(valuetype Lokad.Lython.Frontend.ExecutableAugmentedOperator)",
+      "samples": 43,
+      "percent": 0.3969352903166251
+    },
+    {
+      "name": "System.SpanHelpers::SequenceEqual(uint8\u0026,uint8\u0026,native uint)",
+      "samples": 41,
+      "percent": 0.37847318379027045
+    },
+    {
+      "name": "[unresolved] libc.so.6",
+      "samples": 36,
+      "percent": 0.33231791747438383
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime::LoadLocal(class Lokad.Lython.Frontend.ExecutableCodeObject,object[],int32,class Lokad.Lython.LythonSourceSpan)",
+      "samples": 36,
+      "percent": 0.33231791747438383
+    },
+    {
+      "name": "Lokad.Lython.Runtime.ExecutionValueObservation::RequiresTransientSizeCheck(object)",
+      "samples": 34,
+      "percent": 0.31385581094802917
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime::PeekIterator(class Lokad.Lython.Runtime.LythonRuntime/ExecutableValueStack,class Lokad.Lython.LythonSourceSpan)",
+      "samples": 34,
+      "percent": 0.31385581094802917
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutableValueStack::Pop()",
+      "samples": 33,
+      "percent": 0.30462475768485187
+    },
+    {
+      "name": "_raw_spin_unlock_irqrestore",
+      "samples": 23,
+      "percent": 0.21231422505307856
+    },
+    {
+      "name": "__schedule",
+      "samples": 20,
+      "percent": 0.18462106526354657
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime::Pop(class Lokad.Lython.Runtime.LythonRuntime/ExecutableValueStack,class Lokad.Lython.LythonSourceSpan)",
+      "samples": 17,
+      "percent": 0.15692790547401458
+    },
+    {
+      "name": "Lokad.Lython.Runtime.ChargeReclamationPool::SweepOldQuantum()",
+      "samples": 10,
+      "percent": 0.09231053263177329
+    },
+    {
+      "name": "finish_task_switch.isra.0",
+      "samples": 10,
+      "percent": 0.09231053263177329
+    },
+    {
+      "name": "schedule",
+      "samples": 10,
+      "percent": 0.09231053263177329
+    },
+    {
+      "name": "copy_from_user_nmi",
+      "samples": 9,
+      "percent": 0.08307947936859596
+    },
+    {
+      "name": "do_syscall_64",
+      "samples": 9,
+      "percent": 0.08307947936859596
+    },
+    {
+      "name": "srso_safe_ret",
+      "samples": 7,
+      "percent": 0.0646173728422413
+    },
+    {
+      "name": "copy_process",
+      "samples": 7,
+      "percent": 0.0646173728422413
+    },
+    {
+      "name": "perf_event_alloc",
+      "samples": 6,
+      "percent": 0.055386319579063974
+    },
+    {
+      "name": "__cond_resched",
+      "samples": 5,
+      "percent": 0.046155266315886644
+    },
+    {
+      "name": "hyperv_flush_tlb_multi",
+      "samples": 5,
+      "percent": 0.046155266315886644
+    }
+  ],
+  "inclusive": [
+    {
+      "name": "System.Threading.Thread::StartCallback()",
+      "samples": 10307,
+      "percent": 95.14446598356872
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003C\u003Ec__DisplayClass672_0::\u003CRun\u003Eb__0()",
+      "samples": 10230,
+      "percent": 94.43367488230408
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003C\u003Ec__DisplayClass474_0::\u003CRunOnDedicatedStack\u003Eb__0()",
+      "samples": 10230,
+      "percent": 94.43367488230408
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime::ExecuteExecutableCodeObject(class Lokad.Lython.Frontend.ExecutableCodeObject,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype Lokad.Lython.Runtime.BoundCallArguments,int32[],class [System.Runtime]System.Collections.Generic.IReadOnlyList\u00601\u003Cclass Lokad.Lython.Runtime.LythonRuntime/ExecutableCell\u003E)",
+      "samples": 10213,
+      "percent": 94.27674697683005
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutableFrameInterpreter\u002B\u003CExecuteCoreAsync\u003Ed__58::MoveNext()",
+      "samples": 9844,
+      "percent": 90.87048832271762
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutableFrameInterpreter::ExecuteValueOperation(valuetype Lokad.Lython.Frontend.ExecutableInstruction)",
+      "samples": 3227,
+      "percent": 29.78860888027324
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime::EvaluateAugmentedAssignment(object,object,valuetype Lokad.Lython.Frontend.AugmentedAssignmentOperatorSyntax,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)",
+      "samples": 1180,
+      "percent": 10.892642850549247
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutableFrameInterpreter::ExecuteStackTransfer(valuetype Lokad.Lython.Frontend.ExecutableInstruction)",
+      "samples": 1025,
+      "percent": 9.461829594756761
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime::EvaluateAdd(object,object,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan,string)",
+      "samples": 801,
+      "percent": 7.39407366380504
+    },
+    {
+      "name": "System.Runtime.CompilerServices.AsyncMethodBuilderCore::Start(!!0\u0026)",
+      "samples": 622,
+      "percent": 5.741715129696298
+    },
+    {
+      "name": "Lokad.Lython.Runtime.ExecutionGuards::CheckExecution(class Lokad.Lython.LythonSourceSpan)",
+      "samples": 564,
+      "percent": 5.206314040432013
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime::ResolveName(string,class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext)",
+      "samples": 535,
+      "percent": 4.938613495799871
+    },
+    {
+      "name": "Lokad.Lython.Runtime.PyIteration\u002B\u003CEnumerateChecked\u003Ed__5::MoveNext()",
+      "samples": 491,
+      "percent": 4.532447152220068
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002B\u003CAssignLoopTargetCoreAsync\u003Ed__1666::MoveNext()",
+      "samples": 475,
+      "percent": 4.384750300009231
+    },
+    {
+      "name": "entry_SYSCALL_64_after_hwframe",
+      "samples": 315,
+      "percent": 2.9077817779008583
+    },
+    {
+      "name": "Lokad.Lython.Runtime.PyRange\u002B\u003CIterate\u003Ed__22::MoveNext()",
+      "samples": 315,
+      "percent": 2.9077817779008583
+    },
+    {
+      "name": "do_syscall_64",
+      "samples": 313,
+      "percent": 2.889319671374504
+    },
+    {
+      "name": "x64_sys_call",
+      "samples": 304,
+      "percent": 2.806240192005908
+    },
+    {
+      "name": "System.Threading.ThreadPoolWorkQueue::Dispatch()",
+      "samples": 297,
+      "percent": 2.7416228191636667
+    },
+    {
+      "name": "System.Threading.ExecutionContext::RunInternal(class System.Threading.ExecutionContext,class System.Threading.ContextCallback,object)",
+      "samples": 296,
+      "percent": 2.732391765900489
+    },
+    {
+      "name": "System.Threading.Tasks.AwaitTaskContinuation::RunOrScheduleAction(class System.Runtime.CompilerServices.IAsyncStateMachineBox,bool)",
+      "samples": 296,
+      "percent": 2.732391765900489
+    },
+    {
+      "name": "System.Threading.Tasks.Task::RunContinuations(object)",
+      "samples": 296,
+      "percent": 2.732391765900489
+    },
+    {
+      "name": "Lokad.Lython.Benchmarks.Comparison.ComparisonProtocol\u002B\u003CReadAsync\u003Ed__7::MoveNext()",
+      "samples": 296,
+      "percent": 2.732391765900489
+    },
+    {
+      "name": "Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker\u002B\u003CRunAsync\u003Ed__7::MoveNext()",
+      "samples": 294,
+      "percent": 2.7139296593741347
+    },
+    {
+      "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.Threading.Tasks.VoidTaskResult,Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker\u002B\u003CRunAsync\u003Ed__7]::MoveNext()",
+      "samples": 294,
+      "percent": 2.7139296593741347
+    },
+    {
+      "name": "Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker::Invoke(class [Lokad.Lython]Lokad.Lython.LythonCompiledScript,class Lokad.Lython.Benchmarks.Comparison.ComparisonWorkload)",
+      "samples": 293,
+      "percent": 2.7046986061109575
+    },
+    {
+      "name": "Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker::Batch(class Lokad.Lython.Benchmarks.Comparison.ComparisonWorkload,int32,string,int32,valuetype [System.Runtime]System.Threading.CancellationToken)",
+      "samples": 293,
+      "percent": 2.7046986061109575
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime::RunOnDedicatedStack(class [System.Runtime]System.Func\u00601\u003Cclass Lokad.Lython.LythonExecutionResult\u003E)",
+      "samples": 291,
+      "percent": 2.6862364995846026
+    },
+    {
+      "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.Threading.Tasks.VoidTaskResult,Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker\u002B\u003CRunAsync\u003Ed__7]::ExecutionContextCallback(object)",
+      "samples": 279,
+      "percent": 2.5754638604264746
+    },
+    {
+      "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.Threading.Tasks.VoidTaskResult,Lokad.Lython.Benchmarks.Comparison.LythonComparisonWorker\u002B\u003CRunAsync\u003Ed__7]::MoveNext(class System.Threading.Thread)",
+      "samples": 279,
+      "percent": 2.5754638604264746
+    },
+    {
+      "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.__Canon,Lokad.Lython.Benchmarks.Comparison.ComparisonProtocol\u002B\u003CReadAsync\u003Ed__7]::MoveNext()",
+      "samples": 250,
+      "percent": 2.307763315794332
+    },
+    {
+      "name": "System.Threading.Tasks.Task::ExecuteWithThreadLocal(class System.Threading.Tasks.Task\u0026,class System.Threading.Thread)",
+      "samples": 243,
+      "percent": 2.243145942952091
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutableValueStack::Push(object)",
+      "samples": 221,
+      "percent": 2.0400627711621895
+    },
+    {
+      "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.__Canon,Lokad.Lython.Benchmarks.Comparison.ComparisonProtocol\u002B\u003CReadAsync\u003Ed__7]::MoveNext(class System.Threading.Thread)",
+      "samples": 220,
+      "percent": 2.0308317178990123
+    },
+    {
+      "name": "System.IO.Stream\u002B\u003CReadAtLeastAsyncCore\u003Ed__49::MoveNext()",
+      "samples": 218,
+      "percent": 2.0123696113726575
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime::OwnFreshInteger(object,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.Runtime.ChargeReclamationPool,class Lokad.Lython.LythonSourceSpan)",
+      "samples": 195,
+      "percent": 1.800055386319579
+    },
+    {
+      "name": "Lokad.Lython.Runtime.Numbers.PyNumberOps::TryAsNumber(object,valuetype Lokad.Lython.Runtime.Numbers.PyNumber\u0026)",
+      "samples": 183,
+      "percent": 1.689282747161451
+    },
+    {
+      "name": "System.Runtime.CompilerServices.AsyncTaskMethodBuilder\u00601\u002BAsyncStateMachineBox\u00601[System.__Canon,Lokad.Lython.Benchmarks.Comparison.ComparisonProtocol\u002B\u003CReadAsync\u003Ed__7]::ExecutionContextCallback(object)",
+      "samples": 178,
+      "percent": 1.6431274808455645
+    },
+    {
+      "name": "System.Runtime.CompilerServices.CastHelpers::StelemRef(object[],native int,object)",
+      "samples": 169,
+      "percent": 1.5600480014769684
+    },
+    {
+      "name": "pthread_create",
+      "samples": 153,
+      "percent": 1.4123511492661314
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002BStatisticsModule::TryAddNormalDist(object,object,class Lokad.Lython.LythonSourceSpan,object\u0026)",
+      "samples": 153,
+      "percent": 1.4123511492661314
+    },
+    {
+      "name": "__do_sys_clone3",
+      "samples": 148,
+      "percent": 1.3661958829502445
+    },
+    {
+      "name": "__x64_sys_clone3",
+      "samples": 148,
+      "percent": 1.3661958829502445
+    },
+    {
+      "name": "kernel_clone",
+      "samples": 147,
+      "percent": 1.3569648296870673
+    },
+    {
+      "name": "copy_process",
+      "samples": 137,
+      "percent": 1.264654297055294
+    },
+    {
+      "name": "Lokad.Lython.Runtime.ExecutionValueObservation::EstimateApproximateValueBytes(object)",
+      "samples": 111,
+      "percent": 1.0246469122126836
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime\u002BExecutableFrameInterpreter::ExecuteControlFlow(valuetype Lokad.Lython.Frontend.ExecutableInstruction)",
+      "samples": 109,
+      "percent": 1.0061848056863287
+    },
+    {
+      "name": "perf_event_init_context.constprop.0",
+      "samples": 108,
+      "percent": 0.9969537524231514
+    },
+    {
+      "name": "perf_event_init_task",
+      "samples": 108,
+      "percent": 0.9969537524231514
+    },
+    {
+      "name": "inherit_task_group.isra.0",
+      "samples": 107,
+      "percent": 0.9877226991599741
+    }
+  ],
+  "threads": [
+    {
+      "Key": 790952,
+      "Value": 252
+    },
+    {
+      "Key": 790958,
+      "Value": 101
+    },
+    {
+      "Key": 791874,
+      "Value": 77
+    },
+    {
+      "Key": 790954,
+      "Value": 47
+    },
+    {
+      "Key": 790959,
+      "Value": 43
+    },
+    {
+      "Key": 790956,
+      "Value": 36
+    },
+    {
+      "Key": 790948,
+      "Value": 19
+    },
+    {
+      "Key": 790951,
+      "Value": 7
+    },
+    {
+      "Key": 791618,
+      "Value": 4
+    },
+    {
+      "Key": 791619,
+      "Value": 4
+    }
+  ]
+}
