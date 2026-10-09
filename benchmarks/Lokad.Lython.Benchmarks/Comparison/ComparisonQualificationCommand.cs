@@ -30,7 +30,7 @@ internal static class ComparisonQualificationCommand
     {
         Console.Error.WriteLine("Usage: --compare qualify --catalog <catalog.json> --dotnet <absolute-dotnet> --python <absolute-python> " +
             "--python-worker <cpython-worker.py> --toolchains <toolchains.json> --out <receipt.json> " +
-            "[--case <quick|all|comma-separated-ids>] [--lane <warm|compile-run|compile|fresh-process>] [--resume true]");
+            "[--case <quick|core-loop|all|comma-separated-ids>] [--lane <warm|compile-run|compile|fresh-process>] [--resume true]");
         return 2;
     }
 
@@ -53,6 +53,7 @@ internal static class ComparisonQualificationCommand
         {
             "all" => manifest.Cases.Keys.ToArray(),
             "quick" => ComparisonPolicy.QuickCaseIds,
+            "core-loop" => ComparisonPolicy.CoreLoopCaseIds,
             _ => options["--case"].Split(','),
         };
         if (requested.Any(id => !manifest.Cases.ContainsKey(id))) throw new ArgumentException("An explicitly selected case is absent from the catalog.");

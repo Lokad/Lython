@@ -4,13 +4,14 @@ namespace Lokad.Lython.Benchmarks.Comparison;
 // version bump; a failed campaign is not a reason to weaken its eligibility.
 internal static class ComparisonPolicy
 {
-    public const int Version = 4;
-    public const int EligibilityVersion = 4;
+    public const int Version = 5;
+    public const int EligibilityVersion = 5;
     public const int Sessions = 3;
     public const int Pairs = 7;
     public const int IdleWindows = 1;
     public const double IdleWindowSeconds = .5;
     public const double SettleSeconds = .05;
+    public const double PreparationPauseSeconds = 2;
     public const double MaximumMedianBusyPercent = 3;
     public const double MaximumBusyPercent = 5;
     public const int MinimumWarmupInvocations = 32;
@@ -44,15 +45,25 @@ internal static class ComparisonPolicy
         "compression.zlib.medium",
     ];
 
+    // Zoom into the same scalar-checksum loop at geometric sizes. Public entry
+    // costs remain timed, while output size stays small and nearly constant.
+    public static readonly string[] CoreLoopCaseIds =
+    [
+        "control.empty.control", "control.tiny.control",
+        "loops.integer.small", "loops.integer.medium", "loops.integer.large",
+    ];
+
     public static object Describe() => new
     {
-        Version, EligibilityVersion, Sessions, Pairs, IdleWindows, IdleWindowSeconds, SettleSeconds,
+        Version, EligibilityVersion, Sessions, Pairs, IdleWindows, IdleWindowSeconds, SettleSeconds, PreparationPauseSeconds,
         MaximumMedianBusyPercent, MaximumBusyPercent, MinimumWarmupInvocations, MinimumWarmupSeconds,
         FreshMinimumWarmupInvocations, FreshMinimumWarmupSeconds,
         MaximumWarmupBatches, MaximumCalibrationBatches, CalibrationSeconds, MinimumBatchSeconds,
         MaximumIqrFraction, MaximumOrderFactor, MaximumIntervalFactor, MaximumSessionFactor, MaximumControlFraction,
         BootstrapResamples, BootstrapSeed, CaseDeadlineSeconds, CampaignDeadlineSeconds, CleanupReserveSeconds,
         defaultCaseIds = QuickCaseIds,
+        coreLoopCaseIds = CoreLoopCaseIds,
+        preparation = "fixed two-second pause after calibration, before sampling; recorded parent-clock evidence; included in case/lane deadlines",
         budget = "600 seconds per lane including setup and all retries; ten seconds reserved for cleanup",
         interference = "exclude the affected case without rerunning it; initial/final noise stops the attempt",
         supervisor = "DOTNET_TieredCompilation=0 for the supervisor alone; removed before every persistent/once worker launch",

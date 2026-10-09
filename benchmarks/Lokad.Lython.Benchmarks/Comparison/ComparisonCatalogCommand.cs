@@ -40,12 +40,13 @@ internal static class ComparisonCatalogCommand
         for (var i = 1; i < arguments.Length; i += 2)
             if (i + 1 == arguments.Length || arguments[i] is not ("--out" or "--profile")
                 || !options.TryAdd(arguments[i], arguments[i + 1])) return ListUsage();
-        if (options.TryGetValue("--profile", out var profile) && profile is not ("quick" or "full")) return ListUsage();
+        if (options.TryGetValue("--profile", out var profile) && profile is not ("quick" or "full" or "core-loop")) return ListUsage();
         IReadOnlyList<ComparisonWorkload> workloads = WorkloadCatalog.Create();
-        if (profile == "quick")
+        if (profile is "quick" or "core-loop")
         {
             var all = workloads.ToDictionary(w => w.Id, StringComparer.Ordinal);
-            workloads = ComparisonPolicy.QuickCaseIds.Select(id => all[id]).ToArray();
+            var ids = profile == "core-loop" ? ComparisonPolicy.CoreLoopCaseIds : ComparisonPolicy.QuickCaseIds;
+            workloads = ids.Select(id => all[id]).ToArray();
         }
         if (!options.TryGetValue("--out", out var destination))
         {
@@ -81,7 +82,7 @@ internal static class ComparisonCatalogCommand
 
     private static int ListUsage()
     {
-        Console.Error.WriteLine("Usage: --compare list [--profile <full|quick>] [--out <catalog.json>]");
+        Console.Error.WriteLine("Usage: --compare list [--profile <full|quick|core-loop>] [--out <catalog.json>]");
         return 2;
     }
 }

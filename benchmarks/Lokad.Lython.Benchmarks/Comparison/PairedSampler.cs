@@ -22,6 +22,7 @@ internal sealed class SamplingSession
     public List<PairEvidence> Pairs { get; set; } = [];
     public List<BatchAttempt> Attempts { get; set; } = [];
     public List<QuietEvidence> Gates { get; set; } = [];
+    public NoiseInterval? PreparationPause { get; set; }
     public string State { get; set; } = "Running";
     public string? Reason { get; set; }
     public SessionStatistics? Statistics { get; set; }
@@ -29,12 +30,14 @@ internal sealed class SamplingSession
 
 internal interface ISamplingMachine
 {
+    Task PrepareAsync(CancellationToken cancellationToken);
     Task SettleAsync(CancellationToken cancellationToken);
     Task<QuietEvidence> CheckAsync(CancellationToken cancellationToken);
     MachineSnapshot Read();
 }
 internal sealed class LinuxSamplingMachine : ISamplingMachine
 {
+    public Task PrepareAsync(CancellationToken cancellationToken) => Task.Delay(TimeSpan.FromSeconds(ComparisonPolicy.PreparationPauseSeconds), cancellationToken);
     public Task SettleAsync(CancellationToken cancellationToken) => Task.Delay(TimeSpan.FromSeconds(ComparisonPolicy.SettleSeconds), cancellationToken);
     public Task<QuietEvidence> CheckAsync(CancellationToken cancellationToken) => QuietMachineProbe.CheckAsync(cancellationToken);
     public MachineSnapshot Read() => QuietMachineProbe.Read();
@@ -54,6 +57,10 @@ internal static class PairedSampler
             if (afterWarmup is not null) await afterWarmup(cancellationToken).ConfigureAwait(false);
             var leftCount = await CalibrateAsync(true, trace.LythonWarmup, trace.LythonCalibration).ConfigureAwait(false);
             var rightCount = await CalibrateAsync(false, trace.PythonWarmup, trace.PythonCalibration).ConfigureAwait(false);
+            var preparationBefore = machine.Read();
+            await machine.PrepareAsync(cancellationToken).ConfigureAwait(false);
+            trace.PreparationPause = QuietMachineProbe.Compare(preparationBefore, machine.Read());
+            checkpoint();
             for (var pair = 0; pair < ComparisonPolicy.Pairs; pair++)
             {
                 await machine.SettleAsync(cancellationToken).ConfigureAwait(false);
@@ -182,7 +189,15 @@ internal static class PairedSampler
         var pairs = trace.Pairs.Select(p => new TimedPair(p.Index, p.LythonFirst,
             p.Lython.Seconds / Math.Max(1, p.Lython.Response.CompletedInvocations),
             p.Python.Seconds / Math.Max(1, p.Python.Response.CompletedInvocations))).ToArray();
-        var complete = evidenceComplete && trace.Index is >= 0 and < ComparisonPolicy.Sessions && warm && calibration
+        var preparation = trace.PreparationPause;
+        var prepared = preparation is not null && preparation.Before.Timestamp >= 0 && preparation.Before.ClockFrequency > 0
+            && preparation.Before.ClockFrequency == preparation.After.ClockFrequency
+            && preparation.Before.Cgroup == preparation.After.Cgroup
+            && preparation.After.Timestamp >= preparation.Before.Timestamp
+            && (double)(preparation.After.Timestamp - preparation.Before.Timestamp) / preparation.Before.ClockFrequency >= ComparisonPolicy.PreparationPauseSeconds
+            && trace.Gates.Count > 0 && trace.Gates[0].Windows.Length > 0
+            && preparation.After.Timestamp <= trace.Gates[0].Windows[0].Before.Timestamp;
+        var complete = evidenceComplete && prepared && trace.Index is >= 0 and < ComparisonPolicy.Sessions && warm && calibration
             && trace.Gates.Count == ComparisonPolicy.Pairs && trace.Gates.All(g => QuietMachineProbe.Evaluate(g.Windows).Quiet)
             && trace.Pairs.All(p => p.Index is >= 0 and < ComparisonPolicy.Pairs
             && QuietMachineProbe.Evaluate(p.Quiet.Windows).Quiet && QuietMachineProbe.Compare(p.Noise.Before, p.Noise.After).Clean

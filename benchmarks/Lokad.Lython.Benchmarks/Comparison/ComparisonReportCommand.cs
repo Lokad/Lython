@@ -51,8 +51,9 @@ internal static class ComparisonReportCommand
         builder.AppendLine($"Lane: `{Escape(receipt.Lane)}`. Revision: `{Escape(receipt.Before?.Revision ?? "missing")}`. " +
             $"Policy/eligibility: {receipt.PolicyVersion}/{receipt.EligibilityVersion}. Receipt SHA-256: `{Escape(receiptSha256)}`.").AppendLine();
         builder.AppendLine($"Scope: {receipt.RequestedCaseIds.Length} selected cases from {receipt.CatalogCaseCount} manifest cases. " +
-            "Policy v4 limits each lane to ten minutes including retries. The quick profile covers twelve workloads and two controls, " +
-            "with one-second persistent warmup and seven pairs in each of three independent sessions; it is a limited baseline.").AppendLine();
+            $"Policy v{ComparisonPolicy.Version} limits each lane to ten minutes including retries. " +
+            "The core-loop profile covers three geometric loop sizes and two controls; the quick profile covers twelve workloads and two controls. " +
+            "Persistent warmup lasts at least one second, with a recorded two-second preparation pause before sampling and seven pairs in each of three independent sessions.").AppendLine();
         builder.AppendLine("Ratio means CPython time / Lython time; values above one favor Lython. " +
             "Intervals are fixed-seed paired-bootstrap 95% intervals within one session. " +
             "Independent sessions are shown separately; there is no pooled interval or overall speedup.").AppendLine();

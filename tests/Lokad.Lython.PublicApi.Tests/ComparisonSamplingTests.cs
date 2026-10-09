@@ -6,6 +6,68 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class ComparisonSamplingTests
 {
+    [Fact]
+    public void CoreLoopProfileKeepsTheSameReductionAndSmallIndependentOutputsAtThreeSizes()
+    {
+        var all = WorkloadCatalog.Create().ToDictionary(w => w.Id);
+        var loops = ComparisonPolicy.CoreLoopCaseIds.Skip(2).Select(id => all[id]).ToArray();
+        Assert.Equal(new[] { 256, 2048, 16384 }, loops.Select(w => w.Size));
+        Assert.All(ComparisonPolicy.CoreLoopCaseIds.Take(2), id => Assert.Equal("control", all[id].Category));
+        Assert.All(loops, loop =>
+        {
+            Assert.Contains("for i in range(N):\n    total += i\nprint(total)", loop.Source);
+            Assert.Equal(((long)loop.Size * (loop.Size - 1) / 2).ToString(System.Globalization.CultureInfo.InvariantCulture) + "\n", loop.ExpectedOutput);
+            Assert.InRange(loop.ExpectedOutputUtf8Bytes, 1, 16);
+        });
+    }
+
+    [Theory]
+    [InlineData("missing")]
+    [InlineData("short")]
+    [InlineData("frequency")]
+    [InlineData("cgroup")]
+    [InlineData("future")]
+    public async Task PreparationRunsAfterCalibrationAndInvalidPauseEvidenceCannotQualify(string defect)
+    {
+        var trace = new SamplingSession();
+        var machine = new FakeMachine { PreparationHook = () =>
+        {
+            Assert.NotEmpty(trace.LythonCalibration);
+            Assert.NotEmpty(trace.PythonCalibration);
+            Assert.Empty(trace.Pairs);
+            Assert.Empty(trace.Gates);
+        } };
+        await PairedSampler.RunAsync(trace, (_, count, _) => Task.FromResult(Response(count, count * .02)), machine, () => { }, default);
+        Assert.True(PairedSampler.Evaluate(trace, true).Qualified);
+        var pause = trace.PreparationPause!;
+        trace.PreparationPause = defect switch
+        {
+            "missing" => null,
+            "short" => pause with { After = pause.After with { Timestamp = pause.Before.Timestamp + 1 } },
+            "frequency" => pause with { After = pause.After with { ClockFrequency = 1 } },
+            "future" => pause with { After = pause.After with { Timestamp = trace.Gates[0].Windows[0].Before.Timestamp + 1 } },
+            _ => pause with { After = pause.After with { Cgroup = "/changed" } },
+        };
+        Assert.False(PairedSampler.Evaluate(trace, true).Qualified);
+        var receipt = await ReceiptAsync();
+        receipt.Cases[2].Sessions[0].Sampling.PreparationPause = trace.PreparationPause;
+        Assert.Equal("Unqualified", QualificationEvidence.Assess(receipt, receipt.Cases[2]).Status);
+        Assert.DoesNotContain("| Qualified |", ComparisonReportCommand.Render(receipt, "test"));
+    }
+
+    [Fact]
+    public async Task CancellationDuringPreparationLeavesNoMeasuredPairsOrPauseProof()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var trace = new SamplingSession();
+        var machine = new FakeMachine { PreparationHook = cancellation.Cancel };
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => PairedSampler.RunAsync(trace,
+            (_, count, _) => Task.FromResult(Response(count, count * .02)), machine, () => { }, cancellation.Token));
+        Assert.Equal("Interrupted", trace.State);
+        Assert.Null(trace.PreparationPause);
+        Assert.Empty(trace.Pairs);
+    }
+
     [Theory]
     [InlineData("warm")]
     [InlineData("compile")]
@@ -496,10 +558,26 @@ public sealed class ComparisonSamplingTests
     private sealed class FakeMachine : ISamplingMachine
     {
         private int _read; public bool Busy { get; set; }
+        public Action? PreparationHook { get; set; }
+        public Task PrepareAsync(CancellationToken cancellationToken)
+        {
+            PreparationHook?.Invoke();
+            cancellationToken.ThrowIfCancellationRequested();
+            _read += 20;
+            return Task.CompletedTask;
+        }
         public Task SettleAsync(CancellationToken cancellationToken) => Task.CompletedTask;
         public Task<QuietEvidence> CheckAsync(CancellationToken cancellationToken)
         {
             var gate = Quiet();
+            var offset = _read * 100_000_000L;
+            for (var i = 0; i < gate.Windows.Length; i++)
+                gate.Windows[i] = gate.Windows[i] with
+                {
+                    Before = gate.Windows[i].Before with { Timestamp = gate.Windows[i].Before.Timestamp + offset },
+                    After = gate.Windows[i].After with { Timestamp = gate.Windows[i].After.Timestamp + offset },
+                };
+            _read += 10 * ComparisonPolicy.IdleWindows;
             if (Busy) gate.Windows[0].After.Cpu[0] = 100;
             return Task.FromResult(QuietMachineProbe.Evaluate(gate.Windows));
         }

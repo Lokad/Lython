@@ -1,6 +1,6 @@
 # Lython and CPython comparison contract
 
-Specification version **4**, established before the shortened comparative run. The catalog
+Specification version **5**, established before the targeted core-loop run. The catalog
 and explicit correctness check are available. Persistent worker primitives are
 available, including supervised correctness/timer smokes, paired collection,
 machine checks and raw-evidence report rendering.
@@ -21,6 +21,12 @@ dictionaries, generator drain, supplementary Unicode scanning, ASCII text
 pipeline, JSON roundtrip, retained CSV rows, XML selection and zlib. The full
 131-case catalog remains a correctness suite; this smaller baseline cannot
 establish broad scaling or coverage of every supported library.
+
+The `core-loop` profile zooms into one basic integer reduction at 256, 2,048 and
+16,384 iterations, plus the empty/tiny controls. It uses the existing identical
+source and independent scalar checksum goldens, so output remains small across
+sizes. Public invocation overhead remains timed. This profile is intended to
+separate fixed entry cost from scaling, before profiling the implementation.
 
 The primary question is how long the same supported Python job takes through a
 warm public Lython invocation and a warm CPython invocation on the same machine.
@@ -321,16 +327,25 @@ qualification. The receipt records and validates the supervisor override set,
 binds it on resumption, and distinguishes it from the workers' default profiles.
 Microsoft documents this [compilation setting](https://learn.microsoft.com/en-us/dotnet/core/runtime-config/compilation).
 
-Policy v4 also restores one-second/32-invocation warmup for the persistent
+Policy v4 restored one-second/32-invocation warmup for the persistent
 lanes after a corrected process/thread diagnostic observed worker background
 compilation with 100 ms warmup. Fresh-process preparation remains eight once
 jobs and at least 100 ms; fresh children cannot retain JIT state across jobs.
 The selected jobs, seven-pair sampling, statistical thresholds and 600-second
 lane budget are unchanged. Failed v2/v3 diagnostic evidence is retained separately.
 
+A bounded all-thread diagnostic under v4 still observed a worker tiered compiler
+using 60 ms CPU during a failed first idle window. Policy v5 therefore records a
+fixed **two-second preparation pause after calibration and before sampling**.
+That pause is inside the original case/lane deadlines and applies equally before
+paired collection. It neither disables worker compilation nor retries a failed
+gate. Parent-clock evidence must prove its duration. The noise, stability,
+overhead and sampling thresholds remain unchanged; earlier receipts retain their
+original exclusions and must be rendered with their original revision.
+
 ## Sampling and eligibility
 
-The initial measurement policy is fixed before timing:
+The measurement policy is fixed before timing:
 
 - One half-second idle CPU window: at most **3% median / 5% maximum** background
   activity. Settle and recheck between every pair. Unsupported accounting cannot
@@ -359,7 +374,7 @@ The initial measurement policy is fixed before timing:
   Do not weaken thresholds to obtain publishable results. Controls and jobs
   dominated by harness overhead remain visible without a speedup claim.
 
-Policy/eligibility v4 freezes finite invocation/batch/case/campaign deadlines,
+Policy/eligibility v5 freezes finite invocation/batch/case/campaign deadlines,
 iteration ceilings, case order and protocol size caps in its versioned manifest
 before measurements. A ceiling or interrupted campaign does not relax eligibility.
 Do not force GC or inherit timeit's default cyclic-GC suppression.
@@ -379,8 +394,9 @@ env DOTNET_TieredCompilation=0 <dotnet> <benchmark.dll> --compare qualify --cata
 <dotnet> <benchmark.dll> --compare render-report --receipt <receipt.json> --out <report.md>
 ```
 
-Use `--compare list` to obtain all correctness case IDs, or `--profile quick`
-for the fixed 14-case timing manifest. `--case quick` is the default;
+Use `--compare list` to obtain all correctness case IDs, `--profile quick`
+for the fixed 14-case timing manifest, or `--profile core-loop` for the five-case
+loop profile. Qualification selects it with `--case core-loop`. `--case quick` is the default;
 explicit `all` or comma-separated selections retain the same ten-minute ceiling.
 `--lane` accepts `warm` (default), `compile-run`, `compile` and `fresh-process`.
 The empty and tiny controls always precede selected cases. Each case gets three
@@ -390,7 +406,7 @@ Post-warmup verification reuses the compiled code, preserving specialization.
 Fresh batches sum parent launch-to-drain times for independent exactly-once
 processes; their individual identities/results remain in the receipt.
 
-Policy/eligibility v4 uses 10,000 intact-pair bootstrap resamples with seed 1729,
+Policy/eligibility v5 uses 10,000 intact-pair bootstrap resamples with seed 1729,
 explicit xorshift32/rejection-index sampling and linear `(n-1)*p` quantiles.
 It retains session medians and intervals separately. No aggregate interval is
 computed. The common invocation ceiling is 1,000,000; warmup is capped at twelve
@@ -421,7 +437,8 @@ all attempts. Run it in a dedicated systemd service with `RuntimeMaxSec=600`,
 `TimeoutStopSec=0` and `KillMode=control-group`; this hard limit also covers
 stuck processes and descendants. Supply absolute .NET/Python/toolchain paths,
 an output directory, a common VM lock file and the lane name as positional
-arguments. Collect lanes sequentially, with no builds/tests/transfers during
+arguments; an optional seventh argument selects `quick` (default) or `core-loop`.
+Collect lanes sequentially, with no builds/tests/transfers during
 timing, then render receipts offline. Do not extend the budget after a timeout.
 
 Runtime specialization can still be in progress, and seven pairs

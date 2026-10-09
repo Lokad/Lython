@@ -221,6 +221,9 @@ internal static class QualificationEvidence
                 if (!Semantic(check.Lython, workload, "Equivalent", 2, left.GetProperty("clockFrequency").GetInt64())
                     || !Semantic(check.Python, workload, "Equivalent", 2, right.GetProperty("clockFrequency").GetInt64())) return false;
             var parentFrequency = receipt.Machine.GetProperty("clockFrequency").GetInt64();
+            if (session.Sampling.PreparationPause is not { } preparation
+                || preparation.Before.ClockFrequency != parentFrequency || preparation.After.ClockFrequency != parentFrequency)
+                return false;
             if (session.Sampling.Gates.SelectMany(g => g.Windows).Concat(session.Sampling.Pairs.Select(p => p.Noise))
                 .Any(w => w.Before.ClockFrequency != parentFrequency || w.After.ClockFrequency != parentFrequency)) return false;
             var attempts = session.Sampling.Attempts;
