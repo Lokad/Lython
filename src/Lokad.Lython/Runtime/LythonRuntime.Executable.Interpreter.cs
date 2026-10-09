@@ -150,7 +150,7 @@ internal sealed partial class LythonRuntime
             _stack.Push(value);
         }
 
-        private void ExecuteDefinitionOrFallback(ExecutableInstruction instruction)
+        private void ExecuteDefinitionOrFallback(in ExecutableInstruction instruction)
         {
             switch (instruction.OpCode)
             {
@@ -172,7 +172,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private void ExecuteStackTransfer(ExecutableInstruction instruction)
+        private void ExecuteStackTransfer(in ExecutableInstruction instruction)
         {
             switch (instruction.OpCode)
             {
@@ -274,7 +274,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private bool ExecuteStructure(ExecutableInstruction instruction)
+        private bool ExecuteStructure(in ExecutableInstruction instruction)
         {
             switch (instruction.OpCode)
             {
@@ -343,7 +343,7 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
-        private bool ExecuteValueOperation(ExecutableInstruction instruction)
+        private bool ExecuteValueOperation(in ExecutableInstruction instruction)
         {
             switch (instruction.OpCode)
             {
@@ -466,7 +466,7 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        private bool ExecuteControlFlow(ExecutableInstruction instruction)
+        private bool ExecuteControlFlow(in ExecutableInstruction instruction)
         {
             switch (instruction.OpCode)
             {
