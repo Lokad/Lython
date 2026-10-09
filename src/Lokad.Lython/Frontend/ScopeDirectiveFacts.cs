@@ -150,8 +150,11 @@ internal static class ScopeDirectiveFactsCollector
             switch (statement)
             {
                 case ImportStatementSyntax importStatement:
-                    names.Add(importStatement.BindingName);
-                    if (importStatement.ImportedMembers is not null)
+                    if (importStatement.ImportedMembers is null)
+                    {
+                        names.Add(importStatement.BindingName);
+                    }
+                    else
                     {
                         foreach (var memberName in ImportSyntaxFacts.EnumerateBindingNames(importStatement))
                         {

@@ -96,8 +96,11 @@ internal static class StaticNameBindingDiagnostics
         switch (statement)
         {
             case ImportStatementSyntax importStatement:
-                maybeAssigned.Add(importStatement.BindingName);
-                if (importStatement.ImportedMembers is not null)
+                if (importStatement.ImportedMembers is null)
+                {
+                    maybeAssigned.Add(importStatement.BindingName);
+                }
+                else
                 {
                     foreach (var memberName in ImportSyntaxFacts.EnumerateBindingNames(importStatement))
                     {

@@ -56,6 +56,11 @@ public sealed class UnboundLocalVariableTests
     [InlineData("def f(a, b=2, *, c=3):\n for value in []: pass\n return [a, b, c]\nreturn str(f(1, c=4))", "[1, 2, 4]")]
     [InlineData("def outer():\n def inner(): return value\n value = 7\n return inner\nreturn str(outer()())", "7")]
     [InlineData("def f():\n for value in []: pass\n return 'value' in locals()\nreturn str(f())", "False")]
+    [InlineData("math = 99\ndef f():\n from math import pi\n return math\nreturn str(f())", "99")]
+    [InlineData("def outer():\n math = 99\n def f():\n  from math import pi as value\n  return math\n return f()\nreturn str(outer())", "99")]
+    [InlineData("math = 99\ndef f():\n if False:\n  from math import pi\n return math\nreturn str(f())", "99")]
+    [InlineData("math = 99\nclass C:\n from math import pi\n result = math\nreturn str(C.result)", "99")]
+    [InlineData("def f():\n from math import pi as value\n return ['math' in locals(), 'value' in locals()]\nreturn str(f())", "[False, True]")]
     public async Task OtherNamespacesAndBoundArgumentsKeepTheirBehavior(string source, string expected)
         => await Check(source, expected);
 
@@ -63,6 +68,7 @@ public sealed class UnboundLocalVariableTests
     [InlineData("return value\nvalue = 1")]
     [InlineData("value: int\nreturn value")]
     [InlineData("value = 1\ndel value\nreturn value")]
+    [InlineData("from math import pi\nreturn math\nmath = 1")]
     public void StaticallyCertainUnboundReadsStillHaveCompileDiagnostics(string body)
     {
         var script = new LythonEngine().Compile("def f():\n " + body.Replace("\n", "\n "));

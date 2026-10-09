@@ -47,6 +47,13 @@ free variables keep `NameError`. The original public probe returned outer `99`
 where CPython raised `UnboundLocalError`; the corrected probe matches CPython,
 including messages and deletion/free-variable cases. Existing compile-time
 diagnostics for statically certain unbound reads remain unchanged.
+Final scope review also corrected the shared collector: `from math import pi`
+binds `pi`, and leaves `math` available from an enclosing scope. Both-mode
+regressions cover module/class/closure lookup and `locals()` visibility. The
+timed module loop has no imports, so its emitted code is unaffected; this
+follow-up has no separately claimed timing result.
+Its public probe matches CPython and **520** focused checks pass in each of
+Release and Debug, including the six new import-binding regressions.
 
 All **9,013** local Release tests passed for that correctness fix. The compiler
 candidate passed **755** focused local Release and **757** focused Debug checks;
