@@ -42,6 +42,13 @@ qualified, but no workload qualified on both producers. All original exclusions
 remain visible. The current ASCII pipeline and zlib application qualified;
 the basic-loop comparison still withholds a certified multiplier.
 
+The [string reclamation round](results/2026-10-09-string-reclamation/README.md)
+used five short decomposition jobs and a separate 15-second CPU trace, followed
+by two repetitions each of the pipeline and split/count. Direct string ownership
+registrations reduced pipeline medians by 65–67% and split/count by 63–66% in
+7–8-second collections. These remain diagnostic results; the next full milestone
+is deferred.
+
 ## Short improvement rounds
 
 Build the old and candidate benchmark workers in Release before timing. The
