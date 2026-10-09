@@ -290,6 +290,13 @@ internal sealed partial class LythonRuntime
                 }
                 catch (LythonRuntimeException ex)
                 {
+                    // Preserve the publication failure while closing any other
+                    // writers, just as the ordinary failure path does.
+                    if (context is not null && !context.Services.State.CancellationRequested)
+                    {
+                        context.Services.State.TryCloseOpenFileWriters();
+                    }
+
                     return CreateRuntimeFailureResult(ex, context, options);
                 }
 

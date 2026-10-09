@@ -81,6 +81,58 @@ public sealed class UnclosedWriterEndOfRunTests
         Assert.Equal("yes", host.ReadText("/out.txt"));
     }
 
+    [Theory]
+    [InlineData(false, "pass")]
+    [InlineData(true, "pass")]
+    [InlineData(false, "return None")]
+    [InlineData(true, "return None")]
+    [InlineData(false, "return 7")]
+    [InlineData(true, "return 7")]
+    public async Task PublicationFailureReplacesCompletionAndPreservesCapturedOutput(bool asynchronous, string ending)
+    {
+        var script = new LythonEngine().Compile("print('before')\nf = open('/out.txt', 'w')\nf.write('yes')\n" + ending);
+        Assert.True(script.IsValid);
+        var host = new MockLythonHost();
+        host.FailNextWriteText("/out.txt", "publication blocked");
+
+        var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
+        Assert.False(result.Success);
+        Assert.Equal("Host write_text failed.", result.Failure?.Message);
+        Assert.Null(result.ReturnValue);
+        Assert.Equal("before\n", result.StandardOutput);
+        // Best-effort cleanup retries this transient failure, but must retain
+        // the first publication error as the run's outcome.
+        Assert.Equal("yes", host.ReadText("/out.txt"));
+
+        var retry = asynchronous ? await script.RunAsync(host) : script.Run(host);
+        Assert.True(retry.Success, retry.Failure?.Message);
+        Assert.Equal("yes", host.ReadText("/out.txt"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PublicationFailureStillClosesOtherOutstandingWriters(bool asynchronous)
+    {
+        var script = new LythonEngine().Compile("""
+            good = open('/good.txt', 'w')
+            good.write('kept')
+            bad = open('/bad.txt', 'w')
+            bad.write('denied')
+            return 7
+            """);
+        Assert.True(script.IsValid);
+        var host = new MockLythonHost();
+        host.FailWriteText("/bad.txt", "publication blocked");
+
+        var result = asynchronous ? await script.RunAsync(host) : script.Run(host);
+        Assert.False(result.Success);
+        Assert.Equal("Host write_text failed.", result.Failure?.Message);
+        Assert.Null(result.ReturnValue);
+        Assert.Equal("kept", host.ReadText("/good.txt"));
+        Assert.False(host.Exists("/bad.txt"));
+    }
+
     [Fact]
     public void FlushThenDirtySuffix_PublishesBoth()
     {

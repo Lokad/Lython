@@ -296,6 +296,11 @@ internal sealed partial class LythonRuntime
                 }
                 catch (LythonRuntimeException ex)
                 {
+                    if (context is not null && !context.Services.State.CancellationRequested)
+                    {
+                        context.Services.State.TryCloseOpenFileWriters();
+                    }
+
                     return CreateRuntimeFailureResult(ex, context, options);
                 }
 
@@ -634,6 +639,11 @@ internal sealed partial class LythonRuntime
             }
             catch (LythonRuntimeException ex)
             {
+                if (context is not null && !context.Services.State.CancellationRequested)
+                {
+                    await context.Services.State.TryCloseOpenFileWritersAsync().ConfigureAwait(false);
+                }
+
                 return CreateRuntimeFailureResult(ex, context, options);
             }
 
