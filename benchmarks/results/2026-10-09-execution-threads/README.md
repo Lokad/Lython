@@ -80,6 +80,14 @@ retained-row budgets are included in those checks. Guest limits and host-mediate
 I/O remain unchanged. Passing CSV checks do not establish the cause of the
 separate intermittent retained-row lifetime issue.
 
+The original candidate passed all **9,067 local Debug checks**. The first
+delivery's Ubuntu Release CI passed; Windows passed all 7,748 public checks but
+failed an existing ZIP cancellation test that started an async job and then
+cancelled without ensuring the job was still pending. That test now waits for
+the existing host read barrier before cancelling, with unchanged failure
+assertions and bounded watchdogs. This is a test-only correction; the measured
+production tree is unchanged and no extra timing collection is required.
+
 ## Reproduction and evidence
 
 Run `--compare list --profile quick --out catalog.json` from the Release

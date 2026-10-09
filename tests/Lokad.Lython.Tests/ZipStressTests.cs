@@ -226,12 +226,22 @@ with zipfile.ZipFile("/t.zip") as archive:
         var host = new DelayedLythonHost("/");
         host.SeedBytes("/t.zip", File.ReadAllBytes(Path.Combine(FindCasesRoot(), "zip-deflated", "input.zip")));
         using var cancellation = new CancellationTokenSource();
+        var readStarted = host.PauseReadUntilCancellation("/t.zip");
         var task = new LythonEngine().RunAsync(
             "import zipfile\nwith zipfile.ZipFile(\"/t.zip\") as archive:\n    return archive.testzip()\n",
             host,
             cancellationToken: cancellation.Token);
-        cancellation.Cancel();
-        var result = await task;
+        try
+        {
+            // Cancel during suspended I/O, rather than racing a completed run.
+            await readStarted.WaitAsync(TimeSpan.FromSeconds(30));
+            Assert.False(task.IsCompleted);
+        }
+        finally
+        {
+            cancellation.Cancel();
+        }
+        var result = await task.WaitAsync(TimeSpan.FromSeconds(30));
         Assert.False(result.Success);
         Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
         Assert.Contains("execution canceled", result.Failure?.Message ?? string.Empty, StringComparison.Ordinal);
