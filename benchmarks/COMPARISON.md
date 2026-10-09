@@ -35,6 +35,13 @@ cap and qualification rules. Microbenchmarks provide diagnostic feedback in
 seconds; they do not run idle gates, establish a qualified speedup or replace
 correctness checks.
 
+The [first consolidated milestone](results/2026-10-09-first-milestone/README.md)
+collected the original runtime and current runtime with an identical v6 harness
+and fixed 14-case warm profile. Its lanes lasted 5m58s and 6m28s. Both controls
+qualified, but no workload qualified on both producers. All original exclusions
+remain visible. The current ASCII pipeline and zlib application qualified;
+the basic-loop comparison still withholds a certified multiplier.
+
 ## Short improvement rounds
 
 Build the old and candidate benchmark workers in Release before timing. The
@@ -60,7 +67,8 @@ a 15-second deadline; allow another 15 seconds for owned-worker cleanup. On the
 VM, enforce the complete **30-second hard limit** with a dedicated systemd service
 using `RuntimeMaxSec=30`, `TimeoutStopSec=0` and `KillMode=control-group`.
 [run-micro-linux.sh](run-micro-linux.sh) supplies the shared VM lease and the
-core-loop manifest. It takes absolute dotnet/Python paths, the old worker DLL,
+core-loop manifest for loop/control cases, or the full catalog for other selected
+cases. Only the selected job is timed. It takes absolute dotnet/Python paths, the old worker DLL,
 a new evidence directory, the lease path and an optional case ID. The supervisor
 alone disables its tiered compilation; every worker removes that override.
 Build, test and transfer beforehand; preserve partial/failed receipts. Never
@@ -420,6 +428,13 @@ lane. Existing v4/v5 receipts retain their original exclusions; they cannot be
 requalified by a v6 renderer. A new milestone must freeze its producer and
 manifest before collection. Ordinary improvement rounds still use seconds-long
 microbenchmarks; this policy revision does not require a full lane.
+
+The first v6 milestone exposed an implementation defect: `Task.Delay(2s)` sometimes
+woke before two seconds elapsed on the monotonic evidence clock. Preparation now
+rechecks that clock and waits again when necessary, without spinning. The required
+two-second pause, eligibility rules and deadlines are unchanged. This affects
+future collections; the original milestone keeps its frozen producer and every
+exclusion. It is not rerun to seek qualification.
 
 ## Sampling and eligibility
 
