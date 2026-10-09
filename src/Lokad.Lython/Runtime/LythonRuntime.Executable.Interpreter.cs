@@ -592,7 +592,6 @@ internal sealed partial class LythonRuntime
 
         internal object FrameReturnValue => _frameReturnValue.RequireNotNull();
 
-        public void Execute() => ExecuteCoreAsync(false).GetAwaiter().GetResult();
         public ValueTask ExecuteAsync() => ExecuteCoreAsync(true);
 
         private async ValueTask ExecuteCoreAsync(bool asynchronous)
@@ -732,65 +731,17 @@ internal sealed partial class LythonRuntime
                     }
                     catch (ReturnSignal signal)
                     {
-                        if (!TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingReturn(signal.Value), instruction.Span, ref _pendingAbrupt, ref _currentBlockIndex, out _))
-                        {
-                            AbandonFrame(instruction.Span);
-                            _frameReturnValue = signal.Value;
-                            _hasFrameReturn = true;
-                            return;
-                        }
-
+                        if (!TryRouteReturn(signal, instruction.Span)) return;
                         jumped = true;
                     }
                     catch (ControlSignal signal)
                     {
-                        if (!TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingControl(signal), instruction.Span, ref _pendingAbrupt, ref _currentBlockIndex, out _))
-                        {
-                            AbandonFrame(instruction.Span);
-                            throw;
-                        }
-
+                        if (!TryRouteControl(signal, instruction.Span)) throw;
                         jumped = true;
                     }
                     catch (LythonRuntimeException ex)
                     {
-                        var previousActive = context.Services.CurrentException;
-                        if (previousActive is not null && !ReferenceEquals(ex.OriginalPythonException, previousActive))
-                            ex.PythonContext ??= previousActive;
-                        var previousPending = _pendingAbrupt;
-                        _delegation = null;
-                        _injectedException = null;
-                        if (!TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingException(ex), instruction.Span, ref _pendingAbrupt, ref _currentBlockIndex, out var matchedRegion))
-                        {
-                            var failure = _pendingAbrupt is PendingException unhandled ? unhandled.Exception : ex;
-                            AbandonFrame(instruction.Span);
-                            throw failure;
-                        }
-
-                        var routedToHandler = _pendingAbrupt is null;
-                        var routedToCleanup = !routedToHandler && _pendingAbrupt is PendingException;
-                        var routedException = _pendingAbrupt is PendingException pending ? pending.Exception : ex;
-                        if (routedToHandler || routedToCleanup)
-                        {
-                            // The except route already installed the handler
-                            // exception; hold it aside and reseed the displaced
-                            // live nesting while abandoned suites unwind
-                            // beneath it. The current block now targets the
-                            // handler or cleanup suite.
-                            var installed = routedToHandler ? context.Services.CurrentException : null;
-                            context.Services.SetCurrentException(previousActive);
-                            UnwindAbandonedHandlers(_currentBlockIndex);
-                            var retainedPending = PendingCleanupContains(previousPending, _currentBlockIndex)
-                                ? previousPending : null;
-                            SavedActiveExceptions().Push(new ActiveExceptionSave(
-                                context.Services.CurrentException,
-                                matchedRegion?.SuiteStartBlockIndex,
-                                matchedRegion?.SuiteEndBlockIndex,
-                                retainedPending));
-                            context.Services.SetCurrentException(
-                                routedToHandler ? installed : CreatePythonExceptionInstance(routedException));
-                        }
-
+                        RouteRuntimeException(ex, instruction.Span);
                         jumped = true;
                     }
 
