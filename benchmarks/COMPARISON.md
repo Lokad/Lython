@@ -55,6 +55,11 @@ helped empty and tiny controls modestly, but the integer loop took slightly
 longer in both repetitions, so that candidate remains isolated. An independent
 writer publication cleanup correction is retained; no full lane was collected.
 
+The [lazy string cache experiment](results/2026-10-10-string-cache-metadata/README.md)
+used ten micros of 6.4–7.0 seconds and separate fixed-count allocation checks.
+It reduced pipeline managed allocation by 5.11% but gave no repeatable target
+latency improvement, so the candidate remains isolated. No full lane ran.
+
 ## Short improvement rounds
 
 Build the old and candidate benchmark workers in Release before timing. The
