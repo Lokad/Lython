@@ -60,6 +60,11 @@ used ten micros of 6.4–7.0 seconds and separate fixed-count allocation checks.
 It reduced pipeline managed allocation by 5.11% but gave no repeatable target
 latency improvement, so the candidate remains isolated. No full lane ran.
 
+The [string ownership investigation](results/2026-10-10-string-ownership/README.md)
+uses two boundary diagnostics of about 6.5 seconds and six public micros.
+It identifies adoption as a target and rejects a direct string guard after
+slower pipeline results. A structural ownership proposal remains pending.
+
 ## Short improvement rounds
 
 Build the old and candidate benchmark workers in Release before timing. The
