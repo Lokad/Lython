@@ -199,7 +199,7 @@ internal static class QualificationEvidence
             ValidateProfile(session.LythonIdentity, session.PythonIdentity, receipt.Before, receipt.Toolchains);
             ValidateRuntimeConfig(receipt.RuntimeConfig);
             var left = session.LythonIdentity; var right = session.PythonIdentity;
-            if (!session.Closed || session.Sampling.State != "Measured"
+            if (!session.Closed || session.Sampling.State != "Measured" || session.Sampling.Lane != receipt.Lane
                 || left.GetProperty("catalogSha256").GetString() != receipt.CatalogSha256
                 || right.GetProperty("catalogSha256").GetString() != receipt.CatalogSha256
                 || session.Verification.Count != 3 || !session.Verification.Select(v => v.Phase).SequenceEqual(new[] { "before", "after-warmup", "after" }))

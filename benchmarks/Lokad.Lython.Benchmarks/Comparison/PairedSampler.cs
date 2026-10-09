@@ -13,6 +13,7 @@ internal sealed record BatchAttempt(int Sequence, bool Lython, BatchEvidence Bat
 internal sealed class SamplingSession
 {
     public int Index { get; set; }
+    public string Lane { get; set; } = "warm";
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public List<BatchEvidence> LythonWarmup { get; set; } = [];
     public List<BatchEvidence> PythonWarmup { get; set; } = [];
@@ -45,6 +46,7 @@ internal static class PairedSampler
         Func<bool, int, CancellationToken, Task<WorkerResponse>> run, ISamplingMachine machine,
         Action checkpoint, CancellationToken cancellationToken, Func<CancellationToken, Task>? afterWarmup = null)
     {
+        var warmup = ComparisonPolicy.Warmup(trace.Lane);
         try
         {
             await WarmAsync(true, trace.LythonWarmup).ConfigureAwait(false);
@@ -114,15 +116,15 @@ internal static class PairedSampler
         }
         async Task WarmAsync(bool lython, List<BatchEvidence> records)
         {
-            var count = ComparisonPolicy.MinimumWarmupInvocations;
+            var count = warmup.Invocations;
             for (var batch = 0; batch < ComparisonPolicy.MaximumWarmupBatches; batch++)
             {
                 var evidence = await BatchAsync(lython, count, "warmup").ConfigureAwait(false);
                 records.Add(evidence); checkpoint();
                 var seconds = records.Sum(r => r.Seconds);
-                if (records.Sum(r => (long)r.Response.CompletedInvocations) >= ComparisonPolicy.MinimumWarmupInvocations
-                    && seconds >= ComparisonPolicy.MinimumWarmupSeconds) return;
-                count = NextCount(count, evidence.Seconds, ComparisonPolicy.MinimumWarmupSeconds - seconds,
+                if (records.Sum(r => (long)r.Response.CompletedInvocations) >= warmup.Invocations
+                    && seconds >= warmup.Seconds) return;
+                count = NextCount(count, evidence.Seconds, warmup.Seconds - seconds,
                     allowClampedWarmup: true);
             }
             throw new SamplingExclusion("Warmup reached its finite batch ceiling.");
@@ -165,10 +167,13 @@ internal static class PairedSampler
 
     public static SessionStatistics Evaluate(SamplingSession trace, bool evidenceComplete)
     {
+        if (trace.Lane is not ("warm" or "compile-run" or "compile" or "fresh-process"))
+            return ComparisonStatistics.Evaluate([], false);
+        var warmup = ComparisonPolicy.Warmup(trace.Lane);
         var warm = new[] { trace.LythonWarmup, trace.PythonWarmup }.All(records => records.Count <= ComparisonPolicy.MaximumWarmupBatches
             && records.All(r => r.Complete && r.Phase == "warmup" && r.RequestedIterations <= ComparisonProtocol.MaximumBatchIterations)
-            && records.Sum(r => (long)r.Response.CompletedInvocations) >= ComparisonPolicy.MinimumWarmupInvocations
-            && records.Sum(r => r.Seconds) >= ComparisonPolicy.MinimumWarmupSeconds);
+            && records.Sum(r => (long)r.Response.CompletedInvocations) >= warmup.Invocations
+            && records.Sum(r => r.Seconds) >= warmup.Seconds);
         var calibration = new[] { trace.LythonCalibration, trace.PythonCalibration }.All(records => records.Count >= 2
             && records.Count <= ComparisonPolicy.MaximumCalibrationBatches
             && records.All(r => r.Complete && r.Phase == "calibrate" && r.RequestedIterations <= ComparisonProtocol.MaximumBatchIterations)

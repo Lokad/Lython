@@ -6,6 +6,33 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 public sealed class ComparisonSamplingTests
 {
+    [Theory]
+    [InlineData("warm")]
+    [InlineData("compile")]
+    [InlineData("compile-run")]
+    [InlineData("fresh-process")]
+    public async Task WarmupUsesTheRecordedLaneAndCannotSubstituteFreshPreparationForPersistentEvidence(string lane)
+    {
+        var trace = new SamplingSession { Lane = lane };
+        await PairedSampler.RunAsync(trace, (_, count, _) => Task.FromResult(new WorkerResponse(1, 1, "test", "Completed", count,
+            count * 10_000_000L, 1_000_000_000, "source", "fixture", "expected", "expected", null)), new FakeMachine(), () => { }, default);
+        Assert.Equal("Measured", trace.State);
+        var expected = lane == "fresh-process" ? (.1, 8L) : (1d, 32L);
+        Assert.All(new[] { trace.LythonWarmup, trace.PythonWarmup }, batches =>
+        {
+            Assert.True(batches.Sum(b => b.Seconds) >= expected.Item1);
+            Assert.True(batches.Sum(b => (long)b.Response.CompletedInvocations) >= expected.Item2);
+        });
+        if (lane == "fresh-process")
+        {
+            trace.Lane = "warm";
+            Assert.False(PairedSampler.Evaluate(trace, true).Qualified);
+        }
+        var receipt = await ReceiptAsync(lane);
+        receipt.Cases[2].Sessions[0].Sampling.Lane = lane == "fresh-process" ? "warm" : "fresh-process";
+        Assert.Equal("Unqualified", QualificationEvidence.Assess(receipt, receipt.Cases[2]).Status);
+    }
+
     [Fact]
     public void QuickCatalogRetainsIndependentGoldensAndTheTwoInvocationControls()
     {
@@ -543,7 +570,7 @@ public sealed class ComparisonSamplingTests
                 rightNode["version"] = "3.13.16 test"; rightNode["executable"] = "/python"; rightNode["executableSha256"] = hash;
                 rightNode["adapterSha256"] = hash; rightNode["configArgs"] = "--enable-optimizations --with-lto"; rightNode["flags"] = "isolated=1 no_site=1 ignore_environment=1";
                 rightNode["captureByteLimit"] = 16 * 1024 * 1024;
-                var session = new QualificationSession { Closed = true, LythonIdentity = left, PythonIdentity = QualificationEvidence.Json(rightNode), Sampling = new() { Index = index } };
+                var session = new QualificationSession { Closed = true, LythonIdentity = left, PythonIdentity = QualificationEvidence.Json(rightNode), Sampling = new() { Index = index, Lane = lane } };
                 row.Sessions.Add(session); var request = 0;
                 WorkerResponse Make(int count, double? seconds) => new(1, ++request, workload.Id, seconds is null ? "Equivalent" : "Completed", count,
                     seconds is null ? null : (long)Math.Round(seconds.Value * 1e9), 1_000_000_000, workload.SourceSha256, workload.FixtureSha256,

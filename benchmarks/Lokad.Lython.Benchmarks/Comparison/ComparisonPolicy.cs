@@ -4,8 +4,8 @@ namespace Lokad.Lython.Benchmarks.Comparison;
 // version bump; a failed campaign is not a reason to weaken its eligibility.
 internal static class ComparisonPolicy
 {
-    public const int Version = 3;
-    public const int EligibilityVersion = 3;
+    public const int Version = 4;
+    public const int EligibilityVersion = 4;
     public const int Sessions = 3;
     public const int Pairs = 7;
     public const int IdleWindows = 1;
@@ -13,8 +13,10 @@ internal static class ComparisonPolicy
     public const double SettleSeconds = .05;
     public const double MaximumMedianBusyPercent = 3;
     public const double MaximumBusyPercent = 5;
-    public const int MinimumWarmupInvocations = 8;
-    public const double MinimumWarmupSeconds = .1;
+    public const int MinimumWarmupInvocations = 32;
+    public const double MinimumWarmupSeconds = 1;
+    public const int FreshMinimumWarmupInvocations = 8;
+    public const double FreshMinimumWarmupSeconds = .1;
     public const int MaximumWarmupBatches = 12;
     public const int MaximumCalibrationBatches = 8;
     public const double CalibrationSeconds = .010;
@@ -46,6 +48,7 @@ internal static class ComparisonPolicy
     {
         Version, EligibilityVersion, Sessions, Pairs, IdleWindows, IdleWindowSeconds, SettleSeconds,
         MaximumMedianBusyPercent, MaximumBusyPercent, MinimumWarmupInvocations, MinimumWarmupSeconds,
+        FreshMinimumWarmupInvocations, FreshMinimumWarmupSeconds,
         MaximumWarmupBatches, MaximumCalibrationBatches, CalibrationSeconds, MinimumBatchSeconds,
         MaximumIqrFraction, MaximumOrderFactor, MaximumIntervalFactor, MaximumSessionFactor, MaximumControlFraction,
         BootstrapResamples, BootstrapSeed, CaseDeadlineSeconds, CampaignDeadlineSeconds, CleanupReserveSeconds,
@@ -62,6 +65,13 @@ internal static class ComparisonPolicy
         crossSession = "largest/smallest qualified session median ratio <= 1.10",
         noise = "no observed steal, paging, memory-pressure or observable cgroup-throttle increments",
         controls = "both empty and tiny controls precede cases; each lane's case median must exceed ten times its larger control median",
+    };
+
+    public static (int Invocations, double Seconds) Warmup(string lane) => lane switch
+    {
+        "fresh-process" => (FreshMinimumWarmupInvocations, FreshMinimumWarmupSeconds),
+        "warm" or "compile-run" or "compile" => (MinimumWarmupInvocations, MinimumWarmupSeconds),
+        _ => throw new InvalidDataException("Unknown sampling lane."),
     };
 
     public static bool LythonFirst(int session, int pair)

@@ -123,7 +123,7 @@ internal static class ComparisonQualificationCommand
                 {
                     for (var index = 0; index < ComparisonPolicy.Sessions; index++)
                     {
-                        var session = new QualificationSession { Sampling = new SamplingSession { Index = index } };
+                        var session = new QualificationSession { Sampling = new SamplingSession { Index = index, Lane = receipt.Lane } };
                         row.Sessions.Add(session); Checkpoint();
                         ComparisonWorkerClient? left = null, right = null;
                         try
