@@ -236,7 +236,12 @@ internal sealed partial class ExecutableScript
             var targetExit = suspendingTarget
                 ? CompileSuspendingLoopTarget(statement.Syntax.Target, statement.Span, headBlock) : headBlock;
             if (!suspendingTarget)
-                AddInstruction(headBlock, ExecutableInstruction.AssignLoopTarget(InternLoopTarget(statement.Syntax.Target, statement.Span), statement.Span));
+            {
+                if (statement.Syntax.Target is LoopNameTargetSyntax name)
+                    CompileStoreBoundName(name.Name, statement.Span, headBlock);
+                else
+                    AddInstruction(headBlock, ExecutableInstruction.AssignLoopTarget(InternLoopTarget(statement.Syntax.Target, statement.Span), statement.Span));
+            }
             AddInstruction(targetExit, ExecutableInstruction.Jump(bodyBlock, statement.Span));
 
             _loops.Push(new LoopContext(headBlock, exitBlock, HasIterator: true));
