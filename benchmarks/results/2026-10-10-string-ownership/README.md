@@ -7,15 +7,39 @@ subtracted to assign a share of public execution time or native-handle cost.
 
 A subsequent isolated direct-string guard experiment is **rejected**: target
 pipeline medians increase 8.98% and 1.29%. Production sources and tests remain
-unchanged. Both original results are retained; no favorable recollection or
+unchanged at the experiment's report delivery. Both original results are
+retained; no favorable recollection or
 full comparison lane ran. The preceding possible instruction-reference pipeline
 regression and intermittent CSV lifetime issue remain unresolved.
+
+## Independent correctness follow-up
+
+The source audit for the pending ownership design found an existing stepped
+list-deletion accounting bug. Compaction preserved the right contents, but then
+released scalar coupon identities from the overwritten tail. Those identities
+could include survivors, leaving stale charges and incorrect alias refcounts.
+Three regressions fail the original implementation: both step directions strand
+64 bytes after survivor removal, and surviving repeated aliases lose their
+correct refcounts.
+
+Correction `99827247e5c80abb0eca75e27783491ea7bf4622` releases deleted identities
+before overwriting their slots, clears tail storage without a second refund and
+refreshes the tracked list charge once. Four new cases cover both directions,
+surviving aliases and larger array storage. Focused Debug checks pass 85; after
+adding the larger-storage case, focused Release checks pass 86. A matching Debug
+probe build and the full Debug suite pass all 9,071 checks (1,323 subsystem and
+7,748 public). Final delivery also requires both-platform Release/package CI.
+
+This is an independent correctness fix, not an accepted performance candidate
+or an explanation for the CSV lifetime issue. It changes none of the measured
+split/join, loop or empty paths. All timing receipts and frozen producer hashes
+below remain the originals; no additional performance collection was run.
 
 ## Frozen workload and producer
 
 The clean baseline Release producer is
 `6fbbbbc2af1ebdce7739bc0e2bd99fddf73451e9`. Its production tree is identical to
-the current `b6a6f2ad` delivery: `b9316ce881347f2afaa4cb1174a9660304137085`.
+the `b6a6f2ad` report delivery: `b9316ce881347f2afaa4cb1174a9660304137085`.
 SDK 10.0.401/runtime 10.0.12 run on the dedicated four-core AMD EPYC 9V45
 Ubuntu 24.04.4 VM. Workers retain ordinary workstation/Interactive GC,
 tiering and PGO, with no runtime overrides or forced collections.
