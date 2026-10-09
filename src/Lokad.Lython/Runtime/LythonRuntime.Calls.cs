@@ -1805,7 +1805,7 @@ internal sealed partial class LythonRuntime
     {
         if (byteorder is null)
         {
-            return true;
+            return false;
         }
 
         if (byteorder is not PyString text)

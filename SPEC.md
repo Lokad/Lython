@@ -791,6 +791,10 @@ Host `double` values provide Python floats. CLR `float` and `decimal` scalars
 retain their existing pass-through projection but are unsupported operands for
 Python numeric operations; use `double` or guest `decimal.Decimal` respectively.
 
+The supported `int.to_bytes` and `int.from_bytes` conversions default to
+big-endian byte order, including signed conversions, as in Python 3.13.
+An explicit `byteorder='big'` or `byteorder='little'` selects that order.
+
 `bool` must have Python boolean semantics:
 
 - the values are exactly `True` and `False`
