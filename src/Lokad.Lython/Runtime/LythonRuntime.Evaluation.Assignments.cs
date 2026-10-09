@@ -745,7 +745,8 @@ internal sealed partial class LythonRuntime
             _ => null,
         };
         if (inPlaceMethod is not null &&
-            TryInvokeBinarySpecialMethod(currentValue, inPlaceMethod, right, context, span, out var inPlaceResult))
+            TryInvokeBinarySpecialMethod(currentValue, inPlaceMethod, right, context, span, out var inPlaceResult) &&
+            inPlaceResult is not PyNotImplemented)
         {
             return inPlaceResult;
         }
@@ -857,6 +858,28 @@ internal sealed partial class LythonRuntime
 
             return currentChain;
         }
+
+        // A missing or declining in-place slot falls back to ordinary binary
+        // protocols, including reflected/subclass precedence. Keep the final
+        // builtin funnel below so unsupported operands still name the += token.
+        var binaryOperator = op switch
+        {
+            AugmentedAssignmentOperatorSyntax.Add => BinaryOperatorSyntax.Add,
+            AugmentedAssignmentOperatorSyntax.Subtract => BinaryOperatorSyntax.Subtract,
+            AugmentedAssignmentOperatorSyntax.Multiply => BinaryOperatorSyntax.Multiply,
+            AugmentedAssignmentOperatorSyntax.Divide => BinaryOperatorSyntax.Divide,
+            AugmentedAssignmentOperatorSyntax.FloorDivide => BinaryOperatorSyntax.FloorDivide,
+            AugmentedAssignmentOperatorSyntax.Modulo => BinaryOperatorSyntax.Modulo,
+            AugmentedAssignmentOperatorSyntax.Power => BinaryOperatorSyntax.Power,
+            AugmentedAssignmentOperatorSyntax.BitwiseOr => BinaryOperatorSyntax.BitwiseOr,
+            AugmentedAssignmentOperatorSyntax.BitwiseXor => BinaryOperatorSyntax.BitwiseXor,
+            AugmentedAssignmentOperatorSyntax.BitwiseAnd => BinaryOperatorSyntax.BitwiseAnd,
+            AugmentedAssignmentOperatorSyntax.LeftShift => BinaryOperatorSyntax.LeftShift,
+            AugmentedAssignmentOperatorSyntax.RightShift => BinaryOperatorSyntax.RightShift,
+            _ => throw new InvalidOperationException($"Unsupported augmented assignment operator: {op}")
+        };
+        if (TryEvaluateNumericProtocol(binaryOperator, currentValue, right, context, span, out var fallbackResult))
+            return fallbackResult;
 
         return op switch
         {

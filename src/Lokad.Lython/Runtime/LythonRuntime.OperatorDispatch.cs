@@ -224,6 +224,14 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
+        var rightFirst = ShouldTryReflectedFirst(left, right, methods.Right);
+        if (rightFirst && TryInvokeBinarySpecialMethod(right, methods.Right, left, context, span, out var firstRightValue) &&
+            firstRightValue is not PyNotImplemented)
+        {
+            result = firstRightValue;
+            return true;
+        }
+
         if (TryInvokeBinarySpecialMethod(left, methods.Left, right, context, span, out var leftValue) &&
             leftValue is not PyNotImplemented)
         {
@@ -231,7 +239,8 @@ internal sealed partial class LythonRuntime
             return true;
         }
 
-        if (TryInvokeBinarySpecialMethod(right, methods.Right, left, context, span, out var rightValue) &&
+        if (!rightFirst && !HaveSameInstanceType(left, right) &&
+            TryInvokeBinarySpecialMethod(right, methods.Right, left, context, span, out var rightValue) &&
             rightValue is not PyNotImplemented)
         {
             result = rightValue;
@@ -317,12 +326,21 @@ internal sealed partial class LythonRuntime
         // A NotImplemented answer declines to the reflected slot like the other
         // protocol cores; when both sides decline the operator falls back instead
         // of leaking NotImplemented as a value.
+        var rightFirst = ShouldTryReflectedFirst(left, right, resolvedMethods.Right);
+        if (rightFirst)
+        {
+            var firstRight = await invoke(right, resolvedMethods.Right, left, context, span).ConfigureAwait(false);
+            if (firstRight.Kind == SpecialMethodInvocationKind.Invoked && firstRight.Value is not PyNotImplemented)
+                return firstRight;
+        }
+
         var leftInvocation = await invoke(left, resolvedMethods.Left, right, context, span).ConfigureAwait(false);
         if (leftInvocation.Kind == SpecialMethodInvocationKind.Invoked && leftInvocation.Value is not PyNotImplemented)
         {
             return leftInvocation;
         }
 
+        if (rightFirst || HaveSameInstanceType(left, right)) return SpecialMethodInvocation.Missing;
         var rightInvocation = await invoke(right, resolvedMethods.Right, left, context, span).ConfigureAwait(false);
         return rightInvocation.Kind == SpecialMethodInvocationKind.Invoked && rightInvocation.Value is not PyNotImplemented
             ? rightInvocation
@@ -488,6 +506,10 @@ internal sealed partial class LythonRuntime
 
         return false;
     }
+
+    private static bool HaveSameInstanceType(object left, object right)
+        => left is PyInstance leftInstance && right is PyInstance rightInstance &&
+            ReferenceEquals(leftInstance.Type, rightInstance.Type);
 
     private static object AreEqualWithProtocols(
         object left,
