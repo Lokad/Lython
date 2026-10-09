@@ -687,22 +687,7 @@ internal sealed partial class LythonRuntime
             return needleBytes.ToArray();
         }
 
-        if (needle is bool flag)
-        {
-            return [(byte)(flag ? 1 : 0)];
-        }
-
-        if (needle is int small)
-        {
-            if (small < 0 || small > 255)
-            {
-                throw new LythonRuntimeException("ValueError", "byte must be in range(0, 256)", span);
-            }
-
-            return [(byte)small];
-        }
-
-        if (needle is BigInteger big)
+        if (needle is not null && Numbers.PyNumberOps.TryAsInteger(needle, out var big))
         {
             if (big < 0 || big > 255)
             {
@@ -722,22 +707,9 @@ internal sealed partial class LythonRuntime
             return defaultValue;
         }
 
-        BigInteger integer;
-        if (bound is bool flag)
-        {
-            integer = flag ? BigInteger.One : BigInteger.Zero;
-        }
-        else if (bound is int small)
-        {
-            integer = new BigInteger(small);
-        }
-        else if (bound is not BigInteger big)
+        if (!Numbers.PyNumberOps.TryAsInteger(bound, out var integer))
         {
             throw new InvalidOperationException("slice bounds must be integers or None");
-        }
-        else
-        {
-            integer = big;
         }
 
         if (integer < int.MinValue)

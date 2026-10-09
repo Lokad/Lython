@@ -79,11 +79,10 @@ internal sealed partial class LythonRuntime
             return arguments[0] switch
             {
                 double floating => floating,
-                BigInteger integer => FloatFromInteger(integer, span),
+                _ when PyNumberOps.TryAsInteger(arguments[0], out var integer) => FloatFromInteger(integer, span),
                 PyDecimal decimalValue => (double)decimalValue.Value,
                 PyString text => ParsePythonFloatText(text.AsString(), text, context, span),
                 PyBytes bytesValue => ParsePythonFloatBytes(bytesValue, context, span),
-                bool boolean => boolean ? 1.0 : 0.0,
                 _ => throw new LythonRuntimeException("TypeError", "float() argument must be a string or a real number, not '" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "'", span)
             };
         }
@@ -199,9 +198,8 @@ internal sealed partial class LythonRuntime
             PyBytes bytes => CreateBytes(bytes.ToArray(), context, span),
             PyString => throw new LythonRuntimeException("TypeError", "string argument without an encoding", span),
             string => throw new LythonRuntimeException("TypeError", "string argument without an encoding", span),
-            BigInteger size => CreateSizedBytes(size, "int", context, span),
-            int size => CreateSizedBytes(new BigInteger(size), "int", context, span),
             bool size => CreateZeroBytes(size ? BigInteger.One : BigInteger.Zero, context, span),
+            _ when PyNumberOps.TryAsInteger(arguments[0], out var size) => CreateSizedBytes(size, "int", context, span),
             PyInstance indexable => CreateBytesFromIndexable(indexable, context, span),
             _ => CreateBytes(FromBytesOperands(arguments[0], context, span), context, span)
         };
@@ -212,7 +210,7 @@ internal sealed partial class LythonRuntime
         // Only the iterable-operand fallback can suspend (user-protocol
         // iterables keep the sync path with its fail-fast); every other
         // shape reuses the sync constructor unchanged.
-        if (arguments.Length == 1 && arguments[0] is not (PyBytes or PyString or string or BigInteger or int or bool or PyInstance))
+        if (arguments.Length == 1 && arguments[0] is not (PyBytes or PyString or string or PyInstance) && !PyNumberOps.IsInteger(arguments[0]))
         {
             return CreateBytes(await FromBytesOperandsAsync(arguments[0], context, span).ConfigureAwait(false), context, span);
         }

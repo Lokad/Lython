@@ -300,7 +300,7 @@ internal sealed partial class LythonRuntime
             var valueTypeName = value switch
             {
                 bool => "bool",
-                BigInteger or int => "int",
+                _ when PyNumberOps.IsInteger(value) => "int",
                 double => "float",
                 PyString => "str",
                 PyBytes => "bytes",

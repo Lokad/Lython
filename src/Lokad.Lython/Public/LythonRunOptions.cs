@@ -44,6 +44,14 @@ public sealed class LythonRunOptions
     /// Lython-owned scalars and collections; unsupported CLR objects and cyclic
     /// object graphs are rejected before execution.
     /// </summary>
+    /// <remarks>
+    /// CLR integral values from sbyte through ulong have exact Python integer
+    /// semantics, including inside supported collections. An unchanged scalar
+    /// retains its CLR type when projected back to the host; integer arithmetic
+    /// produces System.Numerics.BigInteger values. CLR float and decimal values
+    /// can round-trip but do not participate in Python numeric operations; use
+    /// double for Python floats and construct decimal.Decimal in the script.
+    /// </remarks>
     public IReadOnlyDictionary<string, object?>? Globals { get; init; }
 
     /// <summary>

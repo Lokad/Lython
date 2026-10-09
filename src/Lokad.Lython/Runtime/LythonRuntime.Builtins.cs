@@ -315,11 +315,10 @@ internal sealed partial class LythonRuntime
         var numberBase = 10;
         if (arguments.Length == 2)
         {
-            var requestedBase = CoerceIndexProtocol(arguments[1], context, span) switch
+            var indexedBase = CoerceIndexProtocol(arguments[1], context, span);
+            var requestedBase = indexedBase switch
             {
-                BigInteger big => big,
-                int small => new BigInteger(small),
-                bool flag => flag ? BigInteger.One : BigInteger.Zero,
+                _ when PyNumberOps.TryAsInteger(indexedBase, out var integerBase) => integerBase,
                 _ => throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(arguments[1], context) + "' object cannot be interpreted as an integer", span),
             };
 
@@ -340,11 +339,11 @@ internal sealed partial class LythonRuntime
             return arguments[0] switch
             {
                 BigInteger integer => integer,
+                _ when PyNumberOps.TryAsInteger(arguments[0], out var integer) => OwnFreshInteger(integer, context.MemoryGovernor, context.Services.State.CallTemporaries, span),
                 double floating => OwnFreshInteger(FloatToInteger(floating, span, Math.Truncate), context.MemoryGovernor, context.Services.State.CallTemporaries, span),
                 PyDecimal decimalValue => OwnFreshInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, context.Services.State.CallTemporaries, span),
                 PyString text => OwnFreshInteger(ParsePythonIntegerText(text.AsString(), numberBase, span, text, context), context.MemoryGovernor, context.Services.State.CallTemporaries, span),
                 PyBytes bytes => OwnFreshInteger(ParsePythonIntegerText(System.Text.Encoding.ASCII.GetString(bytes.Bytes), numberBase, span, bytes, context), context.MemoryGovernor, context.Services.State.CallTemporaries, span),
-                bool boolean => boolean ? BigInteger.One : BigInteger.Zero,
                 _ => throw new LythonRuntimeException("TypeError", "int() argument must be a string, a bytes-like object or a real number, not '" + UnboundTypeMethod.PythonTypeName(arguments[0], context) + "'", span)
             };
         }

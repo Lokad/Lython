@@ -547,11 +547,10 @@ internal sealed partial class LythonRuntime
             string => TryGetBuiltinOrNull(context, "str"),
             PyBytes => TryGetBuiltinOrNull(context, "bytes"),
             byte[] => TryGetBuiltinOrNull(context, "bytes"),
-            BigInteger => TryGetBuiltinOrNull(context, "int"),
-            int => TryGetBuiltinOrNull(context, "int"),
+            bool => TryGetBuiltinOrNull(context, "bool"),
+            _ when Numbers.PyNumberOps.IsInteger(value) => TryGetBuiltinOrNull(context, "int"),
             double => TryGetBuiltinOrNull(context, "float"),
             PyComplex => TryGetBuiltinOrNull(context, "complex"),
-            bool => TryGetBuiltinOrNull(context, "bool"),
             PyDecimal => TryGetModuleMemberOrNull(context, "decimal", "Decimal"),
             PyDate => TryGetModuleMemberOrNull(context, "datetime", "date"),
             PyTime => TryGetModuleMemberOrNull(context, "datetime", "time"),
@@ -1720,7 +1719,7 @@ internal sealed partial class LythonRuntime
             return new BigInteger(runes[0].Value);
         }
 
-        if (key is BigInteger or int or bool)
+        if (Numbers.PyNumberOps.IsInteger(key))
         {
             return key;
         }
@@ -1835,9 +1834,7 @@ internal sealed partial class LythonRuntime
         var coerced = CoerceIndexProtocol(value, context, span);
         return coerced switch
         {
-            BigInteger big => big,
-            int small => new BigInteger(small),
-            bool flag => flag ? BigInteger.One : BigInteger.Zero,
+            _ when Numbers.PyNumberOps.TryAsInteger(coerced, out var integer) => integer,
             _ => throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span),
         };
     }

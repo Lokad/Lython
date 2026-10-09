@@ -756,7 +756,7 @@ internal sealed partial class LythonRuntime
             "generator" => value is PyGenerator or PyGeneratorExpression,
             "bool" => value is bool,
             "type" => value is UrllibParseModule.UrlResultType,
-            "int" => value is BigInteger or int or bool,
+            "int" => Numbers.PyNumberOps.IsInteger(value),
             "float" => value is double,
             "complex" => value is PyComplex,
             "list" => value is PyList,
@@ -1196,7 +1196,7 @@ internal sealed partial class LythonRuntime
                 names.AddRange(TupleDirNames);
                 return names;
 
-            case BigInteger or int or bool:
+            case object integer when Numbers.PyNumberOps.IsInteger(integer):
                 names.AddRange(IntDirNames);
                 return names;
 

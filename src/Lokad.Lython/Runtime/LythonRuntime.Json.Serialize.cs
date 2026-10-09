@@ -234,12 +234,9 @@ internal sealed partial class LythonRuntime
                 case bool boolean:
                     builder.Append(boolean ? "true" : "false");
                     return;
-                case BigInteger integer:
+                case object numericValue when PyNumberOps.TryAsInteger(numericValue, out var integer):
                     // Giant magnitudes render slowly: bracket the conversion itself.
                     context.CheckExecution(span);
-                    AppendJsonNumber(builder, integer.ToString(CultureInfo.InvariantCulture), charge, context, span);
-                    return;
-                case int integer:
                     AppendJsonNumber(builder, integer.ToString(CultureInfo.InvariantCulture), charge, context, span);
                     return;
                 case double floating:
@@ -293,7 +290,7 @@ internal sealed partial class LythonRuntime
                 PyTuple => "tuple",
                 PySet => "set",
                 bool => "bool",
-                BigInteger or int => "int",
+                _ when PyNumberOps.IsInteger(value) => "int",
                 double => "float",
                 PyNone => "NoneType",
                 null => "NoneType",
@@ -354,17 +351,14 @@ internal sealed partial class LythonRuntime
                 case PyString text:
                     key = text.AsString();
                     return true;
-                case BigInteger integer:
-                    key = integer.ToString(CultureInfo.InvariantCulture);
+                case bool boolean:
+                    key = boolean ? "true" : "false";
                     return true;
-                case int integer:
+                case object numericValue when PyNumberOps.TryAsInteger(numericValue, out var integer):
                     key = integer.ToString(CultureInfo.InvariantCulture);
                     return true;
                 case double floating when double.IsFinite(floating):
                     key = Numbers.PyNumberOps.RenderFloat(floating);
-                    return true;
-                case bool boolean:
-                    key = boolean ? "true" : "false";
                     return true;
                 case PyNone:
                     key = "null";
@@ -381,7 +375,7 @@ internal sealed partial class LythonRuntime
         }
 
         internal static bool IsSupportedJsonObjectKey(object key)
-            => key is PyString or BigInteger or int or bool or PyNone ||
+            => key is PyString or PyNone || PyNumberOps.IsInteger(key) ||
                key is double floating && double.IsFinite(floating);
 
         internal static void AppendJsonValuePrefix(StringBuilder builder, JsonDumpOptions options, int depth, int index, JsonGrowthCharge charge, ExecutionContext context, LythonSourceSpan span)

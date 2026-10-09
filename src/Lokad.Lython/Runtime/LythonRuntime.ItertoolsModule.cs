@@ -189,22 +189,9 @@ internal sealed partial class LythonRuntime
     private static long ExpectRepeatCount(object value, ExecutionContext context, LythonSourceSpan span)
     {
         var coerced = CoerceIndexProtocol(value, context, span);
-        BigInteger integer;
-        if (coerced is bool flag)
-        {
-            integer = flag ? BigInteger.One : BigInteger.Zero;
-        }
-        else if (coerced is int small)
-        {
-            integer = new BigInteger(small);
-        }
-        else if (coerced is not BigInteger big)
+        if (!Numbers.PyNumberOps.TryAsInteger(coerced, out var integer))
         {
             throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
-        }
-        else
-        {
-            integer = big;
         }
 
         if (integer > long.MaxValue || integer < long.MinValue)
@@ -290,9 +277,7 @@ internal sealed partial class LythonRuntime
     {
         BigInteger integer = coerced switch
         {
-            BigInteger big => big,
-            int small => new BigInteger(small),
-            bool flag => flag ? BigInteger.One : BigInteger.Zero,
+            _ when Numbers.PyNumberOps.TryAsInteger(coerced, out var integerValue) => integerValue,
             _ => throw new LythonRuntimeException("TypeError", "islice bound is not an integer.", span),
         };
 

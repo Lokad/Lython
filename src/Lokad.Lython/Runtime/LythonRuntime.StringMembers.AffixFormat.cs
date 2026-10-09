@@ -245,14 +245,8 @@ internal sealed partial class LythonRuntime
                     case PyString replacement:
                         builder.Append(replacement.AsString());
                         break;
-                    case BigInteger ordinal:
+                    case object value when Numbers.PyNumberOps.TryAsInteger(value, out var ordinal):
                         AppendTranslationOrdinal(builder, ordinal, span);
-                        break;
-                    case int small:
-                        AppendTranslationOrdinal(builder, new BigInteger(small), span);
-                        break;
-                    case bool flag:
-                        AppendTranslationOrdinal(builder, flag ? BigInteger.One : BigInteger.Zero, span);
                         break;
                     default:
                         throw new LythonRuntimeException("TypeError", "character mapping must return integer, None or str", span);

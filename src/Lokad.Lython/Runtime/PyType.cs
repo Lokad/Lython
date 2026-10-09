@@ -1,4 +1,5 @@
 using System.Numerics;
+using Lokad.Lython.Runtime.Numbers;
 using System.Runtime.CompilerServices;
 using Lokad.Lython.Runtime.Text;
 
@@ -378,7 +379,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             PyNamedTupleType => GetBuiltinTypeObject(context, "type", span),
             PyNone => NoneType,
             bool => GetBuiltinTypeObject(context, "bool", span),
-            BigInteger or int => GetBuiltinTypeObject(context, "int", span),
+            _ when PyNumberOps.IsInteger(value) => GetBuiltinTypeObject(context, "int", span),
             double => GetBuiltinTypeObject(context, "float", span),
             PyList => GetBuiltinTypeObject(context, "list", span),
             PyTuple => GetBuiltinTypeObject(context, "tuple", span),

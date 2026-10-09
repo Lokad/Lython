@@ -1,4 +1,5 @@
 using System.Numerics;
+using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -82,7 +83,7 @@ internal static class RuntimeErrors
         double => "float",
         PyComplex => "complex",
         bool => "bool",
-        BigInteger or int => "int",
+        _ when PyNumberOps.IsInteger(value) => "int",
         PyList => "list",
         PyDict => "dict",
         PyCounter => "Counter",

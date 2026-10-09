@@ -349,7 +349,7 @@ internal sealed partial class LythonRuntime
                 return CsvQuotingMode.Minimal;
             }
 
-            if (arguments[index] is not BigInteger integer || integer < 0 || integer > (int)CsvQuotingMode.None)
+            if (!PyNumberOps.TryAsInteger(arguments[index], out var integer) || integer < 0 || integer > (int)CsvQuotingMode.None)
             {
                 throw new LythonRuntimeException("TypeError", "csv quoting must be one of the QUOTE_* constants.", span);
             }

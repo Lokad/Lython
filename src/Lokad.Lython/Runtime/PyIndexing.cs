@@ -1,4 +1,5 @@
 using System.Numerics;
+using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -242,18 +243,9 @@ internal static class PyIndexing
 
     public static int NormalizeIndex(object? index, int length, LythonSourceSpan span, IndexTargetName target, IndexOperation operation)
     {
-        BigInteger integer;
-        if (index is bool flag)
-        {
-            integer = flag ? BigInteger.One : BigInteger.Zero;
-        }
-        else if (index is not BigInteger big)
+        if (index is null || !PyNumberOps.TryAsInteger(index, out var integer))
         {
             throw InvalidIndexType(index, target, span);
-        }
-        else
-        {
-            integer = big;
         }
 
         return ApplyIndexBounds(integer, length, span, target, operation);
@@ -261,18 +253,9 @@ internal static class PyIndexing
 
     public static int NormalizePopIndex(object? index, int length, LythonSourceSpan span)
     {
-        BigInteger integer;
-        if (index is bool flag)
-        {
-            integer = flag ? BigInteger.One : BigInteger.Zero;
-        }
-        else if (index is not BigInteger)
+        if (index is null || !PyNumberOps.TryAsInteger(index, out var integer))
         {
             throw new LythonRuntimeException("TypeError", $"'{IndexTypeName(index)}' object cannot be interpreted as an integer", span);
-        }
-        else
-        {
-            integer = (BigInteger)index;
         }
 
         if (integer < int.MinValue || integer > int.MaxValue)
@@ -384,7 +367,7 @@ internal static class PyIndexing
         PyNone => "NoneType",
         PyString => "str",
         double => "float",
-        BigInteger or int or bool => "int",
+        _ when Numbers.PyNumberOps.IsInteger(index) => "int",
         PyList => "list",
         PyDict => "dict",
         PyCounter => "Counter",
@@ -445,9 +428,7 @@ internal static class PyIndexing
         {
             null => null,
             PyNone _ => null,
-            BigInteger integer => integer,
-            int small => new BigInteger(small),
-            bool flag => flag ? BigInteger.One : BigInteger.Zero,
+            _ when PyNumberOps.TryAsInteger(value, out var integer) => integer,
             _ => throw RuntimeErrors.Type("slice indices must be integers or None or have an __index__ method", span)
         };
     }

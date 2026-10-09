@@ -12,7 +12,7 @@ internal sealed partial class LythonRuntime
     // raise) inside the shared core, so they pass through untouched.
     private static void RequireRepeatCount(object count, ExecutionContext context, LythonSourceSpan span)
     {
-        if (count is BigInteger || count is bool)
+        if (PyNumberOps.IsInteger(count))
         {
             return;
         }
@@ -540,23 +540,10 @@ internal sealed partial class LythonRuntime
 
     internal static bool RangeContains(PyRange range, object candidate)
     {
-        BigInteger number;
-        switch (candidate)
+        if (!PyNumberOps.TryAsInteger(candidate, out var number))
         {
-            case BigInteger big:
-                number = big;
-                break;
-            case int small:
-                number = new BigInteger(small);
-                break;
-            case bool flag:
-                number = flag ? BigInteger.One : BigInteger.Zero;
-                break;
-            case double floating when floating == Math.Truncate(floating) && !double.IsInfinity(floating):
-                number = new BigInteger(floating);
-                break;
-            default:
-                return false;
+            if (candidate is not double floating || !double.IsFinite(floating) || floating != Math.Truncate(floating)) return false;
+            number = new BigInteger(floating);
         }
 
         return TryRangeIndex(range, number, out _);
@@ -841,34 +828,10 @@ internal sealed partial class LythonRuntime
     // Anything else declines with NotImplemented on every dunder, ordering
     // included — the operator machinery raises once both sides decline.
     private static bool TryAsIntegerOperand(object value, out BigInteger integer)
-    {
-        switch (value)
-        {
-            case BigInteger big:
-                integer = big;
-                return true;
-            case int small:
-                integer = new BigInteger(small);
-                return true;
-            case bool flag:
-                integer = flag ? BigInteger.One : BigInteger.Zero;
-                return true;
-            default:
-                integer = default;
-                return false;
-        }
-    }
+        => PyNumberOps.TryAsInteger(value, out integer);
 
     private static bool TryAsFloatOperand(object value, out PyNumber number)
-    {
-        if (value is int small)
-        {
-            number = PyNumber.FromInteger(new BigInteger(small));
-            return true;
-        }
-
-        return PyNumberOps.TryAsNumber(value, out number);
-    }
+        => PyNumberOps.TryAsNumber(value, out number);
 
 
     internal static class NoneMembers
@@ -1001,13 +964,7 @@ internal sealed partial class LythonRuntime
         private static readonly LythonCallableSignature IntRoundSignature = LythonCallableSignature.Create("int.__round__");
         public static bool TryGetMember(object receiver, string name, [MaybeNullWhen(false)] out object value)
         {
-            var integer = receiver switch
-            {
-                BigInteger big => big,
-                int small => new BigInteger(small),
-                bool flag => flag ? BigInteger.One : BigInteger.Zero,
-                _ => (BigInteger?)null,
-            };
+            BigInteger? integer = PyNumberOps.TryAsInteger(receiver, out var number) ? number : null;
 
             if (integer is null)
             {
@@ -1822,17 +1779,10 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "range.index() takes exactly one argument (" + arguments.Length + " given)", span);
                     }
 
-                    if (arguments[0] is not BigInteger && arguments[0] is not int && arguments[0] is not bool)
+                    if (!PyNumberOps.TryAsInteger(arguments[0], out var candidate))
                     {
                         throw new LythonRuntimeException("ValueError", "sequence.index(x): x not in sequence", span);
                     }
-
-                    var candidate = arguments[0] switch
-                    {
-                        BigInteger big => big,
-                        int small => new BigInteger(small),
-                        _ => BigInteger.One,
-                    };
 
                     if (!TryRangeIndex(range, candidate, out var position))
                     {

@@ -330,17 +330,7 @@ internal sealed partial class LythonRuntime
     // caller falls through to its mismatch error.
     private static bool TryRepeatCount(object value, ExecutionContext context, LythonSourceSpan span, out BigInteger count)
     {
-        if (value is BigInteger integer)
-        {
-            count = integer;
-            return true;
-        }
-
-        if (value is bool flag)
-        {
-            count = flag ? BigInteger.One : BigInteger.Zero;
-            return true;
-        }
+        if (PyNumberOps.TryAsInteger(value, out count)) return true;
 
         if (value is PyInstance)
         {
@@ -363,7 +353,7 @@ internal sealed partial class LythonRuntime
     };
 
     private static bool IsIntLikeOperand(object value)
-        => value is BigInteger or int or bool;
+        => PyNumberOps.IsInteger(value);
 
     private static object EvaluateDivide(object left, object right, ExecutionContext context, LythonSourceSpan span, string? operation = null)
     {

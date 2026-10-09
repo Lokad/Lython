@@ -115,9 +115,7 @@ internal sealed partial class LythonRuntime
             var coerced = CoerceIndexProtocol(value, context, span);
             BigInteger integer = coerced switch
             {
-                BigInteger big => big,
-                int small => new BigInteger(small),
-                bool flag => flag ? BigInteger.One : BigInteger.Zero,
+                _ when Numbers.PyNumberOps.TryAsInteger(coerced, out var integerValue) => integerValue,
                 _ => throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span),
             };
 

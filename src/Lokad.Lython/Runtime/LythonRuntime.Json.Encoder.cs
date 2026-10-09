@@ -166,7 +166,7 @@ internal sealed partial class LythonRuntime
                 PyTuple => "tuple",
                 PySet => "set",
                 bool => "bool",
-                BigInteger or int => "int",
+                _ when Numbers.PyNumberOps.IsInteger(value) => "int",
                 double => "float",
                 PyDecimal => "Decimal",
                 PyNone or null => "NoneType",

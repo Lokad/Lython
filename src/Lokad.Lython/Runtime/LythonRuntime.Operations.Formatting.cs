@@ -644,23 +644,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static bool TryGetIntegerFormatValue(object value, out BigInteger integer)
-    {
-        switch (value)
-        {
-            case BigInteger bigInteger:
-                integer = bigInteger;
-                return true;
-            case int intValue:
-                integer = new BigInteger(intValue);
-                return true;
-            case bool boolValue:
-                integer = boolValue ? BigInteger.One : BigInteger.Zero;
-                return true;
-            default:
-                integer = BigInteger.Zero;
-                return false;
-        }
-    }
+        => Numbers.PyNumberOps.TryAsInteger(value, out integer);
 
     private static string FormatIntegerValue(
         BigInteger value,

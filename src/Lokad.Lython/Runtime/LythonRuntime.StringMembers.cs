@@ -388,9 +388,8 @@ internal sealed partial class LythonRuntime
         {
             return value switch
             {
-                BigInteger => "int",
-                int => "int",
                 bool => "bool",
+                _ when Numbers.PyNumberOps.IsInteger(value) => "int",
                 PyString => "str",
                 PyTuple => "tuple",
                 PyList => "list",

@@ -990,26 +990,7 @@ internal sealed partial class LythonRuntime
             => variance is BigInteger integral ? (double)integral : (double)variance;
 
         private static bool TryAsIntegralStatistic(object value, out BigInteger integer)
-        {
-            switch (value)
-            {
-                case BigInteger integral:
-                    integer = integral;
-                    return true;
-                case int small:
-                    integer = new BigInteger(small);
-                    return true;
-                case long large:
-                    integer = new BigInteger(large);
-                    return true;
-                case bool boolean:
-                    integer = boolean ? BigInteger.One : BigInteger.Zero;
-                    return true;
-                default:
-                    integer = default;
-                    return false;
-            }
-        }
+            => PyNumberOps.TryAsInteger(value, out integer);
 
         // Exact-eligibility: every drained value is int-like. Anything else
         // (floats, Decimals, and anything the drain already rejected) takes

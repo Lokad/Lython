@@ -483,7 +483,7 @@ internal sealed partial class LythonRuntime
             "str" => subject is PyString,
             "bytes" => subject is PyBytes,
             "bool" => subject is bool,
-            "int" => subject is BigInteger or int or bool,
+            "int" => Numbers.PyNumberOps.IsInteger(subject),
             "float" => subject is double,
             "pathlib.Path" => subject is PyPath,
             "datetime.timedelta" => subject is PyTimedelta,

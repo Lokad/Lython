@@ -814,7 +814,7 @@ internal sealed partial class LythonRuntime
             case bool:
                 text = PyString.FromString("bool", context.MemoryGovernor, span);
                 break;
-            case BigInteger or int:
+            case object integer when PyNumberOps.IsInteger(integer):
                 text = PyString.FromString("int", context.MemoryGovernor, span);
                 break;
             case double:

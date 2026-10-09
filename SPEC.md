@@ -781,6 +781,16 @@ The supported subset includes integer, floating-point, boolean and complex value
 - exact integer comparisons
 - exact integer string conversion
 
+Host globals admit all eight CLR integer types (`sbyte`, `byte`, `short`,
+`ushort`, `int`, `uint`, `long`, `ulong`) as exact Python integers, including
+when nested in supported collections. Python operations, type checks, numeric
+equality and hashing use the integer tower. Projecting an unchanged host scalar
+preserves its CLR type; integer arithmetic returns `System.Numerics.BigInteger`.
+These rules preserve the usual collection sharing and memory accounting.
+Host `double` values provide Python floats. CLR `float` and `decimal` scalars
+retain their existing pass-through projection but are unsupported operands for
+Python numeric operations; use `double` or guest `decimal.Decimal` respectively.
+
 `bool` must have Python boolean semantics:
 
 - the values are exactly `True` and `False`

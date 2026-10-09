@@ -37,7 +37,8 @@ internal sealed partial class LythonRuntime
         var normalized = value switch
         {
             PyTuple tuple => ValidateTupleKey(tuple, span),
-            IPyHashableValue or bool or BigInteger or double => value,
+            IPyHashableValue => value,
+            _ when PyNumberOps.TryAsNumber(value, out _) => value,
             _ => throw RuntimeErrors.UnhashableType(value, span)
         };
 

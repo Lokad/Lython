@@ -1,4 +1,4 @@
-using System.Numerics;
+using Lokad.Lython.Runtime.Numbers;
 
 namespace Lokad.Lython.Runtime;
 
@@ -11,8 +11,7 @@ internal static class PyTruthiness
             PyNone => false,
             IPyTruthyValue truthy => truthy.IsTruthy(),
             bool boolean => boolean,
-            BigInteger integer => integer != BigInteger.Zero,
-            double floating => floating != 0.0,
+            _ when PyNumberOps.TryAsNumber(value, out var number) => !number.IsZero,
             IPyIterableValue iterable => HasAny(iterable.Iterate()),
             IReadOnlyCollection<object> collection => collection.Count != 0,
             System.Collections.ICollection collection => collection.Count != 0,

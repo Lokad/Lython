@@ -5,6 +5,11 @@ namespace Lokad.Lython.Runtime.Numbers;
 
 internal static class PyNumberOps
 {
+    // Ingress keeps these CLR scalars for public round trips. Numeric consumers
+    // must nevertheless treat all of them as exact Python integers.
+    public static bool IsInteger(object? value)
+        => value is bool or BigInteger or sbyte or byte or short or ushort or int or uint or long or ulong;
+
     public static bool TryAsNumber(object value, out PyNumber number)
     {
         switch (value)
@@ -13,6 +18,30 @@ internal static class PyNumberOps
                 number = PyNumber.FromBoolean(boolean);
                 return true;
             case BigInteger integer:
+                number = PyNumber.FromInteger(integer);
+                return true;
+            case sbyte integer:
+                number = PyNumber.FromInteger(integer);
+                return true;
+            case byte integer:
+                number = PyNumber.FromInteger(integer);
+                return true;
+            case short integer:
+                number = PyNumber.FromInteger(integer);
+                return true;
+            case ushort integer:
+                number = PyNumber.FromInteger(integer);
+                return true;
+            case int integer:
+                number = PyNumber.FromInteger(integer);
+                return true;
+            case uint integer:
+                number = PyNumber.FromInteger(integer);
+                return true;
+            case long integer:
+                number = PyNumber.FromInteger(integer);
+                return true;
+            case ulong integer:
                 number = PyNumber.FromInteger(integer);
                 return true;
             case double floating:
