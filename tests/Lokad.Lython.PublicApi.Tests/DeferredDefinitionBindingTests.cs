@@ -22,6 +22,8 @@ public sealed class DeferredDefinitionBindingTests
     [InlineData("items=[]\nclass C:\n def read(self): return items[0]\nitems.append(7)\nreturn C().read()==7")]
     [InlineData("items=[1]\ndef read(): return items[0].upper()\nitems[0]='x'\nreturn read()=='X'")]
     [InlineData("items=([],)\ndef read(): return items[0][0]\nitems[0].append(7)\nreturn read()==7")]
+    [InlineData("items=[]\nread=lambda:items[0]\nitems.append(7)\nreturn read()==7")]
+    [InlineData("def make():\n items={}\n read=lambda:items['key']\n items['key']=7\n return read\nreturn make()()==7")]
     public async Task DeferredBodiesDoNotFreezeCapturedCollectionContents(string source)
         => await AssertTrueInBothModes(source);
 
