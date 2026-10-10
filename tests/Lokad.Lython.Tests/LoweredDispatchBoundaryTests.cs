@@ -84,7 +84,7 @@ public sealed class LoweredDispatchBoundaryTests
         Assert.Null(flow.Control);
         var returned = Assert.IsType<PyList>(flow.Return.RequireNotNull().Value);
         Assert.Same(context.Variables["seen"], returned);
-        Assert.Equal(new BigInteger[] { 0, 1, 2, 7 }, returned.ToArray());
+        Assert.Equal(new BigInteger[] { 0, 1, 2, 7 }, returned.ToArray().Cast<BigInteger>().ToArray());
         Assert.Same(active, context.Services.CurrentException);
         Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
         Assert.Equal(0, context.Limits.CurrentRecursionDepth);
