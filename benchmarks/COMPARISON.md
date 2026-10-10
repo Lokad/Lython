@@ -133,6 +133,13 @@ time and 9–12% less keyword-call time. Empty/pipeline controls have small mixe
 changes; sort remains too noisy for a reliable claim. All 9,161 Debug checks pass
 before timing. No full lanes run; qualification waits for a declared milestone.
 
+The [execution-check cold-path round](results/2026-10-10-checkpoint-cold-paths/README.md)
+keeps sweep/exception work separate from an inlined checkpoint body. Twelve
+6.4–7.1-second micros show 11% less loop time, 6–9% less positional-call time and
+3–4% less keyword-call time. Sort medians rise with substantial spread and remain
+visible as a limitation; empty/pipeline changes are small and mixed. All 9,164
+Debug checks pass before timing. No full lanes run.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
