@@ -289,6 +289,18 @@ before timing. Twelve micros take about eight seconds each; separate allocation/
 native groups about four, all under 30-second caps. No full lane or qualified
 Python multiplier; all emitted native bodies/tiers stay retained.
 
+The [unused super-anchor experiment](results/2026-10-10-super-anchor-state/README.md)
+keeps its production change isolated. Positional/keyword allocation falls about
+3.1%, but owned-method allocation falls only 0.46%, below the prospective 0.5%
+floor required across all three call cases. Positional timing improves 2.8–3.3%;
+keyword/method timing has no repeated benefit. Every control remains visible,
+including opposite sort changes. Thirteen independent funding/parity checks are
+retained; all 58 selected checks pass original production first. The candidate
+passes 9,272 Debug tests, VM Release 239 white/331 public and seven canonical
+CPython outputs before fourteen micros taking 8.04–8.06 seconds each. Separate
+allocation/native groups take about four seconds, all under 30-second caps.
+No full lanes run and no observations are recollected to chase acceptance.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
