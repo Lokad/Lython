@@ -1,0 +1,2681 @@
+{
+  "state": "Audited",
+  "baseline": "c31195ef15c0029472d714efd3f264c79e075793",
+  "candidate": "6ecc00b21b6d16c2cb962655dd4ae527e745d574",
+  "baselineProductionTree": "0c6b16fb0f0bf79064fcbf2633dc8b40b3659b9d",
+  "candidateProductionTree": "0b54042760d918797c99b239467f2c63fb0c5c1a",
+  "candidateTestsTree": "36dd7f122b1cf3d3f1e617f1db8b17eb98d22a69",
+  "harnessTree": "c194ce88a7e4d52c576f3929ef82bce60bf37e2d",
+  "microCollections": 12,
+  "microAttempts": 517,
+  "rows": [
+    {
+      "index": 0,
+      "replica": 1,
+      "case": "control.empty.control",
+      "seconds": 6.437443,
+      "wholeSeconds": 8.03988,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 23.200372968980798,
+          "iqrFraction": 0.06002883173228682
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 23.427125195618153,
+          "iqrFraction": 0.04506860518347022
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1.4648891563989994,
+          "iqrFraction": 0.00371642680725669
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "replica": 1,
+      "case": "loops.integer.large",
+      "seconds": 6.923503,
+      "wholeSeconds": 8.044016,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 1063.1408999999999,
+          "iqrFraction": 0.0038993890649864707
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1059.3366774193548,
+          "iqrFraction": 0.011415771226528558
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 577.6543703703703,
+          "iqrFraction": 0.02448362688748628
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "replica": 1,
+      "case": "calls.positional.medium",
+      "seconds": 6.862039,
+      "wholeSeconds": 8.042844,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 462.6277894736842,
+          "iqrFraction": 0.00526750617297427
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 442.6997580645162,
+          "iqrFraction": 0.04718372988902212
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 120.00058064516128,
+          "iqrFraction": 0.0018518895607494289
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "replica": 1,
+      "case": "calls.keyword.medium",
+      "seconds": 6.928517,
+      "wholeSeconds": 8.040219,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 520.772051724138,
+          "iqrFraction": 0.006202445646101181
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 467.609359375,
+          "iqrFraction": 0.011271711540472178
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 137.21370466321247,
+          "iqrFraction": 0.009655053791700723
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "replica": 1,
+      "case": "lists.stable-sort.medium",
+      "seconds": 7.220176,
+      "wholeSeconds": 8.048869,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2709.919428571429,
+          "iqrFraction": 0.11580476087955392
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2772.4354444444443,
+          "iqrFraction": 0.07635577047200268
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 309.2446703296703,
+          "iqrFraction": 0.0054295888973007215
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "replica": 1,
+      "case": "strings.pipeline-ascii.medium",
+      "seconds": 6.679251,
+      "wholeSeconds": 8.042468,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 144.20946153846154,
+          "iqrFraction": 0.025606182886751993
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 138.49686614173228,
+          "iqrFraction": 0.027859466617454427
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 41.37988699080158,
+          "iqrFraction": 0.004027838087749009
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "replica": 2,
+      "case": "control.empty.control",
+      "seconds": 6.50035,
+      "wholeSeconds": 8.052656,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 24.01824145785877,
+          "iqrFraction": 0.01204173656418563
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 23.788774744027304,
+          "iqrFraction": 0.02605090507166972
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1.460213134662992,
+          "iqrFraction": 0.0038966207311227933
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "replica": 2,
+      "case": "loops.integer.large",
+      "seconds": 6.907056,
+      "wholeSeconds": 8.051768,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 1100.3431000000003,
+          "iqrFraction": 0.006081572799126715
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1046.4882666666665,
+          "iqrFraction": 0.01359250786949408
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 616.9879607843137,
+          "iqrFraction": 0.001293825099584055
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "replica": 2,
+      "case": "calls.positional.medium",
+      "seconds": 6.86296,
+      "wholeSeconds": 8.037376,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 460.76432758620695,
+          "iqrFraction": 0.009217461795395395
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 421.35725,
+          "iqrFraction": 0.0027606691024694005
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 124.98598630136985,
+          "iqrFraction": 0.0038434993862872914
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "replica": 2,
+      "case": "calls.keyword.medium",
+      "seconds": 6.923101,
+      "wholeSeconds": 8.047585,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 508.09153333333336,
+          "iqrFraction": 0.009809666184820147
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 463.53271428571423,
+          "iqrFraction": 0.0055612074571129615
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 139.26005759162302,
+          "iqrFraction": 0.003195197233726191
+        }
+      ]
+    },
+    {
+      "index": 10,
+      "replica": 2,
+      "case": "lists.stable-sort.medium",
+      "seconds": 7.122574,
+      "wholeSeconds": 8.044839,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2616.1325454545454,
+          "iqrFraction": 0.1061253221184441
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2778.69,
+          "iqrFraction": 0.0619472365275244
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 305.7284329896907,
+          "iqrFraction": 0.0038886002799196516
+        }
+      ]
+    },
+    {
+      "index": 11,
+      "replica": 2,
+      "case": "strings.pipeline-ascii.medium",
+      "seconds": 6.695413,
+      "wholeSeconds": 8.040338,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 137.59174336283186,
+          "iqrFraction": 0.013982850509333697
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 138.3266818181818,
+          "iqrFraction": 0.020287645813418687
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 41.370974248927034,
+          "iqrFraction": 0.00464162654589334
+        }
+      ]
+    }
+  ],
+  "receipts": [
+    {
+      "path": "vm/micro-0/micro.json",
+      "sha256": "97750288a24103f88d442f10ac20ba2af2b2adb7847377a2baaa21ceb79e88e9"
+    },
+    {
+      "path": "vm/micro-1/micro.json",
+      "sha256": "7ce7bc6c33954e02a8769911c3314a00e36b200d348bd248d78fb9312429bd6b"
+    },
+    {
+      "path": "vm/micro-2/micro.json",
+      "sha256": "b0348bcf970fa42170d5aec5cb922bfb1602e55b9b23cf2edf38d10835535e92"
+    },
+    {
+      "path": "vm/micro-3/micro.json",
+      "sha256": "dc64a181b2358da1e24dfa8a269b2faca67cc5ed13c96d6231c3f71ac95670d4"
+    },
+    {
+      "path": "vm/micro-4/micro.json",
+      "sha256": "fc12471beb2d54241288be8eb8e359d82cc62ae8f5b457f834d6cefd19cccc3f"
+    },
+    {
+      "path": "vm/micro-5/micro.json",
+      "sha256": "b7d2cfe7cde5bc739493c335efe4a7e0f7211fd05d0aa18c7bdccb37187070c4"
+    },
+    {
+      "path": "vm/micro-6/micro.json",
+      "sha256": "cfda92bfface9f8f17deacfef3a2a6a86d844cae84ccab3b44c4cc2792b95429"
+    },
+    {
+      "path": "vm/micro-7/micro.json",
+      "sha256": "aef7e4f75d3a2fd94186071aec19289385785c4e6228e88e5c254d9b19d949e9"
+    },
+    {
+      "path": "vm/micro-8/micro.json",
+      "sha256": "850d98bfb21b7259a14a44d50a1ba457748cb567917d91182473b5f92c6c7b59"
+    },
+    {
+      "path": "vm/micro-9/micro.json",
+      "sha256": "933fbd588742f62917a9b2202e0803d0308c578ab0345df2c6f32ba0e6ddd3e4"
+    },
+    {
+      "path": "vm/micro-10/micro.json",
+      "sha256": "dd2f378b28f11c13b1c0bb80a51dc3d1b9fa9a93740c079c11cfe4c07fda4ec9"
+    },
+    {
+      "path": "vm/micro-11/micro.json",
+      "sha256": "4fcc7ea39b557f6cc0ba90dcf1f8e26977d3ede9b85ecd07f36142ffbf07f5ba"
+    }
+  ],
+  "services": [
+    {
+      "unit": "lython-module-super-discovery-micro-0-20261010",
+      "started": "2026-10-10T18:09:54.371511+00:00",
+      "stopped": "2026-10-10T18:10:02.411391+00:00",
+      "wholeSeconds": 8.03988
+    },
+    {
+      "unit": "lython-module-super-discovery-micro-1-20261010",
+      "started": "2026-10-10T18:10:02.481520+00:00",
+      "stopped": "2026-10-10T18:10:10.525536+00:00",
+      "wholeSeconds": 8.044016
+    },
+    {
+      "unit": "lython-module-super-discovery-micro-2-20261010",
+      "started": "2026-10-10T18:10:10.594504+00:00",
+      "stopped": "2026-10-10T18:10:18.637348+00:00",
+      "wholeSeconds": 8.042844
+    },
+    {
+      "unit": "lython-module-super-discovery-micro-3-20261010",
+      "started": "2026-10-10T18:10:18.706527+00:00",
+      "stopped": "2026-10-10T18:10:26.746746+00:00",
+      "wholeSeconds": 8.040219
+    },
+    {
+      "unit": "lython-module-super-discovery-micro-4-20261010",
+      "started": "2026-10-10T18:10:26.826512+00:00",
+      "stopped": "2026-10-10T18:10:34.875381+00:00",
+      "wholeSeconds": 8.048869
+    },
+    {
+      "unit": "lython-module-super-discovery-micro-5-20261010",
+      "started": "2026-10-10T18:10:34.951516+00:00",
+      "stopped": "2026-10-10T18:10:42.993984+00:00",
+      "wholeSeconds": 8.042468
+    },
+    {
+      "unit": "lython-module-super-discovery-micro-6-20261010",
+      "started": "2026-10-10T18:10:43.060515+00:00",
+      "stopped": "2026-10-10T18:10:51.113171+00:00",
+      "wholeSeconds": 8.052656
+    },
+    {
+      "unit": "lython-module-super-discovery-micro-7-20261010",
+      "started": "2026-10-10T18:10:51.183510+00:00",
+      "stopped": "2026-10-10T18:10:59.235278+00:00",
+      "wholeSeconds": 8.051768
+    },
+    {
+      "unit": "lython-module-super-discovery-micro-8-20261010",
+      "started": "2026-10-10T18:10:59.308510+00:00",
+      "stopped": "2026-10-10T18:11:07.345886+00:00",
+      "wholeSeconds": 8.037376
+    },
+    {
+      "unit": "lython-module-super-discovery-micro-9-20261010",
+      "started": "2026-10-10T18:11:07.414524+00:00",
+      "stopped": "2026-10-10T18:11:15.462109+00:00",
+      "wholeSeconds": 8.047585
+    },
+    {
+      "unit": "lython-module-super-discovery-micro-10-20261010",
+      "started": "2026-10-10T18:11:15.533509+00:00",
+      "stopped": "2026-10-10T18:11:23.578348+00:00",
+      "wholeSeconds": 8.044839
+    },
+    {
+      "unit": "lython-module-super-discovery-micro-11-20261010",
+      "started": "2026-10-10T18:11:23.660519+00:00",
+      "stopped": "2026-10-10T18:11:31.700857+00:00",
+      "wholeSeconds": 8.040338
+    },
+    {
+      "unit": "lython-module-super-discovery-prepare-baseline-20261010",
+      "started": "2026-10-10T18:03:39.029511+00:00",
+      "stopped": "2026-10-10T18:03:41.057784+00:00",
+      "wholeSeconds": 2.028273
+    },
+    {
+      "unit": "lython-module-super-discovery-prepare-candidate-20261010",
+      "started": "2026-10-10T18:03:41.097504+00:00",
+      "stopped": "2026-10-10T18:04:33.288707+00:00",
+      "wholeSeconds": 52.191203
+    }
+  ],
+  "testReceipts": {
+    "full-debug": [
+      {
+        "path": "full-debug/JoannesVermorel_LOKAD-0399_2026-10-10_20_03_57.trx",
+        "sha256": "ca83afaa0da80fd82d97d7012a067d36876a1113aa65fd8c8d2067c3d2e0d05f",
+        "passed": 7760
+      },
+      {
+        "path": "full-debug/JoannesVermorel_LOKAD-0399_2026-10-10_20_03_58.trx",
+        "sha256": "e3309b48d04bfc0a4dbd6ec5c8961c818b60a2d7db4d557dc8393bfaeba7a6d7",
+        "passed": 1499
+      }
+    ],
+    "vm/candidate-white-vm": [
+      {
+        "path": "vm/candidate-white-vm/_lython-bench_2026-10-10_18_04_04_net10.0.trx",
+        "sha256": "8683c9e1a18a25f1cb809ddbc6383149ebd9378e69aad5ad7b178c05317902ee",
+        "passed": 228
+      }
+    ],
+    "vm/candidate-public-vm": [
+      {
+        "path": "vm/candidate-public-vm/_lython-bench_2026-10-10_18_04_14_net10.0.trx",
+        "sha256": "f2e5c52a2ac70ac9c24f3af28e4f6e8b54b9dc9e14452f98872278f3b5555c3f",
+        "passed": 329
+      }
+    ]
+  },
+  "fullDebugGatePassed": true,
+  "fullDebugPassedBeforeTiming": 9259,
+  "fullLanes": 0,
+  "performanceQualified": false,
+  "diagnosticOnly": true,
+  "baselineProducerReused": true,
+  "allocationDiagnostic": {
+    "state": "Audited",
+    "baseline": "c31195ef15c0029472d714efd3f264c79e075793",
+    "candidate": "6ecc00b21b6d16c2cb962655dd4ae527e745d574",
+    "results": [
+      {
+        "replica": 1,
+        "case": "control.empty.control",
+        "baselineBytes": 29392,
+        "candidateBytes": 29392,
+        "savedBytes": 0,
+        "savedFraction": 0.0
+      },
+      {
+        "replica": 1,
+        "case": "loops.integer.large",
+        "baselineBytes": 1079424.4,
+        "candidateBytes": 1079424.64,
+        "savedBytes": -0.23999999999068677,
+        "savedFraction": -2.2234072161175789e-07
+      },
+      {
+        "replica": 1,
+        "case": "calls.positional.medium",
+        "baselineBytes": 523753.2,
+        "candidateBytes": 523752.96,
+        "savedBytes": 0.23999999999068677,
+        "savedFraction": 4.5823109051656985e-07
+      },
+      {
+        "replica": 1,
+        "case": "calls.keyword.medium",
+        "baselineBytes": 524015.92,
+        "candidateBytes": 524015.92,
+        "savedBytes": 0.0,
+        "savedFraction": 0.0
+      },
+      {
+        "replica": 1,
+        "case": "lists.stable-sort.medium",
+        "baselineBytes": 3490423.28,
+        "candidateBytes": 3526308.96,
+        "savedBytes": -35885.68000000017,
+        "savedFraction": -0.010281182859862348
+      },
+      {
+        "replica": 1,
+        "case": "strings.pipeline-ascii.medium",
+        "baselineBytes": 461800,
+        "candidateBytes": 461800,
+        "savedBytes": 0,
+        "savedFraction": 0.0
+      },
+      {
+        "replica": 2,
+        "case": "control.empty.control",
+        "baselineBytes": 29224,
+        "candidateBytes": 29338.4,
+        "savedBytes": -114.40000000000146,
+        "savedFraction": -0.003914590747331026
+      },
+      {
+        "replica": 2,
+        "case": "loops.integer.large",
+        "baselineBytes": 1079210.64,
+        "candidateBytes": 1079210.64,
+        "savedBytes": 0.0,
+        "savedFraction": 0.0
+      },
+      {
+        "replica": 2,
+        "case": "calls.positional.medium",
+        "baselineBytes": 523607.52,
+        "candidateBytes": 523583.92,
+        "savedBytes": 23.600000000034925,
+        "savedFraction": 4.507192715652586e-05
+      },
+      {
+        "replica": 2,
+        "case": "calls.keyword.medium",
+        "baselineBytes": 523951.12,
+        "candidateBytes": 523951.84,
+        "savedBytes": -0.720000000030268,
+        "savedFraction": -1.3741739879336023e-06
+      },
+      {
+        "replica": 2,
+        "case": "lists.stable-sort.medium",
+        "baselineBytes": 3420711.92,
+        "candidateBytes": 3420711.92,
+        "savedBytes": 0.0,
+        "savedFraction": 0.0
+      },
+      {
+        "replica": 2,
+        "case": "strings.pipeline-ascii.medium",
+        "baselineBytes": 461800,
+        "candidateBytes": 461800,
+        "savedBytes": 0,
+        "savedFraction": 0.0
+      }
+    ],
+    "services": [
+      {
+        "unit": "lython-module-super-discovery-invocation-allocation-baseline-20261010",
+        "started": "2026-10-10T18:11:46.237516+00:00",
+        "stopped": "2026-10-10T18:11:50.266835+00:00",
+        "wholeSeconds": 4.029319
+      },
+      {
+        "unit": "lython-module-super-discovery-invocation-allocation-candidate-20261010",
+        "started": "2026-10-10T18:11:50.300518+00:00",
+        "stopped": "2026-10-10T18:11:54.333983+00:00",
+        "wholeSeconds": 4.033465
+      }
+    ],
+    "completeMeasuredInvocations": 2400,
+    "completeWarmupInvocations": 384,
+    "rows": 24,
+    "normalTiming": false,
+    "fullLanes": 0,
+    "afterNormalMicros": true,
+    "managedAllocationIsProcessWide": true,
+    "exactPerGuestTypeAccounting": false,
+    "reusedPreviousRoundHelper": true,
+    "noHelperRebuild": true,
+    "noDiagnosticWorkerRecollected": true,
+    "helperInputsManifestSha256": "ccf553bf21f65571bb720ef32f8455dc01fc5de945a28c67aad44d4b5f187cc0",
+    "files": [
+      {
+        "path": "invocation-allocation-declaration.json",
+        "sha256": "0da355d4b9396a4382c98b38974d7cbe0d3439f1be6a0cfe3d1464f747eee333"
+      },
+      {
+        "path": "allocation-Collect-exit.txt",
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+      },
+      {
+        "path": "launch-invocation-allocation.sh",
+        "sha256": "d16d9c3643b1840c723946c38fa2129379832e7a7a6adfb2fa67f3f3771bd749"
+      },
+      {
+        "path": "vm/helper-reused-inputs-baseline.txt",
+        "sha256": "298e503f8abc3f5067ffcd79c7bb52ddf08875f87dd2535601eebca2f44270fc"
+      },
+      {
+        "path": "vm/helper-reused-inputs-candidate.txt",
+        "sha256": "298e503f8abc3f5067ffcd79c7bb52ddf08875f87dd2535601eebca2f44270fc"
+      },
+      {
+        "path": "vm/final-allocation-inputs.txt",
+        "sha256": "298e503f8abc3f5067ffcd79c7bb52ddf08875f87dd2535601eebca2f44270fc"
+      },
+      {
+        "path": "vm/baseline-invocation-allocation.jsonl",
+        "sha256": "8dadc811193ebc13e4245747d1be37b4122ff8d04bfb1539adf8bf835fd6530d"
+      },
+      {
+        "path": "vm/candidate-invocation-allocation.jsonl",
+        "sha256": "123c19c0f8180d463e9058f7fb91e65ad035f48c339d8961b1331c5526ac98e6"
+      }
+    ]
+  },
+  "nativeCodeDiagnostic": {
+    "state": "Audited",
+    "baseline": "c31195ef15c0029472d714efd3f264c79e075793",
+    "candidate": "6ecc00b21b6d16c2cb962655dd4ae527e745d574",
+    "normalTiming": false,
+    "nativeOnlyDumpSettings": {
+      "DOTNET_JitDisasm": "Execute get_ParentContext TryGetLexicalClassCell EnterInvocationFrame ExecuteBody TryExecuteSimpleReturn",
+      "DOTNET_JitDisasmAssemblies": "Lokad.Lython",
+      "DOTNET_JitStdOutFile": "role-specific artifact"
+    },
+    "ordinaryTieringAndGc": true,
+    "separateAfterNormalTimingAndAllocation": true,
+    "allNativeBodiesAndTiersRetained": true,
+    "noMachineCodeSizeSpeedPrediction": true,
+    "allocationRowsNotOrdinaryDiagnostics": true,
+    "completeMeasuredInvocations": 2400,
+    "completeWarmupInvocations": 384,
+    "rows": 24,
+    "results": [
+      {
+        "role": "baseline",
+        "listings": [
+          {
+            "method": "Lokad.Lython.Runtime.ExecutionThreads+WorkItem:Execute(System.Threading.ExecutionContext):this",
+            "tier": "Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     [CORINFO_HELP_GET_GCSTATIC_BASE]",
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     [System.MulticastDelegate:CtorClosed(System.Object,nint):this]",
+              "call     CORINFO_HELP_ASSIGN_REF",
+              "call     [System.Threading.ExecutionContext:Run(System.Threading.ExecutionContext,System.Threading.ContextCallback,System.Object)]",
+              "call     G_M000_IG11",
+              "call     [System.Runtime.ExceptionServices.ExceptionDispatchInfo:Capture(System.Exception):System.Runtime.ExceptionServices.ExceptionDispatchInfo]"
+            ],
+            "codeBytes": 365
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+            "tier": "Instrumented Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     CORINFO_HELP_PATCHPOINT",
+              "call     [Lokad.Lython.Frontend.ExecutableCodeObject:get_Blocks():System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.ExecutableBasicBlock]:this]",
+              "call     CORINFO_HELP_CLASSPROFILE32",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [System.Nullable`1[int]:GetValueOrDefault():int:this]",
+              "call     [System.Nullable`1[int]:get_HasValue():bool:this]",
+              "call     CORINFO_HELP_COUNTPROFILE32",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack:get_Count():int:this]",
+              "call     [System.Nullable`1[int]:.ctor(int):this]",
+              "call     [Lokad.Lython.Frontend.ExecutableBasicBlock:get_InstructionArray():Lokad.Lython.Frontend.ExecutableInstruction[]:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_Services():Lokad.Lython.Runtime.ExecutionServices:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+              "call     [Lokad.Lython.Runtime.ExecutionServices:CheckExecution(Lokad.Lython.LythonSourceSpan):this]",
+              "call     CORINFO_HELP_THROW",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_OpCode():int:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LocalSlot():int:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:LoadLocal(Lokad.Lython.Frontend.ExecutableCodeObject,System.Object[],int,Lokad.Lython.LythonSourceSpan):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack:Push(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:Pop(byref,Lokad.Lython.LythonSourceSpan):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:StoreLocalValue(Lokad.Lython.Frontend.ExecutableCodeObject,System.Object[],Lokad.Lython.Runtime.LythonRuntime+ExecutableCell[],Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,int,System.Object,Lokad.Lython.LythonSourceSpan)]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteForNext(byref):bool:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableCodeObject:get_Constants():System.Collections.Generic.IReadOnlyList`1[System.Object]:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_ConstantIndex():int:this]",
+              "call     [CORINFO_HELP_CHKCASTCLASS]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecutePreparedOperationAsync(Lokad.Lython.Frontend.ExecutableOperation,Lokad.Lython.LythonSourceSpan,bool):System.Threading.Tasks.ValueTask:this]",
+              "call     [System.Threading.Tasks.ValueTask:GetAwaiter():System.Runtime.CompilerServices.ValueTaskAwaiter:this]",
+              "call     [System.Runtime.CompilerServices.ValueTaskAwaiter:GetResult():this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:set_YieldValue(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:set_HasYield(bool):this]",
+              "call     CORINFO_HELP_NEWARR_1_PTR",
+              "call     [CORINFO_HELP_ARRADDR_ST]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:Iter(System.Object[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:.ctor(System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):this]",
+              "call     CORINFO_HELP_ASSIGN_REF",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:Advance(System.Object,Lokad.Lython.Runtime.LythonRuntimeException):Lokad.Lython.Runtime.PyIterationResult:this]",
+              "call     [Lokad.Lython.Runtime.PyIterationResult:get_HasValue():bool:this]",
+              "call     [Lokad.Lython.Runtime.PyIterationResult:get_Value():System.Object:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:get_ReturnValue():System.Object:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteDefinitionOrFallback(byref):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStackTransfer(byref):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStructure(byref):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteValueOperation(byref):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteControlFlow(byref):bool:this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:.ctor(int,int):this]",
+              "call     [CORINFO_HELP_STRCNS]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:AppendLiteral(System.String):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:AppendFormatted[int](int):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:ToStringAndClear():System.String:this]",
+              "call     [System.InvalidOperationException:.ctor(System.String):this]",
+              "call     CORINFO_HELP_RNGCHKFAIL",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:TryRouteReturn(Lokad.Lython.Runtime.LythonRuntime+ReturnSignal,Lokad.Lython.LythonSourceSpan):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:TryRouteControl(Lokad.Lython.Runtime.LythonRuntime+ControlSignal,Lokad.Lython.LythonSourceSpan):bool:this]",
+              "call     CORINFO_HELP_RETHROW",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:RouteRuntimeException(Lokad.Lython.Runtime.LythonRuntimeException,Lokad.Lython.LythonSourceSpan):this]"
+            ],
+            "codeBytes": 3136
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+            "tier": "Tier1-OSR",
+            "inlineSummary": "68 inlinees with PGO data; 216 single block inlinees; 46 inlinees without PGO data",
+            "callTargets": [
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:SweepCheckpointTemporaries():this]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionStepLimit(long,Lokad.Lython.LythonSourceSpan)]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteControlFlow(byref):bool:this]",
+              "call     [CORINFO_HELP_ISINSTANCEOFANY]",
+              "call     [r11]System.Collections.IEnumerator:MoveNext():bool:this",
+              "call     [r11]System.Collections.Generic.IEnumerator`1[System.__Canon]:get_Current():System.__Canon:this",
+              "call     CORINFO_HELP_NEWARR_1_PTR",
+              "call     System.Buffer:BulkMoveWithWriteBarrierInternal(byref,byref,nuint)",
+              "call     [CORINFO_HELP_ARRADDR_ST]",
+              "call     CORINFO_HELP_ASSIGN_REF",
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     System.Threading.Interlocked:CompareExchangeObject(byref,System.Object,System.Object):System.Object",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [System.String:GetNonRandomizedHashCode():int:this]",
+              "call     [r11]System.Collections.Generic.IEqualityComparer`1[System.__Canon]:GetHashCode(System.__Canon):int:this",
+              "call     [System.SpanHelpers:SequenceEqual(byref,byref,nuint):bool]",
+              "call     [r11]System.Collections.Generic.IEqualityComparer`1[System.__Canon]:Equals(System.__Canon,System.__Canon):bool:this",
+              "call     [System.Collections.HashHelpers:ExpandPrime(int):int]",
+              "call     [System.Collections.Generic.Dictionary`2[System.__Canon,System.__Canon]:Resize(int,bool):this]",
+              "call     [System.Collections.Generic.Dictionary`2[System.__Canon,System.__Canon]:Remove(System.__Canon):bool:this]",
+              "call     [System.Collections.HashHelpers:GetPrime(int):int]",
+              "call     CORINFO_HELP_NEWARR_1_VC",
+              "call     [System.Buffer:BulkMoveWithWriteBarrierBatch(byref,byref,nuint)]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStackTransfer(byref):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteValueOperation(byref):bool:this]",
+              "call     CORINFO_HELP_THROW",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:.ctor(int,int):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:GrowThenCopyString(System.String):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:AppendFormatted[int](int):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:ToStringAndClear():System.String:this]",
+              "call     [System.InvalidOperationException:.ctor(System.String):this]",
+              "call     [System.String:Concat(System.String,System.String):System.String]",
+              "call     System.String:FastAllocateString(ptr,nint):System.String",
+              "call     [System.SpanHelpers:Memmove(byref,byref,nuint)]",
+              "call     [CORINFO_HELP_GET_GCSTATIC_BASE]",
+              "call     [System.ThrowHelper:ThrowOutOfMemoryException_StringTooLong()]",
+              "call     [Lokad.Lython.Runtime.PythonExceptionIdentity:FromRuntimeTypeName(System.String):Lokad.Lython.Runtime.PythonExceptionIdentity]",
+              "call     CORINFO_HELP_POLL_GC",
+              "call     [CORINFO_HELP_STRCNS]",
+              "call     [Lokad.Lython.Runtime.RuntimeErrors:Runtime(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]",
+              "call     [CORINFO_HELP_ISINSTANCEOFCLASS]",
+              "call     [System.ThrowHelper:ThrowNullReferenceException()]",
+              "call     [System.ThrowHelper:ThrowArgumentNullException(int)]",
+              "call     [System.ThrowHelper:ThrowInvalidOperationException_ConcurrentOperationsNotSupported()]",
+              "call     [System.ThrowHelper:ThrowArgumentOutOfRangeException(int,int)]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:ReadOperand(Lokad.Lython.Frontend.ExecutableInstruction+Operand,int):int:this]",
+              "call     [CORINFO_HELP_CHKCASTCLASS]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecutePreparedOperationAsync(Lokad.Lython.Frontend.ExecutableOperation,Lokad.Lython.LythonSourceSpan,bool):System.Threading.Tasks.ValueTask:this]",
+              "call     [System.Threading.Tasks.ValueTask:GetAwaiter():System.Runtime.CompilerServices.ValueTaskAwaiter:this]",
+              "call     [System.Runtime.CompilerServices.TaskAwaiter:HandleNonSuccessAndDebuggerNotification(System.Threading.Tasks.Task,int)]",
+              "call     [r11]System.Threading.Tasks.Sources.IValueTaskSource:GetResult(short):this",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:Pop(byref,Lokad.Lython.LythonSourceSpan):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:Iter(System.Object[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:.ctor(System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:Advance(System.Object,Lokad.Lython.Runtime.LythonRuntimeException):Lokad.Lython.Runtime.PyIterationResult:this]",
+              "call     [Lokad.Lython.Runtime.PyIterationResult:get_Value():System.Object:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack:Push(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteDefinitionOrFallback(byref):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStructure(byref):bool:this]",
+              "call     [System.ThrowHelper:ThrowArgumentOutOfRangeException()]",
+              "call     CORINFO_HELP_RNGCHKFAIL",
+              "call     CORINFO_HELP_OVERFLOW",
+              "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:TryRouteReturn(Lokad.Lython.Runtime.LythonRuntime+ReturnSignal,Lokad.Lython.LythonSourceSpan):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:TryRouteControl(Lokad.Lython.Runtime.LythonRuntime+ControlSignal,Lokad.Lython.LythonSourceSpan):bool:this]",
+              "call     CORINFO_HELP_RETHROW",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:RouteRuntimeException(Lokad.Lython.Runtime.LythonRuntimeException,Lokad.Lython.LythonSourceSpan):this]"
+            ],
+            "codeBytes": 8170
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_ParentContext():Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this",
+            "tier": "Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     [Lokad.Lython.Runtime.ExecutionFrame:get_Parent():Lokad.Lython.Runtime.ExecutionFrame:this]",
+              "call     [CORINFO_HELP_CHKCASTCLASS]"
+            ],
+            "codeBytes": 61
+          },
+          {
+            "method": "Lokad.Lython.Runtime.PyFunctionBase:EnterInvocationFrame(Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this",
+            "tier": "Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     [rax+0x20]Lokad.Lython.Runtime.PyFunctionBase:get_RequiresArgumentMirroring():bool:this",
+              "call     [Lokad.Lython.Runtime.PyFunctionBase:get_OwnerType():Lokad.Lython.Runtime.PyType:this]",
+              "call     [Lokad.Lython.Runtime.PyFunctionBinding:EnterInvocationFrame(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts,Lokad.Lython.Runtime.FunctionBindingPlan,Lokad.Lython.Runtime.BoundCallArguments,bool,Lokad.Lython.Runtime.PyType,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext]"
+            ],
+            "codeBytes": 184
+          },
+          {
+            "method": "Lokad.Lython.Runtime.PyFunctionBinding:EnterInvocationFrame(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts,Lokad.Lython.Runtime.FunctionBindingPlan,Lokad.Lython.Runtime.BoundCallArguments,bool,Lokad.Lython.Runtime.PyType,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext",
+            "tier": "Instrumented Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:.ctor(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts):this]",
+              "call     [Lokad.Lython.Runtime.FunctionBindingPlan:get_CallableName():System.String:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:set_FunctionName(System.String):this]",
+              "call     [Lokad.Lython.Runtime.FunctionBindingPlan:get_LayoutParameterNames():System.Collections.Generic.IReadOnlyList`1[System.String]:this]",
+              "call     CORINFO_HELP_COUNTPROFILE32",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_Variables():System.Collections.Generic.Dictionary`2[System.String,System.Object]:this]",
+              "call     CORINFO_HELP_CLASSPROFILE32",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [Lokad.Lython.Runtime.BoundCallArguments:get_Values():System.Object[]:this]",
+              "call     [System.Collections.Generic.Dictionary`2[System.__Canon,System.__Canon]:set_Item(System.__Canon,System.__Canon):this]",
+              "call     CORINFO_HELP_PATCHPOINT",
+              "call     [r11]System.Collections.Generic.IReadOnlyCollection`1[System.__Canon]:get_Count():int:this",
+              "call     [Lokad.Lython.Runtime.FunctionBindingPlan:get_Parameters():System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.LoweredFunctionParameter]:this]",
+              "call     [Lokad.Lython.Runtime.PyFunctionBinding:TryGetReceiver(Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.Runtime.FunctionBindingPlan,byref):bool]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:TryGetLexicalClassCell(byref):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:BindImplicitSuper(Lokad.Lython.Runtime.LythonRuntime+ExecutableCell,System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:BindUnavailableImplicitSuper(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:EnterFunctionCall(Lokad.Lython.LythonSourceSpan):this]",
+              "call     CORINFO_HELP_RNGCHKFAIL"
+            ],
+            "codeBytes": 896
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:TryGetLexicalClassCell(byref):bool:this",
+            "tier": "Instrumented Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_IsClassBody():bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_ClassCell():Lokad.Lython.Runtime.LythonRuntime+ExecutableCell:this]",
+              "call     CORINFO_HELP_COUNTPROFILE32",
+              "call     CORINFO_HELP_CHECKED_ASSIGN_REF",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_ScopeFacts():Lokad.Lython.Frontend.ScopeDirectiveFacts:this]",
+              "call     [Lokad.Lython.Frontend.ScopeDirectiveFacts:IsGlobal(System.String):bool:this]",
+              "call     [Lokad.Lython.Frontend.ScopeDirectiveFacts:get_LocalNames():System.Collections.Generic.IReadOnlySet`1[System.String]:this]",
+              "call     CORINFO_HELP_CLASSPROFILE32",
+              "call     [r11]System.Collections.Generic.IReadOnlySet`1[System.__Canon]:Contains(System.__Canon):bool:this",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_FunctionName():System.String:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_Frame():Lokad.Lython.Runtime.ExecutionFrame:this]",
+              "call     [Lokad.Lython.Runtime.ExecutionFrame:ContainsVariable(System.String):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_ParentContext():Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this]",
+              "call     CORINFO_HELP_PATCHPOINT"
+            ],
+            "codeBytes": 527
+          },
+          {
+            "method": "Lokad.Lython.Runtime.PyExecutableFunction:ExecuteBody(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.LythonSourceSpan):System.Object:this",
+            "tier": "Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     [Lokad.Lython.Runtime.LythonRuntime:TryExecuteSimpleReturn(Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,int[],byref):bool]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:ExecuteExecutableCodeObject(Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,int[],System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableCell]):System.Object]"
+            ],
+            "codeBytes": 248
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime:TryExecuteSimpleReturn(Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,int[],byref):bool",
+            "tier": "Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     CORINFO_HELP_CHECKED_ASSIGN_REF",
+              "call     [Lokad.Lython.Frontend.ExecutableCodeObject:get_SimpleReturn():int:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_MirrorLocalStores():bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_CurrentExecutableFrame():Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameState:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_ActiveHandlerVariables():System.Collections.Generic.Stack`1[System.ValueTuple`3[System.String,int,int]]:this]",
+              "call     [System.Collections.Generic.Stack`1[System.ValueTuple`3[System.__Canon,int,int]]:get_Count():int:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableCodeObject:get_Blocks():System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.ExecutableBasicBlock]:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableCodeObject:get_EntryBlockIndex():int:this]",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [Lokad.Lython.Frontend.ExecutableBasicBlock:get_InstructionArray():Lokad.Lython.Frontend.ExecutableInstruction[]:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:TryReadSimpleOperand(Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Frontend.ExecutableInstruction,Lokad.Lython.Runtime.BoundCallArguments,int[],byref):bool]",
+              "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:EnterInterpreterFrame(Lokad.Lython.LythonSourceSpan):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_Services():Lokad.Lython.Runtime.ExecutionServices:this]",
+              "call     [Lokad.Lython.Runtime.ExecutionServices:get_CurrentException():Lokad.Lython.Runtime.PyException:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+              "call     [Lokad.Lython.Runtime.ExecutionServices:CheckExecution(Lokad.Lython.LythonSourceSpan):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:LoadSimpleOperand(Lokad.Lython.Frontend.ExecutableInstruction,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.PyException):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateExecutableBinary(int,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ObserveValue(System.Object,Lokad.Lython.LythonSourceSpan):this]",
+              "call     CORINFO_HELP_RNGCHKFAIL",
+              "call     [Lokad.Lython.Runtime.ExecutionServices:SetCurrentException(Lokad.Lython.Runtime.PyException):Lokad.Lython.Runtime.PyException:this]",
+              "call     G_M000_IG25",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:RestoreSimpleReturnException(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.PyException,Lokad.Lython.Runtime.LythonRuntimeException)]",
+              "call     CORINFO_HELP_RETHROW",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:LeaveExecutableSlots(Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameState):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:LeaveInterpreterFrame():this]"
+            ],
+            "codeBytes": 1629
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+            "tier": "Tier1-OSR",
+            "inlineSummary": "32 inlinees with PGO data; 80 single block inlinees; 12 inlinees without PGO data",
+            "callTargets": [
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteControlFlow(byref):bool:this]",
+              "call     [Lokad.Lython.Runtime.PyRange+<IterateChecked>d__23:MoveNext():bool:this]",
+              "call     CORINFO_HELP_ARRADDR_ST",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStackTransfer(byref):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteDefinitionOrFallback(byref):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteValueOperation(byref):bool:this]",
+              "call     CORINFO_HELP_THROW",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:.ctor(int,int):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:GrowThenCopyString(System.String):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:AppendFormatted[int](int):this]",
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:ToStringAndClear():System.String:this]",
+              "call     [System.InvalidOperationException:.ctor(System.String):this]",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [Lokad.Lython.Runtime.RuntimeErrors:NameNotDefined(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]",
+              "call     [Lokad.Lython.Runtime.RuntimeErrors:UnboundLocalVariable(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]",
+              "call     [System.Array:Resize[System.__Canon](byref,int)]",
+              "call     [CORINFO_HELP_STRCNS]",
+              "call     [Lokad.Lython.Runtime.RuntimeErrors:Runtime(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableCell:set_Value(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.ExecutionFrame:get_Variables():System.Collections.Generic.Dictionary`2[System.String,System.Object]:this]",
+              "call     [System.Collections.Generic.Dictionary`2[System.__Canon,System.__Canon]:TryInsert(System.__Canon,System.__Canon,byte):bool:this]",
+              "call     CORINFO_HELP_ISINSTANCEOFANY",
+              "call     [r11]System.Collections.IEnumerator:MoveNext():bool:this",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:Pop(byref,Lokad.Lython.LythonSourceSpan):System.Object]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:ReadOperand(Lokad.Lython.Frontend.ExecutableInstruction+Operand,int):int:this]",
+              "call     [r11]System.Collections.Generic.IEnumerator`1[System.__Canon]:get_Current():System.__Canon:this",
+              "call     [CORINFO_HELP_CHKCASTCLASS]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecutePreparedOperationAsync(Lokad.Lython.Frontend.ExecutableOperation,Lokad.Lython.LythonSourceSpan,bool):System.Threading.Tasks.ValueTask:this]",
+              "call     [System.Threading.Tasks.ValueTask:GetAwaiter():System.Runtime.CompilerServices.ValueTaskAwaiter:this]",
+              "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+              "call     [System.Runtime.CompilerServices.TaskAwaiter:HandleNonSuccessAndDebuggerNotification(System.Threading.Tasks.Task,int)]",
+              "call     [r11]System.Threading.Tasks.Sources.IValueTaskSource:GetResult(short):this",
+              "call     CORINFO_HELP_ASSIGN_REF",
+              "call     CORINFO_HELP_NEWARR_1_PTR",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:Iter(System.Object[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:.ctor(System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:Advance(System.Object,Lokad.Lython.Runtime.LythonRuntimeException):Lokad.Lython.Runtime.PyIterationResult:this]",
+              "call     [Lokad.Lython.Runtime.PyIterationResult:get_Value():System.Object:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack:Push(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStructure(byref):bool:this]",
+              "call     [System.ThrowHelper:ThrowArgumentOutOfRangeException()]",
+              "call     CORINFO_HELP_RNGCHKFAIL",
+              "call     CORINFO_HELP_OVERFLOW",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:SweepCheckpointTemporaries():this]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionStepLimit(long,Lokad.Lython.LythonSourceSpan)]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]",
+              "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:TryRouteReturn(Lokad.Lython.Runtime.LythonRuntime+ReturnSignal,Lokad.Lython.LythonSourceSpan):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:TryRouteControl(Lokad.Lython.Runtime.LythonRuntime+ControlSignal,Lokad.Lython.LythonSourceSpan):bool:this]",
+              "call     CORINFO_HELP_RETHROW",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:RouteRuntimeException(Lokad.Lython.Runtime.LythonRuntimeException,Lokad.Lython.LythonSourceSpan):this]"
+            ],
+            "codeBytes": 3886
+          },
+          {
+            "method": "Lokad.Lython.Runtime.ExecutionThreads+WorkItem:Execute(System.Threading.ExecutionContext):this",
+            "tier": "Instrumented Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     CORINFO_HELP_COUNTPROFILE32",
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     [System.MulticastDelegate:CtorClosed(System.Object,nint):this]",
+              "call     CORINFO_HELP_ASSIGN_REF",
+              "call     [System.Threading.ExecutionContext:Run(System.Threading.ExecutionContext,System.Threading.ContextCallback,System.Object)]",
+              "call     G_M000_IG12",
+              "call     [System.Runtime.ExceptionServices.ExceptionDispatchInfo:Capture(System.Exception):System.Runtime.ExceptionServices.ExceptionDispatchInfo]"
+            ],
+            "codeBytes": 379
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+            "tier": "Instrumented Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     CORINFO_HELP_PATCHPOINT",
+              "call     [Lokad.Lython.Frontend.ExecutableCodeObject:get_Blocks():System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.ExecutableBasicBlock]:this]",
+              "call     CORINFO_HELP_CLASSPROFILE32",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [System.Nullable`1[int]:GetValueOrDefault():int:this]",
+              "call     [System.Nullable`1[int]:get_HasValue():bool:this]",
+              "call     CORINFO_HELP_COUNTPROFILE32",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack:get_Count():int:this]",
+              "call     [System.Nullable`1[int]:.ctor(int):this]",
+              "call     [Lokad.Lython.Frontend.ExecutableBasicBlock:get_InstructionArray():Lokad.Lython.Frontend.ExecutableInstruction[]:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_Services():Lokad.Lython.Runtime.ExecutionServices:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+              "call     [Lokad.Lython.Runtime.ExecutionServices:CheckExecution(Lokad.Lython.LythonSourceSpan):this]",
+              "call     CORINFO_HELP_THROW",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_OpCode():int:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LocalSlot():int:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:LoadLocal(Lokad.Lython.Frontend.ExecutableCodeObject,System.Object[],int,Lokad.Lython.LythonSourceSpan):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack:Push(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:Pop(byref,Lokad.Lython.LythonSourceSpan):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:StoreLocalValue(Lokad.Lython.Frontend.ExecutableCodeObject,System.Object[],Lokad.Lython.Runtime.LythonRuntime+ExecutableCell[],Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,int,System.Object,Lokad.Lython.LythonSourceSpan)]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteForNext(byref):bool:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableCodeObject:get_Constants():System.Collections.Generic.IReadOnlyList`1[System.Object]:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_ConstantIndex():int:this]",
+              "call     [CORINFO_HELP_CHKCASTCLASS]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecutePreparedOperationAsync(Lokad.Lython.Frontend.ExecutableOperation,Lokad.Lython.LythonSourceSpan,bool):System.Threading.Tasks.ValueTask:this]",
+              "call     [System.Threading.Tasks.ValueTask:GetAwaiter():System.Runtime.CompilerServices.ValueTaskAwaiter:this]",
+              "call     [System.Runtime.CompilerServices.ValueTaskAwaiter:GetResult():this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:set_YieldValue(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:set_HasYield(bool):this]",
+              "call     CORINFO_HELP_NEWARR_1_PTR",
+              "call     CORINFO_HELP_ARRADDR_ST",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:Iter(System.Object[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:.ctor(System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):this]",
+              "call     CORINFO_HELP_ASSIGN_REF",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:Advance(System.Object,Lokad.Lython.Runtime.LythonRuntimeException):Lokad.Lython.Runtime.PyIterationResult:this]",
+              "call     [Lokad.Lython.Runtime.PyIterationResult:get_HasValue():bool:this]",
+              "call     [Lokad.Lython.Runtime.PyIterationResult:get_Value():System.Object:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:get_ReturnValue():System.Object:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteDefinitionOrFallback(byref):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStackTransfer(byref):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStructure(byref):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteValueOperation(byref):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteControlFlow(byref):bool:this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:.ctor(int,int):this]",
+              "call     [CORINFO_HELP_STRCNS]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:AppendLiteral(System.String):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:AppendFormatted[int](int):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:ToStringAndClear():System.String:this]",
+              "call     [System.InvalidOperationException:.ctor(System.String):this]",
+              "call     CORINFO_HELP_RNGCHKFAIL",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:TryRouteReturn(Lokad.Lython.Runtime.LythonRuntime+ReturnSignal,Lokad.Lython.LythonSourceSpan):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:TryRouteControl(Lokad.Lython.Runtime.LythonRuntime+ControlSignal,Lokad.Lython.LythonSourceSpan):bool:this]",
+              "call     CORINFO_HELP_RETHROW",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:RouteRuntimeException(Lokad.Lython.Runtime.LythonRuntimeException,Lokad.Lython.LythonSourceSpan):this]"
+            ],
+            "codeBytes": 3135
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_ParentContext():Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this",
+            "tier": "Instrumented Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     [Lokad.Lython.Runtime.ExecutionFrame:get_Parent():Lokad.Lython.Runtime.ExecutionFrame:this]",
+              "call     [CORINFO_HELP_CHKCASTCLASS]"
+            ],
+            "codeBytes": 61
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:TryGetLexicalClassCell(byref):bool:this",
+            "tier": "Instrumented Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_IsClassBody():bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_ClassCell():Lokad.Lython.Runtime.LythonRuntime+ExecutableCell:this]",
+              "call     CORINFO_HELP_COUNTPROFILE32",
+              "call     CORINFO_HELP_CHECKED_ASSIGN_REF",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_ScopeFacts():Lokad.Lython.Frontend.ScopeDirectiveFacts:this]",
+              "call     [Lokad.Lython.Frontend.ScopeDirectiveFacts:IsGlobal(System.String):bool:this]",
+              "call     [Lokad.Lython.Frontend.ScopeDirectiveFacts:get_LocalNames():System.Collections.Generic.IReadOnlySet`1[System.String]:this]",
+              "call     CORINFO_HELP_CLASSPROFILE32",
+              "call     [r11]System.Collections.Generic.IReadOnlySet`1[System.__Canon]:Contains(System.__Canon):bool:this",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_FunctionName():System.String:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_Frame():Lokad.Lython.Runtime.ExecutionFrame:this]",
+              "call     [Lokad.Lython.Runtime.ExecutionFrame:ContainsVariable(System.String):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_ParentContext():Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this]",
+              "call     CORINFO_HELP_PATCHPOINT"
+            ],
+            "codeBytes": 527
+          },
+          {
+            "method": "Lokad.Lython.Runtime.PyExecutableFunction:ExecuteBody(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.LythonSourceSpan):System.Object:this",
+            "tier": "Instrumented Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     [Lokad.Lython.Runtime.LythonRuntime:TryExecuteSimpleReturn(Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,int[],byref):bool]",
+              "call     CORINFO_HELP_COUNTPROFILE32",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:ExecuteExecutableCodeObject(Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,int[],System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableCell]):System.Object]"
+            ],
+            "codeBytes": 293
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime:TryExecuteSimpleReturn(Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,int[],byref):bool",
+            "tier": "Instrumented Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     CORINFO_HELP_CHECKED_ASSIGN_REF",
+              "call     [Lokad.Lython.Frontend.ExecutableCodeObject:get_SimpleReturn():int:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_MirrorLocalStores():bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_CurrentExecutableFrame():Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameState:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_ActiveHandlerVariables():System.Collections.Generic.Stack`1[System.ValueTuple`3[System.String,int,int]]:this]",
+              "call     [System.Collections.Generic.Stack`1[System.ValueTuple`3[System.__Canon,int,int]]:get_Count():int:this]",
+              "call     CORINFO_HELP_COUNTPROFILE32",
+              "call     [Lokad.Lython.Frontend.ExecutableCodeObject:get_Blocks():System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.ExecutableBasicBlock]:this]",
+              "call     CORINFO_HELP_CLASSPROFILE32",
+              "call     [Lokad.Lython.Frontend.ExecutableCodeObject:get_EntryBlockIndex():int:this]",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [Lokad.Lython.Frontend.ExecutableBasicBlock:get_InstructionArray():Lokad.Lython.Frontend.ExecutableInstruction[]:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:TryReadSimpleOperand(Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Frontend.ExecutableInstruction,Lokad.Lython.Runtime.BoundCallArguments,int[],byref):bool]",
+              "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:EnterInterpreterFrame(Lokad.Lython.LythonSourceSpan):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_Services():Lokad.Lython.Runtime.ExecutionServices:this]",
+              "call     [Lokad.Lython.Runtime.ExecutionServices:get_CurrentException():Lokad.Lython.Runtime.PyException:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+              "call     [Lokad.Lython.Runtime.ExecutionServices:CheckExecution(Lokad.Lython.LythonSourceSpan):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:LoadSimpleOperand(Lokad.Lython.Frontend.ExecutableInstruction,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.PyException):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateExecutableBinary(int,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ObserveValue(System.Object,Lokad.Lython.LythonSourceSpan):this]",
+              "call     CORINFO_HELP_RNGCHKFAIL",
+              "call     [Lokad.Lython.Runtime.ExecutionServices:SetCurrentException(Lokad.Lython.Runtime.PyException):Lokad.Lython.Runtime.PyException:this]",
+              "call     G_M000_IG34",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:RestoreSimpleReturnException(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.PyException,Lokad.Lython.Runtime.LythonRuntimeException)]",
+              "call     CORINFO_HELP_RETHROW",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:LeaveExecutableSlots(Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameState):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:LeaveInterpreterFrame():this]"
+            ],
+            "codeBytes": 1932
+          },
+          {
+            "method": "Lokad.Lython.Runtime.PyFunctionBase:EnterInvocationFrame(Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this",
+            "tier": "Instrumented Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     CORINFO_HELP_CLASSPROFILE32",
+              "call     [rax+0x20]Lokad.Lython.Runtime.PyFunctionBase:get_RequiresArgumentMirroring():bool:this",
+              "call     [Lokad.Lython.Runtime.PyFunctionBase:get_OwnerType():Lokad.Lython.Runtime.PyType:this]",
+              "call     [Lokad.Lython.Runtime.PyFunctionBinding:EnterInvocationFrame(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts,Lokad.Lython.Runtime.FunctionBindingPlan,Lokad.Lython.Runtime.BoundCallArguments,bool,Lokad.Lython.Runtime.PyType,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext]"
+            ],
+            "codeBytes": 210
+          },
+          {
+            "method": "Lokad.Lython.Runtime.PyFunctionBinding:EnterInvocationFrame(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts,Lokad.Lython.Runtime.FunctionBindingPlan,Lokad.Lython.Runtime.BoundCallArguments,bool,Lokad.Lython.Runtime.PyType,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext",
+            "tier": "Instrumented Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:.ctor(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts):this]",
+              "call     [Lokad.Lython.Runtime.FunctionBindingPlan:get_CallableName():System.String:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:set_FunctionName(System.String):this]",
+              "call     [Lokad.Lython.Runtime.FunctionBindingPlan:get_LayoutParameterNames():System.Collections.Generic.IReadOnlyList`1[System.String]:this]",
+              "call     CORINFO_HELP_COUNTPROFILE32",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_Variables():System.Collections.Generic.Dictionary`2[System.String,System.Object]:this]",
+              "call     CORINFO_HELP_CLASSPROFILE32",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [Lokad.Lython.Runtime.BoundCallArguments:get_Values():System.Object[]:this]",
+              "call     [System.Collections.Generic.Dictionary`2[System.__Canon,System.__Canon]:set_Item(System.__Canon,System.__Canon):this]",
+              "call     CORINFO_HELP_PATCHPOINT",
+              "call     [r11]System.Collections.Generic.IReadOnlyCollection`1[System.__Canon]:get_Count():int:this",
+              "call     [Lokad.Lython.Runtime.FunctionBindingPlan:get_Parameters():System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.LoweredFunctionParameter]:this]",
+              "call     [Lokad.Lython.Runtime.PyFunctionBinding:TryGetReceiver(Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.Runtime.FunctionBindingPlan,byref):bool]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:TryGetLexicalClassCell(byref):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:BindImplicitSuper(Lokad.Lython.Runtime.LythonRuntime+ExecutableCell,System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:BindUnavailableImplicitSuper(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:EnterFunctionCall(Lokad.Lython.LythonSourceSpan):this]",
+              "call     CORINFO_HELP_RNGCHKFAIL"
+            ],
+            "codeBytes": 896
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_ParentContext():Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this",
+            "tier": "Tier1",
+            "inlineSummary": "0 inlinees with PGO data; 1 single block inlinees; 0 inlinees without PGO data",
+            "callTargets": [
+              "call     CORINFO_HELP_CHKCASTCLASS"
+            ],
+            "codeBytes": 39
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:TryGetLexicalClassCell(byref):bool:this",
+            "tier": "Tier1",
+            "inlineSummary": "5 inlinees with PGO data; 21 single block inlinees; 0 inlinees without PGO data",
+            "callTargets": [
+              "call     [System.String:GetNonRandomizedHashCode():int:this]",
+              "call     [r11]System.Collections.Generic.IEqualityComparer`1[System.__Canon]:GetHashCode(System.__Canon):int:this",
+              "call     [r11]System.Collections.Generic.IEqualityComparer`1[System.__Canon]:Equals(System.__Canon,System.__Canon):bool:this",
+              "call     [r11]System.Collections.Generic.IReadOnlySet`1[System.__Canon]:Contains(System.__Canon):bool:this",
+              "call     CORINFO_HELP_CHKCASTCLASS",
+              "call     CORINFO_HELP_CHECKED_ASSIGN_REF",
+              "call     [System.ThrowHelper:ThrowInvalidOperationException_ConcurrentOperationsNotSupported()]",
+              "call     CORINFO_HELP_RNGCHKFAIL"
+            ],
+            "codeBytes": 1091
+          },
+          {
+            "method": "Lokad.Lython.Runtime.PyFunctionBinding:EnterInvocationFrame(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts,Lokad.Lython.Runtime.FunctionBindingPlan,Lokad.Lython.Runtime.BoundCallArguments,bool,Lokad.Lython.Runtime.PyType,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext",
+            "tier": "Tier1",
+            "inlineSummary": "9 inlinees with PGO data; 36 single block inlinees; 0 inlinees without PGO data",
+            "callTargets": [
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     CORINFO_HELP_ASSIGN_REF",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ResolveNonlocalTargets(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts):System.Collections.Generic.Dictionary`2[System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext]]",
+              "call     [System.Collections.Generic.Dictionary`2[System.__Canon,System.__Canon]:TryInsert(System.__Canon,System.__Canon,byte):bool:this]",
+              "call     [Lokad.Lython.Runtime.ExecutionFrame:InitializeVariables():System.Collections.Generic.Dictionary`2[System.String,System.Object]:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:TryGetLexicalClassCell(byref):bool:this]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:EnterFunctionCall(Lokad.Lython.LythonSourceSpan):this]",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [r11]System.Collections.Generic.IReadOnlyCollection`1[System.__Canon]:get_Count():int:this",
+              "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+              "call     [System.ThrowHelper:ThrowArgumentNullException(int)]",
+              "call     [r11]System.Collections.Generic.IEqualityComparer`1[System.__Canon]:GetHashCode(System.__Canon):int:this",
+              "call     [System.SpanHelpers:SequenceEqual(byref,byref,nuint):bool]",
+              "call     [r11]System.Collections.Generic.IEqualityComparer`1[System.__Canon]:Equals(System.__Canon,System.__Canon):bool:this",
+              "call     [System.ThrowHelper:ThrowInvalidOperationException_ConcurrentOperationsNotSupported()]",
+              "call     [r11]System.Collections.Generic.IReadOnlyDictionary`2[System.__Canon,int]:TryGetValue(System.__Canon,byref):bool:this",
+              "call     CORINFO_HELP_RNGCHKFAIL"
+            ],
+            "codeBytes": 1415
+          },
+          {
+            "method": "Lokad.Lython.Runtime.ExecutionThreads+WorkItem:Execute(System.Threading.ExecutionContext):this",
+            "tier": "Tier1",
+            "inlineSummary": "1 inlinees with PGO data; 0 single block inlinees; 0 inlinees without PGO data",
+            "callTargets": [
+              "call     [System.Threading.ExecutionContext:RunInternal(System.Threading.ExecutionContext,System.Threading.ContextCallback,System.Object)]",
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     [System.MulticastDelegate:CtorClosed(System.Object,nint):this]",
+              "call     CORINFO_HELP_ASSIGN_REF",
+              "call     [System.Threading.ExecutionContext:ThrowNullContext()]",
+              "call     [System.Runtime.ExceptionServices.ExceptionDispatchInfo:Capture(System.Exception):System.Runtime.ExceptionServices.ExceptionDispatchInfo]"
+            ],
+            "codeBytes": 225
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+            "tier": "Tier1-OSR",
+            "inlineSummary": "32 inlinees with PGO data; 80 single block inlinees; 12 inlinees without PGO data",
+            "callTargets": [
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteControlFlow(byref):bool:this]",
+              "call     [Lokad.Lython.Runtime.PyRange+<IterateChecked>d__23:MoveNext():bool:this]",
+              "call     CORINFO_HELP_ARRADDR_ST",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteValueOperation(byref):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStackTransfer(byref):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteDefinitionOrFallback(byref):this]",
+              "call     CORINFO_HELP_THROW",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:.ctor(int,int):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:GrowThenCopyString(System.String):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:AppendFormatted[int](int):this]",
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:ToStringAndClear():System.String:this]",
+              "call     [System.InvalidOperationException:.ctor(System.String):this]",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [Lokad.Lython.Runtime.RuntimeErrors:NameNotDefined(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]",
+              "call     [Lokad.Lython.Runtime.RuntimeErrors:UnboundLocalVariable(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]",
+              "call     [System.Array:Resize[System.__Canon](byref,int)]",
+              "call     [CORINFO_HELP_STRCNS]",
+              "call     [Lokad.Lython.Runtime.RuntimeErrors:Runtime(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableCell:set_Value(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.ExecutionFrame:get_Variables():System.Collections.Generic.Dictionary`2[System.String,System.Object]:this]",
+              "call     [System.Collections.Generic.Dictionary`2[System.__Canon,System.__Canon]:TryInsert(System.__Canon,System.__Canon,byte):bool:this]",
+              "call     CORINFO_HELP_ISINSTANCEOFANY",
+              "call     [r11]System.Collections.IEnumerator:MoveNext():bool:this",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:Pop(byref,Lokad.Lython.LythonSourceSpan):System.Object]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:ReadOperand(Lokad.Lython.Frontend.ExecutableInstruction+Operand,int):int:this]",
+              "call     [r11]System.Collections.Generic.IEnumerator`1[System.__Canon]:get_Current():System.__Canon:this",
+              "call     CORINFO_HELP_CHKCASTCLASS",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecutePreparedOperationAsync(Lokad.Lython.Frontend.ExecutableOperation,Lokad.Lython.LythonSourceSpan,bool):System.Threading.Tasks.ValueTask:this]",
+              "call     [System.Threading.Tasks.ValueTask:GetAwaiter():System.Runtime.CompilerServices.ValueTaskAwaiter:this]",
+              "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+              "call     [System.Runtime.CompilerServices.TaskAwaiter:HandleNonSuccessAndDebuggerNotification(System.Threading.Tasks.Task,int)]",
+              "call     [r11]System.Threading.Tasks.Sources.IValueTaskSource:GetResult(short):this",
+              "call     CORINFO_HELP_ASSIGN_REF",
+              "call     CORINFO_HELP_NEWARR_1_PTR",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:Iter(System.Object[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:.ctor(System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:Advance(System.Object,Lokad.Lython.Runtime.LythonRuntimeException):Lokad.Lython.Runtime.PyIterationResult:this]",
+              "call     [Lokad.Lython.Runtime.PyIterationResult:get_Value():System.Object:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack:Push(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStructure(byref):bool:this]",
+              "call     [System.ThrowHelper:ThrowArgumentOutOfRangeException()]",
+              "call     CORINFO_HELP_RNGCHKFAIL",
+              "call     CORINFO_HELP_OVERFLOW",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:SweepCheckpointTemporaries():this]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionStepLimit(long,Lokad.Lython.LythonSourceSpan)]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]",
+              "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:TryRouteReturn(Lokad.Lython.Runtime.LythonRuntime+ReturnSignal,Lokad.Lython.LythonSourceSpan):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:TryRouteControl(Lokad.Lython.Runtime.LythonRuntime+ControlSignal,Lokad.Lython.LythonSourceSpan):bool:this]",
+              "call     CORINFO_HELP_RETHROW",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:RouteRuntimeException(Lokad.Lython.Runtime.LythonRuntimeException,Lokad.Lython.LythonSourceSpan):this]"
+            ],
+            "codeBytes": 3883
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+            "tier": "Tier1",
+            "inlineSummary": "32 inlinees with PGO data; 80 single block inlinees; 12 inlinees without PGO data",
+            "callTargets": [
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:SweepCheckpointTemporaries():this]",
+              "call     CORINFO_HELP_ARRADDR_ST",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStackTransfer(byref):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteDefinitionOrFallback(byref):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteControlFlow(byref):bool:this]",
+              "call     [Lokad.Lython.Runtime.PyRange+<IterateChecked>d__23:MoveNext():bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteValueOperation(byref):bool:this]",
+              "call     CORINFO_HELP_THROW",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:.ctor(int,int):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:GrowThenCopyString(System.String):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:AppendFormatted[int](int):this]",
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:ToStringAndClear():System.String:this]",
+              "call     [System.InvalidOperationException:.ctor(System.String):this]",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [Lokad.Lython.Runtime.RuntimeErrors:NameNotDefined(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]",
+              "call     [Lokad.Lython.Runtime.RuntimeErrors:UnboundLocalVariable(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]",
+              "call     [System.Array:Resize[System.__Canon](byref,int)]",
+              "call     [CORINFO_HELP_STRCNS]",
+              "call     [Lokad.Lython.Runtime.RuntimeErrors:Runtime(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableCell:set_Value(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.ExecutionFrame:get_Variables():System.Collections.Generic.Dictionary`2[System.String,System.Object]:this]",
+              "call     [System.Collections.Generic.Dictionary`2[System.__Canon,System.__Canon]:TryInsert(System.__Canon,System.__Canon,byte):bool:this]",
+              "call     CORINFO_HELP_ISINSTANCEOFANY",
+              "call     [r11]System.Collections.IEnumerator:MoveNext():bool:this",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:Pop(byref,Lokad.Lython.LythonSourceSpan):System.Object]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:ReadOperand(Lokad.Lython.Frontend.ExecutableInstruction+Operand,int):int:this]",
+              "call     [r11]System.Collections.Generic.IEnumerator`1[System.__Canon]:get_Current():System.__Canon:this",
+              "call     CORINFO_HELP_CHKCASTCLASS",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecutePreparedOperationAsync(Lokad.Lython.Frontend.ExecutableOperation,Lokad.Lython.LythonSourceSpan,bool):System.Threading.Tasks.ValueTask:this]",
+              "call     [System.Threading.Tasks.ValueTask:GetAwaiter():System.Runtime.CompilerServices.ValueTaskAwaiter:this]",
+              "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+              "call     [System.Runtime.CompilerServices.TaskAwaiter:HandleNonSuccessAndDebuggerNotification(System.Threading.Tasks.Task,int)]",
+              "call     [r11]System.Threading.Tasks.Sources.IValueTaskSource:GetResult(short):this",
+              "call     CORINFO_HELP_ASSIGN_REF",
+              "call     CORINFO_HELP_NEWARR_1_PTR",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:Iter(System.Object[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:.ctor(System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:Advance(System.Object,Lokad.Lython.Runtime.LythonRuntimeException):Lokad.Lython.Runtime.PyIterationResult:this]",
+              "call     [Lokad.Lython.Runtime.PyIterationResult:get_Value():System.Object:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack:Push(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStructure(byref):bool:this]",
+              "call     [System.ThrowHelper:ThrowArgumentOutOfRangeException()]",
+              "call     CORINFO_HELP_RNGCHKFAIL",
+              "call     CORINFO_HELP_OVERFLOW",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionStepLimit(long,Lokad.Lython.LythonSourceSpan)]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]",
+              "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:TryRouteReturn(Lokad.Lython.Runtime.LythonRuntime+ReturnSignal,Lokad.Lython.LythonSourceSpan):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:TryRouteControl(Lokad.Lython.Runtime.LythonRuntime+ControlSignal,Lokad.Lython.LythonSourceSpan):bool:this]",
+              "call     CORINFO_HELP_RETHROW",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:RouteRuntimeException(Lokad.Lython.Runtime.LythonRuntimeException,Lokad.Lython.LythonSourceSpan):this]"
+            ],
+            "codeBytes": 3886
+          },
+          {
+            "method": "Lokad.Lython.Runtime.PyFunctionBase:EnterInvocationFrame(Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this",
+            "tier": "Tier1",
+            "inlineSummary": "0 inlinees with PGO data; 3 single block inlinees; 0 inlinees without PGO data",
+            "callTargets": [
+              "call     [rax+0x20]Lokad.Lython.Runtime.PyFunctionBase:get_RequiresArgumentMirroring():bool:this"
+            ],
+            "codeBytes": 162
+          },
+          {
+            "method": "Lokad.Lython.Runtime.PyExecutableFunction:ExecuteBody(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.LythonSourceSpan):System.Object:this",
+            "tier": "Tier1",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     [Lokad.Lython.Runtime.LythonRuntime:TryExecuteSimpleReturn(Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,int[],byref):bool]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:ExecuteExecutableCodeObject(Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,int[],System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableCell]):System.Object]"
+            ],
+            "codeBytes": 196
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime:TryExecuteSimpleReturn(Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,int[],byref):bool",
+            "tier": "Tier1",
+            "inlineSummary": "53 inlinees with PGO data; 188 single block inlinees; 13 inlinees without PGO data",
+            "callTargets": [
+              "call     CORINFO_HELP_CHECKED_ASSIGN_REF",
+              "call     [System.SpanHelpers:NonPackedIndexOfValueType[int,System.SpanHelpers+DontNegate`1[int]](byref,int,int):int]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:ReadOperand(Lokad.Lython.Frontend.ExecutableInstruction+Operand,int):int:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:LoadSimpleOperand(Lokad.Lython.Frontend.ExecutableInstruction,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.PyException):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:MapExecutableBinary(int):int]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateBinaryOperator(int,System.Object,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object]",
+              "call     [Lokad.Lython.Runtime.MemoryGovernor:EnsureCanReserve(long,Lokad.Lython.LythonSourceSpan):this]",
+              "call     [Lokad.Lython.Runtime.ExecutionValueObservation:EnforceValueLimits(System.Object,Lokad.Lython.LythonSourceSpan):this]",
+              "call     [Lokad.Lython.Runtime.ExecutionValueObservation:RequiresTransientSizeCheck(System.Object):bool]",
+              "call     [Lokad.Lython.Runtime.ExecutionValueObservation:EstimateApproximateValueBytes(System.Object):long]",
+              "call     CORINFO_HELP_UNBOX",
+              "call     CORINFO_HELP_RNGCHKFAIL",
+              "call     CORINFO_HELP_OVERFLOW",
+              "call     CORINFO_HELP_ASSIGN_REF",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:SweepCheckpointTemporaries():this]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionStepLimit(long,Lokad.Lython.LythonSourceSpan)]",
+              "call     [System.Threading.CancellationToken:get_IsCancellationRequested():bool:this]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:.ctor(int,int):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:GrowThenCopyString(System.String):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:AppendFormatted[int](int):this]",
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:ToStringAndClear():System.String:this]",
+              "call     [System.InvalidOperationException:.ctor(System.String):this]",
+              "call     CORINFO_HELP_THROW",
+              "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+              "call     [System.ThrowHelper:ThrowArgumentOutOfRangeException()]",
+              "call     [System.ThrowHelper:ThrowArgumentNullException(int)]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:get_Limits():Lokad.Lython.Runtime.LythonRuntime+ExecutionLimits:this]",
+              "call     [CORINFO_HELP_STRCNS]",
+              "call     [Lokad.Lython.Runtime.RuntimeErrors:Runtime(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards+StackRuler:RemainingBytes():long]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:RecursionTripsFirst():bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntimeException:.ctor(System.String,System.String,Lokad.Lython.LythonSourceSpan):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:RestoreSimpleReturnException(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.PyException,Lokad.Lython.Runtime.LythonRuntimeException)]",
+              "call     CORINFO_HELP_RETHROW"
+            ],
+            "codeBytes": 4467
+          }
+        ],
+        "jitSha256": "f4bbfc1769d8a40da5d13a7eaece4a410a4f3849899127b0230434b43d747fe0",
+        "completeOutputRows": 12
+      },
+      {
+        "role": "candidate",
+        "listings": [
+          {
+            "method": "Lokad.Lython.Runtime.ExecutionThreads+WorkItem:Execute(System.Threading.ExecutionContext):this",
+            "tier": "Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     [CORINFO_HELP_GET_GCSTATIC_BASE]",
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     [System.MulticastDelegate:CtorClosed(System.Object,nint):this]",
+              "call     CORINFO_HELP_ASSIGN_REF",
+              "call     [System.Threading.ExecutionContext:Run(System.Threading.ExecutionContext,System.Threading.ContextCallback,System.Object)]",
+              "call     G_M000_IG11",
+              "call     [System.Runtime.ExceptionServices.ExceptionDispatchInfo:Capture(System.Exception):System.Runtime.ExceptionServices.ExceptionDispatchInfo]"
+            ],
+            "codeBytes": 365
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+            "tier": "Instrumented Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     CORINFO_HELP_PATCHPOINT",
+              "call     [Lokad.Lython.Frontend.ExecutableCodeObject:get_Blocks():System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.ExecutableBasicBlock]:this]",
+              "call     CORINFO_HELP_CLASSPROFILE32",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [System.Nullable`1[int]:GetValueOrDefault():int:this]",
+              "call     [System.Nullable`1[int]:get_HasValue():bool:this]",
+              "call     CORINFO_HELP_COUNTPROFILE32",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack:get_Count():int:this]",
+              "call     [System.Nullable`1[int]:.ctor(int):this]",
+              "call     [Lokad.Lython.Frontend.ExecutableBasicBlock:get_InstructionArray():Lokad.Lython.Frontend.ExecutableInstruction[]:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_Services():Lokad.Lython.Runtime.ExecutionServices:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+              "call     [Lokad.Lython.Runtime.ExecutionServices:CheckExecution(Lokad.Lython.LythonSourceSpan):this]",
+              "call     CORINFO_HELP_THROW",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_OpCode():int:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LocalSlot():int:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:LoadLocal(Lokad.Lython.Frontend.ExecutableCodeObject,System.Object[],int,Lokad.Lython.LythonSourceSpan):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack:Push(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:Pop(byref,Lokad.Lython.LythonSourceSpan):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:StoreLocalValue(Lokad.Lython.Frontend.ExecutableCodeObject,System.Object[],Lokad.Lython.Runtime.LythonRuntime+ExecutableCell[],Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,int,System.Object,Lokad.Lython.LythonSourceSpan)]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteForNext(byref):bool:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableCodeObject:get_Constants():System.Collections.Generic.IReadOnlyList`1[System.Object]:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_ConstantIndex():int:this]",
+              "call     [CORINFO_HELP_CHKCASTCLASS]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecutePreparedOperationAsync(Lokad.Lython.Frontend.ExecutableOperation,Lokad.Lython.LythonSourceSpan,bool):System.Threading.Tasks.ValueTask:this]",
+              "call     [System.Threading.Tasks.ValueTask:GetAwaiter():System.Runtime.CompilerServices.ValueTaskAwaiter:this]",
+              "call     [System.Runtime.CompilerServices.ValueTaskAwaiter:GetResult():this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:set_YieldValue(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:set_HasYield(bool):this]",
+              "call     CORINFO_HELP_NEWARR_1_PTR",
+              "call     [CORINFO_HELP_ARRADDR_ST]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:Iter(System.Object[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:.ctor(System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):this]",
+              "call     CORINFO_HELP_ASSIGN_REF",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:Advance(System.Object,Lokad.Lython.Runtime.LythonRuntimeException):Lokad.Lython.Runtime.PyIterationResult:this]",
+              "call     [Lokad.Lython.Runtime.PyIterationResult:get_HasValue():bool:this]",
+              "call     [Lokad.Lython.Runtime.PyIterationResult:get_Value():System.Object:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:get_ReturnValue():System.Object:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteDefinitionOrFallback(byref):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStackTransfer(byref):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStructure(byref):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteValueOperation(byref):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteControlFlow(byref):bool:this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:.ctor(int,int):this]",
+              "call     [CORINFO_HELP_STRCNS]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:AppendLiteral(System.String):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:AppendFormatted[int](int):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:ToStringAndClear():System.String:this]",
+              "call     [System.InvalidOperationException:.ctor(System.String):this]",
+              "call     CORINFO_HELP_RNGCHKFAIL",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:TryRouteReturn(Lokad.Lython.Runtime.LythonRuntime+ReturnSignal,Lokad.Lython.LythonSourceSpan):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:TryRouteControl(Lokad.Lython.Runtime.LythonRuntime+ControlSignal,Lokad.Lython.LythonSourceSpan):bool:this]",
+              "call     CORINFO_HELP_RETHROW",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:RouteRuntimeException(Lokad.Lython.Runtime.LythonRuntimeException,Lokad.Lython.LythonSourceSpan):this]"
+            ],
+            "codeBytes": 3136
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+            "tier": "Tier1-OSR",
+            "inlineSummary": "68 inlinees with PGO data; 216 single block inlinees; 46 inlinees without PGO data",
+            "callTargets": [
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:SweepCheckpointTemporaries():this]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionStepLimit(long,Lokad.Lython.LythonSourceSpan)]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteControlFlow(byref):bool:this]",
+              "call     [CORINFO_HELP_ISINSTANCEOFANY]",
+              "call     [r11]System.Collections.IEnumerator:MoveNext():bool:this",
+              "call     [r11]System.Collections.Generic.IEnumerator`1[System.__Canon]:get_Current():System.__Canon:this",
+              "call     CORINFO_HELP_NEWARR_1_PTR",
+              "call     System.Buffer:BulkMoveWithWriteBarrierInternal(byref,byref,nuint)",
+              "call     [CORINFO_HELP_ARRADDR_ST]",
+              "call     CORINFO_HELP_ASSIGN_REF",
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     System.Threading.Interlocked:CompareExchangeObject(byref,System.Object,System.Object):System.Object",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [System.String:GetNonRandomizedHashCode():int:this]",
+              "call     [r11]System.Collections.Generic.IEqualityComparer`1[System.__Canon]:GetHashCode(System.__Canon):int:this",
+              "call     [System.SpanHelpers:SequenceEqual(byref,byref,nuint):bool]",
+              "call     [r11]System.Collections.Generic.IEqualityComparer`1[System.__Canon]:Equals(System.__Canon,System.__Canon):bool:this",
+              "call     [System.Collections.HashHelpers:ExpandPrime(int):int]",
+              "call     [System.Collections.Generic.Dictionary`2[System.__Canon,System.__Canon]:Resize(int,bool):this]",
+              "call     [System.Collections.Generic.Dictionary`2[System.__Canon,System.__Canon]:Remove(System.__Canon):bool:this]",
+              "call     [System.Collections.HashHelpers:GetPrime(int):int]",
+              "call     CORINFO_HELP_NEWARR_1_VC",
+              "call     [System.Buffer:BulkMoveWithWriteBarrierBatch(byref,byref,nuint)]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStackTransfer(byref):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteValueOperation(byref):bool:this]",
+              "call     CORINFO_HELP_THROW",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:.ctor(int,int):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:GrowThenCopyString(System.String):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:AppendFormatted[int](int):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:ToStringAndClear():System.String:this]",
+              "call     [System.InvalidOperationException:.ctor(System.String):this]",
+              "call     [System.String:Concat(System.String,System.String):System.String]",
+              "call     System.String:FastAllocateString(ptr,nint):System.String",
+              "call     [System.SpanHelpers:Memmove(byref,byref,nuint)]",
+              "call     [CORINFO_HELP_GET_GCSTATIC_BASE]",
+              "call     [System.ThrowHelper:ThrowOutOfMemoryException_StringTooLong()]",
+              "call     [Lokad.Lython.Runtime.PythonExceptionIdentity:FromRuntimeTypeName(System.String):Lokad.Lython.Runtime.PythonExceptionIdentity]",
+              "call     CORINFO_HELP_POLL_GC",
+              "call     [CORINFO_HELP_STRCNS]",
+              "call     [Lokad.Lython.Runtime.RuntimeErrors:Runtime(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]",
+              "call     [CORINFO_HELP_ISINSTANCEOFCLASS]",
+              "call     [System.ThrowHelper:ThrowNullReferenceException()]",
+              "call     [System.ThrowHelper:ThrowArgumentNullException(int)]",
+              "call     [System.ThrowHelper:ThrowInvalidOperationException_ConcurrentOperationsNotSupported()]",
+              "call     [System.ThrowHelper:ThrowArgumentOutOfRangeException(int,int)]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:ReadOperand(Lokad.Lython.Frontend.ExecutableInstruction+Operand,int):int:this]",
+              "call     [CORINFO_HELP_CHKCASTCLASS]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecutePreparedOperationAsync(Lokad.Lython.Frontend.ExecutableOperation,Lokad.Lython.LythonSourceSpan,bool):System.Threading.Tasks.ValueTask:this]",
+              "call     [System.Threading.Tasks.ValueTask:GetAwaiter():System.Runtime.CompilerServices.ValueTaskAwaiter:this]",
+              "call     [System.Runtime.CompilerServices.TaskAwaiter:HandleNonSuccessAndDebuggerNotification(System.Threading.Tasks.Task,int)]",
+              "call     [r11]System.Threading.Tasks.Sources.IValueTaskSource:GetResult(short):this",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:Pop(byref,Lokad.Lython.LythonSourceSpan):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:Iter(System.Object[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:.ctor(System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:Advance(System.Object,Lokad.Lython.Runtime.LythonRuntimeException):Lokad.Lython.Runtime.PyIterationResult:this]",
+              "call     [Lokad.Lython.Runtime.PyIterationResult:get_Value():System.Object:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack:Push(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteDefinitionOrFallback(byref):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStructure(byref):bool:this]",
+              "call     [System.ThrowHelper:ThrowArgumentOutOfRangeException()]",
+              "call     CORINFO_HELP_RNGCHKFAIL",
+              "call     CORINFO_HELP_OVERFLOW",
+              "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:TryRouteReturn(Lokad.Lython.Runtime.LythonRuntime+ReturnSignal,Lokad.Lython.LythonSourceSpan):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:TryRouteControl(Lokad.Lython.Runtime.LythonRuntime+ControlSignal,Lokad.Lython.LythonSourceSpan):bool:this]",
+              "call     CORINFO_HELP_RETHROW",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:RouteRuntimeException(Lokad.Lython.Runtime.LythonRuntimeException,Lokad.Lython.LythonSourceSpan):this]"
+            ],
+            "codeBytes": 8170
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_ParentContext():Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this",
+            "tier": "Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     [Lokad.Lython.Runtime.ExecutionFrame:get_Parent():Lokad.Lython.Runtime.ExecutionFrame:this]",
+              "call     [CORINFO_HELP_CHKCASTCLASS]"
+            ],
+            "codeBytes": 61
+          },
+          {
+            "method": "Lokad.Lython.Runtime.PyFunctionBase:EnterInvocationFrame(Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this",
+            "tier": "Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     [rax+0x20]Lokad.Lython.Runtime.PyFunctionBase:get_RequiresArgumentMirroring():bool:this",
+              "call     [Lokad.Lython.Runtime.PyFunctionBase:get_OwnerType():Lokad.Lython.Runtime.PyType:this]",
+              "call     [Lokad.Lython.Runtime.PyFunctionBinding:EnterInvocationFrame(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts,Lokad.Lython.Runtime.FunctionBindingPlan,Lokad.Lython.Runtime.BoundCallArguments,bool,Lokad.Lython.Runtime.PyType,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext]"
+            ],
+            "codeBytes": 184
+          },
+          {
+            "method": "Lokad.Lython.Runtime.PyFunctionBinding:EnterInvocationFrame(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts,Lokad.Lython.Runtime.FunctionBindingPlan,Lokad.Lython.Runtime.BoundCallArguments,bool,Lokad.Lython.Runtime.PyType,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext",
+            "tier": "Instrumented Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:.ctor(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts):this]",
+              "call     [Lokad.Lython.Runtime.FunctionBindingPlan:get_CallableName():System.String:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:set_FunctionName(System.String):this]",
+              "call     [Lokad.Lython.Runtime.FunctionBindingPlan:get_LayoutParameterNames():System.Collections.Generic.IReadOnlyList`1[System.String]:this]",
+              "call     CORINFO_HELP_COUNTPROFILE32",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_Variables():System.Collections.Generic.Dictionary`2[System.String,System.Object]:this]",
+              "call     CORINFO_HELP_CLASSPROFILE32",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [Lokad.Lython.Runtime.BoundCallArguments:get_Values():System.Object[]:this]",
+              "call     [System.Collections.Generic.Dictionary`2[System.__Canon,System.__Canon]:set_Item(System.__Canon,System.__Canon):this]",
+              "call     CORINFO_HELP_PATCHPOINT",
+              "call     [r11]System.Collections.Generic.IReadOnlyCollection`1[System.__Canon]:get_Count():int:this",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_ParentContext():Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_ClassCell():Lokad.Lython.Runtime.LythonRuntime+ExecutableCell:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_IsClassBody():bool:this]",
+              "call     [Lokad.Lython.Runtime.FunctionBindingPlan:get_Parameters():System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.LoweredFunctionParameter]:this]",
+              "call     [Lokad.Lython.Runtime.PyFunctionBinding:TryGetReceiver(Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.Runtime.FunctionBindingPlan,byref):bool]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:TryGetLexicalClassCell(byref):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:BindImplicitSuper(Lokad.Lython.Runtime.LythonRuntime+ExecutableCell,System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:BindUnavailableImplicitSuper(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:EnterFunctionCall(Lokad.Lython.LythonSourceSpan):this]",
+              "call     CORINFO_HELP_RNGCHKFAIL"
+            ],
+            "codeBytes": 1042
+          },
+          {
+            "method": "Lokad.Lython.Runtime.PyExecutableFunction:ExecuteBody(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.LythonSourceSpan):System.Object:this",
+            "tier": "Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     [Lokad.Lython.Runtime.LythonRuntime:TryExecuteSimpleReturn(Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,int[],byref):bool]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:ExecuteExecutableCodeObject(Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,int[],System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableCell]):System.Object]"
+            ],
+            "codeBytes": 248
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime:TryExecuteSimpleReturn(Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,int[],byref):bool",
+            "tier": "Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     CORINFO_HELP_CHECKED_ASSIGN_REF",
+              "call     [Lokad.Lython.Frontend.ExecutableCodeObject:get_SimpleReturn():int:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_MirrorLocalStores():bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_CurrentExecutableFrame():Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameState:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_ActiveHandlerVariables():System.Collections.Generic.Stack`1[System.ValueTuple`3[System.String,int,int]]:this]",
+              "call     [System.Collections.Generic.Stack`1[System.ValueTuple`3[System.__Canon,int,int]]:get_Count():int:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableCodeObject:get_Blocks():System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.ExecutableBasicBlock]:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableCodeObject:get_EntryBlockIndex():int:this]",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [Lokad.Lython.Frontend.ExecutableBasicBlock:get_InstructionArray():Lokad.Lython.Frontend.ExecutableInstruction[]:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:TryReadSimpleOperand(Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Frontend.ExecutableInstruction,Lokad.Lython.Runtime.BoundCallArguments,int[],byref):bool]",
+              "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:EnterInterpreterFrame(Lokad.Lython.LythonSourceSpan):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_Services():Lokad.Lython.Runtime.ExecutionServices:this]",
+              "call     [Lokad.Lython.Runtime.ExecutionServices:get_CurrentException():Lokad.Lython.Runtime.PyException:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+              "call     [Lokad.Lython.Runtime.ExecutionServices:CheckExecution(Lokad.Lython.LythonSourceSpan):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:LoadSimpleOperand(Lokad.Lython.Frontend.ExecutableInstruction,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.PyException):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateExecutableBinary(int,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ObserveValue(System.Object,Lokad.Lython.LythonSourceSpan):this]",
+              "call     CORINFO_HELP_RNGCHKFAIL",
+              "call     [Lokad.Lython.Runtime.ExecutionServices:SetCurrentException(Lokad.Lython.Runtime.PyException):Lokad.Lython.Runtime.PyException:this]",
+              "call     G_M000_IG25",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:RestoreSimpleReturnException(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.PyException,Lokad.Lython.Runtime.LythonRuntimeException)]",
+              "call     CORINFO_HELP_RETHROW",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:LeaveExecutableSlots(Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameState):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:LeaveInterpreterFrame():this]"
+            ],
+            "codeBytes": 1629
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+            "tier": "Tier1-OSR",
+            "inlineSummary": "32 inlinees with PGO data; 80 single block inlinees; 12 inlinees without PGO data",
+            "callTargets": [
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:SweepCheckpointTemporaries():this]",
+              "call     CORINFO_HELP_ARRADDR_ST",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStackTransfer(byref):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteDefinitionOrFallback(byref):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteControlFlow(byref):bool:this]",
+              "call     [Lokad.Lython.Runtime.PyRange+<IterateChecked>d__23:MoveNext():bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteValueOperation(byref):bool:this]",
+              "call     CORINFO_HELP_THROW",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:.ctor(int,int):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:GrowThenCopyString(System.String):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:AppendFormatted[int](int):this]",
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:ToStringAndClear():System.String:this]",
+              "call     [System.InvalidOperationException:.ctor(System.String):this]",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [Lokad.Lython.Runtime.RuntimeErrors:NameNotDefined(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]",
+              "call     [Lokad.Lython.Runtime.RuntimeErrors:UnboundLocalVariable(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]",
+              "call     [System.Array:Resize[System.__Canon](byref,int)]",
+              "call     [CORINFO_HELP_STRCNS]",
+              "call     [Lokad.Lython.Runtime.RuntimeErrors:Runtime(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableCell:set_Value(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.ExecutionFrame:get_Variables():System.Collections.Generic.Dictionary`2[System.String,System.Object]:this]",
+              "call     [System.Collections.Generic.Dictionary`2[System.__Canon,System.__Canon]:TryInsert(System.__Canon,System.__Canon,byte):bool:this]",
+              "call     CORINFO_HELP_ISINSTANCEOFANY",
+              "call     [r11]System.Collections.IEnumerator:MoveNext():bool:this",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:Pop(byref,Lokad.Lython.LythonSourceSpan):System.Object]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:ReadOperand(Lokad.Lython.Frontend.ExecutableInstruction+Operand,int):int:this]",
+              "call     [r11]System.Collections.Generic.IEnumerator`1[System.__Canon]:get_Current():System.__Canon:this",
+              "call     [CORINFO_HELP_CHKCASTCLASS]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecutePreparedOperationAsync(Lokad.Lython.Frontend.ExecutableOperation,Lokad.Lython.LythonSourceSpan,bool):System.Threading.Tasks.ValueTask:this]",
+              "call     [System.Threading.Tasks.ValueTask:GetAwaiter():System.Runtime.CompilerServices.ValueTaskAwaiter:this]",
+              "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+              "call     [System.Runtime.CompilerServices.TaskAwaiter:HandleNonSuccessAndDebuggerNotification(System.Threading.Tasks.Task,int)]",
+              "call     [r11]System.Threading.Tasks.Sources.IValueTaskSource:GetResult(short):this",
+              "call     CORINFO_HELP_ASSIGN_REF",
+              "call     CORINFO_HELP_NEWARR_1_PTR",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:Iter(System.Object[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:.ctor(System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:Advance(System.Object,Lokad.Lython.Runtime.LythonRuntimeException):Lokad.Lython.Runtime.PyIterationResult:this]",
+              "call     [Lokad.Lython.Runtime.PyIterationResult:get_Value():System.Object:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack:Push(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStructure(byref):bool:this]",
+              "call     [System.ThrowHelper:ThrowArgumentOutOfRangeException()]",
+              "call     CORINFO_HELP_RNGCHKFAIL",
+              "call     CORINFO_HELP_OVERFLOW",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionStepLimit(long,Lokad.Lython.LythonSourceSpan)]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]",
+              "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:TryRouteReturn(Lokad.Lython.Runtime.LythonRuntime+ReturnSignal,Lokad.Lython.LythonSourceSpan):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:TryRouteControl(Lokad.Lython.Runtime.LythonRuntime+ControlSignal,Lokad.Lython.LythonSourceSpan):bool:this]",
+              "call     CORINFO_HELP_RETHROW",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:RouteRuntimeException(Lokad.Lython.Runtime.LythonRuntimeException,Lokad.Lython.LythonSourceSpan):this]"
+            ],
+            "codeBytes": 3910
+          },
+          {
+            "method": "Lokad.Lython.Runtime.ExecutionThreads+WorkItem:Execute(System.Threading.ExecutionContext):this",
+            "tier": "Instrumented Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     CORINFO_HELP_COUNTPROFILE32",
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     [System.MulticastDelegate:CtorClosed(System.Object,nint):this]",
+              "call     CORINFO_HELP_ASSIGN_REF",
+              "call     [System.Threading.ExecutionContext:Run(System.Threading.ExecutionContext,System.Threading.ContextCallback,System.Object)]",
+              "call     G_M000_IG12",
+              "call     [System.Runtime.ExceptionServices.ExceptionDispatchInfo:Capture(System.Exception):System.Runtime.ExceptionServices.ExceptionDispatchInfo]"
+            ],
+            "codeBytes": 379
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+            "tier": "Instrumented Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     CORINFO_HELP_PATCHPOINT",
+              "call     [Lokad.Lython.Frontend.ExecutableCodeObject:get_Blocks():System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.ExecutableBasicBlock]:this]",
+              "call     CORINFO_HELP_CLASSPROFILE32",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [System.Nullable`1[int]:GetValueOrDefault():int:this]",
+              "call     [System.Nullable`1[int]:get_HasValue():bool:this]",
+              "call     CORINFO_HELP_COUNTPROFILE32",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack:get_Count():int:this]",
+              "call     [System.Nullable`1[int]:.ctor(int):this]",
+              "call     [Lokad.Lython.Frontend.ExecutableBasicBlock:get_InstructionArray():Lokad.Lython.Frontend.ExecutableInstruction[]:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_Services():Lokad.Lython.Runtime.ExecutionServices:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+              "call     [Lokad.Lython.Runtime.ExecutionServices:CheckExecution(Lokad.Lython.LythonSourceSpan):this]",
+              "call     CORINFO_HELP_THROW",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_OpCode():int:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_LocalSlot():int:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:LoadLocal(Lokad.Lython.Frontend.ExecutableCodeObject,System.Object[],int,Lokad.Lython.LythonSourceSpan):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack:Push(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:Pop(byref,Lokad.Lython.LythonSourceSpan):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:StoreLocalValue(Lokad.Lython.Frontend.ExecutableCodeObject,System.Object[],Lokad.Lython.Runtime.LythonRuntime+ExecutableCell[],Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,int,System.Object,Lokad.Lython.LythonSourceSpan)]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteForNext(byref):bool:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableCodeObject:get_Constants():System.Collections.Generic.IReadOnlyList`1[System.Object]:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_ConstantIndex():int:this]",
+              "call     [CORINFO_HELP_CHKCASTCLASS]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecutePreparedOperationAsync(Lokad.Lython.Frontend.ExecutableOperation,Lokad.Lython.LythonSourceSpan,bool):System.Threading.Tasks.ValueTask:this]",
+              "call     [System.Threading.Tasks.ValueTask:GetAwaiter():System.Runtime.CompilerServices.ValueTaskAwaiter:this]",
+              "call     [System.Runtime.CompilerServices.ValueTaskAwaiter:GetResult():this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:set_YieldValue(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:set_HasYield(bool):this]",
+              "call     CORINFO_HELP_NEWARR_1_PTR",
+              "call     CORINFO_HELP_ARRADDR_ST",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:Iter(System.Object[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:.ctor(System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):this]",
+              "call     CORINFO_HELP_ASSIGN_REF",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:Advance(System.Object,Lokad.Lython.Runtime.LythonRuntimeException):Lokad.Lython.Runtime.PyIterationResult:this]",
+              "call     [Lokad.Lython.Runtime.PyIterationResult:get_HasValue():bool:this]",
+              "call     [Lokad.Lython.Runtime.PyIterationResult:get_Value():System.Object:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:get_ReturnValue():System.Object:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteDefinitionOrFallback(byref):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStackTransfer(byref):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStructure(byref):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteValueOperation(byref):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteControlFlow(byref):bool:this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:.ctor(int,int):this]",
+              "call     [CORINFO_HELP_STRCNS]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:AppendLiteral(System.String):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:AppendFormatted[int](int):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:ToStringAndClear():System.String:this]",
+              "call     [System.InvalidOperationException:.ctor(System.String):this]",
+              "call     CORINFO_HELP_RNGCHKFAIL",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:TryRouteReturn(Lokad.Lython.Runtime.LythonRuntime+ReturnSignal,Lokad.Lython.LythonSourceSpan):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:TryRouteControl(Lokad.Lython.Runtime.LythonRuntime+ControlSignal,Lokad.Lython.LythonSourceSpan):bool:this]",
+              "call     CORINFO_HELP_RETHROW",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:RouteRuntimeException(Lokad.Lython.Runtime.LythonRuntimeException,Lokad.Lython.LythonSourceSpan):this]"
+            ],
+            "codeBytes": 3135
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_ParentContext():Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this",
+            "tier": "Instrumented Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     [Lokad.Lython.Runtime.ExecutionFrame:get_Parent():Lokad.Lython.Runtime.ExecutionFrame:this]",
+              "call     [CORINFO_HELP_CHKCASTCLASS]"
+            ],
+            "codeBytes": 61
+          },
+          {
+            "method": "Lokad.Lython.Runtime.PyFunctionBase:EnterInvocationFrame(Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this",
+            "tier": "Instrumented Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     CORINFO_HELP_CLASSPROFILE32",
+              "call     [rax+0x20]Lokad.Lython.Runtime.PyFunctionBase:get_RequiresArgumentMirroring():bool:this",
+              "call     [Lokad.Lython.Runtime.PyFunctionBase:get_OwnerType():Lokad.Lython.Runtime.PyType:this]",
+              "call     [Lokad.Lython.Runtime.PyFunctionBinding:EnterInvocationFrame(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts,Lokad.Lython.Runtime.FunctionBindingPlan,Lokad.Lython.Runtime.BoundCallArguments,bool,Lokad.Lython.Runtime.PyType,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext]"
+            ],
+            "codeBytes": 210
+          },
+          {
+            "method": "Lokad.Lython.Runtime.PyFunctionBinding:EnterInvocationFrame(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts,Lokad.Lython.Runtime.FunctionBindingPlan,Lokad.Lython.Runtime.BoundCallArguments,bool,Lokad.Lython.Runtime.PyType,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext",
+            "tier": "Instrumented Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:.ctor(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts):this]",
+              "call     [Lokad.Lython.Runtime.FunctionBindingPlan:get_CallableName():System.String:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:set_FunctionName(System.String):this]",
+              "call     [Lokad.Lython.Runtime.FunctionBindingPlan:get_LayoutParameterNames():System.Collections.Generic.IReadOnlyList`1[System.String]:this]",
+              "call     CORINFO_HELP_COUNTPROFILE32",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_Variables():System.Collections.Generic.Dictionary`2[System.String,System.Object]:this]",
+              "call     CORINFO_HELP_CLASSPROFILE32",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [Lokad.Lython.Runtime.BoundCallArguments:get_Values():System.Object[]:this]",
+              "call     [System.Collections.Generic.Dictionary`2[System.__Canon,System.__Canon]:set_Item(System.__Canon,System.__Canon):this]",
+              "call     CORINFO_HELP_PATCHPOINT",
+              "call     [r11]System.Collections.Generic.IReadOnlyCollection`1[System.__Canon]:get_Count():int:this",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_ParentContext():Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_ClassCell():Lokad.Lython.Runtime.LythonRuntime+ExecutableCell:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_IsClassBody():bool:this]",
+              "call     [Lokad.Lython.Runtime.FunctionBindingPlan:get_Parameters():System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.LoweredFunctionParameter]:this]",
+              "call     [Lokad.Lython.Runtime.PyFunctionBinding:TryGetReceiver(Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.Runtime.FunctionBindingPlan,byref):bool]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:TryGetLexicalClassCell(byref):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:BindImplicitSuper(Lokad.Lython.Runtime.LythonRuntime+ExecutableCell,System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:BindUnavailableImplicitSuper(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:EnterFunctionCall(Lokad.Lython.LythonSourceSpan):this]",
+              "call     CORINFO_HELP_RNGCHKFAIL"
+            ],
+            "codeBytes": 1042
+          },
+          {
+            "method": "Lokad.Lython.Runtime.PyExecutableFunction:ExecuteBody(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.LythonSourceSpan):System.Object:this",
+            "tier": "Instrumented Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     [Lokad.Lython.Runtime.LythonRuntime:TryExecuteSimpleReturn(Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,int[],byref):bool]",
+              "call     CORINFO_HELP_COUNTPROFILE32",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:ExecuteExecutableCodeObject(Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,int[],System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableCell]):System.Object]"
+            ],
+            "codeBytes": 293
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime:TryExecuteSimpleReturn(Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,int[],byref):bool",
+            "tier": "Instrumented Tier0",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     CORINFO_HELP_CHECKED_ASSIGN_REF",
+              "call     [Lokad.Lython.Frontend.ExecutableCodeObject:get_SimpleReturn():int:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_MirrorLocalStores():bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_CurrentExecutableFrame():Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameState:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_ActiveHandlerVariables():System.Collections.Generic.Stack`1[System.ValueTuple`3[System.String,int,int]]:this]",
+              "call     [System.Collections.Generic.Stack`1[System.ValueTuple`3[System.__Canon,int,int]]:get_Count():int:this]",
+              "call     CORINFO_HELP_COUNTPROFILE32",
+              "call     [Lokad.Lython.Frontend.ExecutableCodeObject:get_Blocks():System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.ExecutableBasicBlock]:this]",
+              "call     CORINFO_HELP_CLASSPROFILE32",
+              "call     [Lokad.Lython.Frontend.ExecutableCodeObject:get_EntryBlockIndex():int:this]",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [Lokad.Lython.Frontend.ExecutableBasicBlock:get_InstructionArray():Lokad.Lython.Frontend.ExecutableInstruction[]:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:TryReadSimpleOperand(Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Frontend.ExecutableInstruction,Lokad.Lython.Runtime.BoundCallArguments,int[],byref):bool]",
+              "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:EnterInterpreterFrame(Lokad.Lython.LythonSourceSpan):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_Services():Lokad.Lython.Runtime.ExecutionServices:this]",
+              "call     [Lokad.Lython.Runtime.ExecutionServices:get_CurrentException():Lokad.Lython.Runtime.PyException:this]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+              "call     [Lokad.Lython.Runtime.ExecutionServices:CheckExecution(Lokad.Lython.LythonSourceSpan):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:LoadSimpleOperand(Lokad.Lython.Frontend.ExecutableInstruction,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.PyException):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateExecutableBinary(int,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ObserveValue(System.Object,Lokad.Lython.LythonSourceSpan):this]",
+              "call     CORINFO_HELP_RNGCHKFAIL",
+              "call     [Lokad.Lython.Runtime.ExecutionServices:SetCurrentException(Lokad.Lython.Runtime.PyException):Lokad.Lython.Runtime.PyException:this]",
+              "call     G_M000_IG34",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:RestoreSimpleReturnException(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.PyException,Lokad.Lython.Runtime.LythonRuntimeException)]",
+              "call     CORINFO_HELP_RETHROW",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:LeaveExecutableSlots(Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameState):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:LeaveInterpreterFrame():this]"
+            ],
+            "codeBytes": 1932
+          },
+          {
+            "method": "Lokad.Lython.Runtime.ExecutionThreads+WorkItem:Execute(System.Threading.ExecutionContext):this",
+            "tier": "Tier1",
+            "inlineSummary": "1 inlinees with PGO data; 0 single block inlinees; 0 inlinees without PGO data",
+            "callTargets": [
+              "call     [System.Threading.ExecutionContext:RunInternal(System.Threading.ExecutionContext,System.Threading.ContextCallback,System.Object)]",
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     [System.MulticastDelegate:CtorClosed(System.Object,nint):this]",
+              "call     CORINFO_HELP_ASSIGN_REF",
+              "call     [System.Threading.ExecutionContext:ThrowNullContext()]",
+              "call     [System.Runtime.ExceptionServices.ExceptionDispatchInfo:Capture(System.Exception):System.Runtime.ExceptionServices.ExceptionDispatchInfo]"
+            ],
+            "codeBytes": 225
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:get_ParentContext():Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this",
+            "tier": "Tier1",
+            "inlineSummary": "0 inlinees with PGO data; 1 single block inlinees; 0 inlinees without PGO data",
+            "callTargets": [
+              "call     CORINFO_HELP_CHKCASTCLASS"
+            ],
+            "codeBytes": 39
+          },
+          {
+            "method": "Lokad.Lython.Runtime.PyFunctionBinding:EnterInvocationFrame(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts,Lokad.Lython.Runtime.FunctionBindingPlan,Lokad.Lython.Runtime.BoundCallArguments,bool,Lokad.Lython.Runtime.PyType,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext",
+            "tier": "Tier1",
+            "inlineSummary": "2 inlinees with PGO data; 29 single block inlinees; 0 inlinees without PGO data",
+            "callTargets": [
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     CORINFO_HELP_ASSIGN_REF",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:ResolveNonlocalTargets(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts):System.Collections.Generic.Dictionary`2[System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext]]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:EnterFunctionCall(Lokad.Lython.LythonSourceSpan):this]",
+              "call     [System.Collections.Generic.Dictionary`2[System.__Canon,System.__Canon]:TryInsert(System.__Canon,System.__Canon,byte):bool:this]",
+              "call     [Lokad.Lython.Runtime.ExecutionFrame:InitializeVariables():System.Collections.Generic.Dictionary`2[System.String,System.Object]:this]",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [r11]System.Collections.Generic.IReadOnlyCollection`1[System.__Canon]:get_Count():int:this",
+              "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+              "call     CORINFO_HELP_CHKCASTCLASS",
+              "call     [Lokad.Lython.Runtime.PyFunctionBinding:TryGetReceiver(Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.Runtime.FunctionBindingPlan,byref):bool]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:TryGetLexicalClassCell(byref):bool:this]",
+              "call     CORINFO_HELP_RNGCHKFAIL"
+            ],
+            "codeBytes": 765
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+            "tier": "Tier1",
+            "inlineSummary": "32 inlinees with PGO data; 80 single block inlinees; 12 inlinees without PGO data",
+            "callTargets": [
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:SweepCheckpointTemporaries():this]",
+              "call     CORINFO_HELP_ARRADDR_ST",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStackTransfer(byref):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteDefinitionOrFallback(byref):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteControlFlow(byref):bool:this]",
+              "call     [Lokad.Lython.Runtime.PyRange+<IterateChecked>d__23:MoveNext():bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteValueOperation(byref):bool:this]",
+              "call     CORINFO_HELP_THROW",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:.ctor(int,int):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:GrowThenCopyString(System.String):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:AppendFormatted[int](int):this]",
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:ToStringAndClear():System.String:this]",
+              "call     [System.InvalidOperationException:.ctor(System.String):this]",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [Lokad.Lython.Runtime.RuntimeErrors:NameNotDefined(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]",
+              "call     [Lokad.Lython.Runtime.RuntimeErrors:UnboundLocalVariable(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]",
+              "call     [System.Array:Resize[System.__Canon](byref,int)]",
+              "call     [CORINFO_HELP_STRCNS]",
+              "call     [Lokad.Lython.Runtime.RuntimeErrors:Runtime(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableCell:set_Value(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.ExecutionFrame:get_Variables():System.Collections.Generic.Dictionary`2[System.String,System.Object]:this]",
+              "call     [System.Collections.Generic.Dictionary`2[System.__Canon,System.__Canon]:TryInsert(System.__Canon,System.__Canon,byte):bool:this]",
+              "call     CORINFO_HELP_ISINSTANCEOFANY",
+              "call     [r11]System.Collections.IEnumerator:MoveNext():bool:this",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:Pop(byref,Lokad.Lython.LythonSourceSpan):System.Object]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:ReadOperand(Lokad.Lython.Frontend.ExecutableInstruction+Operand,int):int:this]",
+              "call     [r11]System.Collections.Generic.IEnumerator`1[System.__Canon]:get_Current():System.__Canon:this",
+              "call     CORINFO_HELP_CHKCASTCLASS",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecutePreparedOperationAsync(Lokad.Lython.Frontend.ExecutableOperation,Lokad.Lython.LythonSourceSpan,bool):System.Threading.Tasks.ValueTask:this]",
+              "call     [System.Threading.Tasks.ValueTask:GetAwaiter():System.Runtime.CompilerServices.ValueTaskAwaiter:this]",
+              "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+              "call     [System.Runtime.CompilerServices.TaskAwaiter:HandleNonSuccessAndDebuggerNotification(System.Threading.Tasks.Task,int)]",
+              "call     [r11]System.Threading.Tasks.Sources.IValueTaskSource:GetResult(short):this",
+              "call     CORINFO_HELP_ASSIGN_REF",
+              "call     CORINFO_HELP_NEWARR_1_PTR",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:Iter(System.Object[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:.ctor(System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+GeneratorDelegation:Advance(System.Object,Lokad.Lython.Runtime.LythonRuntimeException):Lokad.Lython.Runtime.PyIterationResult:this]",
+              "call     [Lokad.Lython.Runtime.PyIterationResult:get_Value():System.Object:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableValueStack:Push(System.Object):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStructure(byref):bool:this]",
+              "call     [System.ThrowHelper:ThrowArgumentOutOfRangeException()]",
+              "call     CORINFO_HELP_RNGCHKFAIL",
+              "call     CORINFO_HELP_OVERFLOW",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionStepLimit(long,Lokad.Lython.LythonSourceSpan)]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]",
+              "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:TryRouteReturn(Lokad.Lython.Runtime.LythonRuntime+ReturnSignal,Lokad.Lython.LythonSourceSpan):bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:TryRouteControl(Lokad.Lython.Runtime.LythonRuntime+ControlSignal,Lokad.Lython.LythonSourceSpan):bool:this]",
+              "call     CORINFO_HELP_RETHROW",
+              "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:RouteRuntimeException(Lokad.Lython.Runtime.LythonRuntimeException,Lokad.Lython.LythonSourceSpan):this]"
+            ],
+            "codeBytes": 3884
+          },
+          {
+            "method": "Lokad.Lython.Runtime.PyFunctionBase:EnterInvocationFrame(Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this",
+            "tier": "Tier1",
+            "inlineSummary": "0 inlinees with PGO data; 3 single block inlinees; 0 inlinees without PGO data",
+            "callTargets": [
+              "call     [rax+0x20]Lokad.Lython.Runtime.PyFunctionBase:get_RequiresArgumentMirroring():bool:this"
+            ],
+            "codeBytes": 162
+          },
+          {
+            "method": "Lokad.Lython.Runtime.PyExecutableFunction:ExecuteBody(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.LythonSourceSpan):System.Object:this",
+            "tier": "Tier1",
+            "inlineSummary": null,
+            "callTargets": [
+              "call     [Lokad.Lython.Runtime.LythonRuntime:TryExecuteSimpleReturn(Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,int[],byref):bool]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:ExecuteExecutableCodeObject(Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,int[],System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Runtime.LythonRuntime+ExecutableCell]):System.Object]"
+            ],
+            "codeBytes": 196
+          },
+          {
+            "method": "Lokad.Lython.Runtime.LythonRuntime:TryExecuteSimpleReturn(Lokad.Lython.Frontend.ExecutableCodeObject,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.BoundCallArguments,int[],byref):bool",
+            "tier": "Tier1",
+            "inlineSummary": "54 inlinees with PGO data; 189 single block inlinees; 13 inlinees without PGO data",
+            "callTargets": [
+              "call     CORINFO_HELP_CHECKED_ASSIGN_REF",
+              "call     [System.SpanHelpers:NonPackedIndexOfValueType[int,System.SpanHelpers+DontNegate`1[int]](byref,int,int):int]",
+              "call     [Lokad.Lython.Frontend.ExecutableInstruction:ReadOperand(Lokad.Lython.Frontend.ExecutableInstruction+Operand,int):int:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:LoadSimpleOperand(Lokad.Lython.Frontend.ExecutableInstruction,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.PyException):System.Object]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:MapExecutableBinary(int):int]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateBinaryOperator(int,System.Object,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object]",
+              "call     CORINFO_HELP_UNBOX",
+              "call     [Lokad.Lython.Runtime.MemoryGovernor:EnsureCanReserve(long,Lokad.Lython.LythonSourceSpan):this]",
+              "call     [Lokad.Lython.Runtime.ExecutionValueObservation:EnforceValueLimits(System.Object,Lokad.Lython.LythonSourceSpan):this]",
+              "call     [Lokad.Lython.Runtime.ExecutionValueObservation:RequiresTransientSizeCheck(System.Object):bool]",
+              "call     [Lokad.Lython.Runtime.ExecutionValueObservation:EstimateApproximateValueBytes(System.Object):long]",
+              "call     CORINFO_HELP_RNGCHKFAIL",
+              "call     CORINFO_HELP_OVERFLOW",
+              "call     CORINFO_HELP_ASSIGN_REF",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:SweepCheckpointTemporaries():this]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionStepLimit(long,Lokad.Lython.LythonSourceSpan)]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]",
+              "call     [r11]System.Collections.Generic.IReadOnlyList`1[System.__Canon]:get_Item(int):System.__Canon:this",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:.ctor(int,int):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:GrowThenCopyString(System.String):this]",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:AppendFormatted[int](int):this]",
+              "call     CORINFO_HELP_NEWSFAST",
+              "call     [System.Runtime.CompilerServices.DefaultInterpolatedStringHandler:ToStringAndClear():System.String:this]",
+              "call     [System.InvalidOperationException:.ctor(System.String):this]",
+              "call     CORINFO_HELP_THROW",
+              "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+              "call     [System.ThrowHelper:ThrowArgumentOutOfRangeException()]",
+              "call     [System.ThrowHelper:ThrowArgumentNullException(int)]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:get_Limits():Lokad.Lython.Runtime.LythonRuntime+ExecutionLimits:this]",
+              "call     [CORINFO_HELP_STRCNS]",
+              "call     [Lokad.Lython.Runtime.RuntimeErrors:Runtime(System.String,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntimeException]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards+StackRuler:RemainingBytes():long]",
+              "call     [Lokad.Lython.Runtime.ExecutionGuards:RecursionTripsFirst():bool:this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntimeException:.ctor(System.String,System.String,Lokad.Lython.LythonSourceSpan):this]",
+              "call     [Lokad.Lython.Runtime.LythonRuntime:RestoreSimpleReturnException(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Runtime.PyException,Lokad.Lython.Runtime.LythonRuntimeException)]",
+              "call     CORINFO_HELP_RETHROW"
+            ],
+            "codeBytes": 4482
+          }
+        ],
+        "jitSha256": "fd429c3b1f52672b414f45f2bce16b112d7a3cd098cd211ec971b91cdb74b082",
+        "completeOutputRows": 12
+      }
+    ],
+    "services": [
+      {
+        "unit": "lython-module-super-discovery-native-code-baseline-20261010",
+        "started": "2026-10-10T18:11:55.964511+00:00",
+        "stopped": "2026-10-10T18:12:00.002898+00:00",
+        "wholeSeconds": 4.038387
+      },
+      {
+        "unit": "lython-module-super-discovery-native-code-candidate-20261010",
+        "started": "2026-10-10T18:12:00.037509+00:00",
+        "stopped": "2026-10-10T18:12:04.069628+00:00",
+        "wholeSeconds": 4.032119
+      }
+    ],
+    "files": [
+      {
+        "path": "native-code-declaration.json",
+        "sha256": "a74a43513428869f4762e0ee75a96b2a633fb874def5b8de680cf602696b584b"
+      },
+      {
+        "path": "launch-native-code.sh",
+        "sha256": "6ee69dbae5429b7719a694e4ef2a29d33c723f9cf494dbba8f97d6844d9f188e"
+      },
+      {
+        "path": "native-code-collect-exit.txt",
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+      },
+      {
+        "path": "vm/baseline-native-code.jsonl",
+        "sha256": "7f33949753c5fc205f3ed77d8781079d05718730f8931ba114ceaa0fe8da3668"
+      },
+      {
+        "path": "vm/candidate-native-code.jsonl",
+        "sha256": "d2f00ef482efa331d72946a5cb3b3f5b967b5c4bd033f2ca44921c0f8b5e6b9c"
+      },
+      {
+        "path": "vm/baseline-jit.txt",
+        "sha256": "f4bbfc1769d8a40da5d13a7eaece4a410a4f3849899127b0230434b43d747fe0"
+      },
+      {
+        "path": "vm/candidate-jit.txt",
+        "sha256": "fd429c3b1f52672b414f45f2bce16b112d7a3cd098cd211ec971b91cdb74b082"
+      }
+    ]
+  },
+  "currentCallProfiles": {
+    "state": "Audited",
+    "producer": "c31195ef15c0029472d714efd3f264c79e075793",
+    "productionTree": "0c6b16fb0f0bf79064fcbf2633dc8b40b3659b9d",
+    "identicalProductionAtDeliveredHead": "d7de14e2c4425b17ffc0ef0eed1d7497cc1c7e42",
+    "harnessTree": "c194ce88a7e4d52c576f3929ef82bce60bf37e2d",
+    "profiles": [
+      {
+        "role": "positional",
+        "wholeGroupSeconds": 14.074158,
+        "controllerSeconds": 13.893,
+        "profileSeconds": 11.518934230000013,
+        "samples": 1394,
+        "eventsLost": 0,
+        "missingStacks": 0,
+        "unknownLeaves": 70,
+        "unknownPercent": 5.0215208034433285,
+        "checkedResponses": 723,
+        "completedInvocations": 23044,
+        "dispatchLeaf": [
+          {
+            "name": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::Execute()",
+            "samples": 185,
+            "percent": 13.27116212338594
+          }
+        ],
+        "guardsLeaf": [],
+        "bindingInclusive": [],
+        "callFrameInclusive": [
+          {
+            "name": "Lokad.Lython.Runtime.LythonRuntime::ExecuteExecutableCodeObject(class Lokad.Lython.Frontend.ExecutableCodeObject,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype Lokad.Lython.Runtime.BoundCallArguments,int32[],class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Runtime.LythonRuntime/ExecutableCell>)",
+            "samples": 1001,
+            "percent": 71.8077474892396
+          }
+        ],
+        "sampledAllocations": [
+          {
+            "name": "ExecutionContext / Small",
+            "ticks": 6302,
+            "sampledBytes": 671798552
+          },
+          {
+            "name": "System.Numerics.BigInteger / Small",
+            "ticks": 4177,
+            "sampledBytes": 445263512
+          },
+          {
+            "name": "Entry[System.String,System.Object][] / Small",
+            "ticks": 223,
+            "sampledBytes": 23763576
+          },
+          {
+            "name": "BuiltinCallable / Small",
+            "ticks": 65,
+            "sampledBytes": 6929000
+          },
+          {
+            "name": "System.Int32[] / Small",
+            "ticks": 39,
+            "sampledBytes": 4157352
+          },
+          {
+            "name": "<>c__DisplayClass4_1 / Small",
+            "ticks": 35,
+            "sampledBytes": 3733320
+          },
+          {
+            "name": "ExceptionTypeValue / Small",
+            "ticks": 35,
+            "sampledBytes": 3731000
+          },
+          {
+            "name": "System.String[] / Small",
+            "ticks": 32,
+            "sampledBytes": 3411200
+          }
+        ],
+        "unbalancedGcEvents": true,
+        "gcCountDurationClaims": false,
+        "normalTiming": false,
+        "traceSha256": "bfd6eec03c369bb4f026d1c18805f8b734c8cd708eaf796886ca6f696a78596d",
+        "receiptSha256": "4e9a2429788324c4716c5f1a238094910754b0b821a980446d36ab716ea69fab",
+        "summarySha256": "01667847df2c6fd74b1e4c2ab75017a92a80938f64c72160a831c8ccc1911947"
+      },
+      {
+        "role": "keyword",
+        "wholeGroupSeconds": 18.086272,
+        "controllerSeconds": 17.325887,
+        "profileSeconds": 14.953968039015308,
+        "samples": 6584,
+        "eventsLost": 0,
+        "missingStacks": 0,
+        "unknownLeaves": 318,
+        "unknownPercent": 4.8298906439854195,
+        "checkedResponses": 859,
+        "completedInvocations": 27396,
+        "dispatchLeaf": [
+          {
+            "name": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::Execute()",
+            "samples": 1069,
+            "percent": 16.2363304981774
+          }
+        ],
+        "guardsLeaf": [],
+        "bindingInclusive": [
+          {
+            "name": "Lokad.Lython.Runtime.LythonRuntime::BindFunctionArguments(valuetype Lokad.Lython.Runtime.CallArgumentValue[],class Lokad.Lython.LythonSourceSpan,class Lokad.Lython.Runtime.FunctionBindingPlan,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext)",
+            "samples": 580,
+            "percent": 8.809234507897935
+          }
+        ],
+        "callFrameInclusive": [
+          {
+            "name": "Lokad.Lython.Runtime.LythonRuntime::ExecuteExecutableCodeObject(class Lokad.Lython.Frontend.ExecutableCodeObject,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype Lokad.Lython.Runtime.BoundCallArguments,int32[],class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Runtime.LythonRuntime/ExecutableCell>)",
+            "samples": 5835,
+            "percent": 88.6239368165249
+          }
+        ],
+        "sampledAllocations": [
+          {
+            "name": "ExecutionContext / Small",
+            "ticks": 34540,
+            "sampledBytes": 3681914320
+          },
+          {
+            "name": "System.Numerics.BigInteger / Small",
+            "ticks": 20373,
+            "sampledBytes": 2171730880
+          },
+          {
+            "name": "Entry[System.String,System.Object][] / Small",
+            "ticks": 1276,
+            "sampledBytes": 136009992
+          },
+          {
+            "name": "BuiltinCallable / Small",
+            "ticks": 450,
+            "sampledBytes": 47963488
+          },
+          {
+            "name": "System.Int32[] / Small",
+            "ticks": 279,
+            "sampledBytes": 29748120
+          },
+          {
+            "name": "ExceptionTypeValue / Small",
+            "ticks": 191,
+            "sampledBytes": 20365496
+          },
+          {
+            "name": "System.String[] / Small",
+            "ticks": 136,
+            "sampledBytes": 14498344
+          },
+          {
+            "name": "System.SZGenericArrayEnumerator`1[System.String] / Small",
+            "ticks": 128,
+            "sampledBytes": 13644800
+          }
+        ],
+        "unbalancedGcEvents": true,
+        "gcCountDurationClaims": false,
+        "normalTiming": false,
+        "traceSha256": "78ed6a3f2a7a97ba7c6305a3dc714a2fcf6448245bbbd07168a0745bd9b1c291",
+        "receiptSha256": "af23b717a7ef928a1bb27e10fa733d281b4b73feb7622f4c1024fe25bbd36b0b",
+        "summarySha256": "ef4bcafc25c7d2218dbf4cba5503aa2eeb67bbb9d6a6cb018b4486c786db5aa0"
+      }
+    ],
+    "cleanup": {
+      "sourceClean": true,
+      "inputsRehashed": true,
+      "ownedServicesTerminal": 2,
+      "allRecordedPidsAbsent": true,
+      "controllerPidsRecorded": true,
+      "serviceGroupsVerifiedInactive": true,
+      "sharedLeaseAvailableAtAuditStart": true,
+      "fullLanes": 0,
+      "recordedPidCount": 6
+    },
+    "helpers": [
+      {
+        "path": "pipeline-transfer-profile-20261009\\TraceSummary\\Program.cs",
+        "sha256": "cdb43969a0ec0f2840b21c758248ae43a9098f8719a97d8f286b2067272b48f5"
+      },
+      {
+        "path": "pipeline-transfer-profile-20261009\\TraceSummary\\TraceSummary.csproj",
+        "sha256": "6d715244cd8063623967a25407e786a51eda73dc27880de9522fb70405f6642f"
+      },
+      {
+        "path": "pipeline-transfer-profile-20261009\\TraceSummary\\bin\\Release\\net10.0\\TraceSummary.dll",
+        "sha256": "036842c98a22c0f70b0d793f7b16b4bb79dc04e3b7944b67718cdc6b8c715cc5"
+      },
+      {
+        "path": "pipeline-transfer-profile-20261009\\TraceSummary\\bin\\Release\\net10.0\\Microsoft.Diagnostics.Tracing.TraceEvent.dll",
+        "sha256": "bc4ef3839aea46cebc54a557ecc115474c6eecadfbc68c76da087e8dd616ba7e"
+      }
+    ],
+    "files": [
+      {
+        "path": "vm\\catalog-profile.json",
+        "sha256": "435fa50f7e108813893e8a2b7a84d65d937beb4005230bf264bceb7cc2785423"
+      },
+      {
+        "path": "vm\\declaration.json",
+        "sha256": "95b17814bbf13d80f4493ef0085ee887555a55f5f0e5fdbb818585c24e59dc7e"
+      },
+      {
+        "path": "vm\\final-inputs.txt",
+        "sha256": "9d9be2b43f7b99636018f89696803805f0e1ef7a79959007e89ff3cf6f961a62"
+      },
+      {
+        "path": "vm\\final-lease.txt",
+        "sha256": "ed01b1557bd7a1e70f90d8838f38ae0bb6b8367122b3dca7e5935bafa440a45a"
+      },
+      {
+        "path": "vm\\final-vm-audit.json",
+        "sha256": "ddd703954393b9896a760dfe097e25e6140204c9c920a70702a6105a7b4e5938"
+      },
+      {
+        "path": "vm\\finish.sh",
+        "sha256": "c21e94fb2cb4e1fabe29a02c605768f1e70e1e237bcc0121ff3e650e8d4bc6a0"
+      },
+      {
+        "path": "vm\\keyword\\calls.nettrace",
+        "sha256": "78ed6a3f2a7a97ba7c6305a3dc714a2fcf6448245bbbd07168a0745bd9b1c291"
+      },
+      {
+        "path": "vm\\keyword\\calls.nettrace.etlx",
+        "sha256": "fadbcc603d6c57a9c0a465624fc17f10517b0999317e4e7e791959b28435f0ef"
+      },
+      {
+        "path": "vm\\keyword\\diagnostic.json",
+        "sha256": "af23b717a7ef928a1bb27e10fa733d281b4b73feb7622f4c1024fe25bbd36b0b"
+      },
+      {
+        "path": "vm\\keyword\\responses.jsonl",
+        "sha256": "381f9724651ded4b41bafa8f02630216a901e5c2c836995c7b715ca687583157"
+      },
+      {
+        "path": "vm\\keyword\\tracer.log",
+        "sha256": "6f5a3d11094573f63edee161e5d161926ba5d80fe2345626a2739ee037cfa93b"
+      },
+      {
+        "path": "vm\\keyword\\worker.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "vm\\keyword-final-journal.jsonl",
+        "sha256": "ec59a0748fd132863a5b49e98951c5a4cdd0bb77ff7b2ae6110e360b53190464"
+      },
+      {
+        "path": "vm\\keyword-final-service.txt",
+        "sha256": "e34e0bc981cc66c8fcc4659a87c532075a6cb2829ae543c7b557c4b182a0de85"
+      },
+      {
+        "path": "vm\\keyword-service-exited.txt",
+        "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+      },
+      {
+        "path": "vm\\keyword-service.log",
+        "sha256": "9dfbae816ac492823ed31cb3c56702954eda4fe7de250c345f2dad9cb679a637"
+      },
+      {
+        "path": "vm\\launch-profile.sh",
+        "sha256": "fe8df2aa6f9435e928349c13df9c5541c36ae8502bed6e93a6a27eaaea320568"
+      },
+      {
+        "path": "vm\\positional\\calls.nettrace",
+        "sha256": "bfd6eec03c369bb4f026d1c18805f8b734c8cd708eaf796886ca6f696a78596d"
+      },
+      {
+        "path": "vm\\positional\\calls.nettrace.etlx",
+        "sha256": "d9d3f6a1ecdbdcc1e557159465351496d858dc1c6726200ed088a77b6ea1b99e"
+      },
+      {
+        "path": "vm\\positional\\diagnostic.json",
+        "sha256": "4e9a2429788324c4716c5f1a238094910754b0b821a980446d36ab716ea69fab"
+      },
+      {
+        "path": "vm\\positional\\responses.jsonl",
+        "sha256": "752d9297481f843ef5098c5b54bc8971931eeb7d7869b73bd5d0c4a38f91e720"
+      },
+      {
+        "path": "vm\\positional\\tracer.log",
+        "sha256": "c0bc710718f4af45a10cdb967ac058a2c87fb133780d2e8f32fb677fd57bfb68"
+      },
+      {
+        "path": "vm\\positional\\worker.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "vm\\positional-final-journal.jsonl",
+        "sha256": "8ebd906e3a262b5252728fedac14cb1004e172d21d44bade12a06817407d67d1"
+      },
+      {
+        "path": "vm\\positional-final-service.txt",
+        "sha256": "e34e0bc981cc66c8fcc4659a87c532075a6cb2829ae543c7b557c4b182a0de85"
+      },
+      {
+        "path": "vm\\positional-service-exited.txt",
+        "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+      },
+      {
+        "path": "vm\\positional-service.log",
+        "sha256": "9ea0b496eafbaa64afe11aec679daee1d6326c2641244bc8afc487a341504143"
+      },
+      {
+        "path": "vm\\profile.py",
+        "sha256": "94eaf1650c55398f841beccba08bb1f74082ec916af311b1873fbae715e3d531"
+      }
+    ],
+    "normalTimingCollections": 0,
+    "fullLanes": 0,
+    "diagnosticOnly": true,
+    "qualifiedBeforeAfterCpuClaim": false,
+    "limitations": [
+      "Inclusive stacks overlap",
+      "Profiler/kernel and background JIT overhead is visible",
+      "GC event pairs are incomplete: no complete GC counts or pauses",
+      "Allocation ticks are sampling evidence, not exact per-type allocation"
+    ]
+  },
+  "sourceIntegrated": true,
+  "integrationBasis": "Integrated: control.empty.control: +0.98%/-0.96%; loops.integer.large: -0.36%/-4.89%; calls.positional.medium: -4.31%/-8.55%; calls.keyword.medium: -10.21%/-8.77%; lists.stable-sort.medium: +2.31%/+6.21%; strings.pipeline-ascii.medium: -3.96%/+0.53%. Repeated gains beyond both spreads: ['calls.keyword.medium']; repeated material regressions beyond spreads: []. Every control and replica retained. No general Python ratio or unexplained-variation cause is proven. No recollection or full lane.",
+  "nativeAssessment": "Final emitted Tier1 bodies: ExecutableFrameInterpreter:Execute() [3886] -> [3884]; get_ParentContext() [39] -> [39]; TryGetLexicalClassCell( [1091] -> []; PyFunctionBinding:EnterInvocationFrame( [1415] -> [765]; PyFunctionBase:EnterInvocationFrame( [162] -> [162]; PyExecutableFunction:ExecuteBody( [196] -> [196]; TryExecuteSimpleReturn( [4467] -> [4482]. All emitted tiers, inline summaries and call targets remain in evidence. Missing emissions are not zero-cost proofs. These sizes do not establish total resident code-cache cost, dynamic call counts or CPU causality.",
+  "deliveredProductionTree": "0b54042760d918797c99b239467f2c63fb0c5c1a",
+  "deliveredTestsTree": "36dd7f122b1cf3d3f1e617f1db8b17eb98d22a69",
+  "cleanup": {
+    "bothSourcesClean": true,
+    "inputsRehashed": true,
+    "ownedServicesTerminal": 18,
+    "allRecordedPidsAbsent": true,
+    "sharedLeaseAvailableAtAuditStart": true,
+    "fullLanes": 0,
+    "recordedPidCount": 58
+  },
+  "supportingFiles": [
+    {
+      "path": "baseline-boundary-proof.json",
+      "sha256": "1ac4fc5d916b0ad16f2b91a9a056defc3f954a4a3708e82ec13d67567eb4e52e"
+    },
+    {
+      "path": "baseline-whitebox.dll",
+      "sha256": "a1b0543c598175c95fdc5ee0e1ad986b2868c08178d44ad1f24f1bd272038f37"
+    },
+    {
+      "path": "baseline-public.dll",
+      "sha256": "62efeeba95af95c8b87f8bdf69bf387c6c90d1b49217a7c583743e3a929b3504"
+    },
+    {
+      "path": "baseline-assembly-versions.json",
+      "sha256": "3c96ff1e7ca26c666ad20e292e54f6b93ff6275be46dc1ca8dfe9ba9a1cf3ae4"
+    },
+    {
+      "path": "baseline-focus.log",
+      "sha256": "568410968a252d7dac31851ffc861815279a26025a5a5e39e3c37203b0b9dc86"
+    },
+    {
+      "path": "baseline-corrected-focus.log",
+      "sha256": "0b1384798d1d688f209483dd76097ee0ae99dead6caa290de7d16040b0dd87e3"
+    },
+    {
+      "path": "preparation-declaration.json",
+      "sha256": "9db4ffd9e306abca777f026a1b33b8534e165f9a5e07c79ccf0464ed29aa5486"
+    },
+    {
+      "path": "micro-declaration.json",
+      "sha256": "599b0728b794422a5e77597b0dd27ea1520d7453233bbc7b20bdb5332e91f49b"
+    },
+    {
+      "path": "prepare.sh",
+      "sha256": "a31793e1f539b765d7b0e15661e31fe0fa165c48bba7e0c43277506ab6c24bf0"
+    },
+    {
+      "path": "launch-prepare.sh",
+      "sha256": "ede62eec115cf4108c47240a904ea1d8ccc70d138ff94fe75704bd5ebfc4520d"
+    },
+    {
+      "path": "micro.sh",
+      "sha256": "f81b4dd8fc4f46e8f52fa0ca9e79e020d7def59a437b87afaac58339d0bc0fec"
+    },
+    {
+      "path": "launch-micros.sh",
+      "sha256": "d7710a580a1f3944e8e5da41dd355df9543f1d51f3175157548c95b0d431a2ee"
+    },
+    {
+      "path": "finish.sh",
+      "sha256": "f0f9424a575250fb1e2b6c8f0fd512f669542672027c84c52225bb4a7b4fd32a"
+    },
+    {
+      "path": "audit-micros.py",
+      "sha256": "6c9575d63e39446ce306cde81be77b984feff0edf3c52efb7eeea0733e7064e9"
+    },
+    {
+      "path": "frozen-debug-binaries.json",
+      "sha256": "dc327d5e514fd889bcf2e56eeb8303ea590bd3fbc5b2aea558f31463077e6d06"
+    },
+    {
+      "path": "vm/baseline-prepared-inputs.sha256",
+      "sha256": "609b68bf6a412d2513cf04c5791b59dc79c2a65526c4acd4348631bd67bd129e"
+    },
+    {
+      "path": "vm/candidate-prepared-inputs.sha256",
+      "sha256": "29a38f7b06b8b346d80a2ffaa795415a022f081a72930a6d3f15ce30a0ace1c1"
+    },
+    {
+      "path": "vm/baseline-correctness.json",
+      "sha256": "8857540b570affaa78756f77a06099a5a0540a179c19e2cb9847707171251ff5"
+    },
+    {
+      "path": "vm/candidate-correctness.json",
+      "sha256": "08bba698564b4e860fa97170929a9c2e75637f1c9fdfd7416475c7ca04d32e92"
+    },
+    {
+      "path": "vm/final-vm-audit.json",
+      "sha256": "d3ab2b1efb3f016f3aad9c2e6c71bfe8e7da6bc415272c5f0a8ed4c7d60a5b6f"
+    },
+    {
+      "path": "vm/final-lease.txt",
+      "sha256": "ed01b1557bd7a1e70f90d8838f38ae0bb6b8367122b3dca7e5935bafa440a45a"
+    },
+    {
+      "path": "allocation-audit.json",
+      "sha256": "d675423f97f5df28edb7d189ee8c11af844a5c7880c40217999041d8bdecad02"
+    },
+    {
+      "path": "audit-allocation.py",
+      "sha256": "62ec9da82134ea19dbdb103ef7cc62669d8d2e603acbc94977cfcb1effab0b3c"
+    },
+    {
+      "path": "native-audit.json",
+      "sha256": "c3fc9fe5a1fe7c03a6215a3c8920dfdec2a187b9943c7d0efe05ef24b88a81bc"
+    },
+    {
+      "path": "audit-native.py",
+      "sha256": "a050dad08d3f7c75ad59871d938f829f2850d0f8f229dd9ef17e019968a1b21c"
+    },
+    {
+      "path": "decision.json",
+      "sha256": "1a478af93bbc64defca06678799a5c3511759cfca03e9b755b395b371e2eab6b"
+    },
+    {
+      "path": "decide.py",
+      "sha256": "a3b30428c827fbed036053d2f9508fa18b490fc31ce6da9bee099664e68a7e4b"
+    },
+    {
+      "path": "assessment-policy.json",
+      "sha256": "dd7030453af0f3836e3ef4d53f0bcab2c2f259f8e1a205f4d92860b958d167b8"
+    },
+    {
+      "path": "decision-policy-code-proof.json",
+      "sha256": "56e21027eaaf5e57e8336258c6ef51de63b4c71f1ddcac70713a22428ab5143c"
+    },
+    {
+      "path": "review.json",
+      "sha256": "8868edd7e3dd6d2f0a338a646a0886d79665fe9e6149621e7a0cca401ee89304"
+    },
+    {
+      "path": "appraise.py",
+      "sha256": "35fc1c8a4ca2a503ed2aa011e2a5a49fcb1ebc9d4404071c21e7b96c0d1cdb5f"
+    }
+  ],
+  "baselineBoundaryRegression": {
+    "state": "Passed",
+    "checkedUtc": "2026-10-10T18:01:59.890952+00:00",
+    "regression": "75588bbc59130431859aa836a58fbcbb4f3c8826",
+    "productionTree": "0c6b16fb0f0bf79064fcbf2633dc8b40b3659b9d",
+    "testsTree": "36dd7f122b1cf3d3f1e617f1db8b17eb98d22a69",
+    "passed": 18,
+    "originalFixtureCommit": "0fdd5faf8e511ef05556301aaf1267122f28ed60",
+    "originalFixturePassed": 14,
+    "originalFixtureFailed": 4,
+    "fixtureCorrection": "Explicit MaxExecutionSteps=1000 makes entry fuel observable; production unchanged",
+    "receipts": [
+      {
+        "path": "baseline-corrected-focus\\JoannesVermorel_LOKAD-0399_2026-10-10_20_01_13.trx",
+        "sha256": "42d124b88349defb1ef38b421ff789d0fecba986a76faa5d2380f5cd0c082d50",
+        "passed": 15
+      },
+      {
+        "path": "baseline-corrected-focus\\JoannesVermorel_LOKAD-0399_2026-10-10_20_01_23.trx",
+        "sha256": "726d43676e7cee0fc9345918bcc6500ab51ec191a45c132de406fe8c01f96aaf",
+        "passed": 3
+      }
+    ],
+    "originalFixtureReceipts": [
+      {
+        "path": "baseline-focus\\JoannesVermorel_LOKAD-0399_2026-10-10_20_00_26.trx",
+        "sha256": "6985ca4eab6a9dd20cd1a6346b5ced98e2c420fef88c45e5fd65ecf2ca13783c",
+        "passed": 11,
+        "failed": 4
+      },
+      {
+        "path": "baseline-focus\\JoannesVermorel_LOKAD-0399_2026-10-10_20_00_33.trx",
+        "sha256": "35009d7459bf4033b9bf6f10fe878aefa4bb4a9c0e31166c3647aafe33ed3931",
+        "passed": 3,
+        "failed": 0
+      }
+    ],
+    "assemblies": [
+      {
+        "path": "baseline-whitebox.dll",
+        "sha256": "a1b0543c598175c95fdc5ee0e1ad986b2868c08178d44ad1f24f1bd272038f37",
+        "version": "1.0.0+75588bbc59130431859aa836a58fbcbb4f3c8826"
+      },
+      {
+        "path": "baseline-public.dll",
+        "sha256": "62efeeba95af95c8b87f8bdf69bf387c6c90d1b49217a7c583743e3a929b3504",
+        "version": "1.0.0+75588bbc59130431859aa836a58fbcbb4f3c8826"
+      }
+    ],
+    "precedingGreenDelivery": "d7de14e2c4425b17ffc0ef0eed1d7497cc1c7e42",
+    "noProductionChangesBeforePassing": true
+  },
+  "prospectiveDecisionCode": {
+    "declaredUtc": "2026-10-10T18:04:49.596341+00:00",
+    "beforeNormalTimingDeclaration": true,
+    "files": [
+      {
+        "path": "assessment-policy.json",
+        "sha256": "dd7030453af0f3836e3ef4d53f0bcab2c2f259f8e1a205f4d92860b958d167b8"
+      },
+      {
+        "path": "decide.py",
+        "sha256": "a3b30428c827fbed036053d2f9508fa18b490fc31ce6da9bee099664e68a7e4b"
+      }
+    ]
+  }
+}

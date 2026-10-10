@@ -277,6 +277,18 @@ with separate allocation/native groups about four seconds under 30-second caps.
 No full lanes run. The report also clarifies unresolved keyword allocation types
 in the preceding CPU trace; complete-job byte measurements support its saving.
 
+The [module-function discovery improvement](results/2026-10-10-module-super-discovery/README.md)
+skips implicit-super receiver/class-cell discovery for unowned module-root functions,
+retaining owner binding and nested/live class-cell barriers. Eighteen independent
+checks pass unchanged production first. Keyword calls take 8.8–10.2% less time in
+both short replicas, beyond their spreads; the first positional result overlaps
+its spread, so no repeatable positional gain is claimed. All sort/control changes
+and the first-pass sort allocation increase remain visible. Full Debug passes
+9,259 tests; VM Release 228 white/329 public and six complete CPython cases pass
+before timing. Twelve micros take about eight seconds each; separate allocation/
+native groups about four, all under 30-second caps. No full lane or qualified
+Python multiplier; all emitted native bodies/tiers stay retained.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
