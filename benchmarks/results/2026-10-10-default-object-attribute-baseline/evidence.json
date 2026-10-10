@@ -1,0 +1,666 @@
+{
+  "state": "Passed",
+  "checkedUtc": "2026-10-10T21:18:26.609167+00:00",
+  "baseline": {
+    "source": "218f34a33f50f9f5e53ff931037f92ff9d932758",
+    "production": "7fe2dd6ab6f53578d03dc94564110d97f5912840",
+    "tests": "0a463a1c1aad66197fb5563784a4bd1bd9a70057",
+    "whiteExit": 0,
+    "publicExit": 1,
+    "binaries": [
+      {
+        "path": "baseline-corrected-whitebox.dll",
+        "version": "1.0.0+218f34a33f50f9f5e53ff931037f92ff9d932758",
+        "sha256": "891bbdfcd65866a2da26e2a7b6c162a837f07f22e976c8223f15a35b21085adb"
+      },
+      {
+        "path": "baseline-corrected-public.dll",
+        "version": "1.0.0+218f34a33f50f9f5e53ff931037f92ff9d932758",
+        "sha256": "ecf104fce862ac41ca38ba102abfdf0101082138af627a502d8c55d436d5041b"
+      },
+      {
+        "path": "baseline-corrected-library.dll",
+        "version": "0.10.0+218f34a33f50f9f5e53ff931037f92ff9d932758",
+        "sha256": "29561692981c587fe61709bdddf3aa777c9915cbe8f6a158c62386d082d42dac"
+      },
+      {
+        "path": "baseline-corrected-probe.dll",
+        "version": "1.0.0+218f34a33f50f9f5e53ff931037f92ff9d932758",
+        "sha256": "7290702221295fa1832184ab54257f3d7f00fd400f26a4bf3c016e77b340e155"
+      }
+    ]
+  },
+  "originalCorrectedBaselineReceipts": [
+    {
+      "path": "baseline-corrected-focus/JoannesVermorel_LOKAD-0399_2026-10-10_23_07_42.trx",
+      "sha256": "ac2920e33f7d2def6437f1638b527075b471adee252485644637fc9cbcc8dac1",
+      "total": 63,
+      "passed": 63,
+      "failed": 0
+    },
+    {
+      "path": "baseline-corrected-focus/JoannesVermorel_LOKAD-0399_2026-10-10_23_07_53.trx",
+      "sha256": "34fe276a043263373bae212d5cfad40f01bdc185a1bd2242ae85ad2f9386cb33",
+      "total": 91,
+      "passed": 82,
+      "failed": 9
+    }
+  ],
+  "originalCorrectedBaselineProbes": [
+    {
+      "path": "baseline-corrected-probes-sync.jsonl",
+      "sha256": "15a9319a7097272ba68a427fd1e892f689f9d8560742f6b1281dcb8d7327ce61",
+      "mode": "sync",
+      "cases": 9,
+      "matched": 7,
+      "mismatches": [
+        7,
+        8
+      ]
+    },
+    {
+      "path": "baseline-corrected-probes-async.jsonl",
+      "sha256": "ab2655d6a9e141e8fa67cae9285299e3add5067d1df466541ca7d97ef79919c5",
+      "mode": "async",
+      "cases": 9,
+      "matched": 7,
+      "mismatches": [
+        7,
+        8
+      ]
+    }
+  ],
+  "initialBaselineReceipts": [
+    {
+      "path": "baseline-white/JoannesVermorel_LOKAD-0399_2026-10-10_22_57_09.trx",
+      "sha256": "3eded364064378c5ab0ced78f9f2aa7a5510deb4a95b6d21cc80596954a9885b",
+      "total": 10,
+      "passed": 10,
+      "failed": 0
+    },
+    {
+      "path": "baseline-public/JoannesVermorel_LOKAD-0399_2026-10-10_22_57_58.trx",
+      "sha256": "e8e54c291b55d428bc653dcf821fa0d648713e17da2c37fb17211cdfc2fe6b80",
+      "total": 12,
+      "passed": 9,
+      "failed": 3
+    }
+  ],
+  "uncorrectedFixtureReceipts": [
+    {
+      "path": "baseline-expanded/JoannesVermorel_LOKAD-0399_2026-10-10_23_03_26.trx",
+      "sha256": "cbfbb97f130d23192fe89d77911cfa9072ff9f5ab97ec58e27e34011bc213f9d",
+      "total": 63,
+      "passed": 63,
+      "failed": 0
+    },
+    {
+      "path": "baseline-expanded/JoannesVermorel_LOKAD-0399_2026-10-10_23_03_35.trx",
+      "sha256": "238a9c36e6a764e54ce9e6aa095e5987db1ea81c6daf310b7bcd0c81fadf63cf",
+      "total": 91,
+      "passed": 80,
+      "failed": 11
+    }
+  ],
+  "initialInputs": {
+    "source": "7b8911ee5a253fd76c53fa7e54ac4a2eb596a02a",
+    "production": "7fe2dd6ab6f53578d03dc94564110d97f5912840",
+    "testSourcesDirtyBeforeCommit": true,
+    "whitePassed": 10,
+    "publicPassed": 9,
+    "publicFailed": 3,
+    "binaries": [
+      {
+        "path": "original-whitebox.dll",
+        "version": "1.0.0+7b8911ee5a253fd76c53fa7e54ac4a2eb596a02a",
+        "sha256": "2e51dc819e53c5f8172c99d955ebb5dec16480cd6129aef36cd3eaf5bb73cfc1"
+      },
+      {
+        "path": "original-public.dll",
+        "version": "1.0.0+7b8911ee5a253fd76c53fa7e54ac4a2eb596a02a",
+        "sha256": "87cefcab536bc6805c8907511418d61e7640377013ccea82c01a2eb46f3e8a16"
+      },
+      {
+        "path": "original-library.dll",
+        "version": "0.10.0+7b8911ee5a253fd76c53fa7e54ac4a2eb596a02a",
+        "sha256": "0f1d34df70636b7e066bdda9871c2d61bbd0ce6751608fc7ec83e166c3ccfc34"
+      }
+    ],
+    "testInputs": [
+      {
+        "path": "tests/Lokad.Lython.Tests/DefaultObjectAttributeBoundaryTests.cs",
+        "archived": "original-DefaultObjectAttributeBoundaryTests.cs",
+        "sha256": "af421cc050f164d28cf7187243c0987973d9d261b6c78c65296f744032d5bab5"
+      },
+      {
+        "path": "tests/Lokad.Lython.PublicApi.Tests/DefaultObjectAttributeTests.cs",
+        "archived": "original-DefaultObjectAttributeTests.cs",
+        "sha256": "0df656a03b683c0c74c31643260bcd2a2d455c356a1fa5021e6d58ea5575bb56"
+      }
+    ]
+  },
+  "gates": {
+    "root": {
+      "source": "3555caf98f481b8f1092a979a1c4f0c800042687",
+      "productionTree": "ea4886034b01717ee5b83ceb0207a4b974adff86",
+      "fullDebug": [
+        {
+          "path": "root-full-debug/JoannesVermorel_LOKAD-0399_2026-10-10_23_08_16.trx",
+          "sha256": "7f878b126fa109a9e63326aea71b06bbc969d157a5a590ea796e485f16f2923a",
+          "total": 1547,
+          "passed": 1547,
+          "failed": 0
+        },
+        {
+          "path": "root-full-debug/JoannesVermorel_LOKAD-0399_2026-10-10_23_08_18.trx",
+          "sha256": "7eff37ad26fe1df45ea3ddb662b787970ad7197580ae74f88483991dc1072ec3",
+          "total": 7821,
+          "passed": 7821,
+          "failed": 0
+        }
+      ],
+      "fullDebugPassed": 9368,
+      "focused": [
+        {
+          "path": "root-focus/JoannesVermorel_LOKAD-0399_2026-10-10_23_08_03.trx",
+          "sha256": "6c4fe2021c6a2e95e8079f6c68f42e6ad9c066b7548c2f741bed593647337bc5",
+          "total": 63,
+          "passed": 63,
+          "failed": 0
+        },
+        {
+          "path": "root-focus/JoannesVermorel_LOKAD-0399_2026-10-10_23_08_12.trx",
+          "sha256": "937de1994f833f4fb46083ed72aec320a1c895e8e259c2b67a89bcad302a6141",
+          "total": 91,
+          "passed": 91,
+          "failed": 0
+        }
+      ],
+      "focusedPassed": 154,
+      "cpythonProbes": [
+        {
+          "path": "root-attributes-sync.jsonl",
+          "sha256": "0e6e99228842de9353cbd95744989ae606952a2fde79b320941c569532a70f9e",
+          "mode": "sync",
+          "cases": 9,
+          "matched": 9,
+          "mismatches": []
+        },
+        {
+          "path": "root-probes-sync.jsonl",
+          "sha256": "3e6766047a7132e15e913ef4c51595dba2ceeb4578dc202308a329940a5ca7c3",
+          "mode": "sync",
+          "cases": 8,
+          "matched": 8,
+          "mismatches": []
+        },
+        {
+          "path": "root-deferred-probes-sync.jsonl",
+          "sha256": "71065c06559cdd46f81683a4b35219f40af08f399576c3bf77b15b930fa717ce",
+          "mode": "sync",
+          "cases": 12,
+          "matched": 12,
+          "mismatches": []
+        },
+        {
+          "path": "root-attributes-async.jsonl",
+          "sha256": "1781bec8c1228cdaa33e97eb2430bdf9fc103fd4b99fef8d59d5e27a8eb5c46b",
+          "mode": "async",
+          "cases": 9,
+          "matched": 9,
+          "mismatches": []
+        },
+        {
+          "path": "root-probes-async.jsonl",
+          "sha256": "165b0aa0208f8f65fb0e1cac74ec3720471b02815f785d3e34059bcc667c4848",
+          "mode": "async",
+          "cases": 8,
+          "matched": 8,
+          "mismatches": []
+        },
+        {
+          "path": "root-deferred-probes-async.jsonl",
+          "sha256": "c4f3c6f610bd2d07b337cedb2d8989ccfc3d16a2ad79d6a96b215764b8494d62",
+          "mode": "async",
+          "cases": 12,
+          "matched": 12,
+          "mismatches": []
+        }
+      ],
+      "cpythonComparisons": 58,
+      "binaryIdentities": [
+        {
+          "version": "0.10.0+3555caf98f481b8f1092a979a1c4f0c800042687",
+          "sha256": "6de6222bd52d4c407740e026c0317959d5b9430eba14113c6b560d712f217587"
+        },
+        {
+          "version": "1.0.0+3555caf98f481b8f1092a979a1c4f0c800042687",
+          "sha256": "1ad44b1244a33a947535d5bb30443250f3fe4dc03924b7c257492018b19a6745"
+        },
+        {
+          "version": "1.0.0+3555caf98f481b8f1092a979a1c4f0c800042687",
+          "sha256": "2ddeea1fe7c5eaf7cbdec28724316958230dccd14952ef3bef2b256789f3f435"
+        },
+        {
+          "version": "1.0.0+3555caf98f481b8f1092a979a1c4f0c800042687",
+          "sha256": "43944f469fbfb6d009d92d53bbe4769d98da3ddbf5a38a560dbe4efc08d1df49"
+        }
+      ]
+    },
+    "candidate": {
+      "source": "122384e3099cf25fd162694d9273abbce1f2fed5",
+      "productionTree": "d5165bbb6cb51aac155234a30e4df91ff8011b96",
+      "fullDebug": [
+        {
+          "path": "candidate-full-debug/JoannesVermorel_LOKAD-0399_2026-10-10_23_10_48.trx",
+          "sha256": "2bdb8451218bad064686855bc615e2f01666c4b1ae5a5018d2576eee130f28c2",
+          "total": 1547,
+          "passed": 1547,
+          "failed": 0
+        },
+        {
+          "path": "candidate-full-debug/JoannesVermorel_LOKAD-0399_2026-10-10_23_10_50.trx",
+          "sha256": "6b250ee173ae712c634bf7fecc1ede9383541963c5be8faa86fef41876742fa7",
+          "total": 7821,
+          "passed": 7821,
+          "failed": 0
+        }
+      ],
+      "fullDebugPassed": 9368,
+      "focused": [
+        {
+          "path": "candidate-focus/JoannesVermorel_LOKAD-0399_2026-10-10_23_10_31.trx",
+          "sha256": "b1cd9d853847b3030c0e0c51080b4b27906c5d806609274686dd2e266e926376",
+          "total": 63,
+          "passed": 63,
+          "failed": 0
+        },
+        {
+          "path": "candidate-focus/JoannesVermorel_LOKAD-0399_2026-10-10_23_10_43.trx",
+          "sha256": "2ac6304b8983d9541bdff5b217ed5573846870ae5e9e0dde1f8ac0c665ab5045",
+          "total": 91,
+          "passed": 91,
+          "failed": 0
+        }
+      ],
+      "focusedPassed": 154,
+      "cpythonProbes": [
+        {
+          "path": "candidate-attributes-sync.jsonl",
+          "sha256": "0e6e99228842de9353cbd95744989ae606952a2fde79b320941c569532a70f9e",
+          "mode": "sync",
+          "cases": 9,
+          "matched": 9,
+          "mismatches": []
+        },
+        {
+          "path": "candidate-probes-sync.jsonl",
+          "sha256": "3e6766047a7132e15e913ef4c51595dba2ceeb4578dc202308a329940a5ca7c3",
+          "mode": "sync",
+          "cases": 8,
+          "matched": 8,
+          "mismatches": []
+        },
+        {
+          "path": "candidate-deferred-probes-sync.jsonl",
+          "sha256": "71065c06559cdd46f81683a4b35219f40af08f399576c3bf77b15b930fa717ce",
+          "mode": "sync",
+          "cases": 12,
+          "matched": 12,
+          "mismatches": []
+        },
+        {
+          "path": "candidate-attributes-async.jsonl",
+          "sha256": "1781bec8c1228cdaa33e97eb2430bdf9fc103fd4b99fef8d59d5e27a8eb5c46b",
+          "mode": "async",
+          "cases": 9,
+          "matched": 9,
+          "mismatches": []
+        },
+        {
+          "path": "candidate-probes-async.jsonl",
+          "sha256": "165b0aa0208f8f65fb0e1cac74ec3720471b02815f785d3e34059bcc667c4848",
+          "mode": "async",
+          "cases": 8,
+          "matched": 8,
+          "mismatches": []
+        },
+        {
+          "path": "candidate-deferred-probes-async.jsonl",
+          "sha256": "c4f3c6f610bd2d07b337cedb2d8989ccfc3d16a2ad79d6a96b215764b8494d62",
+          "mode": "async",
+          "cases": 12,
+          "matched": 12,
+          "mismatches": []
+        }
+      ],
+      "cpythonComparisons": 58,
+      "binaryIdentities": [
+        {
+          "version": "0.10.0+122384e3099cf25fd162694d9273abbce1f2fed5",
+          "sha256": "364dcdb104ca2091f0096b47b16accf92d385334245a7fee8e03b41f7e09ba9f"
+        },
+        {
+          "version": "1.0.0+122384e3099cf25fd162694d9273abbce1f2fed5",
+          "sha256": "83794650dc821f0a43a6fc6c935efb47aaed8de13a4d83ca7411298c94087d80"
+        },
+        {
+          "version": "1.0.0+122384e3099cf25fd162694d9273abbce1f2fed5",
+          "sha256": "63bba54e9abb5c43f99ba2cabc72fb5f6511c21a1d932c4a4835fd2f3313003c"
+        },
+        {
+          "version": "1.0.0+122384e3099cf25fd162694d9273abbce1f2fed5",
+          "sha256": "1ee927b64336dd1a8107075344257301db480968ba8d4279fdcc06ce875b50c9"
+        }
+      ]
+    }
+  },
+  "newIndependentChecks": 33,
+  "testsTree": "0a463a1c1aad66197fb5563784a4bd1bd9a70057",
+  "harnessTree": "c194ce88a7e4d52c576f3929ef82bce60bf37e2d",
+  "performanceCandidate": "122384e3099cf25fd162694d9273abbce1f2fed5",
+  "sourceIntegrated": false,
+  "normalTimingCollections": 0,
+  "fullLanes": 0,
+  "vmReleaseGatesPending": true,
+  "performanceGainClaimed": false,
+  "goalComplete": false,
+  "additionalSubsetFindings": [
+    {
+      "path": "extra-probes-sync.jsonl",
+      "sha256": "3f38ed7166c1426168921afd48b6b9a27141aa945508bfd45f5b8dba709f03b4",
+      "mode": "sync",
+      "findings": [
+        {
+          "Index": 0,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [
+              {
+                "Code": "LA1068",
+                "Message": "Unsupported assignment target."
+              }
+            ],
+            "PeakExecutionMemoryBytes": 0,
+            "PeakProjectionMemoryBytes": 0,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "ok\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": "subset-rejection: Lython statically rejected this snippet; CPython ran it.",
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        },
+        {
+          "Index": 1,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 998,
+            "PeakProjectionMemoryBytes": 196,
+            "DeniedReservationBytes": 0,
+            "Failure": {
+              "ExceptionType": "TypeError",
+              "Message": "Builtin 'property' received too many positional arguments.",
+              "Span": "line 2, column 3",
+              "Frames": [
+                "<module> (line 2)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "ok\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": false
+          }
+        }
+      ]
+    },
+    {
+      "path": "extra-probes-async.jsonl",
+      "sha256": "c52085a1f0c4b0251b390495f01b30e35d6ffe7a983878b5bddc648f3dcd43af",
+      "mode": "async",
+      "findings": [
+        {
+          "Index": 0,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [
+              {
+                "Code": "LA1068",
+                "Message": "Unsupported assignment target."
+              }
+            ],
+            "PeakExecutionMemoryBytes": 0,
+            "PeakProjectionMemoryBytes": 0,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "ok\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": "subset-rejection: Lython statically rejected this snippet; CPython ran it.",
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        },
+        {
+          "Index": 1,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 998,
+            "PeakProjectionMemoryBytes": 196,
+            "DeniedReservationBytes": 0,
+            "Failure": {
+              "ExceptionType": "TypeError",
+              "Message": "Builtin 'property' received too many positional arguments.",
+              "Span": "line 2, column 3",
+              "Frames": [
+                "<module> (line 2)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "ok\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": null,
+            "Async": true
+          }
+        }
+      ]
+    }
+  ],
+  "supportingFiles": [
+    {
+      "path": "original-baseline-versions.json",
+      "sha256": "7e253e9a485bd452d71ec707175e445ec7ed53f7fa335e60a9bf0218a16d9059"
+    },
+    {
+      "path": "original-whitebox.dll",
+      "sha256": "2e51dc819e53c5f8172c99d955ebb5dec16480cd6129aef36cd3eaf5bb73cfc1"
+    },
+    {
+      "path": "original-public.dll",
+      "sha256": "87cefcab536bc6805c8907511418d61e7640377013ccea82c01a2eb46f3e8a16"
+    },
+    {
+      "path": "original-library.dll",
+      "sha256": "0f1d34df70636b7e066bdda9871c2d61bbd0ce6751608fc7ec83e166c3ccfc34"
+    },
+    {
+      "path": "original-DefaultObjectAttributeBoundaryTests.cs",
+      "sha256": "af421cc050f164d28cf7187243c0987973d9d261b6c78c65296f744032d5bab5"
+    },
+    {
+      "path": "original-DefaultObjectAttributeTests.cs",
+      "sha256": "0df656a03b683c0c74c31643260bcd2a2d455c356a1fa5021e6d58ea5575bb56"
+    },
+    {
+      "path": "baseline-expanded-versions.json",
+      "sha256": "84c0ed56e8d2b9e288f169b04c18b8fda03f1422258766dbd4e3639636b66d76"
+    },
+    {
+      "path": "baseline-expanded-whitebox.dll",
+      "sha256": "f870467274325224735cfbc1c934c748b99278611ec46150161d9a0e217d5bb2"
+    },
+    {
+      "path": "baseline-expanded-public.dll",
+      "sha256": "cf7ca93bf6cdc1ac0a32bca147634119548491cc0a7483eb29685a3b8bfb0730"
+    },
+    {
+      "path": "baseline-expanded-library.dll",
+      "sha256": "253ebfeb2aceb397ca6ceb81f44db7c2f950ccc779cbe1a91a3a75438dcd5f1e"
+    },
+    {
+      "path": "baseline-expanded-probe.dll",
+      "sha256": "f43e83ee3ed1d20b5bb7ee4f1bed7977a222fd57cc7c5f9e86cda833c9a34656"
+    },
+    {
+      "path": "baseline-uncorrected-probes.json",
+      "sha256": "46936a86dab7f0e0bc6977f377c940e17eff1a7d26d5baeae91779075f92c55a"
+    },
+    {
+      "path": "baseline-complete-probes-sync.jsonl",
+      "sha256": "24f8800e73a44527d5cc5e40695eab16f6144d46543968f9f698ddb75ceb1c5d"
+    },
+    {
+      "path": "baseline-complete-probes-async.jsonl",
+      "sha256": "657248e769f0eddd80a84fe575af6f40b52841f601de0d2254228dbe6310378e"
+    },
+    {
+      "path": "original-probes.json",
+      "sha256": "c0e0dc8b287c216b0014f5f2f21ea9a8e375de81a47e3d00b15b85d93e798a41"
+    },
+    {
+      "path": "original-probes-sync.jsonl",
+      "sha256": "1180bf1679c3f3004d2b9fc129756489c301bf5dfc4b532e6aedfa2f69770250"
+    },
+    {
+      "path": "initial-fixed-probe-build-failed.log",
+      "sha256": "f3a510e368981150b1d84306ac2f6a5ba50faeaeed23078a6dab08b2d8664b02"
+    },
+    {
+      "path": "baseline-corrected-versions.json",
+      "sha256": "e2d9159f758b2bd56ffc8ba8ebe108a7bd31273efcc13a2605b698faa161515d"
+    },
+    {
+      "path": "root-frozen-debug-binaries.json",
+      "sha256": "43ce018a2b83565c5deba08e13303cb9c05f6068868d2875e75e952181d602f3"
+    },
+    {
+      "path": "candidate-frozen-debug-binaries.json",
+      "sha256": "f6997eba09509bd81847f51b36a7fb559edcf7397217a602109235ce4cefe9c4"
+    },
+    {
+      "path": "probes.json",
+      "sha256": "d6c6c520026fa9d30b6614612eac3820d2a9518646a99890b5904590511992ce"
+    },
+    {
+      "path": "assessment-policy.json",
+      "sha256": "9e901612dd8909d8ef7cbb4731ab6831e70ba768ecb37baf7abdd955fc48cb88"
+    },
+    {
+      "path": "decide.py",
+      "sha256": "74ff3ee10d6d15dd60fa4b01d3eb5c86a6ed695e4c8f05aad370ba00b69252b8"
+    },
+    {
+      "path": "decision-policy-code-proof.json",
+      "sha256": "e6bfa55ae43e2db7aef917a9c460856a213ac38b3d0aa7426d7c8c691df39c8b"
+    },
+    {
+      "path": "policy-count-correction.json",
+      "sha256": "0f3514f35fe6ec9022983e626c2229c3319930ccdc1c6620796f1843a73722fa"
+    },
+    {
+      "path": "initial-assessment-policy.json",
+      "sha256": "fe850296a203cf641663e2a3256d4e4fdef1f8cad97b6cd928057b18634759c4"
+    },
+    {
+      "path": "initial-decision-policy-code-proof.json",
+      "sha256": "f1e4630778ae858fd2002e434eec6b64be17fb7cf24d1afcc9d3bf084bf0b0a3"
+    },
+    {
+      "path": "initial-local-build-failure.json",
+      "sha256": "1c4d7d2cf484365cfac48d85fa9405811502599a5ca8466977235b49430a8ded"
+    },
+    {
+      "path": "initial-failed-object-slots.cs",
+      "sha256": "6eb170ae7855947b3c489df89c14fb16256593ce1c9be0fdbef61a604308d0cf"
+    },
+    {
+      "path": "extra-probes.json",
+      "sha256": "aed330ba2decf0979f508cd5bc670cfdb3edb7eeb395bea265d07db920caa9aa"
+    },
+    {
+      "path": "extra-probes-sync.jsonl",
+      "sha256": "3f38ed7166c1426168921afd48b6b9a27141aa945508bfd45f5b8dba709f03b4"
+    },
+    {
+      "path": "extra-probes-async.jsonl",
+      "sha256": "c52085a1f0c4b0251b390495f01b30e35d6ffe7a983878b5bddc648f3dcd43af"
+    }
+  ]
+}

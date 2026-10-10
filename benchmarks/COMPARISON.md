@@ -325,6 +325,13 @@ Fourteen paired micros take about eight seconds each. Method jobs improve
 acceptance rule. The candidate stays isolated. Separate allocation/native
 diagnostics retain all observations; no full lane or recollection runs.
 
+The [default-object attribute compatibility baseline](results/2026-10-10-default-object-attribute-baseline/README.md)
+corrects member-assignment order, lowered async target stores and descriptor
+binding for mutation slots. Its 33 independent checks reproduce nine original
+runtime failures. Fixed baseline and isolated direct-slot candidate each pass
+9,368 Debug tests and 58 CPython comparisons. The candidate awaits fresh Release
+gates and separately declared short micros; no timing or full lanes run.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
