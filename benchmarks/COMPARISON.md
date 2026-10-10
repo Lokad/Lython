@@ -140,6 +140,14 @@ keeps sweep/exception work separate from an inlined checkpoint body. Twelve
 visible as a limitation; empty/pipeline changes are small and mixed. All 9,164
 Debug checks pass before timing. No full lanes run.
 
+The [embedded operand-stack round](results/2026-10-10-frame-stack-storage/README.md)
+places stack state inside each interpreter and borrows it by reference. Separate
+fixed-count diagnostics show about 3.7% less managed call allocation; the change
+is integrated as a storage improvement. Twelve 6.4–7.1-second micros retain mixed
+call timings, so no reliable throughput gain is established. All 9,164 Debug checks
+pass before collection. Retained helper-launcher/declaration errors precede any
+allocation worker; the successful helper build is rehashed and reused. No full lanes run.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
