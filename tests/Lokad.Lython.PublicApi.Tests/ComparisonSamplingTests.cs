@@ -7,6 +7,57 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class ComparisonSamplingTests
 {
     [Fact]
+    public async Task PreparationWaitHonorsItsMinimumWhenTheTimerWakesEarly()
+    {
+        var clock = new PreparationClock();
+        var waits = new List<TimeSpan>();
+        await LinuxSamplingMachine.DelayAtLeastAsync(TimeSpan.FromSeconds(2), clock, (duration, token) =>
+        {
+            token.ThrowIfCancellationRequested();
+            waits.Add(duration);
+            clock.Elapsed += waits.Count == 1 ? TimeSpan.FromMilliseconds(1999.5) : duration;
+            return Task.CompletedTask;
+        }, default);
+        Assert.Equal(new[] { TimeSpan.FromSeconds(2), TimeSpan.FromMilliseconds(1) }, waits);
+        Assert.True(clock.Elapsed >= TimeSpan.FromSeconds(2));
+    }
+
+    [Fact]
+    public async Task PreparationWaitRemainsCancellableAfterAnEarlyTimerWake()
+    {
+        var clock = new PreparationClock();
+        using var cancellation = new CancellationTokenSource();
+        var calls = 0;
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => LinuxSamplingMachine.DelayAtLeastAsync(
+            TimeSpan.FromSeconds(2), clock, (_, _) =>
+            {
+                calls++;
+                clock.Elapsed += TimeSpan.FromMilliseconds(1999.5);
+                cancellation.Cancel();
+                return Task.CompletedTask;
+            }, cancellation.Token));
+        Assert.Equal(1, calls);
+        Assert.True(clock.Elapsed < TimeSpan.FromSeconds(2));
+    }
+
+    [Fact]
+    public async Task PreparationWaitProvesItsMinimumWithTheSystemMonotonicClock()
+    {
+        var clock = TimeProvider.System;
+        var started = clock.GetTimestamp();
+        var minimum = TimeSpan.FromMilliseconds(3);
+        await LinuxSamplingMachine.DelayAtLeastAsync(minimum, clock, Task.Delay, default);
+        Assert.True(clock.GetElapsedTime(started) >= minimum);
+    }
+
+    private sealed class PreparationClock : TimeProvider
+    {
+        public TimeSpan Elapsed { get; set; }
+        public override long TimestampFrequency => TimeSpan.TicksPerSecond;
+        public override long GetTimestamp() => Elapsed.Ticks;
+    }
+
+    [Fact]
     public void CoreLoopProfileKeepsTheSameReductionAndSmallIndependentOutputsAtThreeSizes()
     {
         var all = WorkloadCatalog.Create().ToDictionary(w => w.Id);

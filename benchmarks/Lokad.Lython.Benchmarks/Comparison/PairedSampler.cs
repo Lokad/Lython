@@ -37,10 +37,27 @@ internal interface ISamplingMachine
 }
 internal sealed class LinuxSamplingMachine : ISamplingMachine
 {
-    public Task PrepareAsync(CancellationToken cancellationToken) => Task.Delay(TimeSpan.FromSeconds(ComparisonPolicy.PreparationPauseSeconds), cancellationToken);
+    public Task PrepareAsync(CancellationToken cancellationToken) => DelayAtLeastAsync(
+        TimeSpan.FromSeconds(ComparisonPolicy.PreparationPauseSeconds), TimeProvider.System, Task.Delay, cancellationToken);
     public Task SettleAsync(CancellationToken cancellationToken) => Task.Delay(TimeSpan.FromSeconds(ComparisonPolicy.SettleSeconds), cancellationToken);
     public Task<QuietEvidence> CheckAsync(CancellationToken cancellationToken) => QuietMachineProbe.CheckAsync(cancellationToken);
     public MachineSnapshot Read() => QuietMachineProbe.Read();
+
+    internal static async Task DelayAtLeastAsync(TimeSpan minimum, TimeProvider clock,
+        Func<TimeSpan, CancellationToken, Task> delay, CancellationToken cancellationToken)
+    {
+        var started = clock.GetTimestamp();
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var remaining = minimum - clock.GetElapsedTime(started);
+            if (remaining <= TimeSpan.Zero) return;
+            // Task.Delay can wake early at timer boundaries. Check the same
+            // monotonic clock used by the evidence, with a whole-millisecond
+            // wait so a sub-millisecond remainder never becomes a busy spin.
+            await delay(TimeSpan.FromMilliseconds(Math.Ceiling(remaining.TotalMilliseconds)), cancellationToken).ConfigureAwait(false);
+        }
+    }
 }
 
 internal static class PairedSampler
