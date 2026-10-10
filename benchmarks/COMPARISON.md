@@ -316,9 +316,14 @@ Their overlapping inclusive stacks do not predict removable costs.
 The [lowered-dispatch compatibility baseline](results/2026-10-10-lowered-dispatch-baseline/README.md)
 fixes false static rejections of local lazy type aliases and later reads of
 captured collections. It retains 34 regression checks, passes 9,335 Debug tests
-and matches twenty trusted CPython snippets in both run modes. A direct
-synchronous lowered-dispatch candidate passes 121 focused checks and stays
-isolated pending full gates and separately declared short micros.
+and matches twenty trusted CPython snippets in both run modes.
+
+The [direct synchronous lowered-dispatch experiment](results/2026-10-10-lowered-sync-dispatch/README.md)
+passes 9,335 Debug tests and fresh Release/CPython gates for both producers.
+Fourteen paired micros take about eight seconds each. Method jobs improve
+4.8–6.6%, but the loop control repeatedly regresses 2.6–3.2%, failing the frozen
+acceptance rule. The candidate stays isolated. Separate allocation/native
+diagnostics retain all observations; no full lane or recollection runs.
 
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
