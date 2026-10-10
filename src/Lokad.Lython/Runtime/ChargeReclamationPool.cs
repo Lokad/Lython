@@ -409,13 +409,31 @@ internal sealed class ChargeReclamationPool
     // a defensive top-up so a policy change can never strand capacity.
     private long ReserveTierInsertion(List<ReclamationEntry> tier, LythonSourceSpan? span)
     {
-        var growth = tier.Count == tier.Capacity ? (long)(tier.Capacity == 0 ? 4 : tier.Capacity) : 0L;
-        if (growth > 0)
+        long fundedGrowth = 0;
+        try
         {
-            _governor.Reserve(checked(growth * 8), span);
-        }
+            while (true)
+            {
+                var growth = tier.Count == tier.Capacity ? (long)(tier.Capacity == 0 ? 4 : tier.Capacity) : 0L;
+                if (growth <= fundedGrowth)
+                {
+                    if (growth < fundedGrowth)
+                        _governor.ReleaseReserved(checked((fundedGrowth - growth) * 8));
+                    return growth;
+                }
 
-        return growth;
+                // Relief can prune this tier, or enlarge/fill it through a
+                // reentrant promotion sweep. Revalidate after reserving so
+                // insertion always has its actual capacity funded first.
+                _governor.Reserve(checked((growth - fundedGrowth) * 8), span);
+                fundedGrowth = growth;
+            }
+        }
+        catch
+        {
+            if (fundedGrowth > 0) _governor.ReleaseReserved(checked(fundedGrowth * 8));
+            throw;
+        }
     }
 
     private void CommitTierInsertion(List<ReclamationEntry> tier, long fundedGrowth, long capacityBefore, LythonSourceSpan? span)
