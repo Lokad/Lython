@@ -119,6 +119,13 @@ new regressions and all 9,155 Debug checks pass; pinned denials remain bounded.
 Every untraced diagnostic process takes less than a second. There are no normal
 timing samples, full lanes or speed claims; namespace qualification remains open.
 
+The [new combined lazy-namespace round](results/2026-10-10-function-frame-namespaces/README.md)
+passes its own full 9,161-check Debug gate before ten 6.4–7.3-second micros.
+Complete-call managed allocation falls about 11%; the change is integrated as an
+allocation improvement. Call timing changes remain below spread or mixed, so no
+reliable throughput gain is claimed. The original failed namespace receipt stays
+preserved. No full lanes run; future milestones keep their ten-minute cap.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
