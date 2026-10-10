@@ -1,0 +1,453 @@
+{
+  "schemaVersion": 1,
+  "state": "Audited",
+  "diagnosticOnly": true,
+  "performanceQualified": false,
+  "sourceDelivery": "d4a255fb0bb5f67d48993ee57c451f9e5ce4bab6",
+  "baselineProducer": "c80ad2ab9e24bec6e6443237e20c89137bc75c42",
+  "baselineEquivalentDelivery": "99aea50aec2f30b42f4cfb555e752d7a9442c96c",
+  "baselineProductionTree": "4ba1c30cb4acf15b684a074ca6667081177faae6",
+  "productionTree": "f033f4e29d432d08ffff7061807eeb7d00787a4c",
+  "testTree": "b2360d8d17288b9eb1f22712bd64301d2fecd1f7",
+  "originalRegressionProduction": "99aea50aec2f30b42f4cfb555e752d7a9442c96c",
+  "originalRegressionFixtureSha256": "261871bca3d771bf13d4bc9fcae6eee560962fb7d4efbca8d36607e07984da71",
+  "serviceHardCapSeconds": 30,
+  "fullLanes": 0,
+  "previousCatalogCasesUnchanged": 16,
+  "addedDiagnostic": "diagnostic.csv.scalar-count.medium",
+  "independentScalarGoldenSha256": "38a407cd7d38b41132709485046d7817571b73c32433877751399e229ce11ce2",
+  "responses": 437,
+  "derivedMediansAndIqrs": 30,
+  "declarationUtc": "2026-10-10T03:07:01.067897+00:00",
+  "declarationSha256": "91e4f03d23e76056fb75d06707d2101264f2d723f2ff0ef85e58377875e14bc8",
+  "catalogSha256": "ec99d6c97b9404f2ca5c9a9f6cdd5645abbe806c4fa53a1b51259c7d87b41310",
+  "scripts": {
+    "micro.sh": "3d51f98b206ca3d507ace28556c0fda3b3be1fe9e3adb95169c3a2067048beb0",
+    "launch-micro.sh": "20574394c7833d108db9dcdacfe83e25aa7fc38b6691cdd4d57e8d0dd90643ec"
+  },
+  "receipts": [
+    {
+      "ordinal": 0,
+      "case": "control.empty.control",
+      "seconds": 6.4846273,
+      "responses": 47,
+      "sha256": "fabd3a9de823c4bd39a3f73b0b08bc7230b3c77b77038f172230ac75f09af3ca",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 23.62581703026038,
+          "iqrFraction": 0.029748599782570554
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 23.698935198821797,
+          "iqrFraction": 0.05021510632550185
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1.4802454699886751,
+          "iqrFraction": 0.0026669971802423475
+        }
+      ],
+      "latencyPercent": 0.3094841903997114
+    },
+    {
+      "ordinal": 1,
+      "case": "loops.integer.large",
+      "seconds": 6.9763587,
+      "responses": 43,
+      "sha256": "f36a6d29dfaa4719a94d204ea270382f364973baf3c946563247f7b94ccd42a2",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 1637.634722222222,
+          "iqrFraction": 0.00958545395332213
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1650.7812000000001,
+          "iqrFraction": 0.01530561712236611
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 935.9920882352941,
+          "iqrFraction": 0.036333813279153186
+        }
+      ],
+      "latencyPercent": 0.8027722909989654
+    },
+    {
+      "ordinal": 2,
+      "case": "strings.pipeline-ascii.medium",
+      "seconds": 6.7756604,
+      "responses": 45,
+      "sha256": "894e53c70776bea07fed91f3ad007997c9980a2bf6edd427671ceb965bc91661",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 139.12522302158274,
+          "iqrFraction": 0.016141092497489233
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 136.72233620689656,
+          "iqrFraction": 0.027553074312265526
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 41.376732356857524,
+          "iqrFraction": 0.0040551844012243245
+        }
+      ],
+      "latencyPercent": -1.727139595897298
+    },
+    {
+      "ordinal": 3,
+      "case": "csv.retain.medium",
+      "seconds": 7.036037,
+      "responses": 41,
+      "sha256": "ec3bcb02a1845c0abcb068093de6204479521df7463671df8eb4713321da3255",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 487.0824936708861,
+          "iqrFraction": 0.04828945747941696
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 530.0622285714286,
+          "iqrFraction": 0.0679095063663144
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 99.49188028169014,
+          "iqrFraction": 0.010199041651569315
+        }
+      ],
+      "latencyPercent": 8.82391288108646
+    },
+    {
+      "ordinal": 4,
+      "case": "diagnostic.csv.scalar-count.medium",
+      "seconds": 6.7286281,
+      "responses": 43,
+      "sha256": "418fa32923d59f33eaabc5c0465abe96b98f1ffec35f3aea7dbfeeaf763afa05",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 237.38298958333334,
+          "iqrFraction": 0.1976300429066652
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 253.89512871287127,
+          "iqrFraction": 0.15348775014615826
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 22.448311431143114,
+          "iqrFraction": 0.008235741401569213
+        }
+      ],
+      "latencyPercent": 6.95590663784329
+    },
+    {
+      "ordinal": 5,
+      "case": "control.empty.control",
+      "seconds": 6.4608028,
+      "responses": 47,
+      "sha256": "8b757a556875cea7a6685eeac33537e3a0800384e1992456ffb254068da67889",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 23.41206779661017,
+          "iqrFraction": 0.044060334075008624
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 23.40246527777778,
+          "iqrFraction": 0.010694801562632292
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1.4773775684931507,
+          "iqrFraction": 0.005236139048626128
+        }
+      ],
+      "latencyPercent": -0.041015252970444394
+    },
+    {
+      "ordinal": 6,
+      "case": "loops.integer.large",
+      "seconds": 6.9495844,
+      "responses": 43,
+      "sha256": "1213a89952a34b0aa8313bfd891c691f74173bd589499cebc3d88ad6843f8be2",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 1627.0327894736843,
+          "iqrFraction": 0.004253610131688537
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1622.1008,
+          "iqrFraction": 0.00985137606738118
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 620.3850600000001,
+          "iqrFraction": 0.03060734570236103
+        }
+      ],
+      "latencyPercent": -0.30312784755123223
+    },
+    {
+      "ordinal": 7,
+      "case": "strings.pipeline-ascii.medium",
+      "seconds": 6.7747612,
+      "responses": 43,
+      "sha256": "fb61d40ef234928894bb3c6031564774394a050711d86e4660c7f93f603990a0",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 137.6407297297297,
+          "iqrFraction": 0.02587693866281096
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 136.77706923076923,
+          "iqrFraction": 0.01464449253442658
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 41.39357101449275,
+          "iqrFraction": 0.005764862876556656
+        }
+      ],
+      "latencyPercent": -0.6274745132900383
+    },
+    {
+      "ordinal": 8,
+      "case": "csv.retain.medium",
+      "seconds": 7.0684815,
+      "responses": 42,
+      "sha256": "6a54ce7946208163432154d8a0b4de7330d3c431d2a5743265e58267833da175",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 503.44429113924053,
+          "iqrFraction": 0.09057911426802
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 516.7647567567567,
+          "iqrFraction": 0.06590488975693672
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 99.28821405750799,
+          "iqrFraction": 0.0019005888269703224
+        }
+      ],
+      "latencyPercent": 2.6458668519953488
+    },
+    {
+      "ordinal": 9,
+      "case": "diagnostic.csv.scalar-count.medium",
+      "seconds": 6.7981187,
+      "responses": 43,
+      "sha256": "4a67311d657f1eb969475b7eae3cfc9d66452c29b0a5856f74c180be110d06b6",
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 233.645811965812,
+          "iqrFraction": 0.02960059714901943
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 219.55288541666667,
+          "iqrFraction": 0.1899037992791885
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 22.636275773195877,
+          "iqrFraction": 0.0036535303075587336
+        }
+      ],
+      "latencyPercent": -6.0317479823723374
+    }
+  ],
+  "correctness": {
+    "originalQualifiedDebug": [
+      {
+        "file": "JoannesVermorel_LOKAD-0399_2026-10-10_04_39_15.trx",
+        "sha256": "7389fea0d52ff5f3107739c93ac1111df0aa2b12402df53025c94f06483c951d",
+        "total": 7,
+        "passed": 0,
+        "failed": 7
+      }
+    ],
+    "originalQualifiedRelease": [
+      {
+        "file": "JoannesVermorel_LOKAD-0399_2026-10-10_04_39_26.trx",
+        "sha256": "a083f0aeda04c5283ab6801a066399ade9286e8ce8c7c1811a3c80053265bb90",
+        "total": 7,
+        "passed": 0,
+        "failed": 7
+      }
+    ],
+    "fixedFocusedDebug": [
+      {
+        "file": "JoannesVermorel_LOKAD-0399_2026-10-10_04_44_02.trx",
+        "sha256": "aa86dc4d909feeca34e3d2df05281de840fc82940ac225a27dfcd9a7028e0293",
+        "total": 71,
+        "passed": 71,
+        "failed": 0
+      }
+    ],
+    "fixedFocusedRelease": [
+      {
+        "file": "JoannesVermorel_LOKAD-0399_2026-10-10_04_44_12.trx",
+        "sha256": "78bab20eb7aae0865e6d8a92b47f6dc5181007d00bf08084dea167f447924062",
+        "total": 71,
+        "passed": 71,
+        "failed": 0
+      }
+    ],
+    "fullDebug": [
+      {
+        "file": "JoannesVermorel_LOKAD-0399_2026-10-10_04_51_32.trx",
+        "sha256": "94e016baba493a214a26a74916710b1b2135836310da77373191af811ae77486",
+        "total": 7751,
+        "passed": 7751,
+        "failed": 0
+      },
+      {
+        "file": "JoannesVermorel_LOKAD-0399_2026-10-10_04_51_33.trx",
+        "sha256": "8955f9b4a91882a23d58269d2062b182ffc623b1c8c1e91ea80a32674851e521",
+        "total": 1369,
+        "passed": 1369,
+        "failed": 0
+      }
+    ],
+    "linuxWhiteRelease": [
+      {
+        "file": "_lython-bench_2026-10-10_02_55_44_net10.0.trx",
+        "sha256": "ae042a37d4da721fcc3f73a204b5aa2727445ff4549544a7702dd959eaf07d9a",
+        "total": 1369,
+        "passed": 1369,
+        "failed": 0
+      }
+    ],
+    "linuxSelectedPublicRelease": [
+      {
+        "file": "_lython-bench_2026-10-10_02_56_12_net10.0.trx",
+        "sha256": "be18c0b36efb6c6c1fb451b7f552181578fc7cb28a0c428517a994c77192e418",
+        "total": 577,
+        "passed": 577,
+        "failed": 0
+      }
+    ]
+  },
+  "baselineLibraries": [
+    {
+      "path": "/home/lokad/lython-bench-checks/checkout-reclamation-promotion-funding-20261010/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.dll",
+      "sha256": "9a9ba40aa4e64187f7daaf9e34a581af4f5d10298dfe945bd651c20979f25f87",
+      "version": "0.10.0+c80ad2ab9e24bec6e6443237e20c89137bc75c42",
+      "configuration": "Release",
+      "buildSdk": "10.0.401",
+      "moduleId": "62471c68-64a1-4404-8ed0-17a51175f788"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/checkout-reclamation-promotion-funding-20261010/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+      "sha256": "0843e809bb5d456df922065fad3a6a8e0d678477ffe268edcf3bd6f541ced3df",
+      "version": "1.0.0+c80ad2ab9e24bec6e6443237e20c89137bc75c42",
+      "configuration": "Release",
+      "buildSdk": "10.0.401",
+      "moduleId": "1cda08a5-3bc9-431b-a3d9-dad4a259a683"
+    },
+    {
+      "path": "/home/lokad/lython-bench-toolchains/dotnet/10.0.401/shared/Microsoft.NETCore.App/10.0.12/System.Private.CoreLib.dll",
+      "sha256": "26304a2985357b9ee277f273667fcd9c892edae3ee6eba76f739033e95eb39b3",
+      "version": "10.0.12-servicing.26422.108+95017c711e6afc1085133d440e42b4bd78155701",
+      "configuration": "Release",
+      "buildSdk": null,
+      "moduleId": "473d0ad3-441b-4fee-a00f-67c03eb1e2b3"
+    }
+  ],
+  "candidateLibraries": [
+    {
+      "path": "/home/lokad/lython-bench-checks/checkout-csv-denial-ownership-20261010/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.dll",
+      "sha256": "2951ea5acbd14b19c836d8a03bda3b82dd913eae29c713594b3e1834967af210",
+      "version": "0.10.0+d4a255fb0bb5f67d48993ee57c451f9e5ce4bab6",
+      "configuration": "Release",
+      "buildSdk": "10.0.401",
+      "moduleId": "7d8e0ace-d476-42ee-a088-346617055282"
+    },
+    {
+      "path": "/home/lokad/lython-bench-checks/checkout-csv-denial-ownership-20261010/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+      "sha256": "e073591eb93d75fb5cbe5dfa22f838a95b8cf8a537d04c78f996859c910e97c9",
+      "version": "1.0.0+d4a255fb0bb5f67d48993ee57c451f9e5ce4bab6",
+      "configuration": "Release",
+      "buildSdk": "10.0.401",
+      "moduleId": "4e40287f-31ae-4ac4-b501-046635bcad0c"
+    },
+    {
+      "path": "/home/lokad/lython-bench-toolchains/dotnet/10.0.401/shared/Microsoft.NETCore.App/10.0.12/System.Private.CoreLib.dll",
+      "sha256": "26304a2985357b9ee277f273667fcd9c892edae3ee6eba76f739033e95eb39b3",
+      "version": "10.0.12-servicing.26422.108+95017c711e6afc1085133d440e42b4bd78155701",
+      "configuration": "Release",
+      "buildSdk": null,
+      "moduleId": "473d0ad3-441b-4fee-a00f-67c03eb1e2b3"
+    }
+  ],
+  "python": {
+    "protocolVersion": 1,
+    "status": "Ready",
+    "engine": "CPython",
+    "catalogSha256": "ec99d6c97b9404f2ca5c9a9f6cdd5645abbe806c4fa53a1b51259c7d87b41310",
+    "catalogVersion": 1,
+    "processId": 1527694,
+    "version": "3.13.16 (main, Oct  8 2026, 14:31:33) [GCC 13.3.0]",
+    "executable": "/home/lokad/lython-bench-toolchains/cpython/3.13.16/bin/python3.13",
+    "executableSha256": "673525f3e1ac992831891979187e259c06bbd5e331ab50c0bb697f274ecb0f2a",
+    "adapterSha256": "e6a81d0f72b6ee2f9438b76a9012b42e944e8ce52d616a9445837dbac976cc1d",
+    "architecture": "x86_64",
+    "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+    "flags": "sys.flags(debug=0, inspect=0, interactive=0, optimize=0, dont_write_bytecode=0, no_user_site=1, no_site=1, ignore_environment=1, verbose=0, bytes_warning=0, quiet=0, hash_randomization=1, isolated=1, dev_mode=False, utf8_mode=0, warn_default_encoding=0, safe_path=True, int_max_str_digits=4300)",
+    "paths": [
+      "/home/lokad/lython-bench-toolchains/cpython/3.13.16/lib/python313.zip",
+      "/home/lokad/lython-bench-toolchains/cpython/3.13.16/lib/python3.13",
+      "/home/lokad/lython-bench-toolchains/cpython/3.13.16/lib/python3.13/lib-dynload"
+    ],
+    "configArgs": "'--prefix=/home/lokad/lython-bench-toolchains/cpython/3.13.16' '--enable-optimizations' '--with-lto' '--enable-experimental-jit=no' '--with-ensurepip=no'",
+    "debug": false,
+    "freeThreaded": false,
+    "gilEnabled": true,
+    "gcEnabled": true,
+    "clockFrequency": 1000000000,
+    "clockResolutionSeconds": 1e-09,
+    "clockMonotonic": true,
+    "clockImplementation": "clock_gettime(CLOCK_MONOTONIC)",
+    "maximumFrameBytes": 4194304,
+    "maximumBatchIterations": 1000000,
+    "maximumBatchSeconds": 60,
+    "captureByteLimit": 16777216
+  },
+  "originalPublicCsvCauseEstablished": false,
+  "csvSha256": "d578243939cbd615179b5bfcddbb7c2217435ff8d1c0f2c15957e498f02a5cbd",
+  "cleanupProofSha256": "89d779aaef21d616b0ed44fb69838e306492f84370da18c35ab571a52f983f82",
+  "cleanup": {
+    "ownedUnitsInactive": 11,
+    "allRecordedWorkersAbsent": true,
+    "producerHashesVerified": true,
+    "cleanProducerCheckouts": 2,
+    "sharedLeaseFree": true
+  },
+  "runtimeOverrides": null,
+  "excludedPrecursors": [
+    "original-debug.log: incomplete/wrong abandoned-source precondition and allocation denial instead of registration denial",
+    "original-final and original-final-fixed-fixture logs: fixture compile/analyzer failures; not regression evidence",
+    "initial catalog creation: local cp1252 decode failure before declaration or collection"
+  ]
+}
