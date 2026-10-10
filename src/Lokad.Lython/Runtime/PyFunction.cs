@@ -25,18 +25,27 @@ internal sealed class PyFunction : PyFunctionBase
         LythonSourceSpan span)
     {
         _ = boundArguments;
-        var flow = LythonRuntime.ExecuteStatements(_body, frame);
-        if (flow.Return is not null)
+        var previousDispatch = frame.UseSynchronousLoweredFunctionDispatch;
+        frame.UseSynchronousLoweredFunctionDispatch = true;
+        try
         {
-            return flow.Return.Value;
-        }
+            var flow = LythonRuntime.ExecuteStatements(_body, frame);
+            if (flow.Return is not null)
+            {
+                return flow.Return.Value;
+            }
 
-        if (flow.Control is LythonRuntime.BreakSignal or LythonRuntime.ContinueSignal)
+            if (flow.Control is LythonRuntime.BreakSignal or LythonRuntime.ContinueSignal)
+            {
+                throw new LythonRuntimeException("RuntimeError", "Loop control cannot escape a function body.", span);
+            }
+
+            return PyNone.Instance;
+        }
+        finally
         {
-            throw new LythonRuntimeException("RuntimeError", "Loop control cannot escape a function body.", span);
+            frame.UseSynchronousLoweredFunctionDispatch = previousDispatch;
         }
-
-        return PyNone.Instance;
     }
 
     protected override async ValueTask<object> ExecuteBodyAsync(

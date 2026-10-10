@@ -16,6 +16,10 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext : ExecutionFrame
     {
+        // Only an active synchronous PyFunction body enables the direct lowered
+        // routes. Child frames and asynchronous calls retain their own strategy.
+        internal bool UseSynchronousLoweredFunctionDispatch { get; set; }
+
         private bool? _postponedAnnotations;
         public bool PostponedAnnotations
         {

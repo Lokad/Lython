@@ -13,7 +13,9 @@ internal sealed partial class LythonRuntime
         {
             foreach (var statement in statements)
             {
-                var flow = DispatchLoweredStatementAsync(statement, context, SynchronousLoweredStatementExecution.Instance).GetAwaiter().GetResult();
+                var flow = context.UseSynchronousLoweredFunctionDispatch
+                    ? DispatchLoweredStatement(statement, context)
+                    : DispatchLoweredStatementAsync(statement, context, SynchronousLoweredStatementExecution.Instance).GetAwaiter().GetResult();
                 if (flow.Return is not null)
                 {
                     return flow;
