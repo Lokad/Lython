@@ -360,6 +360,20 @@ internal sealed partial class LythonRuntime
             return false;
         }
 
+        private bool ExecuteForNext(in ExecutableInstruction instruction)
+        {
+            var iterator = PeekIterator(ref _stack, instruction.Span);
+            if (!iterator.MoveNext())
+            {
+                _ = Pop(ref _stack, instruction.Span);
+                _currentBlockIndex = instruction.TargetBlockIndex;
+                return true;
+            }
+
+            _stack.Push(iterator.Current);
+            return false;
+        }
+
         private bool ExecuteValueOperation(in ExecutableInstruction instruction)
         {
             switch (instruction.OpCode)
@@ -370,16 +384,7 @@ internal sealed partial class LythonRuntime
                     break;
 
                 case ExecutableOpCode.ForNext:
-                    var iterator = PeekIterator(ref _stack, instruction.Span);
-                    if (!iterator.MoveNext())
-                    {
-                        _ = Pop(ref _stack, instruction.Span);
-                        _currentBlockIndex = instruction.TargetBlockIndex;
-                        return true;
-                    }
-
-                    _stack.Push(iterator.Current);
-                    break;
+                    return ExecuteForNext(instruction);
 
                 case ExecutableOpCode.AssignLoopTarget:
                     var loopBinding = _codeObject.LoopTargets[instruction.LoopTargetIndex];

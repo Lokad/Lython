@@ -47,6 +47,9 @@ internal sealed partial class LythonRuntime
                             case ExecutableOpCode.StoreLocal:
                                 StoreLocalValue(_codeObject, _locals, _localCells, _context, instruction.LocalSlot, Pop(ref _stack, instruction.Span), instruction.Span);
                                 break;
+                            case ExecutableOpCode.ForNext:
+                                jumped = ExecuteForNext(instruction);
+                                break;
                             case ExecutableOpCode.ApplyOperation:
                                 ExecutePreparedOperationAsync((ExecutableOperation)_codeObject.Constants[instruction.ConstantIndex]!, instruction.Span, false).GetAwaiter().GetResult();
                                 break;
@@ -107,7 +110,6 @@ internal sealed partial class LythonRuntime
                                 break;
 
                             case ExecutableOpCode.GetIter or
-                                 ExecutableOpCode.ForNext or
                                  ExecutableOpCode.AssignLoopTarget or
                                  ExecutableOpCode.AssignUnpackingTargets or
                                  ExecutableOpCode.Call or
