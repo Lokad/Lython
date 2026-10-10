@@ -307,6 +307,16 @@ internal sealed class MemoryGovernor
             _reservedBytes = AddChecked(_reservedBytes, bytes, span);
         }
 
+        public void Shrink(long bytes)
+        {
+            if (bytes <= 0) return;
+            var governor = _governor ?? throw new ObjectDisposedException(nameof(TemporaryMemoryReservation));
+            if (bytes > _reservedBytes)
+                throw new InvalidOperationException("Cannot release another reservation's funding.");
+            governor.ReleaseReserved(bytes);
+            _reservedBytes -= bytes;
+        }
+
         public void Dispose()
         {
             var governor = Interlocked.Exchange(ref _governor, null);

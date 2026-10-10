@@ -823,7 +823,6 @@ internal sealed partial class LythonRuntime
         private readonly string? _quoteCharacter;
         private readonly string? _escapeCharacter;
         private readonly List<object> _row = new();
-        private MemoryGovernor.TemporaryMemoryReservation? _rowScratch;
         private long _chargedRowCapacity;
         private readonly StringBuilder _field = new();
         private readonly MemoryGovernor.TemporaryMemoryReservation _fieldScratch;
@@ -971,7 +970,7 @@ internal sealed partial class LythonRuntime
 
             if (text.Length == 0)
             {
-                EnqueueRecord(new PyList([], _context.MemoryGovernor, _span));
+                EnqueueRecord(TrackRow(new PyList([], _context.MemoryGovernor, _span)));
                 return;
             }
 
@@ -1021,19 +1020,34 @@ internal sealed partial class LythonRuntime
             // it; cover each capacity step (including the old/new overlap)
             // before the cell lands, and release the reservation with the
             // finished record below.
-            _rowScratch ??= _context.MemoryGovernor.ReserveTemporary(0, _span);
             if (_row.Count == _row.Capacity)
             {
                 var predicted = _row.Capacity == 0 ? 4L : (long)_row.Capacity * 2L;
-                _rowScratch.Grow(checked(16L * (predicted - _chargedRowCapacity)), _span);
+                // The registered source scratch owns this reservation too,
+                // so abandonment returns it without retaining the parser.
+                // Fund the replacement beside the old array before allocating.
+                var replacementBytes = checked(16L * predicted);
+                _fieldScratch.Grow(replacementBytes, _span);
+                try
+                {
+                    _row.Capacity = checked((int)predicted);
+                }
+                catch
+                {
+                    _fieldScratch.Shrink(replacementBytes);
+                    throw;
+                }
+                _fieldScratch.Shrink(checked(16L * _chargedRowCapacity));
+                _chargedRowCapacity = predicted;
             }
-
-            _row.Add(cell);
-            if (_row.Capacity > _chargedRowCapacity)
+            else if (_row.Capacity > _chargedRowCapacity)
             {
-                _rowScratch.Grow(checked(16L * (_row.Capacity - _chargedRowCapacity)), _span);
+                // A completed record returned its funding; recharge the
+                // retained array before reusing it for another row.
+                _fieldScratch.Grow(checked(16L * (_row.Capacity - _chargedRowCapacity)), _span);
                 _chargedRowCapacity = _row.Capacity;
             }
+            _row.Add(cell);
         }
 
         private void NoteFieldCapacity()
@@ -1056,7 +1070,7 @@ internal sealed partial class LythonRuntime
             // reclamation pool; row and table backing is charged separately
             // by the governed row containers.
             var payload = PyString.FromString(_field.ToString(), _context.MemoryGovernor, _span);
-            _pool.TrackString(payload);
+            _pool.TrackFreshString(payload, _span);
             AddRowCell(payload);
             _field.Clear();
             _fieldStarted = false;
@@ -1114,8 +1128,7 @@ internal sealed partial class LythonRuntime
 
         private void ReleaseRowScratch()
         {
-            _rowScratch?.Dispose();
-            _rowScratch = null;
+            _fieldScratch.Shrink(checked(16L * _chargedRowCapacity));
             _chargedRowCapacity = 0;
             if (_row.Capacity > 1024)
             {
@@ -1132,7 +1145,7 @@ internal sealed partial class LythonRuntime
             // snapshotted backing charges once the row is dropped, while
             // wholesale replacement (Clear, slice-assignment) notifies the
             // pool through the value itself.
-            _pool.TrackMutable(record, record.CommittedStorageBytes);
+            _pool.TrackFreshMutable(record, record.CommittedStorageBytes, _span);
             return record;
         }
 
