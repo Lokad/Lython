@@ -1,12 +1,12 @@
 # Lython and CPython comparison contract
 
-Specification version **6**, prepared prospectively for a future milestone. The catalog
+Specification version **6**, used by the declared milestone collections. The catalog
 and explicit correctness check are available. Persistent worker primitives are
 available, including supervised correctness/timer smokes, paired collection,
 machine checks and raw-evidence report rendering.
 The [2026-10-09 bounded run](results/2026-10-09-quick/README.md) completed all four
 lanes within ten minutes each. Its raw-evidence review found no qualified
-workload ratios; a qualified baseline remains pending.
+workload ratios; its exclusions remain unchanged.
 The [focused basic-loop investigation](results/2026-10-09-core-loop/README.md)
 completed in 2m13s. Its separate CPU profile identifies interpreter dispatch
 as the leading design investigation; strict stability checks still withhold
@@ -41,6 +41,14 @@ and fixed 14-case warm profile. Its lanes lasted 5m58s and 6m28s. Both controls
 qualified, but no workload qualified on both producers. All original exclusions
 remain visible. The current ASCII pipeline and zlib application qualified;
 the basic-loop comparison still withholds a certified multiplier.
+
+The [second consolidated milestone](results/2026-10-10-second-milestone/README.md)
+completed two warm lanes in 6m00s and 6m17s. The current basic loop, keyword
+calls, stable sort, JSON and zlib qualify against CPython. The basic loop takes
+about 2.6–2.8 times CPython's time. The reference tiny control failed spread,
+so no old/new improvement ratio qualifies. The current ASCII pipeline falls
+below the unchanged invocation floor. Every exclusion remains final; ordinary
+rounds keep using seconds-long micros.
 
 The [string reclamation round](results/2026-10-09-string-reclamation/README.md)
 used five short decomposition jobs and a separate 15-second CPU trace, followed

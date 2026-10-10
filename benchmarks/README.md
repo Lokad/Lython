@@ -12,9 +12,14 @@ raw-evidence report rendering are documented in the comparison contract.
 The [2026-10-09 run](results/2026-10-09-quick/README.md) finished the four lanes in
 14m57s total, within ten minutes per lane. It records absolute timings and all
 exclusions; no workload ratio qualified.
-The `core-loop` profile narrows follow-up collection to a basic integer reduction
-at three sizes and two controls, with scalar checksum output. It uses the same
-public invocation boundary and ten-minute cap; see the comparison contract.
+Ordinary performance rounds use the comparison contract's seconds-long `micro`
+command with a 30-second process-group cap. Full lanes are reserved for infrequent
+declared milestones. The [second milestone](results/2026-10-10-second-milestone/README.md)
+qualifies the current basic loop and four application workloads against CPython;
+its reference control failure keeps old/new improvement ratios unqualified.
+The `core-loop` profile narrows milestone collection to a basic integer reduction
+at three sizes and two controls, with scalar checksum output and the same
+public invocation boundary.
 BenchmarkDotNet results below do not include a
 Python baseline. An explicit, hash-verified Linux toolchain preparation command
 is documented in that contract.
