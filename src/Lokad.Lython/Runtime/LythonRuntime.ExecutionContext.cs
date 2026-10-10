@@ -95,7 +95,7 @@ internal sealed partial class LythonRuntime
         {
             Services = parent.Services;
             SourcePath = parent.SourcePath;
-            Frame = new ExecutionFrame(parent.Frame, new Dictionary<string, object>(StringComparer.Ordinal));
+            Frame = new ExecutionFrame(parent.Frame);
             ParentContext = parent;
             FunctionClosureContext = this;
             ScopeFacts = scopeFacts;
@@ -244,7 +244,7 @@ internal sealed partial class LythonRuntime
                     return true;
                 }
                 if (current.ScopeFacts.IsGlobal("__class__") || current.ScopeFacts.LocalNames.Contains("__class__") ||
-                    current.FunctionName is not null && current.Variables.ContainsKey("__class__")) break;
+                    current.FunctionName is not null && current.Frame.ContainsVariable("__class__")) break;
             }
             cell = null;
             return false;
