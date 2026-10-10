@@ -313,6 +313,13 @@ accepted-runtime method traces take about sixteen seconds each and identify
 attribute handling and shared async lowered dispatch as further design leads.
 Their overlapping inclusive stacks do not predict removable costs.
 
+The [lowered-dispatch compatibility baseline](results/2026-10-10-lowered-dispatch-baseline/README.md)
+fixes false static rejections of local lazy type aliases and later reads of
+captured collections. It retains 34 regression checks, passes 9,335 Debug tests
+and matches twenty trusted CPython snippets in both run modes. A direct
+synchronous lowered-dispatch candidate passes 121 focused checks and stays
+isolated pending full gates and separately declared short micros.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete

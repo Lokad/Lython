@@ -1,0 +1,187 @@
+{
+  "checkedUtc": "2026-10-10T20:14:08.051034+00:00",
+  "source": "88e23251f6d6f3fcb15f2495de8d5eaaa98ae8a0",
+  "productionTree": "7fe2dd6ab6f53578d03dc94564110d97f5912840",
+  "testsTree": "e058c64e74d5eaaa6549a5653dc61b690b0f440d",
+  "harnessTree": "c194ce88a7e4d52c576f3929ef82bce60bf37e2d",
+  "runtimeTreeUnchanged": true,
+  "newIndependentChecks": 34,
+  "fullDebugPassed": 9335,
+  "fullDebug": [
+    {
+      "path": "full-debug\\JoannesVermorel_LOKAD-0399_2026-10-10_22_07_31.trx",
+      "sha256": "a9ee3c59ce87c143f4e6aca5f11d587373c5daf3b60ad8e49b7ecd18ce0770e9",
+      "total": 1537,
+      "passed": 1537,
+      "failed": 0
+    },
+    {
+      "path": "full-debug\\JoannesVermorel_LOKAD-0399_2026-10-10_22_07_31[1].trx",
+      "sha256": "c44f5412c99f68d4ef60d3f20098b076215068b8b46918b26e8664461d4ec136",
+      "total": 7798,
+      "passed": 7798,
+      "failed": 0
+    }
+  ],
+  "originalSelectedBaseline": [
+    {
+      "path": "baseline-before-fixes\\JoannesVermorel_LOKAD-0399_2026-10-10_22_03_43.trx",
+      "sha256": "bf3aac93aa13ae59ac668a1d0d85c34e21f220555d26fa93ee18348bef50c316",
+      "total": 53,
+      "passed": 53,
+      "failed": 0
+    },
+    {
+      "path": "baseline-before-fixes\\JoannesVermorel_LOKAD-0399_2026-10-10_22_03_59.trx",
+      "sha256": "9484fc29151d0f4d9ad9f1dd856f76cee6c1a924e3742e52dae5db210db58975",
+      "total": 66,
+      "passed": 54,
+      "failed": 12
+    }
+  ],
+  "originalReducedDeferredCases": [
+    {
+      "path": "baseline-deferred-complete\\JoannesVermorel_LOKAD-0399_2026-10-10_22_04_54.trx",
+      "sha256": "8284d396c6f531aecc5cf430d6239b62d02043f78aed27dffce89e8d3f3caf95",
+      "total": 16,
+      "passed": 4,
+      "failed": 12
+    }
+  ],
+  "focusedPublic": [
+    {
+      "path": "fixed-public-focus\\JoannesVermorel_LOKAD-0399_2026-10-10_22_05_38.trx",
+      "sha256": "bcb85cf6f31c60999be129c23f0738b2a1b2f3fefb96220b52c0d34048859116",
+      "total": 239,
+      "passed": 239,
+      "failed": 0
+    }
+  ],
+  "cpythonComparison": [
+    {
+      "path": "probes-sync.jsonl",
+      "sha256": "3e6766047a7132e15e913ef4c51595dba2ceeb4578dc202308a329940a5ca7c3",
+      "cases": 8,
+      "mode": "sync"
+    },
+    {
+      "path": "deferred-probes-sync.jsonl",
+      "sha256": "71065c06559cdd46f81683a4b35219f40af08f399576c3bf77b15b930fa717ce",
+      "cases": 12,
+      "mode": "sync"
+    },
+    {
+      "path": "probes-async.jsonl",
+      "sha256": "165b0aa0208f8f65fb0e1cac74ec3720471b02815f785d3e34059bcc667c4848",
+      "cases": 8,
+      "mode": "async"
+    },
+    {
+      "path": "deferred-probes-async.jsonl",
+      "sha256": "c4f3c6f610bd2d07b337cedb2d8989ccfc3d16a2ad79d6a96b215764b8494d62",
+      "cases": 12,
+      "mode": "async"
+    }
+  ],
+  "isolatedCandidate": {
+    "source": "d1a1c599d4264fe49b29c7288a10a5bb1d755522",
+    "productionTree": "ea808ce93c0dbae7b78ddb370459decdc91e9bdf",
+    "focusedPassed": 121,
+    "receipts": [
+      {
+        "path": "candidate-focus\\JoannesVermorel_LOKAD-0399_2026-10-10_22_10_26.trx",
+        "sha256": "8fd1f12c48e1d09c23a33b94fe5e6c28edc0338f56baee20aadc30a02275dd50",
+        "total": 53,
+        "passed": 53,
+        "failed": 0
+      },
+      {
+        "path": "candidate-focus\\JoannesVermorel_LOKAD-0399_2026-10-10_22_10_46.trx",
+        "sha256": "a11e25fb2d3d92faab81f576bd1f5f661a43f9d322cfab54bdb1585af6420670",
+        "total": 68,
+        "passed": 68,
+        "failed": 0
+      }
+    ],
+    "integrated": false
+  },
+  "normalTimingCollections": 0,
+  "fullLanes": 0,
+  "performanceGainClaimed": false,
+  "milestoneQualified": false,
+  "goalComplete": false,
+  "supportingFiles": [
+    {
+      "path": "initial\\baseline-public.log",
+      "sha256": "6a4d5eccbb460b0a9e68fc5b88f9578f29dcfa21f18799858b2def042c2b5ab3"
+    },
+    {
+      "path": "initial\\baseline-white.log",
+      "sha256": "66cf3dbe058f2e181d4ea0d5ef9d97526fabcb39686fc84c162256f10e7f5c0d"
+    },
+    {
+      "path": "initial\\JoannesVermorel_LOKAD-0399_2026-10-10_21_58_40.trx",
+      "sha256": "68accf32fa2c117ad2e52865540730888e808de4eaff34e3985e44f94cc86f99"
+    },
+    {
+      "path": "initial\\public-version.json",
+      "sha256": "d967444f15bad0a21e8d249ebdb972580d3c49b5323e6833bc0773e85f99ebef"
+    },
+    {
+      "path": "initial\\public.dll",
+      "sha256": "10856f525d4077d940dfe41c7de4316a881e9a7580fbcbe5376f5704595778c9"
+    },
+    {
+      "path": "baseline-versions.json",
+      "sha256": "b839d20adc5b3a66f6d6741a4e8e1ae24872ab863e7eb4d7e4b5de52464783f7"
+    },
+    {
+      "path": "baseline-public.dll",
+      "sha256": "5767f2c84236467f22c26b97347d19331e29174be00c72ab6eb4c7aacd983ebb"
+    },
+    {
+      "path": "baseline-whitebox.dll",
+      "sha256": "957243904c69874953715e40de983f0ab44e7ba09cc3f7196d216111941b29a9"
+    },
+    {
+      "path": "baseline-deferred-complete\\versions.json",
+      "sha256": "5c872f460dd6253dcec44ac9d6b3e24502616dff1c9b3055e6848cb0cfc9ff30"
+    },
+    {
+      "path": "baseline-deferred-complete\\public.dll",
+      "sha256": "67ed91c3515ef5d4ecff81771eeaa1c52850532672eda53aa44930a0091e1ebf"
+    },
+    {
+      "path": "baseline-white-corrected\\JoannesVermorel_LOKAD-0399_2026-10-10_22_00_26.trx",
+      "sha256": "35c8304c171e452aa171a5db7df8b279c8848e53d1f2602b5c4f35c449b36d26"
+    },
+    {
+      "path": "baseline-probes.log",
+      "sha256": "8d4848ad7f28480caedf6a5c0b6dd01b8c7f3474287eb79dda9e534a826f8a09"
+    },
+    {
+      "path": "probes.json",
+      "sha256": "0ee8f69646da38e6b00602d055f3fc8f81b7c65dbe6cf2108409c5e15bb6be7f"
+    },
+    {
+      "path": "deferred-probes.json",
+      "sha256": "790443d1972a16d1cba24414d0a711fbf6e11a25e7c0ed46aa1b98c383a8d4ad"
+    },
+    {
+      "path": "synchronous-action-mapping.json",
+      "sha256": "9071b73c8346051910c2b8109de7715af867fba58ef67c0efaf7bd9568d07689"
+    },
+    {
+      "path": "assessment-policy.json",
+      "sha256": "0f7880b4b32e39a2d4d572234d67de549560ed93392ca8a8bf7f943f12d0e63c"
+    },
+    {
+      "path": "decide.py",
+      "sha256": "74ff3ee10d6d15dd60fa4b01d3eb5c86a6ed695e4c8f05aad370ba00b69252b8"
+    },
+    {
+      "path": "decision-policy-code-proof.json",
+      "sha256": "309d9bcae6f83ad87b29dd0e98fec290264864ed4c406950016cf56df657db4c"
+    }
+  ]
+}
