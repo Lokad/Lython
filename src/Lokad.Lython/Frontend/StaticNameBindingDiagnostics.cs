@@ -76,6 +76,9 @@ internal static class StaticNameBindingDiagnostics
         foreach (var expression in StatementSyntaxTraversal.EnumerateDirectExpressions(statement))
         {
             if (statement is TryStatementSyntax) continue;
+            // Alias values and type-parameter bounds/defaults run lazily in
+            // their annotation scope, after the declaration has bound its name.
+            if (statement is TypeAliasStatementSyntax) continue;
             if (statement is ChainedAssignmentStatementSyntax chain && !ReferenceEquals(expression, chain.Expression)) continue;
             if (statement is UnpackingAssignmentStatementSyntax unpack && !ReferenceEquals(expression, unpack.Expression)) continue;
             if (statement is ForStatementSyntax loop && !ReferenceEquals(expression, loop.Iterable)) continue;
@@ -95,6 +98,10 @@ internal static class StaticNameBindingDiagnostics
 
         switch (statement)
         {
+            case TypeAliasStatementSyntax alias:
+                maybeAssigned.Add(alias.Name);
+                break;
+
             case ImportStatementSyntax importStatement:
                 if (importStatement.ImportedMembers is null)
                 {
