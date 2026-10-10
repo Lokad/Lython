@@ -106,7 +106,7 @@ public sealed class HostReadPrereservationTests
         var host = new CountingHost();
         host.SeedFile("/data.txt", string.Concat(Enumerable.Repeat(new string((char)121, 999) + "\n", 100)));
         var sync = script.Run(host, options);
-        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.True(sync.Success, sync.Success ? null : StreamingFailureDetails("sync", sync, host));
         Assert.Equal(expected, sync.ReturnValue);
         Assert.Equal(0, host.TextReads);
         Assert.True(host.TextRangeReads > 1);
@@ -116,13 +116,19 @@ public sealed class HostReadPrereservationTests
         var host2 = new CountingHost();
         host2.SeedFile("/data.txt", string.Concat(Enumerable.Repeat(new string((char)121, 999) + "\n", 100)));
         var asyncResult = await script.RunAsync(host2, options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.True(asyncResult.Success, asyncResult.Success ? null : StreamingFailureDetails("async", asyncResult, host2));
         Assert.Equal(expected, asyncResult.ReturnValue);
         Assert.Equal(0, host2.TextReads);
         Assert.True(host2.TextRangeReads > 1);
         Assert.True(host2.TextRangeBytes == 100000);
         Assert.True(host2.MaxTextRangeBytes <= 16 * 1024, "no single ranged call exceeds the engine window");
     }
+
+    private static string StreamingFailureDetails(string phase, LythonExecutionResult result, CountingHost host)
+        => $"{phase}: {result.Failure?.ExceptionType}: {result.Failure?.Message}; "
+            + $"peak={result.PeakExecutionMemoryBytes}; denied={result.DeniedReservationBytes}; "
+            + $"rangedReads={host.TextRangeReads}; returnedBytes={host.TextRangeBytes}; "
+            + $"maxRangeBytes={host.MaxTextRangeBytes}";
 
     [Fact]
     public async Task RetainedLinesTripWhileStreaming()

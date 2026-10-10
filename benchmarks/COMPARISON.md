@@ -75,6 +75,13 @@ slower pipeline results. A structural ownership proposal remains pending.
 
 ## Short improvement rounds
 
+The [call-frame investigation](results/2026-10-10-call-frames/README.md) uses two
+fourteen-second CPU captures on existing positional/keyword jobs. A lazy function
+namespace candidate remains isolated after a full Debug streaming-memory failure;
+its timing micros are held. The report retains the failure and focused negative
+controls. Production is unchanged, and the existing streaming test gains
+failure-only allocation/window diagnostics for further investigation.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
