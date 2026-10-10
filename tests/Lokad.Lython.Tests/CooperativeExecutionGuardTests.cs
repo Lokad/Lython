@@ -30,6 +30,59 @@ public sealed class CooperativeExecutionGuardTests
         // This synthetic boundary supplements the standalone large finite loop;
         // routine unit tests need not execute fifty million checkpoints.
         context.CheckExecution(null);
+        Assert.Equal(LythonRunOptions.DefaultMaxExecutionSteps, context.Limits.ExecutionStepCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BoundaryCheckpointSweepsBeforeFuelOrCancellationFailure(bool explicitFuel)
+    {
+        using var cancellation = new CancellationTokenSource();
+        var state = new ExecutionState(new MockLythonHost(), new LythonRunOptions
+        {
+            MaxExecutionMemoryBytes = 8192,
+            MaxExecutionSteps = explicitFuel ? 255 : null,
+            CancellationToken = cancellation.Token,
+        });
+        var dropped = TrackTemporary(state);
+        var before = state.MemoryGovernor.CurrentCommittedBytes;
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        Assert.False(dropped.TryGetTarget(out _));
+
+        for (var i = 0; i < 255; i++) state.Guards.CheckExecution(null);
+        Assert.Equal(before, state.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(explicitFuel ? 255 : 0, state.Limits.ExecutionStepCount);
+        cancellation.Cancel();
+        var span = new LythonSourceSpan(7, 2, 3, 4);
+        var failure = Assert.Throws<LythonRuntimeException>(() => state.Guards.CheckExecution(span));
+
+        Assert.Equal(explicitFuel ? "maximum execution step count exceeded (255)" : "execution canceled", failure.Message);
+        Assert.Equal(span, failure.Span);
+        Assert.Equal(explicitFuel ? 256 : 0, state.Limits.ExecutionStepCount);
+        Assert.True(state.MemoryGovernor.CurrentCommittedBytes <= before - 4096);
+        Assert.Equal(0, state.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    [Fact]
+    public void CancellationWithinFuelAllowanceCountsTheCheckpointAndPreservesSpan()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var state = new ExecutionState(new MockLythonHost(), new LythonRunOptions
+        {
+            MaxExecutionSteps = 4,
+            CancellationToken = cancellation.Token,
+        });
+        state.Guards.CheckExecution(null);
+        cancellation.Cancel();
+        var span = new LythonSourceSpan(11, 3, 5, 6);
+        var failure = Assert.Throws<LythonRuntimeException>(() => state.Guards.CheckExecution(span));
+
+        Assert.Equal("execution canceled", failure.Message);
+        Assert.Equal(span, failure.Span);
+        Assert.Equal(2, state.Limits.ExecutionStepCount);
     }
 
     [Theory]
@@ -59,11 +112,15 @@ public sealed class CooperativeExecutionGuardTests
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static WeakReference<object> TrackTemporary(LythonRuntime.ExecutionContext context)
+        => TrackTemporary(context.State);
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static WeakReference<object> TrackTemporary(ExecutionState state)
     {
         var value = new object();
-        context.MemoryGovernor.Reserve(4096, null);
-        context.MemoryGovernor.Commit(4096);
-        context.State.CallTemporaries.Track(value, 4096);
+        state.MemoryGovernor.Reserve(4096, null);
+        state.MemoryGovernor.Commit(4096);
+        state.CallTemporaries.Track(value, 4096);
         return new WeakReference<object>(value);
     }
 }
