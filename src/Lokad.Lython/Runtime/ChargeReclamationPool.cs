@@ -36,8 +36,8 @@ internal sealed class ChargeReclamationPool
     // live/quantum sweeps.
     private const int OldQuantum = 4096;
 
-    // Strings carry their pending entry directly, avoiding an additional weak
-    // table handle per split item. Other pooled values use this identity table.
+    // Strings and lists carry their entry directly, avoiding an additional
+    // weak table handle per value. Other pooled values use this identity table.
     // Both paths keep the target weak and the same conservative registry charge.
     private static readonly ConditionalWeakTable<object, ReclamationEntry> TrackedStorage = new();
 
@@ -134,6 +134,12 @@ internal sealed class ChargeReclamationPool
             return entry is not null;
         }
 
+        if (value is PyList list)
+        {
+            entry = list.ReclamationEntry;
+            return entry is not null;
+        }
+
         return TrackedStorage.TryGetValue(value, out entry);
     }
 
@@ -142,6 +148,10 @@ internal sealed class ChargeReclamationPool
         if (value is PyString text)
         {
             text.ReclamationEntry = entry;
+        }
+        else if (value is PyList list)
+        {
+            list.ReclamationEntry = entry;
         }
         else
         {
@@ -154,6 +164,10 @@ internal sealed class ChargeReclamationPool
         if (value is PyString text)
         {
             text.ReclamationEntry = null;
+        }
+        else if (value is PyList list)
+        {
+            list.ReclamationEntry = null;
         }
         else
         {

@@ -9,6 +9,10 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     private LythonSourceSpan? _allocationSpan;
     private AdoptedScalarCoupons? _scalarCoupons;
 
+    // Keep the weak registration beside its owner, avoiding a second
+    // ephemeron handle for each list. The entry never roots this list.
+    internal ChargeReclamationPool.ReclamationEntry? ReclamationEntry { get; set; }
+
     public PyList()
     {
         _items = PyListStorage.Create();
