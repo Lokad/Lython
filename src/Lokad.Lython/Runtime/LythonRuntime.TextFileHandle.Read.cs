@@ -341,7 +341,9 @@ internal sealed partial class LythonRuntime
             // registry itself stays a bounded 16KB of young-tier entries.
             private void TrackEmission(PyString value)
             {
-                _pool.TrackString(value);
+                // Every emission is freshly constructed and unpublished. If
+                // registration is denied, return its orphaned payload charge.
+                _pool.TrackFreshString(value);
                 if ((++_emissions & 255) == 0)
                 {
                     _pool.Sweep();
