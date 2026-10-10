@@ -217,6 +217,17 @@ seconds each, with separate allocation/native groups about four seconds under
 grows 103 bytes. Every result remains visible. No full lanes run; qualification
 waits for a declared milestone.
 
+The [checked-range iteration round](results/2026-10-10-checked-range-iteration/README.md)
+combines range advancement and checked pulls in one active enumerator, preserving
+the original checkpoint/ownership boundaries and materializer source shape.
+Loop time falls 3.53%/4.50% in two repeats against roughly 1% spreads; call decreases
+are small, sort is mixed and pipeline changes are small. Loop managed allocation
+increases 8–22 bytes per complete job; final interpreter code grows 9 native bytes.
+Eighteen exact boundary regressions pass the unchanged runtime first; all 9,196
+Debug checks pass before collection. Twelve micros take about eight seconds each,
+with separate allocation/native groups about four seconds under 30-second caps.
+Every result and native body/tier remains visible. No full lanes run.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
