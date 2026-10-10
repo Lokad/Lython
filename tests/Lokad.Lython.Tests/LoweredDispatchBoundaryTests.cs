@@ -80,9 +80,10 @@ public sealed class LoweredDispatchBoundaryTests
         var active = new PyException("ValueError", "outer", PyNone.Instance);
         context.Services.SetCurrentException(active);
         var statements = LoweredScript.Lower(frontend.Script.RequireNotNull()).Statements;
-        var flow = asynchronous ? await LythonRuntime.ExecuteStatementsAsync(statements, context) : LythonRuntime.ExecuteStatements(statements, context);
-        Assert.Null(flow.Control);
-        var returned = Assert.IsType<PyList>(flow.Return.RequireNotNull().Value);
+        var signal = asynchronous
+            ? await Assert.ThrowsAsync<LythonRuntime.ReturnSignal>(async () => await LythonRuntime.ExecuteStatementsAsync(statements, context))
+            : Assert.Throws<LythonRuntime.ReturnSignal>(() => LythonRuntime.ExecuteStatements(statements, context));
+        var returned = Assert.IsType<PyList>(signal.Value);
         Assert.Same(context.Variables["seen"], returned);
         Assert.Equal(new BigInteger[] { 0, 1, 2, 7 }, returned.ToArray().Cast<BigInteger>().ToArray());
         Assert.Same(active, context.Services.CurrentException);
