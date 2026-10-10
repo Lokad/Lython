@@ -76,7 +76,7 @@ relief cannot trigger another attempt for the same pending allocation.
 
 Corrected source `fd58dde1b3f5272ae62853c0174c6ed4ace24200` has production tree
 `121846918199fcf4df8f237ec15bc7fa2894affe`, tests
-`57a0eb7a10273f0bf402f5806948241a904c56bb` and unchanged comparison tree
+`57a0eb7a10273f0bf402f5806948241a904c56bb` and unchanged benchmark project tree
 `c194ce88a7e4d52c576f3929ef82bce60bf37e2d`. Delivered baseline is
 `35793a9e0671d777a9dde4c31887944d177ad945`; original namespace source is
 `8d20133d1c8e8a077879e2c830993c103b84c8ae`. Local SDK is
