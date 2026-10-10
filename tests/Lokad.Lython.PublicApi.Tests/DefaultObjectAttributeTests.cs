@@ -182,21 +182,24 @@ public sealed class DefaultObjectAttributeTests
         events=[]
         class C: pass
         c=C()
+        class Holder:
+         def get(self):
+          events.append('receiver')
+          return c
+         target=property(get)
+        holder=Holder()
         class Work:
          def run(self):
-          def receiver():
-           events.append('receiver')
-           return c
           def value():
            events.append('value')
            return []
-          receiver().value=value()
+          holder.target.value=value()
           assert events==['value','receiver']
           events.clear()
           def fail():
            events.append('fail')
            raise ValueError('rhs')
-          try: receiver().value=fail()
+          try: holder.target.value=fail()
           except ValueError: pass
           else: assert False
           assert events==['fail']
@@ -289,7 +292,7 @@ public sealed class DefaultObjectAttributeTests
     [InlineData(true)]
     public async Task DefaultDeleteSlotAwaitsPropertyDeleter(bool explicitSlot)
     {
-        var source = "class C:\n def remove(self):\n  with open('/value') as f:self.saved=f.read()\n value=property(None,None,remove)\nc=C()\n" +
+        var source = "class C:\n def remove(self):\n  with open('/value') as f:self.saved=f.read()\n value=property(None).deleter(remove)\nc=C()\n" +
             (explicitSlot ? "object.__delattr__(c,'value')" : "del c.value") + "\nreturn c.saved\n";
         var compiled = new LythonEngine().Compile(source);
         Assert.True(compiled.IsValid, string.Join("; ", compiled.Diagnostics.Select(d => d.Message)));
