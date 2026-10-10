@@ -206,6 +206,17 @@ seconds each, with separate allocation/native groups about four seconds under
 dispatch, iteration and scalar-value/observation leads; its group stops in 14.08
 seconds. No qualified CPU/speed claim, full lane or production change is made.
 
+The [integer-observation round](results/2026-10-10-integer-observation/README.md)
+keeps the exact signed-byte memory preflight while routing boxed integers before
+generic value checks. Loop time falls 6.53%/5.37% and positional calls 8.59%/9.26%
+in two short repeats; other controls are mixed and allocations effectively
+unchanged. Thirteen budget regressions pass on the original runtime first, and
+all 9,178 Debug checks pass before collection. Twelve micros take about eight
+seconds each, with separate allocation/native groups about four seconds under
+30-second caps. The final interpreter body stays 2,675 bytes; observation code
+grows 103 bytes. Every result remains visible. No full lanes run; qualification
+waits for a declared milestone.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
