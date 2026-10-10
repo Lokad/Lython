@@ -45,11 +45,11 @@ internal sealed partial class LythonRuntime
         internal bool RetentionCharged;
     }
 
-    internal sealed class ExecutableFrameState
+    internal class ExecutableFrameState
     {
-        private readonly ExecutableCodeObject _codeObject;
-        private readonly object[] _locals;
-        private readonly ExecutableCell?[]? _localCells;
+        protected readonly ExecutableCodeObject _codeObject;
+        protected readonly object[] _locals;
+        protected readonly ExecutableCell?[]? _localCells;
         private readonly IReadOnlyList<ExecutableCell>? _closureCells;
 
         public ExecutableFrameState(
@@ -374,12 +374,11 @@ internal sealed partial class LythonRuntime
                 }
             }
 
+            var interpreter = new ExecutableFrameInterpreter(codeObject, context, locals, localCells, closureCells);
             if (closureCells is not null || localCells is not null || codeObject.LocalNames.Count != 0)
             {
-                context.EnterExecutableSlots(new ExecutableFrameState(codeObject, locals, localCells, closureCells));
+                context.EnterExecutableSlots(interpreter);
             }
-
-            var interpreter = new ExecutableFrameInterpreter(codeObject, context, locals, localCells);
             interpreter.Execute();
             return interpreter.HasFrameReturn ? interpreter.FrameReturnValue : null;
         }

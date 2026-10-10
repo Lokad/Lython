@@ -16,7 +16,7 @@ internal sealed partial class LythonRuntime
             // finally blocks can run before return/break/continue is rethrown.
             while (true)
             {
-                var block = codeObject.Blocks[_currentBlockIndex];
+                var block = _codeObject.Blocks[_currentBlockIndex];
                 if (_blockEntryStackDepths.Length != 0)
                 {
                     _blockEntryStackDepths[_currentBlockIndex] ??= _stack.Count;
@@ -27,7 +27,7 @@ internal sealed partial class LythonRuntime
                 for (; _instructionIndex < instructions.Length; _instructionIndex++)
                 {
                     ref readonly var instruction = ref instructions[_instructionIndex];
-                    context.Services.CheckExecution(instruction.Span);
+                    _context.Services.CheckExecution(instruction.Span);
 
                     try
                     {
@@ -40,7 +40,7 @@ internal sealed partial class LythonRuntime
                         switch (instruction.OpCode)
                         {
                             case ExecutableOpCode.ApplyOperation:
-                                ExecutePreparedOperationAsync((ExecutableOperation)codeObject.Constants[instruction.ConstantIndex]!, instruction.Span, false).GetAwaiter().GetResult();
+                                ExecutePreparedOperationAsync((ExecutableOperation)_codeObject.Constants[instruction.ConstantIndex]!, instruction.Span, false).GetAwaiter().GetResult();
                                 break;
                             case ExecutableOpCode.Yield:
                                 YieldValue = Pop(ref _stack, instruction.Span);
@@ -52,8 +52,8 @@ internal sealed partial class LythonRuntime
                                 if (_delegation is null)
                                 {
                                     var source = Pop(ref _stack, instruction.Span);
-                                    var iterator = Iter([source], instruction.Span, context);
-                                    _delegation = new GeneratorDelegation(iterator, context, instruction.Span);
+                                    var iterator = Iter([source], instruction.Span, _context);
+                                    _delegation = new GeneratorDelegation(iterator, _context, instruction.Span);
                                 }
                                 var delegated = _delegation.Advance(_sentValue, _injectedException);
                                 _sentValue = PyNone.Instance;

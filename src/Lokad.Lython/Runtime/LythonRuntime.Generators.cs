@@ -9,7 +9,6 @@ internal sealed partial class LythonRuntime
     {
         private ExecutableFrameInterpreter? _interpreter;
         private ExecutionContext? _frame;
-        private ExecutableFrameState? _slots;
         private readonly LythonSourceSpan _span;
         private readonly long _bytes;
         private bool _started, _completed, _running;
@@ -51,8 +50,7 @@ internal sealed partial class LythonRuntime
                 cells = new ExecutableCell[locals.Length];
                 foreach (var slot in code.CapturedLocalSlots) cells[slot] = new ExecutableCell(locals[slot], frame, code.LocalNames[slot]);
             }
-            _slots = new ExecutableFrameState(code, locals, cells, closureCells);
-            _interpreter = new ExecutableFrameInterpreter(code, frame, locals, cells);
+            _interpreter = new ExecutableFrameInterpreter(code, frame, locals, cells, closureCells);
         }
 
         public bool IsTruthy() => true;
@@ -92,7 +90,7 @@ internal sealed partial class LythonRuntime
                 try
                 {
                     _running = true;
-                    frame.EnterExecutableSlots(_slots!);
+                    frame.EnterExecutableSlots(interpreter);
                     interpreter.SetCallerException(previousException);
                     frame.Services.SetCurrentException(interpreter.HasActiveHandler ? _suspendedException : previousException);
                     _started = true;
@@ -130,7 +128,6 @@ internal sealed partial class LythonRuntime
         {
             _completed = true;
             _frame = null;
-            _slots = null;
             _interpreter = null;
             _suspendedException = null;
         }

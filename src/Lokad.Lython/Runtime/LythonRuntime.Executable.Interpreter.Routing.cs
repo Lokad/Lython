@@ -7,7 +7,7 @@ internal sealed partial class LythonRuntime
         // Synchronous and asynchronous dispatch must unwind the same frame state.
         private bool TryRouteReturn(ReturnSignal signal, LythonSourceSpan span)
         {
-            if (TryHandleAbrupt(codeObject, context, ref _stack, _blockEntryStackDepths, _currentBlockIndex,
+            if (TryHandleAbrupt(_codeObject, _context, ref _stack, _blockEntryStackDepths, _currentBlockIndex,
                 new PendingReturn(signal.Value), span, ref _pendingAbrupt, ref _currentBlockIndex, out _))
                 return true;
 
@@ -19,7 +19,7 @@ internal sealed partial class LythonRuntime
 
         private bool TryRouteControl(ControlSignal signal, LythonSourceSpan span)
         {
-            if (TryHandleAbrupt(codeObject, context, ref _stack, _blockEntryStackDepths, _currentBlockIndex,
+            if (TryHandleAbrupt(_codeObject, _context, ref _stack, _blockEntryStackDepths, _currentBlockIndex,
                 new PendingControl(signal), span, ref _pendingAbrupt, ref _currentBlockIndex, out _))
                 return true;
 
@@ -29,13 +29,13 @@ internal sealed partial class LythonRuntime
 
         private void RouteRuntimeException(LythonRuntimeException ex, LythonSourceSpan span)
         {
-            var previousActive = context.Services.CurrentException;
+            var previousActive = _context.Services.CurrentException;
             if (previousActive is not null && !ReferenceEquals(ex.OriginalPythonException, previousActive))
                 ex.PythonContext ??= previousActive;
             var previousPending = _pendingAbrupt;
             _delegation = null;
             _injectedException = null;
-            if (!TryHandleAbrupt(codeObject, context, ref _stack, _blockEntryStackDepths, _currentBlockIndex,
+            if (!TryHandleAbrupt(_codeObject, _context, ref _stack, _blockEntryStackDepths, _currentBlockIndex,
                 new PendingException(ex), span, ref _pendingAbrupt, ref _currentBlockIndex, out var matchedRegion))
             {
                 var failure = _pendingAbrupt is PendingException unhandled ? unhandled.Exception : ex;
@@ -50,17 +50,17 @@ internal sealed partial class LythonRuntime
             {
                 // Hold the installed handler aside while abandoned suites unwind;
                 // restore the displaced nesting before installing the routed error.
-                var installed = routedToHandler ? context.Services.CurrentException : null;
-                context.Services.SetCurrentException(previousActive);
+                var installed = routedToHandler ? _context.Services.CurrentException : null;
+                _context.Services.SetCurrentException(previousActive);
                 UnwindAbandonedHandlers(_currentBlockIndex);
                 var retainedPending = PendingCleanupContains(previousPending, _currentBlockIndex)
                     ? previousPending : null;
                 SavedActiveExceptions().Push(new ActiveExceptionSave(
-                    context.Services.CurrentException,
+                    _context.Services.CurrentException,
                     matchedRegion?.SuiteStartBlockIndex,
                     matchedRegion?.SuiteEndBlockIndex,
                     retainedPending));
-                context.Services.SetCurrentException(
+                _context.Services.SetCurrentException(
                     routedToHandler ? installed : CreatePythonExceptionInstance(routedException));
             }
         }

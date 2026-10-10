@@ -12,10 +12,10 @@ internal sealed partial class LythonRuntime
             switch (operation)
             {
                 case ExecutableAnnotationsEnabled:
-                    _stack.Push(!context.PostponedAnnotations);
+                    _stack.Push(!_context.PostponedAnnotations);
                     break;
                 case ExecutableCreateFunction function:
-                    using (var storage = context.MemoryGovernor.ReserveTemporary(256L + 160L * function.Inputs.Count + 128L * function.Definition.Parameters.Count, span))
+                    using (var storage = _context.MemoryGovernor.ReserveTemporary(256L + 160L * function.Inputs.Count + 128L * function.Definition.Parameters.Count, span))
                     {
                         var captured = CaptureDefinitionInputs(function.Inputs);
                         var definition = function.Definition with
@@ -30,14 +30,14 @@ internal sealed partial class LythonRuntime
                         };
                         RetainPreparedDefinitionStorage(definition.Parameters, 64L + 160L * definition.Parameters.Count, span);
                         RetainPreparedDefinitionStorage(definition, 128L + 64L * definition.Decorators.Count, span);
-                        if (asynchronous) await ExecuteLoweredFunctionDefinitionAsync(definition, context).ConfigureAwait(false);
-                        else ExecuteLoweredFunctionDefinition(definition, context);
-                        SyncExecutableLocalsFromContext(codeObject, locals, localCells, context);
+                        if (asynchronous) await ExecuteLoweredFunctionDefinitionAsync(definition, _context).ConfigureAwait(false);
+                        else ExecuteLoweredFunctionDefinition(definition, _context);
+                        SyncExecutableLocalsFromContext(_codeObject, _locals, _localCells, _context);
                         LoweredExpression Capture(LoweredExpression input) => captured.TryGetValue(input, out var value) ? value : input;
                     }
                     break;
                 case ExecutableCreateLambda lambda:
-                    using (var storage = context.MemoryGovernor.ReserveTemporary(256L + 256L * lambda.Parameters.Count, span))
+                    using (var storage = _context.MemoryGovernor.ReserveTemporary(256L + 256L * lambda.Parameters.Count, span))
                     {
                         var captured = CaptureDefinitionInputs(lambda.Parameters.Where(p => p.DefaultValue is not null).Select(p => p.DefaultValue!).ToArray());
                         var expression = lambda.Expression with
@@ -48,16 +48,16 @@ internal sealed partial class LythonRuntime
                             }).ToArray(),
                         };
                         RetainPreparedDefinitionStorage(expression.PreparedParameters!, 64L + 160L * lambda.Parameters.Count, span);
-                        PushObserved(asynchronous ? await CreateLoweredLambdaAsync(expression, context).ConfigureAwait(false)
-                            : CreateLoweredLambda(expression, context), span);
+                        PushObserved(asynchronous ? await CreateLoweredLambdaAsync(expression, _context).ConfigureAwait(false)
+                            : CreateLoweredLambda(expression, _context), span);
                     }
                     break;
                 case ExecutableStartClassHeader header:
-                    _stack.Push(new CallExpansion.CallArgumentAccumulator(header.Count, context, ClassHeaderExpansionTarget, retained: true, deferSingleStar: false));
+                    _stack.Push(new CallExpansion.CallArgumentAccumulator(header.Count, _context, ClassHeaderExpansionTarget, retained: true, deferSingleStar: false));
                     break;
                 case ExecutableCreateClass create:
                     using (var accumulator = create.ExpandedHeader ? (CallExpansion.CallArgumentAccumulator)Pop(ref _stack, span) : null)
-                    using (var storage = context.MemoryGovernor.ReserveTemporary(256L + 128L * create.Definition.Decorators.Count, span))
+                    using (var storage = _context.MemoryGovernor.ReserveTemporary(256L + 128L * create.Definition.Decorators.Count, span))
                     {
                         var definition = create.Definition;
                         var decorators = new LoweredExpression[definition.Decorators.Count];
@@ -78,9 +78,9 @@ internal sealed partial class LythonRuntime
                             }
                             definition = definition with { HeaderArguments = headers };
                         }
-                        if (asynchronous) await ExecuteLoweredClassDefinitionAsync(definition, context).ConfigureAwait(false);
-                        else ExecuteLoweredClassDefinition(definition, context);
-                        SyncExecutableLocalsFromContext(codeObject, locals, localCells, context);
+                        if (asynchronous) await ExecuteLoweredClassDefinitionAsync(definition, _context).ConfigureAwait(false);
+                        else ExecuteLoweredClassDefinition(definition, _context);
+                        SyncExecutableLocalsFromContext(_codeObject, _locals, _localCells, _context);
                     }
                     break;
                 default: await ExecutePreparedTargetOperationAsync(operation, span, asynchronous).ConfigureAwait(false); break;
@@ -89,9 +89,9 @@ internal sealed partial class LythonRuntime
 
         private void RetainPreparedDefinitionStorage(object owner, long bytes, LythonSourceSpan span)
         {
-            context.MemoryGovernor.Reserve(bytes, span);
-            context.MemoryGovernor.Commit(bytes);
-            context.Services.State.CallTemporaries.TrackFreshMutable(owner, bytes, span);
+            _context.MemoryGovernor.Reserve(bytes, span);
+            _context.MemoryGovernor.Commit(bytes);
+            _context.Services.State.CallTemporaries.TrackFreshMutable(owner, bytes, span);
         }
 
         private Dictionary<LoweredExpression, LoweredExpression> CaptureDefinitionInputs(IReadOnlyList<LoweredExpression> inputs)

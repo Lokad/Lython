@@ -9,16 +9,31 @@ internal sealed partial class LythonRuntime
     /// code-object invocation. Keeping this state together makes opcode handlers
     /// independently reviewable without extending the runtime entry-point method.
     /// </summary>
-    private sealed partial class ExecutableFrameInterpreter(
-        ExecutableCodeObject codeObject,
-        ExecutionContext context,
-        object[] locals,
-        ExecutableCell?[]? localCells)
+    private sealed partial class ExecutableFrameInterpreter : ExecutableFrameState
     {
+        private readonly ExecutionContext _context;
+
+        public ExecutableFrameInterpreter(
+            ExecutableCodeObject codeObject,
+            ExecutionContext context,
+            object[] locals,
+            ExecutableCell?[]? localCells,
+            IReadOnlyList<ExecutableCell>? closureCells)
+            : base(codeObject, locals, localCells, closureCells)
+        {
+            _context = context;
+            _stack = new(Math.Max(8, codeObject.LocalNames.Count));
+            _currentBlockIndex = codeObject.EntryBlockIndex;
+            _entryActiveException = context.Services.CurrentException;
+            _memberCaches = codeObject.MemberCacheCount == 0 ? Array.Empty<ExecutableMemberCache?>() : new ExecutableMemberCache?[codeObject.MemberCacheCount];
+            _callCaches = codeObject.CallCacheCount == 0 ? Array.Empty<ExecutableCallCache?>() : new ExecutableCallCache?[codeObject.CallCacheCount];
+            _blockEntryStackDepths = codeObject.ExceptionRegions.Count == 0 ? Array.Empty<int?>() : new int?[codeObject.Blocks.Count];
+        }
+
         // The mutable stack lives in this interpreter, including across generator
         // suspension. Helpers must borrow it by reference rather than copy it.
-        private ExecutableValueStack _stack = new(Math.Max(8, codeObject.LocalNames.Count));
-        private int _currentBlockIndex = codeObject.EntryBlockIndex;
+        private ExecutableValueStack _stack;
+        private int _currentBlockIndex;
         private PendingAbruptSignal? _pendingAbrupt;
         private int _instructionIndex;
         private bool _waitingForSend;
@@ -48,7 +63,7 @@ internal sealed partial class LythonRuntime
 
         private Stack<ActiveExceptionSave> SavedActiveExceptions() => _savedActiveExceptions ??= new();
 
-        private PyException? _entryActiveException = context.Services.CurrentException;
+        private PyException? _entryActiveException;
 
         private sealed class ActiveExceptionSave(PyException? savedException, int? suiteStartBlockIndex, int? suiteEndBlockIndex, PendingAbruptSignal? savedPendingAbrupt = null)
         {
@@ -77,8 +92,8 @@ internal sealed partial class LythonRuntime
         {
             _stack.RemoveTail(_stack.Count);
             _savedActiveExceptions?.Clear();
-            AbandonActiveHandlerVars(context, span);
-            context.Services.SetCurrentException(_entryActiveException);
+            AbandonActiveHandlerVars(_context, span);
+            _context.Services.SetCurrentException(_entryActiveException);
         }
 
         // Pops saves for suites this propagation abandoned: a handler stays
@@ -88,9 +103,9 @@ internal sealed partial class LythonRuntime
         private bool PendingCleanupContains(PendingAbruptSignal? pending, int block)
         {
             if (pending?.CleanupId is not int id) return false;
-            for (var i = 0; i < codeObject.ExceptionRegions.Count; i++)
+            for (var i = 0; i < _codeObject.ExceptionRegions.Count; i++)
             {
-                var region = codeObject.ExceptionRegions[i];
+                var region = _codeObject.ExceptionRegions[i];
                 if (region.CleanupId == id && region.SuiteStartBlockIndex is int start &&
                     region.SuiteEndBlockIndex is int end && block >= start && block <= end) return true;
             }
@@ -101,7 +116,7 @@ internal sealed partial class LythonRuntime
         {
             var saved = _savedActiveExceptions is { Count: > 0 } saves ? saves.Pop() : null;
             _pendingAbrupt = saved?.SavedPendingAbrupt;
-            context.Services.SetCurrentException(saved?.SavedException);
+            _context.Services.SetCurrentException(saved?.SavedException);
         }
 
         private void UnwindAbandonedHandlers(int targetBlockIndex)
@@ -110,17 +125,17 @@ internal sealed partial class LythonRuntime
                 saves.Peek() is { SuiteStartBlockIndex: int start, SuiteEndBlockIndex: int end } &&
                 (targetBlockIndex < start || targetBlockIndex > end))
             {
-                context.Services.SetCurrentException(saves.Pop().SavedException);
+                _context.Services.SetCurrentException(saves.Pop().SavedException);
             }
         }
 
         // Empty cache tables are shared: no instruction can name an index the
         // compiler never emitted (any such access already throws today).
-        private readonly ExecutableMemberCache?[] _memberCaches = codeObject.MemberCacheCount == 0 ? Array.Empty<ExecutableMemberCache?>() : new ExecutableMemberCache?[codeObject.MemberCacheCount];
-        private readonly ExecutableCallCache?[] _callCaches = codeObject.CallCacheCount == 0 ? Array.Empty<ExecutableCallCache?>() : new ExecutableCallCache?[codeObject.CallCacheCount];
+        private readonly ExecutableMemberCache?[] _memberCaches;
+        private readonly ExecutableCallCache?[] _callCaches;
         // Depth entries are recorded per block visit but only read when a
         // region matches, so region-free frames share the empty table.
-        private readonly int?[] _blockEntryStackDepths = codeObject.ExceptionRegions.Count == 0 ? Array.Empty<int?>() : new int?[codeObject.Blocks.Count];
+        private readonly int?[] _blockEntryStackDepths;
 
         // Stores through the same cell-mirroring and host-mirroring policy as
         // StoreLocal, so synthetic slots (chain, match, with) behave exactly
@@ -148,7 +163,7 @@ internal sealed partial class LythonRuntime
 
         private void PushObserved(object value, LythonSourceSpan span)
         {
-            context.ObserveValue(value, span);
+            _context.ObserveValue(value, span);
             _stack.Push(value);
         }
 
@@ -157,19 +172,19 @@ internal sealed partial class LythonRuntime
             switch (instruction.OpCode)
             {
                 case ExecutableOpCode.Import:
-                    ExecuteExecutableImport(codeObject, codeObject.Imports[instruction.ImportIndex], locals, localCells, context);
+                    ExecuteExecutableImport(_codeObject, _codeObject.Imports[instruction.ImportIndex], _locals, _localCells, _context);
                     break;
 
                 case ExecutableOpCode.DefineFunction:
-                    ExecuteExecutableFunctionDefinition(codeObject, codeObject.Functions[instruction.FunctionIndex], locals, localCells, context);
+                    ExecuteExecutableFunctionDefinition(_codeObject, _codeObject.Functions[instruction.FunctionIndex], _locals, _localCells, _context);
                     break;
 
                 case ExecutableOpCode.ExecuteFallbackStatement:
                     DispatchLoweredStatementAsync(
-                        codeObject.StatementFallbacks[instruction.StatementFallbackIndex].Statement,
-                        context,
+                        _codeObject.StatementFallbacks[instruction.StatementFallbackIndex].Statement,
+                        _context,
                         SynchronousLoweredStatementExecution.Instance).GetAwaiter().GetResult();
-                    SyncExecutableLocalsFromContext(codeObject, locals, localCells, context);
+                    SyncExecutableLocalsFromContext(_codeObject, _locals, _localCells, _context);
                     break;
             }
         }
@@ -179,36 +194,36 @@ internal sealed partial class LythonRuntime
             switch (instruction.OpCode)
             {
                 case ExecutableOpCode.LoadConst:
-                    var constant = RuntimeValue(codeObject.Constants[instruction.ConstantIndex]);
-                    context.ObserveValue(constant, instruction.Span);
+                    var constant = RuntimeValue(_codeObject.Constants[instruction.ConstantIndex]);
+                    _context.ObserveValue(constant, instruction.Span);
                     _stack.Push(constant);
                     break;
 
                 case ExecutableOpCode.LoadLocal:
-                    _stack.Push(LoadLocal(codeObject, locals, instruction.LocalSlot, instruction.Span));
+                    _stack.Push(LoadLocal(_codeObject, _locals, instruction.LocalSlot, instruction.Span));
                     break;
 
                 case ExecutableOpCode.LoadClosure:
-                    _stack.Push(LoadClosure(codeObject, context, instruction.ClosureSlot, instruction.Span));
+                    _stack.Push(LoadClosure(_codeObject, _context, instruction.ClosureSlot, instruction.Span));
                     break;
 
                 case ExecutableOpCode.LoadGlobal:
-                    _stack.Push(ResolveExecutableGlobal(codeObject.Names[instruction.NameIndex], instruction.Span, context));
+                    _stack.Push(ResolveExecutableGlobal(_codeObject.Names[instruction.NameIndex], instruction.Span, _context));
                     break;
 
                 case ExecutableOpCode.LoadName:
-                    _stack.Push(ResolveExecutableName(codeObject.Names[instruction.NameIndex], instruction.Span, context));
+                    _stack.Push(ResolveExecutableName(_codeObject.Names[instruction.NameIndex], instruction.Span, _context));
                     break;
 
                 case ExecutableOpCode.EvaluateFallbackExpression:
-                    var fallback = EvaluateLoweredExpression(codeObject.ExpressionFallbacks[instruction.ExpressionFallbackIndex].Expression, context);
-                    context.ObserveValue(fallback, instruction.Span);
+                    var fallback = EvaluateLoweredExpression(_codeObject.ExpressionFallbacks[instruction.ExpressionFallbackIndex].Expression, _context);
+                    _context.ObserveValue(fallback, instruction.Span);
                     _stack.Push(fallback);
                     break;
 
                 case ExecutableOpCode.LoadMember:
                     var target = Pop(ref _stack, instruction.Span);
-                    var memberName = codeObject.Names[instruction.NameIndex];
+                    var memberName = _codeObject.Names[instruction.NameIndex];
                     var cachedMember = _memberCaches[instruction.MemberCacheIndex];
                     object memberValue;
                     if (cachedMember is not null && ReferenceEquals(cachedMember.Target, target))
@@ -219,9 +234,9 @@ internal sealed partial class LythonRuntime
                     }
                     else
                     {
-                        if (!TryResolveRuntimeMember(target, memberName, context, instruction.Span, out var resolvedMember))
+                        if (!TryResolveRuntimeMember(target, memberName, _context, instruction.Span, out var resolvedMember))
                         {
-                            throw PyMemberAccess.CreateMissingMemberError(target, memberName, instruction.Span, context);
+                            throw PyMemberAccess.CreateMissingMemberError(target, memberName, instruction.Span, _context);
                         }
 
                         memberValue = resolvedMember;
@@ -230,18 +245,18 @@ internal sealed partial class LythonRuntime
                             : null;
                     }
 
-                    context.ObserveValue(memberValue, instruction.Span);
+                    _context.ObserveValue(memberValue, instruction.Span);
                     _stack.Push(memberValue);
                     break;
 
                 case ExecutableOpCode.StoreLocal:
-                    StoreLocalValue(codeObject, locals, localCells, context, instruction.LocalSlot, Pop(ref _stack, instruction.Span), instruction.Span);
+                    StoreLocalValue(_codeObject, _locals, _localCells, _context, instruction.LocalSlot, Pop(ref _stack, instruction.Span), instruction.Span);
                     break;
 
                 case ExecutableOpCode.StoreClosure:
                     StoreExecutableClosure(
-                        codeObject,
-                        context,
+                        _codeObject,
+                        _context,
                         instruction.ClosureSlot,
                         Pop(ref _stack, instruction.Span),
                         instruction.Span);
@@ -249,20 +264,20 @@ internal sealed partial class LythonRuntime
 
                 case ExecutableOpCode.StoreGlobal:
                     StoreName(
-                        codeObject.Names[instruction.NameIndex],
+                        _codeObject.Names[instruction.NameIndex],
                         Pop(ref _stack, instruction.Span),
-                        context,
+                        _context,
                         instruction.Span);
                     break;
 
                 case ExecutableOpCode.StoreName:
                     AssignExecutableBoundName(
-                        codeObject,
-                        locals,
-                        localCells,
-                        codeObject.Names[instruction.NameIndex],
+                        _codeObject,
+                        _locals,
+                        _localCells,
+                        _codeObject.Names[instruction.NameIndex],
                         Pop(ref _stack, instruction.Span),
-                        context,
+                        _context,
                         instruction.Span);
                     break;
 
@@ -281,24 +296,24 @@ internal sealed partial class LythonRuntime
             switch (instruction.OpCode)
             {
                 case ExecutableOpCode.MakeList:
-                    PushObserved(CreateListFromStack(ref _stack, instruction.ItemCount, instruction.Span, context), instruction.Span);
+                    PushObserved(CreateListFromStack(ref _stack, instruction.ItemCount, instruction.Span, _context), instruction.Span);
                     break;
 
                 case ExecutableOpCode.MakeTuple:
-                    PushObserved(CreateTupleFromStack(ref _stack, instruction.ItemCount, instruction.Span, context), instruction.Span);
+                    PushObserved(CreateTupleFromStack(ref _stack, instruction.ItemCount, instruction.Span, _context), instruction.Span);
                     break;
 
                 case ExecutableOpCode.MakeSet:
-                    PushObserved(ExecuteExecutableMakeSet(ref _stack, instruction.ItemCount, instruction.Span, context), instruction.Span);
+                    PushObserved(ExecuteExecutableMakeSet(ref _stack, instruction.ItemCount, instruction.Span, _context), instruction.Span);
                     break;
 
                 case ExecutableOpCode.MakeDict:
-                    PushObserved(ExecuteExecutableMakeDict(ref _stack, instruction.PairCount, instruction.Span, context), instruction.Span);
+                    PushObserved(ExecuteExecutableMakeDict(ref _stack, instruction.PairCount, instruction.Span, _context), instruction.Span);
                     break;
 
                 case ExecutableOpCode.ResolveContextManager:
                     var managerValue = Pop(ref _stack, instruction.Span);
-                    _stack.Push(PyContextManagers.Resolve(managerValue, instruction.Span, context));
+                    _stack.Push(PyContextManagers.Resolve(managerValue, instruction.Span, _context));
                     break;
 
                 case ExecutableOpCode.EnterContextManager:
@@ -314,7 +329,7 @@ internal sealed partial class LythonRuntime
                         (pendingException.CleanupId ?? -1) == instruction.CleanupId)
                     {
                         if (exitingManager.Exit(
-                                ResolvePythonExceptionType(exception, context),
+                                ResolvePythonExceptionType(exception, _context),
                                 CreatePythonExceptionInstance(exception),
                                 PyNone.Instance))
                         {
@@ -330,11 +345,11 @@ internal sealed partial class LythonRuntime
                 case ExecutableOpCode.MatchCase:
                     var subject = Pop(ref _stack, instruction.Span);
                     if (!TryExecuteExecutableMatchCase(
-                            codeObject.MatchCases[instruction.MatchCaseIndex],
+                            _codeObject.MatchCases[instruction.MatchCaseIndex],
                             subject,
-                            context,
-                            locals,
-                            localCells))
+                            _context,
+                            _locals,
+                            _localCells))
                     {
                         _currentBlockIndex = instruction.FailureBlockIndex;
                         return true;
@@ -351,7 +366,7 @@ internal sealed partial class LythonRuntime
             {
                 case ExecutableOpCode.GetIter:
                     var iterable = Pop(ref _stack, instruction.Span);
-                    _stack.Push(ToSequence(iterable, instruction.Span, context).GetEnumerator());
+                    _stack.Push(ToSequence(iterable, instruction.Span, _context).GetEnumerator());
                     break;
 
                 case ExecutableOpCode.ForNext:
@@ -367,20 +382,20 @@ internal sealed partial class LythonRuntime
                     break;
 
                 case ExecutableOpCode.AssignLoopTarget:
-                    var loopBinding = codeObject.LoopTargets[instruction.LoopTargetIndex];
-                    AssignLoopTarget(loopBinding.Target, Pop(ref _stack, instruction.Span), loopBinding.Span, context);
+                    var loopBinding = _codeObject.LoopTargets[instruction.LoopTargetIndex];
+                    AssignLoopTarget(loopBinding.Target, Pop(ref _stack, instruction.Span), loopBinding.Span, _context);
                     break;
 
                 case ExecutableOpCode.AssignUnpackingTargets:
-                    var unpackingBinding = codeObject.UnpackingTargets[instruction.UnpackingTargetIndex];
-                    AssignTargets(unpackingBinding.Targets, Pop(ref _stack, instruction.Span), unpackingBinding.Span, context);
+                    var unpackingBinding = _codeObject.UnpackingTargets[instruction.UnpackingTargetIndex];
+                    AssignTargets(unpackingBinding.Targets, Pop(ref _stack, instruction.Span), unpackingBinding.Span, _context);
                     break;
 
                 case ExecutableOpCode.Call:
                     var callResult = ExecuteExecutableCall(
-                        codeObject.CallSites[instruction.CallSiteIndex],
+                        _codeObject.CallSites[instruction.CallSiteIndex],
                         ref _stack,
-                        context,
+                        _context,
                         ref _callCaches[instruction.CallCacheIndex]);
                     PushObserved(callResult, instruction.Span);
                     break;
@@ -388,16 +403,16 @@ internal sealed partial class LythonRuntime
                 case ExecutableOpCode.Subscript:
                     var index = Pop(ref _stack, instruction.Span);
                     var target = Pop(ref _stack, instruction.Span);
-                    PushObserved(ReadSubscriptValue(target, index, instruction.Span, context), instruction.Span);
+                    PushObserved(ReadSubscriptValue(target, index, instruction.Span, _context), instruction.Span);
                     break;
 
                 case ExecutableOpCode.Slice:
-                    PushObserved(ExecuteExecutableSlice(ref _stack, instruction.SliceParts, instruction.Span, context), instruction.Span);
+                    PushObserved(ExecuteExecutableSlice(ref _stack, instruction.SliceParts, instruction.Span, _context), instruction.Span);
                     break;
 
                 case ExecutableOpCode.MakeSlice:
                     var (start, stop, step) = PopExecutableSliceBounds(ref _stack, instruction.SliceParts, instruction.Span);
-                    PushObserved(CreateSliceValue(start, stop, step, instruction.Span, context), instruction.Span);
+                    PushObserved(CreateSliceValue(start, stop, step, instruction.Span, _context), instruction.Span);
                     break;
 
                 case ExecutableOpCode.Binary:
@@ -408,7 +423,7 @@ internal sealed partial class LythonRuntime
                         binaryLeft,
                         binaryRight,
                         instruction.Span,
-                        context), instruction.Span);
+                        _context), instruction.Span);
                     break;
 
                 case ExecutableOpCode.Augmented:
@@ -418,7 +433,7 @@ internal sealed partial class LythonRuntime
                         instruction.AugmentedOperator,
                         augmentedLeft,
                         augmentedRight,
-                        context,
+                        _context,
                         instruction.Span), instruction.Span);
                     break;
 
@@ -426,7 +441,7 @@ internal sealed partial class LythonRuntime
                     PushObserved(EvaluateExecutableUnary(
                         instruction.UnaryOperator,
                         Pop(ref _stack, instruction.Span),
-                        context,
+                        _context,
                         instruction.Span), instruction.Span);
                     break;
             }
@@ -443,8 +458,8 @@ internal sealed partial class LythonRuntime
         // which stays as the routing backstop.
         private bool DeliverReturn(object value, LythonSourceSpan span)
         {
-            if (codeObject.ExceptionRegions.Count != 0 &&
-                TryHandleAbrupt(codeObject, context, ref _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingReturn(value), span, ref _pendingAbrupt, ref _currentBlockIndex, out _))
+            if (_codeObject.ExceptionRegions.Count != 0 &&
+                TryHandleAbrupt(_codeObject, _context, ref _stack, _blockEntryStackDepths, _currentBlockIndex, new PendingReturn(value), span, ref _pendingAbrupt, ref _currentBlockIndex, out _))
             {
                 return true;
             }
@@ -460,10 +475,10 @@ internal sealed partial class LythonRuntime
             var previous = ReferenceEquals(_pendingAbrupt, jump) ? jump.SavedPendingAbrupt : _pendingAbrupt;
             jump.SavedPendingAbrupt = PendingCleanupContains(previous, jump.TargetBlock) ? previous : null;
             _pendingAbrupt = jump.SavedPendingAbrupt;
-            if (TryHandleAbrupt(codeObject, context, ref _stack, _blockEntryStackDepths, _currentBlockIndex, jump, span, ref _pendingAbrupt, ref _currentBlockIndex, out _)) return true;
+            if (TryHandleAbrupt(_codeObject, _context, ref _stack, _blockEntryStackDepths, _currentBlockIndex, jump, span, ref _pendingAbrupt, ref _currentBlockIndex, out _)) return true;
             if (jump.DiscardIterator) _stack.RemoveTail(1);
             UnwindAbandonedHandlers(jump.TargetBlock);
-            UnwindAbandonedHandlerVars(context, span, jump.TargetBlock);
+            UnwindAbandonedHandlerVars(_context, span, jump.TargetBlock);
             _currentBlockIndex = jump.TargetBlock;
             return true;
         }
@@ -476,7 +491,7 @@ internal sealed partial class LythonRuntime
                     return DeliverJump(new PendingJump(instruction.TargetBlockIndex, instruction.DiscardIterator), instruction.Span);
 
                 case ExecutableOpCode.JumpIfFalse:
-                    if (!IsTruthy(Pop(ref _stack, instruction.Span), context, instruction.Span))
+                    if (!IsTruthy(Pop(ref _stack, instruction.Span), _context, instruction.Span))
                     {
                         _currentBlockIndex = instruction.TargetBlockIndex;
                         return true;
@@ -493,8 +508,8 @@ internal sealed partial class LythonRuntime
                 case ExecutableOpCode.ClearException:
                     if (instruction.ExceptionNameIndex >= 0)
                     {
-                        _ = DeleteName(codeObject.Names[instruction.ExceptionNameIndex], context, instruction.Span);
-                        if (context.ActiveHandlerVariables is { Count: > 0 } activeHandlers)
+                        _ = DeleteName(_codeObject.Names[instruction.ExceptionNameIndex], _context, instruction.Span);
+                        if (_context.ActiveHandlerVariables is { Count: > 0 } activeHandlers)
                         {
                             activeHandlers.Pop();
                         }
@@ -502,31 +517,31 @@ internal sealed partial class LythonRuntime
                     if (_savedActiveExceptions is { Count: > 0 } saves)
                     {
                         var saved = saves.Pop();
-                        context.Services.SetCurrentException(saved.SavedException);
+                        _context.Services.SetCurrentException(saved.SavedException);
                         _pendingAbrupt = saved.SavedPendingAbrupt;
                     }
-                    else context.Services.SetCurrentException(null);
+                    else _context.Services.SetCurrentException(null);
                     return false;
 
                 case ExecutableOpCode.MatchException:
-                    var active = context.Services.CurrentException
+                    var active = _context.Services.CurrentException
                         ?? throw new InvalidOperationException("Exception selection requires an active exception.");
-                    _stack.Push(MatchesCaughtExceptionValue(Pop(ref _stack, instruction.Span), active.Identity, context, instruction.Span));
+                    _stack.Push(MatchesCaughtExceptionValue(Pop(ref _stack, instruction.Span), active.Identity, _context, instruction.Span));
                     return false;
 
                 case ExecutableOpCode.BindException:
-                    var bound = context.Services.CurrentException
+                    var bound = _context.Services.CurrentException
                         ?? throw new InvalidOperationException("Exception binding requires an active exception.");
-                    ChargeBoundException(context.MemoryGovernor, instruction.Span);
-                    var name = codeObject.Names[instruction.NameIndex];
-                    AssignExecutableBoundName(codeObject, locals, localCells, name, bound, context, instruction.Span);
+                    ChargeBoundException(_context.MemoryGovernor, instruction.Span);
+                    var name = _codeObject.Names[instruction.NameIndex];
+                    AssignExecutableBoundName(_codeObject, _locals, _localCells, name, bound, _context, instruction.Span);
                     var suite = SavedActiveExceptions().Peek();
-                    context.ActiveHandlerVariables ??= new();
-                    context.ActiveHandlerVariables.Push((name, suite.SuiteStartBlockIndex ?? 0, suite.SuiteEndBlockIndex ?? int.MaxValue));
+                    _context.ActiveHandlerVariables ??= new();
+                    _context.ActiveHandlerVariables.Push((name, suite.SuiteStartBlockIndex ?? 0, suite.SuiteEndBlockIndex ?? int.MaxValue));
                     return false;
 
                 case ExecutableOpCode.ReraiseException:
-                    ThrowReraisedException(instruction.Span, context);
+                    ThrowReraisedException(instruction.Span, _context);
                     return false;
 
                 case ExecutableOpCode.EndFinally:
@@ -541,7 +556,7 @@ internal sealed partial class LythonRuntime
                     {
                         // An exception-routed finally suite exits: restore the
                         // active exception saved when the suite was entered.
-                        context.Services.SetCurrentException(
+                        _context.Services.SetCurrentException(
                             _savedActiveExceptions is { Count: > 0 } restored ? restored.Pop().SavedException : null);
                     }
 
@@ -575,13 +590,13 @@ internal sealed partial class LythonRuntime
             var right = Pop(ref _stack, instruction.Span);
             var linkValue = EvaluateExecutableBinary(
                 instruction.BinaryOperator,
-                LoadLocal(codeObject, locals, instruction.ChainSlot, instruction.Span),
+                LoadLocal(_codeObject, _locals, instruction.ChainSlot, instruction.Span),
                 right,
                 instruction.Span,
-                context);
-            context.ObserveValue(linkValue, instruction.Span);
-            StoreLocalValue(codeObject, locals, localCells, context, instruction.ChainSlot, right, instruction.Span);
-            if (!IsTruthy(linkValue, context, instruction.Span))
+                _context);
+            _context.ObserveValue(linkValue, instruction.Span);
+            StoreLocalValue(_codeObject, _locals, _localCells, _context, instruction.ChainSlot, right, instruction.Span);
+            if (!IsTruthy(linkValue, _context, instruction.Span))
             {
                 _currentBlockIndex = instruction.FailureBlockIndex;
                 return true;
@@ -604,7 +619,7 @@ internal sealed partial class LythonRuntime
             // finally blocks can run before return/break/continue is rethrown.
             while (true)
             {
-                var block = codeObject.Blocks[_currentBlockIndex];
+                var block = _codeObject.Blocks[_currentBlockIndex];
                 if (_blockEntryStackDepths.Length != 0)
                 {
                     _blockEntryStackDepths[_currentBlockIndex] ??= _stack.Count;
@@ -615,7 +630,7 @@ internal sealed partial class LythonRuntime
                 for (; _instructionIndex < instructions.Length; _instructionIndex++)
                 {
                     var instruction = instructions[_instructionIndex];
-                    context.Services.CheckExecution(instruction.Span);
+                    _context.Services.CheckExecution(instruction.Span);
 
                     try
                     {
@@ -628,7 +643,7 @@ internal sealed partial class LythonRuntime
                         switch (instruction.OpCode)
                         {
                             case ExecutableOpCode.ApplyOperation:
-                                await ExecutePreparedOperationAsync((ExecutableOperation)codeObject.Constants[instruction.ConstantIndex]!, instruction.Span, asynchronous).ConfigureAwait(false);
+                                await ExecutePreparedOperationAsync((ExecutableOperation)_codeObject.Constants[instruction.ConstantIndex]!, instruction.Span, asynchronous).ConfigureAwait(false);
                                 break;
                             case ExecutableOpCode.Yield:
                                 YieldValue = Pop(ref _stack, instruction.Span);
@@ -640,8 +655,8 @@ internal sealed partial class LythonRuntime
                                 if (_delegation is null)
                                 {
                                     var source = Pop(ref _stack, instruction.Span);
-                                    var iterator = asynchronous ? await IterAsync([source], instruction.Span, context).ConfigureAwait(false) : Iter([source], instruction.Span, context);
-                                    _delegation = new GeneratorDelegation(iterator, context, instruction.Span);
+                                    var iterator = asynchronous ? await IterAsync([source], instruction.Span, _context).ConfigureAwait(false) : Iter([source], instruction.Span, _context);
+                                    _delegation = new GeneratorDelegation(iterator, _context, instruction.Span);
                                 }
                                 var delegated = asynchronous ? await _delegation.AdvanceAsync(_sentValue, _injectedException, true).ConfigureAwait(false)
                                     : _delegation.Advance(_sentValue, _injectedException);
@@ -677,13 +692,13 @@ internal sealed partial class LythonRuntime
                                  ExecutableOpCode.Dup or
                                  ExecutableOpCode.PopTop:
                                 if (asynchronous && instruction.OpCode == ExecutableOpCode.EvaluateFallbackExpression)
-                                    PushObserved(await EvaluateLoweredExpressionAsync(codeObject.ExpressionFallbacks[instruction.ExpressionFallbackIndex].Expression, context).ConfigureAwait(false), instruction.Span);
+                                    PushObserved(await EvaluateLoweredExpressionAsync(_codeObject.ExpressionFallbacks[instruction.ExpressionFallbackIndex].Expression, _context).ConfigureAwait(false), instruction.Span);
                                 else if (asynchronous && instruction.OpCode == ExecutableOpCode.LoadMember)
                                 {
                                     var target = Pop(ref _stack, instruction.Span);
-                                    var name = codeObject.Names[instruction.NameIndex];
-                                    var member = await TryResolveRuntimeMemberAsync(target, name, context, instruction.Span).ConfigureAwait(false);
-                                    if (!member.Found) throw PyMemberAccess.CreateMissingMemberError(target, name, instruction.Span, context);
+                                    var name = _codeObject.Names[instruction.NameIndex];
+                                    var member = await TryResolveRuntimeMemberAsync(target, name, _context, instruction.Span).ConfigureAwait(false);
+                                    if (!member.Found) throw PyMemberAccess.CreateMissingMemberError(target, name, instruction.Span, _context);
                                     PushObserved(member.Value, instruction.Span);
                                 }
                                 else ExecuteStackTransfer(instruction);
