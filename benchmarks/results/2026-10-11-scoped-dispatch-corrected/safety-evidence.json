@@ -1,0 +1,238 @@
+{
+  "originalFailedDelivery": "50cb26e665f1eb40d5f323d60b7e5ee633521d24",
+  "ciRun": 38091976517,
+  "ciUrl": "https://github.com/Lokad/Lython/actions/runs/38091976517",
+  "linuxFatalStackOverflow": true,
+  "windowsPassed": true,
+  "originalCiAuthenticatedRequests": 9,
+  "recordedFormatRetry": true,
+  "noSameHeadRerun": true,
+  "publicationFix": "4be9971b9578c2c74aacda02a22598d3e3d16517",
+  "propagationFix": "d10564e7e2e35a6ad9ddc1788548f123f3178ef3",
+  "originalColdTelemetry": {
+    "producer": "0.10.0+0445ca571417aa2ae20bc833e8839a845e6dac52",
+    "count": 32,
+    "first": [
+      16771916,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807
+    ],
+    "second": [
+      16771916,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807,
+      9223372036854775807
+    ],
+    "errors": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "firstUnknown": 31,
+    "permanentlyUnknown": 31,
+    "runtime": "10.0.12",
+    "normalTiming": false
+  },
+  "publicationFixAloneDidNotResolveHookCrash": true,
+  "discardedHeadroomTrialBytes": 1048576,
+  "finalHeadroomBytes": 98304,
+  "interpreterDepthCap": 512,
+  "firstWorkerDiagnosticExcluded": "Missing dependency; wrapper success was not child success",
+  "workerTelemetryProducer": "Dirty 4be9971b with the retained 1 MiB reserve patch",
+  "workerTelemetryCalls": 510,
+  "workerTelemetryFirstRemaining": 16765228,
+  "workerTelemetryLastRemaining": 14721084,
+  "workerTelemetryThread": 4,
+  "diagnosticNotNormalTiming": true,
+  "publicationFixWindowsFullDebug": [
+    {
+      "path": "stack-guard-publication-20261011/full-debug/JoannesVermorel_LOKAD-0399_2026-10-11_01_04_09.trx",
+      "sha256": "dfc9310cf00852c2e449a046b1ca4434b80b0bd716db5b004a59a07061bfacb0",
+      "passed": 7822
+    },
+    {
+      "path": "stack-guard-publication-20261011/full-debug/JoannesVermorel_LOKAD-0399_2026-10-11_01_04_11.trx",
+      "sha256": "317490b37cdfa05621ca3c1f784de7f55e9d102e1e6af0617b00884256701396",
+      "passed": 1574
+    }
+  ],
+  "propagationTrialLinuxFocused": [
+    {
+      "path": "stack-guard-publication-20261011/vm/propagation-focus-release/_lython-bench_2026-10-10_23_21_26_net10.0.trx",
+      "sha256": "d053772830f8b5b28d7b7cbb5ed176e6acd94691593d03647fd3abc73d7a153b",
+      "passed": 5
+    }
+  ],
+  "propagationTrialWindowsFocused": [
+    {
+      "path": "stack-guard-publication-20261011/propagation-focus-debug/JoannesVermorel_LOKAD-0399_2026-10-11_01_21_08.trx",
+      "sha256": "f80d7e825eafe77ecef4f49c2861d7de883cf2fa7532b777d1becb0fa1c92dee",
+      "passed": 5
+    }
+  ],
+  "correctedFixtureWindowsFocused": [
+    {
+      "path": "stack-guard-publication-20261011/propagation-extra-debug-v2/JoannesVermorel_LOKAD-0399_2026-10-11_01_22_54.trx",
+      "sha256": "7065aad88291f780fa18bd175a4886d5979cd34c2bbba2919296a5bd1a49ae90",
+      "passed": 3
+    }
+  ],
+  "rawSupportFiles": [
+    {
+      "path": "stack-guard-publication-20261011/original-telemetry.json",
+      "sha256": "fb61883c95e7d169278c84bf281db3fb9d8efd8454e1ef895a8893966f1dbda4"
+    },
+    {
+      "path": "stack-guard-publication-20261011/cold-telemetry-exit.txt",
+      "sha256": "f0b5c2c2211c8d67ed15e75e656c7862d086e9245420892a7de62cd9ec582a06"
+    },
+    {
+      "path": "stack-guard-publication-20261011/headroom-trial.patch",
+      "sha256": "704442dff6362613a2809430c9578b7e1ab337554cf2d576f0deb6c32b51dea0"
+    },
+    {
+      "path": "stack-guard-publication-20261011/headroom-trial-exit.txt",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "path": "stack-guard-publication-20261011/vm/focus-release.log",
+      "sha256": "5f9df5ca91377a8d381f9bf64b0483deccc4aa6e38bbc223719c37305eac02dc"
+    },
+    {
+      "path": "stack-guard-publication-20261011/vm/headroom-focus-release.log",
+      "sha256": "4b8ae44f4a68156102b08aa31a2839b56b1bc34181e5fea920dd50ea4c535fd0"
+    },
+    {
+      "path": "stack-guard-publication-20261011/vm/headroom-trial-binaries.sha256",
+      "sha256": "59fe5667021bf373d38db62958bfc6ce035eb1f27efb65628de345802cfa0039"
+    },
+    {
+      "path": "stack-guard-publication-20261011/vm/worker-headroom.stderr",
+      "sha256": "b4753e9fbc10d8f863809417b3ba269c2e7f1c379346bfea33ad97db01aa8cb2"
+    },
+    {
+      "path": "stack-guard-publication-20261011/vm/worker-headroom-exited.txt",
+      "sha256": "e792fb1003f5b8e68721716306a9bab5856d30413cca23a76dff24f967a16083"
+    },
+    {
+      "path": "stack-guard-publication-20261011/vm/worker-headroom-v2.jsonl",
+      "sha256": "9bb32a876bdfc0e0e84b6e8df7be4396fa7a0af1c4b5fef22960b5fc1ccf9d25"
+    },
+    {
+      "path": "stack-guard-publication-20261011/vm/worker-headroom-v2.stderr",
+      "sha256": "1fbde6ce9c268940ea93a871a674e98dde5fef0d6e4c4fca8f05ca722a095f16"
+    },
+    {
+      "path": "stack-guard-publication-20261011/vm/worker-headroom-v2-exited.txt",
+      "sha256": "5f3bbb7122a689e4a084ee2a7b34a290284ba4600c558792e4a70ad280f799fd"
+    },
+    {
+      "path": "stack-guard-publication-20261011/vm/applied-propagation-trial.patch",
+      "sha256": "6e8e09389706bad6acd260fbf39166b97d387af6c89468872cd24a3aee47873a"
+    },
+    {
+      "path": "stack-guard-publication-20261011/vm/propagation-focus-release.log",
+      "sha256": "c0187f21f854a1d6e0515982561cf53a9448933ec7f0a637dbeb7f02b30a2df0"
+    },
+    {
+      "path": "stack-guard-publication-20261011/propagation-fixture-v1/RecursiveExceptionPropagationTests.cs",
+      "sha256": "d3cf272190075337510ee127429a122cc81b00a3f5a47ddef61df17fc5db2e9e"
+    },
+    {
+      "path": "stack-guard-publication-20261011/propagation-fixture-v1/Lokad.Lython.PublicApi.Tests.dll",
+      "sha256": "8afbbe965388cd20c72563de630eacff15ad930d290da7c24e338b7f8f1d774d"
+    },
+    {
+      "path": "stack-guard-publication-20261011/frozen-debug-binaries.json",
+      "sha256": "c26b4c31d4a32a7b45be66e20d639c6bc73aa0da41cc7ccc30654bcab2b7089d"
+    }
+  ],
+  "failedCiLogSha256": "f8a6bae9aea6e091e5db91a1ead9b1fae922753020e868468014c4cc620b576b",
+  "failedCiLedgerSha256": "f906c8442ddde5138b943d8feaefad8159d6f70097285d4df1ad5eeb740e066a"
+}
