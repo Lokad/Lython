@@ -4,6 +4,15 @@ Specification version **6**, used by the declared milestone collections. The cat
 and explicit correctness check are available. Persistent worker primitives are
 available, including supervised correctness/timer smokes, paired collection,
 machine checks and raw-evidence report rendering.
+The [function-scoped dispatch round](results/2026-10-11-function-scoped-dispatch/README.md)
+accepts direct lowered dispatch only inside active synchronous function bodies.
+Method jobs take 3.6% / 8.3% less time and allocate 1.5% / 4.4% less in two passes,
+with no repeated control regression beyond the frozen bounds. Fourteen paired
+micros take about eight seconds each; separate allocation and native-code groups
+take about four seconds. Both producers pass 9,395 Debug tests, matching Release
+boundaries and full canonical CPython checks. All controls and emitted native tiers
+remain visible. No full lane, recollection or milestone-qualified ratio is added.
+
 The [2026-10-09 bounded run](results/2026-10-09-quick/README.md) completed all four
 lanes within ten minutes each. Its raw-evidence review found no qualified
 workload ratios; its exclusions remain unchanged.
