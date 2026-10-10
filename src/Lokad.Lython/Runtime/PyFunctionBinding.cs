@@ -24,7 +24,13 @@ internal static class PyFunctionBinding
             }
         }
 
-        if (bindingPlan.Parameters.Count > 0 && TryGetReceiver(boundArguments, bindingPlan, out var receiver))
+        // A module-root closure cannot supply a lexical class cell. Ordinary
+        // module functions therefore need no receiver or class-cell discovery.
+        // Owner binding can happen later, and nested scopes have live __class__
+        // barriers, so keep their existing discovery and unavailable-super path.
+        var needsImplicitSuper = ownerType is not null || closure.ParentContext is not null ||
+            closure.ClassCell is not null || closure.IsClassBody;
+        if (needsImplicitSuper && bindingPlan.Parameters.Count > 0 && TryGetReceiver(boundArguments, bindingPlan, out var receiver))
         {
             if (frame.TryGetLexicalClassCell(out var classCell)) frame.BindImplicitSuper(classCell, receiver);
             else if (ownerType is not null || closure.TryGetLexicalClassCell(out _)) frame.BindUnavailableImplicitSuper(receiver);
