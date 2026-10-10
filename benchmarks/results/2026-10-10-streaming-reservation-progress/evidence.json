@@ -1,0 +1,736 @@
+{
+  "source": "fd58dde1b3f5272ae62853c0174c6ed4ace24200",
+  "trees": {
+    "production": "121846918199fcf4df8f237ec15bc7fa2894affe",
+    "tests": "57a0eb7a10273f0bf402f5806948241a904c56bb",
+    "harness": "3e7339099b331befb14c72547d2b906dda5f1808"
+  },
+  "mechanisms": [
+    {
+      "asyncMode": false,
+      "beforeScratchCommitted": 65008,
+      "partialDrainRefund": 3768,
+      "afterDrainCommitted": 61240,
+      "scratchReservation": 4032,
+      "accountedAfterScratch": 65272,
+      "payloadRequest": 1128,
+      "attemptedAccounted": 66400,
+      "budget": 65536,
+      "skippedCollection": true,
+      "pooledEntries": 22,
+      "pooledCharge": 27632
+    },
+    {
+      "asyncMode": true,
+      "beforeScratchCommitted": 65008,
+      "partialDrainRefund": 3768,
+      "afterDrainCommitted": 61240,
+      "scratchReservation": 4032,
+      "accountedAfterScratch": 65272,
+      "payloadRequest": 1128,
+      "attemptedAccounted": 66400,
+      "budget": 65536,
+      "skippedCollection": true,
+      "pooledEntries": 22,
+      "pooledCharge": 27632
+    }
+  ],
+  "diagnosticGroups": [
+    {
+      "label": "untraced-baseline-debug",
+      "configuration": "Debug",
+      "source": "35793a9e0671d777a9dde4c31887944d177ad945",
+      "receipt": {
+        "startedUtc": "2026-10-10T08:17:39.518137+00:00",
+        "stoppedUtc": "2026-10-10T08:17:39.905441+00:00",
+        "elapsedSeconds": 0.3873071998823434,
+        "exitCode": 0,
+        "timedOut": false,
+        "capSeconds": 30,
+        "dllSha256": "3fca76a5891f41e84b89bd8bc370b5e21ca8920cf8285dd9a22690609e0bb8cf"
+      },
+      "rows": [
+        {
+          "collectAt": 0,
+          "asyncMode": false,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65008,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 0
+        },
+        {
+          "collectAt": 0,
+          "asyncMode": true,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65008,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 0
+        },
+        {
+          "collectAt": 28,
+          "asyncMode": false,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65008,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 28,
+          "asyncMode": true,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65008,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 29,
+          "asyncMode": false,
+          "Success": false,
+          "returned": null,
+          "failure": "execution memory budget exceeded (65536)",
+          "PeakExecutionMemoryBytes": 65272,
+          "DeniedReservationBytes": 1128,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 29,
+          "asyncMode": true,
+          "Success": false,
+          "returned": null,
+          "failure": "execution memory budget exceeded (65536)",
+          "PeakExecutionMemoryBytes": 65272,
+          "DeniedReservationBytes": 1128,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 30,
+          "asyncMode": false,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65272,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 30,
+          "asyncMode": true,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65272,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        }
+      ],
+      "responseSha256": "9f335b1114ea2cc3fb5db1a4427600bdee519869186c2f4683d638a69d4c7bd2",
+      "receiptSha256": "35e5f62634f5b7312cd1c6a5e024fff204dc21009324de5f6d7174697ffb52cd"
+    },
+    {
+      "label": "untraced-baseline-release",
+      "configuration": "Release",
+      "source": "35793a9e0671d777a9dde4c31887944d177ad945",
+      "receipt": {
+        "startedUtc": "2026-10-10T08:17:48.118437+00:00",
+        "stoppedUtc": "2026-10-10T08:17:48.461058+00:00",
+        "elapsedSeconds": 0.3426234999205917,
+        "exitCode": 0,
+        "timedOut": false,
+        "capSeconds": 30,
+        "dllSha256": "5bbc6231bcb8d43d9554b6fdbf11d0f6371b18a164818ca4b9f78ba0645ba4fa"
+      },
+      "rows": [
+        {
+          "collectAt": 0,
+          "asyncMode": false,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65008,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 0
+        },
+        {
+          "collectAt": 0,
+          "asyncMode": true,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65008,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 0
+        },
+        {
+          "collectAt": 28,
+          "asyncMode": false,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65008,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 28,
+          "asyncMode": true,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65008,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 29,
+          "asyncMode": false,
+          "Success": false,
+          "returned": null,
+          "failure": "execution memory budget exceeded (65536)",
+          "PeakExecutionMemoryBytes": 65272,
+          "DeniedReservationBytes": 1128,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 29,
+          "asyncMode": true,
+          "Success": false,
+          "returned": null,
+          "failure": "execution memory budget exceeded (65536)",
+          "PeakExecutionMemoryBytes": 65272,
+          "DeniedReservationBytes": 1128,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 30,
+          "asyncMode": false,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65272,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 30,
+          "asyncMode": true,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65272,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        }
+      ],
+      "responseSha256": "9f335b1114ea2cc3fb5db1a4427600bdee519869186c2f4683d638a69d4c7bd2",
+      "receiptSha256": "fe36a8ea3fb209e125adedf157201b16f898bc7dd1c6eadf8857c74db24abd02"
+    },
+    {
+      "label": "original-baseline-debug",
+      "configuration": "Debug",
+      "source": "8d20133d1c8e8a077879e2c830993c103b84c8ae",
+      "receipt": {
+        "startedUtc": "2026-10-10T08:20:21.004652+00:00",
+        "stoppedUtc": "2026-10-10T08:20:21.372016+00:00",
+        "elapsedSeconds": 0.3673672000877559,
+        "exitCode": 0,
+        "timedOut": false,
+        "capSeconds": 30,
+        "dllSha256": "13eea69e60c0ddb63d0a6f24d4a66cb6740fbe510ee73cdfa50cd9d766cc9891"
+      },
+      "rows": [
+        {
+          "collectAt": 0,
+          "asyncMode": false,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65008,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 0
+        },
+        {
+          "collectAt": 0,
+          "asyncMode": true,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65008,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 0
+        },
+        {
+          "collectAt": 28,
+          "asyncMode": false,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65008,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 28,
+          "asyncMode": true,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65008,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 29,
+          "asyncMode": false,
+          "Success": false,
+          "returned": null,
+          "failure": "execution memory budget exceeded (65536)",
+          "PeakExecutionMemoryBytes": 65272,
+          "DeniedReservationBytes": 1128,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 29,
+          "asyncMode": true,
+          "Success": false,
+          "returned": null,
+          "failure": "execution memory budget exceeded (65536)",
+          "PeakExecutionMemoryBytes": 65272,
+          "DeniedReservationBytes": 1128,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 30,
+          "asyncMode": false,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65272,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 30,
+          "asyncMode": true,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65272,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        }
+      ],
+      "responseSha256": "9f335b1114ea2cc3fb5db1a4427600bdee519869186c2f4683d638a69d4c7bd2",
+      "receiptSha256": "b238699d0c1d87df436dfbd120d7b9db114e12eff6ccf9f42c8d3d4399b34cb3"
+    },
+    {
+      "label": "untraced-candidate-debug",
+      "configuration": "Debug",
+      "source": "fd58dde1b3f5272ae62853c0174c6ed4ace24200",
+      "receipt": {
+        "startedUtc": "2026-10-10T08:21:29.095123+00:00",
+        "stoppedUtc": "2026-10-10T08:21:29.745707+00:00",
+        "elapsedSeconds": 0.6505909999832511,
+        "exitCode": 0,
+        "timedOut": false,
+        "capSeconds": 30,
+        "dllSha256": "545a2b449c6a9c40382b0f0bced5518e25eb56ea944e7834d71bb9adcb21fdd0"
+      },
+      "rows": [
+        {
+          "collectAt": 0,
+          "asyncMode": false,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65008,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 0
+        },
+        {
+          "collectAt": 0,
+          "asyncMode": true,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65008,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 0
+        },
+        {
+          "collectAt": 28,
+          "asyncMode": false,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65008,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 28,
+          "asyncMode": true,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65008,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 29,
+          "asyncMode": false,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65272,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 29,
+          "asyncMode": true,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65272,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 30,
+          "asyncMode": false,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65272,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 30,
+          "asyncMode": true,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65272,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        }
+      ],
+      "responseSha256": "95cc92018586584b7998628a11a486972704aed4683cdb2abfd74d00a59fb97a",
+      "receiptSha256": "0f9cc24c995282898b5f0ab13be5d2b7d32b1d0309bb48f9ca7e7a4913ac2e8b"
+    },
+    {
+      "label": "untraced-candidate-release",
+      "configuration": "Release",
+      "source": "fd58dde1b3f5272ae62853c0174c6ed4ace24200",
+      "receipt": {
+        "startedUtc": "2026-10-10T08:21:46.246128+00:00",
+        "stoppedUtc": "2026-10-10T08:21:46.709864+00:00",
+        "elapsedSeconds": 0.4637406999245286,
+        "exitCode": 0,
+        "timedOut": false,
+        "capSeconds": 30,
+        "dllSha256": "ac2f609cc2df2984ab0c4dcca212cb5210211c55ee7a24acfa725d5e6a6c808b"
+      },
+      "rows": [
+        {
+          "collectAt": 0,
+          "asyncMode": false,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65008,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 0
+        },
+        {
+          "collectAt": 0,
+          "asyncMode": true,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65008,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 0
+        },
+        {
+          "collectAt": 28,
+          "asyncMode": false,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65008,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 28,
+          "asyncMode": true,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65008,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 29,
+          "asyncMode": false,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65272,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 29,
+          "asyncMode": true,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65272,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 30,
+          "asyncMode": false,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65272,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        },
+        {
+          "collectAt": 30,
+          "asyncMode": true,
+          "Success": true,
+          "returned": "100000",
+          "failure": null,
+          "PeakExecutionMemoryBytes": 65272,
+          "DeniedReservationBytes": 0,
+          "scheduledCollections": 1
+        }
+      ],
+      "responseSha256": "95cc92018586584b7998628a11a486972704aed4683cdb2abfd74d00a59fb97a",
+      "receiptSha256": "0708de9588e91db0297b2723dd68b6fd68cc7161ea6e1a490a18b1841580e8e8"
+    }
+  ],
+  "tests": [
+    {
+      "path": "baseline-progress-debug/baseline-progress-debug.trx",
+      "sha256": "dbb5502a99e3f7b2b6827483dfabe73cc9380cf260247ebb4bd780c2a3760741",
+      "counters": {
+        "total": "3",
+        "executed": "3",
+        "passed": "0",
+        "failed": "3",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failures": [
+        {
+          "name": "Lokad.Lython.Tests.MemoryGovernorReservationProgressTests.PinnedDenialAfterSuccessfulScratchDoesNotRepeatedlyCollectWithoutProgress",
+          "outcome": "Failed",
+          "message": "Assert.True() Failure\r\nExpected: True\r\nActual:   False"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MemoryGovernorReservationProgressTests.SuccessfulReservationAllowsTheNextAllocationToCollectRemainingGarbage(temporary: False)",
+          "outcome": "Failed",
+          "message": "Lokad.Lython.Runtime.LythonRuntimeException : execution memory budget exceeded (600)"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MemoryGovernorReservationProgressTests.SuccessfulReservationAllowsTheNextAllocationToCollectRemainingGarbage(temporary: True)",
+          "outcome": "Failed",
+          "message": "Lokad.Lython.Runtime.LythonRuntimeException : execution memory budget exceeded (600)"
+        }
+      ]
+    },
+    {
+      "path": "baseline-progress-release/baseline-progress-release.trx",
+      "sha256": "4db810c24294a4370430fb88684e290aa5eca90b5fa34e0b54ad3b7639ed7154",
+      "counters": {
+        "total": "3",
+        "executed": "3",
+        "passed": "0",
+        "failed": "3",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failures": [
+        {
+          "name": "Lokad.Lython.Tests.MemoryGovernorReservationProgressTests.SuccessfulReservationAllowsTheNextAllocationToCollectRemainingGarbage(temporary: True)",
+          "outcome": "Failed",
+          "message": "Lokad.Lython.Runtime.LythonRuntimeException : execution memory budget exceeded (600)"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MemoryGovernorReservationProgressTests.SuccessfulReservationAllowsTheNextAllocationToCollectRemainingGarbage(temporary: False)",
+          "outcome": "Failed",
+          "message": "Lokad.Lython.Runtime.LythonRuntimeException : execution memory budget exceeded (600)"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MemoryGovernorReservationProgressTests.PinnedDenialAfterSuccessfulScratchDoesNotRepeatedlyCollectWithoutProgress",
+          "outcome": "Failed",
+          "message": "Assert.True() Failure\r\nExpected: True\r\nActual:   False"
+        }
+      ]
+    },
+    {
+      "path": "candidate-focused-debug/candidate-focused-debug.trx",
+      "sha256": "f62dfc437c044fb2fcf65f1134746338a9621b9e57a92e4b7e543e202685a72c",
+      "counters": {
+        "total": "84",
+        "executed": "84",
+        "passed": "84",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failures": []
+    },
+    {
+      "path": "candidate-focused-release/candidate-focused-release.trx",
+      "sha256": "0e35ddc4c941ab1b6b71cc35d111e2677fbf470a2a39c3c8acfe1a89aeee3c1d",
+      "counters": {
+        "total": "84",
+        "executed": "84",
+        "passed": "84",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failures": []
+    },
+    {
+      "path": "candidate-full-debug/candidate-white-debug.trx",
+      "sha256": "3ac042e18d42a2b4ee3723e0e7e463cfef4d4a5e3d0c94c9afbcf3aa089e421f",
+      "counters": {
+        "total": "1402",
+        "executed": "1402",
+        "passed": "1402",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failures": []
+    },
+    {
+      "path": "candidate-full-debug/candidate-public-debug.trx",
+      "sha256": "d46b597f6eca28eb7a2ea8ed47863d2bec790366b6c39da166e18fc41976028f",
+      "counters": {
+        "total": "7753",
+        "executed": "7753",
+        "passed": "7753",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failures": []
+    },
+    {
+      "path": "candidate-public-release/candidate-public-release.trx",
+      "sha256": "2536ef00892e8404e171b9f2bf620f97c62416655e476a9c5143886a5c9d0142",
+      "counters": {
+        "total": "39",
+        "executed": "39",
+        "passed": "39",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failures": []
+    }
+  ],
+  "fullDebugPassed": 9155,
+  "focusedPublicReleasePassed": 39,
+  "traceRows": 48,
+  "untracedRows": 40,
+  "fullLanes": 0,
+  "normalTimingCollections": 0,
+  "actualHistoricalGcChronologyRecorded": false,
+  "controlledOriginalFixtureReproduced": true,
+  "heldNamespaceIntegrated": false,
+  "originalCsvCauseProven": false,
+  "originalPipelineVariationProven": false
+}

@@ -111,6 +111,14 @@ constructor/registration diagnostics show about 67% less allocation for scalar
 pairs, with the larger-tuple control essentially unchanged. All 9,152 Debug checks
 pass. No full benchmark lanes run.
 
+The [streaming reservation-progress correction](results/2026-10-10-streaming-reservation-progress/README.md)
+reproduces the unchanged 64 KiB streaming fixture under a controlled collection
+schedule, including the original frozen namespace source. A successful scratch
+reservation now lets the following allocation collect remaining garbage. Three
+new regressions and all 9,155 Debug checks pass; pinned denials remain bounded.
+Every untraced diagnostic process takes less than a second. There are no normal
+timing samples, full lanes or speed claims; namespace qualification remains open.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
