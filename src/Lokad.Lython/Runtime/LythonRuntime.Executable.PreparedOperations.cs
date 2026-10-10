@@ -26,8 +26,8 @@ internal sealed partial class LythonRuntime
                     _stack.Push(collection);
                     break;
                 case ExecutableAppendDisplay append:
-                    var value = Pop(_stack, span);
-                    var destination = Peek(_stack, span);
+                    var value = Pop(ref _stack, span);
+                    var destination = Peek(ref _stack, span);
                     if (!append.Unpacking) Add(value);
                     else if (asynchronous)
                     {
@@ -49,10 +49,10 @@ internal sealed partial class LythonRuntime
                         context.ObserveValue(destination, span);
                     }
                 case ExecutableStoreDictionaryItem item:
-                    var itemValue = Pop(_stack, span);
+                    var itemValue = Pop(ref _stack, span);
                     if (!item.Unpacking)
                     {
-                        var key = Pop(_stack, span);
+                        var key = Pop(ref _stack, span);
                         Put(key, itemValue);
                     }
                     else if (itemValue is PyInstance mapping)
@@ -84,35 +84,35 @@ internal sealed partial class LythonRuntime
                     {
                         context.CheckExecution(span);
                         using var ambient = PyStructuralGuard.PushAmbient(context, span);
-                        var dictionary = (PyDict)Peek(_stack, span);
+                        var dictionary = (PyDict)Peek(ref _stack, span);
                         dictionary.SetItem(ValidateDictionaryKey(key, span), itemValue);
                         context.ObserveCollectionCount(dictionary.Count, span);
                         context.ObserveValue(dictionary, span);
                     }
                 case ExecutableFinishTuple:
-                    var expanded = (PyList)Pop(_stack, span);
+                    var expanded = (PyList)Pop(ref _stack, span);
                     var tuple = new PyTuple(expanded, context.MemoryGovernor, span);
                     context.Services.State.CallTemporaries.TrackFreshMutable(tuple, tuple.CommittedStorageBytes, span);
                     PushObserved(tuple, span);
                     break;
                 case ExecutableStartCall call:
-                    _stack.Push(new CallExpansion.CallArgumentAccumulator(call.ArgumentCount, context, Pop(_stack, span), retained: true, deferSingleStar: call.DeferSingleStar));
+                    _stack.Push(new CallExpansion.CallArgumentAccumulator(call.ArgumentCount, context, Pop(ref _stack, span), retained: true, deferSingleStar: call.DeferSingleStar));
                     break;
                 case ExecutableAppendCall argument:
-                    var argumentValue = Pop(_stack, span);
-                    await ((CallExpansion.CallArgumentAccumulator)Peek(_stack, span)).AppendAsync(argument.Form, argumentValue, span, asynchronous).ConfigureAwait(false);
+                    var argumentValue = Pop(ref _stack, span);
+                    await ((CallExpansion.CallArgumentAccumulator)Peek(ref _stack, span)).AppendAsync(argument.Form, argumentValue, span, asynchronous).ConfigureAwait(false);
                     break;
                 case ExecutableFinishCall call:
-                    using (var accumulator = (CallExpansion.CallArgumentAccumulator)Pop(_stack, span))
+                    using (var accumulator = (CallExpansion.CallArgumentAccumulator)Pop(ref _stack, span))
                         PushObserved(await accumulator.InvokeAsync(call.TargetSpan, span, asynchronous).ConfigureAwait(false), span);
                     break;
                 case ExecutableConvertFormattedValue conversion:
-                    PushObserved(await FormatSuspendedFieldAsync(Pop(_stack, span), conversion.Conversion,
+                    PushObserved(await FormatSuspendedFieldAsync(Pop(ref _stack, span), conversion.Conversion,
                         null, context, span, asynchronous).ConfigureAwait(false), span);
                     break;
                 case ExecutableFormatField field:
-                    var specifier = field.DynamicSpecifier ? ((PyString)Pop(_stack, span)).AsString() : field.FormatSpecifier;
-                    var fieldValue = Pop(_stack, span);
+                    var specifier = field.DynamicSpecifier ? ((PyString)Pop(ref _stack, span)).AsString() : field.FormatSpecifier;
+                    var fieldValue = Pop(ref _stack, span);
                     PushObserved(await FormatSuspendedFieldAsync(fieldValue, null, specifier, context, span, asynchronous).ConfigureAwait(false), span);
                     break;
                 case ExecutableJoinFormattedParts join:
@@ -129,7 +129,7 @@ internal sealed partial class LythonRuntime
                     finally { builder.Release(); }
                     break;
                 case ExecutableCreateComprehension comprehension:
-                    var outer = Pop(_stack, span);
+                    var outer = Pop(ref _stack, span);
                     var expression = CaptureOutermostIterable(comprehension.Expression, outer, context, span);
                     PushObserved(asynchronous ? await EvaluateLoweredExpressionAsync(expression, context).ConfigureAwait(false)
                         : EvaluateLoweredExpression(expression, context), span);

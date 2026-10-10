@@ -7,7 +7,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static PyDict ExecuteExecutableMakeDict(ExecutableValueStack stack, int pairCount, LythonSourceSpan span, ExecutionContext context)
+    private static PyDict ExecuteExecutableMakeDict(ref ExecutableValueStack stack, int pairCount, LythonSourceSpan span, ExecutionContext context)
     {
         var valueCount = checked(pairCount * 2);
         if (valueCount < 0 || stack.Count < valueCount)
@@ -31,7 +31,7 @@ internal sealed partial class LythonRuntime
         return dict;
     }
 
-    private static PySet ExecuteExecutableMakeSet(ExecutableValueStack stack, int count, LythonSourceSpan span, ExecutionContext context)
+    private static PySet ExecuteExecutableMakeSet(ref ExecutableValueStack stack, int count, LythonSourceSpan span, ExecutionContext context)
     {
         if (count < 0 || stack.Count < count)
         {
@@ -53,9 +53,9 @@ internal sealed partial class LythonRuntime
         return set;
     }
 
-    private static IPyContextManager PopContextManager(ExecutableValueStack stack, LythonSourceSpan span)
+    private static IPyContextManager PopContextManager(ref ExecutableValueStack stack, LythonSourceSpan span)
     {
-        var value = Pop(stack, span);
+        var value = Pop(ref stack, span);
         if (value is IPyContextManager manager)
         {
             return manager;
@@ -64,14 +64,14 @@ internal sealed partial class LythonRuntime
         throw RuntimeErrors.Type("'" + RuntimeErrors.OperandTypeName(value) + "' object does not support the context manager protocol", span);
     }
 
-    private static object ExecuteExecutableSlice(ExecutableValueStack stack, ExecutableSliceParts parts, LythonSourceSpan span, ExecutionContext context)
+    private static object ExecuteExecutableSlice(ref ExecutableValueStack stack, ExecutableSliceParts parts, LythonSourceSpan span, ExecutionContext context)
     {
-        var (start, end, step) = PopExecutableSliceBounds(stack, parts, span);
-        var target = Pop(stack, span);
+        var (start, end, step) = PopExecutableSliceBounds(ref stack, parts, span);
+        var target = Pop(ref stack, span);
         return ReadSliceValue(target, start, end, step, span, context);
     }
 
-    private static (object? Start, object? End, object? Step) PopExecutableSliceBounds(ExecutableValueStack stack, ExecutableSliceParts parts, LythonSourceSpan span)
+    private static (object? Start, object? End, object? Step) PopExecutableSliceBounds(ref ExecutableValueStack stack, ExecutableSliceParts parts, LythonSourceSpan span)
     {
         object? step = null;
         object? end = null;
@@ -79,15 +79,15 @@ internal sealed partial class LythonRuntime
 
         if ((parts & ExecutableSliceParts.Step) != 0)
         {
-            step = Pop(stack, span);
+            step = Pop(ref stack, span);
         }
         if ((parts & ExecutableSliceParts.End) != 0)
         {
-            end = Pop(stack, span);
+            end = Pop(ref stack, span);
         }
         if ((parts & ExecutableSliceParts.Start) != 0)
         {
-            start = Pop(stack, span);
+            start = Pop(ref stack, span);
         }
 
         return (start, end, step);
@@ -130,7 +130,7 @@ internal sealed partial class LythonRuntime
             target is not PySuper &&
             target is not IPyContextualDynamicAttributes);
 
-    private static object Pop(ExecutableValueStack stack, LythonSourceSpan span)
+    private static object Pop(ref ExecutableValueStack stack, LythonSourceSpan span)
     {
         if (stack.Count == 0)
         {
@@ -140,7 +140,7 @@ internal sealed partial class LythonRuntime
         return stack.Pop();
     }
 
-    private static object Peek(ExecutableValueStack stack, LythonSourceSpan span)
+    private static object Peek(ref ExecutableValueStack stack, LythonSourceSpan span)
     {
         if (stack.Count == 0)
         {
@@ -150,7 +150,7 @@ internal sealed partial class LythonRuntime
         return stack.Peek();
     }
 
-    private static IEnumerator<object> PeekIterator(ExecutableValueStack stack, LythonSourceSpan span)
+    private static IEnumerator<object> PeekIterator(ref ExecutableValueStack stack, LythonSourceSpan span)
     {
         if (stack.Count == 0 || stack.Peek() is not IEnumerator<object> iterator)
         {
@@ -160,7 +160,7 @@ internal sealed partial class LythonRuntime
         return iterator;
     }
 
-    private static PyList CreateListFromStack(ExecutableValueStack stack, int count, LythonSourceSpan span, ExecutionContext context)
+    private static PyList CreateListFromStack(ref ExecutableValueStack stack, int count, LythonSourceSpan span, ExecutionContext context)
     {
         if (count < 0 || stack.Count < count)
         {
@@ -181,7 +181,7 @@ internal sealed partial class LythonRuntime
         return list;
     }
 
-    private static PyTuple CreateTupleFromStack(ExecutableValueStack stack, int count, LythonSourceSpan span, ExecutionContext context)
+    private static PyTuple CreateTupleFromStack(ref ExecutableValueStack stack, int count, LythonSourceSpan span, ExecutionContext context)
     {
         if (count < 0 || stack.Count < count)
         {

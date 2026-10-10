@@ -30,12 +30,12 @@ internal sealed partial class LythonRuntime
         {
             if (instruction.OpCode == ExecutableOpCode.EnterContextManager)
             {
-                PushObserved(await PyContextManagers.EnterAsync(PopContextManager(_stack, instruction.Span), instruction.Span, context).ConfigureAwait(false), instruction.Span);
+                PushObserved(await PyContextManagers.EnterAsync(PopContextManager(ref _stack, instruction.Span), instruction.Span, context).ConfigureAwait(false), instruction.Span);
                 return false;
             }
             if (instruction.OpCode == ExecutableOpCode.ExitContextManager)
             {
-                var manager = PopContextManager(_stack, instruction.Span);
+                var manager = PopContextManager(ref _stack, instruction.Span);
                 if (_pendingAbrupt is PendingException { Exception: var exception } pendingException &&
                     (pendingException.CleanupId ?? -1) == instruction.CleanupId)
                 {
@@ -57,14 +57,14 @@ internal sealed partial class LythonRuntime
             switch (instruction.OpCode)
             {
                 case ExecutableOpCode.GetIter:
-                    _stack.Push(await PyIteration.Cursor.CreateAsync(Pop(_stack, instruction.Span), instruction.Span, context).ConfigureAwait(false));
+                    _stack.Push(await PyIteration.Cursor.CreateAsync(Pop(ref _stack, instruction.Span), instruction.Span, context).ConfigureAwait(false));
                     break;
                 case ExecutableOpCode.ForNext:
-                    var iterator = (PyIteration.Cursor)Peek(_stack, instruction.Span);
+                    var iterator = (PyIteration.Cursor)Peek(ref _stack, instruction.Span);
                     var advanced = await iterator.TryMoveNextAsync().ConfigureAwait(false);
                     if (!advanced.HasValue)
                     {
-                        _ = Pop(_stack, instruction.Span);
+                        _ = Pop(ref _stack, instruction.Span);
                         await iterator.DisposeAsync().ConfigureAwait(false);
                         _currentBlockIndex = instruction.TargetBlockIndex;
                         return true;
@@ -73,11 +73,11 @@ internal sealed partial class LythonRuntime
                     break;
                 case ExecutableOpCode.AssignLoopTarget:
                     var loop = codeObject.LoopTargets[instruction.LoopTargetIndex];
-                    await AssignLoopTargetAsync(loop.Target, Pop(_stack, instruction.Span), loop.Span, context).ConfigureAwait(false);
+                    await AssignLoopTargetAsync(loop.Target, Pop(ref _stack, instruction.Span), loop.Span, context).ConfigureAwait(false);
                     break;
                 case ExecutableOpCode.AssignUnpackingTargets:
                     var unpacking = codeObject.UnpackingTargets[instruction.UnpackingTargetIndex];
-                    await AssignTargetAsync(unpacking.Lowered, Pop(_stack, instruction.Span), context).ConfigureAwait(false);
+                    await AssignTargetAsync(unpacking.Lowered, Pop(ref _stack, instruction.Span), context).ConfigureAwait(false);
                     break;
                 case ExecutableOpCode.Call:
                     var call = codeObject.CallSites[instruction.CallSiteIndex];
@@ -97,28 +97,28 @@ internal sealed partial class LythonRuntime
                     finally { ReturnCallArguments(arguments); }
                     break;
                 case ExecutableOpCode.Subscript:
-                    var index = Pop(_stack, instruction.Span);
-                    var receiver = Pop(_stack, instruction.Span);
+                    var index = Pop(ref _stack, instruction.Span);
+                    var receiver = Pop(ref _stack, instruction.Span);
                     PushObserved(await ReadLoweredSubscriptAsync(receiver, index, instruction.Span, context).ConfigureAwait(false), instruction.Span);
                     break;
                 case ExecutableOpCode.Slice:
-                    var (sliceStart, sliceEnd, sliceStep) = PopExecutableSliceBounds(_stack, instruction.SliceParts, instruction.Span);
-                    var target = Pop(_stack, instruction.Span);
+                    var (sliceStart, sliceEnd, sliceStep) = PopExecutableSliceBounds(ref _stack, instruction.SliceParts, instruction.Span);
+                    var target = Pop(ref _stack, instruction.Span);
                     PushObserved(await ReadSliceValueAsync(target, sliceStart, sliceEnd, sliceStep, instruction.Span, context).ConfigureAwait(false), instruction.Span);
                     break;
                 case ExecutableOpCode.Binary:
-                    var right = Pop(_stack, instruction.Span);
-                    var left = Pop(_stack, instruction.Span);
+                    var right = Pop(ref _stack, instruction.Span);
+                    var left = Pop(ref _stack, instruction.Span);
                     PushObserved(await EvaluateBinaryOperatorAsync(MapExecutableBinary(instruction.BinaryOperator), left, right, context, instruction.Span).ConfigureAwait(false), instruction.Span);
                     break;
                 case ExecutableOpCode.Augmented:
-                    var augmentedRight = Pop(_stack, instruction.Span);
-                    var augmentedLeft = Pop(_stack, instruction.Span);
+                    var augmentedRight = Pop(ref _stack, instruction.Span);
+                    var augmentedLeft = Pop(ref _stack, instruction.Span);
                     PushObserved(await EvaluateAugmentedAssignmentAsync(augmentedLeft, augmentedRight,
                         MapExecutableAugmented(instruction.AugmentedOperator), context, instruction.Span).ConfigureAwait(false), instruction.Span);
                     break;
                 case ExecutableOpCode.Unary:
-                    PushObserved(await EvaluateUnaryOperatorAsync(MapExecutableUnary(instruction.UnaryOperator), Pop(_stack, instruction.Span), context, instruction.Span).ConfigureAwait(false), instruction.Span);
+                    PushObserved(await EvaluateUnaryOperatorAsync(MapExecutableUnary(instruction.UnaryOperator), Pop(ref _stack, instruction.Span), context, instruction.Span).ConfigureAwait(false), instruction.Span);
                     break;
                 default: return ExecuteValueOperation(instruction);
             }
@@ -129,13 +129,13 @@ internal sealed partial class LythonRuntime
         {
             if (instruction.OpCode == ExecutableOpCode.JumpIfFalse)
             {
-                if (await IsTruthyAsync(Pop(_stack, instruction.Span), context, instruction.Span).ConfigureAwait(false)) return false;
+                if (await IsTruthyAsync(Pop(ref _stack, instruction.Span), context, instruction.Span).ConfigureAwait(false)) return false;
                 _currentBlockIndex = instruction.TargetBlockIndex;
                 return true;
             }
             if (instruction.OpCode == ExecutableOpCode.ChainLink)
             {
-                var right = Pop(_stack, instruction.Span);
+                var right = Pop(ref _stack, instruction.Span);
                 var result = await EvaluateBinaryOperatorAsync(MapExecutableBinary(instruction.BinaryOperator),
                     LoadLocal(codeObject, locals, instruction.ChainSlot, instruction.Span), right, context, instruction.Span).ConfigureAwait(false);
                 StoreLocalValue(codeObject, locals, localCells, context, instruction.ChainSlot, right, instruction.Span);

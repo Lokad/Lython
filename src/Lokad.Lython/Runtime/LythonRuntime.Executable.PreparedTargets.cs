@@ -11,11 +11,11 @@ internal sealed partial class LythonRuntime
             switch (operation)
             {
                 case ExecutableFailAssertion assertion:
-                    ThrowAssertionError(assertion.HasMessage ? Pop(_stack, span) : null, context, span);
+                    ThrowAssertionError(assertion.HasMessage ? Pop(ref _stack, span) : null, context, span);
                     break;
                 case ExecutableRaise raised:
-                    var cause = raised.HasCause ? Pop(_stack, span) : null;
-                    ThrowRaisedValue(Pop(_stack, span), raised.HasCause, cause, context, span);
+                    var cause = raised.HasCause ? Pop(ref _stack, span) : null;
+                    ThrowRaisedValue(Pop(ref _stack, span), raised.HasCause, cause, context, span);
                     break;
                 case ExecutableDeletePreparedTarget deleted:
                     using (var storage = context.MemoryGovernor.ReserveTemporary(1024, span))
@@ -29,8 +29,8 @@ internal sealed partial class LythonRuntime
                     break;
                 case ExecutableUnpackValues unpack:
                     using (var materialized = asynchronous
-                        ? await MaterializeHeaderSequenceAsync(Pop(_stack, span), span, context).ConfigureAwait(false)
-                        : MaterializeUnpackingSequence(Pop(_stack, span), span, context))
+                        ? await MaterializeHeaderSequenceAsync(Pop(ref _stack, span), span, context).ConfigureAwait(false)
+                        : MaterializeUnpackingSequence(Pop(ref _stack, span), span, context))
                     {
                         var values = materialized.Items;
                         var layout = unpack.Layout;
@@ -60,11 +60,11 @@ internal sealed partial class LythonRuntime
                 case ExecutableStorePreparedTarget store:
                     using (var storage = context.MemoryGovernor.ReserveTemporary(1024, span))
                     {
-                        var result = store.ValueLast ? Pop(_stack, span) : null;
+                        var result = store.ValueLast ? Pop(ref _stack, span) : null;
                         var reads = AssignmentTargetFacts.Reads(store.Target).ToArray();
                         var values = CaptureTargetReads(reads, _stack.Count - reads.Length);
                         _stack.RemoveTail(reads.Length);
-                        result ??= Pop(_stack, span);
+                        result ??= Pop(ref _stack, span);
                         await StorePreparedTargetAsync(store.Target, values, result, context, span, asynchronous).ConfigureAwait(false);
                     }
                     break;

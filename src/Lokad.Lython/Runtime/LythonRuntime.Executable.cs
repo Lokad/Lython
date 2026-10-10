@@ -210,13 +210,14 @@ internal sealed partial class LythonRuntime
 
     private sealed record ExecutableCallCache(object Target, ICallable Callable);
 
-    private sealed class ExecutableValueStack
+    private struct ExecutableValueStack
     {
         private object?[] _items;
 
         public ExecutableValueStack(int capacity)
         {
             _items = new object[Math.Max(4, capacity)];
+            Count = 0;
         }
 
         public int Count { get; private set; }

@@ -7,7 +7,7 @@ internal sealed partial class LythonRuntime
         // Synchronous and asynchronous dispatch must unwind the same frame state.
         private bool TryRouteReturn(ReturnSignal signal, LythonSourceSpan span)
         {
-            if (TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex,
+            if (TryHandleAbrupt(codeObject, context, ref _stack, _blockEntryStackDepths, _currentBlockIndex,
                 new PendingReturn(signal.Value), span, ref _pendingAbrupt, ref _currentBlockIndex, out _))
                 return true;
 
@@ -19,7 +19,7 @@ internal sealed partial class LythonRuntime
 
         private bool TryRouteControl(ControlSignal signal, LythonSourceSpan span)
         {
-            if (TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex,
+            if (TryHandleAbrupt(codeObject, context, ref _stack, _blockEntryStackDepths, _currentBlockIndex,
                 new PendingControl(signal), span, ref _pendingAbrupt, ref _currentBlockIndex, out _))
                 return true;
 
@@ -35,7 +35,7 @@ internal sealed partial class LythonRuntime
             var previousPending = _pendingAbrupt;
             _delegation = null;
             _injectedException = null;
-            if (!TryHandleAbrupt(codeObject, context, _stack, _blockEntryStackDepths, _currentBlockIndex,
+            if (!TryHandleAbrupt(codeObject, context, ref _stack, _blockEntryStackDepths, _currentBlockIndex,
                 new PendingException(ex), span, ref _pendingAbrupt, ref _currentBlockIndex, out var matchedRegion))
             {
                 var failure = _pendingAbrupt is PendingException unhandled ? unhandled.Exception : ex;

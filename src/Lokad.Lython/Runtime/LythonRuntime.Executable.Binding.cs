@@ -93,7 +93,7 @@ internal sealed partial class LythonRuntime
     private static bool TryHandleAbrupt(
         ExecutableCodeObject codeObject,
         ExecutionContext context,
-        ExecutableValueStack stack,
+        ref ExecutableValueStack stack,
         IReadOnlyList<int?> blockEntryStackDepths,
         int currentBlockIndex,
         PendingAbruptSignal abrupt,
@@ -147,7 +147,7 @@ internal sealed partial class LythonRuntime
                 if (!matches)
                     continue;
 
-                RestoreExecutableStackForHandler(region, stack, blockEntryStackDepths, span);
+                RestoreExecutableStackForHandler(region, ref stack, blockEntryStackDepths, span);
                 pendingAbrupt = null;
                 matchedRegion = region;
                 var pyException = CreatePythonExceptionInstance(exception);
@@ -166,7 +166,7 @@ internal sealed partial class LythonRuntime
 
             if (region.FinallyBlockIndex is int finallyBlock)
             {
-                RestoreExecutableStackForHandler(region, stack, blockEntryStackDepths, span);
+                RestoreExecutableStackForHandler(region, ref stack, blockEntryStackDepths, span);
                 abrupt.CleanupId = region.CleanupId;
                 pendingAbrupt = abrupt;
                 nextBlockIndex = finallyBlock;
@@ -219,7 +219,7 @@ internal sealed partial class LythonRuntime
 
     private static void RestoreExecutableStackForHandler(
         ExecutableExceptionRegion region,
-        ExecutableValueStack stack,
+        ref ExecutableValueStack stack,
         IReadOnlyList<int?> blockEntryStackDepths,
         LythonSourceSpan span)
     {
@@ -452,7 +452,7 @@ internal sealed partial class LythonRuntime
 
     private static object ExecuteExecutableCall(
         ExecutableCallSite callSite,
-        ExecutableValueStack stack,
+        ref ExecutableValueStack stack,
         ExecutionContext context,
         ref ExecutableCallCache? cache)
     {

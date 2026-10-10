@@ -43,7 +43,7 @@ internal sealed partial class LythonRuntime
                                 ExecutePreparedOperationAsync((ExecutableOperation)codeObject.Constants[instruction.ConstantIndex]!, instruction.Span, false).GetAwaiter().GetResult();
                                 break;
                             case ExecutableOpCode.Yield:
-                                YieldValue = Pop(_stack, instruction.Span);
+                                YieldValue = Pop(ref _stack, instruction.Span);
                                 HasYield = true;
                                 _waitingForSend = true;
                                 _instructionIndex++;
@@ -51,7 +51,7 @@ internal sealed partial class LythonRuntime
                             case ExecutableOpCode.YieldFrom:
                                 if (_delegation is null)
                                 {
-                                    var source = Pop(_stack, instruction.Span);
+                                    var source = Pop(ref _stack, instruction.Span);
                                     var iterator = Iter([source], instruction.Span, context);
                                     _delegation = new GeneratorDelegation(iterator, context, instruction.Span);
                                 }

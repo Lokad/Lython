@@ -56,13 +56,13 @@ internal sealed partial class LythonRuntime
                     _stack.Push(new CallExpansion.CallArgumentAccumulator(header.Count, context, ClassHeaderExpansionTarget, retained: true, deferSingleStar: false));
                     break;
                 case ExecutableCreateClass create:
-                    using (var accumulator = create.ExpandedHeader ? (CallExpansion.CallArgumentAccumulator)Pop(_stack, span) : null)
+                    using (var accumulator = create.ExpandedHeader ? (CallExpansion.CallArgumentAccumulator)Pop(ref _stack, span) : null)
                     using (var storage = context.MemoryGovernor.ReserveTemporary(256L + 128L * create.Definition.Decorators.Count, span))
                     {
                         var definition = create.Definition;
                         var decorators = new LoweredExpression[definition.Decorators.Count];
                         for (var i = decorators.Length - 1; i >= 0; i--)
-                            decorators[i] = new LoweredCapturedExpression(definition.Decorators[i].Syntax, Pop(_stack, span));
+                            decorators[i] = new LoweredCapturedExpression(definition.Decorators[i].Syntax, Pop(ref _stack, span));
                         definition = definition with { Decorators = decorators };
                         if (accumulator is not null)
                         {
@@ -98,7 +98,7 @@ internal sealed partial class LythonRuntime
         {
             var result = new Dictionary<LoweredExpression, LoweredExpression>(inputs.Count);
             for (var i = inputs.Count - 1; i >= 0; i--)
-                result[inputs[i]] = new LoweredCapturedExpression(inputs[i].Syntax, Pop(_stack, inputs[i].Span));
+                result[inputs[i]] = new LoweredCapturedExpression(inputs[i].Syntax, Pop(ref _stack, inputs[i].Span));
             return result;
         }
     }
