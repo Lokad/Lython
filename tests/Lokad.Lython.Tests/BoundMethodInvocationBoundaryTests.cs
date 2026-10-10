@@ -94,24 +94,22 @@ public sealed class BoundMethodInvocationBoundaryTests
     [InlineData(2)]
     public void FrameAdmissionDenialKeepsSpanFundingAndRollback(int width)
     {
-        var (function, context, _) = Function(width, new LythonRunOptions { MaxExecutionSteps = 1000, MaxExecutionMemoryBytes = 8192 });
+        var (function, context, _) = Function(width, new LythonRunOptions { MaxExecutionSteps = 1000, MaxExecutionMemoryBytes = 8192, MaxRecursionDepth = 0 });
         var active = new PyException("ValueError", "outer", PyNone.Instance);
         context.Services.SetCurrentException(active);
         var governor = context.MemoryGovernor;
-        var pressure = 8192 - governor.CurrentAccountedBytes;
-        governor.Reserve(pressure, Span);
-        governor.Commit(pressure);
+        var before = governor.CurrentAccountedBytes;
         var receiver = new object();
         var arguments = Arguments(width);
         var direct = Assert.Throws<LythonRuntimeException>(() => function.Invoke(new[] { CallArgumentValue.Positional(receiver) }.Concat(arguments).ToArray(), Span, context));
         var denied = governor.LastDeniedReservationBytes;
         context.Limits.ExecutionStepCount = 0;
         var bound = Assert.Throws<LythonRuntimeException>(() => new PyBoundMethod(receiver, function).Invoke(arguments, Span, context));
-        Assert.Equal("MemoryError", bound.ExceptionType);
+        Assert.Equal("RecursionError", bound.ExceptionType);
         Assert.Equal(direct.Message, bound.Message);
         Assert.Same(direct.Span, bound.Span);
         Assert.Equal(denied, governor.LastDeniedReservationBytes);
-        Assert.Equal(8192, governor.CurrentAccountedBytes);
+        Assert.Equal(before, governor.CurrentAccountedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
         Assert.Same(active, context.Services.CurrentException);
         Assert.Equal(0, context.Limits.CurrentRecursionDepth);
