@@ -103,6 +103,14 @@ time falls about 28% in both replicas; full sort/output falls 22–26%, retainin
 its spread. Mixed keys retain Python dispatch, and all 9,140 Debug checks pass.
 Full lanes remain deferred to a declared consolidated milestone.
 
+The [small immutable tuple round](results/2026-10-10-small-tuple-adoption/README.md)
+removes temporary adoption collections for tuples of up to two items while
+preserving logical charges and rollback. Eight 6.4–7.3-second micros show 24–26%
+less construction time; complete sort observations remain noisy. Separate retained
+constructor/registration diagnostics show about 67% less allocation for scalar
+pairs, with the larger-tuple control essentially unchanged. All 9,152 Debug checks
+pass. No full benchmark lanes run.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
