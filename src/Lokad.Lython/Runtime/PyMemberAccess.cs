@@ -216,7 +216,8 @@ internal static class PyMemberAccess
             var bound = raw switch
             {
                 IPyBindableCallable bindable => bindable.Bind(instance),
-                IPyDescriptor descriptor => descriptor.Get(instance, instance.Type, context, span),
+                IPyDescriptor descriptor => await descriptor.GetAsync(instance, instance.Type, context, span).ConfigureAwait(false),
+                PyInstance => await PyAttributeLookup.BindForInstanceAsync(instance, raw, context, span).ConfigureAwait(false),
                 _ => raw,
             };
             if (bound is not LythonRuntime.ICallable callable)
@@ -260,6 +261,7 @@ internal static class PyMemberAccess
                 {
                     IPyBindableCallable bindable => bindable.Bind(instance),
                     IPyDescriptor descriptor => descriptor.Get(instance, instance.Type, context, span),
+                    PyInstance => PyAttributeLookup.BindForInstance(instance, setattrValue, context, span),
                     _ => setattrValue
                 };
                 if (boundSetAttr is not LythonRuntime.ICallable setattrCallable)
@@ -408,6 +410,7 @@ internal static class PyMemberAccess
             {
                 IPyBindableCallable bindable => bindable.Bind(instance),
                 IPyDescriptor descriptor => await descriptor.GetAsync(instance, instance.Type, context, span).ConfigureAwait(false),
+                PyInstance => await PyAttributeLookup.BindForInstanceAsync(instance, raw, context, span).ConfigureAwait(false),
                 _ => raw,
             };
             if (bound is not LythonRuntime.ICallable callable)
@@ -428,6 +431,7 @@ internal static class PyMemberAccess
                 {
                     IPyBindableCallable bindable => bindable.Bind(instance),
                     IPyDescriptor descriptor => descriptor.Get(instance, instance.Type, context, span),
+                    PyInstance => PyAttributeLookup.BindForInstance(instance, delattrValue, context, span),
                     _ => delattrValue
                 };
                 if (boundDelAttr is not LythonRuntime.ICallable delattrCallable)
