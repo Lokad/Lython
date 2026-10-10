@@ -2,6 +2,7 @@ using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Calls;
 using Lokad.Lython.Runtime.Text;
 using System.Text.RegularExpressions;
+using System.Runtime.ExceptionServices;
 
 namespace Lokad.Lython.Runtime;
 
@@ -15,6 +16,7 @@ internal sealed partial class LythonRuntime
     internal static object EvaluateLoweredExpression(LoweredExpression expression, ExecutionContext context)
     {
         context.CheckExecution(expression.Span);
+        LythonRuntimeException failure;
         try
         {
             return context.UseSynchronousLoweredFunctionDispatch
@@ -24,8 +26,13 @@ internal sealed partial class LythonRuntime
         catch (LythonRuntimeException ex)
         {
             ex.SetSourcePathIfMissing(context.SourcePath);
-            throw;
+            failure = ex;
         }
+
+        // Propagate after releasing the catch's native exception state, just
+        // as ExecuteStatements does, while preserving the original exception.
+        ExceptionDispatchInfo.Throw(failure);
+        return PyNone.Instance;
     }
 
     private static PyList CreateLoweredListLiteral(LoweredListLiteralExpression list, ExecutionContext context)

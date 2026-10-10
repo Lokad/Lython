@@ -2,6 +2,7 @@ using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Calls;
 using Lokad.Lython.Runtime.Text;
 using System.Text.RegularExpressions;
+using System.Runtime.ExceptionServices;
 
 namespace Lokad.Lython.Runtime;
 
@@ -9,6 +10,7 @@ internal sealed partial class LythonRuntime
 {
     internal static LoweredBlockFlow ExecuteStatements(IReadOnlyList<LoweredStatement> statements, ExecutionContext context)
     {
+        LythonRuntimeException failure;
         try
         {
             foreach (var statement in statements)
@@ -27,12 +29,18 @@ internal sealed partial class LythonRuntime
         catch (LythonRuntimeException ex)
         {
             ex.SetSourcePathIfMissing(context.SourcePath);
-            throw;
+            failure = ex;
         }
         catch (ControlSignal signal)
         {
             return new LoweredBlockFlow(signal, null);
         }
+
+        // Leave the catch before propagating. On Unix, recursively rethrowing
+        // from active catch handlers can exhaust the native exception stack
+        // even while the guest's managed frames have ample stack headroom.
+        ExceptionDispatchInfo.Throw(failure);
+        return default;
     }
 
     private static void ExecuteLoweredImport(LoweredImportStatement statement, ExecutionContext context)
