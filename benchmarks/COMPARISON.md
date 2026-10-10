@@ -329,8 +329,20 @@ The [default-object attribute compatibility baseline](results/2026-10-10-default
 corrects member-assignment order, lowered async target stores and descriptor
 binding for mutation slots. Its 33 independent checks reproduce nine original
 runtime failures. Fixed baseline and isolated direct-slot candidate each pass
-9,368 Debug tests and 58 CPython comparisons. The candidate awaits fresh Release
-gates and separately declared short micros; no timing or full lanes run.
+9,368 Debug tests and 58 CPython comparisons. At that baseline's delivery, fresh
+Release gates and separately declared short micros were pending; no timing or
+full lanes ran.
+
+The [exact default object-slot round](results/2026-10-10-default-object-attribute-slots/README.md)
+integrates direct descriptor-aware handling after method jobs improve 31.0% /
+28.3% and process-wide complete-job allocation drops 48.4% in both passes.
+Both fresh Release producers pass 276 white/390 public checks and seven canonical
+CPython comparisons before fourteen paired micros taking 8.04–8.06 seconds each.
+All controls remain visible: positional calls change +4.39%/-3.67%, while full
+sort/output changes +6.62%/+3.09% within 12.1%/18.9% retained maximum spreads.
+The unchanged prospective repeated-regression rule passes. Separate allocation
+and native-code groups take about four seconds; all collections have 30-second
+external caps. No full lanes, recollection or milestone qualification.
 
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
