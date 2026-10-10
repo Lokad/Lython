@@ -177,6 +177,30 @@ public sealed class DefaultObjectAttributeTests
         assert c.value==3 and events==['bind-set','bind']
         del c.value
         assert events==['bind-set','bind','bind-delete']
+        """,
+        """
+        events=[]
+        class C: pass
+        c=C()
+        class Work:
+         def run(self):
+          def receiver():
+           events.append('receiver')
+           return c
+          def value():
+           events.append('value')
+           return []
+          receiver().value=value()
+          assert events==['value','receiver']
+          events.clear()
+          def fail():
+           events.append('fail')
+           raise ValueError('rhs')
+          try: receiver().value=fail()
+          except ValueError: pass
+          else: assert False
+          assert events==['fail']
+        Work().run()
         """
     };
 
