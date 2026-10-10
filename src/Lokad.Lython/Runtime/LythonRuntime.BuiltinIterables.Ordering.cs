@@ -264,6 +264,14 @@ internal sealed partial class LythonRuntime
 
     private static bool IsSortKeyLessThan(object left, object right, LythonSourceSpan span, ExecutionContext context)
     {
+        // Exact Python integers have no guest comparison slots. Avoid rich-slot
+        // dispatch and a boxed boolean for this common key shape; mixed types
+        // still use the Python comparison/truthiness path below.
+        if (left is BigInteger leftInteger && right is BigInteger rightInteger)
+        {
+            return leftInteger < rightInteger;
+        }
+
         if (left is PyCmpKey leftKey &&
             right is PyCmpKey rightKey &&
             ReferenceEquals(leftKey.Comparer, rightKey.Comparer))
@@ -277,6 +285,11 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<bool> IsSortKeyLessThanAsync(object left, object right, LythonSourceSpan span, ExecutionContext context)
     {
+        if (left is BigInteger leftInteger && right is BigInteger rightInteger)
+        {
+            return leftInteger < rightInteger;
+        }
+
         if (left is PyCmpKey leftKey &&
             right is PyCmpKey rightKey &&
             ReferenceEquals(leftKey.Comparer, rightKey.Comparer))
