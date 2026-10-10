@@ -38,7 +38,10 @@ internal sealed partial class LythonRuntime
                         IEnumerable<PyString> EnumerateParts()
                         {
                             var index = 0;
-                            foreach (var part in ToSequence(arguments[0], span, context))
+                            var parts = arguments[0] is PyList list && list.TryBorrowSplitForJoin(out var borrowed)
+                                ? new PyIteration.CheckedSequence(borrowed, span, context)
+                                : ToSequence(arguments[0], span, context);
+                            foreach (var part in parts)
                             {
                                 if (!PyStringOps.TryAsString(part, out var partText))
                                 {

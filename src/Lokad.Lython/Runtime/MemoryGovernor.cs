@@ -211,6 +211,12 @@ internal sealed class MemoryGovernor
     /// accounting negative, but callers must still pair every reserve with a
     /// matching commit or release. Debug builds throw on unpaired use.
     /// </summary>
+    // Publishing metadata whose fee was funded earlier is still allocation
+    // progress, even though ownership transfer changes no accounting total.
+    // Give a later denial the same reclamation opportunity as an ordinary
+    // successful commit; repeated denials without progress still fail fast.
+    internal void NotePrefundedAllocation() => _hasCommittedSinceReclaim = true;
+
     public void Commit(long bytes)
     {
         if (bytes <= 0)

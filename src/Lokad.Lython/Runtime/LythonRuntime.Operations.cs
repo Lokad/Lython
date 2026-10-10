@@ -768,6 +768,14 @@ internal sealed partial class LythonRuntime
     // charged. Items-first ordering keeps denial atomic: an item denial strands
     // only its own bytes, and a container denial refunds with every item already
     // owned. A null pool is only valid beside a null governor like above.
+    // Only string split-family producers call this twin. Their nonempty slices
+    // are fresh distinct identities; shared Empty remains ungoverned. General
+    // path/difflib lists keep the existing alias-aware eager adoption below.
+    internal static PyList OwnFreshStringSplitListResult(PyList result, LythonSourceSpan? span, ChargeReclamationPool? pool)
+        => pool is not null && result.TryDeferFreshSplitOwnership(pool, span)
+            ? result
+            : OwnSplitListResult(result, span, pool);
+
     internal static PyList OwnSplitListResult(PyList result, LythonSourceSpan? span, ChargeReclamationPool? pool)
     {
         if (pool is not null)

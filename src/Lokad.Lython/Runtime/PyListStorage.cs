@@ -75,6 +75,11 @@ internal static class PyListStorage
 
     public static IPyListStorage EnsureCapacity(IPyListStorage storage, int targetCount, MemoryGovernor? governor, LythonSourceSpan? span)
     {
+        if (storage is PyList.DeferredSplitStorage deferred)
+        {
+            storage = deferred.Acquire();
+        }
+
         if (targetCount <= SmallCapacity)
         {
             if (storage is ArrayPyListStorage arrayStorage)

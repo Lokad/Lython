@@ -68,6 +68,48 @@ internal sealed class ChargeReclamationPool
 
     public int Count => _young.Count + _old.Count;
 
+    internal bool OwnsGovernor(MemoryGovernor governor) => ReferenceEquals(_governor, governor);
+
+    // The pending container already committed this entry's fee and payload.
+    // Transfer publishes an ordinary independent entry without charging either
+    // twice. The caller removes its aggregate snapshot only after success.
+    internal void TrackPrefundedString(PyString value, LythonSourceSpan? span)
+    {
+        if (!ReferenceEquals(value.OwnerMemoryGovernor, _governor) || value.ReclamationEntry is not null)
+        {
+            throw new InvalidOperationException("Pending string is not a fresh value owned by this governor.");
+        }
+
+        var fundedGrowth = ReserveTierInsertion(_young, span);
+        var growthReserved = fundedGrowth > 0;
+        try
+        {
+            var entry = new ReclamationEntry(value, value.CommittedOwnedBytes);
+            var capacityBefore = _young.Capacity;
+            var published = false;
+            try
+            {
+                PublishEntry(value, entry);
+                published = true;
+                _young.Add(entry);
+                CommitTierInsertion(_young, fundedGrowth, capacityBefore, span);
+            }
+            catch
+            {
+                if (published) UnpublishEntry(value, entry);
+                throw;
+            }
+
+            growthReserved = false;
+            _governor.NotePrefundedAllocation();
+        }
+        catch
+        {
+            if (growthReserved) _governor.ReleaseReserved(checked(fundedGrowth * 8));
+            throw;
+        }
+    }
+
     // A sweep can temporarily detach an entry while funding its promotion.
     // Exhaustion relief may revisit the source registry during that window;
     // an empty tier then does not mean the pool can be unregistered.
