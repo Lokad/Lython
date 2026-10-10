@@ -344,6 +344,15 @@ The unchanged prospective repeated-regression rule passes. Separate allocation
 and native-code groups take about four seconds; all collections have 30-second
 external caps. No full lanes, recollection or milestone qualification.
 
+The [current method CPU refresh and scoped-dispatch baseline](results/2026-10-11-function-scoped-dispatch-baseline/README.md)
+uses two 10-second captures on accepted attribute-slot production, with whole
+groups taking 14.07/16.08 seconds. Shared async statement dispatch remains in
+33.5–35.6% of inclusive sampled stacks; these overlapping shares are design leads,
+not predicted savings. Twenty-seven independent invocation checks precede an
+isolated function-body strategy. Baseline and candidate each pass 9,395 Debug
+tests, 181 selected checks and 58 CPython comparisons. Fresh Release gates and
+short candidate micros remain pending; no gain or integration is claimed.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
