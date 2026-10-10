@@ -158,6 +158,15 @@ under 30-second caps. All 9,164 Debug checks pass before collection. The empty
 control's small allocation increase and first-sort variation remain visible.
 No full lanes run; milestone qualification stays deferred.
 
+The [context/namespace storage round](results/2026-10-10-context-namespace-owner/README.md)
+places namespace-frame storage inside its execution context. Both fixed-count
+passes show about 4.1% less managed call allocation; the change is integrated for
+storage savings. Call timings are small or mixed, with no reliable throughput
+gain. Twelve paired micros stop in about eight seconds each; separate allocation
+groups in about four seconds, all under 30-second caps. All 9,165 Debug checks
+pass before collection, including concurrent namespace aliases through both views.
+Every observation is retained. No full lanes run; qualification remains deferred.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete

@@ -1,0 +1,839 @@
+{
+  "state": "Audited",
+  "baseline": "e0a4ea775171ea113ef813a8d99da5d9e583e632",
+  "candidate": "a39daf4d919e557bf785348ad5286bd316f22217",
+  "baselineProductionTree": "eb8857ec378778a91831b6ea5549fe9389d4a956",
+  "candidateProductionTree": "7f10d59e8ef989e4d90fff1a31303910bd7638c2",
+  "candidateTestsTree": "7d3c9cfcf80a35125e723997141db47234052f6b",
+  "harnessTree": "c194ce88a7e4d52c576f3929ef82bce60bf37e2d",
+  "microCollections": 12,
+  "microAttempts": 517,
+  "rows": [
+    {
+      "index": 0,
+      "replica": 1,
+      "case": "control.empty.control",
+      "seconds": 6.393721,
+      "wholeSeconds": 8.040012,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 23.928152019002376,
+          "iqrFraction": 0.051377844785802575
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 23.176904832713756,
+          "iqrFraction": 0.02566320587630223
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1.4727140434352475,
+          "iqrFraction": 0.012329093405293699
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "replica": 1,
+      "case": "loops.integer.large",
+      "seconds": 6.939652,
+      "wholeSeconds": 8.040721,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 1274.5024583333334,
+          "iqrFraction": 0.007313654651967405
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1295.5293333333332,
+          "iqrFraction": 0.005511566314721207
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 577.3921454545455,
+          "iqrFraction": 0.052605117782248974
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "replica": 1,
+      "case": "calls.positional.medium",
+      "seconds": 6.911474,
+      "wholeSeconds": 8.039158,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 623.0376666666666,
+          "iqrFraction": 0.012648212012863917
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 633.1924893617022,
+          "iqrFraction": 0.02152229463884915
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 119.97766135458167,
+          "iqrFraction": 0.0022597998239580856
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "replica": 1,
+      "case": "calls.keyword.medium",
+      "seconds": 6.94421,
+      "wholeSeconds": 8.043167,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 673.66125,
+          "iqrFraction": 0.0064192466573856945
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 672.8797872340426,
+          "iqrFraction": 0.01545671431304314
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 149.42946766169155,
+          "iqrFraction": 0.003116563787244675
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "replica": 1,
+      "case": "lists.stable-sort.medium",
+      "seconds": 7.124246,
+      "wholeSeconds": 8.052765,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2709.697727272727,
+          "iqrFraction": 0.12070542923690752
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2829.7444,
+          "iqrFraction": 0.04650950099945419
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 301.2390396039604,
+          "iqrFraction": 0.004564645760251591
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "replica": 1,
+      "case": "strings.pipeline-ascii.medium",
+      "seconds": 6.645109,
+      "wholeSeconds": 8.03782,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 148.28494736842103,
+          "iqrFraction": 0.02812490461110785
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 137.96267938931297,
+          "iqrFraction": 0.022216789350765154
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 41.54312553495008,
+          "iqrFraction": 0.007824603558078376
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "replica": 2,
+      "case": "control.empty.control",
+      "seconds": 6.429841,
+      "wholeSeconds": 8.046358,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 23.556085543199316,
+          "iqrFraction": 0.028982229187541477
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 23.58757656362329,
+          "iqrFraction": 0.04099998235311273
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1.4643691551603089,
+          "iqrFraction": 0.00557379093759628
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "replica": 2,
+      "case": "loops.integer.large",
+      "seconds": 6.93531,
+      "wholeSeconds": 8.042272,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 1308.69048,
+          "iqrFraction": 0.007082499751965752
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1294.77275,
+          "iqrFraction": 0.006554818210377115
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 626.4668399999999,
+          "iqrFraction": 0.0014077680472281725
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "replica": 2,
+      "case": "calls.positional.medium",
+      "seconds": 6.948852,
+      "wholeSeconds": 8.043685,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 627.0976,
+          "iqrFraction": 0.006264495351281816
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 618.90262,
+          "iqrFraction": 0.01169382672834684
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 128.36218686868688,
+          "iqrFraction": 0.0015417037483859985
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "replica": 2,
+      "case": "calls.keyword.medium",
+      "seconds": 6.943058,
+      "wholeSeconds": 8.04159,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 680.3968260869565,
+          "iqrFraction": 0.015325455534995598
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 669.3390909090908,
+          "iqrFraction": 0.012095717213587775
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 139.88273999999998,
+          "iqrFraction": 0.005217244815193198
+        }
+      ]
+    },
+    {
+      "index": 10,
+      "replica": 2,
+      "case": "lists.stable-sort.medium",
+      "seconds": 7.034277,
+      "wholeSeconds": 8.049704,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2930.9976,
+          "iqrFraction": 0.059174016382681306
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2642.2913636363637,
+          "iqrFraction": 0.06835828269575255
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 301.46494117647063,
+          "iqrFraction": 0.00565778077664148
+        }
+      ]
+    },
+    {
+      "index": 11,
+      "replica": 2,
+      "case": "strings.pipeline-ascii.medium",
+      "seconds": 6.776986,
+      "wholeSeconds": 8.04437,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 140.91223622047244,
+          "iqrFraction": 0.027866622067882353
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 137.86095035460994,
+          "iqrFraction": 0.016880201111264648
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 41.2152206095791,
+          "iqrFraction": 0.0009862737943945698
+        }
+      ]
+    }
+  ],
+  "receipts": [
+    {
+      "path": "vm/micro-0/micro.json",
+      "sha256": "e842f31118f327d0fb5f21faa127a40e81bf6cf6269d0d5ab5427e5e025e3e2d"
+    },
+    {
+      "path": "vm/micro-1/micro.json",
+      "sha256": "4a62015026b41716d310b8191ddb41f060514bfd4d9cf6fc0b278991319c145c"
+    },
+    {
+      "path": "vm/micro-2/micro.json",
+      "sha256": "c60b15e9632d7381101ec925640369489a74fb085788578ca64925a64ca0c5f0"
+    },
+    {
+      "path": "vm/micro-3/micro.json",
+      "sha256": "9738d239cd79b4e9cea65dd6701e4781f97f56ced123cb08c815d3bf7c35368f"
+    },
+    {
+      "path": "vm/micro-4/micro.json",
+      "sha256": "d1fc1005dbbab9c14365fd536a2794249b1bedb1bf12c70ed0390776d9db98c5"
+    },
+    {
+      "path": "vm/micro-5/micro.json",
+      "sha256": "cad9c00217e224532736261c1ce5e8624e354af231b7252e0dc195875b05a225"
+    },
+    {
+      "path": "vm/micro-6/micro.json",
+      "sha256": "14483e68cf68c844ec260b5fdc44285bf655de0c15ef17a2d2025632005daec5"
+    },
+    {
+      "path": "vm/micro-7/micro.json",
+      "sha256": "e1c852d21273c8af92920c773dafc2917751454738bb6871c8fbc1f7e60ad66c"
+    },
+    {
+      "path": "vm/micro-8/micro.json",
+      "sha256": "afb5c9ef0043b6e51ecce78f7ea1a4e74162c1aad800dfd78e4650dd5665410d"
+    },
+    {
+      "path": "vm/micro-9/micro.json",
+      "sha256": "cf4387e7ddea69b8fe4b6f36e27457ca959d676fc9af4b6fef19b140ad941eb2"
+    },
+    {
+      "path": "vm/micro-10/micro.json",
+      "sha256": "910094909744f4a1351f1c783c33b215d093db5613a7a7b355e58675942c81f5"
+    },
+    {
+      "path": "vm/micro-11/micro.json",
+      "sha256": "833225c8688355f83793d6ca0c9bf3f5fac3aa34414f2d1b20351d51eba5a6af"
+    }
+  ],
+  "services": [
+    {
+      "unit": "lython-context-namespace-micro-0-20261010",
+      "started": "2026-10-10T11:42:33.252510+00:00",
+      "stopped": "2026-10-10T11:42:41.292522+00:00",
+      "wholeSeconds": 8.040012
+    },
+    {
+      "unit": "lython-context-namespace-micro-1-20261010",
+      "started": "2026-10-10T11:42:41.374514+00:00",
+      "stopped": "2026-10-10T11:42:49.415235+00:00",
+      "wholeSeconds": 8.040721
+    },
+    {
+      "unit": "lython-context-namespace-micro-2-20261010",
+      "started": "2026-10-10T11:42:49.482525+00:00",
+      "stopped": "2026-10-10T11:42:57.521683+00:00",
+      "wholeSeconds": 8.039158
+    },
+    {
+      "unit": "lython-context-namespace-micro-3-20261010",
+      "started": "2026-10-10T11:42:57.584535+00:00",
+      "stopped": "2026-10-10T11:43:05.627702+00:00",
+      "wholeSeconds": 8.043167
+    },
+    {
+      "unit": "lython-context-namespace-micro-4-20261010",
+      "started": "2026-10-10T11:43:05.692509+00:00",
+      "stopped": "2026-10-10T11:43:13.745274+00:00",
+      "wholeSeconds": 8.052765
+    },
+    {
+      "unit": "lython-context-namespace-micro-5-20261010",
+      "started": "2026-10-10T11:43:13.813528+00:00",
+      "stopped": "2026-10-10T11:43:21.851348+00:00",
+      "wholeSeconds": 8.03782
+    },
+    {
+      "unit": "lython-context-namespace-micro-6-20261010",
+      "started": "2026-10-10T11:43:21.915537+00:00",
+      "stopped": "2026-10-10T11:43:29.961895+00:00",
+      "wholeSeconds": 8.046358
+    },
+    {
+      "unit": "lython-context-namespace-micro-7-20261010",
+      "started": "2026-10-10T11:43:30.034509+00:00",
+      "stopped": "2026-10-10T11:43:38.076781+00:00",
+      "wholeSeconds": 8.042272
+    },
+    {
+      "unit": "lython-context-namespace-micro-8-20261010",
+      "started": "2026-10-10T11:43:38.152523+00:00",
+      "stopped": "2026-10-10T11:43:46.196208+00:00",
+      "wholeSeconds": 8.043685
+    },
+    {
+      "unit": "lython-context-namespace-micro-9-20261010",
+      "started": "2026-10-10T11:43:46.276527+00:00",
+      "stopped": "2026-10-10T11:43:54.318117+00:00",
+      "wholeSeconds": 8.04159
+    },
+    {
+      "unit": "lython-context-namespace-micro-10-20261010",
+      "started": "2026-10-10T11:43:54.383515+00:00",
+      "stopped": "2026-10-10T11:44:02.433219+00:00",
+      "wholeSeconds": 8.049704
+    },
+    {
+      "unit": "lython-context-namespace-micro-11-20261010",
+      "started": "2026-10-10T11:44:02.495521+00:00",
+      "stopped": "2026-10-10T11:44:10.539891+00:00",
+      "wholeSeconds": 8.04437
+    },
+    {
+      "unit": "lython-context-namespace-prepare-baseline-20261010",
+      "started": "2026-10-10T11:36:40.692513+00:00",
+      "stopped": "2026-10-10T11:36:42.723814+00:00",
+      "wholeSeconds": 2.031301
+    },
+    {
+      "unit": "lython-context-namespace-prepare-candidate-20261010",
+      "started": "2026-10-10T11:36:42.770502+00:00",
+      "stopped": "2026-10-10T11:37:28.923303+00:00",
+      "wholeSeconds": 46.152801
+    }
+  ],
+  "testReceipts": {
+    "full-debug": [
+      {
+        "path": "full-debug/JoannesVermorel_LOKAD-0399_2026-10-10_13_36_48.trx",
+        "sha256": "827aeb80622c2a684f820cb2dbbd566b716f96c10b9c2a7bc101696552c19f12",
+        "passed": 1408
+      },
+      {
+        "path": "full-debug/JoannesVermorel_LOKAD-0399_2026-10-10_13_36_48[1].trx",
+        "sha256": "694058ce310797bf2854489401c47bf7215b98a2f1ead41de7648eebea729f8a",
+        "passed": 7757
+      }
+    ],
+    "vm/candidate-white-vm": [
+      {
+        "path": "vm/candidate-white-vm/_lython-bench_2026-10-10_11_37_05_net10.0.trx",
+        "sha256": "7dcd7bf780b9be290479d2ee5976baba6017655129cad9e4a39e3552f9624b2c",
+        "passed": 115
+      }
+    ],
+    "vm/candidate-public-vm": [
+      {
+        "path": "vm/candidate-public-vm/_lython-bench_2026-10-10_11_37_15_net10.0.trx",
+        "sha256": "7e2b1c67b76f48b33d8a9bcc1397508ffd5cb7c4aaadcca25279dd997baa1f07",
+        "passed": 286
+      }
+    ]
+  },
+  "fullDebugGatePassed": true,
+  "fullDebugPassedBeforeTiming": 9165,
+  "fullLanes": 0,
+  "performanceQualified": false,
+  "diagnosticOnly": true,
+  "baselineProducerReused": true,
+  "allocationDiagnostic": {
+    "state": "Audited",
+    "baseline": "e0a4ea775171ea113ef813a8d99da5d9e583e632",
+    "candidate": "a39daf4d919e557bf785348ad5286bd316f22217",
+    "results": [
+      {
+        "replica": 1,
+        "case": "control.empty.control",
+        "baselineBytes": 29424,
+        "candidateBytes": 29400,
+        "savedBytes": 24,
+        "savedFraction": 0.0008156606851549286
+      },
+      {
+        "replica": 1,
+        "case": "loops.integer.large",
+        "baselineBytes": 1079448.4,
+        "candidateBytes": 1079424.4,
+        "savedBytes": 24.0,
+        "savedFraction": 2.223357781627744e-05
+      },
+      {
+        "replica": 1,
+        "case": "calls.positional.medium",
+        "baselineBytes": 1195524.32,
+        "candidateBytes": 1146354.48,
+        "savedBytes": 49169.840000000084,
+        "savedFraction": 0.04112826412431336
+      },
+      {
+        "replica": 1,
+        "case": "calls.keyword.medium",
+        "baselineBytes": 1212157.2,
+        "candidateBytes": 1162981.44,
+        "savedBytes": 49175.76000000001,
+        "savedFraction": 0.04056879751240183
+      },
+      {
+        "replica": 1,
+        "case": "lists.stable-sort.medium",
+        "baselineBytes": 3606894.16,
+        "candidateBytes": 3496352.56,
+        "savedBytes": 110541.6000000001,
+        "savedFraction": 0.030647309041083703
+      },
+      {
+        "replica": 1,
+        "case": "strings.pipeline-ascii.medium",
+        "baselineBytes": 461832,
+        "candidateBytes": 461808,
+        "savedBytes": 24,
+        "savedFraction": 5.1966949020432196e-05
+      },
+      {
+        "replica": 2,
+        "case": "control.empty.control",
+        "baselineBytes": 29300.32,
+        "candidateBytes": 29232,
+        "savedBytes": 68.31999999999971,
+        "savedFraction": 0.0023317151485034993
+      },
+      {
+        "replica": 2,
+        "case": "loops.integer.large",
+        "baselineBytes": 1079221.84,
+        "candidateBytes": 1079211.68,
+        "savedBytes": 10.160000000149012,
+        "savedFraction": 9.414190506151776e-06
+      },
+      {
+        "replica": 2,
+        "case": "calls.positional.medium",
+        "baselineBytes": 1195341.2,
+        "candidateBytes": 1146151.36,
+        "savedBytes": 49189.83999999985,
+        "savedFraction": 0.041151296382990754
+      },
+      {
+        "replica": 2,
+        "case": "calls.keyword.medium",
+        "baselineBytes": 1211975.36,
+        "candidateBytes": 1162813.2,
+        "savedBytes": 49162.16000000015,
+        "savedFraction": 0.04056366294443492
+      },
+      {
+        "replica": 2,
+        "case": "lists.stable-sort.medium",
+        "baselineBytes": 3486336.88,
+        "candidateBytes": 3437128.88,
+        "savedBytes": 49208.0,
+        "savedFraction": 0.01411452814049341
+      },
+      {
+        "replica": 2,
+        "case": "strings.pipeline-ascii.medium",
+        "baselineBytes": 461832,
+        "candidateBytes": 461808,
+        "savedBytes": 24,
+        "savedFraction": 5.1966949020432196e-05
+      }
+    ],
+    "services": [
+      {
+        "unit": "lython-context-namespace-invocation-allocation-baseline-20261010",
+        "started": "2026-10-10T11:44:29.191506+00:00",
+        "stopped": "2026-10-10T11:44:33.230840+00:00",
+        "wholeSeconds": 4.039334
+      },
+      {
+        "unit": "lython-context-namespace-invocation-allocation-candidate-20261010",
+        "started": "2026-10-10T11:44:33.267503+00:00",
+        "stopped": "2026-10-10T11:44:37.300332+00:00",
+        "wholeSeconds": 4.032829
+      }
+    ],
+    "completeMeasuredInvocations": 2400,
+    "completeWarmupInvocations": 384,
+    "rows": 24,
+    "normalTiming": false,
+    "fullLanes": 0,
+    "afterNormalMicros": true,
+    "managedAllocationIsProcessWide": true,
+    "exactPerGuestTypeAccounting": false,
+    "reusedPreviousRoundHelper": true,
+    "noHelperRebuild": true,
+    "noDiagnosticWorkerRecollected": true,
+    "helperInputsManifestSha256": "ccf553bf21f65571bb720ef32f8455dc01fc5de945a28c67aad44d4b5f187cc0",
+    "files": [
+      {
+        "path": "invocation-allocation-declaration.json",
+        "sha256": "2395ee2c4afd73022ca4385bed6deb4b3f6b776292ed4bdaa2bb2dff3966e4a8"
+      },
+      {
+        "path": "allocation-Collect-exit.txt",
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+      },
+      {
+        "path": "launch-invocation-allocation.sh",
+        "sha256": "62ff0ec1a150e7ba1a567287ea2e99aec6fea8e9386f0ce84f6a32b08c444f22"
+      },
+      {
+        "path": "vm/helper-reused-inputs-baseline.txt",
+        "sha256": "298e503f8abc3f5067ffcd79c7bb52ddf08875f87dd2535601eebca2f44270fc"
+      },
+      {
+        "path": "vm/helper-reused-inputs-candidate.txt",
+        "sha256": "298e503f8abc3f5067ffcd79c7bb52ddf08875f87dd2535601eebca2f44270fc"
+      },
+      {
+        "path": "vm/final-allocation-inputs.txt",
+        "sha256": "298e503f8abc3f5067ffcd79c7bb52ddf08875f87dd2535601eebca2f44270fc"
+      },
+      {
+        "path": "vm/baseline-invocation-allocation.jsonl",
+        "sha256": "ba26fe2e137de66844d11b898498fc8110e1edb897ea346e92fb8c43d5893367"
+      },
+      {
+        "path": "vm/candidate-invocation-allocation.jsonl",
+        "sha256": "e954cebde66df1628e30466bca8688211f092d5ebe13f7a309e4265432946ba9"
+      }
+    ]
+  },
+  "compiledFields": {
+    "state": "Audited",
+    "compiledMetadata": true,
+    "baseOwnerAndFieldsVerified": true,
+    "exactObjectBytesPredicted": false,
+    "binaries": [
+      {
+        "path": ".git/agent-worktrees/shared-frame-owner/src/Lokad.Lython/bin/Debug/net10.0/Lokad.Lython.dll",
+        "sha256": "ba8be2d8a92a95681f4972cd473ad1e9a087a1c69a03a46eb9a57244531eab71",
+        "types": [
+          {
+            "name": "ExecutionFrame",
+            "baseName": "Object",
+            "fields": [
+              "_variables",
+              "<Parent>k__BackingField"
+            ]
+          },
+          {
+            "name": "ExecutionContext",
+            "baseName": "Object",
+            "fields": [
+              "_postponedAnnotations",
+              "EmptyNonlocalTargets",
+              "<Services>k__BackingField",
+              "<Frame>k__BackingField",
+              "<SourcePath>k__BackingField",
+              "<ParentContext>k__BackingField",
+              "<IsClassBody>k__BackingField",
+              "<IsAnnotationScope>k__BackingField",
+              "<IsTypeParameterScope>k__BackingField",
+              "<HasModernTypeDeclarations>k__BackingField",
+              "<EvaluateModernClassAnnotations>k__BackingField",
+              "<FunctionName>k__BackingField",
+              "ClosureRetentionCharged",
+              "ClosureChargedVariableCount",
+              "<FunctionClosureContext>k__BackingField",
+              "<ClassCell>k__BackingField",
+              "<ScopeFacts>k__BackingField",
+              "<NonlocalTargets>k__BackingField",
+              "<CurrentExecutableFrame>k__BackingField",
+              "<MirrorLocalStores>k__BackingField",
+              "<ActiveHandlerVariables>k__BackingField",
+              "<ImplicitSuperAnchorType>k__BackingField",
+              "<ImplicitSuperReceiver>k__BackingField",
+              "<ImplicitSuperClassCell>k__BackingField",
+              "<MissingImplicitSuperClassCell>k__BackingField",
+              "<MirrorsExecutableLocals>k__BackingField",
+              "MaxGlobalNormalizationDepth",
+              "MemoEntryBytes"
+            ]
+          }
+        ]
+      },
+      {
+        "path": ".git/agent-worktrees/context-namespace-owner/src/Lokad.Lython/bin/Debug/net10.0/Lokad.Lython.dll",
+        "sha256": "5ad86c2140f1ab3c29194a97e16cc7ea2f0222094267746eb55990ff2b366a3f",
+        "types": [
+          {
+            "name": "ExecutionFrame",
+            "baseName": "Object",
+            "fields": [
+              "_variables",
+              "<Parent>k__BackingField"
+            ]
+          },
+          {
+            "name": "ExecutionContext",
+            "baseName": "ExecutionFrame",
+            "fields": [
+              "_postponedAnnotations",
+              "EmptyNonlocalTargets",
+              "<Services>k__BackingField",
+              "<SourcePath>k__BackingField",
+              "<ParentContext>k__BackingField",
+              "<IsClassBody>k__BackingField",
+              "<IsAnnotationScope>k__BackingField",
+              "<IsTypeParameterScope>k__BackingField",
+              "<HasModernTypeDeclarations>k__BackingField",
+              "<EvaluateModernClassAnnotations>k__BackingField",
+              "<FunctionName>k__BackingField",
+              "ClosureRetentionCharged",
+              "ClosureChargedVariableCount",
+              "<FunctionClosureContext>k__BackingField",
+              "<ClassCell>k__BackingField",
+              "<ScopeFacts>k__BackingField",
+              "<NonlocalTargets>k__BackingField",
+              "<CurrentExecutableFrame>k__BackingField",
+              "<MirrorLocalStores>k__BackingField",
+              "<ActiveHandlerVariables>k__BackingField",
+              "<ImplicitSuperAnchorType>k__BackingField",
+              "<ImplicitSuperReceiver>k__BackingField",
+              "<ImplicitSuperClassCell>k__BackingField",
+              "<MissingImplicitSuperClassCell>k__BackingField",
+              "<MirrorsExecutableLocals>k__BackingField",
+              "MaxGlobalNormalizationDepth",
+              "MemoEntryBytes"
+            ]
+          }
+        ]
+      }
+    ],
+    "sourceFiles": [
+      {
+        "path": "Metadata/Program.cs",
+        "sha256": "40d01aa5535a1b6b4094430faed3d6dafce2e33ed7c0741e0eaad16053cfa725"
+      },
+      {
+        "path": "Metadata/Metadata.csproj",
+        "sha256": "2342ade0bfd177bb8c15a31868cb0a00a2ebc462d939a7d556c205b0bae3b5f4"
+      },
+      {
+        "path": "compiled-fields.json",
+        "sha256": "2baa5bbb490213c0cbbb89202b9d1684824a1732cc64e3780a002495b87ab226"
+      }
+    ]
+  },
+  "integrationBasis": "Repeated complete-call managed-allocation reduction with compiled context/namespace ownership proof and semantic/containment gates; short timing remains diagnostic",
+  "cleanup": {
+    "bothSourcesClean": true,
+    "inputsRehashed": true,
+    "ownedServicesTerminal": 16,
+    "allRecordedPidsAbsent": true,
+    "sharedLeaseAvailableAtAuditStart": true,
+    "fullLanes": 0,
+    "recordedPidCount": 54
+  },
+  "supportingFiles": [
+    {
+      "path": "preparation-declaration.json",
+      "sha256": "5c4ee24fb424c0a4c7dea6cef9d0d6e9a7ae36f4f99ab67b8f9f1603bc4a09d1"
+    },
+    {
+      "path": "micro-declaration.json",
+      "sha256": "cfb50640506475f08400c29caef6708de68f28a20937353f8227e2c9ad5b9508"
+    },
+    {
+      "path": "prepare.sh",
+      "sha256": "c7d2ccabbd2b364047b6192210aaadd99483c420b5724faedd7625bbcdd90b8d"
+    },
+    {
+      "path": "launch-prepare.sh",
+      "sha256": "67f531a358be3ae84063022bf1fe916c94199dd3dd0faf997bece0c29e0dd7a6"
+    },
+    {
+      "path": "micro.sh",
+      "sha256": "acebdb0ab0da652db20fd236251d4980187f413919c90b1c4eae650d2367a787"
+    },
+    {
+      "path": "launch-micros.sh",
+      "sha256": "ac190fc89116b007dc565102a4d3db9e025b8fc773a6c2cb7f3a5c065262d74d"
+    },
+    {
+      "path": "finish.sh",
+      "sha256": "c3946827ca0e08d8c4b7d64c71ddbbdd7e53b6b3428492031a28f5a250990452"
+    },
+    {
+      "path": "audit-micros.py",
+      "sha256": "261d25417a9e62638cc6fd30deaf959adb18c72d7d3e167942c451d5818a8f09"
+    },
+    {
+      "path": "frozen-debug-binaries.json",
+      "sha256": "e97b86ffacdc3eb976f9e1e98a1d94d59b7145a7764787ca14d6788dbd58a30f"
+    },
+    {
+      "path": "vm/baseline-prepared-inputs.sha256",
+      "sha256": "6956b0543b1094df7002cb0e4c4420918be6ccc1cddc996654acd37e464bd9de"
+    },
+    {
+      "path": "vm/candidate-prepared-inputs.sha256",
+      "sha256": "f4e15d315567f44dd764bd04805d454d4aa9d27eddf10633fb2eeeacf3d6973b"
+    },
+    {
+      "path": "vm/baseline-correctness.json",
+      "sha256": "2239552109b1f5f81e1a21129f40a0e244e1318048ee47bc4bf63f76f65dcc40"
+    },
+    {
+      "path": "vm/candidate-correctness.json",
+      "sha256": "97bc717876d307738bc6f489ec78d0e9b3badb9a05b12b7e7f73375197dbd088"
+    },
+    {
+      "path": "vm/final-vm-audit.json",
+      "sha256": "9a6a54b5be0afd5da68e009007f0b8ebeee1f19fafc108a1d397bfa13d417ecc"
+    },
+    {
+      "path": "vm/final-lease.txt",
+      "sha256": "ed01b1557bd7a1e70f90d8838f38ae0bb6b8367122b3dca7e5935bafa440a45a"
+    },
+    {
+      "path": "allocation-audit.json",
+      "sha256": "bbfb62e757878ff0caf4b1ae6fcf4791464d8e62891c730fe3bbe55f63d48df8"
+    },
+    {
+      "path": "audit-allocation.py",
+      "sha256": "30464bac91bb8716460c163038dace6ee5c5b70fb8ab803fcc66d8d2cc3fa04a"
+    },
+    {
+      "path": "fields-audit.json",
+      "sha256": "bb176e02829827d59f376275e8a542d8735c7918198527957a5d3e3bccc34b45"
+    },
+    {
+      "path": "audit-fields.py",
+      "sha256": "646ad2ddce597e1c6e6abd0b0af4bcbfc2578fd5857c14d6f8d96c09f471f256"
+    }
+  ]
+}
