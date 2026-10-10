@@ -9,6 +9,10 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
     private readonly LythonSourceSpan? _allocationSpan;
     private readonly long _adoptedBytes;
 
+    // Keep identity-based reclamation metadata with its immutable owner. The
+    // entry refers back weakly, so this does not keep a dropped tuple alive.
+    internal ChargeReclamationPool.ReclamationEntry? ReclamationEntry { get; set; }
+
     public static readonly PyTuple Empty = new([], takeOwnership: true);
 
     public PyTuple(IEnumerable<object> items)

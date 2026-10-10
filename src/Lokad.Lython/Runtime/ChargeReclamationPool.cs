@@ -140,6 +140,12 @@ internal sealed class ChargeReclamationPool
             return entry is not null;
         }
 
+        if (value is PyTuple tuple)
+        {
+            entry = tuple.ReclamationEntry;
+            return entry is not null;
+        }
+
         return TrackedStorage.TryGetValue(value, out entry);
     }
 
@@ -152,6 +158,10 @@ internal sealed class ChargeReclamationPool
         else if (value is PyList list)
         {
             list.ReclamationEntry = entry;
+        }
+        else if (value is PyTuple tuple)
+        {
+            tuple.ReclamationEntry = entry;
         }
         else
         {
@@ -168,6 +178,10 @@ internal sealed class ChargeReclamationPool
         else if (value is PyList list)
         {
             list.ReclamationEntry = null;
+        }
+        else if (value is PyTuple tuple)
+        {
+            tuple.ReclamationEntry = null;
         }
         else
         {
