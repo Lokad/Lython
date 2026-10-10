@@ -177,6 +177,16 @@ All 9,169 candidate Debug checks and complete CPython outputs pass before timing
 The runtime, tests and harness retain their preceding delivered versions.
 No full lanes run; all observations and the rejection remain visible.
 
+The [direct binder-array experiment](results/2026-10-10-binding-plan-arrays/README.md)
+remains isolated despite smaller compiled binder methods. Twelve paired micros
+show slower positional calls in both replicas and mixed keyword results, with
+effectively unchanged call allocation. All 9,165 frozen Debug checks pass first;
+normal groups take about eight seconds and allocation groups four, under 30-second
+caps. A separate ten-second current-loop CPU capture then identifies dispatch,
+stack transfer and integer operations as broader leads; its group stops in
+14.08 seconds. Sampling is diagnostic, with no qualified CPU or speed ratio.
+Production, tests and harness remain unchanged. No full lanes run.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete

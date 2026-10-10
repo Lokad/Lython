@@ -1,0 +1,1385 @@
+{
+  "state": "Audited",
+  "baseline": "a39daf4d919e557bf785348ad5286bd316f22217",
+  "candidate": "92685427716af93bd93df0c41ae6ed47159efc37",
+  "baselineProductionTree": "7f10d59e8ef989e4d90fff1a31303910bd7638c2",
+  "candidateProductionTree": "ca45d4ba20d47f49d42639b2cb84fcc9e22a96b3",
+  "candidateTestsTree": "7d3c9cfcf80a35125e723997141db47234052f6b",
+  "harnessTree": "c194ce88a7e4d52c576f3929ef82bce60bf37e2d",
+  "microCollections": 12,
+  "microAttempts": 514,
+  "rows": [
+    {
+      "index": 0,
+      "replica": 1,
+      "case": "control.empty.control",
+      "seconds": 6.371937,
+      "wholeSeconds": 8.052181,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 24.910144292237444,
+          "iqrFraction": 0.04231662529299836
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 24.4620184501845,
+          "iqrFraction": 0.04783882898814298
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1.5826609116373822,
+          "iqrFraction": 0.0014727013493921813
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "replica": 1,
+      "case": "loops.integer.large",
+      "seconds": 6.94823,
+      "wholeSeconds": 8.04061,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 1307.9572173913043,
+          "iqrFraction": 0.0042467650185074625
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1291.1552608695654,
+          "iqrFraction": 0.011925636128157814
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 646.0652857142857,
+          "iqrFraction": 0.0012100881066578108
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "replica": 1,
+      "case": "calls.positional.medium",
+      "seconds": 6.967879,
+      "wholeSeconds": 8.056375,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 648.3658723404255,
+          "iqrFraction": 0.02238550889115795
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 653.9363469387756,
+          "iqrFraction": 0.0042996914041529225
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 125.73074042553192,
+          "iqrFraction": 0.0075427313024618555
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "replica": 1,
+      "case": "calls.keyword.medium",
+      "seconds": 6.948581,
+      "wholeSeconds": 8.041092,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 667.513590909091,
+          "iqrFraction": 0.012760959106110095
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 682.9761395348837,
+          "iqrFraction": 0.04905512038385762
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 139.93121499999998,
+          "iqrFraction": 0.036188565932197554
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "replica": 1,
+      "case": "lists.stable-sort.medium",
+      "seconds": 7.194788,
+      "wholeSeconds": 8.038899,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2712.5704545454546,
+          "iqrFraction": 0.03561543018153709
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2691.113307692308,
+          "iqrFraction": 0.057560035276220965
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 302.78326373626373,
+          "iqrFraction": 0.004913716796735303
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "replica": 1,
+      "case": "strings.pipeline-ascii.medium",
+      "seconds": 6.733337,
+      "wholeSeconds": 8.038649,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 137.77178102189782,
+          "iqrFraction": 0.010505419573065392
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 139.1685357142857,
+          "iqrFraction": 0.018210397003222373
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 42.054762736535665,
+          "iqrFraction": 0.006529418805216199
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "replica": 2,
+      "case": "control.empty.control",
+      "seconds": 6.445045,
+      "wholeSeconds": 8.0498,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 22.962143481427532,
+          "iqrFraction": 0.031160712510026636
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 23.160448660714284,
+          "iqrFraction": 0.021333481625961888
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1.4750681041033435,
+          "iqrFraction": 0.006777367898821341
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "replica": 2,
+      "case": "loops.integer.large",
+      "seconds": 6.919817,
+      "wholeSeconds": 8.042666,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 1313.2049200000001,
+          "iqrFraction": 0.009913867821939088
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1281.0298750000002,
+          "iqrFraction": 0.008638313372668165
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 618.26064,
+          "iqrFraction": 0.0010129061426262023
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "replica": 2,
+      "case": "calls.positional.medium",
+      "seconds": 6.945363,
+      "wholeSeconds": 8.039753,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 600.5449347826087,
+          "iqrFraction": 0.010325658214693159
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 644.7403125000001,
+          "iqrFraction": 0.008821639591004524
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 120.584652,
+          "iqrFraction": 0.0035796429548927535
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "replica": 2,
+      "case": "calls.keyword.medium",
+      "seconds": 6.938843,
+      "wholeSeconds": 8.045504,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 667.7950638297872,
+          "iqrFraction": 0.009889898697421833
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 662.0592444444444,
+          "iqrFraction": 0.014890527084753148
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 138.92793846153847,
+          "iqrFraction": 0.007543128427990018
+        }
+      ]
+    },
+    {
+      "index": 10,
+      "replica": 2,
+      "case": "lists.stable-sort.medium",
+      "seconds": 7.195451,
+      "wholeSeconds": 8.039984,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2663.822,
+          "iqrFraction": 0.01580285769844971
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2624.5579285714284,
+          "iqrFraction": 0.06543272008447906
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 310.10071578947367,
+          "iqrFraction": 0.0036564690968991388
+        }
+      ]
+    },
+    {
+      "index": 11,
+      "replica": 2,
+      "case": "strings.pipeline-ascii.medium",
+      "seconds": 6.751127,
+      "wholeSeconds": 8.055973,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 139.9924910714286,
+          "iqrFraction": 0.02495634491620382
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 139.46876153846154,
+          "iqrFraction": 0.03040766393842033
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 41.641409395973156,
+          "iqrFraction": 0.008406980661028842
+        }
+      ]
+    }
+  ],
+  "receipts": [
+    {
+      "path": "vm/micro-0/micro.json",
+      "sha256": "4264fea6f4276273ade7ba32570b12269186ccc72aef399c0d9d07bc64c23935"
+    },
+    {
+      "path": "vm/micro-1/micro.json",
+      "sha256": "72770e96addc4a971bf2a9d4fe5c9944547437acfc70f7aad9d1c17a1a364506"
+    },
+    {
+      "path": "vm/micro-2/micro.json",
+      "sha256": "d4ebc9fdafc734106f2872416af98a75fdbf446b0037a180d428164c512dfa37"
+    },
+    {
+      "path": "vm/micro-3/micro.json",
+      "sha256": "528eb94f75587ec7d4e85254d24cec2e7fdee535e0de8de7b41906ce62e3c87a"
+    },
+    {
+      "path": "vm/micro-4/micro.json",
+      "sha256": "3d3cf4ee87a759020b583069301c63f5623813e4025f94ae26304ae95775cf14"
+    },
+    {
+      "path": "vm/micro-5/micro.json",
+      "sha256": "44def9d7d467a45205a1be1c775bc4b2367b0c7681cc7cefbf9bb7099d907386"
+    },
+    {
+      "path": "vm/micro-6/micro.json",
+      "sha256": "2e41f4a3cabea1aa004f47cc8f247e56fd7571cb0c0e8941e1da1d329d67ceb4"
+    },
+    {
+      "path": "vm/micro-7/micro.json",
+      "sha256": "a1d11745306c7126646a571c44af4e252657386d6549f671108f932935c96588"
+    },
+    {
+      "path": "vm/micro-8/micro.json",
+      "sha256": "fe5a949dad6020de827df2eaa72473646539b8ba327b67bb4e884dfd2edeebaf"
+    },
+    {
+      "path": "vm/micro-9/micro.json",
+      "sha256": "4d49421badc1fbba650e5a1612936e9d4ec337b1673daf18c9a73d9e0767ad96"
+    },
+    {
+      "path": "vm/micro-10/micro.json",
+      "sha256": "a3dd12587eec733f6759f72f12f048dfe42dcfc9ab30b86bea1518743dc48a6d"
+    },
+    {
+      "path": "vm/micro-11/micro.json",
+      "sha256": "05dd8dcc88e9481c8431155003a0a0237a961f8265cbe0f9a3609d746b8c6340"
+    }
+  ],
+  "services": [
+    {
+      "unit": "lython-binding-arrays-micro-0-20261010",
+      "started": "2026-10-10T12:58:42.145516+00:00",
+      "stopped": "2026-10-10T12:58:50.197697+00:00",
+      "wholeSeconds": 8.052181
+    },
+    {
+      "unit": "lython-binding-arrays-micro-1-20261010",
+      "started": "2026-10-10T12:58:50.279515+00:00",
+      "stopped": "2026-10-10T12:58:58.320125+00:00",
+      "wholeSeconds": 8.04061
+    },
+    {
+      "unit": "lython-binding-arrays-micro-2-20261010",
+      "started": "2026-10-10T12:58:58.390514+00:00",
+      "stopped": "2026-10-10T12:59:06.446889+00:00",
+      "wholeSeconds": 8.056375
+    },
+    {
+      "unit": "lython-binding-arrays-micro-3-20261010",
+      "started": "2026-10-10T12:59:06.518529+00:00",
+      "stopped": "2026-10-10T12:59:14.559621+00:00",
+      "wholeSeconds": 8.041092
+    },
+    {
+      "unit": "lython-binding-arrays-micro-4-20261010",
+      "started": "2026-10-10T12:59:14.625521+00:00",
+      "stopped": "2026-10-10T12:59:22.664420+00:00",
+      "wholeSeconds": 8.038899
+    },
+    {
+      "unit": "lython-binding-arrays-micro-5-20261010",
+      "started": "2026-10-10T12:59:22.736519+00:00",
+      "stopped": "2026-10-10T12:59:30.775168+00:00",
+      "wholeSeconds": 8.038649
+    },
+    {
+      "unit": "lython-binding-arrays-micro-6-20261010",
+      "started": "2026-10-10T12:59:30.844519+00:00",
+      "stopped": "2026-10-10T12:59:38.894319+00:00",
+      "wholeSeconds": 8.0498
+    },
+    {
+      "unit": "lython-binding-arrays-micro-7-20261010",
+      "started": "2026-10-10T12:59:38.972518+00:00",
+      "stopped": "2026-10-10T12:59:47.015184+00:00",
+      "wholeSeconds": 8.042666
+    },
+    {
+      "unit": "lython-binding-arrays-micro-8-20261010",
+      "started": "2026-10-10T12:59:47.082524+00:00",
+      "stopped": "2026-10-10T12:59:55.122277+00:00",
+      "wholeSeconds": 8.039753
+    },
+    {
+      "unit": "lython-binding-arrays-micro-9-20261010",
+      "started": "2026-10-10T12:59:55.197515+00:00",
+      "stopped": "2026-10-10T13:00:03.243019+00:00",
+      "wholeSeconds": 8.045504
+    },
+    {
+      "unit": "lython-binding-arrays-micro-10-20261010",
+      "started": "2026-10-10T13:00:03.313515+00:00",
+      "stopped": "2026-10-10T13:00:11.353499+00:00",
+      "wholeSeconds": 8.039984
+    },
+    {
+      "unit": "lython-binding-arrays-micro-11-20261010",
+      "started": "2026-10-10T13:00:11.424535+00:00",
+      "stopped": "2026-10-10T13:00:19.480508+00:00",
+      "wholeSeconds": 8.055973
+    },
+    {
+      "unit": "lython-binding-arrays-prepare-baseline-20261010",
+      "started": "2026-10-10T12:53:01.803510+00:00",
+      "stopped": "2026-10-10T12:53:03.834987+00:00",
+      "wholeSeconds": 2.031477
+    },
+    {
+      "unit": "lython-binding-arrays-prepare-candidate-20261010",
+      "started": "2026-10-10T12:53:03.876510+00:00",
+      "stopped": "2026-10-10T12:53:50.043080+00:00",
+      "wholeSeconds": 46.16657
+    }
+  ],
+  "testReceipts": {
+    "full-debug": [
+      {
+        "path": "full-debug/JoannesVermorel_LOKAD-0399_2026-10-10_14_52_45.trx",
+        "sha256": "66f97b102a45560423911c830809efce0dd57325509596154780369b5beaf7fb",
+        "passed": 1408
+      },
+      {
+        "path": "full-debug/JoannesVermorel_LOKAD-0399_2026-10-10_14_52_45[1].trx",
+        "sha256": "d9acd247814ab41a0158d37553ffa4375595a6e00a15ba3f6e9f1b1c3efa6b59",
+        "passed": 7757
+      }
+    ],
+    "vm/candidate-white-vm": [
+      {
+        "path": "vm/candidate-white-vm/_lython-bench_2026-10-10_12_53_26_net10.0.trx",
+        "sha256": "9b6921f09b17fb168ffa34287046937ca082715457087e35150b26bf06376fc1",
+        "passed": 128
+      }
+    ],
+    "vm/candidate-public-vm": [
+      {
+        "path": "vm/candidate-public-vm/_lython-bench_2026-10-10_12_53_35_net10.0.trx",
+        "sha256": "6acd5808423a68128843ddf49bb04caa9ff9e85e37c1e0ca1dd9175fb2a0ba54",
+        "passed": 286
+      }
+    ]
+  },
+  "fullDebugGatePassed": true,
+  "fullDebugPassedBeforeTiming": 9165,
+  "fullLanes": 0,
+  "performanceQualified": false,
+  "diagnosticOnly": true,
+  "baselineProducerReused": true,
+  "allocationDiagnostic": {
+    "state": "Audited",
+    "baseline": "a39daf4d919e557bf785348ad5286bd316f22217",
+    "candidate": "92685427716af93bd93df0c41ae6ed47159efc37",
+    "results": [
+      {
+        "replica": 1,
+        "case": "control.empty.control",
+        "baselineBytes": 29400,
+        "candidateBytes": 29400,
+        "savedBytes": 0,
+        "savedFraction": 0.0
+      },
+      {
+        "replica": 1,
+        "case": "loops.integer.large",
+        "baselineBytes": 1079424.4,
+        "candidateBytes": 1079424.4,
+        "savedBytes": 0.0,
+        "savedFraction": 0.0
+      },
+      {
+        "replica": 1,
+        "case": "calls.positional.medium",
+        "baselineBytes": 1146354.72,
+        "candidateBytes": 1146354.48,
+        "savedBytes": 0.23999999999068677,
+        "savedFraction": 2.0935928102261414e-07
+      },
+      {
+        "replica": 1,
+        "case": "calls.keyword.medium",
+        "baselineBytes": 1162981.2,
+        "candidateBytes": 1162981.44,
+        "savedBytes": -0.23999999999068677,
+        "savedFraction": -2.063661905804537e-07
+      },
+      {
+        "replica": 1,
+        "case": "lists.stable-sort.medium",
+        "baselineBytes": 3538217.36,
+        "candidateBytes": 3491676,
+        "savedBytes": 46541.35999999987,
+        "savedFraction": 0.013153900754135694
+      },
+      {
+        "replica": 1,
+        "case": "strings.pipeline-ascii.medium",
+        "baselineBytes": 461808,
+        "candidateBytes": 461808,
+        "savedBytes": 0,
+        "savedFraction": 0.0
+      },
+      {
+        "replica": 2,
+        "case": "control.empty.control",
+        "baselineBytes": 29232,
+        "candidateBytes": 29232,
+        "savedBytes": 0,
+        "savedFraction": 0.0
+      },
+      {
+        "replica": 2,
+        "case": "loops.integer.large",
+        "baselineBytes": 1079197.84,
+        "candidateBytes": 1079211.68,
+        "savedBytes": -13.839999999850988,
+        "savedFraction": -1.2824339974404353e-05
+      },
+      {
+        "replica": 2,
+        "case": "calls.positional.medium",
+        "baselineBytes": 1146165.2,
+        "candidateBytes": 1146165.2,
+        "savedBytes": 0.0,
+        "savedFraction": 0.0
+      },
+      {
+        "replica": 2,
+        "case": "calls.keyword.medium",
+        "baselineBytes": 1162799.36,
+        "candidateBytes": 1162799.36,
+        "savedBytes": 0.0,
+        "savedFraction": 0.0
+      },
+      {
+        "replica": 2,
+        "case": "lists.stable-sort.medium",
+        "baselineBytes": 3437131.76,
+        "candidateBytes": 3437620.88,
+        "savedBytes": -489.12000000011176,
+        "savedFraction": -0.00014230469884579655
+      },
+      {
+        "replica": 2,
+        "case": "strings.pipeline-ascii.medium",
+        "baselineBytes": 461808,
+        "candidateBytes": 461808,
+        "savedBytes": 0,
+        "savedFraction": 0.0
+      }
+    ],
+    "services": [
+      {
+        "unit": "lython-binding-arrays-invocation-allocation-baseline-20261010",
+        "started": "2026-10-10T13:00:35.894515+00:00",
+        "stopped": "2026-10-10T13:00:39.929808+00:00",
+        "wholeSeconds": 4.035293
+      },
+      {
+        "unit": "lython-binding-arrays-invocation-allocation-candidate-20261010",
+        "started": "2026-10-10T13:00:39.965517+00:00",
+        "stopped": "2026-10-10T13:00:43.997785+00:00",
+        "wholeSeconds": 4.032268
+      }
+    ],
+    "completeMeasuredInvocations": 2400,
+    "completeWarmupInvocations": 384,
+    "rows": 24,
+    "normalTiming": false,
+    "fullLanes": 0,
+    "afterNormalMicros": true,
+    "managedAllocationIsProcessWide": true,
+    "exactPerGuestTypeAccounting": false,
+    "reusedPreviousRoundHelper": true,
+    "noHelperRebuild": true,
+    "noDiagnosticWorkerRecollected": true,
+    "helperInputsManifestSha256": "ccf553bf21f65571bb720ef32f8455dc01fc5de945a28c67aad44d4b5f187cc0",
+    "files": [
+      {
+        "path": "invocation-allocation-declaration.json",
+        "sha256": "f7d6e63824c56410bc79b53a0f2f2bdffad992b80ef001c8f8dba6ae7730b9c7"
+      },
+      {
+        "path": "allocation-Collect-exit.txt",
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+      },
+      {
+        "path": "launch-invocation-allocation.sh",
+        "sha256": "852c72f77c2032c42b29ca0c2be536a83c3a4f98cdd5592b10ccc760dad3863f"
+      },
+      {
+        "path": "vm/helper-reused-inputs-baseline.txt",
+        "sha256": "298e503f8abc3f5067ffcd79c7bb52ddf08875f87dd2535601eebca2f44270fc"
+      },
+      {
+        "path": "vm/helper-reused-inputs-candidate.txt",
+        "sha256": "298e503f8abc3f5067ffcd79c7bb52ddf08875f87dd2535601eebca2f44270fc"
+      },
+      {
+        "path": "vm/final-allocation-inputs.txt",
+        "sha256": "298e503f8abc3f5067ffcd79c7bb52ddf08875f87dd2535601eebca2f44270fc"
+      },
+      {
+        "path": "vm/baseline-invocation-allocation.jsonl",
+        "sha256": "72dc388b99b5457a1c80e43113c30235bc7b07e09d263b5a47ac77cdb533a8d6"
+      },
+      {
+        "path": "vm/candidate-invocation-allocation.jsonl",
+        "sha256": "74993aac6b2edb172cd5e61bd9e6df5b4726599e9380d32c814f1206810d6c9f"
+      }
+    ]
+  },
+  "compiledBinding": {
+    "state": "Audited",
+    "compiledMetadataAndIl": true,
+    "ownedArrayFieldsReplaceViewsWithoutAddedReferences": true,
+    "hotBinderUsesArrayLengths": true,
+    "noCpuSavingPredicted": true,
+    "noPhysicalObjectBytesPredicted": true,
+    "methods": [
+      {
+        "method": "BindFunctionArguments",
+        "baselineIlBytes": 77,
+        "candidateIlBytes": 70,
+        "baselineArrayLengthInstructions": 0,
+        "candidateArrayLengthInstructions": 2,
+        "baselineCountGetterCalls": 2,
+        "candidateCountGetterCalls": 0
+      },
+      {
+        "method": "BindInto",
+        "baselineIlBytes": 1206,
+        "candidateIlBytes": 1177,
+        "baselineArrayLengthInstructions": 1,
+        "candidateArrayLengthInstructions": 6,
+        "baselineCountGetterCalls": 7,
+        "candidateCountGetterCalls": 2
+      }
+    ],
+    "binaries": [
+      {
+        "path": ".git/agent-worktrees/context-namespace-owner/src/Lokad.Lython/bin/Debug/net10.0/Lokad.Lython.dll",
+        "sha256": "5ad86c2140f1ab3c29194a97e16cc7ea2f0222094267746eb55990ff2b366a3f",
+        "plan": {
+          "fields": [
+            "<CallableName>k__BackingField",
+            "<CallableKind>k__BackingField",
+            "<Parameters>k__BackingField",
+            "<PositionalParameters>k__BackingField",
+            "<KeywordOnlyParameters>k__BackingField",
+            "<NamedParameters>k__BackingField",
+            "<LayoutParameterNames>k__BackingField",
+            "<LayoutParameterIndex>k__BackingField",
+            "<NamedLayoutCount>k__BackingField",
+            "<PositionalOnlyCount>k__BackingField",
+            "<VariadicList>k__BackingField",
+            "<VariadicDictionary>k__BackingField",
+            "<DefaultValues>k__BackingField"
+          ]
+        },
+        "methods": [
+          {
+            "name": "BindFunctionArguments",
+            "ilBytes": 77,
+            "instructions": {
+              "nop": 5,
+              "ldarg.3": 2,
+              "callvirt": 6,
+              "ldarg.2": 3,
+              "brfalse.s": 1,
+              "call": 4,
+              "br.s": 1,
+              "stloc.0": 1,
+              "ldloc.0": 2,
+              "ldarg.0": 1,
+              "ldarg.1": 1,
+              "stloc.1": 1,
+              "leave.s": 1,
+              "pop": 1,
+              "rethrow": 1,
+              "ldloc.1": 1,
+              "ret": 1
+            },
+            "calls": [
+              "get_State",
+              "NoteBoundCall",
+              "get_LayoutParameterNames",
+              "get_Count",
+              "get_LayoutParameterNames",
+              "get_Count",
+              "RentBoundValues",
+              "<generic specification>",
+              "BindInto",
+              "ReturnBoundValues"
+            ]
+          },
+          {
+            "name": "BindInto",
+            "ilBytes": 1206,
+            "instructions": {
+              "nop": 45,
+              "ldarg.s": 6,
+              "callvirt": 69,
+              "stloc.0": 1,
+              "ldloca.s": 22,
+              "ldarg.3": 32,
+              "call": 31,
+              "ldnull": 12,
+              "stloc.2": 2,
+              "stloc.3": 2,
+              "ldc.i4.0": 10,
+              "stloc.s": 41,
+              "ldarg.1": 1,
+              "br": 3,
+              "ldloc.s": 78,
+              "ldelem": 1,
+              "brfalse": 3,
+              "clt": 4,
+              "ceq": 10,
+              "brfalse.s": 15,
+              "ldarg.2": 11,
+              "throw": 6,
+              "ldloc.2": 5,
+              "newobj": 7,
+              "ldloc.0": 4,
+              "ldarg.0": 8,
+              "stelem.ref": 7,
+              "ldc.i4.1": 10,
+              "add": 5,
+              "bge.s": 1,
+              "br.s": 12,
+              "ldloc.3": 4,
+              "brtrue.s": 4,
+              "ldlen": 1,
+              "conv.i4": 1,
+              "blt": 1,
+              "brtrue": 1,
+              "stfld": 1,
+              "ldfld": 5,
+              "ldsfld": 2,
+              "dup": 2,
+              "pop": 1,
+              "ldftn": 2,
+              "stsfld": 1,
+              "cgt.un": 1,
+              "leave.s": 1,
+              "constrained.": 1,
+              "endfinally": 1,
+              "ldloc.1": 1,
+              "ret": 1
+            },
+            "calls": [
+              "get_State",
+              "get_CallTemporaries",
+              "get_LayoutParameterNames",
+              "get_Count",
+              ".ctor",
+              "get_IsPositional",
+              "get_PositionalParameters",
+              "get_Count",
+              "get_VariadicList",
+              "get_CallableKind",
+              "get_CallableName",
+              "TooManyPositional",
+              "<generic specification>",
+              "get_MemoryGovernor",
+              ".ctor",
+              "get_CommittedStorageBytes",
+              "TrackMutable",
+              "get_Value",
+              "Add",
+              "get_Value",
+              "set_Item",
+              "get_KeywordName",
+              "get_LayoutParameterIndex",
+              "TryGetValue",
+              "get_NamedLayoutCount",
+              "get_PositionalOnlyCount",
+              "get_VariadicDictionary",
+              "get_CallableKind",
+              "get_CallableName",
+              "UnexpectedKeyword",
+              "get_Ordinal",
+              ".ctor",
+              "get_Value",
+              "TryAdd",
+              "get_CallableKind",
+              "get_CallableName",
+              "MultipleValues",
+              "get_Item",
+              "get_CallableKind",
+              "get_CallableName",
+              "MultipleValues",
+              "get_Value",
+              "set_Item",
+              "get_Item",
+              "get_PositionalParameters",
+              "get_Item",
+              "get_Name",
+              "get_DefaultValues",
+              "TryGetValue",
+              "get_CallableKind",
+              "get_CallableName",
+              "MissingArgument",
+              "get_PositionalParameters",
+              "get_Count",
+              "get_PositionalParameters",
+              "get_Count",
+              "get_Item",
+              "get_KeywordOnlyParameters",
+              "get_Item",
+              "get_Name",
+              "get_DefaultValues",
+              "TryGetValue",
+              "get_CallableKind",
+              "get_CallableName",
+              "MissingArgument",
+              "get_KeywordOnlyParameters",
+              "get_Count",
+              "get_VariadicList",
+              ".ctor",
+              "get_LayoutParameterIndex",
+              "get_VariadicList",
+              "get_Name",
+              "get_Item",
+              "get_Count",
+              "<BindInto>b__264_0",
+              ".ctor",
+              "CreateTuple",
+              "get_CommittedStorageBytes",
+              "NotifyStorageReplaced",
+              "get_Count",
+              "<BindInto>b__1",
+              ".ctor",
+              "CreateTuple",
+              "get_CommittedStorageBytes",
+              "TrackMutable",
+              "set_Item",
+              "get_VariadicDictionary",
+              "get_MemoryGovernor",
+              ".ctor",
+              "get_CommittedStorageBytes",
+              "TrackMutable",
+              "GetEnumerator",
+              "get_Current",
+              "get_Key",
+              "get_MemoryGovernor",
+              "FromString",
+              "TrackString",
+              "get_Value",
+              "SetItem",
+              "MoveNext",
+              "Dispose",
+              "get_CommittedStorageBytes",
+              "NotifyStorageReplaced",
+              "get_LayoutParameterIndex",
+              "get_VariadicDictionary",
+              "get_Name",
+              "get_Item",
+              "set_Item",
+              ".ctor"
+            ]
+          }
+        ]
+      },
+      {
+        "path": ".git/agent-worktrees/binding-plan-arrays/src/Lokad.Lython/bin/Debug/net10.0/Lokad.Lython.dll",
+        "sha256": "2890c1a08458852de1b777a583fb4b073b23cd28986d7a2ebd8f7249649a3f68",
+        "plan": {
+          "fields": [
+            "<CallableName>k__BackingField",
+            "<CallableKind>k__BackingField",
+            "<Parameters>k__BackingField",
+            "<PositionalParameterArray>k__BackingField",
+            "<KeywordOnlyParameterArray>k__BackingField",
+            "<NamedParameters>k__BackingField",
+            "<LayoutParameterNameArray>k__BackingField",
+            "<LayoutParameterIndex>k__BackingField",
+            "<NamedLayoutCount>k__BackingField",
+            "<PositionalOnlyCount>k__BackingField",
+            "<VariadicList>k__BackingField",
+            "<VariadicDictionary>k__BackingField",
+            "<DefaultValues>k__BackingField"
+          ]
+        },
+        "methods": [
+          {
+            "name": "BindFunctionArguments",
+            "ilBytes": 70,
+            "instructions": {
+              "nop": 5,
+              "ldarg.3": 2,
+              "callvirt": 4,
+              "ldarg.2": 3,
+              "ldlen": 2,
+              "brfalse.s": 1,
+              "conv.i4": 1,
+              "call": 4,
+              "br.s": 1,
+              "stloc.0": 1,
+              "ldloc.0": 2,
+              "ldarg.0": 1,
+              "ldarg.1": 1,
+              "stloc.1": 1,
+              "leave.s": 1,
+              "pop": 1,
+              "rethrow": 1,
+              "ldloc.1": 1,
+              "ret": 1
+            },
+            "calls": [
+              "get_State",
+              "NoteBoundCall",
+              "get_LayoutParameterNameArray",
+              "get_LayoutParameterNameArray",
+              "RentBoundValues",
+              "<generic specification>",
+              "BindInto",
+              "ReturnBoundValues"
+            ]
+          },
+          {
+            "name": "BindInto",
+            "ilBytes": 1177,
+            "instructions": {
+              "nop": 45,
+              "ldarg.s": 6,
+              "callvirt": 58,
+              "stloc.0": 1,
+              "ldloca.s": 22,
+              "ldarg.3": 28,
+              "ldlen": 6,
+              "conv.i4": 6,
+              "call": 31,
+              "stloc.2": 1,
+              "stloc.3": 1,
+              "ldnull": 12,
+              "stloc.s": 45,
+              "ldc.i4.0": 10,
+              "ldarg.1": 1,
+              "br": 3,
+              "ldloc.s": 87,
+              "ldelem": 1,
+              "brfalse": 3,
+              "ldloc.2": 4,
+              "clt": 4,
+              "ceq": 10,
+              "brfalse.s": 15,
+              "ldarg.2": 11,
+              "throw": 6,
+              "newobj": 7,
+              "ldloc.0": 4,
+              "ldarg.0": 8,
+              "stelem.ref": 7,
+              "ldc.i4.1": 10,
+              "add": 5,
+              "bge.s": 1,
+              "br.s": 12,
+              "brtrue.s": 5,
+              "blt": 1,
+              "ldelem.ref": 2,
+              "ldloc.3": 2,
+              "stfld": 1,
+              "ldfld": 5,
+              "ldsfld": 2,
+              "dup": 2,
+              "pop": 1,
+              "ldftn": 2,
+              "stsfld": 1,
+              "cgt.un": 1,
+              "leave.s": 1,
+              "constrained.": 1,
+              "endfinally": 1,
+              "ldloc.1": 1,
+              "ret": 1
+            },
+            "calls": [
+              "get_State",
+              "get_CallTemporaries",
+              "get_LayoutParameterNameArray",
+              ".ctor",
+              "get_PositionalParameterArray",
+              "get_KeywordOnlyParameterArray",
+              "get_IsPositional",
+              "get_VariadicList",
+              "get_CallableKind",
+              "get_CallableName",
+              "TooManyPositional",
+              "<generic specification>",
+              "get_MemoryGovernor",
+              ".ctor",
+              "get_CommittedStorageBytes",
+              "TrackMutable",
+              "get_Value",
+              "Add",
+              "get_Value",
+              "set_Item",
+              "get_KeywordName",
+              "get_LayoutParameterIndex",
+              "TryGetValue",
+              "get_NamedLayoutCount",
+              "get_PositionalOnlyCount",
+              "get_VariadicDictionary",
+              "get_CallableKind",
+              "get_CallableName",
+              "UnexpectedKeyword",
+              "get_Ordinal",
+              ".ctor",
+              "get_Value",
+              "TryAdd",
+              "get_CallableKind",
+              "get_CallableName",
+              "MultipleValues",
+              "get_Item",
+              "get_CallableKind",
+              "get_CallableName",
+              "MultipleValues",
+              "get_Value",
+              "set_Item",
+              "get_Item",
+              "get_Name",
+              "get_DefaultValues",
+              "TryGetValue",
+              "get_CallableKind",
+              "get_CallableName",
+              "MissingArgument",
+              "get_Item",
+              "get_Name",
+              "get_DefaultValues",
+              "TryGetValue",
+              "get_CallableKind",
+              "get_CallableName",
+              "MissingArgument",
+              "get_VariadicList",
+              ".ctor",
+              "get_LayoutParameterIndex",
+              "get_VariadicList",
+              "get_Name",
+              "get_Item",
+              "get_Count",
+              "<BindInto>b__264_0",
+              ".ctor",
+              "CreateTuple",
+              "get_CommittedStorageBytes",
+              "NotifyStorageReplaced",
+              "get_Count",
+              "<BindInto>b__1",
+              ".ctor",
+              "CreateTuple",
+              "get_CommittedStorageBytes",
+              "TrackMutable",
+              "set_Item",
+              "get_VariadicDictionary",
+              "get_MemoryGovernor",
+              ".ctor",
+              "get_CommittedStorageBytes",
+              "TrackMutable",
+              "GetEnumerator",
+              "get_Current",
+              "get_Key",
+              "get_MemoryGovernor",
+              "FromString",
+              "TrackString",
+              "get_Value",
+              "SetItem",
+              "MoveNext",
+              "Dispose",
+              "get_CommittedStorageBytes",
+              "NotifyStorageReplaced",
+              "get_LayoutParameterIndex",
+              "get_VariadicDictionary",
+              "get_Name",
+              "get_Item",
+              "set_Item",
+              ".ctor"
+            ]
+          }
+        ]
+      }
+    ],
+    "sourceFiles": [
+      {
+        "path": "Metadata/Program.cs",
+        "sha256": "95cd39c8cf487ef0a456d4cd99b59eb338b39f7115096adb45efb70734be6171"
+      },
+      {
+        "path": "Metadata/Metadata.csproj",
+        "sha256": "2342ade0bfd177bb8c15a31868cb0a00a2ebc462d939a7d556c205b0bae3b5f4"
+      },
+      {
+        "path": "compiled-binding.json",
+        "sha256": "76a95ec45f972b69bd8a02d306f7578a8889af9d0a32baa5f5c2e988ec092620"
+      }
+    ]
+  },
+  "sourceIntegrated": false,
+  "integrationBasis": "Rejected: no repeatable complete-call speed improvement; positional calls slower in both replicas, keyword results mixed, allocation effectively unchanged",
+  "deliveredProductionTree": "7f10d59e8ef989e4d90fff1a31303910bd7638c2",
+  "deliveredTestsTree": "7d3c9cfcf80a35125e723997141db47234052f6b",
+  "currentLoopProfile": {
+    "state": "Audited",
+    "producer": "a39daf4d919e557bf785348ad5286bd316f22217",
+    "productionTree": "7f10d59e8ef989e4d90fff1a31303910bd7638c2",
+    "identicalProductionAtDeliveredHead": "aa15844a944fd708c12a28b981cb8c9ec9ae598b",
+    "harnessTree": "c194ce88a7e4d52c576f3929ef82bce60bf37e2d",
+    "profiles": [
+      {
+        "role": "loop",
+        "wholeGroupSeconds": 14.081911,
+        "controllerSeconds": 13.499012,
+        "profileSeconds": 11.111635756999021,
+        "samples": 1574,
+        "eventsLost": 0,
+        "missingStacks": 0,
+        "unknownLeaves": 72,
+        "unknownPercent": 4.5743329097839895,
+        "checkedResponses": 254,
+        "completedInvocations": 8036,
+        "dispatchLeaf": [
+          {
+            "name": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::Execute()",
+            "samples": 470,
+            "percent": 29.86022871664549
+          }
+        ],
+        "guardsLeaf": [],
+        "bindingInclusive": [],
+        "callFrameInclusive": [
+          {
+            "name": "Lokad.Lython.Runtime.LythonRuntime::ExecuteExecutableCodeObject(class Lokad.Lython.Frontend.ExecutableCodeObject,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype Lokad.Lython.Runtime.BoundCallArguments,int32[],class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Runtime.LythonRuntime/ExecutableCell>)",
+            "samples": 1358,
+            "percent": 86.27700127064803
+          }
+        ],
+        "sampledAllocations": [
+          {
+            "name": "System.Numerics.BigInteger / Small",
+            "ticks": 10196,
+            "sampledBytes": 1086896000
+          },
+          {
+            "name": "Entry[System.String,System.Object][] / Small",
+            "ticks": 118,
+            "sampledBytes": 12578800
+          },
+          {
+            "name": "BuiltinCallable / Small",
+            "ticks": 37,
+            "sampledBytes": 3944200
+          },
+          {
+            "name": "System.Int32[] / Small",
+            "ticks": 29,
+            "sampledBytes": 3090440
+          },
+          {
+            "name": "ExceptionTypeValue / Small",
+            "ticks": 21,
+            "sampledBytes": 2238728
+          },
+          {
+            "name": "Lokad.Lython.Runtime.LythonRuntime / Small",
+            "ticks": 15,
+            "sampledBytes": 1599000
+          },
+          {
+            "name": "System.String[] / Small",
+            "ticks": 14,
+            "sampledBytes": 1492400
+          },
+          {
+            "name": "<>c__DisplayClass4_1 / Small",
+            "ticks": 10,
+            "sampledBytes": 1064856
+          }
+        ],
+        "unbalancedGcEvents": true,
+        "gcCountDurationClaims": false,
+        "normalTiming": false,
+        "traceSha256": "71253cb0e7e5e704e98cb09ba23f3cd71378bb577270f2855b30da4150bf89cb",
+        "receiptSha256": "84db276b38f012f725493890500d84d7f25347d82a5f65dc82fd94a6b1355cf7",
+        "summarySha256": "eda68eaea2e2e0b7457a667f8c84a44ed9feef74963e45448013e179bfaeabe3"
+      }
+    ],
+    "helpers": [
+      {
+        "path": "pipeline-transfer-profile-20261009\\TraceSummary\\Program.cs",
+        "sha256": "cdb43969a0ec0f2840b21c758248ae43a9098f8719a97d8f286b2067272b48f5"
+      },
+      {
+        "path": "pipeline-transfer-profile-20261009\\TraceSummary\\TraceSummary.csproj",
+        "sha256": "6d715244cd8063623967a25407e786a51eda73dc27880de9522fb70405f6642f"
+      },
+      {
+        "path": "pipeline-transfer-profile-20261009\\TraceSummary\\bin\\Release\\net10.0\\TraceSummary.dll",
+        "sha256": "036842c98a22c0f70b0d793f7b16b4bb79dc04e3b7944b67718cdc6b8c715cc5"
+      },
+      {
+        "path": "pipeline-transfer-profile-20261009\\TraceSummary\\bin\\Release\\net10.0\\Microsoft.Diagnostics.Tracing.TraceEvent.dll",
+        "sha256": "bc4ef3839aea46cebc54a557ecc115474c6eecadfbc68c76da087e8dd616ba7e"
+      }
+    ],
+    "normalTimingCollections": 0,
+    "fullLanes": 0,
+    "diagnosticOnly": true,
+    "qualifiedBeforeAfterCpuClaim": false,
+    "limitations": [
+      "Inclusive stacks overlap",
+      "Profiler/kernel and background JIT overhead is visible",
+      "GC event pairs are incomplete: no complete GC counts or pauses",
+      "Allocation ticks are sampling evidence, not exact per-type allocation"
+    ],
+    "cleanup": {
+      "sourceClean": true,
+      "inputsRehashed": true,
+      "ownedServicesTerminal": 1,
+      "allRecordedPidsAbsent": true,
+      "controllerPidsRecorded": true,
+      "serviceGroupsVerifiedInactive": true,
+      "sharedLeaseAvailableAtAuditStart": true,
+      "fullLanes": 0,
+      "recordedPidCount": 3
+    }
+  },
+  "cleanup": {
+    "bothSourcesClean": true,
+    "inputsRehashed": true,
+    "ownedServicesTerminal": 16,
+    "allRecordedPidsAbsent": true,
+    "sharedLeaseAvailableAtAuditStart": true,
+    "fullLanes": 0,
+    "recordedPidCount": 54
+  },
+  "supportingFiles": [
+    {
+      "path": "preparation-declaration.json",
+      "sha256": "556ae36c35ffef2aaaadfb744decba76b41bf847f194b52e4b1a1bf876e85c4d"
+    },
+    {
+      "path": "micro-declaration.json",
+      "sha256": "9ed12b7bd2f898ef68b4334216c2aa19755b0abae976d20fb2ad6684b1c65075"
+    },
+    {
+      "path": "prepare.sh",
+      "sha256": "c30969b59ac3af4eac1277db2ea278a4fb0a2b960fbba1afd1fe71de67b54154"
+    },
+    {
+      "path": "launch-prepare.sh",
+      "sha256": "d930c061ad08c65f719e8e942613bb4dc28fbfa91e41fe54db0553819a919e93"
+    },
+    {
+      "path": "micro.sh",
+      "sha256": "2816dead434ae2f29ffbe80fb0feb66d6d42230433b48b27e4ee321155faa11c"
+    },
+    {
+      "path": "launch-micros.sh",
+      "sha256": "39342099222583d605f96aacc5d442e19567192b0715cdbd80dec80979400651"
+    },
+    {
+      "path": "finish.sh",
+      "sha256": "03feb4c6c5c4a079db05aec82c4b939052489dfc67bcf10f53fe08acb14cebce"
+    },
+    {
+      "path": "audit-micros.py",
+      "sha256": "0b8d79ea6c620c2336ab98ac3de004e3d6465945c7f3006335ddc288803caffa"
+    },
+    {
+      "path": "frozen-debug-binaries.json",
+      "sha256": "ee1914ed73a4773b35c18de36674057a68185b9aa4f6a478e7e6cfabebddc532"
+    },
+    {
+      "path": "vm/baseline-prepared-inputs.sha256",
+      "sha256": "0d8abbf45cb47b46fbad8c24330af3379f4ab66b2c4bfe1b2bda4d9da70fde4d"
+    },
+    {
+      "path": "vm/candidate-prepared-inputs.sha256",
+      "sha256": "c4f5a9b18aba74e870c228f2588441348c5f9bb91a1159f2f19d1c41c306b4ad"
+    },
+    {
+      "path": "vm/baseline-correctness.json",
+      "sha256": "03b97a1e74c6c7922bbe0cebc632c69e45d65607cbc2310d6cc9805144c00213"
+    },
+    {
+      "path": "vm/candidate-correctness.json",
+      "sha256": "2820184f2d510e57611b57947aa267ea11f309f5b13bc9e96bad7ecf27a21ff6"
+    },
+    {
+      "path": "vm/final-vm-audit.json",
+      "sha256": "b7245ab75dc274a9cd7a6dd303ba7424d2d2a5c448e8f3f364b5f5ca4ac2e230"
+    },
+    {
+      "path": "vm/final-lease.txt",
+      "sha256": "ed01b1557bd7a1e70f90d8838f38ae0bb6b8367122b3dca7e5935bafa440a45a"
+    },
+    {
+      "path": "allocation-audit.json",
+      "sha256": "ed9d05ef512f9ba5f35a8b51bd2b09afe46bf39f9929483722aa994dd8e7c0e0"
+    },
+    {
+      "path": "audit-allocation.py",
+      "sha256": "512da1ac86dc257367feb59e811d5708b56d8d8086aff5e3fd7b9ad1025ada6c"
+    },
+    {
+      "path": "binding-audit.json",
+      "sha256": "3690643e68a2a38e260d7cdfd0e75066d4b9e03a366618de43bf1e84c5ca0168"
+    },
+    {
+      "path": "audit-binding.py",
+      "sha256": "3e79f245d062421926f6272a2a050901dafae770d44a7e1a16a52f545299022e"
+    },
+    {
+      "path": "decision.json",
+      "sha256": "891907fe87e9b3b2ae1fa2a45ef8ac5a1ced59a4cb52ec3e7fafb790d7d4d2bf"
+    },
+    {
+      "path": "../loop-cost-current-20261010/declaration.json",
+      "sha256": "ba693e8aed8c9b825cdecedf5f68dc439bb37a18c61d73f9e37a332a4402d031"
+    },
+    {
+      "path": "../loop-cost-current-20261010/profile.py",
+      "sha256": "02e35af352368ae3cff0dcb82f1a1cb7b9c5865693b0ffcfdd1c16ee19f289a0"
+    },
+    {
+      "path": "../loop-cost-current-20261010/launch-profile.sh",
+      "sha256": "3ca7fc8de459f377cc59b68ac5d74a576e8d26bdcc8b615bc12c9393e719c05d"
+    },
+    {
+      "path": "../loop-cost-current-20261010/finish.sh",
+      "sha256": "9cf6971ba2d231a26ba1dbb177a4f54e7b2286241be9b9ae54f7c09579e4a170"
+    },
+    {
+      "path": "../loop-cost-current-20261010/audit.py",
+      "sha256": "cabd0b13aa5c790e381c82a76d3e772d71e87a38cd9d11b4322dda48f6a31c9e"
+    },
+    {
+      "path": "../loop-cost-current-20261010/profiles-audit.json",
+      "sha256": "db2f8a561d6bddb8ed6001b7203ed4a982cec77e68ebdf219ec378fb62aaeeb8"
+    },
+    {
+      "path": "../loop-cost-current-20261010/loop-summary.json",
+      "sha256": "eda68eaea2e2e0b7457a667f8c84a44ed9feef74963e45448013e179bfaeabe3"
+    },
+    {
+      "path": "../loop-cost-current-20261010/vm/loop/diagnostic.json",
+      "sha256": "84db276b38f012f725493890500d84d7f25347d82a5f65dc82fd94a6b1355cf7"
+    },
+    {
+      "path": "../loop-cost-current-20261010/vm/loop/responses.jsonl",
+      "sha256": "0d8cd951cc66cc8b69f51642fdb3c34986bc48885e1bb8591e7537d59d735441"
+    },
+    {
+      "path": "../loop-cost-current-20261010/vm/loop/calls.nettrace",
+      "sha256": "71253cb0e7e5e704e98cb09ba23f3cd71378bb577270f2855b30da4150bf89cb"
+    },
+    {
+      "path": "../loop-cost-current-20261010/vm/final-vm-audit.json",
+      "sha256": "7c974a46b556ce4f0459033f743cc5196ba5430f40c3daf06def2bcdb37d75ae"
+    },
+    {
+      "path": "../loop-cost-current-20261010/vm/final-lease.txt",
+      "sha256": "ed01b1557bd7a1e70f90d8838f38ae0bb6b8367122b3dca7e5935bafa440a45a"
+    }
+  ]
+}
