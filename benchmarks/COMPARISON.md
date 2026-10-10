@@ -239,6 +239,17 @@ CPU claim. All 9,196 Debug checks pass before twelve micros of about eight
 seconds, with separate allocation/native groups about four seconds, each under
 a 30-second cap. No full lanes run; milestone qualification remains pending.
 
+The [inline operand-stack experiment](results/2026-10-10-inline-operand-stack/README.md)
+remains isolated. It saves about 9.86–10.01% of managed call allocation, but both
+repetitions show slower loops (11.99%/15.69%), positional calls (10.19%/6.93%)
+and keyword calls (2.12%/8.33%), beyond their spreads. Fifteen independent
+growth/reference/disposal checks pass on unchanged production first and are
+delivered; all 9,211 candidate Debug checks pass before collection. Two separate
+current call profiles supply frame/allocation leads without a savings forecast.
+Twelve micros take about eight seconds each, allocation/native groups four,
+under 30-second caps. All observations and native bodies/tiers remain visible.
+No full lane runs; production keeps the preceding implementation.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
