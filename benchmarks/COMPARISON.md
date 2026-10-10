@@ -239,6 +239,19 @@ CPU claim. All 9,196 Debug checks pass before twelve micros of about eight
 seconds, with separate allocation/native groups about four seconds, each under
 a 30-second cap. No full lanes run; milestone qualification remains pending.
 
+The [simple compiled-return improvement](results/2026-10-10-simple-return-functions/README.md)
+removes transient interpreter and array allocations from guarded return-only
+functions, while retaining their actual context, binder, checkpoints and funding.
+Two paired short replicas show 16.6–18.1% less positional-call time and 13.0–20.1%
+less keyword-call time, with about 53% less managed job allocation. All controls
+remain visible, including an unexplained first-loop increase of 7.61% that does
+not repeat in replica two (-0.29%). Native code grows with different emitted
+profiles; every body and tier is retained. Twelve collections stop in about eight
+seconds each; separate allocation/native groups take about four seconds, all
+under 30-second process-group caps including cleanup. No full lane or recollection.
+Full frozen Debug passes 9,232 checks and VM Release 204 white/296 public, with
+six complete CPython goldens before timing. Milestone qualification remains pending.
+
 The [inline operand-stack experiment](results/2026-10-10-inline-operand-stack/README.md)
 remains isolated. It saves about 9.86–10.01% of managed call allocation, but both
 repetitions show slower loops (11.99%/15.69%), positional calls (10.19%/6.93%)
