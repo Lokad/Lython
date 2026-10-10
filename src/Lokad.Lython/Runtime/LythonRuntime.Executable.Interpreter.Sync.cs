@@ -23,10 +23,10 @@ internal sealed partial class LythonRuntime
                 }
                 var jumped = false;
 
-                var instructions = block.Instructions;
-                for (; _instructionIndex < instructions.Count; _instructionIndex++)
+                var instructions = block.InstructionArray;
+                for (; _instructionIndex < instructions.Length; _instructionIndex++)
                 {
-                    var instruction = instructions[_instructionIndex];
+                    ref readonly var instruction = ref instructions[_instructionIndex];
                     context.Services.CheckExecution(instruction.Span);
 
                     try

@@ -407,7 +407,10 @@ internal readonly record struct ExecutableInstruction
 
 internal sealed record ExecutableBasicBlock(
     int Index,
-    IReadOnlyList<ExecutableInstruction> Instructions);
+    ExecutableInstruction[] InstructionArray)
+{
+    public IReadOnlyList<ExecutableInstruction> Instructions => InstructionArray;
+}
 
 internal sealed record ExecutableExceptionRegion(
     int ProtectedStartBlockIndex,
