@@ -1,0 +1,380 @@
+{
+  "schemaVersion": 1,
+  "state": "Audited",
+  "diagnosticOnly": true,
+  "performanceQualified": false,
+  "sourceDelivery": "862bd91e4954ded39f8a8d58b5c33e6f738a4163",
+  "productionTree": "fd4c4a7a223976c27f882119aab44b350d470f33",
+  "testTree": "177887380335e4a8e404ee54d94f8f71805f77a9",
+  "serviceHardCapSeconds": 30,
+  "fullLanes": 0,
+  "canonicalCasesUnchanged": 14,
+  "diagnosticCasesAdded": 2,
+  "responses": 1056.0,
+  "derivedMediansAndIqrs": 72,
+  "producers": [
+    {
+      "model": "all-at-once",
+      "baseline": "ce61d05097f96e69abb8d060a1518e08f82aed58",
+      "candidate": "df9be8b12bced6e50fc06d9e9c17541e56d5f249",
+      "declarationUtc": "2026-10-10T00:10:56.288322+00:00",
+      "declarationSha256": "0bebbecb37b0142b8a731039620eda85ee55187b95fd6811d5109ee1228c2fb0",
+      "catalogSha256": "4230f75b0c048f0daf8967f79cf13946c0f325354f289c228c81ee2aed8ad287",
+      "libraries": [
+        {
+          "engine": "baseline",
+          "version": "0.10.0+ce61d05097f96e69abb8d060a1518e08f82aed58",
+          "configuration": "Release",
+          "buildSdk": "10.0.401",
+          "sha256": "ce354e123e71c50bcb49fea601211a771f6e32b6d443b9f20a47ea41d65376d5",
+          "moduleId": "d5a0e642-b241-4da0-9231-228f27e4d78a"
+        },
+        {
+          "engine": "baseline",
+          "version": "1.0.0+ce61d05097f96e69abb8d060a1518e08f82aed58",
+          "configuration": "Release",
+          "buildSdk": "10.0.401",
+          "sha256": "0dedfed7005e35c07d309aabcb7aecd7b31007d3baccc4b2cde2069f45d82fa2",
+          "moduleId": "6fd47fb4-6fd5-4df9-b2bf-3cdb01256cff"
+        },
+        {
+          "engine": "baseline",
+          "version": "10.0.12-servicing.26422.108+95017c711e6afc1085133d440e42b4bd78155701",
+          "configuration": "Release",
+          "buildSdk": null,
+          "sha256": "26304a2985357b9ee277f273667fcd9c892edae3ee6eba76f739033e95eb39b3",
+          "moduleId": "473d0ad3-441b-4fee-a00f-67c03eb1e2b3"
+        },
+        {
+          "engine": "candidate",
+          "version": "0.10.0+df9be8b12bced6e50fc06d9e9c17541e56d5f249",
+          "configuration": "Release",
+          "buildSdk": "10.0.401",
+          "sha256": "5b6d9cacf2affbbd8449aaba8e36a771adc0399668a5d8df88259c94f4779ef4",
+          "moduleId": "ac01d172-2cab-4998-b897-fb1a89ae7dab"
+        },
+        {
+          "engine": "candidate",
+          "version": "1.0.0+df9be8b12bced6e50fc06d9e9c17541e56d5f249",
+          "configuration": "Release",
+          "buildSdk": "10.0.401",
+          "sha256": "783c9907a69008ecba130606cf48b37bd80c1135a9d43b085498957ab2b9c2a4",
+          "moduleId": "f8c6df3f-fbc7-468e-aec5-d126596ef4bb"
+        },
+        {
+          "engine": "candidate",
+          "version": "10.0.12-servicing.26422.108+95017c711e6afc1085133d440e42b4bd78155701",
+          "configuration": "Release",
+          "buildSdk": null,
+          "sha256": "26304a2985357b9ee277f273667fcd9c892edae3ee6eba76f739033e95eb39b3",
+          "moduleId": "473d0ad3-441b-4fee-a00f-67c03eb1e2b3"
+        }
+      ],
+      "python": {
+        "version": "3.13.16 (main, Oct  8 2026, 14:31:33) [GCC 13.3.0]",
+        "executableSha256": "673525f3e1ac992831891979187e259c06bbd5e331ab50c0bb697f274ecb0f2a",
+        "adapterSha256": "e6a81d0f72b6ee2f9438b76a9012b42e944e8ce52d616a9445837dbac976cc1d",
+        "debug": false,
+        "freeThreaded": false,
+        "gilEnabled": true,
+        "gcEnabled": true
+      }
+    },
+    {
+      "model": "per-item",
+      "baseline": "ce61d05097f96e69abb8d060a1518e08f82aed58",
+      "candidate": "5be2e72befc3b22663b7e0002c6542f49489106c",
+      "declarationUtc": "2026-10-10T00:32:56.932349+00:00",
+      "declarationSha256": "c17b57330f08587f163c156964f7d0fb06e1cfc28a2e4ce07486ff343a01cd92",
+      "catalogSha256": "4230f75b0c048f0daf8967f79cf13946c0f325354f289c228c81ee2aed8ad287",
+      "libraries": [
+        {
+          "engine": "baseline",
+          "version": "0.10.0+ce61d05097f96e69abb8d060a1518e08f82aed58",
+          "configuration": "Release",
+          "buildSdk": "10.0.401",
+          "sha256": "ce354e123e71c50bcb49fea601211a771f6e32b6d443b9f20a47ea41d65376d5",
+          "moduleId": "d5a0e642-b241-4da0-9231-228f27e4d78a"
+        },
+        {
+          "engine": "baseline",
+          "version": "1.0.0+ce61d05097f96e69abb8d060a1518e08f82aed58",
+          "configuration": "Release",
+          "buildSdk": "10.0.401",
+          "sha256": "0dedfed7005e35c07d309aabcb7aecd7b31007d3baccc4b2cde2069f45d82fa2",
+          "moduleId": "6fd47fb4-6fd5-4df9-b2bf-3cdb01256cff"
+        },
+        {
+          "engine": "baseline",
+          "version": "10.0.12-servicing.26422.108+95017c711e6afc1085133d440e42b4bd78155701",
+          "configuration": "Release",
+          "buildSdk": null,
+          "sha256": "26304a2985357b9ee277f273667fcd9c892edae3ee6eba76f739033e95eb39b3",
+          "moduleId": "473d0ad3-441b-4fee-a00f-67c03eb1e2b3"
+        },
+        {
+          "engine": "candidate",
+          "version": "0.10.0+5be2e72befc3b22663b7e0002c6542f49489106c",
+          "configuration": "Release",
+          "buildSdk": "10.0.401",
+          "sha256": "e14bffd5ac93772cbdf25c2e3116dc94f87d65051e531febaf73a3fe2ea2140f",
+          "moduleId": "17e8d715-047d-42fa-bc01-aba51204bb31"
+        },
+        {
+          "engine": "candidate",
+          "version": "1.0.0+5be2e72befc3b22663b7e0002c6542f49489106c",
+          "configuration": "Release",
+          "buildSdk": "10.0.401",
+          "sha256": "fb40ca5901b8215130dbaa50a10139281ee8fd892f67bc358d925b6007d0a5c0",
+          "moduleId": "12e143ec-3adc-4f46-aed6-8412076d5945"
+        },
+        {
+          "engine": "candidate",
+          "version": "10.0.12-servicing.26422.108+95017c711e6afc1085133d440e42b4bd78155701",
+          "configuration": "Release",
+          "buildSdk": null,
+          "sha256": "26304a2985357b9ee277f273667fcd9c892edae3ee6eba76f739033e95eb39b3",
+          "moduleId": "473d0ad3-441b-4fee-a00f-67c03eb1e2b3"
+        }
+      ],
+      "python": {
+        "version": "3.13.16 (main, Oct  8 2026, 14:31:33) [GCC 13.3.0]",
+        "executableSha256": "673525f3e1ac992831891979187e259c06bbd5e331ab50c0bb697f274ecb0f2a",
+        "adapterSha256": "e6a81d0f72b6ee2f9438b76a9012b42e944e8ce52d616a9445837dbac976cc1d",
+        "debug": false,
+        "freeThreaded": false,
+        "gilEnabled": true,
+        "gcEnabled": true
+      }
+    }
+  ],
+  "collections": [
+    {
+      "model": "all-at-once",
+      "ordinal": 0,
+      "case": "control.empty.control",
+      "receiptSha256": "510e53867b56b899d17b804753be0124130060fac1950ff6b94e39d6475e1a59",
+      "responses": 46,
+      "collectionSeconds": 6.4034388
+    },
+    {
+      "model": "all-at-once",
+      "ordinal": 1,
+      "case": "loops.integer.large",
+      "receiptSha256": "36afd9821684370d7ddeae989761fccdfe7662e6976f94d1e899589e3df394cc",
+      "responses": 43,
+      "collectionSeconds": 6.947997
+    },
+    {
+      "model": "all-at-once",
+      "ordinal": 2,
+      "case": "diagnostic.strings.split-count-ascii.medium",
+      "receiptSha256": "c6dd6167d74d24b30dfe8a9c4a08c4bd719e425830e0a983fd73a1a7b6507576",
+      "responses": 44,
+      "collectionSeconds": 6.7924175
+    },
+    {
+      "model": "all-at-once",
+      "ordinal": 3,
+      "case": "strings.pipeline-ascii.medium",
+      "receiptSha256": "075ae05f0c5a87e4f8ab323ed1f65e94db0496f6c3cef35f8d314a3bb3637ea4",
+      "responses": 44,
+      "collectionSeconds": 6.8291881
+    },
+    {
+      "model": "all-at-once",
+      "ordinal": 4,
+      "case": "diagnostic.strings.split-index-ascii.medium",
+      "receiptSha256": "106cf31167f0e3b45dbe73d266dc243d14b65cf30d0364b48af395c2e55f0ffb",
+      "responses": 43,
+      "collectionSeconds": 6.8447213
+    },
+    {
+      "model": "all-at-once",
+      "ordinal": 5,
+      "case": "strings.scan-supplementary.medium",
+      "receiptSha256": "223fa2ef800c14d7d87801bf9ec70bc9f351dd136d194ab9b159b0c445addba8",
+      "responses": 43,
+      "collectionSeconds": 6.9484763
+    },
+    {
+      "model": "all-at-once",
+      "ordinal": 6,
+      "case": "control.empty.control",
+      "receiptSha256": "e30fae91acfaa15115489fb3982d65ec5ad5b47206c6529e46ca6656629812db",
+      "responses": 46,
+      "collectionSeconds": 6.3710684
+    },
+    {
+      "model": "all-at-once",
+      "ordinal": 7,
+      "case": "loops.integer.large",
+      "receiptSha256": "4cdf3d96b878219c6c979550f4f6620bea83f9abe2ae2a73aa9a8c2562d5c9d1",
+      "responses": 43,
+      "collectionSeconds": 6.9551571
+    },
+    {
+      "model": "all-at-once",
+      "ordinal": 8,
+      "case": "diagnostic.strings.split-count-ascii.medium",
+      "receiptSha256": "8c754305bde2b208bfe57819dad8897c1d2dfbfb27910de51dccdc5ec92bfff8",
+      "responses": 46,
+      "collectionSeconds": 6.85308
+    },
+    {
+      "model": "all-at-once",
+      "ordinal": 9,
+      "case": "strings.pipeline-ascii.medium",
+      "receiptSha256": "50970c978ebc04dfb76fbfafc70902fa2d985206f562f5bf6c495fd6910078a7",
+      "responses": 45,
+      "collectionSeconds": 6.8494656
+    },
+    {
+      "model": "all-at-once",
+      "ordinal": 10,
+      "case": "diagnostic.strings.split-index-ascii.medium",
+      "receiptSha256": "90952d9932e1ca669ff6234b24723b45cbd778f149dcc5225e62198c2aae9719",
+      "responses": 43,
+      "collectionSeconds": 6.9225576
+    },
+    {
+      "model": "all-at-once",
+      "ordinal": 11,
+      "case": "strings.scan-supplementary.medium",
+      "receiptSha256": "ddc76afe39d0c10ac14165ee4f953e3748b6db3ba4ef8c52747bc74a9f4e392a",
+      "responses": 41,
+      "collectionSeconds": 6.9904452
+    },
+    {
+      "model": "per-item",
+      "ordinal": 0,
+      "case": "control.empty.control",
+      "receiptSha256": "b90452673d390e8e9fde87fa80e41662e129939e87831a7abbd878ee05f42ca0",
+      "responses": 46,
+      "collectionSeconds": 6.4050585
+    },
+    {
+      "model": "per-item",
+      "ordinal": 1,
+      "case": "loops.integer.large",
+      "receiptSha256": "11efb87d0686ccdc5e361eae6c79dedbf60193a489a8a2b5b0043684df584ac5",
+      "responses": 43,
+      "collectionSeconds": 6.9695812
+    },
+    {
+      "model": "per-item",
+      "ordinal": 2,
+      "case": "diagnostic.strings.split-count-ascii.medium",
+      "receiptSha256": "1b985c2e7257bd9b11b43d3ae70feb1773880dc6e91ce647cf183881d97bf1ae",
+      "responses": 42,
+      "collectionSeconds": 6.7871631
+    },
+    {
+      "model": "per-item",
+      "ordinal": 3,
+      "case": "strings.pipeline-ascii.medium",
+      "receiptSha256": "abeb0f17f05326e56783b64a00bfe9b84d8cd979800919488bb5468673253ad0",
+      "responses": 44,
+      "collectionSeconds": 6.8735057
+    },
+    {
+      "model": "per-item",
+      "ordinal": 4,
+      "case": "diagnostic.strings.split-index-ascii.medium",
+      "receiptSha256": "c5203d298e086298dea525636fa28882abf9e978d49c3f309a2260cb68530cc5",
+      "responses": 45,
+      "collectionSeconds": 6.8128257
+    },
+    {
+      "model": "per-item",
+      "ordinal": 5,
+      "case": "strings.scan-supplementary.medium",
+      "receiptSha256": "998ae4a9203dd63e8207655e1a07d4adf3ac353cee327ec75af94fbca59d0f85",
+      "responses": 43,
+      "collectionSeconds": 6.9379801
+    },
+    {
+      "model": "per-item",
+      "ordinal": 6,
+      "case": "control.empty.control",
+      "receiptSha256": "9998fb85f1ce6ca0e39db9c2bf32cfcec13d57444b90050afba40d54c9bba565",
+      "responses": 46,
+      "collectionSeconds": 6.4197847
+    },
+    {
+      "model": "per-item",
+      "ordinal": 7,
+      "case": "loops.integer.large",
+      "receiptSha256": "8de95443d3eebe2586733aabf1912c27fbc006901d4557dc65d7c74524d26d9a",
+      "responses": 43,
+      "collectionSeconds": 6.9486754
+    },
+    {
+      "model": "per-item",
+      "ordinal": 8,
+      "case": "diagnostic.strings.split-count-ascii.medium",
+      "receiptSha256": "6663e53db04cf073b01c9f46dee991264e6d89447bcb8941f3c3583e92fcdbc2",
+      "responses": 45,
+      "collectionSeconds": 6.6979464
+    },
+    {
+      "model": "per-item",
+      "ordinal": 9,
+      "case": "strings.pipeline-ascii.medium",
+      "receiptSha256": "cd89d98817722fa84acd0e5ed6f08e9c627f95fb2f25e568b23f39617c3d49b1",
+      "responses": 45,
+      "collectionSeconds": 6.8038721
+    },
+    {
+      "model": "per-item",
+      "ordinal": 10,
+      "case": "diagnostic.strings.split-index-ascii.medium",
+      "receiptSha256": "cd94567231ecb6c21d381c1665aac69375b540beeed0b7c488b41eadbff559a0",
+      "responses": 44,
+      "collectionSeconds": 6.7883432
+    },
+    {
+      "model": "per-item",
+      "ordinal": 11,
+      "case": "strings.scan-supplementary.medium",
+      "receiptSha256": "ea062f0dbe3be5c0bef17451c3b1d75a2393ee002f15eeba2f97d3dcab6b9646",
+      "responses": 43,
+      "collectionSeconds": 6.9252918
+    }
+  ],
+  "fullDebug": [
+    {
+      "passed": 1354,
+      "sha256": "36eb39dec2ff486b81a6eb7b86fca7dc82d81f497f1ba8215117009203e2506c"
+    },
+    {
+      "passed": 7750,
+      "sha256": "f73ef443d9fb37ffe93da5ac3b38268d724b9a67cbd243f00871be15fd986ebd"
+    }
+  ],
+  "matchingDebugProbe": true,
+  "linuxRelease": {
+    "initialPublic": 1033,
+    "matchingProbes": true,
+    "baselinePublic": 1031,
+    "baselineWhite": 1323,
+    "refinedPublic": 1033,
+    "refinedWhite": 1354,
+    "initialWhite": 1352
+  },
+  "cleanupSha256": "dfc90a936c7a71cd17b8056656eaba51038a38d56a064eaaef22bf275a135c4f",
+  "workersAbsent": true,
+  "leaseFree": true,
+  "sourceClean": true,
+  "csvSha256": "2b5a5437162dd0eaf3ebcca6dae0cafb818f5d721b9b5637cef780c75fee3b0b",
+  "preservedFailures": [
+    "initial public test fixture compile error before timing",
+    "prefunded progress regression on initial prototype",
+    "independent young-tier regression on baseline",
+    "untimed golden formatting preflight",
+    "refined preparation final checksum filename typo"
+  ],
+  "sameSourceRecollection": false,
+  "nativeCostAttributed": false,
+  "csvLifetimeCauseEstablished": false
+}

@@ -1,6 +1,9 @@
 # Pending design: fresh split ownership
 
-Status: proposal for an isolated prototype, not implemented or accepted.
+Historical proposal: implemented with a storage decorator and per-item escapes
+in the subsequent round. See the [implemented ownership design](../2026-10-10-deferred-split/OWNERSHIP.md)
+and [comparison report](../2026-10-10-deferred-split/README.md). The text below
+preserves the original tentative representation and its acceptance requirements.
 The short boundary diagnostics identify adoption as a target without proving
 native-handle cost. The direct string guard did not improve the public pipeline.
 Further guard/layout-only changes need a concrete new hypothesis; do not repeat
