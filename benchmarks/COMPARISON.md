@@ -167,6 +167,16 @@ groups in about four seconds, all under 30-second caps. All 9,165 Debug checks
 pass before collection, including concurrent namespace aliases through both views.
 Every observation is retained. No full lanes run; qualification remains deferred.
 
+The [shared locals/stack-buffer experiment](results/2026-10-10-shared-frame-buffer/README.md)
+remains isolated. It reduces complete-call managed allocation by 4.18–4.29%,
+but both replicas show slower positional calls (2.64%/1.99%), keyword calls
+(3.55%/1.46%) and integer loops (3.74%/1.35%). Fourteen paired micros include a
+prospective stack-growth control and stop in about eight seconds each. Separate
+allocation groups stop in about four seconds; all have 30-second caps.
+All 9,169 candidate Debug checks and complete CPython outputs pass before timing.
+The runtime, tests and harness retain their preceding delivered versions.
+No full lanes run; all observations and the rejection remain visible.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
