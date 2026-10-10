@@ -31,6 +31,14 @@ internal sealed class ExecutionValueObservation
 
     public void ObserveValue(object value, LythonSourceSpan? span)
     {
+        // Exact integers have no string/collection limits or governed owner.
+        // Keep their transient preflight without generic shape/graph checks.
+        if (value is BigInteger integer)
+        {
+            State.MemoryGovernor.EnsureCanReserve(RuntimeMemoryEstimates.EstimateBigIntegerBytes(integer), span);
+            return;
+        }
+
         EnforceValueLimits(value, span);
 
         if (RequiresTransientSizeCheck(value))
