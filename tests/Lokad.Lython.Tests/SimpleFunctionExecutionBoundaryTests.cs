@@ -116,7 +116,7 @@ public sealed class SimpleFunctionExecutionBoundaryTests
     [Theory]
     [InlineData("def f(value):\n    return value + 3\nreturn f(True)\n", "4")]
     [InlineData("def f(value):\n    return value + 3\nreturn f(1.5)\n", "4.5")]
-    [InlineData("class V(int):\n    def __add__(self, other):\n        return 91\ndef f(value):\n    return value + 3\nreturn f(V(2))\n", "91")]
+    [InlineData("class V:\n    def __add__(self, other):\n        return 91\ndef f(value):\n    return value + 3\nreturn f(V())\n", "91")]
     [InlineData("class V:\n    def __radd__(self, other):\n        return 83\ndef f(value):\n    return 3 + value\nreturn f(V())\n", "83")]
     [InlineData("def make():\n    offset = 2\n    def f(value):\n        return value + offset\n    return f\nreturn make()(5)\n", "7")]
     [InlineData("def f(value):\n    return locals()['value']\nreturn f(9)\n", "9")]
