@@ -421,12 +421,23 @@ internal sealed class ChargeReclamationPool
     private void CommitTierInsertion(List<ReclamationEntry> tier, long fundedGrowth, long capacityBefore, LythonSourceSpan? span)
     {
         var actualGrowth = (long)(tier.Capacity - capacityBefore);
-        if (actualGrowth > fundedGrowth)
+        if (actualGrowth != fundedGrowth)
         {
-            var extra = checked((actualGrowth - fundedGrowth) * 8);
-            _governor.Reserve(extra, span);
-            _governor.Commit(extra);
-            _backingBytes += extra;
+            if (actualGrowth > fundedGrowth)
+            {
+                var extra = checked((actualGrowth - fundedGrowth) * 8);
+                _governor.Reserve(extra, span);
+                _governor.Commit(extra);
+                _backingBytes += extra;
+            }
+            else
+            {
+                // Reserving predicted growth can reclaim or promote entries,
+                // freeing existing slots before insertion. Return unused
+                // funding instead of committing backing that never grew.
+                _governor.ReleaseReserved(checked((fundedGrowth - actualGrowth) * 8));
+                fundedGrowth = actualGrowth;
+            }
         }
 
         var bytes = checked(fundedGrowth * 8);
