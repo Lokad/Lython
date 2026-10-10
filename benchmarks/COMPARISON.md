@@ -126,6 +126,13 @@ allocation improvement. Call timing changes remain below spread or mixed, so no
 reliable throughput gain is claimed. The original failed namespace receipt stays
 preserved. No full lanes run; future milestones keep their ten-minute cap.
 
+The [direct instruction-array round](results/2026-10-10-instruction-arrays/README.md)
+uses compiler-owned arrays directly in dispatch, with readonly synchronous reads.
+Twelve 6.4–7.2-second micros show 13–15% less loop time, 7–8% less positional-call
+time and 9–12% less keyword-call time. Empty/pipeline controls have small mixed
+changes; sort remains too noisy for a reliable claim. All 9,161 Debug checks pass
+before timing. No full lanes run; qualification waits for a declared milestone.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
