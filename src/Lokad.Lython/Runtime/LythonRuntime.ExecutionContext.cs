@@ -35,7 +35,6 @@ internal sealed partial class LythonRuntime
             var sourcePath = options?.SourcePath is null ? null : PathOps.Normalize(options.SourcePath, host.Cwd);
             SourcePath = sourcePath;
             InitializeFrameVariables(CreateModuleVariables(builtinVariables, sourcePath, "__main__"));
-            ParentContext = null;
             FunctionClosureContext = this;
             ScopeFacts = ScopeDirectiveFacts.Empty;
             NonlocalTargets = EmptyNonlocalTargets;
@@ -61,7 +60,6 @@ internal sealed partial class LythonRuntime
         {
             Services = parent.Services;
             SourcePath = parent.SourcePath;
-            ParentContext = parent;
             FunctionClosureContext = this;
             ScopeFacts = ScopeDirectiveFacts.Empty;
             NonlocalTargets = EmptyNonlocalTargets;
@@ -85,7 +83,6 @@ internal sealed partial class LythonRuntime
         {
             Services = parent.Services;
             SourcePath = parent.SourcePath;
-            ParentContext = parent;
             FunctionClosureContext = this;
             ScopeFacts = ScopeDirectiveFacts.Empty;
             NonlocalTargets = EmptyNonlocalTargets;
@@ -96,7 +93,6 @@ internal sealed partial class LythonRuntime
         {
             Services = parent.Services;
             SourcePath = parent.SourcePath;
-            ParentContext = parent;
             FunctionClosureContext = this;
             ScopeFacts = scopeFacts;
             NonlocalTargets = ResolveNonlocalTargets(parent, scopeFacts);
@@ -171,7 +167,6 @@ internal sealed partial class LythonRuntime
             Services = template.Services;
             SourcePath = scope.SourcePath;
             InitializeFrameVariables(CreateModuleVariables(State.BuiltinVariables, scope.SourcePath, scope.Name));
-            ParentContext = null;
             FunctionClosureContext = this;
             ScopeFacts = ScopeDirectiveFacts.Empty;
             NonlocalTargets = EmptyNonlocalTargets;
@@ -184,10 +179,9 @@ internal sealed partial class LythonRuntime
             IsClassBody = true;
             Services = parent.Services;
             SourcePath = parent.SourcePath;
-            ParentContext = parent.IsClassBody ? parent.FunctionClosureContext : parent;
             FunctionClosureContext = parent.FunctionClosureContext;
             ScopeFacts = facts;
-            NonlocalTargets = ResolveNonlocalTargets(ParentContext, facts);
+            NonlocalTargets = ResolveNonlocalTargets(ParentContext!, facts);
         }
 
         private readonly record struct ModuleScope(string? SourcePath, string Name);
@@ -210,7 +204,9 @@ internal sealed partial class LythonRuntime
 
         public ILythonHost Host => Services.Host;
 
-        public ExecutionContext? ParentContext { get; }
+        // Context constructors already give the inherited frame this same
+        // lexical parent; roots/modules leave it null. Keep one immutable link.
+        public ExecutionContext? ParentContext => (ExecutionContext?)Parent;
         internal bool IsClassBody { get; }
         internal bool IsAnnotationScope { get; init; }
         internal bool IsTypeParameterScope { get; init; }
