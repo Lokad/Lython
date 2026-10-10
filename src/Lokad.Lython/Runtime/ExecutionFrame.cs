@@ -1,8 +1,15 @@
 namespace Lokad.Lython.Runtime;
 
-internal sealed class ExecutionFrame
+internal class ExecutionFrame
 {
     private Dictionary<string, object>? _variables;
+
+    protected ExecutionFrame() { }
+
+    // Module contexts construct their namespace after preparing shared services.
+    // They publish the context only after this eager namespace is initialized.
+    protected void InitializeFrameVariables(Dictionary<string, object> variables)
+        => _variables = variables;
 
     public ExecutionFrame(ExecutionFrame? parent, Dictionary<string, object> variables)
     {

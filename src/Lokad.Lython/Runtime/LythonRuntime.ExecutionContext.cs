@@ -14,7 +14,7 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    internal sealed partial class ExecutionContext
+    internal sealed partial class ExecutionContext : ExecutionFrame
     {
         private bool? _postponedAnnotations;
         public bool PostponedAnnotations
@@ -34,7 +34,7 @@ internal sealed partial class LythonRuntime
             Services = new ExecutionServices(new ExecutionState(host, options, builtinVariables));
             var sourcePath = options?.SourcePath is null ? null : PathOps.Normalize(options.SourcePath, host.Cwd);
             SourcePath = sourcePath;
-            Frame = new ExecutionFrame(parent: null, CreateModuleVariables(builtinVariables, sourcePath, "__main__"));
+            InitializeFrameVariables(CreateModuleVariables(builtinVariables, sourcePath, "__main__"));
             ParentContext = null;
             FunctionClosureContext = this;
             ScopeFacts = ScopeDirectiveFacts.Empty;
@@ -57,10 +57,10 @@ internal sealed partial class LythonRuntime
         }
 
         public ExecutionContext(ExecutionContext parent)
+            : base(parent.Frame, new Dictionary<string, object>(StringComparer.Ordinal))
         {
             Services = parent.Services;
             SourcePath = parent.SourcePath;
-            Frame = new ExecutionFrame(parent.Frame, new Dictionary<string, object>(StringComparer.Ordinal));
             ParentContext = parent;
             FunctionClosureContext = this;
             ScopeFacts = ScopeDirectiveFacts.Empty;
@@ -81,10 +81,10 @@ internal sealed partial class LythonRuntime
         }
 
         private ExecutionContext(ExecutionContext parent, Dictionary<string, object> variables)
+            : base(parent.Frame, variables)
         {
             Services = parent.Services;
             SourcePath = parent.SourcePath;
-            Frame = new ExecutionFrame(parent.Frame, variables);
             ParentContext = parent;
             FunctionClosureContext = this;
             ScopeFacts = ScopeDirectiveFacts.Empty;
@@ -92,10 +92,10 @@ internal sealed partial class LythonRuntime
         }
 
         public ExecutionContext(ExecutionContext parent, ScopeDirectiveFacts scopeFacts)
+            : base(parent.Frame)
         {
             Services = parent.Services;
             SourcePath = parent.SourcePath;
-            Frame = new ExecutionFrame(parent.Frame);
             ParentContext = parent;
             FunctionClosureContext = this;
             ScopeFacts = scopeFacts;
@@ -170,9 +170,7 @@ internal sealed partial class LythonRuntime
         {
             Services = template.Services;
             SourcePath = scope.SourcePath;
-            Frame = new ExecutionFrame(
-                parent: null,
-                CreateModuleVariables(State.BuiltinVariables, scope.SourcePath, scope.Name));
+            InitializeFrameVariables(CreateModuleVariables(State.BuiltinVariables, scope.SourcePath, scope.Name));
             ParentContext = null;
             FunctionClosureContext = this;
             ScopeFacts = ScopeDirectiveFacts.Empty;
@@ -180,12 +178,13 @@ internal sealed partial class LythonRuntime
         }
 
         private ExecutionContext(ExecutionContext parent, ClassBodyScope _, ScopeDirectiveFacts facts)
+            : base((parent.IsClassBody ? parent.FunctionClosureContext : parent).Frame,
+                new Dictionary<string, object>(StringComparer.Ordinal))
         {
             IsClassBody = true;
             Services = parent.Services;
             SourcePath = parent.SourcePath;
             ParentContext = parent.IsClassBody ? parent.FunctionClosureContext : parent;
-            Frame = new ExecutionFrame(ParentContext.Frame, new Dictionary<string, object>(StringComparer.Ordinal));
             FunctionClosureContext = parent.FunctionClosureContext;
             ScopeFacts = facts;
             NonlocalTargets = ResolveNonlocalTargets(ParentContext, facts);
@@ -202,7 +201,8 @@ internal sealed partial class LythonRuntime
 
         public ExecutionServices Services { get; }
 
-        public ExecutionFrame Frame { get; }
+        // The namespace frame shares this context's identity and lifetime.
+        public ExecutionFrame Frame => this;
 
         public string? SourcePath { get; }
 
@@ -277,7 +277,7 @@ internal sealed partial class LythonRuntime
 
         public MemoryGovernor MemoryGovernor => Services.MemoryGovernor;
 
-        public Dictionary<string, object> Variables => Frame.Variables;
+        public new Dictionary<string, object> Variables => base.Variables;
 
         public PyDecimalContext DecimalContext => State.DecimalContext;
 
