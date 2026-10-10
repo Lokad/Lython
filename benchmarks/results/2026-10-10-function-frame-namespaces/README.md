@@ -82,8 +82,9 @@ on the VM during these normal timings.
 
 Each case has one second of warmup per engine, roughly 25 ms batch calibration
 and seven rotating-order measured rounds. Sources, fixtures, complete golden
-outputs and invocation boundaries are identical across engines. Compilation,
-transport and output checks remain outside the clock. The integer loop has 16,384
+outputs and invocation boundaries are identical across engines. Cheap complete-
+output and success checks remain inside each clock; compilation, transport and
+output hashing stay outside. The integer loop has 16,384
 iterations; call jobs use 2,048 calls; the canonical stable sort prints every tuple
 in its 2,048-item result. These are complete jobs, without subtracting setup or
 variants into synthetic costs.

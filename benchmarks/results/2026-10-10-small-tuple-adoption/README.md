@@ -79,7 +79,8 @@ invocation. The 2,048-tuple construction case includes range/reverse iteration,
 modulo, comprehension, adoption and scalar length output; it is not isolated
 constructor latency. Canonical sort calls the guest key once per element, stably
 sorts and prints the entire list, checking every tuple against an independent
-group-order golden. Compilation, transport and output checks stay outside the clock.
+group-order golden. Cheap success and complete-output checks stay inside the clock;
+compilation, transport and output hashing stay outside.
 Full catalogs are byte-identical and all four jobs verify against CPython first.
 
 Cells show median **µs/invocation**, followed by **IQR/median**. Both replicas are
