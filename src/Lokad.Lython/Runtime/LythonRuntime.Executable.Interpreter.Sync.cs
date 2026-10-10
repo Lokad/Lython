@@ -39,6 +39,14 @@ internal sealed partial class LythonRuntime
                         }
                         switch (instruction.OpCode)
                         {
+                            // Common local transfers keep the same operations and
+                            // instruction boundary without a second opcode switch.
+                            case ExecutableOpCode.LoadLocal:
+                                _stack.Push(LoadLocal(_codeObject, _locals, instruction.LocalSlot, instruction.Span));
+                                break;
+                            case ExecutableOpCode.StoreLocal:
+                                StoreLocalValue(_codeObject, _locals, _localCells, _context, instruction.LocalSlot, Pop(ref _stack, instruction.Span), instruction.Span);
+                                break;
                             case ExecutableOpCode.ApplyOperation:
                                 ExecutePreparedOperationAsync((ExecutableOperation)_codeObject.Constants[instruction.ConstantIndex]!, instruction.Span, false).GetAwaiter().GetResult();
                                 break;
@@ -74,13 +82,11 @@ internal sealed partial class LythonRuntime
                                 break;
 
                             case ExecutableOpCode.LoadConst or
-                                 ExecutableOpCode.LoadLocal or
                                  ExecutableOpCode.LoadClosure or
                                  ExecutableOpCode.LoadGlobal or
                                  ExecutableOpCode.LoadName or
                                  ExecutableOpCode.EvaluateFallbackExpression or
                                  ExecutableOpCode.LoadMember or
-                                 ExecutableOpCode.StoreLocal or
                                  ExecutableOpCode.StoreClosure or
                                  ExecutableOpCode.StoreGlobal or
                                  ExecutableOpCode.StoreName or
