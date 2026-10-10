@@ -327,8 +327,8 @@ internal sealed partial class LythonRuntime
 
     private static void ExecuteMemberAssignment(MemberAssignmentStatementSyntax statement, ExecutionContext context)
     {
-        var target = EvaluateExpression(statement.Target, context);
         var value = EvaluateExpression(statement.Expression, context);
+        var target = EvaluateExpression(statement.Target, context);
         if (!PyMemberAccess.TryAssign(target, statement.MemberName, value, context, statement.Span))
         {
             throw new LythonRuntimeException("TypeError", "Object does not support attribute assignment.", statement.Span);

@@ -344,9 +344,9 @@ internal sealed partial class LythonRuntime
                     return;
                 case LoweredChainedAssignmentStatement chained:
                     var chainedValue = await EvaluateLoweredExpressionAsync(chained.Expression, context).ConfigureAwait(false);
-                    foreach (var assignmentTarget in chained.Assignment.Targets)
+                    foreach (var assignmentTarget in chained.Targets)
                     {
-                        AssignTarget(assignmentTarget, chainedValue, context);
+                        await AssignTargetAsync(assignmentTarget, chainedValue, context).ConfigureAwait(false);
                     }
                     return;
                 case LoweredAnnotatedAssignmentStatement annotated:
@@ -368,11 +368,10 @@ internal sealed partial class LythonRuntime
                         augmented.Span).ConfigureAwait(false)).ConfigureAwait(false);
                     return;
                 case LoweredUnpackingAssignmentStatement unpacking:
-                    AssignTargets(
-                        unpacking.Assignment.Targets,
+                    await AssignTargetAsync(
+                        unpacking.Target,
                         await EvaluateLoweredExpressionAsync(unpacking.Expression, context).ConfigureAwait(false),
-                        unpacking.Expression.Span,
-                        context);
+                        context).ConfigureAwait(false);
                     return;
                 case LoweredSubscriptAssignmentStatement subscript:
                     await ExecuteLoweredSubscriptAssignmentAsync(
@@ -395,9 +394,9 @@ internal sealed partial class LythonRuntime
                         .ConfigureAwait(false);
                     return;
                 case LoweredMemberAssignmentStatement member:
-                    var target = await EvaluateLoweredExpressionAsync(member.Receiver, context).ConfigureAwait(false);
                     var value = await EvaluateLoweredExpressionAsync(member.Expression, context).ConfigureAwait(false);
-                    if (!PyMemberAccess.TryAssign(target, member.Assignment.MemberName, value, context, member.Span))
+                    var target = await EvaluateLoweredExpressionAsync(member.Receiver, context).ConfigureAwait(false);
+                    if (!await PyMemberAccess.TryAssignAsync(target, member.Assignment.MemberName, value, context, member.Span).ConfigureAwait(false))
                     {
                         throw new LythonRuntimeException("TypeError", "Object does not support attribute assignment.", member.Span);
                     }

@@ -354,8 +354,8 @@ internal sealed partial class LythonRuntime
                         context);
                     return;
                 case LoweredMemberAssignmentStatement member:
-                    var target = EvaluateLoweredExpression(member.Receiver, context);
                     var value = EvaluateLoweredExpression(member.Expression, context);
+                    var target = EvaluateLoweredExpression(member.Receiver, context);
                     if (!PyMemberAccess.TryAssign(target, member.Assignment.MemberName, value, context, member.Span))
                     {
                         throw new LythonRuntimeException("TypeError", "Object does not support attribute assignment.", member.Span);

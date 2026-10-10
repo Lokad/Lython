@@ -81,7 +81,10 @@ internal sealed record LoweredNameAssignmentStatement(
 
 internal sealed record LoweredChainedAssignmentStatement(
     ChainedAssignmentStatementSyntax Assignment,
-    LoweredExpression Expression) : LoweredAssignmentStatement(Assignment);
+    LoweredExpression Expression) : LoweredAssignmentStatement(Assignment)
+{
+    public IReadOnlyList<LoweredStoreTarget> Targets { get; } = Assignment.Targets.Select(target => new LoweredStoreTarget(target)).ToArray();
+}
 
 internal sealed record LoweredAnnotatedAssignmentStatement(
     AnnotatedAssignmentStatementSyntax Assignment,
@@ -123,7 +126,10 @@ internal sealed record LoweredAugmentedAssignmentStatement(
 
 internal sealed record LoweredUnpackingAssignmentStatement(
     UnpackingAssignmentStatementSyntax Assignment,
-    LoweredExpression Expression) : LoweredAssignmentStatement(Assignment);
+    LoweredExpression Expression) : LoweredAssignmentStatement(Assignment)
+{
+    public LoweredStoreTarget Target { get; } = new(new UnpackingAssignmentTargetGroupSyntax(Assignment.Targets, Expression.Span));
+}
 
 internal sealed record LoweredSubscriptAssignmentStatement(
     SubscriptAssignmentStatementSyntax Assignment,
