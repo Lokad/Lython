@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Lokad.Lython.Runtime;
@@ -15,26 +17,42 @@ internal sealed class ExecutionGuards
 
     public LythonRuntime.ExecutionLimits Limits => State.Limits;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void CheckExecution(LythonSourceSpan? span)
     {
         if (--_checkpointsUntilSweep == 0)
         {
-            // Housekeeping is independent of optional fuel. Call-free loops
-            // still release dropped temporaries; bound calls sweep separately.
-            _checkpointsUntilSweep = 256;
-            State.CallTemporaries.Sweep();
+            SweepCheckpointTemporaries();
         }
-        if (Limits.MaxExecutionSteps is { } maxExecutionSteps &&
-            ++Limits.ExecutionStepCount > maxExecutionSteps)
+        var limits = Limits;
+        if (limits.MaxExecutionSteps is { } maxExecutionSteps &&
+            ++limits.ExecutionStepCount > maxExecutionSteps)
         {
-            throw RuntimeErrors.Runtime($"maximum execution step count exceeded ({maxExecutionSteps})", span);
+            ThrowExecutionStepLimit(maxExecutionSteps, span);
         }
 
-        if (Limits.CancellationToken.IsCancellationRequested)
+        if (limits.CancellationToken.IsCancellationRequested)
         {
-            throw RuntimeErrors.Runtime("execution canceled", span);
+            ThrowExecutionCanceled(span);
         }
     }
+
+    // Keep sweep and exception construction out of the frequently executed
+    // checkpoint body while retaining their original order and cadence.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void SweepCheckpointTemporaries()
+    {
+        _checkpointsUntilSweep = 256;
+        State.CallTemporaries.Sweep();
+    }
+
+    [DoesNotReturn, MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowExecutionStepLimit(long maximum, LythonSourceSpan? span)
+        => throw RuntimeErrors.Runtime($"maximum execution step count exceeded ({maximum})", span);
+
+    [DoesNotReturn, MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowExecutionCanceled(LythonSourceSpan? span)
+        => throw RuntimeErrors.Runtime("execution canceled", span);
 
     public void RegisterHostCall(LythonSourceSpan? span)
     {
