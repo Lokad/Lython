@@ -1,0 +1,249 @@
+{
+  "state": "Audited",
+  "candidate": "a88949c5efd9e34ec246faa2985f751698a96bba",
+  "baselineProductionTree": "b4c953ccb98d78b0ca56be1510dae243ec38f76c",
+  "productionTree": "4174256cc6da53c0f2f5cd7d163c2bb47fb0fcf3",
+  "testsTree": "a45507af1ed878492a6907b12bfe04cd678d036a",
+  "harnessTree": "c194ce88a7e4d52c576f3929ef82bce60bf37e2d",
+  "localSdk": "10.0.300-preview.0.26177.108",
+  "runtime": "10.0.12",
+  "baselineFinalDebugDefectFailures": 8,
+  "baselineReleaseDefectFailures": 8,
+  "baselineReleaseControlAuthoringFailures": 2,
+  "controlAuthoringCorrection": "IsTracked checks global identity, not ownership by the queried pool. Select the sole nonempty pool instead.",
+  "testReceipts": {
+    "baseline-debug": [
+      {
+        "path": "baseline-debug/baseline-debug.trx",
+        "sha256": "99632affd2a6cc640c8adacc6735282ff75f3aebbe0d175824953a61950f6c01",
+        "total": 2,
+        "passed": 0,
+        "failed": 2,
+        "failures": [
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedLineRegistrationReturnsUnpublishedPayload(asynchronous: False)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   404"
+          },
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedLineRegistrationReturnsUnpublishedPayload(asynchronous: True)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   404"
+          }
+        ]
+      }
+    ],
+    "baseline-expanded-debug": [
+      {
+        "path": "baseline-expanded-debug/baseline-expanded-debug.trx",
+        "sha256": "a2280ae2136a81d920aef3ab4aab009c85c61eb0eedb177a82ec63261734cc40",
+        "total": 6,
+        "passed": 0,
+        "failed": 6,
+        "failures": [
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionRegistrationReturnsUnpublishedPayload(asynchronous: False, readSize: 4)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   404"
+          },
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionRegistrationReturnsUnpublishedPayload(asynchronous: False, readSize: 2)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   402"
+          },
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionRegistrationReturnsUnpublishedPayload(asynchronous: True, readSize: -1)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   404"
+          },
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionRegistrationReturnsUnpublishedPayload(asynchronous: False, readSize: -1)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   404"
+          },
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionRegistrationReturnsUnpublishedPayload(asynchronous: True, readSize: 2)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   402"
+          },
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionRegistrationReturnsUnpublishedPayload(asynchronous: True, readSize: 4)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   404"
+          }
+        ]
+      }
+    ],
+    "baseline-release": [
+      {
+        "path": "baseline-release/baseline-release.trx",
+        "sha256": "590df8d355be1ff2125317ba47f56180d477b7d830b3f461fcab20c00114283a",
+        "total": 10,
+        "passed": 0,
+        "failed": 10,
+        "failures": [
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionRegistrationReturnsUnpublishedPayload(asynchronous: True, readSize: -1, registrationHeadroom: 159)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   404"
+          },
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionRegistrationReturnsUnpublishedPayload(asynchronous: False, readSize: 2, registrationHeadroom: 127)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   402"
+          },
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionRegistrationReturnsUnpublishedPayload(asynchronous: True, readSize: 2, registrationHeadroom: 127)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   402"
+          },
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionRegistrationReturnsUnpublishedPayload(asynchronous: True, readSize: 4, registrationHeadroom: 127)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   404"
+          },
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.RetainedLineStaysChargedAfterReaderCloses(asynchronous: True)",
+            "message": "System.InvalidOperationException : Sequence contains more than one matching element"
+          },
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionRegistrationReturnsUnpublishedPayload(asynchronous: True, readSize: -1, registrationHeadroom: 127)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   404"
+          },
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionRegistrationReturnsUnpublishedPayload(asynchronous: False, readSize: 4, registrationHeadroom: 127)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   404"
+          },
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionRegistrationReturnsUnpublishedPayload(asynchronous: False, readSize: -1, registrationHeadroom: 159)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   404"
+          },
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.RetainedLineStaysChargedAfterReaderCloses(asynchronous: False)",
+            "message": "System.InvalidOperationException : Sequence contains more than one matching element"
+          },
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionRegistrationReturnsUnpublishedPayload(asynchronous: False, readSize: -1, registrationHeadroom: 127)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   404"
+          }
+        ]
+      }
+    ],
+    "baseline-final-debug": [
+      {
+        "path": "baseline-final-debug/baseline-final-debug.trx",
+        "sha256": "e64d6e3c673ea74bbe9e91c38c02211948cc4d46ef6b9d622ec0f68fccfa5d6f",
+        "total": 10,
+        "passed": 2,
+        "failed": 8,
+        "failures": [
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionRegistrationReturnsUnpublishedPayload(asynchronous: False, readSize: 4, registrationHeadroom: 127)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   404"
+          },
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionRegistrationReturnsUnpublishedPayload(asynchronous: False, readSize: -1, registrationHeadroom: 127)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   404"
+          },
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionRegistrationReturnsUnpublishedPayload(asynchronous: True, readSize: -1, registrationHeadroom: 127)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   404"
+          },
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionRegistrationReturnsUnpublishedPayload(asynchronous: False, readSize: 2, registrationHeadroom: 127)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   402"
+          },
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionRegistrationReturnsUnpublishedPayload(asynchronous: True, readSize: 2, registrationHeadroom: 127)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   402"
+          },
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionRegistrationReturnsUnpublishedPayload(asynchronous: True, readSize: 4, registrationHeadroom: 127)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   404"
+          },
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionRegistrationReturnsUnpublishedPayload(asynchronous: False, readSize: -1, registrationHeadroom: 159)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   404"
+          },
+          {
+            "test": "Lokad.Lython.Tests.TextReadEmissionOwnershipTests.DeniedEmissionRegistrationReturnsUnpublishedPayload(asynchronous: True, readSize: -1, registrationHeadroom: 159)",
+            "message": "Assert.Equal() Failure: Values differ\r\nExpected: 272\r\nActual:   404"
+          }
+        ]
+      }
+    ],
+    "baseline-retained-release": [
+      {
+        "path": "baseline-retained-release/baseline-retained-release.trx",
+        "sha256": "357ad5f282d976325205462f3206528bba53437c5732d04d764daecd26283d36",
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "failures": []
+      }
+    ],
+    "candidate-focused-debug": [
+      {
+        "path": "candidate-focused-debug/candidate-focused-debug.trx",
+        "sha256": "1764274130acd5abd25af29532673d9e888ce488d36f931b66dbc095451651eb",
+        "total": 22,
+        "passed": 22,
+        "failed": 0,
+        "failures": []
+      }
+    ],
+    "candidate-focused-release": [
+      {
+        "path": "candidate-focused-release/candidate-focused-release.trx",
+        "sha256": "8b29fb6982e6ee23974f1450b29310edd9d6f2863dcc55e5cc61896509aa0088",
+        "total": 22,
+        "passed": 22,
+        "failed": 0,
+        "failures": []
+      }
+    ],
+    "candidate-public-release": [
+      {
+        "path": "candidate-public-release/candidate-public-release.trx",
+        "sha256": "84590ca2909fbf67b2f23009e13080e915b6d72f41993bdbe0a877322817b023",
+        "total": 43,
+        "passed": 43,
+        "failed": 0,
+        "failures": []
+      }
+    ],
+    "candidate-full-debug": [
+      {
+        "path": "candidate-full-debug/candidate-full-debug.trx",
+        "sha256": "e3863af38c7f85c31750b32373d988418ac7290d534ea6fb15949f8d808d0731",
+        "total": 7751,
+        "passed": 7751,
+        "failed": 0,
+        "failures": []
+      },
+      {
+        "path": "candidate-full-debug/candidate-white-debug.trx",
+        "sha256": "7e8c337dca92918074a8bcf1ce48698d6339e4825f0dfbdcff882af1a15e5a65",
+        "total": 1383,
+        "passed": 1383,
+        "failed": 0,
+        "failures": []
+      }
+    ]
+  },
+  "fullDebugReceiptPreservation": {
+    "total": 1383,
+    "sha256": "7e8c337dca92918074a8bcf1ce48698d6339e4825f0dfbdcff882af1a15e5a65",
+    "reason": "Preserve completed white receipt before the public suite overwrites the shared logger filename"
+  },
+  "linePayloadBytesStranded": 132,
+  "boundedPayloadBytesStranded": 130,
+  "readWindowsBytes": 4,
+  "reservationPressureShortfallBytes": 1,
+  "entryHeadroomBytes": [
+    127,
+    159
+  ],
+  "registrationEntryFeeBytes": 128,
+  "initialTierGrowthBytes": 32,
+  "denialRefundProven": true,
+  "retainedValuesStayCharged": true,
+  "originalC06CauseProven": false,
+  "originalC05CauseProven": false,
+  "namespaceCandidateIntegrated": false,
+  "fullDebugSameSourceRecollection": false,
+  "performanceMeasured": false,
+  "microCollections": 0,
+  "fullLanes": 0,
+  "vmCollections": 0,
+  "testBudgetRaised": false,
+  "hostMediationChanged": false
+}

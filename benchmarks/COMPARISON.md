@@ -82,6 +82,13 @@ its timing micros are held. The report retains the failure and focused negative
 controls. Production is unchanged, and the existing streaming test gains
 failure-only allocation/window diagnostics for further investigation.
 
+The [text-emission rollback correction](results/2026-10-10-streaming-emission-ownership/README.md)
+fixes charges stranded when an unpublished text result's reclamation registration
+is denied. Eight deterministic baseline probes fail; the fix passes all ten new
+checks and the full Debug suite. Retained values stay charged. This separate
+correctness prerequisite does not establish the original streaming failure's
+cause or a speed improvement; it runs no timing micros or full lanes.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
