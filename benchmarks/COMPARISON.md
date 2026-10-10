@@ -301,6 +301,18 @@ CPython outputs before fourteen micros taking 8.04–8.06 seconds each. Separate
 allocation/native groups take about four seconds, all under 30-second caps.
 No full lanes run and no observations are recollected to chase acceptance.
 
+The [method receiver lease experiment](results/2026-10-10-method-receiver-lease/README.md)
+also stays isolated. Method allocation savings are only 35.76 / 180.16 bytes per
+complete job, below the declared 0.5% floor; method timing changes +0.72% / -5.62%,
+while positional calls regress +2.82% / +3.43% beyond both retained spreads.
+Twenty-nine regression checks remain integrated: 87 selected checks pass original
+production first, followed by 9,301 candidate Debug tests, VM Release 256 white /
+343 public and seven complete CPython outputs. Fourteen micros take about eight
+seconds each, with separate allocation/native groups and no full lanes. Follow-up
+accepted-runtime method traces take about sixteen seconds each and identify
+attribute handling and shared async lowered dispatch as further design leads.
+Their overlapping inclusive stacks do not predict removable costs.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
