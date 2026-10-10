@@ -115,25 +115,59 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
     // the snapshot.
     private static long AdoptConstructionCoupons(object[] items, MemoryGovernor governor, LythonSourceSpan? span)
     {
+        if (items.Length <= 2)
+        {
+            return AdoptSmallConstructionCoupons(items, governor, span);
+        }
+
         var incoming = new AdoptedScalarCoupons();
         incoming.AdoptAll(items, governor, span);
         return incoming.CommittedBytes;
     }
 
-    private static long AdoptConstructionCouponsShared(object[] items, MemoryGovernor governor, LythonSourceSpan? span, long committedBacking)
+    // Immutable small tuples need only the final charge, not a temporary
+    // identity/refcount dictionary and rollback list. Input slots retain the
+    // owners throughout reservation relief, and two slots dedup by identity.
+    private static long AdoptSmallConstructionCoupons(object[] items, MemoryGovernor governor, LythonSourceSpan? span)
     {
-        var incoming = new AdoptedScalarCoupons();
+        long committed = 0;
         try
         {
-            incoming.AdoptAll(items, governor, span);
+            for (var i = 0; i < items.Length; i++)
+            {
+                var value = items[i];
+                if (!AdoptedScalarCoupons.IsAdoptableScalar(value) ||
+                    (i == 1 && ReferenceEquals(value, items[0])) ||
+                    ChargeReclamationPool.IsTrackedValue(value))
+                {
+                    continue;
+                }
+
+                governor.Reserve(AdoptedScalarCoupons.CouponBytes, span);
+                governor.Commit(AdoptedScalarCoupons.CouponBytes);
+                committed += AdoptedScalarCoupons.CouponBytes;
+            }
+
+            return committed;
+        }
+        catch
+        {
+            if (committed > 0) governor.Release(committed);
+            throw;
+        }
+    }
+
+    private static long AdoptConstructionCouponsShared(object[] items, MemoryGovernor governor, LythonSourceSpan? span, long committedBacking)
+    {
+        try
+        {
+            return AdoptConstructionCoupons(items, governor, span);
         }
         catch
         {
             governor.Release(committedBacking);
             throw;
         }
-
-        return incoming.CommittedBytes;
     }
 
 
