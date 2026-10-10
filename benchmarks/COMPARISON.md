@@ -187,6 +187,16 @@ stack transfer and integer operations as broader leads; its group stops in
 14.08 seconds. Sampling is diagnostic, with no qualified CPU or speed ratio.
 Production, tests and harness remain unchanged. No full lanes run.
 
+The [direct local-dispatch round](results/2026-10-10-direct-local-dispatch/README.md)
+integrates LoadLocal/StoreLocal into the synchronous main switch with their
+original helpers and instruction boundaries. Both basic-loop replicas improve
+7.07%/8.40%; call changes are small, other controls mixed and allocation effectively
+unchanged. Generated Tier1 main-method code grows from 1,774 to 2,675 bytes;
+all native bodies and tiers remain visible. Twelve paired micros take about
+eight seconds each, with separate allocation/native groups about four seconds,
+all under 30-second caps. All 9,165 frozen Debug checks pass before collection.
+No full lanes run; milestone qualification remains pending.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
