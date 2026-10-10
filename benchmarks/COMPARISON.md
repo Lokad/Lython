@@ -263,6 +263,20 @@ Twelve micros take about eight seconds each, allocation/native groups four,
 under 30-second caps. All observations and native bodies/tiers remain visible.
 No full lane runs; production keeps the preceding implementation.
 
+The [context-parent consolidation](results/2026-10-10-context-parent-link/README.md)
+derives ancestry from the existing frame link while retaining real function
+contexts, namespaces, lexical services and containment checks. Nine independent
+constructor/namespace/nonlocal checks pass original production first. Complete-call
+managed allocation falls about 3.0–3.1%; keyword time falls 2.5–5.6% in both short
+replicas, while positional time stays within its spreads. The loop +3.91%/-1.43%
+reversal and all sort/pipeline controls remain visible without speedup claims.
+The checked getter grows from 5 to 39 native bytes; every body/tier is retained.
+Full Debug passes 9,241 checks and VM Release 213 white/296 public with six full
+CPython goldens before timing. Twelve collections take about eight seconds each,
+with separate allocation/native groups about four seconds under 30-second caps.
+No full lanes run. The report also clarifies unresolved keyword allocation types
+in the preceding CPU trace; complete-job byte measurements support its saving.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
