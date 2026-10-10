@@ -40,11 +40,13 @@ internal sealed class MemoryGovernor
     // tracking, so no second registry can grow here.
     internal Func<IEnumerable<ChargeReclamationPool>>? LivePoolProvider { get; set; }
 
-    // Successful allocation progress since the last relief. Net committed
+    // Successful reservation or commit since the last relief. Scratch can
+    // reserve before a following payload commits; both need an opportunity to
+    // collect the garbage a partial drain left behind. Net committed
     // bytes may stay flat or fall while replacements allocate and old values
-    // become collectible. Repeated pinned denials without a new commit still
+    // become collectible. Repeated pinned denials without new allocation still
     // fail fast instead of paying a collection per caught trip.
-    private bool _hasCommittedSinceReclaim;
+    private bool _hasAllocatedSinceReclaim;
 
     // Reentrancy guard: sweeps may themselves reserve (tier promotion funds its
     // old-tier slot), so a denial inside relief fails fast instead of re-entering
@@ -70,7 +72,7 @@ internal sealed class MemoryGovernor
                 throw RuntimeErrors.Memory($"execution memory budget exceeded ({maxAccountedBytes})", span);
             }
 
-            if (_hasCommittedSinceReclaim && !_inExhaustionRelief)
+            if (_hasAllocatedSinceReclaim && !_inExhaustionRelief)
             {
                 _inExhaustionRelief = true;
                 try
@@ -82,7 +84,7 @@ internal sealed class MemoryGovernor
                     _inExhaustionRelief = false;
                     // Promotion commits made by relief itself do not warrant
                     // another attempt when the pending allocation still fails.
-                    _hasCommittedSinceReclaim = false;
+                    _hasAllocatedSinceReclaim = false;
                 }
             }
             nextReserved = AddChecked(CurrentReservedBytes, bytes, span);
@@ -190,6 +192,7 @@ internal sealed class MemoryGovernor
         EnsureCanReserve(bytes, span);
 
         CurrentReservedBytes += bytes;
+        _hasAllocatedSinceReclaim = true;
         if (CurrentReservedBytes > PeakReservedBytes)
         {
             PeakReservedBytes = CurrentReservedBytes;
@@ -215,7 +218,7 @@ internal sealed class MemoryGovernor
     // progress, even though ownership transfer changes no accounting total.
     // Give a later denial the same reclamation opportunity as an ordinary
     // successful commit; repeated denials without progress still fail fast.
-    internal void NotePrefundedAllocation() => _hasCommittedSinceReclaim = true;
+    internal void NotePrefundedAllocation() => _hasAllocatedSinceReclaim = true;
 
     public void Commit(long bytes)
     {
@@ -234,7 +237,7 @@ internal sealed class MemoryGovernor
         var committed = Math.Min(bytes, CurrentReservedBytes);
         CurrentReservedBytes -= committed;
         CurrentCommittedBytes = checked(CurrentCommittedBytes + committed);
-        if (committed > 0) _hasCommittedSinceReclaim = true;
+        if (committed > 0) _hasAllocatedSinceReclaim = true;
 
         if (CurrentCommittedBytes > PeakCommittedBytes)
         {
