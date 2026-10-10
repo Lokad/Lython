@@ -96,6 +96,13 @@ about 25% in both replicas and isolated constructor/registration allocation by
 18.7%. The change is integrated; high-variance sort results and the remaining
 CPython gap stay visible. All micros take 6.4–7.5 seconds; no full lanes run.
 
+The [exact integer sort-key round](results/2026-10-10-integer-sort-keys/README.md)
+refreshes current construction/sort CPU leads with two bounded captures, then
+accepts a guarded integer comparison after ten 6.4–7.3-second micros. Scalar-sort
+time falls about 28% in both replicas; full sort/output falls 22–26%, retaining
+its spread. Mixed keys retain Python dispatch, and all 9,140 Debug checks pass.
+Full lanes remain deferred to a declared consolidated milestone.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
