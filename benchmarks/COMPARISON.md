@@ -197,6 +197,15 @@ eight seconds each, with separate allocation/native groups about four seconds,
 all under 30-second caps. All 9,165 frozen Debug checks pass before collection.
 No full lanes run; milestone qualification remains pending.
 
+The [plain-jump dispatch experiment](results/2026-10-10-direct-jump-dispatch/README.md)
+remains isolated: loop changes -0.76%/-2.38% are inconclusive against their spreads,
+positional calls reverse -5.21%/+5.04%, and emitted Tier1 main code grows another
+185 bytes. All 9,165 Debug checks pass; twelve paired micros take about eight
+seconds each, with separate allocation/native groups about four seconds under
+30-second caps. A separate ten-second accepted-runtime CPU capture then records
+dispatch, iteration and scalar-value/observation leads; its group stops in 14.08
+seconds. No qualified CPU/speed claim, full lane or production change is made.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
