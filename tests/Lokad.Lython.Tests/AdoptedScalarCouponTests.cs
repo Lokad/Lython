@@ -146,13 +146,12 @@ public sealed class AdoptedScalarCouponTests
 
     private static long PooledCharge(ChargeReclamationPool pool, object value)
     {
-        // Reads the pool entry snapshot like a later drop sweep would: renames
-        // fail loudly here by design.
-        var table = typeof(ChargeReclamationPool)
-            .GetField("TrackedStorage", BindingFlags.NonPublic | BindingFlags.Static)!
-            .GetValue(null)!;
+        // Read the shared registration lookup so this checks the same snapshot
+        // for values with an adjacent entry and values using the weak table.
+        var lookup = typeof(ChargeReclamationPool)
+            .GetMethod("TryGetEntry", BindingFlags.NonPublic | BindingFlags.Static)!;
         var args = new object?[] { value, null };
-        if (!(bool)table.GetType().GetMethod("TryGetValue")!.Invoke(table, args)!)
+        if (!(bool)lookup.Invoke(null, args)!)
         {
             throw new InvalidOperationException("Value is not pool-tracked.");
         }
