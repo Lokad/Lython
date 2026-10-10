@@ -1,0 +1,1732 @@
+{
+  "state": "Audited",
+  "baseline": "036f3522f3e4ad02e0287890c38390b753f9a059",
+  "candidate": "f4faf1925e66c8cba302250eb8009432f2f2dd5b",
+  "baselineProductionTree": "4174256cc6da53c0f2f5cd7d163c2bb47fb0fcf3",
+  "candidateProductionTree": "fc9af4d384b7333afdf32b8d5510a1f9c6973174",
+  "harnessTree": "c194ce88a7e4d52c576f3929ef82bce60bf37e2d",
+  "fullLanes": 0,
+  "microCollections": 20,
+  "microAttempts": 839,
+  "rows": [
+    {
+      "collection": "micro",
+      "index": 0,
+      "case": "control.empty.control",
+      "seconds": 6.413191,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 23.46095483415667,
+          "iqrFraction": 0.05273172233822742
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 22.974345029239764,
+          "iqrFraction": 0.027237748138737854
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1.4847009905774342,
+          "iqrFraction": 0.00691166377068292
+        }
+      ]
+    },
+    {
+      "collection": "micro",
+      "index": 1,
+      "case": "diagnostic.tuples.scalar.medium",
+      "seconds": 7.121803,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 1539.3305789473684,
+          "iqrFraction": 0.147046968229286
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1521.2946190476193,
+          "iqrFraction": 0.0933454172350136
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 49.97604330708661,
+          "iqrFraction": 0.0019193448199393132
+        }
+      ]
+    },
+    {
+      "collection": "micro",
+      "index": 2,
+      "case": "diagnostic.keys.inline.medium",
+      "seconds": 7.341362,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2343.054,
+          "iqrFraction": 0.09344460264253403
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2837.4764999999998,
+          "iqrFraction": 0.406568477307213
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 70.2034875846501,
+          "iqrFraction": 0.004882919356163847
+        }
+      ]
+    },
+    {
+      "collection": "micro",
+      "index": 3,
+      "case": "diagnostic.keys.function.medium",
+      "seconds": 6.832674,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 3377.5950000000003,
+          "iqrFraction": 0.20357729883738773
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 5619.705,
+          "iqrFraction": 0.7313319827286308
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 138.96104787234043,
+          "iqrFraction": 0.013568837616633411
+        }
+      ]
+    },
+    {
+      "collection": "micro",
+      "index": 4,
+      "case": "diagnostic.sort.scalar.medium",
+      "seconds": 7.086524,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2856.3437000000004,
+          "iqrFraction": 0.0491176009385704
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2754.7450000000003,
+          "iqrFraction": 0.01739523007644022
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 118.37567338709678,
+          "iqrFraction": 0.0038070260662412974
+        }
+      ]
+    },
+    {
+      "collection": "micro",
+      "index": 5,
+      "case": "lists.stable-sort.medium",
+      "seconds": 6.86075,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 4119.302,
+          "iqrFraction": 0.13285129373859936
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 4403.1410000000005,
+          "iqrFraction": 0.06547627023527064
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 303.76948888888893,
+          "iqrFraction": 0.003785088649455981
+        }
+      ]
+    },
+    {
+      "collection": "micro",
+      "index": 6,
+      "case": "control.empty.control",
+      "seconds": 6.414614,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 23.445556862745097,
+          "iqrFraction": 0.03715787447163786
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 23.665475113122174,
+          "iqrFraction": 0.027338496425478018
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1.4949480656114007,
+          "iqrFraction": 0.002276408975198078
+        }
+      ]
+    },
+    {
+      "collection": "micro",
+      "index": 7,
+      "case": "diagnostic.tuples.scalar.medium",
+      "seconds": 7.445312,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 1514.3628571428571,
+          "iqrFraction": 0.07063255739801935
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1464.846423076923,
+          "iqrFraction": 0.08648885140413913
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 49.53671496062992,
+          "iqrFraction": 0.0017000354846959794
+        }
+      ]
+    },
+    {
+      "collection": "micro",
+      "index": 8,
+      "case": "diagnostic.keys.inline.medium",
+      "seconds": 7.348294,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2405.7568,
+          "iqrFraction": 0.22741388489476583
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2153.3408,
+          "iqrFraction": 0.1707416447967735
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 69.98972828507796,
+          "iqrFraction": 0.0023942106935958825
+        }
+      ]
+    },
+    {
+      "collection": "micro",
+      "index": 9,
+      "case": "diagnostic.keys.function.medium",
+      "seconds": 7.009857,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 3284.393666666667,
+          "iqrFraction": 0.2122870776452803
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 3260.828,
+          "iqrFraction": 0.21074815966987515
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 142.6265060240964,
+          "iqrFraction": 0.010475597651630367
+        }
+      ]
+    },
+    {
+      "collection": "micro",
+      "index": 10,
+      "case": "diagnostic.sort.scalar.medium",
+      "seconds": 6.988322,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2831.6638571428575,
+          "iqrFraction": 0.05124279026863907
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2985.2996000000003,
+          "iqrFraction": 0.0186984582719938
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 117.71512313432837,
+          "iqrFraction": 0.002674319385977808
+        }
+      ]
+    },
+    {
+      "collection": "micro",
+      "index": 11,
+      "case": "lists.stable-sort.medium",
+      "seconds": 7.088532,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 4272.335,
+          "iqrFraction": 0.13807771394331209
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 4499.279,
+          "iqrFraction": 0.20033445358689694
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 304.33795999999995,
+          "iqrFraction": 0.005552051410215139
+        }
+      ]
+    },
+    {
+      "collection": "candidate-micro",
+      "index": 0,
+      "case": "control.empty.control",
+      "seconds": 6.470714,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 24.025290706910248,
+          "iqrFraction": 0.040000259853256906
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 23.50548480463097,
+          "iqrFraction": 0.04197159082863308
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1.4665721337431312,
+          "iqrFraction": 0.00818034513515156
+        }
+      ]
+    },
+    {
+      "collection": "candidate-micro",
+      "index": 1,
+      "case": "loops.integer.large",
+      "seconds": 6.90993,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 1647.0075,
+          "iqrFraction": 0.009419963175638264
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1653.003105263158,
+          "iqrFraction": 0.0033138250862648016
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 597.2985192307692,
+          "iqrFraction": 0.0031946723714977045
+        }
+      ]
+    },
+    {
+      "collection": "candidate-micro",
+      "index": 2,
+      "case": "diagnostic.tuples.scalar.medium",
+      "seconds": 7.185343,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 1492.3002222222221,
+          "iqrFraction": 0.031844004381404056
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1116.2883333333334,
+          "iqrFraction": 0.07630682335657007
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 49.11648982785603,
+          "iqrFraction": 0.0015781204512143171
+        }
+      ]
+    },
+    {
+      "collection": "candidate-micro",
+      "index": 3,
+      "case": "lists.stable-sort.medium",
+      "seconds": 6.892804,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 4298.0324,
+          "iqrFraction": 0.19404907231504331
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 3883.7875,
+          "iqrFraction": 0.11831723543062042
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 309.46562500000005,
+          "iqrFraction": 0.004478873192027925
+        }
+      ]
+    },
+    {
+      "collection": "candidate-micro",
+      "index": 4,
+      "case": "control.empty.control",
+      "seconds": 6.438581,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 23.033630188679247,
+          "iqrFraction": 0.03560111941325507
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 23.167660687593425,
+          "iqrFraction": 0.04690949480181683
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1.4883970042796006,
+          "iqrFraction": 0.006988644991377086
+        }
+      ]
+    },
+    {
+      "collection": "candidate-micro",
+      "index": 5,
+      "case": "loops.integer.large",
+      "seconds": 6.917081,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 1663.083052631579,
+          "iqrFraction": 0.005615078627905294
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1630.9655263157895,
+          "iqrFraction": 0.005767232809625645
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 613.1186078431372,
+          "iqrFraction": 0.012419549440086827
+        }
+      ]
+    },
+    {
+      "collection": "candidate-micro",
+      "index": 6,
+      "case": "diagnostic.tuples.scalar.medium",
+      "seconds": 7.205436,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 1510.35404,
+          "iqrFraction": 0.042238652865787665
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1124.1037096774194,
+          "iqrFraction": 0.05179931882648301
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 48.943341592920355,
+          "iqrFraction": 0.0007817600036569407
+        }
+      ]
+    },
+    {
+      "collection": "candidate-micro",
+      "index": 7,
+      "case": "lists.stable-sort.medium",
+      "seconds": 6.879637,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 4692.501333333333,
+          "iqrFraction": 0.1649629081973622
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 3902.5158333333334,
+          "iqrFraction": 0.07722663521117475
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 302.11882653061224,
+          "iqrFraction": 0.03943785464868951
+        }
+      ]
+    }
+  ],
+  "receipts": [
+    {
+      "path": "vm\\micro-0\\micro.json",
+      "sha256": "1c1c88c4f3103c6642e812c508b07369c0301b0fd64532eb9d49413e38adaaad"
+    },
+    {
+      "path": "vm\\micro-1\\micro.json",
+      "sha256": "587e28ddeb929e953c9c2d061f559812618d2a8becb088cdc98a8724a3e96a10"
+    },
+    {
+      "path": "vm\\micro-2\\micro.json",
+      "sha256": "4842e855ecc69dce9445752e2ccd655aa806655068f06a408a6bc5d39766e848"
+    },
+    {
+      "path": "vm\\micro-3\\micro.json",
+      "sha256": "3ad23e5e38b9ba7c34a1f17fefd0c9987e2922c345752c00e28685eae97db769"
+    },
+    {
+      "path": "vm\\micro-4\\micro.json",
+      "sha256": "ab15f56f2f3e9bcd7f954bb1eed221e35ea11b6c3be0d12fa1ebf2e1317cce23"
+    },
+    {
+      "path": "vm\\micro-5\\micro.json",
+      "sha256": "0e63e83cda733aabbe011ef48ff631198e043c414273d25a83c16bd3b50603f3"
+    },
+    {
+      "path": "vm\\micro-6\\micro.json",
+      "sha256": "e0c7ecb84e08527cd3e874993652a2d8204866369578832648c9fd810a56626c"
+    },
+    {
+      "path": "vm\\micro-7\\micro.json",
+      "sha256": "d654786709a6472f5e62964d455e243db0b7b781ae6869c5e00ad32e6b6452e5"
+    },
+    {
+      "path": "vm\\micro-8\\micro.json",
+      "sha256": "62696d58e09b7b5b86a5601ad274751bf6c315e696503f053376fbe6c9b645bf"
+    },
+    {
+      "path": "vm\\micro-9\\micro.json",
+      "sha256": "b3e629f568be6edfdf5adc599af4110b0745d4aa4d99055f457feaf56ecc4e17"
+    },
+    {
+      "path": "vm\\micro-10\\micro.json",
+      "sha256": "236d5fef8ec1b5cc30cc316ef093396c9092d8de63b239af9c03722fdff123ff"
+    },
+    {
+      "path": "vm\\micro-11\\micro.json",
+      "sha256": "e8e20afc845c64d9a9144732eacd8cb7983f7d04cc0511ebb8e6b9a1e31fb435"
+    },
+    {
+      "path": "vm\\candidate-micro-0\\micro.json",
+      "sha256": "fa9dd8a3e25710b9122323136a6a2316dc2e91d6405c47d2d47f08bbc0b398bd"
+    },
+    {
+      "path": "vm\\candidate-micro-1\\micro.json",
+      "sha256": "99d567b80149721e191d066530fcaeca37a6d647cb44251ad4bd73c3775c01e8"
+    },
+    {
+      "path": "vm\\candidate-micro-2\\micro.json",
+      "sha256": "71eba72d7b58797c743593a9206c999de057b3fd3f0f501edb109d6a00a2ea78"
+    },
+    {
+      "path": "vm\\candidate-micro-3\\micro.json",
+      "sha256": "91f72145f69d6a25de7f35a14004c65467d0f82551d23303250a4d00f389fcb1"
+    },
+    {
+      "path": "vm\\candidate-micro-4\\micro.json",
+      "sha256": "b455016c9f894017b1cf43e6e05b5863195d9a1e2885014e5a2e9fd1f7e90fc1"
+    },
+    {
+      "path": "vm\\candidate-micro-5\\micro.json",
+      "sha256": "1b925fea95c29850c326a1785d915fec4df5c3ca0e15549339ec2e8fd5200a4a"
+    },
+    {
+      "path": "vm\\candidate-micro-6\\micro.json",
+      "sha256": "ebc82eb7611a4eb48cae83c3f612309b7d8dbf790bf947fd07df0864b4eebd90"
+    },
+    {
+      "path": "vm\\candidate-micro-7\\micro.json",
+      "sha256": "1eebf34ab7672a1e0bf16910142ecfc9c08ee568c802b749b30af56230045466"
+    }
+  ],
+  "testReceipts": {
+    "candidate-white-debug": [
+      {
+        "path": "candidate-white-debug\\JoannesVermorel_LOKAD-0399_2026-10-10_08_31_15.trx",
+        "sha256": "eed8ff45bda7e60fd73a5b6b537e8c565b88b4a766d27a61631e753ef0fea724",
+        "total": 60,
+        "passed": 60,
+        "failed": 0
+      }
+    ],
+    "candidate-white-release": [
+      {
+        "path": "candidate-white-release\\JoannesVermorel_LOKAD-0399_2026-10-10_08_34_09.trx",
+        "sha256": "b2c8a5defefeae026fd1b6b9ca64b9e00e7580fc76e62213348fa00da8298fa1",
+        "total": 60,
+        "passed": 60,
+        "failed": 0
+      }
+    ],
+    "candidate-public-release": [
+      {
+        "path": "candidate-public-release\\JoannesVermorel_LOKAD-0399_2026-10-10_08_35_11.trx",
+        "sha256": "7b3bfecb984121e0a47fd44af7de5dbd6181aceb66e5c02a3470a53ac06eabe8",
+        "total": 331,
+        "passed": 331,
+        "failed": 0
+      }
+    ],
+    "candidate-full-debug": [
+      {
+        "path": "candidate-full-debug\\JoannesVermorel_LOKAD-0399_2026-10-10_08_37_44.trx",
+        "sha256": "93d88bad8f4199fc715ac5e23ca2ec1ffe5582bd187b51b877cd856b001b1cfe",
+        "total": 1387,
+        "passed": 1387,
+        "failed": 0
+      },
+      {
+        "path": "candidate-full-debug\\JoannesVermorel_LOKAD-0399_2026-10-10_08_37_44[1].trx",
+        "sha256": "54eddce223bd293091eb0150bb69984cdc4d588ac2f408a26e5f481f7d4c9996",
+        "total": 7751,
+        "passed": 7751,
+        "failed": 0
+      }
+    ],
+    "vm/candidate-white-vm": [
+      {
+        "path": "vm\\candidate-white-vm\\_lython-bench_2026-10-10_06_39_36_net10.0.trx",
+        "sha256": "12ea3dbf648c63208188dc7147a2b73164535610488d1398690c1110f907f9a1",
+        "total": 1387,
+        "passed": 1387,
+        "failed": 0
+      }
+    ],
+    "vm/candidate-public-vm": [
+      {
+        "path": "vm\\candidate-public-vm\\_lython-bench_2026-10-10_06_40_03_net10.0.trx",
+        "sha256": "681bdf98c28f1b635ae858ea69b3746ec6ee6a476533add3966b2454fdf459e9",
+        "total": 673,
+        "passed": 673,
+        "failed": 0
+      }
+    ],
+    "vm/public-preparation": [
+      {
+        "path": "vm\\public-preparation\\_lython-bench_2026-10-10_06_16_29_net10.0.trx",
+        "sha256": "21ffd54928cc66693a412826f27693522a9b951c7440d0f174032fb4d9209ede",
+        "total": 415,
+        "passed": 414,
+        "failed": 1
+      }
+    ],
+    "vm/corrected-probe-preparation": [
+      {
+        "path": "vm\\corrected-probe-preparation\\_lython-bench_2026-10-10_06_19_53_net10.0.trx",
+        "sha256": "eca5c72de0a9d78ccaf1e01a5171dee4e7f6d418795cd264a88bd7315352c8ed",
+        "total": 1,
+        "passed": 1,
+        "failed": 0
+      }
+    ]
+  },
+  "layout": [
+    {
+      "purpose": "Constructor plus registration allocation diagnostic, not public invocation allocation or latency",
+      "libraryPath": "/home/lokad/lython-bench-checks/checkout-stable-sort-decomposition-20261010/src/Lokad.Lython/bin/Release/net10.0/Lokad.Lython.dll",
+      "librarySha256": "b73ca76fa093b094acbdf685a567703c2ee0c2dd2777598efd101f04f375afc2",
+      "version": "0.10.0+036f3522f3e4ad02e0287890c38390b753f9a059",
+      "runtime": "10.0.12",
+      "warmup": 512,
+      "fixedCount": 10000,
+      "allocatedBytes": 2969624,
+      "bytesPerTuple": 296.9624,
+      "logicalCommittedBytes": 2149376,
+      "registeredCount": 10512,
+      "noForcedCollections": true
+    },
+    {
+      "purpose": "Constructor plus registration allocation diagnostic, not public invocation allocation or latency",
+      "libraryPath": "/home/lokad/lython-bench-checks/checkout-tuple-reclamation-entry-20261010/src/Lokad.Lython/bin/Release/net10.0/Lokad.Lython.dll",
+      "librarySha256": "c65c478d6bbc7c194241fad3fbd5dba5a29308ef4446a558c75889804960ba90",
+      "version": "0.10.0+f4faf1925e66c8cba302250eb8009432f2f2dd5b",
+      "runtime": "10.0.12",
+      "warmup": 512,
+      "fixedCount": 10000,
+      "allocatedBytes": 2414224,
+      "bytesPerTuple": 241.4224,
+      "logicalCommittedBytes": 2149376,
+      "registeredCount": 10512,
+      "noForcedCollections": true
+    }
+  ],
+  "profile": {
+    "samples": 3236,
+    "eventsLost": 0,
+    "unknownLeaves": 92,
+    "noStacks": 0,
+    "attempts": 52,
+    "completedInvocations": 1604,
+    "traceSha256": "5c49fac8db43d4d0e6db716e28813acd2723bd92c3d460e003d395798584f5a9",
+    "summarySha256": "1a89f6b7406f73f5839fdeb6ecf37a9ef06db038399baf2273fa0a13f0023d28",
+    "leaf": [
+      {
+        "name": "ScanConsecutiveHandlesWithUserData(Object**, Object**, ScanCallbackInfo*, unsigned long*)",
+        "samples": 1502,
+        "percent": 46.41532756489493
+      },
+      {
+        "name": "WKS::GCHeap::IsPromoted2(Object*, bool)",
+        "samples": 141,
+        "percent": 4.357231149567367
+      },
+      {
+        "name": "BlockScanBlocksEphemeral(TableSegment*, unsigned int, unsigned int, ScanCallbackInfo*)",
+        "samples": 108,
+        "percent": 3.3374536464771323
+      },
+      {
+        "name": "TableScanHandles(HandleTable*, unsigned int const*, unsigned int, TableSegment* (*)(HandleTable*, TableSegment*, Holder<CrstBase*, &CrstBase::AcquireLock(CrstBase*), &CrstBase::ReleaseLock(CrstBase*), (unsigned long)0, &int CompareDefault<CrstBase*>(CrstBase*, CrstBase*), true>*), void (*)(TableSegment*, unsigned int, unsigned int, ScanCallbackInfo*), ScanCallbackInfo*, Holder<CrstBase*, &CrstBase::AcquireLock(CrstBase*), &CrstBase::ReleaseLock(CrstBase*), (unsigned long)0, &int CompareDefault<CrstBase*>(CrstBase*, CrstBase*), true>*)",
+        "samples": 75,
+        "percent": 2.3176761433868975
+      },
+      {
+        "name": "CompareHandlesByFreeOrder(unsigned long, unsigned long)",
+        "samples": 65,
+        "percent": 2.008652657601978
+      },
+      {
+        "name": "[unresolved] ",
+        "samples": 57,
+        "percent": 1.761433868974042
+      },
+      {
+        "name": "QuickSort(unsigned long*, int, int, int (*)(unsigned long, unsigned long))",
+        "samples": 55,
+        "percent": 1.6996291718170582
+      },
+      {
+        "name": "WKS::gc_heap::plan_phase(int)",
+        "samples": 47,
+        "percent": 1.4524103831891224
+      },
+      {
+        "name": "Lokad.Lython.Runtime.ChargeReclamationPool::SweepOldQuantum()",
+        "samples": 40,
+        "percent": 1.2360939431396787
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime::EvaluateRichComparison(object,object,string,string,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan,class [System.Runtime]System.Func`2<int32,bool>)",
+        "samples": 34,
+        "percent": 1.0506798516687268
+      },
+      {
+        "name": "Lokad.Lython.Runtime.PyStableSort::MergePasses(class [System.Collections]System.Collections.Generic.List`1<valuetype Lokad.Lython.Runtime.PyStableSort/Entry>,valuetype Lokad.Lython.Runtime.PyStableSort/Entry[],bool,class [System.Runtime]System.Func`3<object,object,bool>,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)",
+        "samples": 34,
+        "percent": 1.0506798516687268
+      },
+      {
+        "name": "BlockFetchUserDataPointer(_TableSegmentHeader*, unsigned int, int)",
+        "samples": 31,
+        "percent": 0.957972805933251
+      }
+    ],
+    "inclusive": [
+      {
+        "name": "CorUnix::CPalThread::ThreadEntry(void*)",
+        "samples": 3223,
+        "percent": 99.5982694684796
+      },
+      {
+        "name": "ManagedThreadBase::KickOff(void (*)(void*), void*)",
+        "samples": 3192,
+        "percent": 98.64029666254635
+      },
+      {
+        "name": "CallDescrWorkerInternal",
+        "samples": 3083,
+        "percent": 95.27194066749072
+      },
+      {
+        "name": "DispatchCallSimple(unsigned long*, unsigned int, unsigned long, unsigned int)",
+        "samples": 3083,
+        "percent": 95.27194066749072
+      },
+      {
+        "name": "KickOffThread_Worker(void*)",
+        "samples": 3049,
+        "percent": 94.221260815822
+      },
+      {
+        "name": "KickOffThread(void*)",
+        "samples": 3049,
+        "percent": 94.221260815822
+      },
+      {
+        "name": "System.Threading.ExecutionContext::RunInternal(class System.Threading.ExecutionContext,class System.Threading.ContextCallback,object)",
+        "samples": 3042,
+        "percent": 94.00494437577255
+      },
+      {
+        "name": "Lokad.Lython.Runtime.ExecutionThreads+Worker::Run()",
+        "samples": 3029,
+        "percent": 93.60321384425217
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime+<>c__DisplayClass674_0::<Run>b__0()",
+        "samples": 3025,
+        "percent": 93.4796044499382
+      },
+      {
+        "name": "Lokad.Lython.Runtime.ExecutionThreads+WorkItem::Execute(class [System.Threading]System.Threading.ExecutionContext)",
+        "samples": 3025,
+        "percent": 93.4796044499382
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::Execute()",
+        "samples": 2944,
+        "percent": 90.97651421508034
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime::ExecuteExecutableCodeObject(class Lokad.Lython.Frontend.ExecutableCodeObject,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype Lokad.Lython.Runtime.BoundCallArguments,int32[],class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Runtime.LythonRuntime/ExecutableCell>)",
+        "samples": 2944,
+        "percent": 90.97651421508034
+      },
+      {
+        "name": "RhpGcAlloc",
+        "samples": 2431,
+        "percent": 75.12360939431397
+      },
+      {
+        "name": "Alloc(ee_alloc_context*, unsigned long, GC_ALLOC_FLAGS)",
+        "samples": 2411,
+        "percent": 74.50556242274413
+      },
+      {
+        "name": "WKS::GCHeap::Alloc(gc_alloc_context*, unsigned long, unsigned int)",
+        "samples": 2402,
+        "percent": 74.22744128553771
+      },
+      {
+        "name": "WKS::gc_heap::try_allocate_more_space(alloc_context*, unsigned long, unsigned int, int)",
+        "samples": 2387,
+        "percent": 73.76390605686032
+      },
+      {
+        "name": "WKS::gc_heap::gc1()",
+        "samples": 2338,
+        "percent": 72.24969097651422
+      },
+      {
+        "name": "WKS::GCHeap::GarbageCollectGeneration(unsigned int, gc_reason)",
+        "samples": 2330,
+        "percent": 72.00247218788628
+      },
+      {
+        "name": "WKS::gc_heap::trigger_gc_for_alloc(int, gc_reason, WKS::GCDebugSpinLock*, bool, WKS::msl_take_state)",
+        "samples": 2330,
+        "percent": 72.00247218788628
+      },
+      {
+        "name": "WKS::gc_heap::garbage_collect(int)",
+        "samples": 2322,
+        "percent": 71.75525339925835
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime::ExecuteExecutableCall(class Lokad.Lython.Frontend.ExecutableCallSite,class Lokad.Lython.Runtime.LythonRuntime/ExecutableValueStack,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.Runtime.LythonRuntime/ExecutableCallCache&)",
+        "samples": 2063,
+        "percent": 63.751545117428925
+      },
+      {
+        "name": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteValueOperation(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)",
+        "samples": 2063,
+        "percent": 63.751545117428925
+      },
+      {
+        "name": "TableScanHandles(HandleTable*, unsigned int const*, unsigned int, TableSegment* (*)(HandleTable*, TableSegment*, Holder<CrstBase*, &CrstBase::AcquireLock(CrstBase*), &CrstBase::ReleaseLock(CrstBase*), (unsigned long)0, &int CompareDefault<CrstBase*>(CrstBase*, CrstBase*), true>*), void (*)(TableSegment*, unsigned int, unsigned int, ScanCallbackInfo*), ScanCallbackInfo*, Holder<CrstBase*, &CrstBase::AcquireLock(CrstBase*), &CrstBase::ReleaseLock(CrstBase*), (unsigned long)0, &int CompareDefault<CrstBase*>(CrstBase*, CrstBase*), true>*)",
+        "samples": 1838,
+        "percent": 56.79851668726823
+      },
+      {
+        "name": "HndScanHandlesForGC(HandleTable*, void (*)(Object**, unsigned long*, unsigned long, unsigned long), unsigned long, unsigned long, unsigned int const*, unsigned int, unsigned int, unsigned int, unsigned int)",
+        "samples": 1834,
+        "percent": 56.674907292954266
+      },
+      {
+        "name": "BlockScanBlocksEphemeral(TableSegment*, unsigned int, unsigned int, ScanCallbackInfo*)",
+        "samples": 1736,
+        "percent": 53.64647713226205
+      }
+    ]
+  },
+  "cleanup": {
+    "allRecordedPidsAbsent": true,
+    "recordedPids": [
+      1657419,
+      1657437,
+      1657510,
+      1657531,
+      1657546,
+      1657592,
+      1657613,
+      1657628,
+      1657672,
+      1657693,
+      1657708,
+      1657755,
+      1657776,
+      1657791,
+      1657835,
+      1657856,
+      1657871,
+      1657917,
+      1657938,
+      1657953,
+      1657999,
+      1658020,
+      1658035,
+      1658079,
+      1658100,
+      1658115,
+      1658158,
+      1658179,
+      1658194,
+      1658238,
+      1658259,
+      1658274,
+      1658317,
+      1658338,
+      1658353,
+      1658396,
+      1658417,
+      1658432,
+      1663509,
+      1663530,
+      1663545,
+      1663589,
+      1663610,
+      1663625,
+      1663668,
+      1663689,
+      1663704,
+      1663747,
+      1663768,
+      1663783,
+      1663827,
+      1663848,
+      1663863,
+      1663907,
+      1663928,
+      1663943,
+      1663986,
+      1664007,
+      1664022,
+      1664067,
+      1664088,
+      1664103,
+      1663261,
+      1663280
+    ],
+    "ownedServicesTerminal": 26,
+    "bothSourcesClean": true,
+    "inputsRehashed": true,
+    "sharedLeaseWasAvailableAtAuditStart": true,
+    "fullLanes": 0
+  },
+  "preparationFailurePreserved": true,
+  "diagnosticOnly": true,
+  "performanceQualified": false,
+  "files": [
+    {
+      "path": "vm\\baseline-layout-exited.txt",
+      "sha256": "1f15b75e16163e5a4f676f2c216bb290622495d542ab471858da90016a9fbe14"
+    },
+    {
+      "path": "vm\\baseline-layout.json",
+      "sha256": "09f9105ae7fd19e0f7ff3ceccbcafeba0393adf2d9f5a1e1ff84ff5e6a4f2c9e"
+    },
+    {
+      "path": "vm\\build.log",
+      "sha256": "175831dbe4dbbf860d5ab71466b755de53187c675990c040463bf1b4fa8adea9"
+    },
+    {
+      "path": "vm\\candidate-build.log",
+      "sha256": "638b552d62377cbfd3407022d3adf5a268cd8b86e154a3a7a9e50e7d1d1beaad"
+    },
+    {
+      "path": "vm\\candidate-catalog.log",
+      "sha256": "57c32cdffd3ccb60cdd8ccb142c8d2ba849e415ea50e5533e926423b7121912d"
+    },
+    {
+      "path": "vm\\candidate-clone.log",
+      "sha256": "e2fe2e81b37dfd85f0d17b2c1c9c07bfd29b96f25139188d0646df7d4f624db8"
+    },
+    {
+      "path": "vm\\candidate-correctness.json",
+      "sha256": "c21cb745fe78edbe6ed51d37c48a23ad09d71aa6dff12ed6b9d318f6a10aa196"
+    },
+    {
+      "path": "vm\\candidate-correctness.log",
+      "sha256": "9902e2197c071524496ef62b82911a032c30e3688ea8e85cc507c20b36d07362"
+    },
+    {
+      "path": "vm\\candidate-declaration.json",
+      "sha256": "ae766306c4eaca5435b0d5c73954cfa5851956987abfa8ae6dee37edca78032e"
+    },
+    {
+      "path": "vm\\candidate-full-catalog.json",
+      "sha256": "c5031ac6bdc78d2218698c71d8aeb5a2f95277ffedffe572604597c5d633b6a6"
+    },
+    {
+      "path": "vm\\candidate-layout-exited.txt",
+      "sha256": "d33f79cba4fcbd81820a4b8e24db479194565f668f9fe01a51c77ee9bbf2473f"
+    },
+    {
+      "path": "vm\\candidate-layout.json",
+      "sha256": "77c81dcc4e449cea19b612125ae1e8069ebae4dd6ee17b9e6ee9f9c31169a04e"
+    },
+    {
+      "path": "vm\\candidate-micro-0\\exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "vm\\candidate-micro-0\\micro.json",
+      "sha256": "fa9dd8a3e25710b9122323136a6a2316dc2e91d6405c47d2d47f08bbc0b398bd"
+    },
+    {
+      "path": "vm\\candidate-micro-0\\micro.log",
+      "sha256": "9a0a8bde8e7d3295666882392afbbcd226902f3cf6003fbdf4f4aa6b73b21e10"
+    },
+    {
+      "path": "vm\\candidate-micro-1\\exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "vm\\candidate-micro-1\\micro.json",
+      "sha256": "99d567b80149721e191d066530fcaeca37a6d647cb44251ad4bd73c3775c01e8"
+    },
+    {
+      "path": "vm\\candidate-micro-1\\micro.log",
+      "sha256": "27bc45b81697295ea7a2b9ff25371e979dc8d945a73d7d7faab64710269834c6"
+    },
+    {
+      "path": "vm\\candidate-micro-2\\exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "vm\\candidate-micro-2\\micro.json",
+      "sha256": "71eba72d7b58797c743593a9206c999de057b3fd3f0f501edb109d6a00a2ea78"
+    },
+    {
+      "path": "vm\\candidate-micro-2\\micro.log",
+      "sha256": "3e47340035829c47bca15a07991e5e61bb2089899e7a0784becf974db07df9ed"
+    },
+    {
+      "path": "vm\\candidate-micro-3\\exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "vm\\candidate-micro-3\\micro.json",
+      "sha256": "91f72145f69d6a25de7f35a14004c65467d0f82551d23303250a4d00f389fcb1"
+    },
+    {
+      "path": "vm\\candidate-micro-3\\micro.log",
+      "sha256": "b2221927ddff5ca4537e28ce50de2caa34512c0b706464cf3703794b71dc4be8"
+    },
+    {
+      "path": "vm\\candidate-micro-4\\exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "vm\\candidate-micro-4\\micro.json",
+      "sha256": "b455016c9f894017b1cf43e6e05b5863195d9a1e2885014e5a2e9fd1f7e90fc1"
+    },
+    {
+      "path": "vm\\candidate-micro-4\\micro.log",
+      "sha256": "de31d73906506990efb3f38363403e5e4885905d7f98ede72daf671ea8e1ced4"
+    },
+    {
+      "path": "vm\\candidate-micro-5\\exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "vm\\candidate-micro-5\\micro.json",
+      "sha256": "1b925fea95c29850c326a1785d915fec4df5c3ca0e15549339ec2e8fd5200a4a"
+    },
+    {
+      "path": "vm\\candidate-micro-5\\micro.log",
+      "sha256": "fbea6adf2927c5bc3319f01d96a53355c69d221d20674f697ad52fcbcd705624"
+    },
+    {
+      "path": "vm\\candidate-micro-6\\exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "vm\\candidate-micro-6\\micro.json",
+      "sha256": "ebc82eb7611a4eb48cae83c3f612309b7d8dbf790bf947fd07df0864b4eebd90"
+    },
+    {
+      "path": "vm\\candidate-micro-6\\micro.log",
+      "sha256": "3dfe5495ebeb812ecfd7bf886430dfab8733e4cb44d057ce97262482120027fe"
+    },
+    {
+      "path": "vm\\candidate-micro-7\\exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "vm\\candidate-micro-7\\micro.json",
+      "sha256": "1eebf34ab7672a1e0bf16910142ecfc9c08ee568c802b749b30af56230045466"
+    },
+    {
+      "path": "vm\\candidate-micro-7\\micro.log",
+      "sha256": "23172a3af51d2221bb6d9a76b313fabf4db8973ca5b5128b8e173be7d4ab1e1a"
+    },
+    {
+      "path": "vm\\candidate-micro-service-0-exited.txt",
+      "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+    },
+    {
+      "path": "vm\\candidate-micro-service-0.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vm\\candidate-micro-service-1-exited.txt",
+      "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+    },
+    {
+      "path": "vm\\candidate-micro-service-1.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vm\\candidate-micro-service-2-exited.txt",
+      "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+    },
+    {
+      "path": "vm\\candidate-micro-service-2.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vm\\candidate-micro-service-3-exited.txt",
+      "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+    },
+    {
+      "path": "vm\\candidate-micro-service-3.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vm\\candidate-micro-service-4-exited.txt",
+      "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+    },
+    {
+      "path": "vm\\candidate-micro-service-4.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vm\\candidate-micro-service-5-exited.txt",
+      "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+    },
+    {
+      "path": "vm\\candidate-micro-service-5.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vm\\candidate-micro-service-6-exited.txt",
+      "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+    },
+    {
+      "path": "vm\\candidate-micro-service-6.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vm\\candidate-micro-service-7-exited.txt",
+      "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+    },
+    {
+      "path": "vm\\candidate-micro-service-7.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vm\\candidate-prepared-inputs.sha256",
+      "sha256": "39958ab416263f3ead610a76cecbe96ebb40fd594aa4714346d63e5650f4a299"
+    },
+    {
+      "path": "vm\\candidate-probe.log",
+      "sha256": "444cd628dc531982a6e3908e00b9a55e9837795a93fa81668a396c3453da125b"
+    },
+    {
+      "path": "vm\\candidate-producer.txt",
+      "sha256": "d93338b1ecba48a0047e9df3e288a869518a97941f223b427d26c9581ae3cd36"
+    },
+    {
+      "path": "vm\\candidate-public-vm\\_lython-bench_2026-10-10_06_40_03_net10.0.trx",
+      "sha256": "681bdf98c28f1b635ae858ea69b3746ec6ee6a476533add3966b2454fdf459e9"
+    },
+    {
+      "path": "vm\\candidate-public-vm.log",
+      "sha256": "d49751260415abc4371fd411482a1a005aaadd821e4a288968c7dd58162013ae"
+    },
+    {
+      "path": "vm\\candidate-restore.log",
+      "sha256": "f1dfbb6487ff5df9408436e115a5cc041c36a675838dd99255dde9224ae8a7a8"
+    },
+    {
+      "path": "vm\\candidate-shutdown.log",
+      "sha256": "830e5cd707f90e485d1b96b500318ea1d4c6248cd46f3da146a5887084144dbf"
+    },
+    {
+      "path": "vm\\candidate-white-vm\\_lython-bench_2026-10-10_06_39_36_net10.0.trx",
+      "sha256": "12ea3dbf648c63208188dc7147a2b73164535610488d1398690c1110f907f9a1"
+    },
+    {
+      "path": "vm\\candidate-white-vm.log",
+      "sha256": "391e9bda4294fd5cb2e6b9d27c1c1061b092142eee96cad7d22be94c2eb8a472"
+    },
+    {
+      "path": "vm\\catalog-candidate-micro.json",
+      "sha256": "7c86c1ff549088ee0b0d9c1056c75c7281c3694e7b0694f220a7070c5ff1fe86"
+    },
+    {
+      "path": "vm\\catalog-full.json",
+      "sha256": "c5031ac6bdc78d2218698c71d8aeb5a2f95277ffedffe572604597c5d633b6a6"
+    },
+    {
+      "path": "vm\\catalog-micro.json",
+      "sha256": "cb4eb1a9ea837df87952a7a0ebc8bbbe4a8487d034ffc720211f0c0092f8b535"
+    },
+    {
+      "path": "vm\\catalog-profile.json",
+      "sha256": "a766157f3a69f0ae53376237f18a1d41e6b0f4d760007315e6b89d157e2da92a"
+    },
+    {
+      "path": "vm\\catalog.log",
+      "sha256": "7b59fb184fbc126bc624b086d342e6fe0e10db0beea217a451ba36d1058dea70"
+    },
+    {
+      "path": "vm\\clone.log",
+      "sha256": "43fd473b432118d368eadbac23916d86806bdaa94888ac25c7b64a08248cad73"
+    },
+    {
+      "path": "vm\\corrected-probe-preparation\\_lython-bench_2026-10-10_06_19_53_net10.0.trx",
+      "sha256": "eca5c72de0a9d78ccaf1e01a5171dee4e7f6d418795cd264a88bd7315352c8ed"
+    },
+    {
+      "path": "vm\\corrected-probe-preparation.log",
+      "sha256": "baea2327fcca4961059fa0f1360936ef4a1e7f5f897f61eb6b633a3ba95a4f60"
+    },
+    {
+      "path": "vm\\correctness.json",
+      "sha256": "816c0395bb373241a0f540f949898aa189f2835953a1d62259a68c9ffffe7de2"
+    },
+    {
+      "path": "vm\\correctness.log",
+      "sha256": "1c715294cd955c8bd00e4a42bf53126d42f6002a7e45988a082c8319cedc531b"
+    },
+    {
+      "path": "vm\\declaration.json",
+      "sha256": "f3caae5aa4c655c56bcde49fe0243fdd74cfee9adddbcd5e65deedfb2b9917d0"
+    },
+    {
+      "path": "vm\\final-candidate-baseline-inputs.txt",
+      "sha256": "abeafb911259fdbb187e4109a642e6e5dc4bb86956acb7b266f039739561ad4b"
+    },
+    {
+      "path": "vm\\final-candidate-inputs.txt",
+      "sha256": "5869f96bd1dcf7b3fade392edbb70e19245acae25ef1e8c9116d1785d7861de2"
+    },
+    {
+      "path": "vm\\final-candidate-lease.txt",
+      "sha256": "ed01b1557bd7a1e70f90d8838f38ae0bb6b8367122b3dca7e5935bafa440a45a"
+    },
+    {
+      "path": "vm\\final-candidate-vm-audit.json",
+      "sha256": "c8d73ad5edd1b8cfc2a575dee6e737ff8ad1faf613fb59c93a3a129706c87bc0"
+    },
+    {
+      "path": "vm\\final-inputs.txt",
+      "sha256": "abeafb911259fdbb187e4109a642e6e5dc4bb86956acb7b266f039739561ad4b"
+    },
+    {
+      "path": "vm\\final-lease.txt",
+      "sha256": "ed01b1557bd7a1e70f90d8838f38ae0bb6b8367122b3dca7e5935bafa440a45a"
+    },
+    {
+      "path": "vm\\final-vm-audit.json",
+      "sha256": "3d12f68685078fe0e50241ae7928f96ecb10c4c0b3132eaa4a6051843504756d"
+    },
+    {
+      "path": "vm\\layout-build.log",
+      "sha256": "bbc2169dd30195e32b1fa253f6b6cd2cdf98e041bd19df859089040df9e34a83"
+    },
+    {
+      "path": "vm\\layout-declaration.json",
+      "sha256": "c3dc52ef1169b931944d9bd5a620f3a075e29e956a8f44c0d48301b1dc199b73"
+    },
+    {
+      "path": "vm\\lython-sort-micro-0-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-0-20261010-final.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-1-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-1-20261010-final.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-10-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-10-20261010-final.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-11-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-11-20261010-final.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-2-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-2-20261010-final.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-3-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-3-20261010-final.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-4-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-4-20261010-final.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-5-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-5-20261010-final.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-6-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-6-20261010-final.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-7-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-7-20261010-final.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-8-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-8-20261010-final.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-9-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-micro-9-20261010-final.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-prepare-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-prepare-20261010-final.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-profile-sort-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-profile-sort-20261010-final.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-resume-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-sort-resume-20261010-final.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-tuple-layout-baseline-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-tuple-layout-candidate-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-tuple-micro-0-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-tuple-micro-1-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-tuple-micro-2-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-tuple-micro-3-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-tuple-micro-4-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-tuple-micro-5-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-tuple-micro-6-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-tuple-micro-7-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\lython-tuple-prepare-20261010-final-candidate.txt",
+      "sha256": "3d3107b7ba9e07fdedce907588c47d109568c5ff7ae79884d6851fcb88e1895c"
+    },
+    {
+      "path": "vm\\make-catalog.log",
+      "sha256": "3169f18e47ce032cecb25a91039d2991134d95e61983f777fbb794d9dfa448e6"
+    },
+    {
+      "path": "vm\\micro-0\\exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "vm\\micro-0\\micro.json",
+      "sha256": "1c1c88c4f3103c6642e812c508b07369c0301b0fd64532eb9d49413e38adaaad"
+    },
+    {
+      "path": "vm\\micro-0\\micro.log",
+      "sha256": "e68385890f1bdd4f30d60494b07c38bad8633690e602071e9057f162af8bc50d"
+    },
+    {
+      "path": "vm\\micro-1\\exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "vm\\micro-1\\micro.json",
+      "sha256": "587e28ddeb929e953c9c2d061f559812618d2a8becb088cdc98a8724a3e96a10"
+    },
+    {
+      "path": "vm\\micro-1\\micro.log",
+      "sha256": "ba497fc8dae2a0a9e0f2be55c193aa76304adcd4c36ab534532c49a1e133bd02"
+    },
+    {
+      "path": "vm\\micro-10\\exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "vm\\micro-10\\micro.json",
+      "sha256": "236d5fef8ec1b5cc30cc316ef093396c9092d8de63b239af9c03722fdff123ff"
+    },
+    {
+      "path": "vm\\micro-10\\micro.log",
+      "sha256": "0535b497bb27249c54c38442be794b0cc8cca18c96558003e189a96e84b8f8b7"
+    },
+    {
+      "path": "vm\\micro-11\\exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "vm\\micro-11\\micro.json",
+      "sha256": "e8e20afc845c64d9a9144732eacd8cb7983f7d04cc0511ebb8e6b9a1e31fb435"
+    },
+    {
+      "path": "vm\\micro-11\\micro.log",
+      "sha256": "610114ac1647d53b5f5fb7ee6c173a3b13607a1020c1ee0e9d6a15b0ab44df37"
+    },
+    {
+      "path": "vm\\micro-2\\exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "vm\\micro-2\\micro.json",
+      "sha256": "4842e855ecc69dce9445752e2ccd655aa806655068f06a408a6bc5d39766e848"
+    },
+    {
+      "path": "vm\\micro-2\\micro.log",
+      "sha256": "254fb5fda320804dbf7ddd471cdf1c5b2044a36e575b45dfb19b306feb520530"
+    },
+    {
+      "path": "vm\\micro-3\\exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "vm\\micro-3\\micro.json",
+      "sha256": "3ad23e5e38b9ba7c34a1f17fefd0c9987e2922c345752c00e28685eae97db769"
+    },
+    {
+      "path": "vm\\micro-3\\micro.log",
+      "sha256": "9ee526f92a8f5d4c42be07c797350b360032b857ee347aea0ad9a0dc1ace3a12"
+    },
+    {
+      "path": "vm\\micro-4\\exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "vm\\micro-4\\micro.json",
+      "sha256": "ab15f56f2f3e9bcd7f954bb1eed221e35ea11b6c3be0d12fa1ebf2e1317cce23"
+    },
+    {
+      "path": "vm\\micro-4\\micro.log",
+      "sha256": "b62b5d65757fdeb2a334bacbd935debd4ac14cf8ed9ca6c666e957abeaf5f0fa"
+    },
+    {
+      "path": "vm\\micro-5\\exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "vm\\micro-5\\micro.json",
+      "sha256": "0e63e83cda733aabbe011ef48ff631198e043c414273d25a83c16bd3b50603f3"
+    },
+    {
+      "path": "vm\\micro-5\\micro.log",
+      "sha256": "076846e67619db61c90017fa7ab335c7cbf13151c54cb81e4a4746bc60f7624c"
+    },
+    {
+      "path": "vm\\micro-6\\exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "vm\\micro-6\\micro.json",
+      "sha256": "e0c7ecb84e08527cd3e874993652a2d8204866369578832648c9fd810a56626c"
+    },
+    {
+      "path": "vm\\micro-6\\micro.log",
+      "sha256": "21118ab666a061d0a85b0ad2f88598a371efc09fbd0fdb0f1161b58d38167325"
+    },
+    {
+      "path": "vm\\micro-7\\exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "vm\\micro-7\\micro.json",
+      "sha256": "d654786709a6472f5e62964d455e243db0b7b781ae6869c5e00ad32e6b6452e5"
+    },
+    {
+      "path": "vm\\micro-7\\micro.log",
+      "sha256": "4602e818a56ffdead04bc12077a1d92b8fb6cda859a0d40ec2fec2feb7471461"
+    },
+    {
+      "path": "vm\\micro-8\\exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "vm\\micro-8\\micro.json",
+      "sha256": "62696d58e09b7b5b86a5601ad274751bf6c315e696503f053376fbe6c9b645bf"
+    },
+    {
+      "path": "vm\\micro-8\\micro.log",
+      "sha256": "be2a7db5854b4bde7ada9eb855bc45f8a28fcad74d5c43902860fee43412f561"
+    },
+    {
+      "path": "vm\\micro-9\\exit-code.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "vm\\micro-9\\micro.json",
+      "sha256": "b3e629f568be6edfdf5adc599af4110b0745d4aa4d99055f457feaf56ecc4e17"
+    },
+    {
+      "path": "vm\\micro-9\\micro.log",
+      "sha256": "84a319f9c97579100ea90f11c87448f1c9f2d9a134299b57fdfc2535e811b574"
+    },
+    {
+      "path": "vm\\micro-service-0-exited.txt",
+      "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+    },
+    {
+      "path": "vm\\micro-service-0.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vm\\micro-service-1-exited.txt",
+      "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+    },
+    {
+      "path": "vm\\micro-service-1.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vm\\micro-service-10-exited.txt",
+      "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+    },
+    {
+      "path": "vm\\micro-service-10.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vm\\micro-service-11-exited.txt",
+      "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+    },
+    {
+      "path": "vm\\micro-service-11.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vm\\micro-service-2-exited.txt",
+      "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+    },
+    {
+      "path": "vm\\micro-service-2.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vm\\micro-service-3-exited.txt",
+      "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+    },
+    {
+      "path": "vm\\micro-service-3.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vm\\micro-service-4-exited.txt",
+      "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+    },
+    {
+      "path": "vm\\micro-service-4.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vm\\micro-service-5-exited.txt",
+      "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+    },
+    {
+      "path": "vm\\micro-service-5.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vm\\micro-service-6-exited.txt",
+      "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+    },
+    {
+      "path": "vm\\micro-service-6.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vm\\micro-service-7-exited.txt",
+      "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+    },
+    {
+      "path": "vm\\micro-service-7.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vm\\micro-service-8-exited.txt",
+      "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+    },
+    {
+      "path": "vm\\micro-service-8.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vm\\micro-service-9-exited.txt",
+      "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+    },
+    {
+      "path": "vm\\micro-service-9.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vm\\original-probe-launch.json",
+      "sha256": "e048f32564a1545c887cb7817c4d6b36b8eef6b0db7597902bf6a31233730c31"
+    },
+    {
+      "path": "vm\\prepared-inputs.sha256",
+      "sha256": "86bf7d2e5f802e4679c0379b0b675ea688bdfcfe0c2ae743cf6ae123e8805fe3"
+    },
+    {
+      "path": "vm\\probe.log",
+      "sha256": "ed415fc60d3de94e45e03cd392867f4fe2b65165113593b67d1299ed5eafde21"
+    },
+    {
+      "path": "vm\\producer.txt",
+      "sha256": "4220bd274aafd284fa4dd2d26965946e2d38d208ae4f27e3573284182b30d423"
+    },
+    {
+      "path": "vm\\public-preparation\\_lython-bench_2026-10-10_06_16_29_net10.0.trx",
+      "sha256": "21ffd54928cc66693a412826f27693522a9b951c7440d0f174032fb4d9209ede"
+    },
+    {
+      "path": "vm\\public-preparation.log",
+      "sha256": "231b0d880bf1eaa3132fcc8a42f12c148642800650871755092ed8378d715778"
+    },
+    {
+      "path": "vm\\restore.log",
+      "sha256": "8e270d74a0fe8eb822b58b60be39a34f82f66e2fa5a123742970a8d2f599dfd6"
+    },
+    {
+      "path": "vm\\resume-shutdown.log",
+      "sha256": "830e5cd707f90e485d1b96b500318ea1d4c6248cd46f3da146a5887084144dbf"
+    },
+    {
+      "path": "vm\\sort\\diagnostic.json",
+      "sha256": "af5c0fdb49e5ba3c5ff3d7885a3063966a1e61aeba40505e7376b8b4d7c3d6c3"
+    },
+    {
+      "path": "vm\\sort\\responses.jsonl",
+      "sha256": "524aea14496f16800db59c9483feffabbdbbf6b919cfbdd417933baff66e3eee"
+    },
+    {
+      "path": "vm\\sort\\tracer.log",
+      "sha256": "b135356e1b497296e92a9d58363ada931452045a7111a1c6d06c41fa143edb32"
+    },
+    {
+      "path": "vm\\sort\\worker.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vm\\sort-service-exited.txt",
+      "sha256": "c06e7c8677e15b156111df7138b5a2f82791bc9fe8e5c0e1836f6123ad307b44"
+    },
+    {
+      "path": "vm\\sort-service.log",
+      "sha256": "54aae161ff4ebe83f535ef0003562f1e55cb2a35f764cca087b1ad3361087c19"
+    }
+  ]
+}

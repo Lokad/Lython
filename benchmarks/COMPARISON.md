@@ -89,6 +89,13 @@ checks and the full Debug suite. Retained values stay charged. This separate
 correctness prerequisite does not establish the original streaming failure's
 cause or a speed improvement; it runs no timing micros or full lanes.
 
+The [stable-sort decomposition](results/2026-10-10-stable-sort-decomposition/README.md)
+uses twelve baseline variant micros, a separate bounded CPU capture and eight
+old/new micros. Tuple-owned reclamation metadata reduces construction time by
+about 25% in both replicas and isolated constructor/registration allocation by
+18.7%. The change is integrated; high-variance sort results and the remaining
+CPython gap stay visible. All micros take 6.4–7.5 seconds; no full lanes run.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
