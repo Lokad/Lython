@@ -9,7 +9,7 @@ internal static class PyIteration
 
     /// <summary>Resolves the Python iteration protocol for arbitrary values, including user-defined <c>__iter__</c>.</summary>
     public static IEnumerable<object> ToSequence(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => WithCheckpoints(value switch
+        => value is PyRange range ? new CheckedRange(range, span, context) : WithCheckpoints(value switch
         {
             PyInstance instance => new PyUserIterator(instance, context, span).Iterate(),
             // ChainMap iteration snapshots merged keys eagerly with lifetime
@@ -42,8 +42,18 @@ internal static class PyIteration
         : IEnumerable<object>
     {
         internal IEnumerable<object> Source => source;
-        public IEnumerator<object> GetEnumerator() => EnumerateChecked(source, span, context).GetEnumerator();
+        protected LythonSourceSpan Span { get; } = span;
+        protected LythonRuntime.ExecutionContext Context { get; } = context;
+        public virtual IEnumerator<object> GetEnumerator() => EnumerateChecked(source, Span, Context).GetEnumerator();
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    private sealed class CheckedRange(
+        PyRange range, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        : CheckedSequence(range.Iterate(), span, context)
+    {
+        // Keep the original source shape for bulk-materializer inspection.
+        public override IEnumerator<object> GetEnumerator() => range.IterateChecked(Span, Context).GetEnumerator();
     }
 
     private sealed class CheckedCollection(

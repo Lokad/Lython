@@ -88,6 +88,31 @@ internal sealed class PyRange : IPyIterableValue, IPySliceableValue, IPySubscrip
         }
     }
 
+    internal IEnumerable<object> IterateChecked(LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        try
+        {
+            context.CheckExecution(span);
+            var movesUntilCheckpoint = 63;
+            for (var value = Start; Step > 0 ? value < Stop : value > Stop;)
+            {
+                yield return OwnYield(value);
+
+                // Check before advancing, including the exhausted pull.
+                if (movesUntilCheckpoint-- == 0)
+                {
+                    movesUntilCheckpoint = 63;
+                    context.CheckExecution(span);
+                }
+                value += Step;
+            }
+        }
+        finally
+        {
+            // Preserve terminal disposal of an active checked enumerator.
+        }
+    }
+
     public object GetSubscript(object index, LythonSourceSpan span)
     {
         if (!Numbers.PyNumberOps.TryAsInteger(index, out var integer))
