@@ -18,6 +18,8 @@ internal sealed class DelayedLythonHost : ILythonHost
 
     public int CompletedAsynchronously { get; private set; }
 
+    public Action? OnTextReadCompleted { get; set; }
+
     public string Cwd => _inner.Cwd;
 
     public DateTimeOffset LocalNow => _inner.LocalNow;
@@ -49,7 +51,9 @@ internal sealed class DelayedLythonHost : ILythonHost
         }
 
         await Delay(cancellationToken).ConfigureAwait(false);
-        return await _inner.ReadTextUtf8Async(path, cancellationToken).ConfigureAwait(false);
+        var bytes = await _inner.ReadTextUtf8Async(path, cancellationToken).ConfigureAwait(false);
+        OnTextReadCompleted?.Invoke();
+        return bytes;
     }
 
     public async ValueTask WriteTextUtf8Async(string path, ReadOnlyMemory<byte> utf8, CancellationToken cancellationToken)

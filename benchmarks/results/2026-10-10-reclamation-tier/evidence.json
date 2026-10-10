@@ -322,7 +322,7 @@
     "gilEnabled": true,
     "gcEnabled": true,
     "clockFrequency": 1000000000,
-    "clockResolutionSeconds": 1e-09,
+    "clockResolutionSeconds": 1E-09,
     "clockMonotonic": true,
     "clockImplementation": "clock_gettime(CLOCK_MONOTONIC)",
     "maximumFrameBytes": 4194304,
@@ -340,5 +340,53 @@
     "cleanProducerCheckouts": 3,
     "sharedLeaseFree": true
   },
-  "runtimeOverrides": null
+  "runtimeOverrides": null,
+  "testOnlyFollowup": {
+    "firstDelivery": "590e6ef06cf1239535fb1122117be96b5bc1d65d",
+    "firstCiRun": 38014099842,
+    "firstCiConclusion": "failure",
+    "firstCiWindowsTest": "AsyncFileRowRemaindersStayBounded",
+    "largePeak": 13076008,
+    "smallPeak": 1296164,
+    "originalRatioBound": 8,
+    "originalRowCounts": [
+      10000,
+      100000
+    ],
+    "originalDefaultBudgetCasePreserved": true,
+    "additionalMemoryBudgetBytes": 4194304,
+    "collectionBoundary": "asynchronous host text reads",
+    "gates": [
+      {
+        "gate": "starred-budget-fixed-final-Debug",
+        "file": "JoannesVermorel_LOKAD-0399_2026-10-10_03_59_38.trx",
+        "total": 21,
+        "passed": 21,
+        "failed": 0,
+        "sha256": "fedbd162760f41f2c5853538b2b6fd7abd4f40f11452bf078b335db18b1fef6c"
+      },
+      {
+        "gate": "starred-budget-fixed-final-Release",
+        "file": "JoannesVermorel_LOKAD-0399_2026-10-10_04_00_16.trx",
+        "total": 21,
+        "passed": 21,
+        "failed": 0,
+        "sha256": "50263455a510b53c8ce135e2dac0c4244d624d936e6b58fb9e95ae614b96ef01"
+      },
+      {
+        "gate": "starred-budget-fault-release",
+        "file": "JoannesVermorel_LOKAD-0399_2026-10-10_03_59_42.trx",
+        "total": 2,
+        "passed": 1,
+        "failed": 1,
+        "sha256": "88d8be612f525a6c3ba0ff4844f6dfdebd07509ab8a44109536d06b7819f87f3"
+      }
+    ],
+    "fault": "suppress registry tracking of three-cell remainder lists",
+    "faultPatchSha256": "5f1096a3911a23994acd25cf5fec93c6c9eedabaf76ab549698ddbb707d6a5b0",
+    "originalCiLogSha256": "bcefabb0c1adcc2dc01dfd0ad53bc7418fd179e2ff5bdb44583e2c0e052c9ae9",
+    "runtimeProductionTreeUnchanged": true,
+    "timingCollectionsRepeated": 0,
+    "sameHeadCiReruns": 0
+  }
 }

@@ -40,8 +40,9 @@ alongside the first loop's **−0.20%**; do not recollect to seek a favorable re
 | strings.pipeline-ascii.medium | 2 | 140.538 | 138.422 | -1.51% |
 
 Baseline producer `5be2e72befc3b22663b7e0002c6542f49489106c` has the same production tree as delivery
-`85d78a21`. Candidate producer `c80ad2ab9e24bec6e6443237e20c89137bc75c42` matches the delivered runtime and
-test trees. Both use SDK **10.0.401**, .NET **10.0.12**, default worker tiering,
+`85d78a21`. Candidate producer `c80ad2ab9e24bec6e6443237e20c89137bc75c42` matches the delivered runtime.
+Its test tree precedes the test-only CI stabilization described below. Both
+producers use SDK **10.0.401**, .NET **10.0.12**, default worker tiering,
 workstation GC and no runtime overrides. The supervisor's tiering setting does
 not propagate into workers. CPython **3.13.16** uses the pinned PGO/LTO build,
 ordinary GIL/GC and isolated worker mode. All engines execute the same trusted
@@ -70,3 +71,23 @@ recorded worker is absent, producer files/libraries match their hashes, all thre
 producer checkouts are clean and the shared VM lease is free. The initial
 overcharge-only candidate is retained as a superseded precursor; it has no timing
 collection and is not presented as the final source.
+
+## CI lifetime-test stabilization
+
+The first delivery `590e6ef0` failed Windows CI run `38014099842` in
+`AsyncFileRowRemaindersStayBounded`: the 100,000-row peak was 13,076,008 bytes,
+versus 1,296,164 bytes for 10,000 rows. Ubuntu passed. This peak-ratio test lets
+CLR collection timing affect the result. The terminal failure and its original
+log are retained; that head was not rerun.
+
+The test now collects at asynchronous host text-read boundaries. Its input,
+10,000/100,000 row counts, default-budget case and 8× peak bound remain. An
+additional **4 MiB** case requires abandoned remainders to reclaim before denial.
+A private diagnostic disables registration only for three-cell remainder lists:
+the ratio-only case still passes, while the capped case fails with the expected
+memory-budget denial. This demonstrates why the stronger case is useful.
+
+The follow-up changes only tests and their host fixture. The runtime remains
+the frozen measured candidate; all six timing receipts are unchanged and no
+new performance collection is needed. The manifest records the follow-up checks
+and fault patch. The original intermittent C05 cause remains unproven.

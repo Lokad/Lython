@@ -339,19 +339,37 @@ public sealed class StarredLoopTargetTests
         Assert.True(large <= 8 * small, $"large={large} small={small}");
     }
 
-    [Fact]
-    public async Task AsyncFileRowRemaindersStayBounded()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AsyncFileRowRemaindersStayBounded(bool capExecutionMemory)
     {
         // N32: real suspension dimension; chunked file iteration stays lazy so
-        // only per-line remainders turn over.
+        // only per-line remainders turn over. Collect at chunk-read boundaries
+        // so this checks reclamation rather than the CLR's choice of GC timing.
         static string MakeRows(int count) => string.Concat(Enumerable.Repeat("k v w x\n", count));
         async Task<long> PeakOfRows(int count)
         {
             var host = new DelayedLythonHost();
             host.SeedFile("/r.txt", MakeRows(count));
+            var collections = 0;
+            host.OnTextReadCompleted = () =>
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+                collections++;
+            };
             var script = Compile("with open(\"/r.txt\") as f:\n    for line in f:\n        first, *rest = line.split()\n    return \"done\"\n");
-            var result = await script.RunAsync(host);
+            var options = capExecutionMemory
+                ? new LythonRunOptions { MaxExecutionMemoryBytes = 4L * 1024 * 1024 }
+                : null;
+            var result = options is null ? await script.RunAsync(host) : await script.RunAsync(host, options);
             Assert.True(result.Success, result.Failure?.Message);
+            Assert.True(collections > 1);
+            Assert.True(host.CompletedAsynchronously > 0);
+            if (options is not null)
+                Assert.True(result.PeakExecutionMemoryBytes <= options.MaxExecutionMemoryBytes!.Value.Bytes);
             return result.PeakExecutionMemoryBytes;
         }
 
