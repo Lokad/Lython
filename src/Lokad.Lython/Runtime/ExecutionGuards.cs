@@ -296,7 +296,7 @@ internal sealed class ExecutionGuards
 
             private static bool EnsureResolved()
             {
-                if (s_initialized)
+                if (Volatile.Read(ref s_initialized))
                 {
                     return s_handle != 0;
                 }
@@ -308,7 +308,6 @@ internal sealed class ExecutionGuards
                         return s_handle != 0;
                     }
 
-                    s_initialized = true;
                     string[] candidates = OperatingSystem.IsMacOS() || OperatingSystem.IsIOS()
                         ? ["libSystem.dylib", "libc.dylib", "libc"]
                         : ["libpthread.so.0", "libc.so.6", "libc.so", "libc"];
@@ -332,9 +331,14 @@ internal sealed class ExecutionGuards
                         s_getattr = Marshal.GetDelegateForFunctionPointer<PthreadGetattrNp>(getattr);
                         s_getstack = Marshal.GetDelegateForFunctionPointer<PthreadAttrGetstack>(getstack);
                         s_destroy = Marshal.GetDelegateForFunctionPointer<PthreadAttrDestroy>(destroy);
+                        // Publish only after every delegate is ready. Other threads
+                        // must wait here instead of permanently caching a failed
+                        // range lookup while the first thread is still resolving.
+                        Volatile.Write(ref s_initialized, true);
                         return true;
                     }
 
+                    Volatile.Write(ref s_initialized, true);
                     return false;
                 }
             }
