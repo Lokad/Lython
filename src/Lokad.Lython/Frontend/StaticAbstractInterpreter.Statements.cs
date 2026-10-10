@@ -331,7 +331,7 @@ internal static partial class StaticAbstractInterpreter
                         return true;
                     }
 
-                    var functionBindings = bindings.Clone();
+                    var functionBindings = bindings.CloneForDeferredBody();
                     foreach (var parameter in functionDefinition.Parameters)
                     {
                         functionBindings.Remove(parameter.Name);

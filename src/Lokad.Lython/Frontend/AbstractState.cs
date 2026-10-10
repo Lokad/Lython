@@ -187,6 +187,38 @@ internal sealed class AbstractState
         }
     }
 
+    public AbstractState CloneForDeferredBody()
+    {
+        var clone = Clone();
+        // Captured collections can change before a def or lambda runs. Forget
+        // their contents, including through tuples and other captured values;
+        // new local collections will establish their own facts in the body.
+        foreach (var (name, value) in _values)
+        {
+            if (ContainsMutableCollectionFacts(value, new HashSet<AbstractState>()))
+            {
+                clone.Remove(name);
+            }
+        }
+        return clone;
+    }
+
+    private static bool ContainsMutableCollectionFacts(AbstractValue value, HashSet<AbstractState> visited)
+        => value.Kind switch
+        {
+            AbstractValueKind.List or AbstractValueKind.ListType or AbstractValueKind.Dict or
+                AbstractValueKind.Set or AbstractValueKind.SetType or AbstractValueKind.CollectionsDeque or
+                AbstractValueKind.CollectionsDefaultDict or AbstractValueKind.CollectionsCounter or
+                AbstractValueKind.CollectionsChainMap => true,
+            AbstractValueKind.Tuple => value.RequireSequenceItems().Any(item => ContainsMutableCollectionFacts(item, visited)),
+            AbstractValueKind.MaybeNone => ContainsMutableCollectionFacts(value.RequireNestedValue(), visited),
+            AbstractValueKind.UserInstance => value.RequireInstanceSummary().Fields.Values.Any(field => ContainsMutableCollectionFacts(field, visited)),
+            AbstractValueKind.UserClass => value.RequireClassSummary().Fields.Any(field => ContainsMutableCollectionFacts(field.DefaultValue, visited)),
+            AbstractValueKind.Function => visited.Add(value.RequireFunctionSummary().CapturedBindings) &&
+                value.RequireFunctionSummary().CapturedBindings._values.Values.Any(captured => ContainsMutableCollectionFacts(captured, visited)),
+            _ => false,
+        };
+
     public AbstractState Clone() => new(
         new Dictionary<string, AbstractValue>(_values, StringComparer.Ordinal),
         new Dictionary<string, AbstractSequenceLengthBounds>(_sequenceLengths, StringComparer.Ordinal));

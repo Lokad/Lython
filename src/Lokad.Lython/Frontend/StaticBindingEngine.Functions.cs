@@ -18,7 +18,7 @@ internal static partial class StaticBindingEngine
             return false;
         }
 
-        var capturedBindings = bindings.Clone();
+        var capturedBindings = bindings.CloneForDeferredBody();
         capturedBindings.Remove(functionDefinition.Name);
         summary = new AbstractFunctionSummary(functionDefinition.Parameters, functionDefinition.Body, capturedBindings, functionDefinition.Span);
         return true;

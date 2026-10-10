@@ -332,7 +332,7 @@ internal static partial class StaticAbstractInterpreter
                     return true;
 
                 case LambdaExpressionSyntax lambda:
-                    var lambdaBindings = bindings.Clone();
+                    var lambdaBindings = bindings.CloneForDeferredBody();
                     StaticBindingEngine.BindFunctionParametersUnknown(lambda.Parameters, lambdaBindings);
                     AnalyzeExpression(lambda.Body, diagnostics, lambdaBindings);
                     return true;
