@@ -228,6 +228,17 @@ Debug checks pass before collection. Twelve micros take about eight seconds each
 with separate allocation/native groups about four seconds under 30-second caps.
 Every result and native body/tier remains visible. No full lanes run.
 
+The [direct iterator-dispatch round](results/2026-10-10-direct-for-next-dispatch/README.md)
+routes synchronous ForNext through its original operations from the main switch.
+Loop time falls 3.50%/3.73% in two repeats against 0.5–0.9% spreads; calls and
+pipeline reverse, and full-sort increases remain within their retained spreads.
+Allocation is effectively unchanged. Final Tier1 main code grows 24 bytes;
+early OSR grows 1,231 bytes. Every body/tier remains visible. A separate
+ten-second baseline CPU capture supplies fresh leads, without a before/after
+CPU claim. All 9,196 Debug checks pass before twelve micros of about eight
+seconds, with separate allocation/native groups about four seconds, each under
+a 30-second cap. No full lanes run; milestone qualification remains pending.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete
