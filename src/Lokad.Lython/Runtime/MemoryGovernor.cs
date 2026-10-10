@@ -136,6 +136,7 @@ internal sealed class MemoryGovernor
         {
             try
             {
+                pool.DrainYoungTier();
                 pool.Sweep(full: true);
             }
             catch (LythonRuntimeException ex) when (ex.ExceptionType == "MemoryError")
@@ -159,6 +160,7 @@ internal sealed class MemoryGovernor
             // promotion slot would otherwise deny against the full tier and
             // abort the re-sweep before it frees anything.
             pool.DrainOldTier();
+            pool.DrainYoungTier();
             try
             {
                 pool.Sweep(full: true);

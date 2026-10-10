@@ -419,6 +419,16 @@ internal sealed class ChargeReclamationPool
         return released;
     }
 
+    // Exhaustion relief must also prune collected young targets before funding
+    // promotion. A newest live entry can otherwise deny its old-tier slot and
+    // stop the sweep before it visits an older, already collected young entry.
+    internal long DrainYoungTier()
+    {
+        var released = DrainTier(_young);
+        if (released > 0) _governor.Release(released);
+        return released;
+    }
+
     private long SweepTier(List<ReclamationEntry> tier, List<ReclamationEntry>? promoteTo)
     {
         var released = 0L;
