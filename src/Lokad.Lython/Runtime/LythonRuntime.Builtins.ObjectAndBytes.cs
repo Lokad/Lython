@@ -506,10 +506,11 @@ internal sealed partial class LythonRuntime
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             if (arguments.Length == 3 && !arguments.Any(static argument => argument.IsKeyword) &&
-                arguments[0].Value is PyInstance instance && PyStringOps.TryAsString(arguments[1].Value, out var name) &&
-                instance.Type.TryLookupInMro(name.AsString(), 0, out var descriptor, out _) &&
-                await PyAttributeLookup.TrySetDescriptorValueAsync(descriptor, instance, arguments[2].Value, context, span).ConfigureAwait(false))
+                arguments[0].Value is PyInstance instance && PyStringOps.TryAsString(arguments[1].Value, out var name))
+            {
+                await SetObjectInstanceAttributeAsync(instance, name.AsString(), arguments[2].Value, context, span).ConfigureAwait(false);
                 return PyNone.Instance;
+            }
             return Invoke(arguments, span, context);
         }
 
@@ -576,23 +577,7 @@ internal sealed partial class LythonRuntime
 
             if (arguments[0].Value is PyInstance instance)
             {
-                if (instance.Type.TryLookupInMro(name.AsString(), 0, out var rawValue, out _) &&
-                    PyAttributeLookup.TrySetDescriptorValue(rawValue, instance, arguments[2].Value, context, span))
-                {
-                    return PyNone.Instance;
-                }
-
-                instance.AttachMemoryGovernor(context.MemoryGovernor, span);
-                var attributesBefore = instance.CommittedAttributeBytes;
-                instance.SetAttribute(name.AsString(), arguments[2].Value);
-                // M04: adopt first attribution (or re-snapshot growth) through the
-                // pool; change-detected so rebinding steady state costs two field
-                // reads. Dropped instances reclaim on sweep while retained ones
-                // stay charged.
-                if (instance.CommittedAttributeBytes != attributesBefore)
-                {
-                    context.Services.State.CallTemporaries.TrackGrowth(instance, instance.CommittedAttributeBytes, span);
-                }
+                SetObjectInstanceAttribute(instance, name.AsString(), arguments[2].Value, context, span);
                 return PyNone.Instance;
             }
 
@@ -784,12 +769,7 @@ internal sealed partial class LythonRuntime
             var memberName = name.AsString();
             if (arguments[0].Value is PyInstance instance)
             {
-                if (PyAttributeLookup.TryResolveInstanceMemberWithoutGetAttrFallback(instance, memberName, context, span, out var value))
-                {
-                    return value;
-                }
-
-                throw PyMemberAccess.CreateMissingMemberError(instance, memberName, span, context);
+                return GetObjectInstanceAttribute(instance, memberName, context, span);
             }
 
             // Other receivers resolve through the same choke as ordinary
@@ -810,9 +790,9 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "object.__getattribute__(self, name) expects an instance and a string name.", span);
 
             var memberName = name.AsString();
-            var resolved = arguments[0].Value is PyInstance instance
-                ? await PyAttributeLookup.TryResolveInstanceMemberWithoutGetAttrFallbackAsync(instance, memberName, context, span).ConfigureAwait(false)
-                : await TryResolveRuntimeMemberAsync(arguments[0].Value, memberName, context, span).ConfigureAwait(false);
+            if (arguments[0].Value is PyInstance instance)
+                return await GetObjectInstanceAttributeAsync(instance, memberName, context, span).ConfigureAwait(false);
+            var resolved = await TryResolveRuntimeMemberAsync(arguments[0].Value, memberName, context, span).ConfigureAwait(false);
             if (resolved.Found) return resolved.Value;
             throw PyMemberAccess.CreateMissingMemberError(arguments[0].Value, memberName, span, context);
         }

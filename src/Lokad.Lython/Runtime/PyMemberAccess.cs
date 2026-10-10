@@ -213,6 +213,11 @@ internal static class PyMemberAccess
     {
         if (target is PyInstance instance && instance.Type.TryLookupInMro("__setattr__", 0, out var raw, out _))
         {
+            if (LythonRuntime.IsDefaultObjectSetAttribute(raw))
+            {
+                await LythonRuntime.SetObjectInstanceAttributeAsync(instance, memberName, value, context, span).ConfigureAwait(false);
+                return true;
+            }
             var bound = raw switch
             {
                 IPyBindableCallable bindable => bindable.Bind(instance),
@@ -257,6 +262,11 @@ internal static class PyMemberAccess
         {
             if (instance.Type.TryLookupInMro("__setattr__", 0, out var setattrValue, out _))
             {
+                if (LythonRuntime.IsDefaultObjectSetAttribute(setattrValue))
+                {
+                    LythonRuntime.SetObjectInstanceAttribute(instance, memberName, value, context, span);
+                    return true;
+                }
                 var boundSetAttr = setattrValue switch
                 {
                     IPyBindableCallable bindable => bindable.Bind(instance),

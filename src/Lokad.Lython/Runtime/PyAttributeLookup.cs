@@ -56,15 +56,21 @@ internal static class PyAttributeLookup
     {
         if (instance.Type.TryLookupInMro("__getattribute__", 0, out var getAttributeValue, out _))
         {
-            var bound = BindForInstance(instance, getAttributeValue, context, span);
-            if (bound is not LythonRuntime.ICallable getAttributeCallable)
+            var defaultSlot = LythonRuntime.IsDefaultObjectGetAttribute(getAttributeValue);
+            LythonRuntime.ICallable? getAttributeCallable = null;
+            if (!defaultSlot)
             {
-                throw new LythonRuntimeException("TypeError", "__getattribute__ must be callable.", span);
+                var bound = BindForInstance(instance, getAttributeValue, context, span);
+                if (bound is not LythonRuntime.ICallable callable)
+                    throw new LythonRuntimeException("TypeError", "__getattribute__ must be callable.", span);
+                getAttributeCallable = callable;
             }
 
             try
             {
-                value = CallableInvocation.InvokeUnary(getAttributeCallable, PyString.FromString(memberName), span, context);
+                value = defaultSlot
+                    ? LythonRuntime.GetObjectInstanceAttribute(instance, memberName, context, span)
+                    : CallableInvocation.InvokeUnary(getAttributeCallable!, PyString.FromString(memberName), span, context);
                 return true;
             }
             catch (LythonRuntimeException ex) when (ex.ExceptionType == "AttributeError")
@@ -135,12 +141,20 @@ internal static class PyAttributeLookup
     {
         if (!instance.Type.TryLookupInMro("__getattribute__", 0, out var rawGetAttribute, out _))
             return (false, PyNone.Instance);
-        var bound = await BindForInstanceAsync(instance, rawGetAttribute, context, span).ConfigureAwait(false);
-        if (bound is not LythonRuntime.ICallable getAttribute)
-            throw new LythonRuntimeException("TypeError", "__getattribute__ must be callable.", span);
+        var defaultSlot = LythonRuntime.IsDefaultObjectGetAttribute(rawGetAttribute);
+        LythonRuntime.ICallable? getAttribute = null;
+        if (!defaultSlot)
+        {
+            var bound = await BindForInstanceAsync(instance, rawGetAttribute, context, span).ConfigureAwait(false);
+            if (bound is not LythonRuntime.ICallable callable)
+                throw new LythonRuntimeException("TypeError", "__getattribute__ must be callable.", span);
+            getAttribute = callable;
+        }
         try
         {
-            return (true, await CallableInvocation.InvokeUnaryAsync(getAttribute, PyString.FromString(memberName), span, context).ConfigureAwait(false));
+            return (true, defaultSlot
+                ? await LythonRuntime.GetObjectInstanceAttributeAsync(instance, memberName, context, span).ConfigureAwait(false)
+                : await CallableInvocation.InvokeUnaryAsync(getAttribute!, PyString.FromString(memberName), span, context).ConfigureAwait(false));
         }
         catch (LythonRuntimeException error) when (error.ExceptionType == "AttributeError")
         {
