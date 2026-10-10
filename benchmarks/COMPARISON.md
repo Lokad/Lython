@@ -148,6 +148,16 @@ call timings, so no reliable throughput gain is established. All 9,164 Debug che
 pass before collection. Retained helper-launcher/declaration errors precede any
 allocation worker; the successful helper build is rehashed and reused. No full lanes run.
 
+The [shared frame-owner round](results/2026-10-10-shared-frame-owner/README.md)
+combines interpreter and slot state, removing a separate object and duplicate
+references. Two fixed-count passes show about 6.3–6.4% less managed call allocation.
+The change is integrated for storage savings; timing varies between replicas, so
+no reliable throughput gain is established. Twelve paired micros stop in about
+eight seconds each, and separate allocation groups in about four seconds, all
+under 30-second caps. All 9,164 Debug checks pass before collection. The empty
+control's small allocation increase and first-sort variation remain visible.
+No full lanes run; milestone qualification stays deferred.
+
 Build the old and candidate benchmark workers in Release before timing. The
 short command reuses one identical precompiled case in old Lython, candidate
 Lython and isolated CPython, with fresh state, ordinary limits/GC, complete

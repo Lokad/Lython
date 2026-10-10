@@ -1,0 +1,827 @@
+{
+  "state": "Audited",
+  "baseline": "17a6b046b9208b7cc4f835253cc28e273dbbabf3",
+  "candidate": "e0a4ea775171ea113ef813a8d99da5d9e583e632",
+  "baselineProductionTree": "47e033c1c653812e18adec388ca0fc41f3e48337",
+  "candidateProductionTree": "eb8857ec378778a91831b6ea5549fe9389d4a956",
+  "candidateTestsTree": "4873ff730fb2c6aa1ae7746ea083ed2f909a7b91",
+  "harnessTree": "c194ce88a7e4d52c576f3929ef82bce60bf37e2d",
+  "microCollections": 12,
+  "microAttempts": 515,
+  "rows": [
+    {
+      "index": 0,
+      "replica": 1,
+      "case": "control.empty.control",
+      "seconds": 6.412572,
+      "wholeSeconds": 8.043301,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 23.23252846153846,
+          "iqrFraction": 0.026874504569802983
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 23.20240570934256,
+          "iqrFraction": 0.03621617284718831
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1.4625680248618784,
+          "iqrFraction": 0.004920220556528798
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "replica": 1,
+      "case": "loops.integer.large",
+      "seconds": 6.955083,
+      "wholeSeconds": 8.040804,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 1355.9472380952382,
+          "iqrFraction": 0.01067027752028001
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1363.084875,
+          "iqrFraction": 0.009049876663035932
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 673.8083913043479,
+          "iqrFraction": 0.0017056035734063911
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "replica": 1,
+      "case": "calls.positional.medium",
+      "seconds": 6.969019,
+      "wholeSeconds": 8.040213,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 695.3977111111111,
+          "iqrFraction": 0.008278476102739999
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 658.0952444444445,
+          "iqrFraction": 0.01175182815483049
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 134.1149619047619,
+          "iqrFraction": 0.008184999919401009
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "replica": 1,
+      "case": "calls.keyword.medium",
+      "seconds": 6.953692,
+      "wholeSeconds": 8.044055,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 753.693923076923,
+          "iqrFraction": 0.012285695243968121
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 690.6397045454546,
+          "iqrFraction": 0.00999039197750358
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 151.1637891891892,
+          "iqrFraction": 0.009820598748427549
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "replica": 1,
+      "case": "lists.stable-sort.medium",
+      "seconds": 7.14272,
+      "wholeSeconds": 8.041599,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2897.178833333333,
+          "iqrFraction": 0.08456535561922794
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2916.8021,
+          "iqrFraction": 0.08166976772267127
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 320.3246511627907,
+          "iqrFraction": 0.010161874290327536
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "replica": 1,
+      "case": "strings.pipeline-ascii.medium",
+      "seconds": 6.749817,
+      "wholeSeconds": 8.045045,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 148.749099009901,
+          "iqrFraction": 0.011959270374813572
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 143.3942831858407,
+          "iqrFraction": 0.025849236531689343
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 43.3749779917469,
+          "iqrFraction": 0.005638016251168695
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "replica": 2,
+      "case": "control.empty.control",
+      "seconds": 6.456061,
+      "wholeSeconds": 8.055685,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 25.272550086355785,
+          "iqrFraction": 0.024616689218162086
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 24.723146341463412,
+          "iqrFraction": 0.026149599738173684
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1.551589915536217,
+          "iqrFraction": 0.0032999333659052667
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "replica": 2,
+      "case": "loops.integer.large",
+      "seconds": 7.001173,
+      "wholeSeconds": 8.045887,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 1368.6742608695654,
+          "iqrFraction": 0.008296508318999175
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1350.8447619047618,
+          "iqrFraction": 0.01670973789240867
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 668.5858222222222,
+          "iqrFraction": 0.016760833363635038
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "replica": 2,
+      "case": "calls.positional.medium",
+      "seconds": 6.995311,
+      "wholeSeconds": 8.041472,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 665.5638085106382,
+          "iqrFraction": 0.012989786710668853
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 663.5041224489796,
+          "iqrFraction": 0.009199964369752144
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 128.5032198275862,
+          "iqrFraction": 0.010162716639295067
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "replica": 2,
+      "case": "calls.keyword.medium",
+      "seconds": 6.97708,
+      "wholeSeconds": 8.047482,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 716.5939756097562,
+          "iqrFraction": 0.004950978635280452
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 717.4300000000001,
+          "iqrFraction": 0.017874964406681813
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 144.31385648148148,
+          "iqrFraction": 0.0021121338769316688
+        }
+      ]
+    },
+    {
+      "index": 10,
+      "replica": 2,
+      "case": "lists.stable-sort.medium",
+      "seconds": 7.195551,
+      "wholeSeconds": 8.048598,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2834.505285714286,
+          "iqrFraction": 0.08590667648378256
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2689.158266666667,
+          "iqrFraction": 0.0559802554325922
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 320.7338072289157,
+          "iqrFraction": 0.00628049623855772
+        }
+      ]
+    },
+    {
+      "index": 11,
+      "replica": 2,
+      "case": "strings.pipeline-ascii.medium",
+      "seconds": 6.752097,
+      "wholeSeconds": 8.048366,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 145.2711954887218,
+          "iqrFraction": 0.02622398895216413
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 145.82664150943395,
+          "iqrFraction": 0.034569122654296784
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 44.19442006269592,
+          "iqrFraction": 0.004637637058253462
+        }
+      ]
+    }
+  ],
+  "receipts": [
+    {
+      "path": "vm/micro-0/micro.json",
+      "sha256": "65acdfc75eef0372a9a9528f2139d33d457981cb347f30c992386f8d31e98f55"
+    },
+    {
+      "path": "vm/micro-1/micro.json",
+      "sha256": "961157ad38de02d88ad0013f010fca2b4e72a557e0b96fef1198ca1715d31b8a"
+    },
+    {
+      "path": "vm/micro-2/micro.json",
+      "sha256": "b76daa73358e1e9ff2f5acb2466822815ffa0011e0511a103c926e6a9c68d488"
+    },
+    {
+      "path": "vm/micro-3/micro.json",
+      "sha256": "1c3db50f7121c3704681f40bcce8d45307659739b4a1c981b85d72a64764920d"
+    },
+    {
+      "path": "vm/micro-4/micro.json",
+      "sha256": "049e8224c7569c9a3a95085addadf1471f5c86133d6a62bd01f82fdda2366755"
+    },
+    {
+      "path": "vm/micro-5/micro.json",
+      "sha256": "cb68c0a927edf594341928f128e005a750203736a1b97b74759a7a16f034dc62"
+    },
+    {
+      "path": "vm/micro-6/micro.json",
+      "sha256": "79079ec600d24d83d2cb7ecf84175d81a0bc6c7c8622770e6596e1888ca6239c"
+    },
+    {
+      "path": "vm/micro-7/micro.json",
+      "sha256": "b5ef1df359e78732337175c6fb98be790b7ce807cccd6a20a4f9d26f8b0b9bcc"
+    },
+    {
+      "path": "vm/micro-8/micro.json",
+      "sha256": "85506cabadd3ec4adae93519fac7de0057918823a52fafe6760aca71f4877cb7"
+    },
+    {
+      "path": "vm/micro-9/micro.json",
+      "sha256": "40ddb5bfc76f7cdba767509ec6afca594e6f1d376c4243881aaec1305c1e0e44"
+    },
+    {
+      "path": "vm/micro-10/micro.json",
+      "sha256": "e4cd27741bcfca8ee49c6030b83e8e7578d3a2589bd72d15ee1d199ef1535d78"
+    },
+    {
+      "path": "vm/micro-11/micro.json",
+      "sha256": "758d6af5876fc330e57dce05bd6d0ac348eb5eaab5927bbabc7d5ec50d7ea4b2"
+    }
+  ],
+  "services": [
+    {
+      "unit": "lython-shared-frame-micro-0-20261010",
+      "started": "2026-10-10T11:15:18.399511+00:00",
+      "stopped": "2026-10-10T11:15:26.442812+00:00",
+      "wholeSeconds": 8.043301
+    },
+    {
+      "unit": "lython-shared-frame-micro-1-20261010",
+      "started": "2026-10-10T11:15:26.514504+00:00",
+      "stopped": "2026-10-10T11:15:34.555308+00:00",
+      "wholeSeconds": 8.040804
+    },
+    {
+      "unit": "lython-shared-frame-micro-2-20261010",
+      "started": "2026-10-10T11:15:34.627520+00:00",
+      "stopped": "2026-10-10T11:15:42.667733+00:00",
+      "wholeSeconds": 8.040213
+    },
+    {
+      "unit": "lython-shared-frame-micro-3-20261010",
+      "started": "2026-10-10T11:15:42.740528+00:00",
+      "stopped": "2026-10-10T11:15:50.784583+00:00",
+      "wholeSeconds": 8.044055
+    },
+    {
+      "unit": "lython-shared-frame-micro-4-20261010",
+      "started": "2026-10-10T11:15:50.849530+00:00",
+      "stopped": "2026-10-10T11:15:58.891129+00:00",
+      "wholeSeconds": 8.041599
+    },
+    {
+      "unit": "lython-shared-frame-micro-5-20261010",
+      "started": "2026-10-10T11:15:58.967522+00:00",
+      "stopped": "2026-10-10T11:16:07.012567+00:00",
+      "wholeSeconds": 8.045045
+    },
+    {
+      "unit": "lython-shared-frame-micro-6-20261010",
+      "started": "2026-10-10T11:16:07.093518+00:00",
+      "stopped": "2026-10-10T11:16:15.149203+00:00",
+      "wholeSeconds": 8.055685
+    },
+    {
+      "unit": "lython-shared-frame-micro-7-20261010",
+      "started": "2026-10-10T11:16:15.227517+00:00",
+      "stopped": "2026-10-10T11:16:23.273404+00:00",
+      "wholeSeconds": 8.045887
+    },
+    {
+      "unit": "lython-shared-frame-micro-8-20261010",
+      "started": "2026-10-10T11:16:23.353530+00:00",
+      "stopped": "2026-10-10T11:16:31.395002+00:00",
+      "wholeSeconds": 8.041472
+    },
+    {
+      "unit": "lython-shared-frame-micro-9-20261010",
+      "started": "2026-10-10T11:16:31.470527+00:00",
+      "stopped": "2026-10-10T11:16:39.518009+00:00",
+      "wholeSeconds": 8.047482
+    },
+    {
+      "unit": "lython-shared-frame-micro-10-20261010",
+      "started": "2026-10-10T11:16:39.588526+00:00",
+      "stopped": "2026-10-10T11:16:47.637124+00:00",
+      "wholeSeconds": 8.048598
+    },
+    {
+      "unit": "lython-shared-frame-micro-11-20261010",
+      "started": "2026-10-10T11:16:47.711516+00:00",
+      "stopped": "2026-10-10T11:16:55.759882+00:00",
+      "wholeSeconds": 8.048366
+    },
+    {
+      "unit": "lython-shared-frame-prepare-baseline-20261010",
+      "started": "2026-10-10T11:09:12.172506+00:00",
+      "stopped": "2026-10-10T11:09:14.197253+00:00",
+      "wholeSeconds": 2.024747
+    },
+    {
+      "unit": "lython-shared-frame-prepare-candidate-20261010",
+      "started": "2026-10-10T11:09:14.238504+00:00",
+      "stopped": "2026-10-10T11:10:00.415361+00:00",
+      "wholeSeconds": 46.176857
+    }
+  ],
+  "testReceipts": {
+    "full-debug": [
+      {
+        "path": "full-debug/JoannesVermorel_LOKAD-0399_2026-10-10_13_09_22.trx",
+        "sha256": "e9b324ccf4a6e6329a763dad5654f995299551be08a335beebaeefedc6b8dcec",
+        "passed": 7757
+      },
+      {
+        "path": "full-debug/JoannesVermorel_LOKAD-0399_2026-10-10_13_09_23.trx",
+        "sha256": "1760d6f0ff78aadea3016dbc250e27991ddb7dd7a367253ad08b710a46f163ea",
+        "passed": 1407
+      }
+    ],
+    "vm/candidate-white-vm": [
+      {
+        "path": "vm/candidate-white-vm/_lython-bench_2026-10-10_11_09_36_net10.0.trx",
+        "sha256": "24805bc2eae125fb5b5cd61866be60ab06f6fb9a81e7058f7daa162e4f087d80",
+        "passed": 111
+      }
+    ],
+    "vm/candidate-public-vm": [
+      {
+        "path": "vm/candidate-public-vm/_lython-bench_2026-10-10_11_09_46_net10.0.trx",
+        "sha256": "1b45cb71678264cc9ebccb7351ee72e47c13f094e62021a328942b4602e35536",
+        "passed": 286
+      }
+    ]
+  },
+  "fullDebugGatePassed": true,
+  "fullDebugPassedBeforeTiming": 9164,
+  "fullLanes": 0,
+  "performanceQualified": false,
+  "diagnosticOnly": true,
+  "baselineProducerReused": true,
+  "allocationDiagnostic": {
+    "state": "Audited",
+    "baseline": "17a6b046b9208b7cc4f835253cc28e273dbbabf3",
+    "candidate": "e0a4ea775171ea113ef813a8d99da5d9e583e632",
+    "results": [
+      {
+        "replica": 1,
+        "case": "control.empty.control",
+        "baselineBytes": 29416,
+        "candidateBytes": 29424,
+        "savedBytes": -8,
+        "savedFraction": -0.0002719608376393623
+      },
+      {
+        "replica": 1,
+        "case": "loops.integer.large",
+        "baselineBytes": 1079488.64,
+        "candidateBytes": 1079448.4,
+        "savedBytes": 40.23999999999069,
+        "savedFraction": 3.7276909185424145e-05
+      },
+      {
+        "replica": 1,
+        "case": "calls.positional.medium",
+        "baselineBytes": 1277463.84,
+        "candidateBytes": 1195524.32,
+        "savedBytes": 81939.52000000002,
+        "savedFraction": 0.0641423400289749
+      },
+      {
+        "replica": 1,
+        "case": "calls.keyword.medium",
+        "baselineBytes": 1294103.36,
+        "candidateBytes": 1212157.2,
+        "savedBytes": 81946.16000000015,
+        "savedFraction": 0.06332273181023207
+      },
+      {
+        "replica": 1,
+        "case": "lists.stable-sort.medium",
+        "baselineBytes": 3580079.68,
+        "candidateBytes": 3597936.88,
+        "savedBytes": -17857.19999999972,
+        "savedFraction": -0.004987933676381173
+      },
+      {
+        "replica": 1,
+        "case": "strings.pipeline-ascii.medium",
+        "baselineBytes": 461872,
+        "candidateBytes": 461832,
+        "savedBytes": 40,
+        "savedFraction": 8.660408078431381e-05
+      },
+      {
+        "replica": 2,
+        "case": "control.empty.control",
+        "baselineBytes": 29286.64,
+        "candidateBytes": 29299.6,
+        "savedBytes": -12.959999999999127,
+        "savedFraction": -0.0004425225973343494
+      },
+      {
+        "replica": 2,
+        "case": "loops.integer.large",
+        "baselineBytes": 1079261.84,
+        "candidateBytes": 1079221.84,
+        "savedBytes": 40.0,
+        "savedFraction": 3.7062368479556795e-05
+      },
+      {
+        "replica": 2,
+        "case": "calls.positional.medium",
+        "baselineBytes": 1277287.36,
+        "candidateBytes": 1195341.2,
+        "savedBytes": 81946.16000000015,
+        "savedFraction": 0.06415640095271913
+      },
+      {
+        "replica": 2,
+        "case": "calls.keyword.medium",
+        "baselineBytes": 1293949.2,
+        "candidateBytes": 1211975.36,
+        "savedBytes": 81973.83999999985,
+        "savedFraction": 0.06335166790164548
+      },
+      {
+        "replica": 2,
+        "case": "lists.stable-sort.medium",
+        "baselineBytes": 3486368.88,
+        "candidateBytes": 3486328.88,
+        "savedBytes": 40.0,
+        "savedFraction": 1.147325523398468e-05
+      },
+      {
+        "replica": 2,
+        "case": "strings.pipeline-ascii.medium",
+        "baselineBytes": 461872,
+        "candidateBytes": 461832,
+        "savedBytes": 40,
+        "savedFraction": 8.660408078431381e-05
+      }
+    ],
+    "services": [
+      {
+        "unit": "lython-shared-frame-invocation-allocation-baseline-20261010",
+        "started": "2026-10-10T11:17:01.796522+00:00",
+        "stopped": "2026-10-10T11:17:05.828392+00:00",
+        "wholeSeconds": 4.03187
+      },
+      {
+        "unit": "lython-shared-frame-invocation-allocation-candidate-20261010",
+        "started": "2026-10-10T11:17:05.880516+00:00",
+        "stopped": "2026-10-10T11:17:09.922699+00:00",
+        "wholeSeconds": 4.042183
+      }
+    ],
+    "completeMeasuredInvocations": 2400,
+    "completeWarmupInvocations": 384,
+    "rows": 24,
+    "normalTiming": false,
+    "fullLanes": 0,
+    "afterNormalMicros": true,
+    "managedAllocationIsProcessWide": true,
+    "exactPerGuestTypeAccounting": false,
+    "reusedPreviousRoundHelper": true,
+    "noHelperRebuild": true,
+    "noDiagnosticWorkerRecollected": true,
+    "helperInputsManifestSha256": "ccf553bf21f65571bb720ef32f8455dc01fc5de945a28c67aad44d4b5f187cc0",
+    "files": [
+      {
+        "path": "invocation-allocation-declaration.json",
+        "sha256": "0848ae802b6a0414823169e67e62578e65a524eaf2e2908cbc9205da39a640ac"
+      },
+      {
+        "path": "allocation-Collect-exit.txt",
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+      },
+      {
+        "path": "launch-invocation-allocation.sh",
+        "sha256": "013e4190e844b4e06ce78298870309b8e9871d841cd1718bbf7ba5d69c21e1a8"
+      },
+      {
+        "path": "vm/helper-reused-inputs-baseline.txt",
+        "sha256": "298e503f8abc3f5067ffcd79c7bb52ddf08875f87dd2535601eebca2f44270fc"
+      },
+      {
+        "path": "vm/helper-reused-inputs-candidate.txt",
+        "sha256": "298e503f8abc3f5067ffcd79c7bb52ddf08875f87dd2535601eebca2f44270fc"
+      },
+      {
+        "path": "vm/final-allocation-inputs.txt",
+        "sha256": "298e503f8abc3f5067ffcd79c7bb52ddf08875f87dd2535601eebca2f44270fc"
+      },
+      {
+        "path": "vm/baseline-invocation-allocation.jsonl",
+        "sha256": "ec5f09749dba9664bf5a25910c5aa441b137d022ab0a3972cec4d8d9a8282ddf"
+      },
+      {
+        "path": "vm/candidate-invocation-allocation.jsonl",
+        "sha256": "131e82f0f744fb82224c63b3afe07567bac2a08882365c1d5392323ff536e379"
+      }
+    ]
+  },
+  "compiledFields": {
+    "state": "Audited",
+    "compiledMetadata": true,
+    "baseOwnerAndFieldsVerified": true,
+    "exactObjectBytesPredicted": false,
+    "binaries": [
+      {
+        "path": ".git/agent-worktrees/frame-stack-field/src/Lokad.Lython/bin/Debug/net10.0/Lokad.Lython.dll",
+        "sha256": "71e5f9b3ed5101068576c6499acd12e89e90f2b23251c67153b3e0823cd4b761",
+        "types": [
+          {
+            "name": "ExecutableFrameState",
+            "baseName": "Object",
+            "fields": [
+              "_codeObject",
+              "_locals",
+              "_localCells",
+              "_closureCells"
+            ]
+          },
+          {
+            "name": "ExecutableFrameInterpreter",
+            "baseName": "Object",
+            "fields": [
+              "<codeObject>P",
+              "<context>P",
+              "<locals>P",
+              "<localCells>P",
+              "_stack",
+              "_currentBlockIndex",
+              "_pendingAbrupt",
+              "_instructionIndex",
+              "_waitingForSend",
+              "_sentValue",
+              "_injectedException",
+              "_delegation",
+              "<HasYield>k__BackingField",
+              "<YieldValue>k__BackingField",
+              "_frameReturnValue",
+              "_hasFrameReturn",
+              "_savedActiveExceptions",
+              "_entryActiveException",
+              "_memberCaches",
+              "_callCaches",
+              "_blockEntryStackDepths"
+            ]
+          }
+        ]
+      },
+      {
+        "path": ".git/agent-worktrees/shared-frame-owner/src/Lokad.Lython/bin/Debug/net10.0/Lokad.Lython.dll",
+        "sha256": "ba8be2d8a92a95681f4972cd473ad1e9a087a1c69a03a46eb9a57244531eab71",
+        "types": [
+          {
+            "name": "ExecutableFrameState",
+            "baseName": "Object",
+            "fields": [
+              "_codeObject",
+              "_locals",
+              "_localCells",
+              "_closureCells"
+            ]
+          },
+          {
+            "name": "ExecutableFrameInterpreter",
+            "baseName": "ExecutableFrameState",
+            "fields": [
+              "_context",
+              "_stack",
+              "_currentBlockIndex",
+              "_pendingAbrupt",
+              "_instructionIndex",
+              "_waitingForSend",
+              "_sentValue",
+              "_injectedException",
+              "_delegation",
+              "<HasYield>k__BackingField",
+              "<YieldValue>k__BackingField",
+              "_frameReturnValue",
+              "_hasFrameReturn",
+              "_savedActiveExceptions",
+              "_entryActiveException",
+              "_memberCaches",
+              "_callCaches",
+              "_blockEntryStackDepths"
+            ]
+          }
+        ]
+      }
+    ],
+    "sourceFiles": [
+      {
+        "path": "Metadata/Program.cs",
+        "sha256": "39298057afd48f483ba9deb136931fa5e1832e6d2dcac9909e905b4d8adbd351"
+      },
+      {
+        "path": "Metadata/Metadata.csproj",
+        "sha256": "2342ade0bfd177bb8c15a31868cb0a00a2ebc462d939a7d556c205b0bae3b5f4"
+      },
+      {
+        "path": "compiled-fields.json",
+        "sha256": "eca906125aa3109f5eef24468fa293af8544ff92c8ddc14512bbed0286c4f58b"
+      }
+    ]
+  },
+  "integrationBasis": "Repeated complete-call managed-allocation reduction with compiled ownership proof and semantic/containment gates; timing mixed, no reliable throughput gain established",
+  "cleanup": {
+    "bothSourcesClean": true,
+    "inputsRehashed": true,
+    "ownedServicesTerminal": 16,
+    "allRecordedPidsAbsent": true,
+    "sharedLeaseAvailableAtAuditStart": true,
+    "fullLanes": 0,
+    "recordedPidCount": 54
+  },
+  "supportingFiles": [
+    {
+      "path": "preparation-declaration.json",
+      "sha256": "ece24dff4bf8b8c0fc8e0ab0ab84feaffef45447969749bb6e1ec101d8c24337"
+    },
+    {
+      "path": "micro-declaration.json",
+      "sha256": "cb35fae5c0d8e2cfb330db4b01dcb65a15d2b70053e2976b3ce9322408ec77d7"
+    },
+    {
+      "path": "prepare.sh",
+      "sha256": "abea13a290b43a92d19d46c77ec43c43e89d6d2304586d56060ddb254574a4a4"
+    },
+    {
+      "path": "launch-prepare.sh",
+      "sha256": "9d15a06e6e68d46313c9f13d093a5354429f9646dad1a8ec50c9b5cf2e76e0a0"
+    },
+    {
+      "path": "micro.sh",
+      "sha256": "fef0da3c057c41593e247e5f29bf21cde03c2bc7fddb72b4efb3aa0b0e247e33"
+    },
+    {
+      "path": "launch-micros.sh",
+      "sha256": "80f962c87ecc5f28c8f10aa0798dc0eb61cf1db467dbc882d406e989c3bec767"
+    },
+    {
+      "path": "finish.sh",
+      "sha256": "d45e8ac610f519fc3b5d35d55bc55d0f77ceaaa8d35a3c88d94c68e1a31a032d"
+    },
+    {
+      "path": "audit-micros.py",
+      "sha256": "5eeebe0614f56e90a6b232539d42ffd5df16bf28eb9ff815c5e198ca708f8a9a"
+    },
+    {
+      "path": "frozen-debug-binaries.json",
+      "sha256": "0b86e2de624d447f9ed624c15eede82e852329808bf52ac44a7c01a6e12f0c4e"
+    },
+    {
+      "path": "vm/baseline-prepared-inputs.sha256",
+      "sha256": "6f6778301f49f4aba2b61a321bcbca2d984a6caf6783f99e64ba7edbe2147b48"
+    },
+    {
+      "path": "vm/candidate-prepared-inputs.sha256",
+      "sha256": "31a8f1f2013ddcaa9ded2a19ec409ed66b480bfb9ea6888229018e41c7ca8c0c"
+    },
+    {
+      "path": "vm/baseline-correctness.json",
+      "sha256": "db0e727a1f533159f17e70c30f0a5973a3f9a6e5316791b886998cc6367ac32c"
+    },
+    {
+      "path": "vm/candidate-correctness.json",
+      "sha256": "35a9a5bf58890f5a9bc37999e053b5e6f93a11236cdab6ee9a34c407cd7bfb43"
+    },
+    {
+      "path": "vm/final-vm-audit.json",
+      "sha256": "c0b4e75a57528bfbee960b62b7e32af358d67084802adfd51ac0a43200bb0d9d"
+    },
+    {
+      "path": "vm/final-lease.txt",
+      "sha256": "ed01b1557bd7a1e70f90d8838f38ae0bb6b8367122b3dca7e5935bafa440a45a"
+    },
+    {
+      "path": "allocation-audit.json",
+      "sha256": "601b8af63cd1589b12d067a34e30b7663a68866b553a99179cad602259eaba7a"
+    },
+    {
+      "path": "audit-allocation.py",
+      "sha256": "144d261db31e66eaeadc4fd16aeac9123661adb61c007da7aaaf2a9e384c7119"
+    },
+    {
+      "path": "fields-audit.json",
+      "sha256": "081ee4b584f64c7f69740c0aa1dc1345543dbab03ffcb1a4535854308120192f"
+    },
+    {
+      "path": "audit-fields.py",
+      "sha256": "e5962de6cc19e24de34f1e7031f90f858c3010b35df3491a29ffdb535e07371d"
+    }
+  ]
+}
