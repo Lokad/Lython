@@ -471,6 +471,14 @@ internal sealed record ExecutableStatementFallback(
 internal sealed record ExecutableExpressionFallback(
     LoweredExpression Expression);
 
+internal enum ExecutableSimpleReturn
+{
+    None,
+    ReturnNone,
+    ReturnValue,
+    IntegerAdd,
+}
+
 internal sealed class ExecutableCodeObject
 {
     public ExecutableCodeObject(
@@ -523,6 +531,7 @@ internal sealed class ExecutableCodeObject
         ExpressionFallbacks = expressionFallbacks;
         RequiresLocalVariableMirroring = requiresLocalVariableMirroring;
         IsFunctionScope = isFunctionScope;
+        SimpleReturn = ClassifySimpleReturn();
     }
 
     public string Name { get; }
@@ -572,4 +581,27 @@ internal sealed class ExecutableCodeObject
     public bool RequiresLocalVariableMirroring { get; }
 
     public bool IsFunctionScope { get; }
+
+    public ExecutableSimpleReturn SimpleReturn { get; }
+
+    private ExecutableSimpleReturn ClassifySimpleReturn()
+    {
+        if (!IsFunctionScope || RequiresLocalVariableMirroring || CapturedLocalSlots.Count != 0
+            || ClosureNames.Count != 0 || ExceptionRegions.Count != 0 || Blocks.Count != 1)
+            return ExecutableSimpleReturn.None;
+
+        var instructions = Blocks[EntryBlockIndex].InstructionArray;
+        if (instructions.Length == 1 && instructions[0].OpCode == ExecutableOpCode.ReturnNone)
+            return ExecutableSimpleReturn.ReturnNone;
+        if (instructions.Length == 2 && IsOperand(instructions[0]) && instructions[1].OpCode == ExecutableOpCode.Return)
+            return ExecutableSimpleReturn.ReturnValue;
+        if (instructions.Length == 4 && IsOperand(instructions[0]) && IsOperand(instructions[1])
+            && instructions[2].OpCode == ExecutableOpCode.Binary && instructions[2].BinaryOperator == ExecutableBinaryOperator.Add
+            && instructions[3].OpCode == ExecutableOpCode.Return)
+            return ExecutableSimpleReturn.IntegerAdd;
+        return ExecutableSimpleReturn.None;
+
+        static bool IsOperand(ExecutableInstruction instruction) =>
+            instruction.OpCode is ExecutableOpCode.LoadLocal or ExecutableOpCode.LoadConst;
+    }
 }
