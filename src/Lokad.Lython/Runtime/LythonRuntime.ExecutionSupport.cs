@@ -110,18 +110,6 @@ internal sealed partial class LythonRuntime
     // (MG20 pin: 512-deep copies succeed, 600-deep fail).
     public const int MaxInterpreterDepth = 512;
 
-    // Stack-probe backstop (MG25): the counters above cannot trip first when
-    // the CLR stack is nearly exhausted, so nesting past this depth also
-    // proves real stack headroom before deepening. The trip fires while fewer
-    // than the headroom bytes remain (see StackRuler); it is a last-resort
-    // backstop for stacks the counters cannot see (exotic hosts, pool-thread
-    // continuations), not the primary limiter, so it stays small enough to
-    // never disturb funded depths. The threshold keeps shallow programs
-    // (and synthetic counter drills, which nest no CLR frames) on the
-    // counter-only fast path.
-    public const int StackProbeDepthThreshold = 32;
-    public const long StackProbeHeadroomBytes = 96 * 1024;
-
         // Counts only an explicitly requested allowance. Ordinary execution
         // uses cancellation and the guard's independent housekeeping cadence.
         public long ExecutionStepCount { get; set; }

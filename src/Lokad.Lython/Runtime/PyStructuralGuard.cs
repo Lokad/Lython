@@ -137,6 +137,11 @@ internal static class PyStructuralGuard
             }
         }
 
+        if (!RuntimeHelpers.TryEnsureSufficientExecutionStack())
+        {
+            throw RuntimeErrors.Recursion("maximum recursion depth exceeded in comparison", span);
+        }
+
         var pairs = state.Pairs ??= new HashSet<StructuralPair>(StructuralPairComparer.Instance);
         var pair = new StructuralPair(left, right);
         var swapped = new StructuralPair(right, left);
@@ -187,6 +192,11 @@ internal static class PyStructuralGuard
             {
                 throw RuntimeErrors.Runtime("maximum interpreter stack depth exceeded", span);
             }
+        }
+
+        if (!RuntimeHelpers.TryEnsureSufficientExecutionStack())
+        {
+            throw RuntimeErrors.Recursion("maximum recursion depth exceeded", span);
         }
 
         var singles = state.Singles ??= new HashSet<object>(ReferenceEqualityComparer.Instance);

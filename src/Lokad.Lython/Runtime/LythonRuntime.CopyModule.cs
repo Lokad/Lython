@@ -344,6 +344,11 @@ internal sealed partial class LythonRuntime
         CopyMemo memo,
         int graphDepth)
     {
+        if (!RuntimeHelpers.TryEnsureSufficientExecutionStack())
+        {
+            throw RuntimeErrors.Recursion("maximum recursion depth exceeded", span);
+        }
+
         if (value is PyList or PyDict or PySet or PyDefaultDict or PyCounter or PyDeque or PyTuple or PyInstance)
         {
             if (memo.TryGet(value, out var existing))
