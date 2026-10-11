@@ -104,7 +104,8 @@ internal static class PyAttributeLookup
             return true;
         }
 
-        if (instance.Type.TryLookupInMro(memberName, 0, out var rawValue, out _) &&
+        var classMemberFound = instance.Type.TryLookupInMro(memberName, 0, out var rawValue, out _);
+        if (classMemberFound &&
             (rawValue is IPySettableDescriptor ||
              rawValue is PyInstance descriptorInstance && descriptorInstance.Type.TryLookupInMro("__set__", 0, out _, out _)))
         {
@@ -117,9 +118,11 @@ internal static class PyAttributeLookup
             return true;
         }
 
-        if (instance.Type.TryLookupInMro(memberName, 0, out rawValue, out _))
+        // The own-attribute dictionary read invokes no guest code, so this
+        // operation can reuse the live member already resolved above.
+        if (classMemberFound)
         {
-            value = BindForInstance(instance, rawValue, context, span);
+            value = BindForInstance(instance, rawValue!, context, span);
             return true;
         }
 
@@ -171,13 +174,14 @@ internal static class PyAttributeLookup
         PyInstance instance, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         if (memberName == "__class__") return (true, instance.Type);
-        if (instance.Type.TryLookupInMro(memberName, 0, out var rawValue, out _) &&
+        var classMemberFound = instance.Type.TryLookupInMro(memberName, 0, out var rawValue, out _);
+        if (classMemberFound &&
             (rawValue is IPySettableDescriptor ||
              rawValue is PyInstance descriptorInstance && descriptorInstance.Type.TryLookupInMro("__set__", 0, out _, out _)))
             return (true, await BindForInstanceAsync(instance, rawValue, context, span).ConfigureAwait(false));
         if (instance.TryGetOwnAttribute(memberName, out var ownValue)) return (true, ownValue);
-        if (instance.Type.TryLookupInMro(memberName, 0, out rawValue, out _))
-            return (true, await BindForInstanceAsync(instance, rawValue, context, span).ConfigureAwait(false));
+        if (classMemberFound)
+            return (true, await BindForInstanceAsync(instance, rawValue!, context, span).ConfigureAwait(false));
         return LythonRuntime.JsonSubclassSupport.TryGetEngineMember(instance, memberName, context, span, out var engineValue)
             ? (true, engineValue) : (false, PyNone.Instance);
     }
