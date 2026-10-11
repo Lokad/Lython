@@ -19,6 +19,7 @@ internal sealed partial class LythonRuntime
         LythonRuntimeException failure;
         try
         {
+            ExecutionGuards.EnsureInterpreterStack(expression.Span);
             return context.UseSynchronousLoweredFunctionDispatch
                 ? DispatchLoweredExpression(expression, context)
                 : DispatchLoweredExpressionAsync(expression, context, SynchronousLoweredStatementExecution.Instance).GetAwaiter().GetResult();

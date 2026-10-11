@@ -67,35 +67,24 @@ internal sealed class ExecutionGuards
     public void EnterFunctionCall(LythonSourceSpan? span)
     {
         CheckExecution(span);
-        Limits.CurrentRecursionDepth++;
         if (Limits.MaxRecursionDepth is { } maxRecursionDepth &&
-            Limits.CurrentRecursionDepth > maxRecursionDepth)
+            Limits.CurrentRecursionDepth >= maxRecursionDepth)
         {
-            Limits.CurrentRecursionDepth--;
             throw RuntimeErrors.Recursion("maximum recursion depth exceeded", span);
         }
 
-        EnsureStackForNesting(span, isFunctionCall: true);
+        EnsureInterpreterStack(span);
+        Limits.CurrentRecursionDepth++;
     }
 
     // The managed runtime checks the current stack on every nesting entry,
     // including entries on a host continuation. A false result trips before
     // descending; no native range cache or future-cap prediction is needed.
-    private void EnsureStackForNesting(LythonSourceSpan? span, bool isFunctionCall)
+    internal static void EnsureInterpreterStack(LythonSourceSpan? span)
     {
         if (RuntimeHelpers.TryEnsureSufficientExecutionStack())
         {
             return;
-        }
-
-        // An Enter-time throw has no matching Leave. Undo only this entry.
-        if (isFunctionCall)
-        {
-            Limits.CurrentRecursionDepth--;
-        }
-        else
-        {
-            Limits.CurrentInterpreterDepth--;
         }
 
         throw RuntimeErrors.Runtime("maximum interpreter stack depth exceeded", span);
@@ -112,14 +101,13 @@ internal sealed class ExecutionGuards
     public void EnterInterpreterFrame(LythonSourceSpan? span)
     {
         CheckExecution(span);
-        Limits.CurrentInterpreterDepth++;
-        if (Limits.CurrentInterpreterDepth > LythonRuntime.ExecutionLimits.MaxInterpreterDepth)
+        if (Limits.CurrentInterpreterDepth >= LythonRuntime.ExecutionLimits.MaxInterpreterDepth)
         {
-            Limits.CurrentInterpreterDepth--;
             throw RuntimeErrors.Runtime("maximum interpreter stack depth exceeded", span);
         }
 
-        EnsureStackForNesting(span, isFunctionCall: false);
+        EnsureInterpreterStack(span);
+        Limits.CurrentInterpreterDepth++;
     }
 
     public void LeaveInterpreterFrame()

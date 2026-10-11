@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
 
@@ -11,18 +12,23 @@ public sealed class ManagedStackGuardTests
     [InlineData("interpreter")]
     [InlineData("pair")]
     [InlineData("single")]
+    [InlineData("lowered")]
+    [InlineData("lowered-async")]
     public void LowStackEntryFailsBeforePublishingDepthOrTraversal(string entry)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
         var state = new StructuralGuardState();
         var span = new LythonSourceSpan(4, 2, 1, 1);
         object left = new(), right = new();
+        var expression = new LoweredCapturedExpression(new BooleanLiteralExpressionSyntax(true, span), true);
         Action enter = entry switch
         {
             "function" => () => context.EnterFunctionCall(span),
             "interpreter" => () => context.EnterInterpreterFrame(span),
             "pair" => () => PyStructuralGuard.EnterPair(state, left, right, span, context).Dispose(),
             "single" => () => PyStructuralGuard.EnterSingle(state, left, span, context).Dispose(),
+            "lowered" => () => LythonRuntime.EvaluateLoweredExpression(expression, context),
+            "lowered-async" => () => LythonRuntime.EvaluateLoweredExpressionAsync(expression, context).GetAwaiter().GetResult(),
             _ => throw new ArgumentOutOfRangeException(nameof(entry))
         };
         Exception? failure = null;

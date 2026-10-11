@@ -16,6 +16,7 @@ internal sealed partial class LythonRuntime
         context.CheckExecution(expression.Span);
         try
         {
+            ExecutionGuards.EnsureInterpreterStack(expression.Span);
             var value = await DispatchLoweredExpressionAsync(
                     expression,
                     context,
