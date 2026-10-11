@@ -87,4 +87,29 @@ public sealed class RandomScratchLifetimeTests
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(sync.ReturnValue, asyncResult.ReturnValue);
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RepeatedInvalidWeightDrainsReleaseTheirBacking(bool asyncMode)
+    {
+        var script = Compile("""
+            import random
+            pop = list(range(1000))
+            weights = [1] * 999 + ["x"]
+            for i in range(1000):
+                try:
+                    random.choices(pop, weights=weights, k=3)
+                except (ValueError, TypeError):
+                    pass
+                random.choices([1, 2], k=1)
+            return "ok"
+            """);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
+        var result = asyncMode
+            ? await script.RunAsync(new MockLythonHost(), options)
+            : script.Run(new MockLythonHost(), options);
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("ok", result.ReturnValue?.ToString());
+    }
 }
