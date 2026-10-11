@@ -222,7 +222,11 @@ internal sealed partial class LythonRuntime
 
         public int Count { get; private set; }
 
-        public object this[int index] => _items[index].RequireNotNull();
+        public object this[int index]
+        {
+            get => _items[index].RequireNotNull();
+            set => _items[index] = value;
+        }
 
         public void Push(object value)
         {

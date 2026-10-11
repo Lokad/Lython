@@ -4,6 +4,8 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    private sealed record PreparedUserSliceTarget(PyInstance Receiver, PySlice Key);
+
     private sealed partial class ExecutableFrameInterpreter
     {
         private async ValueTask ExecutePreparedTargetOperationAsync(ExecutableOperation operation, LythonSourceSpan span, bool asynchronous)
@@ -53,7 +55,19 @@ internal sealed partial class LythonRuntime
                     using (var storage = _context.MemoryGovernor.ReserveTemporary(1024, span))
                     {
                         var reads = AssignmentTargetFacts.Reads(read.Target).ToArray();
-                        var values = CaptureTargetReads(reads, _stack.Count - reads.Length);
+                        var first = _stack.Count - reads.Length;
+                        var values = CaptureTargetReads(reads, first);
+                        if (read.Target is SliceAssignmentTargetSyntax slice && values[slice.Target] is PyInstance receiver)
+                        {
+                            var key = CreateSliceValue(slice.Start is null ? null : values[slice.Start],
+                                slice.End is null ? null : values[slice.End],
+                                slice.Step is null ? null : values[slice.Step], span, _context);
+                            var prepared = new PreparedUserSliceTarget(receiver, key);
+                            // The receiver is the first captured operand. Retain its evaluated key
+                            // in the same slot until the store or the frame's normal cleanup.
+                            _stack[first] = prepared;
+                            values[slice.Target] = prepared;
+                        }
                         PushObserved(await ReadPreparedTargetAsync(read.Target, values, _context, span, asynchronous).ConfigureAwait(false), span);
                     }
                     break;
@@ -134,11 +148,10 @@ internal sealed partial class LythonRuntime
                 var start = slice.Start is null ? PyNone.Instance : reads[slice.Start];
                 var end = slice.End is null ? PyNone.Instance : reads[slice.End];
                 var step = slice.Step is null ? PyNone.Instance : reads[slice.Step];
-                if (sequence is PyInstance sequenceInstance)
+                if (sequence is PreparedUserSliceTarget prepared)
                 {
-                    var key = new PySlice(start, end, step);
-                    return asynchronous ? await GetUserItemAsync(sequenceInstance, key, _context, span).ConfigureAwait(false)
-                        : GetUserItem(sequenceInstance, key, _context, span);
+                    return asynchronous ? await GetUserItemAsync(prepared.Receiver, prepared.Key, _context, span).ConfigureAwait(false)
+                        : GetUserItem(prepared.Receiver, prepared.Key, _context, span);
                 }
                 return PyIndexing.ReadSlice(sequence, start, end, step, span, _context);
             default: throw new InvalidOperationException("Prepared reads require an attribute or item target.");
@@ -165,9 +178,14 @@ internal sealed partial class LythonRuntime
                 var start = slice.Start is null ? PyNone.Instance : reads[slice.Start];
                 var end = slice.End is null ? PyNone.Instance : reads[slice.End];
                 var step = slice.Step is null ? PyNone.Instance : reads[slice.Step];
-                if (sequence is PyInstance)
+                if (sequence is PreparedUserSliceTarget prepared)
                 {
-                    var key = new PySlice(start, end, step);
+                    if (asynchronous) await SetHeaderSubscriptAsync(prepared.Receiver, prepared.Key, value, span, _context).ConfigureAwait(false);
+                    else SetSubscriptValue(prepared.Receiver, prepared.Key, value, span, _context);
+                }
+                else if (sequence is PyInstance)
+                {
+                    var key = CreateSliceValue(start, end, step, span, _context);
                     if (asynchronous) await SetHeaderSubscriptAsync(sequence, key, value, span, _context).ConfigureAwait(false);
                     else SetSubscriptValue(sequence, key, value, span, _context);
                 }

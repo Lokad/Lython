@@ -4,8 +4,8 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 /// <summary>
-/// MG11: explicit slice() calls own their shell; slice syntax never
-/// materializes an object and stays free.
+/// MG11: explicit slice() calls and keys passed to user methods own their shell;
+/// built-in sequence slicing does not materialize a key object.
 /// </summary>
 public sealed class SliceObjectAccountingScenarioTests
 {
