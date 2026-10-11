@@ -200,7 +200,8 @@ internal sealed partial class LythonRuntime
 
         private static ulong ParseState(object value, LythonSourceSpan span, ExecutionContext context)
         {
-            var items = MaterializeSequence(value, span, context);
+            using var scratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var items = MaterializeSequence(value, span, context, scratch);
             if (items.Count != 2 ||
                 !PyStringOps.TryAsString(items[0], out var tag) ||
                 tag.AsString() != StateTag ||

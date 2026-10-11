@@ -93,7 +93,7 @@ internal sealed partial class LythonRuntime
 
         private static double[] ReadWeights(object value, int expectedCount, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
         {
-            var values = MaterializeSequence(value, span, context);
+            var values = MaterializeSequence(value, span, context, scratch);
             if (values.Count != expectedCount)
             {
                 throw new LythonRuntimeException("ValueError", "The number of weights does not match the population", span);
@@ -102,11 +102,11 @@ internal sealed partial class LythonRuntime
             // The converted copy coexists with the drained values, so it
             // reserves its exact backing as caller-scoped scratch: it lives
             // for the selection and releases on every exit path.
-            var result = new double[values.Count];
             if (values.Count > 0)
             {
                 scratch.Grow(32L + (8L * values.Count), span);
             }
+            var result = new double[values.Count];
             for (var i = 0; i < values.Count; i++)
             {
                 var weight = RuntimeArgumentValidation.ExpectReal(values[i], owner, span);
@@ -294,13 +294,10 @@ internal sealed partial class LythonRuntime
             return lo;
         }
 
-        private static List<object> MaterializeSequence(object value, LythonSourceSpan span, ExecutionContext context)
+        private static List<object> MaterializeSequence(object value, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
         {
-            // Populations and weights are caller-lifetime scratch with no
-            // governed adopter, so backing commits durably (statistics-drain
-            // shape): sized inputs pay exactly once up front, lazy ones pay
-            // each doubling. Payloads stay owned elsewhere.
-            var governor = context.MemoryGovernor;
+            // Drains stay funded for their caller's lifetime, including validation
+            // failure. Payloads remain owned elsewhere; scratch never commits.
             var sizedCount = value switch
             {
                 object[] array => array.Length,
@@ -309,34 +306,21 @@ internal sealed partial class LythonRuntime
                 ICollection<object> collection => collection.Count,
                 _ => (int?)null,
             };
+            scratch.Grow(32L + (sizedCount > 0 ? 32L + 8L * sizedCount.Value : 0), span);
             var result = sizedCount.HasValue ? new List<object>(sizedCount.Value) : new List<object>();
-            var chargedCapacity = result.Capacity;
-            if (chargedCapacity > 0)
-            {
-                governor.Reserve(8L * chargedCapacity, span);
-                governor.Commit(8L * chargedCapacity);
-            }
 
             foreach (var item in ToSequence(value, span, context))
             {
                 if (result.Count == result.Capacity)
                 {
                     var predicted = result.Capacity == 0 ? 4L : (long)result.Capacity * 2L;
-                    var delta = checked(8L * (predicted - chargedCapacity));
-                    governor.Reserve(delta, span);
-                    governor.Commit(delta);
-                    chargedCapacity = (int)predicted;
+                    var previous = result.Capacity;
+                    scratch.Grow(checked(32L + 8L * predicted), span);
+                    result.Capacity = checked((int)predicted);
+                    if (previous > 0) scratch.Shrink(32L + 8L * previous);
                 }
 
                 result.Add(RuntimeValue(item));
-                if (result.Capacity > chargedCapacity)
-                {
-                    var delta = checked(8L * (result.Capacity - chargedCapacity));
-                    governor.Reserve(delta, span);
-                    governor.Commit(delta);
-                    chargedCapacity = result.Capacity;
-                }
-
                 context.ObserveCollectionCount(result.Count, span);
                 if ((result.Count & 63) == 0)
                 {
@@ -347,14 +331,14 @@ internal sealed partial class LythonRuntime
             return result;
         }
 
-        private static List<object> MaterializePopulation(object value, string owner, LythonSourceSpan span, ExecutionContext context)
+        private static List<object> MaterializePopulation(object value, string owner, LythonSourceSpan span, ExecutionContext context, MemoryGovernor.TemporaryMemoryReservation scratch)
         {
             if (value is not IPyIndexableValue && value is not PyRange)
             {
                 throw new LythonRuntimeException("TypeError", $"{owner} population must be a sequence.", span);
             }
 
-            return MaterializeSequence(value, span, context);
+            return MaterializeSequence(value, span, context, scratch);
         }
 
         private static int ChooseWeightedIndex(PyRandomState state, int populationLength, double[]? weights, double[]? cumulative, LythonSourceSpan span)

@@ -2669,6 +2669,11 @@ deny under budgets that previously accepted them; for example, `[0] * 100000`
 requires 6.4 MB of numeric allowance before backing. Long dropped/refill streams
 release live charges rather than accumulating total allocation forever.
 
+Random population, weight and state drains likewise fund temporary backing
+before allocation and release it when the operation exits, including validation
+failure or cancellation. Replacement arrays remain funded while they coexist;
+returned values retain their separate result and payload ownership.
+
 `int.from_bytes` preflights conversion storage before creating its result. Heap
 magnitudes own their payload through the same reclamation path as parsed and
 arithmetic integers: retained conversions count toward the execution budget,

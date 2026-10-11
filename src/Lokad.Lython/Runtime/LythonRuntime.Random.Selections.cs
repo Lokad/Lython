@@ -136,7 +136,8 @@ internal sealed partial class LythonRuntime
                 return RuntimeValue(directChoice.GetAt((int)state.NextBelow((ulong)directChoice.Length)));
             }
 
-            var items = MaterializePopulation(arguments[0], "random.choice", span, context);
+            using var populationScratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var items = MaterializePopulation(arguments[0], "random.choice", span, context, populationScratch);
             if (items.Count == 0)
             {
                 throw new LythonRuntimeException("IndexError", "Cannot choose from an empty sequence", span);
@@ -155,7 +156,8 @@ internal sealed partial class LythonRuntime
             // N07: indexed picks need no drain; per-pick draws below are
             // exactly the legacy draws, so seeded sequences are unchanged.
             var directChoices = TryGetDirectPopulation(arguments[0], span, context);
-            var population = directChoices is null ? MaterializePopulation(arguments[0], "random.choices", span, context) : null;
+            using var weightScratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var population = directChoices is null ? MaterializePopulation(arguments[0], "random.choices", span, context, weightScratch) : null;
             var populationLength = directChoices?.Length ?? population!.Count;
             if (populationLength == 0)
             {
@@ -164,7 +166,6 @@ internal sealed partial class LythonRuntime
 
             // N07: converted weight copies are caller-scoped scratch; they
             // live for the selection and release on every exit path.
-            using var weightScratch = context.MemoryGovernor.ReserveTemporary(0, span);
             var weights = arguments.Length >= 2 && arguments[1] is not PyNone ? ReadWeights(arguments[1], populationLength, "random.choices(..., weights=...)", span, context, weightScratch) : null;
             var cumulative = arguments.Length >= 3 && arguments[2] is not PyNone ? ReadCumulativeWeights(arguments[2], populationLength, "random.choices(..., cum_weights=...)", span, context, weightScratch) : null;
             if (weights is not null && cumulative is not null)
@@ -224,7 +225,8 @@ internal sealed partial class LythonRuntime
             }
 
             var directSample = TryGetDirectPopulation(arguments[0], span, context);
-            var population = directSample is null ? MaterializePopulation(arguments[0], "random.sample", span, context) : null;
+            using var populationScratch = context.MemoryGovernor.ReserveTemporary(0, span);
+            var population = directSample is null ? MaterializePopulation(arguments[0], "random.sample", span, context, populationScratch) : null;
             var populationLength = directSample?.Length ?? population!.Count;
             var rawCount = arguments[1] is int smallCount ? new BigInteger(smallCount) : arguments[1];
             // Like CPython, k flows through dispatched comparisons first and
@@ -245,7 +247,7 @@ internal sealed partial class LythonRuntime
                     return SampleCountedPositions(directCounted.GetAt, directCounted.Length, arguments[2], rawCount, state, span, context);
                 }
 
-                var counted = population ?? MaterializePopulation(arguments[0], "random.sample", span, context);
+                var counted = population ?? MaterializePopulation(arguments[0], "random.sample", span, context, populationScratch);
                 return SampleCountedPositions(i => counted[i], counted.Count, arguments[2], rawCount, state, span, context);
             }
 
@@ -260,7 +262,7 @@ internal sealed partial class LythonRuntime
                 return SampleDirectPositions(state, direct.GetAt, populationLength, count, context.MemoryGovernor, span, context);
             }
 
-            var materialized = population ?? MaterializePopulation(arguments[0], "random.sample", span, context);
+            var materialized = population ?? MaterializePopulation(arguments[0], "random.sample", span, context, populationScratch);
             ShuffleMaterialized(state, materialized);
             var result = new object[count];
             for (var i = 0; i < count; i++)
