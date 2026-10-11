@@ -14,6 +14,7 @@ public sealed class ManagedStackGuardTests
     [InlineData("single")]
     [InlineData("lowered")]
     [InlineData("lowered-async")]
+    [InlineData("projection")]
     public void LowStackEntryFailsBeforePublishingDepthOrTraversal(string entry)
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
@@ -21,6 +22,7 @@ public sealed class ManagedStackGuardTests
         var span = new LythonSourceSpan(4, 2, 1, 1);
         object left = new(), right = new();
         var expression = new LoweredCapturedExpression(new BooleanLiteralExpressionSyntax(true, span), true);
+        var projected = new PyList([true]);
         Action enter = entry switch
         {
             "function" => () => context.EnterFunctionCall(span),
@@ -29,6 +31,7 @@ public sealed class ManagedStackGuardTests
             "single" => () => PyStructuralGuard.EnterSingle(state, left, span, context).Dispose(),
             "lowered" => () => LythonRuntime.EvaluateLoweredExpression(expression, context),
             "lowered-async" => () => LythonRuntime.EvaluateLoweredExpressionAsync(expression, context).GetAwaiter().GetResult(),
+            "projection" => () => PublicProjection.NormalizeValue(projected),
             _ => throw new ArgumentOutOfRangeException(nameof(entry))
         };
         Exception? failure = null;
@@ -49,9 +52,14 @@ public sealed class ManagedStackGuardTests
         thread.Start();
         Assert.True(thread.Join(TimeSpan.FromSeconds(5)), "Low-stack test thread did not stop.");
         Assert.True(refused, "The real managed stack boundary was not reached.");
-        var error = Assert.IsType<LythonRuntimeException>(failure);
-        Assert.Equal(entry is "pair" or "single" ? "RecursionError" : "RuntimeError", error.ExceptionType);
-        Assert.Equal(span, error.Span);
+        if (entry == "projection")
+            Assert.Contains("stack headroom", Assert.IsType<ProjectionException>(failure).Message, StringComparison.Ordinal);
+        else
+        {
+            var error = Assert.IsType<LythonRuntimeException>(failure);
+            Assert.Equal(entry is "pair" or "single" ? "RecursionError" : "RuntimeError", error.ExceptionType);
+            Assert.Equal(span, error.Span);
+        }
         Assert.Equal(0, context.Limits.CurrentRecursionDepth);
         Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
         Assert.Equal(0, state.Depth);

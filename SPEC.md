@@ -2614,7 +2614,10 @@ do structural/copy depth or stack-headroom failures. The backstop does not predi
 which logical counter might eventually reach its limit. Available depth can vary
 between the dedicated startup stack and a continuation stack, so sufficient
 logical budget alone does not promise that a deep operation will be admitted.
-Refused entries restore their counters and leave traversal state unpublished.
+Recursive public projection likewise checks managed stack admission before
+publishing an active container and reports an explicit projection failure when
+headroom is insufficient, while retaining its independent budget and depth/cycle
+limits. Refused entries leave their counters and traversal state unpublished.
 
 ### 14.5 Execution Deadlines and Optional Fuel
 

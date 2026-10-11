@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -59,6 +60,11 @@ internal static class PublicProjection
 
     private static void EnterContainer(object container, HashSet<object> active)
     {
+        if (!RuntimeHelpers.TryEnsureSufficientExecutionStack())
+        {
+            throw new ProjectionException("insufficient stack headroom while projecting a nested value.");
+        }
+
         if (!active.Add(container))
         {
             throw new ProjectionException("cyclic value cannot be projected to a public CLR value.");
