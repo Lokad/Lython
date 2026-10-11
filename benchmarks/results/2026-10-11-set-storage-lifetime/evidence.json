@@ -1,0 +1,1136 @@
+{
+  "generatedUtc": "2026-10-11T18:58:54.1153807+00:00",
+  "scope": "Private set storage lifetime correction; no performance claim",
+  "baseline": {
+    "deliveryHead": "31bdfaf418e92bfdf56810a6617e160f4b4c3711",
+    "frozenReleaseHead": "c362b2436d14d38999d55357a1a1a734508929dc",
+    "productionTree": "99071b61a21b34753099117d0ef0c5bcf1ef0e64",
+    "testsTree": "6a0d4561cd6958d66966b702288e46f9c54f112e",
+    "priorGreenCi": 38163365228,
+    "debugBinarySnapshot": [
+      {
+        "path": "src/Lokad.Lython/bin/Debug/net10.0/Lokad.Lython.dll",
+        "sha256": "5054163A1052E60C650DCFDE9513113791052B546993E16DF669436DD306B8BC"
+      },
+      {
+        "path": "tests/Lokad.Lython.Tests/bin/Debug/net10.0/Lokad.Lython.WhiteBox.Tests.dll",
+        "sha256": "9DFEF7C7FF7B7E28292FCDD31B3228B6AE1F8CF1E1D10DF185E920A7442BD501"
+      },
+      {
+        "path": "tests/Lokad.Lython.PublicApi.Tests/bin/Debug/net10.0/Lokad.Lython.PublicApi.Tests.dll",
+        "sha256": "61A96EF4FF00FE6A4E4AC0D97988DC3DB3234A793DE7497E4F2FA42C1779EFD8"
+      },
+      {
+        "path": "tools/LythonProbe/bin/Debug/net10.0/LythonProbe.dll",
+        "sha256": "BD2CC02F2B6625E5D27A4E61A453F01FBB768715D7B3892CC632205CC8722634"
+      }
+    ]
+  },
+  "candidate": {
+    "head": "e60a86b64030dae7beb0e5ffd89a4da7c0f4ddc7",
+    "productionTree": "02f1fa7cc0f4653f839375518cef997c6662f7ed",
+    "testsTree": "04329dc03e97c173a31bb5403bbc69096d9029bd",
+    "harnessTree": "c194ce88a7e4d52c576f3929ef82bce60bf37e2d",
+    "probeTree": "bfd4ee12ae4532e0a65a85db86792da8183eec9d",
+    "debugBinaries": [
+      {
+        "path": "src/Lokad.Lython/bin/Debug/net10.0/Lokad.Lython.dll",
+        "sha256": "D61AD1B989FB49502AB261514E8F0378B1C3069F683F7C08BFA6D3389E29A25B"
+      },
+      {
+        "path": "tests/Lokad.Lython.Tests/bin/Debug/net10.0/Lokad.Lython.WhiteBox.Tests.dll",
+        "sha256": "DC55F8C7E95620DCE136B6EC7E15B8BC951417140CCAB497D62F3F526C7E2D65"
+      },
+      {
+        "path": "tests/Lokad.Lython.PublicApi.Tests/bin/Debug/net10.0/Lokad.Lython.PublicApi.Tests.dll",
+        "sha256": "E7157F4F8F76FBF2B14DEBDEC72DC328FA8D34809056FC44CD5C7E7410D1BB86"
+      },
+      {
+        "path": "tools/LythonProbe/bin/Debug/net10.0/LythonProbe.dll",
+        "sha256": "E435FCB952C00E6B2FC5DFD67C06C1935198C7007819F72DF033056284B2310B"
+      }
+    ],
+    "releaseBinaries": [
+      "f2210f273af6c2eda3e869bd046d7a7317276fe86dd3a1c7b007df3f4fa0b680  src/Lokad.Lython/bin/Release/net10.0/Lokad.Lython.dll",
+      "0f4adab653895d4623318a7868f7ca06c2d14a724514b623c248d17710db4229  tests/Lokad.Lython.Tests/bin/Release/net10.0/Lokad.Lython.WhiteBox.Tests.dll",
+      "68964b8078b55679a69d83bf7dff4b1ed8e56d887fbc440f8008b1df50c8c709  tests/Lokad.Lython.PublicApi.Tests/bin/Release/net10.0/Lokad.Lython.PublicApi.Tests.dll",
+      "c47e352e16864d37d706b495a2f7cf17fa6474a35ef768e26059fbafcd421b6a  tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll"
+    ],
+    "sourceReceipt": [
+      "e60a86b64030dae7beb0e5ffd89a4da7c0f4ddc7",
+      "02f1fa7cc0f4653f839375518cef997c6662f7ed",
+      "04329dc03e97c173a31bb5403bbc69096d9029bd",
+      "c194ce88a7e4d52c576f3929ef82bce60bf37e2d",
+      "bfd4ee12ae4532e0a65a85db86792da8183eec9d"
+    ]
+  },
+  "capBytes": 1048576,
+  "iterations": 5000,
+  "cpythonRelease": "3.13.16",
+  "dotnetRelease": "10.0.401",
+  "pureCases": [
+    "def failed():\n    yield 1\n    raise ValueError('stop')\ncaught = 0\nfor i in range(5000):\n    try:\n        list(failed())\n    except ValueError:\n        caught += 1\nprint(caught)\n",
+    "def failed():\n    yield 1\n    raise ValueError('stop')\ncaught = 0\nfor i in range(5000):\n    try:\n        tuple(failed())\n    except ValueError:\n        caught += 1\nprint(caught)\n",
+    "def failed():\n    yield 1\n    raise ValueError('stop')\ncaught = 0\nfor i in range(5000):\n    try:\n        set(failed())\n    except ValueError:\n        caught += 1\nprint(caught)\n",
+    "retained = {1, 2}\nfor i in range(5000):\n    retained.intersection([1, 2])\nprint(5000)\n",
+    "retained = {1, 2}\nfor i in range(5000):\n    retained.intersection_update([1, 2])\nprint(5000)\n",
+    "retained = {1, 2}\nfor i in range(5000):\n    retained.issubset([1, 2])\nprint(5000)\n"
+  ],
+  "testReceipts": [
+    {
+      "group": "baseline-focused",
+      "file": "JoannesVermorel_LOKAD-0399_2026-10-11_20_44_45.trx",
+      "sha256": "FCCD6DC91F3AF50171BA862C602B38677841332F0AB2C9AAC3B1BF78D90A38F9",
+      "total": 17,
+      "passed": 11,
+      "failed": 6,
+      "failures": [
+        "Lokad.Lython.Tests.SetConstructionAccountingTests.LazySourceConstructionStopsAtBudgetInsteadOfSnapshotting",
+        "Lokad.Lython.Tests.SetConstructionAccountingTests.FailedSourcePreservesOtherLiveCharges(sized: False)",
+        "Lokad.Lython.Tests.SetConstructionAccountingTests.FailedInitialAdmissionRefundsEveryPrivateCharge(budget: 128)",
+        "Lokad.Lython.Tests.SetConstructionAccountingTests.FailedSourcePreservesOtherLiveCharges(sized: True)",
+        "Lokad.Lython.Tests.SetConstructionAccountingTests.FailedCopyAdmissionLeavesItsSourceCharged",
+        "Lokad.Lython.Tests.SetConstructionAccountingTests.FailedInitialAdmissionRefundsEveryPrivateCharge(budget: 300)"
+      ]
+    },
+    {
+      "group": "baseline-focused",
+      "file": "JoannesVermorel_LOKAD-0399_2026-10-11_20_44_53.trx",
+      "sha256": "C7E9CC3F3EA416D628A0ED62D4E5EFDFFEDA6CDB52239CEC56F6EC688656647E",
+      "total": 13,
+      "passed": 2,
+      "failed": 11,
+      "failures": [
+        "Lokad.Lython.PublicApi.Tests.SetConstructionAbortTests.RepeatedIteratorFailuresKeepLiveStorageBounded(expression: \"retained.symmetric_difference(failed())\")",
+        "Lokad.Lython.PublicApi.Tests.SetConstructionAbortTests.RepeatedIteratorFailuresKeepLiveStorageBounded(expression: \"set(failed())\")",
+        "Lokad.Lython.PublicApi.Tests.SetConstructionAbortTests.RepeatedIteratorFailuresKeepLiveStorageBounded(expression: \"{0, *failed()}\")",
+        "Lokad.Lython.PublicApi.Tests.SetConstructionAbortTests.RepeatedIteratorFailuresKeepLiveStorageBounded(expression: \"{item for item in failed()}\")",
+        "Lokad.Lython.PublicApi.Tests.SetConstructionAbortTests.RepeatedIteratorFailuresKeepLiveStorageBounded(expression: \"retained.intersection(failed())\")",
+        "Lokad.Lython.PublicApi.Tests.SetConstructionAbortTests.RepeatedIteratorFailuresKeepLiveStorageBounded(expression: \"retained.difference(failed())\")",
+        "Lokad.Lython.PublicApi.Tests.SetConstructionAbortTests.RepeatedIteratorFailuresKeepLiveStorageBounded(expression: \"retained.union(failed())\")",
+        "Lokad.Lython.PublicApi.Tests.SetConstructionAbortTests.RepeatedValidationFailuresRefundOnlyPrivateResults(expression: \"{item for item in [1, []]}\")",
+        "Lokad.Lython.PublicApi.Tests.SetConstructionAbortTests.RepeatedValidationFailuresRefundOnlyPrivateResults(expression: \"set([1, []])\")",
+        "Lokad.Lython.PublicApi.Tests.SetConstructionAbortTests.RepeatedValidationFailuresRefundOnlyPrivateResults(expression: \"{1, []}\")",
+        "Lokad.Lython.PublicApi.Tests.SetConstructionAbortTests.SuspendedIteratorFailureOrCancellationKeepsHostEffects(cancel: False)"
+      ]
+    },
+    {
+      "group": "candidate-focused",
+      "file": "JoannesVermorel_LOKAD-0399_2026-10-11_20_46_57.trx",
+      "sha256": "305E3C0745781891E9BE18CBFC3E9413F36A9DC2B35F4561216A3C30AB5EA7A6",
+      "total": 20,
+      "passed": 20,
+      "failed": 0,
+      "failures": []
+    },
+    {
+      "group": "candidate-focused",
+      "file": "JoannesVermorel_LOKAD-0399_2026-10-11_20_47_01.trx",
+      "sha256": "186E1E62B48516D3066FFFB23717D471006CD17D8E2B6760EDB33B25A16302DF",
+      "total": 73,
+      "passed": 72,
+      "failed": 1,
+      "failures": [
+        "Lokad.Lython.PublicApi.Tests.SetConstructionAbortTests.RepeatedIteratorFailuresKeepLiveStorageBounded(expression: \"retained.intersection(failed())\")"
+      ]
+    },
+    {
+      "group": "final-focused",
+      "file": "JoannesVermorel_LOKAD-0399_2026-10-11_20_48_51.trx",
+      "sha256": "88583F2CD8CE742F27FCE1FEE6E577F5E8E791FBCFDE7F99B5241E386EFE2E26",
+      "total": 20,
+      "passed": 20,
+      "failed": 0,
+      "failures": []
+    },
+    {
+      "group": "final-focused",
+      "file": "JoannesVermorel_LOKAD-0399_2026-10-11_20_48_55.trx",
+      "sha256": "B24CCFBC7C12E04A2C01884D9F189240481F6C1DD275E6778B4E7B9AA63DA21C",
+      "total": 76,
+      "passed": 76,
+      "failed": 0,
+      "failures": []
+    },
+    {
+      "group": "full-debug",
+      "file": "JoannesVermorel_LOKAD-0399_2026-10-11_20_50_45.trx",
+      "sha256": "4BB04598F4CC937AC9207B7F5A7CF4C3EC4E1CC89BC930F571E2F4D27A271053",
+      "total": 8051,
+      "passed": 8051,
+      "failed": 0,
+      "failures": []
+    },
+    {
+      "group": "full-debug",
+      "file": "JoannesVermorel_LOKAD-0399_2026-10-11_20_50_53.trx",
+      "sha256": "B228BD1646DD751EF12FA2C627AEEA6D9AA51E4CDB094CD519030945E1419A28",
+      "total": 1909,
+      "passed": 1909,
+      "failed": 0,
+      "failures": []
+    },
+    {
+      "group": "vm-receipts/release-tests",
+      "file": "_lython-bench_2026-10-11_18_53_00_net10.0.trx",
+      "sha256": "86E93E331EA4FA59C67908E90E2EF7B2AA253A1841341224D9A212277556F8B8",
+      "total": 99,
+      "passed": 99,
+      "failed": 0,
+      "failures": []
+    },
+    {
+      "group": "vm-receipts/release-tests",
+      "file": "_lython-bench_2026-10-11_18_53_01_net10.0.trx",
+      "sha256": "983FA090F2F6D868CDBD3F9AC6B804286C06EA65D65ABCDEAFCCED0C3710DBAB",
+      "total": 87,
+      "passed": 87,
+      "failed": 0,
+      "failures": []
+    }
+  ],
+  "probeReceipts": [
+    {
+      "role": "baseline",
+      "mode": "sync",
+      "sha256": "37A9F40936DDFAFE620A0473A1AC98295F84CF9B9A7B4D8057B44794CBB1C312",
+      "results": [
+        {
+          "Index": 0,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1048566,
+            "PeakProjectionMemoryBytes": 42,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": false
+          }
+        },
+        {
+          "Index": 1,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1047750,
+            "PeakProjectionMemoryBytes": 42,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": false
+          }
+        },
+        {
+          "Index": 2,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1048574,
+            "PeakProjectionMemoryBytes": 164,
+            "DeniedReservationBytes": 128,
+            "Failure": {
+              "ExceptionType": "MemoryError",
+              "Message": "execution memory budget exceeded (1048576)",
+              "Span": "line 6, column 5",
+              "Frames": [
+                "<module> (line 6)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": false
+          }
+        },
+        {
+          "Index": 3,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1048576,
+            "PeakProjectionMemoryBytes": 164,
+            "DeniedReservationBytes": 40,
+            "Failure": {
+              "ExceptionType": "MemoryError",
+              "Message": "execution memory budget exceeded (1048576)",
+              "Span": "line 3, column 5",
+              "Frames": [
+                "<module> (line 3)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": false
+          }
+        },
+        {
+          "Index": 4,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1048576,
+            "PeakProjectionMemoryBytes": 164,
+            "DeniedReservationBytes": 40,
+            "Failure": {
+              "ExceptionType": "MemoryError",
+              "Message": "execution memory budget exceeded (1048576)",
+              "Span": "line 1, column 12",
+              "Frames": [
+                "<module> (line 1)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": false
+          }
+        },
+        {
+          "Index": 5,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1048576,
+            "PeakProjectionMemoryBytes": 164,
+            "DeniedReservationBytes": 128,
+            "Failure": {
+              "ExceptionType": "MemoryError",
+              "Message": "execution memory budget exceeded (1048576)",
+              "Span": "line 3, column 5",
+              "Frames": [
+                "<module> (line 3)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": false
+          }
+        }
+      ]
+    },
+    {
+      "role": "baseline",
+      "mode": "async",
+      "sha256": "C10BEB44042DC9329709986EED59011D33E805BEA4B62AA25542FDEE99D37A20",
+      "results": [
+        {
+          "Index": 0,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 675734,
+            "PeakProjectionMemoryBytes": 42,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": true
+          }
+        },
+        {
+          "Index": 1,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 852262,
+            "PeakProjectionMemoryBytes": 42,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": true
+          }
+        },
+        {
+          "Index": 2,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1048574,
+            "PeakProjectionMemoryBytes": 164,
+            "DeniedReservationBytes": 128,
+            "Failure": {
+              "ExceptionType": "MemoryError",
+              "Message": "execution memory budget exceeded (1048576)",
+              "Span": "line 3, column 11",
+              "Frames": [
+                "failed (line 7)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": true
+          }
+        },
+        {
+          "Index": 3,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1048576,
+            "PeakProjectionMemoryBytes": 164,
+            "DeniedReservationBytes": 40,
+            "Failure": {
+              "ExceptionType": "MemoryError",
+              "Message": "execution memory budget exceeded (1048576)",
+              "Span": "line 3, column 5",
+              "Frames": [
+                "<module> (line 3)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": true
+          }
+        },
+        {
+          "Index": 4,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1048576,
+            "PeakProjectionMemoryBytes": 164,
+            "DeniedReservationBytes": 40,
+            "Failure": {
+              "ExceptionType": "MemoryError",
+              "Message": "execution memory budget exceeded (1048576)",
+              "Span": "line 1, column 12",
+              "Frames": [
+                "<module> (line 1)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": true
+          }
+        },
+        {
+          "Index": 5,
+          "Lython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": 1,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1048576,
+            "PeakProjectionMemoryBytes": 164,
+            "DeniedReservationBytes": 128,
+            "Failure": {
+              "ExceptionType": "MemoryError",
+              "Message": "execution memory budget exceeded (1048576)",
+              "Span": "line 3, column 5",
+              "Frames": [
+                "<module> (line 3)"
+              ]
+            }
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": true
+          }
+        }
+      ]
+    },
+    {
+      "role": "candidate",
+      "mode": "sync",
+      "sha256": "0B2CD2C25E93666E227F06ACE3EB12B6057800378B284A589822C3112B78DFB5",
+      "results": [
+        {
+          "Index": 0,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1048566,
+            "PeakProjectionMemoryBytes": 42,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": false
+          }
+        },
+        {
+          "Index": 1,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1047750,
+            "PeakProjectionMemoryBytes": 42,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": false
+          }
+        },
+        {
+          "Index": 2,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1047934,
+            "PeakProjectionMemoryBytes": 42,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": false
+          }
+        },
+        {
+          "Index": 3,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1048576,
+            "PeakProjectionMemoryBytes": 42,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": false
+          }
+        },
+        {
+          "Index": 4,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1048560,
+            "PeakProjectionMemoryBytes": 42,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": false
+          }
+        },
+        {
+          "Index": 5,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1048560,
+            "PeakProjectionMemoryBytes": 42,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": false
+          }
+        }
+      ]
+    },
+    {
+      "role": "candidate",
+      "mode": "async",
+      "sha256": "253B2BB5232B3B30C386B8BEFF448F020DF80926160F1437D42871A2B65A3CB9",
+      "results": [
+        {
+          "Index": 0,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 672358,
+            "PeakProjectionMemoryBytes": 42,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": true
+          }
+        },
+        {
+          "Index": 1,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 857414,
+            "PeakProjectionMemoryBytes": 42,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": true
+          }
+        },
+        {
+          "Index": 2,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 952030,
+            "PeakProjectionMemoryBytes": 42,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": true
+          }
+        },
+        {
+          "Index": 3,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1048576,
+            "PeakProjectionMemoryBytes": 42,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": true
+          }
+        },
+        {
+          "Index": 4,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1048560,
+            "PeakProjectionMemoryBytes": 42,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": true
+          }
+        },
+        {
+          "Index": 5,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 1048560,
+            "PeakProjectionMemoryBytes": 42,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "5000\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 1048576,
+            "Async": true
+          }
+        }
+      ]
+    }
+  ],
+  "ownedGroups": [
+    {
+      "role": "baseline",
+      "mode": "sync",
+      "cleanupWallSeconds": 1,
+      "receipt": [
+        "TimeoutStopUSec=0",
+        "RuntimeMaxUSec=30s",
+        "MainPID=0",
+        "Result=success",
+        "ExecMainStartTimestamp=Sun 2026-10-11 18:54:02 UTC",
+        "ExecMainExitTimestamp=Sun 2026-10-11 18:54:03 UTC",
+        "ExecMainPID=2192214",
+        "ExecMainStatus=0",
+        "ControlGroup=",
+        "KillMode=control-group",
+        "ActiveState=active",
+        "SubState=exited",
+        "cleanupWallSeconds=1"
+      ]
+    },
+    {
+      "role": "baseline",
+      "mode": "async",
+      "cleanupWallSeconds": 2,
+      "receipt": [
+        "TimeoutStopUSec=0",
+        "RuntimeMaxUSec=30s",
+        "MainPID=0",
+        "Result=success",
+        "ExecMainStartTimestamp=Sun 2026-10-11 18:54:03 UTC",
+        "ExecMainExitTimestamp=Sun 2026-10-11 18:54:04 UTC",
+        "ExecMainPID=2192256",
+        "ExecMainStatus=0",
+        "ControlGroup=",
+        "KillMode=control-group",
+        "ActiveState=active",
+        "SubState=exited",
+        "cleanupWallSeconds=2"
+      ]
+    },
+    {
+      "role": "candidate",
+      "mode": "sync",
+      "cleanupWallSeconds": 1,
+      "receipt": [
+        "TimeoutStopUSec=0",
+        "RuntimeMaxUSec=30s",
+        "MainPID=0",
+        "Result=success",
+        "ExecMainStartTimestamp=Sun 2026-10-11 18:54:05 UTC",
+        "ExecMainExitTimestamp=Sun 2026-10-11 18:54:06 UTC",
+        "ExecMainPID=2192305",
+        "ExecMainStatus=0",
+        "ControlGroup=",
+        "KillMode=control-group",
+        "ActiveState=active",
+        "SubState=exited",
+        "cleanupWallSeconds=1"
+      ]
+    },
+    {
+      "role": "candidate",
+      "mode": "async",
+      "cleanupWallSeconds": 2,
+      "receipt": [
+        "TimeoutStopUSec=0",
+        "RuntimeMaxUSec=30s",
+        "MainPID=0",
+        "Result=success",
+        "ExecMainStartTimestamp=Sun 2026-10-11 18:54:06 UTC",
+        "ExecMainExitTimestamp=Sun 2026-10-11 18:54:08 UTC",
+        "ExecMainPID=2192346",
+        "ExecMainStatus=0",
+        "ControlGroup=",
+        "KillMode=control-group",
+        "ActiveState=active",
+        "SubState=exited",
+        "cleanupWallSeconds=2"
+      ]
+    }
+  ],
+  "fullLanes": 0,
+  "timingCollections": 0,
+  "performanceQualified": false,
+  "forcedGc": "Retained: unrelated weak-owner accounting still depends on managed collection.",
+  "finalVmAudit": [
+    "Sun Oct 11 18:55:12 UTC 2026",
+    "source-clean binaries-rehashed parents-stopped groups-empty lease-free"
+  ]
+}
