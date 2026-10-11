@@ -17,9 +17,11 @@ public sealed class LoweredDispatchBoundaryTests
     public void ExpressionCheckpointsKeepEvaluationOrderAndSpans(string source, int[] starts, int[] lengths, string expected)
     {
         var expression = Expression(source);
+        foreach (var directFunctionDispatch in new[] { false, true })
         for (var fuel = 1; fuel <= starts.Length; fuel++)
         {
             var context = Context(new LythonRunOptions { MaxExecutionSteps = fuel, SourcePath = "/lowered.py" });
+            context.UseSynchronousLoweredFunctionDispatch = directFunctionDispatch;
             if (fuel == starts.Length)
             {
                 var result = LythonRuntime.EvaluateLoweredExpression(expression, context);
@@ -46,16 +48,20 @@ public sealed class LoweredDispatchBoundaryTests
     [InlineData(true)]
     public void ExpressionChecksFuelBeforeCancellation(bool fuelDenied)
     {
-        using var cancellation = new CancellationTokenSource();
-        var expression = Expression("1 + 2");
-        var context = Context(new LythonRunOptions { MaxExecutionSteps = fuelDenied ? 1 : 100, CancellationToken = cancellation.Token });
-        context.Limits.ExecutionStepCount = 1;
-        cancellation.Cancel();
-        var error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.EvaluateLoweredExpression(expression, context));
-        Assert.Same(expression.Span, error.Span);
-        Assert.Equal(fuelDenied ? "maximum execution step count exceeded (1)" : "execution canceled", error.Message);
-        Assert.Equal(2, context.Limits.ExecutionStepCount);
-        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        foreach (var directFunctionDispatch in new[] { false, true })
+        {
+            using var cancellation = new CancellationTokenSource();
+            var expression = Expression("1 + 2");
+            var context = Context(new LythonRunOptions { MaxExecutionSteps = fuelDenied ? 1 : 100, CancellationToken = cancellation.Token });
+            context.UseSynchronousLoweredFunctionDispatch = directFunctionDispatch;
+            context.Limits.ExecutionStepCount = 1;
+            cancellation.Cancel();
+            var error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.EvaluateLoweredExpression(expression, context));
+            Assert.Same(expression.Span, error.Span);
+            Assert.Equal(fuelDenied ? "maximum execution step count exceeded (1)" : "execution canceled", error.Message);
+            Assert.Equal(2, context.Limits.ExecutionStepCount);
+            Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        }
     }
 
     [Theory]
