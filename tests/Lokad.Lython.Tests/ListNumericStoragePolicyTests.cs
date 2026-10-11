@@ -109,4 +109,35 @@ public sealed class ListNumericStoragePolicyTests
         list.Add(new object());
         Assert.Equal(backing, list.CommittedStorageBytes);
     }
+
+    [Fact]
+    public void AttachedGovernorFundsExistingSlotsBeforeTheirRemoval()
+    {
+        object value = new BigInteger(7);
+        var list = new PyList([value, value]);
+        var governor = new MemoryGovernor(4096);
+        list.AttachMemoryGovernor(governor);
+        Assert.Equal(128, governor.CurrentCommittedBytes);
+        list.RemoveAt(0);
+        Assert.Equal(64, governor.CurrentCommittedBytes);
+        Assert.Same(value, list[0]);
+        Assert.Equal(list.CommittedStorageBytes, governor.CurrentCommittedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+    }
+
+    [Fact]
+    public void DeniedGovernorAttachmentLeavesTheListUnowned()
+    {
+        object value = new BigInteger(7);
+        var list = new PyList([value, value]);
+        var governor = new MemoryGovernor(64);
+        var failure = Assert.Throws<LythonRuntimeException>(() => list.AttachMemoryGovernor(governor));
+        Assert.Equal("MemoryError", failure.ExceptionType);
+        Assert.Null(list.OwnerMemoryGovernor);
+        Assert.Equal(0, governor.CurrentCommittedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+        list.RemoveAt(0);
+        Assert.Single(list);
+        Assert.Same(value, list[0]);
+    }
 }

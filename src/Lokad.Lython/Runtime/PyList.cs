@@ -7,7 +7,8 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     private IPyListStorage _items;
     private MemoryGovernor? _memoryGovernor;
     private LythonSourceSpan? _allocationSpan;
-    private AdoptedScalarCoupons? _scalarCoupons;
+    private long _numericStorageBytes;
+    private const long NumericSlotCharge = 64;
 
     // Keep the weak registration beside its owner, avoiding a second
     // ephemeron handle for each list. The entry never roots this list.
@@ -30,7 +31,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
         _items = PyListStorage.Create(items, governor, allocationSpan);
-        AdoptInitialItems();
+        ChargeInitialNumericStorage();
     }
 
     public PyList(PyList other)
@@ -42,16 +43,16 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
             : PyListStorage.Create(other._items, other._memoryGovernor, other._allocationSpan);
         if (_memoryGovernor is not null)
         {
-            AdoptInitialItems();
+            ChargeInitialNumericStorage();
         }
     }
 
     public int Count => _items.Count;
 
     // Current committed backing charges, for pooled owners that release them
-    // if this list is dropped without wholesale storage replacement. Adopted
-    // scalar coupons fold in, so snapshots and drop sweeps carry them.
-    internal long CommittedStorageBytes => _items.CommittedBytes + (_scalarCoupons?.CommittedBytes ?? 0);
+    // if this list is dropped without wholesale storage replacement. Numeric
+    // slot allowances fold into the same snapshot and drop lifetime.
+    internal long CommittedStorageBytes => _items.CommittedBytes + _numericStorageBytes;
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
 
@@ -71,26 +72,23 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     public void Add(object value)
     {
         var committedBefore = CommittedStorageBytes;
-        AdoptIncoming(value);
+        var target = checked(_numericStorageBytes + NumericBytes(value));
+        var growth = ReserveNumericGrowth(target);
         try
         {
-            _items = PyListStorage.EnsureCapacity(_items, Count + 1, _memoryGovernor, _allocationSpan);
+            _items = PyListStorage.EnsureCapacity(_items, checked(Count + 1), _memoryGovernor, _allocationSpan);
         }
-        catch (Exception)
+        catch
         {
-            UnadoptIncoming(value);
+            if (growth > 0) _memoryGovernor!.Release(growth);
             throw;
         }
-
         _items.Add(value);
-        NoteGrowth(committedBefore);
+        CompleteNumericChange(target, committedBefore);
     }
 
-    // Keeps a tracked coupon current across growth: capacity commits below change
-    // the backing this entry owns, so refresh the snapshot after successful growth.
-    // Denied growth throws before mutating, leaving the old coupon (and retry
-    // headroom) intact. Untracked values cost one lookup and no entry. Totals
-    // include adopted coupons, so coupon commits refresh the snapshot as well.
+    // Backing and numeric slot changes share the existing list ownership snapshot.
+    // Failed funding leaves that snapshot and the published contents unchanged.
     private void NoteGrowth(long committedBefore)
     {
         if (CommittedStorageBytes != committedBefore)
@@ -99,131 +97,56 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         }
     }
 
-    // Adopts construction contents with a refund of the orphaned storage when
-    // a coupon denies: callers publish nothing on failure.
-    private void AdoptInitialItems()
+    // Numeric slots conservatively cover small boxes without consulting identity
+    // or payload tracking. Large magnitudes keep their independent actual owner.
+    private static bool IsNumericSlot(object value) =>
+        value is System.Numerics.BigInteger or double or int or long or PyDecimal;
+
+    private long NumericBytes(object value) =>
+        _memoryGovernor is not null && IsNumericSlot(value) ? NumericSlotCharge : 0;
+
+    private long NumericBytes(IEnumerable<object> values)
     {
-        var incoming = new AdoptedScalarCoupons();
+        if (_memoryGovernor is null) return 0;
+        long bytes = 0;
+        foreach (var value in values) bytes = checked(bytes + NumericBytes(value));
+        return bytes;
+    }
+
+    // Publish the new subtotal only after mutation. A backing-growth failure
+    // refunds this positive delta; no identities or rollback records are needed.
+    private long ReserveNumericGrowth(long target)
+    {
+        var growth = Math.Max(target - _numericStorageBytes, 0);
+        if (growth > 0)
+        {
+            _memoryGovernor!.Reserve(growth, _allocationSpan);
+            _memoryGovernor.Commit(growth);
+        }
+        return growth;
+    }
+
+    private void CompleteNumericChange(long target, long committedBefore)
+    {
+        var released = _numericStorageBytes - target;
+        _numericStorageBytes = target;
+        if (released > 0) _memoryGovernor!.Release(released);
+        NoteGrowth(committedBefore);
+    }
+
+    private void ChargeInitialNumericStorage()
+    {
         try
         {
-            incoming.AdoptAll(_items, _memoryGovernor!, _allocationSpan);
+            var target = NumericBytes((IEnumerable<object>)_items);
+            ReserveNumericGrowth(target);
+            _numericStorageBytes = target;
         }
         catch
         {
-            var orphaned = _items.ReleaseCommittedBytes();
-            if (orphaned > 0)
-            {
-                _memoryGovernor!.Release(orphaned);
-            }
-
+            _memoryGovernor!.Release(_items.ReleaseCommittedBytes());
             throw;
         }
-
-        _scalarCoupons = incoming.CommittedBytes > 0 ? incoming : null;
-    }
-
-    // Adopts one incoming value when governed; denies before the caller mutates.
-    private void AdoptIncoming(object value)
-    {
-        if (_memoryGovernor is null || !AdoptedScalarCoupons.IsAdoptableScalar(value))
-        {
-            return;
-        }
-
-        _scalarCoupons ??= new AdoptedScalarCoupons();
-        _scalarCoupons.Adopt(value, _memoryGovernor, _allocationSpan);
-        if (_scalarCoupons.CommittedBytes == 0)
-        {
-            _scalarCoupons = null;
-        }
-    }
-
-    private void AdoptAllIncoming(IEnumerable<object> values)
-    {
-        if (_memoryGovernor is null)
-        {
-            return;
-        }
-
-        var coupons = _scalarCoupons ?? new AdoptedScalarCoupons();
-        coupons.AdoptAll(values, _memoryGovernor, _allocationSpan);
-        _scalarCoupons = coupons.CommittedBytes > 0 ? coupons : null;
-    }
-
-    private void UnadoptIncoming(object value)
-    {
-        if (_scalarCoupons is null || _memoryGovernor is null)
-        {
-            return;
-        }
-
-        _scalarCoupons.Release(value, _memoryGovernor);
-        if (_scalarCoupons.CommittedBytes == 0)
-        {
-            _scalarCoupons = null;
-        }
-    }
-
-    private void UnadoptAllIncoming(IEnumerable<object> values)
-    {
-        if (_scalarCoupons is null || _memoryGovernor is null)
-        {
-            return;
-        }
-
-        foreach (var value in values)
-        {
-            _scalarCoupons.Release(value, _memoryGovernor);
-        }
-
-        if (_scalarCoupons.CommittedBytes == 0)
-        {
-            _scalarCoupons = null;
-        }
-    }
-
-    private void ReleaseOutgoing(object? value)
-    {
-        if (_scalarCoupons is null || _memoryGovernor is null)
-        {
-            return;
-        }
-
-        _scalarCoupons.Release(value, _memoryGovernor);
-        if (_scalarCoupons.CommittedBytes == 0)
-        {
-            _scalarCoupons = null;
-        }
-    }
-
-    private void ReleaseAllOutgoing(object[] values)
-    {
-        if (_scalarCoupons is null || _memoryGovernor is null)
-        {
-            return;
-        }
-
-        foreach (var value in values)
-        {
-            _scalarCoupons.Release(value, _memoryGovernor);
-        }
-
-        if (_scalarCoupons.CommittedBytes == 0)
-        {
-            _scalarCoupons = null;
-        }
-    }
-
-    private void ReleaseAllCoupons()
-    {
-        if (_scalarCoupons is null || _memoryGovernor is null)
-        {
-            _scalarCoupons = null;
-            return;
-        }
-
-        _scalarCoupons.ReleaseAll(_memoryGovernor);
-        _scalarCoupons = null;
     }
 
     public void AddRange(IEnumerable<object> values)
@@ -254,14 +177,15 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
             // Bounded, known-size inputs reserve exactly once up front, so the
             // bulk append below cannot grow past the ensured capacity uncharged.
             var committedBefore = CommittedStorageBytes;
-            AdoptAllIncoming(known);
+            var target = checked(_numericStorageBytes + NumericBytes((IEnumerable<object>)known));
+            var growth = ReserveNumericGrowth(target);
             try
             {
                 _items = PyListStorage.EnsureCapacity(_items, checked(Count + known.Count), _memoryGovernor, _allocationSpan);
             }
             catch (Exception)
             {
-                UnadoptAllIncoming(known);
+                if (growth > 0) _memoryGovernor!.Release(growth);
                 throw;
             }
 
@@ -270,7 +194,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
                 _items.Add(value);
             }
 
-            NoteGrowth(committedBefore);
+            CompleteNumericChange(target, committedBefore);
             return;
         }
 
@@ -360,19 +284,19 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         var normalized = index < 0 ? index + Count : index;
         normalized = Math.Clamp(normalized, 0, Count);
         var committedBefore = CommittedStorageBytes;
-        AdoptIncoming(value);
+        var target = checked(_numericStorageBytes + NumericBytes(value));
+        var growth = ReserveNumericGrowth(target);
         try
         {
             _items = PyListStorage.EnsureCapacity(_items, checked(Count + 1), _memoryGovernor, _allocationSpan);
         }
-        catch (Exception)
+        catch
         {
-            UnadoptIncoming(value);
+            if (growth > 0) _memoryGovernor!.Release(growth);
             throw;
         }
-
         _items.InsertAt(normalized, value);
-        NoteGrowth(committedBefore);
+        CompleteNumericChange(target, committedBefore);
     }
 
     public void Reverse()
@@ -400,27 +324,25 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
             ReplaceStorage([]);
             return;
         }
-
         var totalLength = (long)Count * count;
         if (totalLength > int.MaxValue)
-        {
             throw new LythonRuntimeException("RuntimeError", "List repetition is too large.", span);
-        }
-
         var total = (int)totalLength;
         var originalCount = Count;
         var committedBefore = CommittedStorageBytes;
-        _items = PyListStorage.EnsureCapacity(_items, total, _memoryGovernor, _allocationSpan);
-        _items.RepeatFill(originalCount, total);
-        if (_scalarCoupons is not null)
+        var target = checked(_numericStorageBytes * count);
+        var growth = ReserveNumericGrowth(target);
+        try
         {
-            for (var i = 0; i < originalCount; i++)
-            {
-                _scalarCoupons.AddRef(_items[i], count - 1);
-            }
+            _items = PyListStorage.EnsureCapacity(_items, total, _memoryGovernor, _allocationSpan);
         }
-
-        NoteGrowth(committedBefore);
+        catch
+        {
+            if (growth > 0) _memoryGovernor!.Release(growth);
+            throw;
+        }
+        _items.RepeatFill(originalCount, total);
+        CompleteNumericChange(target, committedBefore);
     }
 
     public void AttachMemoryGovernor(MemoryGovernor governor)
@@ -428,40 +350,36 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
 
     public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
-        _memoryGovernor ??= governor;
+        if (_memoryGovernor is null)
+        {
+            long bytes = 0;
+            foreach (var value in _items)
+                if (IsNumericSlot(value)) bytes = checked(bytes + NumericSlotCharge);
+            governor.Reserve(bytes, allocationSpan);
+            governor.Commit(bytes);
+            _numericStorageBytes = bytes;
+            _memoryGovernor = governor;
+        }
         _allocationSpan ??= allocationSpan;
     }
 
     public void RemoveAt(int index)
     {
-        // The coupon release below shrinks the owned total, so refresh the
-        // pool snapshot or a later drop sweep would over-release.
         var committedBefore = CommittedStorageBytes;
-        var outgoing = _items[index];
+        var target = _numericStorageBytes - NumericBytes(_items[index]);
         _items.RemoveAt(index);
-        ReleaseOutgoing(outgoing);
-        NoteGrowth(committedBefore);
+        CompleteNumericChange(target, committedBefore);
     }
 
     public void RemoveRange(int index, int count)
     {
-        if (count <= 0)
-        {
-            return;
-        }
-
-        // Index reads throw before mutating on a bad range, matching the
-        // throwing read the old single-slot path performed.
+        if (count <= 0) return;
         var committedBefore = CommittedStorageBytes;
-        var outgoing = new object[count];
-        for (var i = 0; i < count; i++)
-        {
-            outgoing[i] = _items[index + i];
-        }
-
+        long outgoing = 0;
+        // Read before mutation both to validate the range and to count its slots.
+        for (var i = 0; i < count; i++) outgoing += NumericBytes(_items[index + i]);
         _items.RemoveRangeAt(index, count);
-        ReleaseAllOutgoing(outgoing);
-        NoteGrowth(committedBefore);
+        CompleteNumericChange(_numericStorageBytes - outgoing, committedBefore);
     }
 
     public void DeleteSlice(PyIndexing.SliceBounds bounds)
@@ -471,43 +389,22 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
             RemoveRange(bounds.Start, Math.Max(bounds.End - bounds.Start, 0));
             return;
         }
-
-        var removeCount = bounds.Count;
-        if (removeCount == 0)
-        {
-            return;
-        }
-
-        // Release deleted identities before compaction overwrites their slots.
-        // Moving survivors does not change their adoption refcounts; the old
-        // tail contains copied survivors as well as deleted values, so dropping
-        // it must only clear storage, without releasing those identities again.
+        if (bounds.Count == 0) return;
         var committedBefore = CommittedStorageBytes;
         var count = Count;
         var destination = 0;
+        long outgoing = 0;
         for (var source = 0; source < count; source++)
         {
-            if (bounds.Contains(source))
-            {
-                ReleaseOutgoing(_items[source]);
-            }
+            if (bounds.Contains(source)) outgoing += NumericBytes(_items[source]);
             else
             {
-                if (destination != source)
-                {
-                    _items[destination] = _items[source];
-                }
-
+                if (destination != source) _items[destination] = _items[source];
                 destination++;
             }
         }
-
-        if (destination < count)
-        {
-            _items.RemoveRangeAt(destination, count - destination);
-        }
-
-        NoteGrowth(committedBefore);
+        if (destination < count) _items.RemoveRangeAt(destination, count - destination);
+        CompleteNumericChange(_numericStorageBytes - outgoing, committedBefore);
     }
 
     public void SetSlice(PyIndexing.SliceBounds bounds, IReadOnlyList<object> values, LythonSourceSpan span)
@@ -516,69 +413,36 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         {
             var removeCount = Math.Max(bounds.End - bounds.Start, 0);
             IReadOnlyList<object> staged = values;
-            if (values is PyList sourceList)
-            {
-                // The right-hand side would observe its own replacement;
-                // snapshot it first, as if it had been evaluated eagerly.
-                staged = sourceList.ToArray();
-            }
-            else if (values is IPyListStorage sourceStorage)
-            {
-                staged = sourceStorage.ToArray();
-            }
-
+            if (values is PyList sourceList) staged = sourceList.ToArray();
+            else if (values is IPyListStorage sourceStorage) staged = sourceStorage.ToArray();
             var committedBefore = CommittedStorageBytes;
-            var outgoing = new object[removeCount];
-            for (var i = 0; i < removeCount; i++)
-            {
-                outgoing[i] = _items[bounds.Start + i];
-            }
-
-            AdoptAllIncoming(staged);
+            long outgoing = 0;
+            for (var i = 0; i < removeCount; i++) outgoing += NumericBytes(_items[bounds.Start + i]);
+            var target = checked(_numericStorageBytes - outgoing + NumericBytes((IEnumerable<object>)staged));
+            var growth = ReserveNumericGrowth(target);
             try
             {
                 _items = PyListStorage.EnsureCapacity(_items, checked(Count - removeCount + staged.Count), _memoryGovernor, _allocationSpan);
             }
-            catch (Exception)
+            catch
             {
-                UnadoptAllIncoming(staged);
+                if (growth > 0) _memoryGovernor!.Release(growth);
                 throw;
             }
-
             _items.ReplaceRange(bounds.Start, removeCount, staged);
-            ReleaseAllOutgoing(outgoing);
-            NoteGrowth(committedBefore);
+            CompleteNumericChange(target, committedBefore);
             return;
         }
-
         if (bounds.Count != values.Count)
-        {
             throw new LythonRuntimeException("ValueError", "attempt to assign sequence of size " + values.Count + " to extended slice of size " + bounds.Count, span);
-        }
-
-        var indices = new int[bounds.Count];
-        var fill = 0;
-        foreach (var index in bounds.Indices())
-        {
-            indices[fill++] = index;
-        }
-
-        var replaced = new object[bounds.Count];
-        for (var i = 0; i < indices.Length; i++)
-        {
-            replaced[i] = _items[indices[i]];
-        }
-
         var extendedBefore = CommittedStorageBytes;
-        AdoptAllIncoming(values);
+        long extendedOutgoing = 0;
+        foreach (var index in bounds.Indices()) extendedOutgoing += NumericBytes(_items[index]);
+        var extendedTarget = checked(_numericStorageBytes - extendedOutgoing + NumericBytes((IEnumerable<object>)values));
+        ReserveNumericGrowth(extendedTarget);
         var position = 0;
-        for (var i = 0; i < indices.Length; i++)
-        {
-            _items[indices[i]] = values[position++];
-        }
-
-        ReleaseAllOutgoing(replaced);
-        NoteGrowth(extendedBefore);
+        foreach (var index in bounds.Indices()) _items[index] = values[position++];
+        CompleteNumericChange(extendedTarget, extendedBefore);
     }
 
     public void Clear()
@@ -592,7 +456,8 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
             }
 
             _items = PyListStorage.Create(System.Array.Empty<object>(), _memoryGovernor, _allocationSpan);
-            ReleaseAllCoupons();
+            _memoryGovernor.Release(_numericStorageBytes);
+            _numericStorageBytes = 0;
             ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
             return;
         }
@@ -616,22 +481,17 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
 
     public void SetIndex(int index, object value) => SetElement(index, value);
 
-    // Replaces one slot: the incoming coupon commits before the store (a denial
-    // leaves the old element in place), the store itself cannot fail, and the
-    // outgoing reference releases after. Same-reference stores skip both sides.
+    // Transfer an existing numeric slot allowance; reserve a positive change
+    // before the store and release a negative change afterwards.
     private void SetElement(int index, object value)
     {
         var outgoing = _items[index];
-        if (ReferenceEquals(outgoing, value))
-        {
-            return;
-        }
-
+        if (ReferenceEquals(outgoing, value)) return;
         var committedBefore = CommittedStorageBytes;
-        AdoptIncoming(value);
+        var target = _numericStorageBytes - NumericBytes(outgoing) + NumericBytes(value);
+        ReserveNumericGrowth(target);
         _items[index] = value;
-        ReleaseOutgoing(outgoing);
-        NoteGrowth(committedBefore);
+        CompleteNumericChange(target, committedBefore);
     }
 
     public object[] ToArray()
@@ -675,38 +535,26 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     {
         if (_memoryGovernor is not null)
         {
-            // Keep the old storage charged until its replacement succeeds so a
-            // failed allocation leaves both the list and its accounting intact.
+            // Fund real replacement backing before publishing it; retain the
+            // old contents and charge if its construction or numeric funding fails.
             var replacement = PyListStorage.Create(values, _memoryGovernor, _allocationSpan);
-            var incoming = new AdoptedScalarCoupons();
+            long target;
             try
             {
-                incoming.AdoptAll(replacement, _memoryGovernor, _allocationSpan);
+                target = NumericBytes((IEnumerable<object>)replacement);
+                ReserveNumericGrowth(target);
             }
             catch
             {
-                var orphaned = replacement.ReleaseCommittedBytes();
-                if (orphaned > 0)
-                {
-                    _memoryGovernor.Release(orphaned);
-                }
-
+                _memoryGovernor.Release(replacement.ReleaseCommittedBytes());
                 throw;
             }
-
-            var released = _items.ReleaseCommittedBytes();
-            if (released > 0)
-            {
-                _memoryGovernor.Release(released);
-            }
-
-            ReleaseAllCoupons();
+            var committedBefore = CommittedStorageBytes;
+            _memoryGovernor.Release(_items.ReleaseCommittedBytes());
             _items = replacement;
-            _scalarCoupons = incoming.CommittedBytes > 0 ? incoming : null;
-            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
+            CompleteNumericChange(target, committedBefore);
             return;
         }
-
         _items = PyListStorage.Create(values);
     }
 
