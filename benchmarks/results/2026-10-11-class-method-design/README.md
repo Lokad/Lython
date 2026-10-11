@@ -131,3 +131,21 @@ No prototype or new performance result is introduced.
 [Follow-up evidence](follow-up-evidence.json) retains the failed delivery,
 controlled diagnostic, corrected fixture gate, metadata result and artifact
 hashes. The original capture evidence remains unchanged.
+
+## Method-body compiler contract inventory
+
+Before a compiler change, **26 additional white-box cases and 11 public cases**
+pass on unchanged production `f006f62c` in Windows Debug. The new fixtures pin
+all 40 escaped-closure and 48 generic-definition fuel cutoffs, source spans and
+effects; their net logical funding is respectively 2,410 and 10,864 bytes.
+Escaped generator construction retains its 26 steps and 2,950 bytes. Seven
+memory-budget allowances and compound-depth denial also pin failure and cleanup.
+
+Actual frames, governors, defaults, annotations, type parameters, live class
+cells and escaped values retain identity. Eight definition/body phases genuinely
+suspend, permit same-run reentry and resume or cancel. Public host reads cover
+nine phases, including cancellation and reuse of the compiled script.
+These checks extend the baseline inventory; no compiler or speedup is claimed.
+No new performance collection or full timing lane was run.
+[Boundary evidence](method-boundary-evidence.json) records the original producer,
+test and binary hashes, successful cases and initial fixture correction.

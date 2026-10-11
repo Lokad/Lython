@@ -1,0 +1,247 @@
+{
+  "kind": "Independent original-production method-body compilation boundaries",
+  "producerHead": "b6379d74120dc1abde97414ae1c83beccefc21b8",
+  "producerSourceState": "Unchanged production at the stated head, with the two added baseline test files recorded below; tests were not yet committed when executed.",
+  "productionTree": "f006f62cad79f63bc1b2564494ce742b6fe74000",
+  "benchmarkProjectTree": "c194ce88a7e4d52c576f3929ef82bce60bf37e2d",
+  "configuration": "Windows Debug",
+  "receipts": [
+    {
+      "file": "final/final.trx",
+      "sha256": "d94e817c53c65afd1c0bbdf19bd5b8e9d47ae60b48be85b284a7a051a5552696",
+      "total": 26,
+      "passed": 26,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.DefinitionAndBodyCallbacksActuallySuspendWithTheirRealFrames(pausedPhase: \"result\", cancel: True)",
+          "duration": "00:00:00.0011639"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.CompoundDepthDenialPrecedesConditionEffectsAndRestoresAdmission(asynchronous: False)",
+          "duration": "00:00:00.0007356"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.EscapedMethodGeneratorsKeepTheirOriginalDefaultAndClassCell(asynchronous: True)",
+          "duration": "00:00:00.0079855"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.DefinitionAndBodyCallbacksActuallySuspendWithTheirRealFrames(pausedPhase: \"bottom\", cancel: True)",
+          "duration": "00:00:00.0024806"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.DefinitionBudgetDenialsReleaseReservationsAndKeepCallerBindings(asynchronous: True)",
+          "duration": "00:00:00.0353495"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.GenericMethodDefinitionsRetainDefaultsTypeScopesAndRealClassCells(asynchronous: False)",
+          "duration": "00:00:00.0488347"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.DefinitionAndBodyCallbacksActuallySuspendWithTheirRealFrames(pausedPhase: \"default\", cancel: True)",
+          "duration": "00:00:00.1650341"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.DefinitionBudgetDenialsReleaseReservationsAndKeepCallerBindings(asynchronous: False)",
+          "duration": "00:00:00.0234282"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.EscapedMethodClosuresKeepFundingAndEveryFuelBoundary(asynchronous: True)",
+          "duration": "00:00:00.0241543"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.DefinitionAndBodyCallbacksActuallySuspendWithTheirRealFrames(pausedPhase: \"bottom\", cancel: False)",
+          "duration": "00:00:00.0016878"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.DefinitionAndBodyCallbacksActuallySuspendWithTheirRealFrames(pausedPhase: \"body\", cancel: False)",
+          "duration": "00:00:00.0119179"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.DefinitionAndBodyCallbacksActuallySuspendWithTheirRealFrames(pausedPhase: \"default\", cancel: False)",
+          "duration": "00:00:00.0011668"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.DefinitionAndBodyCallbacksActuallySuspendWithTheirRealFrames(pausedPhase: \"top\", cancel: True)",
+          "duration": "00:00:00.0023688"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.DefinitionAndBodyCallbacksActuallySuspendWithTheirRealFrames(pausedPhase: \"top-apply\", cancel: False)",
+          "duration": "00:00:00.0093945"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.DefinitionAndBodyCallbacksActuallySuspendWithTheirRealFrames(pausedPhase: \"top-apply\", cancel: True)",
+          "duration": "00:00:00.0071131"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.DefinitionAndBodyCallbacksActuallySuspendWithTheirRealFrames(pausedPhase: \"argument\", cancel: False)",
+          "duration": "00:00:00.0010444"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.DefinitionAndBodyCallbacksActuallySuspendWithTheirRealFrames(pausedPhase: \"body\", cancel: True)",
+          "duration": "00:00:00.0014356"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.DefinitionAndBodyCallbacksActuallySuspendWithTheirRealFrames(pausedPhase: \"bottom-apply\", cancel: False)",
+          "duration": "00:00:00.0012098"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.EscapedMethodClosuresKeepFundingAndEveryFuelBoundary(asynchronous: False)",
+          "duration": "00:00:00.0174191"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.DefinitionAndBodyCallbacksActuallySuspendWithTheirRealFrames(pausedPhase: \"bottom-apply\", cancel: True)",
+          "duration": "00:00:00.0010509"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.CompoundDepthDenialPrecedesConditionEffectsAndRestoresAdmission(asynchronous: True)",
+          "duration": "00:00:00.0089555"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.GenericMethodDefinitionsRetainDefaultsTypeScopesAndRealClassCells(asynchronous: True)",
+          "duration": "00:00:00.0468435"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.DefinitionAndBodyCallbacksActuallySuspendWithTheirRealFrames(pausedPhase: \"argument\", cancel: True)",
+          "duration": "00:00:00.0013023"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.DefinitionAndBodyCallbacksActuallySuspendWithTheirRealFrames(pausedPhase: \"top\", cancel: False)",
+          "duration": "00:00:00.0011039"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.EscapedMethodGeneratorsKeepTheirOriginalDefaultAndClassCell(asynchronous: False)",
+          "duration": "00:00:00.0008180"
+        },
+        {
+          "name": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.DefinitionAndBodyCallbacksActuallySuspendWithTheirRealFrames(pausedPhase: \"result\", cancel: False)",
+          "duration": "00:00:00.0013534"
+        }
+      ]
+    },
+    {
+      "file": "public-initial/public-initial.trx",
+      "sha256": "6898d2b491c2b3caa26cbaa86e3cc3558e1d71e609a893361dac37edd2a7dcbe",
+      "total": 11,
+      "passed": 11,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.MethodDefinitionHostBoundaryTests.CancellationDuringEveryDefinitionPhaseLeavesTheScriptReusable(pausedPhase: \"keyword-default\")",
+          "duration": "00:00:01.1578952"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.MethodDefinitionHostBoundaryTests.CancellationDuringEveryDefinitionPhaseLeavesTheScriptReusable(pausedPhase: \"argument\")",
+          "duration": "00:00:01.2492884"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.MethodDefinitionHostBoundaryTests.CancellationDuringEveryDefinitionPhaseLeavesTheScriptReusable(pausedPhase: \"second-apply\")",
+          "duration": "00:00:01.4833612"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.MethodDefinitionHostBoundaryTests.CancellationDuringEveryDefinitionPhaseLeavesTheScriptReusable(pausedPhase: \"result\")",
+          "duration": "00:00:01.3585329"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.MethodDefinitionHostBoundaryTests.CancellationDuringEveryDefinitionPhaseLeavesTheScriptReusable(pausedPhase: \"default\")",
+          "duration": "00:00:01.0927223"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.MethodDefinitionHostBoundaryTests.CancellationDuringEveryDefinitionPhaseLeavesTheScriptReusable(pausedPhase: \"body\")",
+          "duration": "00:00:01.6661872"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.MethodDefinitionHostBoundaryTests.MethodDefinitionAndBodyPreserveOrderThroughActualHostReads(asynchronous: False)",
+          "duration": "00:00:00.0311703"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.MethodDefinitionHostBoundaryTests.CancellationDuringEveryDefinitionPhaseLeavesTheScriptReusable(pausedPhase: \"first-apply\")",
+          "duration": "00:00:01.9812817"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.MethodDefinitionHostBoundaryTests.CancellationDuringEveryDefinitionPhaseLeavesTheScriptReusable(pausedPhase: \"second\")",
+          "duration": "00:00:00.9834663"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.MethodDefinitionHostBoundaryTests.MethodDefinitionAndBodyPreserveOrderThroughActualHostReads(asynchronous: True)",
+          "duration": "00:00:00.8417703"
+        },
+        {
+          "name": "Lokad.Lython.PublicApi.Tests.MethodDefinitionHostBoundaryTests.CancellationDuringEveryDefinitionPhaseLeavesTheScriptReusable(pausedPhase: \"first\")",
+          "duration": "00:00:00.8742365"
+        }
+      ]
+    }
+  ],
+  "files": [
+    {
+      "path": "tests/Lokad.Lython.Tests/MethodBodyCompilationBoundaryTests.cs",
+      "sha256": "3c9ac487845ac4471c5f87cfb9b94be02c22c730c97c7526d60c84ec9c14021d"
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/MethodDefinitionHostBoundaryTests.cs",
+      "sha256": "72b5589c416b7b426a04422c768e2485bdbe4239935078907af0f4337f78251d"
+    },
+    {
+      "path": "tests/Lokad.Lython.Tests/bin/Debug/net10.0/Lokad.Lython.WhiteBox.Tests.dll",
+      "sha256": "0f22f662d7abfcc415b8eca5e25f7a7653895588e6bb874e90e46c25a43fff25"
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/bin/Debug/net10.0/Lokad.Lython.PublicApi.Tests.dll",
+      "sha256": "d1acb7fb7d4bbef254e7440a42942b9c1a27fc9eabca9015d46da57bb8b10ffd"
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/bin/Debug/net10.0/Lokad.Lython.dll",
+      "sha256": "c71f01b618160ab814e1ea46540029ee2e54dc2b4b404b6f51e11f90a07848a0"
+    }
+  ],
+  "boundaries": {
+    "escapedClosureMethod": {
+      "steps": 40,
+      "netLogicalFundingBytes": 2410,
+      "everyFuelCutoff": true
+    },
+    "genericNestedMethodDefinition": {
+      "steps": 48,
+      "netLogicalFundingBytes": 10864,
+      "everyFuelCutoff": true
+    },
+    "escapedMethodGeneratorConstruction": {
+      "steps": 26,
+      "netLogicalFundingBytes": 2950
+    },
+    "definitionMemoryAllowancesBytes": [
+      0,
+      128,
+      512,
+      1024,
+      4096,
+      8192,
+      12288
+    ],
+    "compoundDepthDenial": {
+      "depth": 512,
+      "steps": 3,
+      "type": "RuntimeError",
+      "span": [
+        33,
+        35,
+        3,
+        3
+      ]
+    },
+    "genuinelySuspendedDefinitionAndBodyPhases": 8,
+    "suspensionModes": [
+      "resume with same-run reentry",
+      "cancellation with same-run reentry"
+    ],
+    "publicHostReadPhases": 9,
+    "publicHostCancellationAndReusePhases": 9
+  },
+  "limits": [
+    "No production change, compiler prototype, timing collection, allocation diagnostic or VM activity.",
+    "Exact observed funding, checkpoints, failure spans and effects are pinned in independent source fixtures before a compiler change.",
+    "This extends the existing inventory; it does not qualify a compiler or complete the performance plan.",
+    "The two initial depth assertions expected RecursionError; original production returns RuntimeError. Failed receipts are retained privately."
+  ]
+}
