@@ -9,7 +9,7 @@ public sealed class SmallTupleAdoptionTests
     [InlineData(0)]
     [InlineData(1)]
     [InlineData(2)]
-    public void ChargesDistinctIdentitiesAndAliasesAcrossTheSmallTupleBoundary(int construction)
+    public void ChargesNumericSlotsWithoutChangingAliasesAcrossTupleArities(int construction)
     {
         object shared = new BigInteger(7);
         object equal = new BigInteger(7);
@@ -22,9 +22,8 @@ public sealed class SmallTupleAdoptionTests
         {
             var governor = new MemoryGovernor(null);
             var tuple = Make(items, governor, construction);
-            var distinct = items.Where(AdoptedScalarCoupons.IsAdoptableScalar)
-                .Distinct(ReferenceEqualityComparer.Instance).Count();
-            var expected = PyTuple.EstimateApproximateBytes(items.Length) + distinct * AdoptedScalarCoupons.CouponBytes;
+            var slots = items.Count(AdoptedScalarCoupons.IsAdoptableScalar);
+            var expected = PyTuple.EstimateApproximateBytes(items.Length) + slots * 64L;
             Assert.Equal(expected, tuple.CommittedStorageBytes);
             Assert.Equal(expected, governor.CurrentCommittedBytes);
             Assert.Equal(0, governor.CurrentReservedBytes);
@@ -40,7 +39,7 @@ public sealed class SmallTupleAdoptionTests
     [InlineData(1, 1)]
     [InlineData(2, 0)]
     [InlineData(2, 1)]
-    public void FirstOrSecondCouponDenialRefundsConstructionAndAllowsRecovery(int construction, int fundedCoupons)
+    public void DeniedStorageRefundsConstructionAndAllowsRecovery(int construction, int fundedCoupons)
     {
         object[] items = [new BigInteger(1), new BigInteger(2)];
         var budget = PyTuple.EstimateApproximateBytes(2) + (fundedCoupons + 1) * AdoptedScalarCoupons.CouponBytes - 1;
@@ -49,7 +48,7 @@ public sealed class SmallTupleAdoptionTests
         Assert.Equal("MemoryError", failure.ExceptionType);
         Assert.Equal(0, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
-        var recovered = Make([items[0]], governor, construction);
+        var recovered = new PyTuple(new object[] { items[0] }, governor);
         Assert.Equal(PyTuple.EstimateApproximateBytes(1) + AdoptedScalarCoupons.CouponBytes, governor.CurrentCommittedBytes);
         Assert.Same(items[0], recovered[0]);
         GC.KeepAlive(items);
@@ -68,11 +67,11 @@ public sealed class SmallTupleAdoptionTests
         LythonRuntime.OwnFreshInteger(large, governor, pool, null);
         var before = governor.CurrentCommittedBytes;
         var alias = Make([large, large], governor, construction);
-        Assert.Equal(PyTuple.EstimateApproximateBytes(2), alias.CommittedStorageBytes);
+        Assert.Equal(PyTuple.EstimateApproximateBytes(2) + 2 * 64, alias.CommittedStorageBytes);
         Assert.Equal(alias.CommittedStorageBytes, governor.CurrentCommittedBytes - before);
         before = governor.CurrentCommittedBytes;
         var mixed = Make([large, new BigInteger(1)], governor, construction);
-        Assert.Equal(PyTuple.EstimateApproximateBytes(2) + AdoptedScalarCoupons.CouponBytes, mixed.CommittedStorageBytes);
+        Assert.Equal(PyTuple.EstimateApproximateBytes(2) + 2 * 64, mixed.CommittedStorageBytes);
         Assert.Equal(mixed.CommittedStorageBytes, governor.CurrentCommittedBytes - before);
         Assert.True(pool.IsTracked(large));
         Assert.Equal(0, governor.CurrentReservedBytes);

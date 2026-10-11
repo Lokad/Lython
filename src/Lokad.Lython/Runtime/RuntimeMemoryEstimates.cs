@@ -6,6 +6,19 @@ internal static class RuntimeMemoryEstimates
 {
     private const long BigIntegerObjectOverheadBytes = 32;
 
+    // A retained numeric slot pays a conservative box allowance without an
+    // identity map. Large magnitudes retain their existing payload owner;
+    // only an unowned magnitude needs its byte-count estimate here.
+    internal const long ScalarStorageBytes = 64;
+
+    internal static long EstimateScalarStorageBytes(object? value) => value switch
+    {
+        BigInteger integer => integer.GetByteCount() > 9 && !ChargeReclamationPool.IsTrackedValue(value)
+            ? ScalarStorageBytes + integer.GetByteCount() : ScalarStorageBytes,
+        double or int or long or PyDecimal => ScalarStorageBytes,
+        _ => 0,
+    };
+
     public static long EstimateBigIntegerBytes(BigInteger value)
         => BigIntegerObjectOverheadBytes + value.GetByteCount();
 

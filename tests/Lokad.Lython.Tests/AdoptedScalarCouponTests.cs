@@ -518,10 +518,10 @@ public sealed class AdoptedScalarCouponTests
     }
 
     [Fact]
-    public void TupleAdoptsDistinctOnce()
+    public void TupleChargesEachRetainedNumericSlot()
     {
-        // Tuples adopt construction contents with per-identity dedup: distinct
-        // boxes earn one coupon each, aliases share.
+        // Immutable storage uses a conservative per-slot estimate; aliases
+        // retain Python identity and have no identity-accounting table.
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
@@ -529,7 +529,7 @@ public sealed class AdoptedScalarCouponTests
         var before = governor.CurrentCommittedBytes;
         object shared = new BigInteger(9);
         var tuple = new PyTuple(new object[] { new BigInteger(1), new BigInteger(2), shared, shared }, governor, span);
-        var expected = PyTuple.EstimateApproximateBytes(4) + 3 * AdoptedScalarCoupons.CouponBytes;
+        var expected = PyTuple.EstimateApproximateBytes(4) + 4 * 64L;
         Assert.Equal(expected, tuple.CommittedStorageBytes);
         Assert.Equal(expected, governor.CurrentCommittedBytes - before);
         Assert.Equal(0, governor.CurrentReservedBytes);

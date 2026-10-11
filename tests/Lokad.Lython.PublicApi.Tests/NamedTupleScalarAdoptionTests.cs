@@ -3,9 +3,8 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// N06 (namedtuple half): guest-constructed records adopt one uniform coupon per
-// distinct small-scalar field. Records never mutate, so the total stays fixed;
-// drops release through the regular tracking snapshot.
+// Immutable records charge numeric fields conservatively per slot. Their
+// backing owner carries the total until ordinary drop reclamation.
 public sealed class NamedTupleScalarAdoptionTests
 {
     private const long ThreeMib = 3145728;
@@ -38,7 +37,7 @@ public sealed class NamedTupleScalarAdoptionTests
     }
 
     [Fact]
-    public async Task AliasFieldsShareOneCoupon()
+    public async Task ConservativeAliasFieldsRemainBoundedAndKeepIdentity()
     {
         var script = Compile("""
             import collections

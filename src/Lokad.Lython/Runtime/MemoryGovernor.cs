@@ -320,6 +320,17 @@ internal sealed class MemoryGovernor
             _reservedBytes -= bytes;
         }
 
+        // Transfer only this reservation's funding to its final storage owner.
+        // Dispose then refunds remaining scratch, never another lease's bytes.
+        public void Commit(long bytes)
+        {
+            var governor = _governor ?? throw new ObjectDisposedException(nameof(TemporaryMemoryReservation));
+            if (bytes < 0 || bytes > _reservedBytes)
+                throw new InvalidOperationException("Cannot commit another reservation's funding.");
+            governor.Commit(bytes);
+            _reservedBytes -= bytes;
+        }
+
         public void Dispose()
         {
             var governor = Interlocked.Exchange(ref _governor, null);

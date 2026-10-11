@@ -2624,6 +2624,17 @@ The runtime may approximate memory pressure conservatively rather than measuring
 
 Such approximations must lean on the safe side: it is acceptable to reject scripts earlier than a perfect memory model would require if doing so better protects the host.
 
+Immutable tuples and named-tuple records include a conservative allowance for
+each retained numeric slot in their backing-storage charge. Repeated aliases
+are charged per occurrence without changing Python object identity. Large
+integer magnitudes keep their independent payload owner; unowned magnitudes
+include a payload-size estimate in the slot charge. These estimates may reject alias-heavy scripts under
+tight budgets and may change reported accounted peaks. They track retained
+storage rather than cumulative allocation: dropped records remain reclaimable,
+while retained records and escaped payloads continue to consume the budget.
+Construction preflights storage, refunds failed materialization, and transfers
+only its own temporary funding to the completed storage owner.
+
 Lython does not need to promise a perfect hard memory ceiling from inside the same managed process, but it must provide conservative in-process resource controls that make runaway allocation materially harder.
 
 #### 14.6.1 Combined Peak Envelope

@@ -485,7 +485,7 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
     private readonly object[] _values;
     private readonly MemoryGovernor? _memoryGovernor;
     private readonly LythonSourceSpan? _allocationSpan;
-    private readonly long _adoptedBytes;
+    private readonly long _committedBytes;
 
     public PyNamedTupleObject(PyNamedTupleType type, object[] values)
     {
@@ -494,30 +494,14 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
     }
 
     // Guest-constructed instances own their backing array at the tuple slot
-    // rate; engine-owned tuples without a governor stay free. Distinct scalar
-    // field values adopt one coupon each (N06); records never mutate, so the
-    // total stays fixed and no refcount map is retained.
+    // rate; engine-owned tuples without a governor stay free. Conservative
+    // numeric slot allowances join the backing charge without identity maps.
     public PyNamedTupleObject(PyNamedTupleType type, object[] values, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
-        var backingBytes = PyTuple.EstimateApproximateBytes(values.Length);
-        governor.Reserve(backingBytes, allocationSpan);
-        governor.Commit(backingBytes);
         _type = type;
-        _values = [.. values];
+        _values = PyTuple.CopyGovernedItems(values, governor, allocationSpan, out _committedBytes);
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
-        var incoming = new AdoptedScalarCoupons();
-        try
-        {
-            incoming.AdoptAll(_values, governor, allocationSpan);
-        }
-        catch
-        {
-            governor.Release(backingBytes);
-            throw;
-        }
-
-        _adoptedBytes = incoming.CommittedBytes;
     }
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
@@ -525,9 +509,9 @@ internal sealed class PyNamedTupleObject : IPySequenceValue, IPyIndexableValue, 
     public LythonSourceSpan? AllocationSpan => _allocationSpan;
 
     // Current committed backing charges, mirroring the tuple slot rate: records never grow,
-    // so the snapshot stays exact. Unowned records carry nothing. Adopted scalar
-    // coupons fold in, so tracking snapshots and drop sweeps carry them.
-    internal long CommittedStorageBytes => OwnerMemoryGovernor is null ? 0 : PyTuple.EstimateApproximateBytes(_values.Length) + _adoptedBytes;
+    // so the snapshot stays exact. Unowned records carry nothing; scalar-slot
+    // allowances belong to the same backing owner through its drop lifetime.
+    internal long CommittedStorageBytes => _committedBytes;
 
     public PyNamedTupleType Type => _type;
 

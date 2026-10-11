@@ -3,11 +3,9 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// N06 (PyTuple half): governed tuples adopt one uniform coupon per distinct
-// small-scalar identity at construction. Tuples never mutate, so the total
-// stays fixed and no refcount map is retained: only the total rides the drop
-// snapshot. Distinct populations deny; alias repetitions share one coupon;
-// unpacking loops stay bounded.
+// Immutable tuples charge retained numeric slots without identity bookkeeping.
+// Aliases retain their identity but are conservatively charged per occurrence.
+// The total belongs to backing storage and its ordinary drop snapshot.
 public sealed class TupleScalarAdoptionTests
 {
     private const long ThreeMib = 3145728;
@@ -35,17 +33,18 @@ public sealed class TupleScalarAdoptionTests
     }
 
     [Fact]
-    public async Task AliasRepeatSharesOneCoupon()
+    public async Task AliasRepeatUsesConservativeSlotBudget()
     {
         var script = Compile("return len((0,) * 100000)\n");
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
-        var expected = new BigInteger(100000);
         var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+        Assert.True(sync.PeakExecutionMemoryBytes <= ThreeMib);
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= ThreeMib);
     }
 
     [Fact]

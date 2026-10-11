@@ -7,7 +7,7 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
     private readonly object[] _items;
     private readonly MemoryGovernor? _memoryGovernor;
     private readonly LythonSourceSpan? _allocationSpan;
-    private readonly long _adoptedBytes;
+    private readonly long _committedBytes;
 
     // Keep identity-based reclamation metadata with its immutable owner. The
     // entry refers back weakly, so this does not keep a dropped tuple alive.
@@ -26,16 +26,7 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
     {
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
-        _items = MaterializeGovernedItems(items, governor, allocationSpan);
-        try
-        {
-            _adoptedBytes = AdoptConstructionCoupons(_items, governor, allocationSpan);
-        }
-        catch
-        {
-            governor.Release(EstimateApproximateBytes(_items.Length));
-            throw;
-        }
+        _items = MaterializeGovernedItems(items, governor, allocationSpan, out _committedBytes);
     }
 
     public PyTuple(object[] items)
@@ -49,20 +40,7 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
     {
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
-        var approximateBytes = EstimateApproximateBytes(items.Length);
-        governor.EnsureCanReserve(approximateBytes, allocationSpan);
-        _items = [.. items];
-        governor.Reserve(approximateBytes, allocationSpan);
-        governor.Commit(approximateBytes);
-        try
-        {
-            _adoptedBytes = AdoptConstructionCoupons(_items, governor, allocationSpan);
-        }
-        catch
-        {
-            governor.Release(approximateBytes);
-            throw;
-        }
+        _items = CopyGovernedItems(items, governor, allocationSpan, out _committedBytes);
     }
 
     private PyTuple(object[] items, bool takeOwnership)
@@ -70,12 +48,12 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
         _items = takeOwnership ? items : [.. items];
     }
 
-    private PyTuple(object[] items, MemoryGovernor governor, LythonSourceSpan? allocationSpan, bool takeOwnership, long adoptedBytes = 0)
+    private PyTuple(object[] items, MemoryGovernor governor, LythonSourceSpan? allocationSpan, long committedBytes)
     {
-        _items = takeOwnership ? items : [.. items];
+        _items = items;
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
-        _adoptedBytes = adoptedBytes;
+        _committedBytes = committedBytes;
     }
 
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
@@ -90,9 +68,9 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
     // Current committed backing charges, for pooled owners that release them
     // if this tuple is dropped. Tuples never grow, so the snapshot stays exact.
     // Unowned tuples carry nothing: snapshots must mirror committed charges so a
-    // later sweep can never release what was never committed. Adopted scalar
-    // coupons fold in, so snapshots and drop sweeps carry them.
-    internal long CommittedStorageBytes => OwnerMemoryGovernor is null ? 0 : EstimateApproximateBytes(_items.Length) + _adoptedBytes;
+    // later sweep can never release what was never committed. Conservative
+    // numeric slot allowances belong to the same immutable storage owner.
+    internal long CommittedStorageBytes => _committedBytes;
 
     internal static PyTuple FromOwnedArray(object[] items) => new(items, takeOwnership: true);
 
@@ -101,154 +79,84 @@ internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyVa
         // Ownership transfer lets collection-expression callers avoid a second
         // backing-array copy. The caller must not retain or mutate the array.
         // Box identities are only read, so the transfer proof is unaffected.
-        var approximateBytes = EstimateApproximateBytes(items.Length);
-        governor.Reserve(approximateBytes, allocationSpan);
-        governor.Commit(approximateBytes);
-        var adopted = AdoptConstructionCouponsShared(items, governor, allocationSpan, approximateBytes);
-        return new PyTuple(items, governor, allocationSpan, takeOwnership: true, adoptedBytes: adopted);
+        var bytes = EstimateStorageBytes(items);
+        governor.Reserve(bytes, allocationSpan);
+        governor.Commit(bytes);
+        return new PyTuple(items, governor, allocationSpan, bytes);
     }
 
-    // Adopts construction contents with a refund of the orphaned backing charge
-    // when a coupon denies: callers publish nothing on failure. AdoptAll rolls its
-    // own coupons back, so only the backing refunds here. Tuples never mutate, so
-    // the total stays fixed and no refcount map is retained: only the total rides
-    // the snapshot.
-    private static long AdoptConstructionCoupons(object[] items, MemoryGovernor governor, LythonSourceSpan? span)
+    internal static long EstimateStorageBytes(ReadOnlySpan<object> items)
     {
-        if (items.Length <= 2)
-        {
-            return AdoptSmallConstructionCoupons(items, governor, span);
-        }
-
-        var incoming = new AdoptedScalarCoupons();
-        incoming.AdoptAll(items, governor, span);
-        return incoming.CommittedBytes;
+        var bytes = EstimateApproximateBytes(items.Length);
+        foreach (var item in items) bytes += RuntimeMemoryEstimates.EstimateScalarStorageBytes(item);
+        return bytes;
     }
 
-    // Immutable small tuples need only the final charge, not a temporary
-    // identity/refcount dictionary and rollback list. Input slots retain the
-    // owners throughout reservation relief, and two slots dedup by identity.
-    private static long AdoptSmallConstructionCoupons(object[] items, MemoryGovernor governor, LythonSourceSpan? span)
+    // Known arrays need one admission before copying and no funding helper
+    // allocation. Named tuples share this same storage construction rule.
+    internal static object[] CopyGovernedItems(object[] items, MemoryGovernor governor,
+        LythonSourceSpan? span, out long bytes)
     {
-        long committed = 0;
+        bytes = EstimateStorageBytes(items);
+        governor.Reserve(bytes, span);
+        object[] result;
         try
         {
-            for (var i = 0; i < items.Length; i++)
-            {
-                var value = items[i];
-                if (!AdoptedScalarCoupons.IsAdoptableScalar(value) ||
-                    (i == 1 && ReferenceEquals(value, items[0])) ||
-                    ChargeReclamationPool.IsTrackedValue(value))
-                {
-                    continue;
-                }
-
-                governor.Reserve(AdoptedScalarCoupons.CouponBytes, span);
-                governor.Commit(AdoptedScalarCoupons.CouponBytes);
-                committed += AdoptedScalarCoupons.CouponBytes;
-            }
-
-            return committed;
+            result = [.. items];
         }
         catch
         {
-            if (committed > 0) governor.Release(committed);
+            governor.ReleaseReserved(bytes);
             throw;
         }
+        governor.Commit(bytes);
+        return result;
     }
 
-    private static long AdoptConstructionCouponsShared(object[] items, MemoryGovernor governor, LythonSourceSpan? span, long committedBacking)
-    {
-        try
-        {
-            return AdoptConstructionCoupons(items, governor, span);
-        }
-        catch
-        {
-            governor.Release(committedBacking);
-            throw;
-        }
-    }
-
-
-
-    private static object[] MaterializeGovernedItems(IEnumerable<object> items, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+    private static object[] MaterializeGovernedItems(IEnumerable<object> items, MemoryGovernor governor,
+        LythonSourceSpan? allocationSpan, out long bytes)
     {
         if (items is object[] array)
         {
-            var approximateBytes = EstimateApproximateBytes(array.Length);
-            governor.EnsureCanReserve(approximateBytes, allocationSpan);
-            var result = new object[array.Length];
-            Array.Copy(array, result, array.Length);
-            governor.Reserve(approximateBytes, allocationSpan);
-            governor.Commit(approximateBytes);
-            return result;
+            return CopyGovernedItems(array, governor, allocationSpan, out bytes);
         }
 
-        if (items is ICollection<object> collection)
+        var capacity = items switch
         {
-            var approximateBytes = EstimateApproximateBytes(collection.Count);
-            governor.EnsureCanReserve(approximateBytes, allocationSpan);
-            var result = new object[collection.Count];
-            collection.CopyTo(result, 0);
-            governor.Reserve(approximateBytes, allocationSpan);
-            governor.Commit(approximateBytes);
-            return result;
-        }
-
-        if (items is IReadOnlyCollection<object> readOnlyCollection)
+            ICollection<object> collection => collection.Count,
+            IReadOnlyCollection<object> collection => collection.Count,
+            _ => 0,
+        };
+        using var funding = governor.ReserveTemporary(EstimateApproximateBytes(capacity), allocationSpan);
+        var buffer = capacity == 0 ? Array.Empty<object>() : new object[capacity];
+        var count = 0;
+        long scalarBytes = 0;
+        foreach (var item in items)
         {
-            var approximateBytes = EstimateApproximateBytes(readOnlyCollection.Count);
-            governor.EnsureCanReserve(approximateBytes, allocationSpan);
-            var result = new object[readOnlyCollection.Count];
-            governor.Reserve(approximateBytes, allocationSpan);
-            governor.Commit(approximateBytes);
-            var index = 0;
-            foreach (var item in readOnlyCollection)
-            {
-                result[index++] = item;
-            }
-
-            return result;
-        }
-
-        object[] materialized;
-        long bytes;
-        using (var temporary = governor.ReserveTemporary(0, allocationSpan))
-        {
-            var count = 0;
-            var buffer = Array.Empty<object>();
-            foreach (var item in items)
-            {
-                if (count == buffer.Length)
-                {
-                    var nextCapacity = buffer.Length == 0 ? 4 : checked(buffer.Length * 2);
-                    temporary.Grow(
-                        EstimateApproximateBytes(nextCapacity) - EstimateApproximateBytes(buffer.Length),
-                        allocationSpan);
-                    Array.Resize(ref buffer, nextCapacity);
-                }
-
-                buffer[count++] = item;
-            }
-
-            bytes = EstimateApproximateBytes(count);
             if (count == buffer.Length)
             {
-                materialized = buffer;
+                var nextCapacity = buffer.Length == 0 ? 4 : checked(buffer.Length * 2);
+                funding.Grow(EstimateApproximateBytes(nextCapacity) - EstimateApproximateBytes(buffer.Length), allocationSpan);
+                Array.Resize(ref buffer, nextCapacity);
             }
-            else
-            {
-                // The exact array coexists briefly with the growth buffer, so
-                // reserve both before making the final allocation.
-                temporary.Grow(bytes, allocationSpan);
-                materialized = new object[count];
-                Array.Copy(buffer, materialized, count);
-            }
+
+            var scalar = RuntimeMemoryEstimates.EstimateScalarStorageBytes(item);
+            funding.Grow(scalar, allocationSpan);
+            scalarBytes += scalar;
+            buffer[count++] = item;
         }
 
-        governor.Reserve(bytes, allocationSpan);
-        governor.Commit(bytes);
+        var backingBytes = EstimateApproximateBytes(count);
+        var materialized = buffer;
+        if (count != buffer.Length)
+        {
+            // The exact final array coexists with the temporary growth buffer.
+            funding.Grow(backingBytes, allocationSpan);
+            materialized = new object[count];
+            Array.Copy(buffer, materialized, count);
+        }
+        bytes = backingBytes + scalarBytes;
+        funding.Commit(bytes);
         return materialized;
     }
 
