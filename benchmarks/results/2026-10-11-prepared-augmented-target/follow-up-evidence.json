@@ -1,0 +1,33 @@
+{
+  "state": "Audited",
+  "failedHead": "358e9a200aefb725d0bea4da22d30131fa8c85d8",
+  "failedRun": 38101730382,
+  "firstAttempt": true,
+  "sameHeadRerun": false,
+  "originalNewChecksFailed": 2,
+  "correctedLinuxChecksPassed": 31,
+  "correctedWindowsChecksPassed": 31,
+  "productionUnchanged": true,
+  "harnessUnchanged": true,
+  "existingFiveSecondExitDeadlinePreserved": true,
+  "noReadErrorCountsAsExit": true,
+  "diagnosticGroups": [
+    {
+      "role": "original",
+      "wholeSeconds": 2.033188,
+      "mainPid": 1910647,
+      "terminal": true
+    },
+    {
+      "role": "corrected",
+      "wholeSeconds": 13.08673,
+      "mainPid": 1910875,
+      "terminal": true
+    }
+  ],
+  "servicesInactiveAndCgroupsEmpty": true,
+  "leaseAvailable": true,
+  "fullLanes": 0,
+  "originalEvidenceUntouched": true,
+  "diagnosticAuditSha256": "a025eb248fe146dff064d19d9ffad628597f5b3977db834c0b865eec63ffa4b7"
+}

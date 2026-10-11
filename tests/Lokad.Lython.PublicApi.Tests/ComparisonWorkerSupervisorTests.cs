@@ -173,7 +173,54 @@ public sealed class ComparisonWorkerSupervisorTests
         await AssertExitedAsync(fixture.RootId);
     }
 
-    private static async Task AssertExitedAsync(int id)
+    [Fact]
+    public async Task ExitAfterOpeningProcStatDoesNotEscapeTheCleanupAssertion()
+    {
+        if (!OperatingSystem.IsLinux()) return;
+        using var fixture = new Fixture("normal");
+        await using var worker = await fixture.StartAsync();
+        var reads = 0;
+        await AssertExitedAsync(fixture.RootId, async id =>
+        {
+            reads++;
+            using var reader = File.OpenText($"/proc/{id}/stat");
+            await worker.CloseAsync();
+            // An open proc handle can report ESRCH when its process is reaped.
+            var error = Assert.Throws<IOException>(() => reader.ReadToEnd());
+            throw error;
+        });
+        Assert.Equal(1, reads);
+        Assert.True(worker.CleanupCompleted);
+    }
+
+    [Fact]
+    public async Task ProcStatReadFailureDoesNotPassForALiveWorker()
+    {
+        if (!OperatingSystem.IsLinux()) return;
+        using var fixture = new Fixture("normal");
+        await using var worker = await fixture.StartAsync();
+        var read = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var pending = AssertExitedAsync(fixture.RootId, _ =>
+        {
+            read.TrySetResult();
+            return Task.FromException<string>(new IOException("Transient proc read failure"));
+        });
+        try
+        {
+            await read.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.False(pending.IsCompleted);
+            Assert.Equal("Equivalent", (await worker.VerifyAsync(Case)).Status);
+        }
+        finally
+        {
+            await worker.CloseAsync();
+            if (pending.IsFaulted) _ = pending.Exception;
+        }
+        await pending;
+        Assert.True(worker.CleanupCompleted);
+    }
+
+    private static async Task AssertExitedAsync(int id, Func<int, Task<string>>? readStat = null)
     {
         var deadline = Stopwatch.StartNew();
         while (true)
@@ -184,10 +231,18 @@ public sealed class ComparisonWorkerSupervisorTests
                 if (process.HasExited) return;
                 // An orphan killed in our Linux session may briefly await PID1
                 // reaping. A zombie has exited and cannot hold any pipe open.
-                if (OperatingSystem.IsLinux() && File.ReadAllText($"/proc/{id}/stat").Split(')')[1].TrimStart().StartsWith('Z')) return;
+                if (OperatingSystem.IsLinux())
+                {
+                    var stat = readStat is null ? File.ReadAllText($"/proc/{id}/stat") : await readStat(id);
+                    if (stat.Split(')')[1].TrimStart().StartsWith('Z')) return;
+                }
             }
             catch (ArgumentException) { return; }
             catch (FileNotFoundException) { return; }
+            // Linux can reap a process between opening and reading its stat
+            // file, producing ESRCH as IOException. Retry the exit check;
+            // a read failure alone does not establish that a worker exited.
+            catch (IOException) when (OperatingSystem.IsLinux()) { }
             Assert.True(deadline.Elapsed < TimeSpan.FromSeconds(5), $"Owned process {id} is still running.");
             await Task.Delay(10);
         }

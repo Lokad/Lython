@@ -102,3 +102,15 @@ All 20 owned services are terminal; all
 66 recorded PIDs are absent, both producers are clean,
 inputs are rehashed and the shared VM lease is free. Raw responses, failed
 original probes, binaries, journals and native listings remain private.
+
+## CI follow-up
+
+The initial delivery `358e9a20` passes Windows CI and all new runtime checks, but
+Ubuntu fails an existing cleanup assertion when a process is reaped between
+opening and reading `/proc/<pid>/stat`. The test helper now retries that
+inconclusive read while preserving its five-second exit deadline. Two checks on
+actual owned workers reproduce the old failure and verify that an unreadable
+stat file cannot pass for a live process. All 31 supervisor checks pass on Windows
+and Linux; diagnostic groups take 2.03s and 13.09s including cleanup. Production,
+harness and original timing evidence stay unchanged. Details are recorded in
+[the follow-up evidence](follow-up-evidence.json).

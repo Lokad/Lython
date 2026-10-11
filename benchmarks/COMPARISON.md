@@ -10,6 +10,9 @@ on both producers, with 42 independent pre-prototype checks. Fourteen paired
 micros take 8.04–8.05s including cleanup; separate allocation/native
 checks and all controls remain visible. No full lane or favorable recollection
 is added; the next milestone remains deferred.
+Initial delivery CI exposes a Linux `/proc` read race in an existing test helper.
+Two actual-worker checks reproduce it; the corrected supervisor suite passes
+all 31 cases on both platforms without changing production or timing evidence.
 
 The [corrected function-scoped dispatch round](results/2026-10-11-scoped-dispatch-corrected/README.md)
 accepts direct lowered dispatch only inside active synchronous function bodies.
