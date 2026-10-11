@@ -2656,6 +2656,13 @@ Private list storage construction likewise refunds its current backing on
 population failure, including after small-list promotion. Live list extension
 keeps its successfully inserted prefix and its charges if later input fails.
 
+`int.from_bytes` preflights conversion storage before creating its result. Heap
+magnitudes own their payload through the same reclamation path as parsed and
+arithmetic integers: retained conversions count toward the execution budget,
+while dropped conversions can reclaim their charge. The byte-length estimate is
+conservative, so heavily sign-padded input can require more admission headroom
+than the final integer's payload. This does not charge total allocation forever.
+
 Lython does not need to promise a perfect hard memory ceiling from inside the same managed process, but it must provide conservative in-process resource controls that make runaway allocation materially harder.
 
 #### 14.6.1 Combined Peak Envelope

@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
@@ -72,4 +73,37 @@ public sealed class IntegerFromBytesOwnershipTests
         Assert.Equal(0, governor.CurrentReservedBytes);
         Assert.Equal(0, context.Services.State.CallTemporaries.Count);
     }
+
+    [Fact]
+    public void EscapedPayloadStaysFundedAfterTheInputDrops()
+    {
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var value = ConvertFresh(context);
+        var before = context.MemoryGovernor.CurrentCommittedBytes;
+        GC.Collect();
+        Assert.Equal(0, context.Services.State.CallTemporaries.Sweep(full: true));
+        Assert.True(context.Services.State.CallTemporaries.IsTracked(value));
+        Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
+        GC.KeepAlive(value);
+    }
+
+    [Fact]
+    public void DroppedPayloadReleasesItsActualCharge()
+    {
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var before = context.MemoryGovernor.CurrentCommittedBytes;
+        var weak = ConvertDropped(context);
+        GC.Collect();
+        Assert.False(weak.TryGetTarget(out _));
+        Assert.True(context.Services.State.CallTemporaries.Sweep(full: true) > 512);
+        Assert.Equal(before + context.Services.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static object ConvertFresh(LythonRuntime.ExecutionContext context)
+        => Conversion(context).Invoke(Arguments(512, "little", false), Span, context);
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static WeakReference<object> ConvertDropped(LythonRuntime.ExecutionContext context)
+        => new(ConvertFresh(context));
 }

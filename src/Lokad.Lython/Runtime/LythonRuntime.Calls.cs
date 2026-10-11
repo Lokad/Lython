@@ -1918,32 +1918,20 @@ internal sealed partial class LythonRuntime
 
         var littleEndian = ParseByteOrder(orderValue, "from_bytes", context, span);
         var signed = signedValue is not null && IsTruthy(signedValue);
-        var raw = source switch
+        ReadOnlySpan<byte> raw = source switch
         {
-            PyBytes bytes => bytes.ToArray(),
+            PyBytes bytes => bytes.Bytes,
             PyString => throw new LythonRuntimeException("TypeError", "cannot convert '" + UnboundTypeMethod.PythonTypeName(source, context) + "' object to bytes", span),
             _ => FromBytesOperands(source, context, span),
         };
 
-        if (!littleEndian)
-        {
-            Array.Reverse(raw);
-        }
-
-        var magnitude = BigInteger.Zero;
-        var shift = 0;
-        foreach (var octet in raw)
-        {
-            magnitude |= ((BigInteger)octet) << shift;
-            shift += 8;
-        }
-
-        if (signed && raw.Length > 0 && (raw[raw.Length - 1] & 0x80) != 0)
-        {
-            magnitude -= BigInteger.One << (8 * raw.Length);
-        }
-
-        return magnitude;
+        // The extra byte covers an unsigned magnitude's positive sign byte.
+        // Borrow immutable bytes; convert once, then own the actual returned box.
+        GuardIntegerResultBytes(33L + raw.Length, context.MemoryGovernor, span);
+        var result = OwnFreshInteger(new BigInteger(raw, isUnsigned: !signed, isBigEndian: !littleEndian),
+            context.MemoryGovernor, context.Services.State.CallTemporaries, span);
+        GC.KeepAlive(source); // Keep borrowed storage's owner through admission.
+        return result;
     }
 
     private static byte[] FromBytesOperands(object source, ExecutionContext context, LythonSourceSpan span)
