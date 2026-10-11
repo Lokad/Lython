@@ -13,8 +13,8 @@ public sealed class ReclamationTierFundingTests
     {
         // Four 1-byte values + four 128-byte entries + four young slots = 548.
         // The fifth value/entry fit, but its predicted 32-byte growth misses by
-        // one byte. Relief prunes a dead entry and promotes the three live ones,
-        // leaving the existing young slots available for the new publication.
+        // one byte. Relief prunes a dead entry, leaving the existing slots
+        // available for the new publication without any backing growth.
         var governor = new MemoryGovernor(708);
         var pool = new ChargeReclamationPool(governor);
         governor.LivePoolProvider = () => new[] { pool };
@@ -32,7 +32,7 @@ public sealed class ReclamationTierFundingTests
 
         Assert.Equal(4, pool.Count);
         var actualBacking = ActualBacking(pool);
-        Assert.Equal(64, actualBacking);
+        Assert.Equal(32, actualBacking);
         Assert.Equal(actualBacking, pool.CommittedBackingBytes);
         Assert.Equal(4 * (1 + ChargeReclamationPool.EntryChargeBytes) + actualBacking,
             governor.CurrentCommittedBytes);
@@ -65,9 +65,9 @@ public sealed class ReclamationTierFundingTests
         Assert.Equal("x", escaped.AsString());
         Assert.Equal(4, pool.Count);
         Assert.True(list.TryBorrowSplitForJoin(out _));
-        Assert.Equal(64, ActualBacking(pool));
+        Assert.Equal(32, ActualBacking(pool));
         Assert.Equal(ActualBacking(pool), pool.CommittedBackingBytes);
-        Assert.Equal(before - 129 + 32, governor.CurrentCommittedBytes);
+        Assert.Equal(before - 129, governor.CurrentCommittedBytes);
         Assert.Equal(pressure, governor.CurrentReservedBytes);
         governor.ReleaseReserved(pressure);
         Assert.Equal(0, governor.CurrentReservedBytes);
@@ -140,11 +140,11 @@ public sealed class ReclamationTierFundingTests
         Assert.NotNull(next);
         Assert.Equal("z", ((PyString)next[0]).AsString());
         Assert.Equal(4, source.Pool.Count);
-        Assert.Equal(64, ActualBacking(source.Pool));
+        Assert.Equal(32, ActualBacking(source.Pool));
         Assert.Equal(ActualBacking(source.Pool), source.Pool.CommittedBackingBytes);
         // The dead three-cell row and one dropped field refund exactly the
-        // new one-cell row/field charges. Only real old-tier growth remains.
-        Assert.Equal(before + 32, governor.CurrentCommittedBytes);
+        // new one-cell row/field charges. Existing slots need no growth.
+        Assert.Equal(before, governor.CurrentCommittedBytes);
         Assert.Equal(reservedBefore + pressure, governor.CurrentReservedBytes);
         Assert.True(governor.PeakAccountedBytes <= cap);
         governor.ReleaseReserved(pressure);
@@ -180,9 +180,8 @@ public sealed class ReclamationTierFundingTests
     }
 
     private static long ActualBacking(ChargeReclamationPool pool) =>
-        new[] { "_young", "_old" }.Sum(name => 8L *
-            ((List<ChargeReclamationPool.ReclamationEntry>)typeof(ChargeReclamationPool)
-                .GetField(name, BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(pool)!).Capacity);
+        8L * ((List<ChargeReclamationPool.ReclamationEntry>)typeof(ChargeReclamationPool)
+            .GetField("_entries", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(pool)!).Capacity;
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static (object[] Retained, WeakReference<object> Dead) FillYoung(MemoryGovernor governor, ChargeReclamationPool pool)

@@ -162,7 +162,7 @@ public sealed class PoolRegistrationTransactionTests
     // growth. The genuine denial must refund the dead entry and keep the live
     // entry queued; another denial and then a funded retry preserve ownership.
     [Fact]
-    public void SweepPromotionDenialReleasesDeadAndKeepsLive()
+    public void SweepReleasesDeadAndKeepsLiveWithoutPromotionAdmission()
     {
         var governor = new MemoryGovernor(8296);
         var pool = new ChargeReclamationPool(governor);
@@ -191,30 +191,28 @@ public sealed class PoolRegistrationTransactionTests
         GC.WaitForPendingFinalizers();
         GC.Collect();
 
-        var failure = Assert.Throws<LythonRuntimeException>(() => pool.Sweep());
-        Assert.Equal("MemoryError", failure.ExceptionType);
+        Assert.Equal(228, pool.Sweep());
         Assert.Equal(33, pool.Count);
         Assert.Equal(8068, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
 
-        // A second denial without funding strands nothing further.
+        // At the original cap, another sweep needs no bookkeeping funding.
         governor.Reserve(228, null);
         governor.Commit(228);
         Assert.Equal(8296, governor.CurrentCommittedBytes);
-        var again = Assert.Throws<LythonRuntimeException>(() => pool.Sweep());
-        Assert.Equal("MemoryError", again.ExceptionType);
+        Assert.Equal(0, pool.Sweep());
         Assert.Equal(33, pool.Count);
         Assert.Equal(8296, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
         governor.Release(228);
 
-        // Releasing the filler funds promotion; all 33 live values stay charged.
+        // Removing the filler changes only its charge; backing is already funded.
         Assert.Equal(8068, governor.CurrentCommittedBytes);
         governor.Release(32);
         Assert.Equal(8036, governor.CurrentCommittedBytes);
         Assert.Equal(0, pool.Sweep(full: true));
         Assert.Equal(33, pool.Count);
-        Assert.Equal(8292, governor.CurrentCommittedBytes);
+        Assert.Equal(8036, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
         GC.KeepAlive(live);
         GC.KeepAlive(oldKeys);

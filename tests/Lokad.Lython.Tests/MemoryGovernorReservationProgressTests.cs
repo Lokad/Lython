@@ -24,14 +24,14 @@ public sealed class MemoryGovernorReservationProgressTests
         // between this scratch reservation and the next payload allocation.
         using var scratch = temporary ? governor.ReserveTemporary(200, null) : null;
         if (!temporary) governor.Reserve(200, null);
-        Assert.Equal(320, governor.CurrentCommittedBytes);
+        Assert.Equal(288, governor.CurrentCommittedBytes);
         Assert.Equal(200, governor.CurrentReservedBytes);
         Assert.True(IsAlive(targets.Uncollected));
 
         governor.Reserve(150, null);
         Assert.False(IsAlive(targets.Uncollected));
         Assert.Equal(0, pool.Count);
-        Assert.Equal(64, governor.CurrentCommittedBytes);
+        Assert.Equal(32, governor.CurrentCommittedBytes);
         Assert.Equal(350, governor.CurrentReservedBytes);
         Assert.Equal(0, governor.LastDeniedReservationBytes);
         Assert.True(governor.PeakAccountedBytes <= 600);
@@ -48,7 +48,7 @@ public sealed class MemoryGovernorReservationProgressTests
         governor.LivePoolProvider = () => { enumerations++; return [pool]; };
         var targets = CreateCollectedAndUncollectedValues(governor, pool, retainSecond: true);
         using var scratch = governor.ReserveTemporary(200, null);
-        Assert.Equal(320, governor.CurrentCommittedBytes);
+        Assert.Equal(288, governor.CurrentCommittedBytes);
         Assert.Equal(200, governor.CurrentReservedBytes);
         var beforeDenial = enumerations;
 
@@ -65,7 +65,7 @@ public sealed class MemoryGovernorReservationProgressTests
         governor.Commit(0);
         Assert.Throws<LythonRuntimeException>(() => governor.EnsureCanReserve(150, null));
         Assert.Equal(afterDenial, enumerations);
-        Assert.Equal(320, governor.CurrentCommittedBytes);
+        Assert.Equal(288, governor.CurrentCommittedBytes);
         Assert.Equal(200, governor.CurrentReservedBytes);
         Assert.Equal(150, governor.LastDeniedReservationBytes);
         Assert.Equal(1, pool.Count);

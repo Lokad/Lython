@@ -17,9 +17,8 @@ public sealed class DeferredSplitOwnershipTests
 
     private static long RegisteredCharges(ChargeReclamationPool pool)
     {
-        var entries = new[] { "_young", "_old" }.SelectMany(name =>
-            (List<ChargeReclamationPool.ReclamationEntry>)typeof(ChargeReclamationPool)
-                .GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(pool)!);
+        var entries = (List<ChargeReclamationPool.ReclamationEntry>)typeof(ChargeReclamationPool)
+            .GetField("_entries", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(pool)!;
         return entries.Sum(entry => entry.ValueCharge + ChargeReclamationPool.EntryChargeBytes) + pool.CommittedBackingBytes;
     }
 

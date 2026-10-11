@@ -48,9 +48,8 @@ internal sealed class MemoryGovernor
     // fail fast instead of paying a collection per caught trip.
     private bool _hasAllocatedSinceReclaim;
 
-    // Reentrancy guard: sweeps may themselves reserve (tier promotion funds its
-    // old-tier slot), so a denial inside relief fails fast instead of re-entering
-    // relief forever.
+    // A provider can run while relief enumerates registered owners. A nested
+    // reservation must fail fast instead of recursively entering relief.
     private bool _inExhaustionRelief;
 
     public void EnsureCanReserve(long bytes, LythonSourceSpan? span)
@@ -82,8 +81,8 @@ internal sealed class MemoryGovernor
                 finally
                 {
                     _inExhaustionRelief = false;
-                    // Promotion commits made by relief itself do not warrant
-                    // another attempt when the pending allocation still fails.
+                    // Relief itself does not warrant another attempt when the
+                    // pending allocation still fails.
                     _hasAllocatedSinceReclaim = false;
                 }
             }
@@ -103,8 +102,6 @@ internal sealed class MemoryGovernor
     // fully before failing attributes the denial to live retention rather
     // than garbage pressure — but only for charges tracked through registered
     // pools; untracked retained charges still deny, correctly, without relief.
-    // Tier promotion inside those sweeps may reserve its old-tier slot; the
-    // reentrancy guard above turns that nested denial into a fast failure.
     private void ReclaimForExhaustion(long shortfallBytes)
     {
         if (LivePoolProvider is not { } provider)
@@ -132,22 +129,11 @@ internal sealed class MemoryGovernor
         // Release already-collected targets first: when bursty drops pile up
         // faster than collections run, that alone can cover the shortfall and
         // skip the process-wide pause. The net committed comparison keeps this
-        // exact even if tier backing grows mid-sweep.
+        // exact; sweeps themselves allocate nothing and require no funding.
         var committedBefore = CurrentCommittedBytes;
         foreach (var pool in live)
         {
-            try
-            {
-                pool.DrainYoungTier();
-                pool.Sweep(full: true);
-            }
-            catch (LythonRuntimeException ex) when (ex.ExceptionType == "MemoryError")
-            {
-                // Sweeping an uncollected backlog promotes it first, which funds
-                // old-tier slots the budget cannot spare: that pool keeps its
-                // backlog, but relief still collects and re-sweeps below instead
-                // of failing with garbage still on the table.
-            }
+            pool.Sweep(full: true);
         }
 
         if (committedBefore - CurrentCommittedBytes >= shortfallBytes)
@@ -158,20 +144,7 @@ internal sealed class MemoryGovernor
         GC.Collect();
         foreach (var pool in live)
         {
-            // Drain the old backlog before re-sweeping: a live young entry's
-            // promotion slot would otherwise deny against the full tier and
-            // abort the re-sweep before it frees anything.
-            pool.DrainOldTier();
-            pool.DrainYoungTier();
-            try
-            {
-                pool.Sweep(full: true);
-            }
-            catch (LythonRuntimeException ex) when (ex.ExceptionType == "MemoryError")
-            {
-                // Same bookkeeping pressure after collecting: keep whatever
-                // this pool already released and let the retry below decide.
-            }
+            pool.Sweep(full: true);
         }
 
         // A full sweep may have collected the last aliases from an abandoned

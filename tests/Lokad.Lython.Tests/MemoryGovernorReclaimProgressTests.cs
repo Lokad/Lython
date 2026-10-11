@@ -17,11 +17,13 @@ public sealed class MemoryGovernorReclaimProgressTests
 
         // The replacement has made allocation progress, but the committed
         // total is equal to or below its level at the previous denial.
-        Assert.Equal(320 + replacementCharge, governor.CurrentCommittedBytes);
-        governor.EnsureCanReserve(64, null);
+        Assert.Equal(288 + replacementCharge, governor.CurrentCommittedBytes);
+        // Single-array backing is smaller; 96 bytes still exhausts each
+        // original cap and therefore exercises the same progress/relief path.
+        governor.EnsureCanReserve(96, null);
 
         Assert.False(target.TryGetTarget(out _));
-        Assert.Equal(64 + replacementCharge, governor.CurrentCommittedBytes);
+        Assert.Equal(32 + replacementCharge, governor.CurrentCommittedBytes);
         Assert.Equal(0, pool.Count);
     }
 
@@ -44,7 +46,7 @@ public sealed class MemoryGovernorReclaimProgressTests
         var afterFirstRelief = enumerations;
         Assert.Throws<LythonRuntimeException>(() => governor.EnsureCanReserve(64, null));
         Assert.Equal(afterFirstRelief, enumerations);
-        Assert.Equal(336, governor.CurrentCommittedBytes);
+        Assert.Equal(304, governor.CurrentCommittedBytes);
         GC.KeepAlive(value);
     }
 

@@ -2635,6 +2635,17 @@ while retained records and escaped payloads continue to consume the budget.
 Construction preflights storage, refunds failed materialization, and transfers
 only its own temporary funding to the completed storage owner.
 
+Reclamation metadata uses one funded entry collection per pool, with backing
+pages of at most 8,192 entries to avoid large transient reference arrays. Sweeps do not
+allocate or require additional budget to keep live entries tracked; they release
+collected owners in place. Recent registrations are scanned promptly, while
+retained populations are visited in bounded quanta outside exhaustion relief.
+Pool capacity remains accounted until its owner is abandoned, avoiding repeated
+trim/regrow allocation. These metadata estimates can change accounted peaks.
+Catching `MemoryError` does not release retained values or guarantee room for a
+new result container. Scripts that recover under a saturated budget must reuse
+funded storage or release storage before allocating again.
+
 Lython does not need to promise a perfect hard memory ceiling from inside the same managed process, but it must provide conservative in-process resource controls that make runaway allocation materially harder.
 
 #### 14.6.1 Combined Peak Envelope

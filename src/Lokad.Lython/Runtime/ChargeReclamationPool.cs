@@ -6,13 +6,13 @@ namespace Lokad.Lython.Runtime;
 
 // Tracks committed charges for values whose owner reclaims them once they
 // become unreachable: sweeps release charges for entries whose targets were
-// collected while keeping every live entry charged. New entries land in the
-// young tier, which scans fully every sweep; survivors promote to the old
-// tier, which scans in bounded quanta every sweep (resuming where the last
-// quantum stopped), so per-sweep work stays flat no matter how much stays
-// retained. A full sweep drains the old tier instead (used at exhaustion).
+// collected while keeping every live entry charged. One funded collection holds
+// both recent appends and retained entries. Sweeps visit all recent appends
+// and a bounded retained quantum, resuming where the previous quantum stopped.
+// Survivors stay in place: sweeping requires no allocation or admission.
+// A full sweep visits every entry (used at exhaustion).
 // Each entry also commits a registry charge covering its own tracking nodes,
-// released on prune; tier backing arrays commit per-slot on growth and release
+// released on prune; the backing array commits per-slot on growth and releases
 // when the owning run abandons the pool.
 //
 // Pooled mutables (lists, dictionaries) snapshot their backing charges at
@@ -28,13 +28,13 @@ internal sealed class ChargeReclamationPool
     // Per-entry registry charge: the entry record, the weak handle, the table node
     // and amortized table capacity. Measured ~108 B marginal per entry at 100k scale
     // (~155 B at 20k where fixed table minimums dominate); 128 B covers the marginal
-    // rate with headroom while tier backing below owns the fixed capacity separately.
+    // rate with headroom while backing below owns the fixed capacity separately.
     internal const long EntryChargeBytes = 128L;
 
-    // Old-tier entries visited at most once per sweep, up to the quantum;
+    // Retained entries visited at most once per sweep, up to the quantum;
     // bounds per-sweep work while every entry is revisited within
     // live/quantum sweeps.
-    private const int OldQuantum = 4096;
+    private const int RetainedQuantum = 4096;
 
     // Strings and lists carry their entry directly, avoiding an additional
     // weak table handle per value. Other pooled values use this identity table.
@@ -42,11 +42,16 @@ internal sealed class ChargeReclamationPool
     private static readonly ConditionalWeakTable<object, ReclamationEntry> TrackedStorage = new();
 
     private readonly MemoryGovernor _governor;
-    private readonly List<ReclamationEntry> _young = new();
-    private readonly List<ReclamationEntry> _old = new();
-    private int _oldCursor;
+    private readonly List<ReclamationEntry> _entries = new();
+    // Keep transient tracking arrays below the large-object threshold. The
+    // first page keeps ordinary tiny-budget growth; more pages are lazy.
+    private const int PageBits = 13;
+    private const int PageSize = 1 << PageBits;
+    private List<List<ReclamationEntry>>? _pages;
+    private int _count;
+    private int _recentStart;
+    private int _sweepCursor;
     private long _backingBytes;
-    private int _sweepDepth;
 
     internal sealed class ReclamationEntry
     {
@@ -66,7 +71,16 @@ internal sealed class ChargeReclamationPool
         _governor = governor;
     }
 
-    public int Count => _young.Count + _old.Count;
+    public int Count => _count;
+
+    private List<ReclamationEntry> EntryPage(int index) =>
+        _pages is { } pages ? pages[index >> PageBits] : _entries;
+
+    private ReclamationEntry this[int index]
+    {
+        get => EntryPage(index)[index & (PageSize - 1)];
+        set => EntryPage(index)[index & (PageSize - 1)] = value;
+    }
 
     internal bool OwnsGovernor(MemoryGovernor governor) => ReferenceEquals(_governor, governor);
 
@@ -80,19 +94,18 @@ internal sealed class ChargeReclamationPool
             throw new InvalidOperationException("Pending string is not a fresh value owned by this governor.");
         }
 
-        var fundedGrowth = ReserveTierInsertion(_young, span);
+        var fundedGrowth = ReserveEntryInsertion(span);
         var growthReserved = fundedGrowth > 0;
         try
         {
             var entry = new ReclamationEntry(value, value.CommittedOwnedBytes);
-            var capacityBefore = _young.Capacity;
             var published = false;
             try
             {
                 PublishEntry(value, entry);
                 published = true;
-                _young.Add(entry);
-                CommitTierInsertion(_young, fundedGrowth, capacityBefore, span);
+                var actualGrowth = AddEntry(entry);
+                CommitEntryInsertion(fundedGrowth, actualGrowth, span);
             }
             catch
             {
@@ -109,11 +122,6 @@ internal sealed class ChargeReclamationPool
             throw;
         }
     }
-
-    // A sweep can temporarily detach an entry while funding its promotion.
-    // Exhaustion relief may revisit the source registry during that window;
-    // an empty tier then does not mean the pool can be unregistered.
-    internal bool IsSweeping => _sweepDepth != 0;
 
     // Reports whether a value already owns a reclamation entry, so fresh-value
     // helpers can alias-dedup before committing instead of double-charging a
@@ -267,17 +275,18 @@ internal sealed class ChargeReclamationPool
 
     // Only for a fresh value in a construction transaction that has exposed
     // nothing to guest code. The transaction keeps its values strongly alive,
-    // so no sweep can have released these coupons. Tier capacity remains owned
+    // so no sweep can have released these coupons. Capacity remains owned
     // by the pool, exactly as after ordinary pruning.
     internal void RefundUnpublishedValue(object value)
     {
         if (TryGetEntry(value, out var entry))
         {
-            if (!_young.Remove(entry) && !_old.Remove(entry))
+            var index = IndexOfEntry(entry);
+            if (index < 0)
                 throw new InvalidOperationException("Unpublished value belongs to another reclamation pool.");
+            RemovePublishedEntryAt(index);
             RemoveEntry(value);
             _governor.Release(entry.ValueCharge + EntryChargeBytes);
-            _oldCursor = Math.Min(_oldCursor, _old.Count);
         }
         else if (value is IPyOwnershipSnapshot snapshot && snapshot.TrySnapshotOwnership(out var charge))
         {
@@ -323,33 +332,58 @@ internal sealed class ChargeReclamationPool
         }
     }
 
-    // Committed tier-backing bytes currently owned by this pool.
+    // Committed backing bytes currently owned by this pool.
     internal long CommittedBackingBytes => _backingBytes;
 
     // Releases charges for entries whose targets have been collected and
-    // prunes them; returns the released bytes. A full sweep drains the old
-    // tier instead of visiting one quantum. Tier capacity is intentionally never
+    // prunes them; returns the released bytes. A full sweep visits every
+    // entry instead of one retained quantum. Capacity is intentionally never
     // trimmed here: trim-and-regrow churn on every exhaustion cycle measured
     // +11% allocated on the 200K scan; empty capacity reconciles explicitly
     // through CommittedBackingBytes and releases on pool abandonment.
     public long Sweep(bool full = false)
     {
-        _sweepDepth++;
-        try
+        long released = 0;
+        // Recent entries must not wait behind a large retained population.
+        // Reverse removal only swaps in entries already visited in this pass.
+        for (var i = _count - 1; i >= (full ? 0 : _recentStart); i--)
         {
-            var released = SweepTier(_young, _old);
-            var oldReleased = full ? DrainTier(_old) : SweepOldQuantum();
-            if (oldReleased > 0)
+            var entry = this[i];
+            if (!entry.Target.TryGetTarget(out _))
             {
-                _governor.Release(oldReleased);
+                released += entry.ValueCharge + EntryChargeBytes;
+                RemoveAtSwap(i);
             }
-
-            return released + oldReleased;
         }
-        finally
+        _recentStart = _count;
+        if (full)
         {
-            _sweepDepth--;
+            _sweepCursor = 0;
         }
+        else
+        {
+            // Dead removals consume probes just like live advances. Do not wrap
+            // within a sweep: a tiny population should be visited only once.
+            var probed = 0;
+            while (probed < RetainedQuantum && _sweepCursor < _recentStart)
+            {
+                var entry = this[_sweepCursor];
+                probed++;
+                if (!entry.Target.TryGetTarget(out _))
+                {
+                    released += entry.ValueCharge + EntryChargeBytes;
+                    RemoveAtSwap(_sweepCursor);
+                    _recentStart--;
+                }
+                else
+                {
+                    _sweepCursor++;
+                }
+            }
+            if (_sweepCursor >= _recentStart) _sweepCursor = 0;
+        }
+        _governor.Release(released);
+        return released;
     }
 
     // Registers one pooled value transactionally (R08): every stage below is owned
@@ -362,7 +396,7 @@ internal sealed class ChargeReclamationPool
             return;
         }
 
-        // Every stage rolls back on denial: the entry reservation, the tier-growth
+        // Every stage rolls back on denial: the entry reservation, the backing-growth
         // reservation, and the table/list publication are all owned by this
         // operation until the final commit. A denied registration therefore strands
         // no reserved bytes and publishes no mark, so a funded retry registers
@@ -374,17 +408,16 @@ internal sealed class ChargeReclamationPool
         var growthReserved = false;
         try
         {
-            fundedGrowth = ReserveTierInsertion(_young, span);
+            fundedGrowth = ReserveEntryInsertion(span);
             growthReserved = fundedGrowth > 0;
             var entry = new ReclamationEntry(value, valueCharge);
-            var capacityBefore = _young.Capacity;
             var published = false;
             try
             {
                 PublishEntry(value, entry);
                 published = true;
-                _young.Add(entry);
-                CommitTierInsertion(_young, fundedGrowth, capacityBefore, span);
+                var actualGrowth = AddEntry(entry);
+                CommitEntryInsertion(fundedGrowth, actualGrowth, span);
             }
             catch
             {
@@ -419,30 +452,33 @@ internal sealed class ChargeReclamationPool
     private void UnpublishEntry(object value, ReclamationEntry entry)
     {
         RemoveEntry(value);
-        // The entry was appended last with no interleaving publication on this
-        // single-threaded runtime; fall back to a linear remove defensively.
-        if (_young.Count > 0 && ReferenceEquals(_young[_young.Count - 1], entry))
-        {
-            _young.RemoveAt(_young.Count - 1);
-        }
-        else
-        {
-            _young.Remove(entry);
-        }
+        var index = IndexOfEntry(entry);
+        if (index >= 0) RemovePublishedEntryAt(index);
     }
 
-    // Tier backing arrays never shrink on prune, so committed capacity rides the
+    // Rare publication refunds preserve the order between retained/recent
+    // regions and adjust the scan position when an earlier entry is removed.
+    private void RemovePublishedEntryAt(int index)
+    {
+        for (var i = index; i < _count - 1; i++) this[i] = this[i + 1];
+        RemoveLastEntry();
+        if (index < _recentStart) _recentStart--;
+        if (index < _sweepCursor) _sweepCursor--;
+        if (_sweepCursor >= _recentStart) _sweepCursor = 0;
+    }
+
+    // Backing pages never shrink on prune, so committed capacity rides the
     // pool lifetime. Growth funds before the insertion becomes visible; List<T>
     // grows 0->4 then doubles, and actual growth is verified after the fact with
     // a defensive top-up so a policy change can never strand capacity.
-    private long ReserveTierInsertion(List<ReclamationEntry> tier, LythonSourceSpan? span)
+    private long ReserveEntryInsertion(LythonSourceSpan? span)
     {
         long fundedGrowth = 0;
         try
         {
             while (true)
             {
-                var growth = tier.Count == tier.Capacity ? (long)(tier.Capacity == 0 ? 4 : tier.Capacity) : 0L;
+                var growth = RequiredInsertionGrowth();
                 if (growth <= fundedGrowth)
                 {
                     if (growth < fundedGrowth)
@@ -450,8 +486,7 @@ internal sealed class ChargeReclamationPool
                     return growth;
                 }
 
-                // Relief can prune this tier, or enlarge/fill it through a
-                // reentrant promotion sweep. Revalidate after reserving so
+                // Relief can prune entries. Revalidate after reserving so
                 // insertion always has its actual capacity funded first.
                 _governor.Reserve(checked((growth - fundedGrowth) * 8), span);
                 fundedGrowth = growth;
@@ -464,9 +499,8 @@ internal sealed class ChargeReclamationPool
         }
     }
 
-    private void CommitTierInsertion(List<ReclamationEntry> tier, long fundedGrowth, long capacityBefore, LythonSourceSpan? span)
+    private void CommitEntryInsertion(long fundedGrowth, long actualGrowth, LythonSourceSpan? span)
     {
-        var actualGrowth = (long)(tier.Capacity - capacityBefore);
         if (actualGrowth != fundedGrowth)
         {
             if (actualGrowth > fundedGrowth)
@@ -478,7 +512,7 @@ internal sealed class ChargeReclamationPool
             }
             else
             {
-                // Reserving predicted growth can reclaim or promote entries,
+                // Reserving predicted growth can reclaim entries,
                 // freeing existing slots before insertion. Return unused
                 // funding instead of committing backing that never grew.
                 _governor.ReleaseReserved(checked((fundedGrowth - actualGrowth) * 8));
@@ -491,10 +525,10 @@ internal sealed class ChargeReclamationPool
         _backingBytes += bytes;
     }
 
-    // Called once when the owning run abandons this pool: the tier arrays become
+    // Called once when the owning run abandons this pool: its pages become
     // garbage with it, so their committed backing releases instead of stranding.
     // Live pools keep their backing through exhaustion sweeps.
-    internal void ReleaseTierBacking()
+    internal void ReleaseBacking()
     {
         if (_backingBytes > 0)
         {
@@ -503,140 +537,64 @@ internal sealed class ChargeReclamationPool
         }
     }
 
-    // Old-tier-only drain for exhaustion relief after collecting: with a full
-    // old backlog the young scan below would abort on promotion funding before
-    // reaching any drain, so free the collected backlog first and let the
-    // re-sweep's promotions fit. Releasing needs no funding and cannot deny.
-    internal long DrainOldTier()
+    private long RequiredInsertionGrowth()
     {
-        var released = DrainTier(_old);
-        if (released > 0)
-        {
-            _governor.Release(released);
-        }
-
-        return released;
+        if (_pages is not { } pages)
+            return _count == PageSize ? 8L : ListGrowth(_entries);
+        var pageIndex = _count >> PageBits;
+        return pageIndex == pages.Count ? 4L + ListGrowth(pages) : ListGrowth(pages[pageIndex]);
     }
 
-    // Exhaustion relief must also prune collected young targets before funding
-    // promotion. A newest live entry can otherwise deny its old-tier slot and
-    // stop the sweep before it visits an older, already collected young entry.
-    internal long DrainYoungTier()
+    private static long ListGrowth<T>(List<T> list) =>
+        list.Count == list.Capacity ? (list.Capacity == 0 ? 4L : list.Capacity) : 0L;
+
+    // Build a new page/registry locally before publication. A failed CLR
+    // allocation leaves the previous collection intact and funding refundable.
+    private long AddEntry(ReclamationEntry entry)
     {
-        var released = DrainTier(_young);
-        if (released > 0) _governor.Release(released);
-        return released;
+        if (_pages is null && _count == PageSize)
+        {
+            var page = new List<ReclamationEntry>(4) { entry };
+            var pages = new List<List<ReclamationEntry>>(4) { _entries, page };
+            _pages = pages;
+            _count++;
+            return 8;
+        }
+        if (_pages is { } registry && (_count >> PageBits) == registry.Count)
+        {
+            var page = new List<ReclamationEntry>(4) { entry };
+            var before = registry.Capacity;
+            registry.Add(page);
+            _count++;
+            return 4L + registry.Capacity - before;
+        }
+        var current = EntryPage(_count);
+        var capacityBefore = current.Capacity;
+        current.Add(entry);
+        _count++;
+        return (long)current.Capacity - capacityBefore;
     }
 
-    private long SweepTier(List<ReclamationEntry> tier, List<ReclamationEntry>? promoteTo)
+    private int IndexOfEntry(ReclamationEntry entry)
     {
-        var released = 0L;
-        // Detach-then-decide: funding a promotion slot can deny into exhaustion
-        // relief, whose inner sweep prunes and moves these same tier lists. An
-        // index held across that call goes stale; an entry held locally stays
-        // exact no matter what the inner sweep removes.
-        List<ReclamationEntry>? retained = null;
-        while (tier.Count > 0)
+        if (_pages is not { } pages) return _entries.IndexOf(entry);
+        for (var page = 0; page < pages.Count; page++)
         {
-            var entry = tier[tier.Count - 1];
-            tier.RemoveAt(tier.Count - 1);
-            if (!entry.Target.TryGetTarget(out _))
-            {
-                // Refund before a later survivor needs promotion capacity.
-                // Detached dead entries are invisible to exhaustion relief,
-                // so deferring this credit can deny an already-funded sweep.
-                var charge = entry.ValueCharge + EntryChargeBytes;
-                _governor.Release(charge);
-                released += charge;
-            }
-            else if (promoteTo is null)
-            {
-                retained ??= new List<ReclamationEntry>();
-                retained.Add(entry);
-            }
-            else
-            {
-                // Fund the old-tier slot before moving: a denial re-queues the entry
-                // in the young tier for the next sweep instead of stranding it.
-                // Dead entries have already refunded even on this exceptional exit.
-                try
-                {
-                    var fundedGrowth = ReserveTierInsertion(promoteTo, null);
-                    var capacityBefore = promoteTo.Capacity;
-                    promoteTo.Add(entry);
-                    CommitTierInsertion(promoteTo, fundedGrowth, capacityBefore, null);
-                }
-                catch (LythonRuntimeException)
-                {
-                    tier.Add(entry);
-                    throw;
-                }
-            }
+            var index = pages[page].IndexOf(entry);
+            if (index >= 0) return (page << PageBits) + index;
         }
-
-        if (retained is not null)
-        {
-            tier.AddRange(retained);
-        }
-
-        return released;
+        return -1;
     }
 
-    // Visits at most one quantum of old entries per sweep, counting dead removals
-    // against the same budget as survivor advances: the window advances without
-    // wrapping, so a lone live entry costs one probe instead of a full quantum of
-    // revisits. Removal compacts from the end, which can only pull unvisited
-    // entries into the window. Every sweep makes progress while anything remains
-    // (the cursor advances or the tier shrinks), so dead entries still release
-    // exactly, just over more sweeps.
-    private long SweepOldQuantum()
+    private void RemoveLastEntry()
     {
-        var released = 0L;
-        var probed = 0;
-        while (probed < OldQuantum && _oldCursor < _old.Count)
-        {
-            var entry = _old[_oldCursor];
-            probed++;
-            if (!entry.Target.TryGetTarget(out _))
-            {
-                released += entry.ValueCharge + EntryChargeBytes;
-                RemoveAtSwap(_old, _oldCursor);
-            }
-            else
-            {
-                _oldCursor++;
-            }
-        }
-
-        if (_oldCursor >= _old.Count)
-        {
-            _oldCursor = 0;
-        }
-
-        return released;
+        _count--;
+        EntryPage(_count).RemoveAt(_count & (PageSize - 1));
     }
 
-    // Exhaustion drain: releases everything unreachable with a full scan.
-    // Live entries keep their charges and stay tracked (unlike a terminal
-    // drain), so a run that survives the relief keeps exact ownership.
-    private static long DrainTier(List<ReclamationEntry> tier)
+    private void RemoveAtSwap(int index)
     {
-        var released = 0L;
-        for (var i = tier.Count - 1; i >= 0; i--)
-        {
-            if (!tier[i].Target.TryGetTarget(out _))
-            {
-                released += tier[i].ValueCharge + EntryChargeBytes;
-                RemoveAtSwap(tier, i);
-            }
-        }
-
-        return released;
-    }
-
-    private static void RemoveAtSwap(List<ReclamationEntry> tier, int index)
-    {
-        tier[index] = tier[tier.Count - 1];
-        tier.RemoveAt(tier.Count - 1);
+        this[index] = this[_count - 1];
+        RemoveLastEntry();
     }
 }

@@ -14,12 +14,11 @@ public sealed class ChargeReclamationPoolTests
         => new ChargeReclamationPool(governor);
 
     private static int OldCursor(ChargeReclamationPool pool)
-        => (int)typeof(ChargeReclamationPool).GetField("_oldCursor", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(pool)!;
+        => (int)typeof(ChargeReclamationPool).GetField("_sweepCursor", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(pool)!;
 
     private static int OldCount(ChargeReclamationPool pool)
     {
-        var tier = typeof(ChargeReclamationPool).GetField("_old", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(pool)!;
-        return ((System.Collections.IList)tier).Count;
+        return (int)typeof(ChargeReclamationPool).GetField("_recentStart", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(pool)!;
     }
 
     private static List<object> TrackLive(ChargeReclamationPool pool, MemoryGovernor governor, int count)
@@ -418,10 +417,10 @@ public sealed class ChargeReclamationPoolTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void MixedYoungSweepFundsPromotionFromAlreadyCollectedEntries(bool full)
+    public void MixedRecentSweepReleasesCollectedEntriesAtTheCap(bool full)
     {
-        // The two entries and young backing exactly fill the cap. The dead
-        // entry is visited first; its refund must fund the survivor's old slot.
+        // The two entries and backing exactly fill the cap. Releasing the dead
+        // entry must preserve the live one without admitting more bookkeeping.
         var governor = new MemoryGovernor(544);
         var pool = NewPool(governor);
         var keys = TrackLive(pool, governor, 2);
@@ -433,7 +432,7 @@ public sealed class ChargeReclamationPoolTests
         Assert.Equal(256, pool.Sweep(full));
         Assert.Equal(1, pool.Count);
         Assert.Equal(1, OldCount(pool));
-        Assert.Equal(320, governor.CurrentCommittedBytes);
+        Assert.Equal(288, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
         Assert.Equal(0, governor.LastDeniedReservationBytes);
         Assert.Equal(544, governor.PeakAccountedBytes);
@@ -441,10 +440,10 @@ public sealed class ChargeReclamationPoolTests
     }
 
     [Fact]
-    public void MixedYoungSweepStillDeniesUnfundedLivePromotionAndRefundsExactly()
+    public void MixedRecentSweepNeedsNoPromotionAndRefundsExactly()
     {
-        // A full 64-slot old tier needs 512 bytes of growth. One dead entry
-        // refunds only 256, so this genuine denial must preserve the survivor.
+        // The baseline needed promotion growth here and denied. The existing
+        // single array already funds every entry; a sweep needs no new budget.
         var governor = new MemoryGovernor(17920);
         var pool = NewPool(governor);
         var oldKeys = TrackLive(pool, governor, 64);
@@ -455,13 +454,12 @@ public sealed class ChargeReclamationPoolTests
         GC.WaitForPendingFinalizers();
         GC.Collect();
 
-        var failure = Assert.Throws<LythonRuntimeException>(() => pool.Sweep());
-        Assert.Equal("MemoryError", failure.ExceptionType);
+        Assert.Equal(256, pool.Sweep());
         Assert.Equal(65, pool.Count);
-        Assert.Equal(64, OldCount(pool));
+        Assert.Equal(65, OldCount(pool));
         Assert.Equal(17664, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
-        Assert.Equal(512, governor.LastDeniedReservationBytes);
+        Assert.Equal(0, governor.LastDeniedReservationBytes);
 
         DropAll(oldKeys);
         DropAll(youngKeys);

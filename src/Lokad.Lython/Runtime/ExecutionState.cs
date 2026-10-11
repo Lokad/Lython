@@ -79,8 +79,8 @@ internal sealed class ExecutionState
         Guards = new ExecutionGuards(this);
         MemoryGovernor = new MemoryGovernor(Limits.MaxExecutionMemoryBytes);
         CallTemporaries = new ChargeReclamationPool(MemoryGovernor);
-        // Relief must enumerate every pool before funding any promotion:
-        // another pool may contain collected charges that fund the request.
+        // Relief enumerates every pool: another pool may contain collected
+        // charges that fund the request.
         MemoryGovernor.LivePoolProvider = () => LiveReclamationPools(sweepAbandoned: false);
         RandomState = new PyRandomState();
         DecimalContext = PyDecimalContext.Default();
@@ -296,18 +296,13 @@ internal sealed class ExecutionState
     {
         for (var i = _poolRegistrations.Count - 1; i >= 0; i--)
         {
-            // Promotion funding can reenter this registry and retire other
-            // sources, so an index from before the sweep may no longer exist.
-            i = Math.Min(i, _poolRegistrations.Count - 1);
-            if (i < 0) break;
             var entry = _poolRegistrations[i];
-            if (!entry.Owner.TryGetTarget(out _) && !entry.Pool.IsSweeping)
+            if (!entry.Owner.TryGetTarget(out _))
             {
                 var firstAbandonment = !entry.Abandoned;
                 if (firstAbandonment)
                 {
-                    // Scratch belongs to the source, so free it before a sweep
-                    // might need promotion capacity under a tight budget.
+                    // Scratch belongs to the abandoned source.
                     entry.Scratch?.Dispose();
                     entry = entry with { Scratch = null, Abandoned = true };
                     _poolRegistrations[i] = entry;
@@ -315,17 +310,13 @@ internal sealed class ExecutionState
 
                 // The governor owns full sweeps and collection during relief.
                 // Enumeration there only releases abandoned scratch/empty
-                // registrations, so it cannot deny on promotion first.
+                // registrations.
                 if (sweepAbandoned) entry.Pool.Sweep(full: firstAbandonment);
                 if (entry.Pool.Count == 0)
                 {
-                    var removeIndex = i < _poolRegistrations.Count
-                        && ReferenceEquals(_poolRegistrations[i].Owner, entry.Owner)
-                        ? i : _poolRegistrations.IndexOf(entry);
-                    if (removeIndex < 0) continue;
-                    entry.Pool.ReleaseTierBacking();
+                    entry.Pool.ReleaseBacking();
                     MemoryGovernor.Release(ChargeReclamationPool.EntryChargeBytes);
-                    _poolRegistrations[removeIndex] = _poolRegistrations[_poolRegistrations.Count - 1];
+                    _poolRegistrations[i] = _poolRegistrations[_poolRegistrations.Count - 1];
                     _poolRegistrations.RemoveAt(_poolRegistrations.Count - 1);
                     continue;
                 }

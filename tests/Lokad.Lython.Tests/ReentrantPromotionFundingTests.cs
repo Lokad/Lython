@@ -9,7 +9,7 @@ namespace Lokad.Lython.Tests;
 public sealed class ReentrantPromotionFundingTests
 {
     [Fact]
-    public void ReliefCannotPublishAnUnderfundedPromotionOrStrandItsReservation()
+    public void FundedSweepsDoNotTriggerPromotionReliefOrStrandReservations()
     {
         const long cap = 3L * 1024 * 1024;
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
@@ -35,38 +35,40 @@ public sealed class ReentrantPromotionFundingTests
         var donorOwner = new object();
         var donor = new ChargeReclamationPool(governor);
         var dead = DropDonor(governor, donor);
-        // Registrations enumerate newest first, so donor relief precedes the
-        // active pool's nested sweep. Both owners stay live, like an active CSV
-        // source and the input cursor registered on its first pull.
+        // Both owners stay live, like an active CSV source and its input cursor.
+        // Collected donor charges remain available if exhaustion relief needs
+        // them, but sweeping the retained pool must not require any admission.
         context.State.RegisterPool(donorOwner, donor);
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
         Assert.False(dead.TryGetTarget(out _));
         Assert.Equal(33, pool.Count);
-        Assert.Equal(320, ActualBacking(pool));
+        Assert.Equal(512, ActualBacking(pool));
         var before = governor.CurrentCommittedBytes;
         var pressure = cap - governor.CurrentAccountedBytes - 63;
         governor.Reserve(pressure, null);
 
-        var failure = Assert.Throws<LythonRuntimeException>(() => pool.Sweep());
-
-        Assert.Equal("MemoryError", failure.ExceptionType);
+        Assert.Equal(0, pool.Sweep());
         var actual = ActualBacking(pool);
         Assert.True(pool.Count == 33 && actual == 512 && pool.CommittedBackingBytes == actual &&
             governor.CurrentReservedBytes == pressure,
             $"entries={pool.Count} (expected 33); actual backing={actual} (expected 512); " +
             $"billed backing={pool.CommittedBackingBytes}; stranded reservation={governor.CurrentReservedBytes - pressure}");
-        Assert.Equal(before - 257 + 192, governor.CurrentCommittedBytes);
+        Assert.Equal(before, governor.CurrentCommittedBytes);
         Assert.All(retained, value => Assert.True(pool.IsTracked(value)));
 
-        // Funded retry must publish exactly once and reconcile actual capacity.
+        // A full sweep also requires no growth, and the donor's dead value
+        // releases separately without disturbing the held pressure reservation.
+        Assert.Equal(0, pool.Sweep(full: true));
+        Assert.Equal(257, donor.Sweep(full: true));
+        Assert.Equal(pressure, governor.CurrentReservedBytes);
         governor.ReleaseReserved(pressure);
         pool.Sweep(full: true);
         Assert.Equal(33, pool.Count);
-        Assert.Equal(768, ActualBacking(pool));
+        Assert.Equal(512, ActualBacking(pool));
         Assert.Equal(ActualBacking(pool), pool.CommittedBackingBytes);
-        Assert.Equal(before - 257 + 192 + 256, governor.CurrentCommittedBytes);
+        Assert.Equal(before - 257, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
         Assert.True(governor.PeakAccountedBytes <= cap);
         GC.KeepAlive(owner);
@@ -83,7 +85,6 @@ public sealed class ReentrantPromotionFundingTests
     }
 
     private static long ActualBacking(ChargeReclamationPool pool) =>
-        new[] { "_young", "_old" }.Sum(name => 8L *
-            ((List<ChargeReclamationPool.ReclamationEntry>)typeof(ChargeReclamationPool)
-                .GetField(name, BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(pool)!).Capacity);
+        8L * ((List<ChargeReclamationPool.ReclamationEntry>)typeof(ChargeReclamationPool)
+            .GetField("_entries", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(pool)!).Capacity;
 }

@@ -74,21 +74,33 @@ public sealed class SliceLifetimeScenarioTests
     }
 
     [Fact]
-    public async Task RetainedSlicesDenyAndAllowReuse()
+    public async Task RetainedSlicesDenyThenReleasedStorageAllowsReuse()
     {
         var script = new LythonEngine().Compile(
             "b = 'a' * 1000\n"
-            + "ok = False\n"
+            // Fund the result before retention exhausts the budget. Catching
+            // MemoryError does not create space for a new result container.
+            + "result = [False, False, 999]\n"
             + "objs = []\n"
             + "i = 0\n"
             + "while i < 100000:\n"
             + "    try:\n"
             + "        objs.append(b[1:])\n"
             + "    except MemoryError:\n"
-            + "        ok = True\n"
+            + "        result[0] = True\n"
             + "        break\n"
             + "    i = i + 1\n"
-            + "return [ok, len(objs) > 0, len(objs[-1])]\n");
+            + "result[1] = len(objs) > 0\n"
+            + "kept = objs[-1]\n"
+            + "assert len(kept) == result[2]\n"
+            + "objs.clear()\n"
+            // Reuse the same budget after a genuine retained-value denial,
+            // while an escaped slice remains alive throughout the stream.
+            + "for i in range(10000):\n"
+            + "    fresh = b[1:]\n"
+            + "assert len(fresh) == result[2]\n"
+            + "assert len(kept) == result[2]\n"
+            + "return result\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
         var expected = new List<object?> { true, true, new BigInteger(999) };
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };

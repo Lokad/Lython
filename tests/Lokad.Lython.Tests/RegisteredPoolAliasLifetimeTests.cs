@@ -38,7 +38,7 @@ public sealed class RegisteredPoolAliasLifetimeTests
     }
 
     [Fact]
-    public void DeniedPromotionKeepsTheActivePoolRegisteredForLaterReclamation()
+    public void FundedSweepAtTheCapKeepsTheActivePoolRegisteredForLaterReclamation()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
             new LythonRunOptions { MaxExecutionMemoryBytes = 1312 });
@@ -165,7 +165,7 @@ public sealed class RegisteredPoolAliasLifetimeTests
         Assert.False(owner.TryGetTarget(out _));
         var live = state.LiveReclamationPools().ToList();
         Assert.Contains(pool, live);
-        Assert.Equal(1344, state.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(1312, state.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, state.MemoryGovernor.CurrentReservedBytes);
         var weak = new WeakReference<object>(alias);
         GC.KeepAlive(alias);
@@ -182,11 +182,10 @@ public sealed class RegisteredPoolAliasLifetimeTests
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static WeakReference<object> DenyWhileAliasLives(ExecutionState state)
     {
-        var (alias, owner, _) = CreateRegisteredAlias(state, false, scratchBytes: 0);
+        var (alias, owner, pool) = CreateRegisteredAlias(state, false, scratchBytes: 0);
         Collect();
         Assert.False(owner.TryGetTarget(out _));
-        var failure = Assert.Throws<LythonRuntimeException>(() => state.LiveReclamationPools().ToList());
-        Assert.Equal("MemoryError", failure.ExceptionType);
+        Assert.Contains(pool, state.LiveReclamationPools());
         Assert.Equal(1312, state.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, state.MemoryGovernor.CurrentReservedBytes);
         var weak = new WeakReference<object>(alias);
