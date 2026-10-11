@@ -123,7 +123,7 @@ internal sealed partial class LythonRuntime
                 ["bytes"] = BuiltinCallable.Create(LythonCallableSignature.Create("bytes", ["source", "encoding", "errors"], requiredCount: 0, maximumPositionalArgumentCount: 3, variadicParameters: LythonVariadicParameters.None, positionalOnlyCount: 1), Bytes, BytesAsync),
                 ["staticmethod"] = BuiltinCallable.Create("staticmethod", StaticMethod, ["func"], requiredCount: 1),
                 ["classmethod"] = BuiltinCallable.Create("classmethod", ClassMethod, ["func"], requiredCount: 1),
-                ["property"] = BuiltinCallable.Create("property", Property, ["fget", "fset"], requiredCount: 0),
+                ["property"] = BuiltinCallable.Create("property", Property, PropertyAsync, ["fget", "fset", "fdel", "doc"], requiredCount: 0),
                 ["super"] = BuiltinCallable.Create("super", Super),
                 ["isinstance"] = BuiltinCallable.Create("isinstance", IsInstance, ["value", "type"], requiredCount: 2),
                 ["issubclass"] = BuiltinCallable.Create("issubclass", IsSubclass, ["type", "base"], requiredCount: 2),

@@ -283,18 +283,20 @@ internal sealed partial class LythonRuntime
 
     private static object Property(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        if (arguments.Length > 3)
-        {
-            throw new LythonRuntimeException("TypeError", "property([fget][, fset][, fdel]) expects zero to three callable arguments.", span);
-        }
+        var getter = arguments.Length >= 1 ? arguments[0] : PyNone.Instance;
+        var setter = arguments.Length >= 2 ? arguments[1] : PyNone.Instance;
+        var deleter = arguments.Length >= 3 ? arguments[2] : PyNone.Instance;
+        var doc = arguments.Length >= 4 ? arguments[3] : PyNone.Instance;
+        return PyProperty.Create(getter, setter, deleter, doc, context, span);
+    }
 
-        var getter = arguments.Length >= 1 ? ParsePropertyCallable(arguments[0], "fget", span) : null;
-        var setter = arguments.Length >= 2 ? ParsePropertyCallable(arguments[1], "fset", span) : null;
-        var deleter = arguments.Length >= 3 ? ParsePropertyCallable(arguments[2], "fdel", span) : null;
-        // The retained callables stay aliased; own the descriptor shell.
-        context.MemoryGovernor.Reserve(64L, span);
-        context.MemoryGovernor.Commit(64L);
-        return new PyProperty(getter, setter, deleter);
+    private static async ValueTask<object> PropertyAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var getter = arguments.Length >= 1 ? arguments[0] : PyNone.Instance;
+        var setter = arguments.Length >= 2 ? arguments[1] : PyNone.Instance;
+        var deleter = arguments.Length >= 3 ? arguments[2] : PyNone.Instance;
+        var doc = arguments.Length >= 4 ? arguments[3] : PyNone.Instance;
+        return await PyProperty.CreateAsync(getter, setter, deleter, doc, context, span).ConfigureAwait(false);
     }
 
     private static object StaticMethod(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -1613,15 +1615,5 @@ internal sealed partial class LythonRuntime
             return CreateUnsortedNameList(names, context, span);
         }
     }
-    private static ICallable? ParsePropertyCallable(object value, string parameterName, LythonSourceSpan span)
-    {
-        return value switch
-        {
-            null or PyNone => null,
-            ICallable callable => callable,
-            _ => throw new LythonRuntimeException("TypeError", $"property({parameterName}=...) expects a callable or None.", span)
-        };
-    }
-
 
 }

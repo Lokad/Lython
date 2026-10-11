@@ -162,7 +162,7 @@ os.path.commonpath("/repo/docs")
 """);
 
         Assert.False(compiled.IsValid);
-        Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3036");
+        Assert.DoesNotContain(compiled.Diagnostics, d => d.Code == "LA3036");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3037");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3038");
         Assert.Contains(compiled.Diagnostics, d => d.Code == "LA3039");

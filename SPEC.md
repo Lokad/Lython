@@ -1163,6 +1163,24 @@ The builtin environment must include exactly the following builtins and builtin 
 
 No builtin outside this set is supported unless it is explicitly added elsewhere in this specification.
 
+`property(fget=None, fset=None, fdel=None, doc=None)` supports all four positional
+or keyword arguments. Its readonly `fget`, `fset` and `fdel` metadata retains the
+original accessor objects, including `None`. Construction accepts non-callable
+accessors; invoking one raises `TypeError`, while a missing accessor raises
+`AttributeError`. An accessor is called with the actual instance (and the new
+value for a setter), without invoking the accessor object's `__get__` method.
+Callable objects and already bound methods are supported.
+Documentation defaults to the getter's `__doc__`; a missing documentation
+attribute becomes `None`, while other lookup errors propagate. Explicit doc
+objects retain their identity, and `__doc__` may be assigned or deleted.
+The `getter`, `setter` and `deleter` methods create fresh descriptors; passing
+`None` preserves the corresponding accessor. Inherited documentation is read
+again from the resulting getter when a derivative is created. Explicit doc
+objects remain aliased. `RunAsync` awaits documentation lookup and accessor
+calls, including calls through supported explicit descriptor methods. Descriptor
+shells, adopted scalar metadata and reclamation entries remain memory governed;
+rejected construction or metadata updates publish no partial change.
+
 `globals()` returns one live dictionary for the actual module namespace.
 Assignments, deletions and dictionary mutations share that namespace, including
 after a defining frame returns and during function calls or generator resumes.

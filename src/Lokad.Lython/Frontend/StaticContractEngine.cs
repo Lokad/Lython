@@ -21,7 +21,6 @@ internal static class StaticContractEngine
         new(IsDefaultDictCall, AnalyzeDefaultDictCall),
         new(IsArgumentParserConstructorCall, AnalyzeArgumentParserConstructorCall),
         new(IsFunctoolsPartialCall, AnalyzeFunctoolsPartialCall),
-        new(IsPropertyCall, AnalyzePropertyCall),
         new(IsGlobCollectorCall, AnalyzeGlobCollectorCall),
         new(IsGlobEscapeCall, AnalyzeGlobEscapeCall),
         new(IsSysStreamWriteCall, AnalyzeSysStreamWriteCall),
@@ -420,8 +419,6 @@ internal static class StaticContractEngine
                 "recursive_repr"
         };
 
-    private static bool IsPropertyCall(CallExpressionSyntax call)
-        => call.Target is IdentifierExpressionSyntax { Name: "property" };
 
     private static bool IsGlobCollectorCall(CallExpressionSyntax call)
         => call.Target is MemberExpressionSyntax
@@ -508,13 +505,6 @@ internal static class StaticContractEngine
                 StaticContractChecks.AnalyzeKnownStringArgument(arguments, 0, "fillvalue", "LA3085", "functools.recursive_repr(fillvalue=...) expects a string fill value.", diagnostics, bindings);
                 break;
         }
-    }
-
-    private static void AnalyzePropertyCall(CallExpressionSyntax call, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)
-    {
-        StaticContractChecks.AnalyzeCallableOrNoneArgument(arguments, 0, "fget", "LA3036", "property(fget=...) expects a callable or None.", diagnostics, bindings);
-        StaticContractChecks.AnalyzeCallableOrNoneArgument(arguments, 1, "fset", "LA3036", "property(fset=...) expects a callable or None.", diagnostics, bindings);
-        StaticContractChecks.AnalyzeCallableOrNoneArgument(arguments, 2, "fdel", "LA3036", "property(fdel=...) expects a callable or None.", diagnostics, bindings);
     }
 
     private static void AnalyzeGlobCollectorCall(CallExpressionSyntax call, ConcreteCallArguments arguments, List<LythonDiagnostic> diagnostics, AbstractState bindings)

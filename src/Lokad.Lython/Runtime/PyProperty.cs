@@ -8,56 +8,128 @@ internal interface IPyDeletableDescriptor
     void Delete(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span);
 }
 
-internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettableDescriptor, IPyDeletableDescriptor, IClassOwnedMember, IClassNamedMember
+internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettableDescriptor,
+    IPyDeletableDescriptor, IClassOwnedMember, IClassNamedMember, IPyMutableDynamicAttributes,
+    IPyDeletableDynamicAttributes, IPyGovernedValue, IPyOwnershipSnapshot
 {
-    private readonly LythonRuntime.ICallable? _getter;
-    private readonly LythonRuntime.ICallable? _setter;
-    private readonly LythonRuntime.ICallable? _deleter;
+    // Accessors, documentation and ownership metadata live in this shell.
+    // Alias payloads keep their existing ownership; unowned scalars are adopted.
+    internal const long ShellBytes = 128;
+    private readonly object _getter, _setter, _deleter;
+    private object _doc;
+    private readonly bool _getterDoc;
+    private readonly MemoryGovernor _governor;
+    private readonly LythonSourceSpan _span;
+    private AdoptedScalarCoupons? _coupons;
 
-    public PyProperty(LythonRuntime.ICallable? getter, LythonRuntime.ICallable? setter) : this(getter, setter, null) { }
-
-    public PyProperty(LythonRuntime.ICallable? getter, LythonRuntime.ICallable? setter, LythonRuntime.ICallable? deleter)
+    private PyProperty(object getter, object setter, object deleter, object doc, bool getterDoc,
+        MemoryGovernor governor, LythonSourceSpan span)
     {
         _getter = getter;
         _setter = setter;
         _deleter = deleter;
+        _doc = doc;
+        _getterDoc = getterDoc;
+        _governor = governor;
+        _span = span;
     }
 
+    public MemoryGovernor OwnerMemoryGovernor => _governor;
+    public LythonSourceSpan? AllocationSpan => _span;
+    internal long CommittedBytes => ShellBytes + (_coupons?.CommittedBytes ?? 0);
+    bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes) { bytes = CommittedBytes; return true; }
     public string? Name { get; private set; }
-
     public void BindName(string name) => Name ??= name;
 
-    public PyProperty WithGetter(LythonRuntime.ICallable getter)
+    internal static PyProperty Create(object getter, object setter, object deleter, object doc,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        var property = new PyProperty(getter, _setter, _deleter);
-        if (Name is not null)
-        {
-            property.BindName(Name);
-        }
+        var getterDoc = ReferenceEquals(doc, PyNone.Instance) && !ReferenceEquals(getter, PyNone.Instance);
+        if (getterDoc) doc = ReadGetterDoc(getter, context, span);
+        return CreateResolved(getter, setter, deleter, doc, getterDoc, context, span);
+    }
 
+    internal static async ValueTask<PyProperty> CreateAsync(object getter, object setter, object deleter, object doc,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        var getterDoc = ReferenceEquals(doc, PyNone.Instance) && !ReferenceEquals(getter, PyNone.Instance);
+        if (getterDoc) doc = await ReadGetterDocAsync(getter, context, span).ConfigureAwait(false);
+        return CreateResolved(getter, setter, deleter, doc, getterDoc, context, span);
+    }
+
+    private static object ReadGetterDoc(object getter, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        try { return LythonRuntime.TryResolveRuntimeMember(getter, "__doc__", context, span, out var doc) ? doc : PyNone.Instance; }
+        catch (LythonRuntimeException error) when (error.ExceptionType == "AttributeError") { return PyNone.Instance; }
+    }
+
+    private static async ValueTask<object> ReadGetterDocAsync(object getter, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        try
+        {
+            var result = await LythonRuntime.TryResolveRuntimeMemberAsync(getter, "__doc__", context, span).ConfigureAwait(false);
+            return result.Found ? result.Value : PyNone.Instance;
+        }
+        catch (LythonRuntimeException error) when (error.ExceptionType == "AttributeError") { return PyNone.Instance; }
+    }
+
+    private static PyProperty CreateResolved(object getter, object setter, object deleter, object doc, bool getterDoc,
+        LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
+        context.MemoryGovernor.Reserve(ShellBytes, span);
+        var property = new PyProperty(getter, setter, deleter, doc, getterDoc, context.MemoryGovernor, span);
+        context.MemoryGovernor.Commit(ShellBytes);
+        try
+        {
+            property.Adopt(getter);
+            property.Adopt(setter);
+            property.Adopt(deleter);
+            property.Adopt(doc);
+        }
+        catch
+        {
+            property._coupons?.ReleaseAll(context.MemoryGovernor);
+            context.MemoryGovernor.Release(ShellBytes);
+            throw;
+        }
+        context.Services.State.CallTemporaries.TrackFreshMutable(property, property.CommittedBytes, span);
         return property;
     }
 
-    public PyProperty WithSetter(LythonRuntime.ICallable setter)
+    private void Adopt(object value)
     {
-        var property = new PyProperty(_getter, setter, _deleter);
-        if (Name is not null)
-        {
-            property.BindName(Name);
-        }
-
-        return property;
+        if (!AdoptedScalarCoupons.IsAdoptableScalar(value)) return;
+        _coupons ??= new AdoptedScalarCoupons();
+        _coupons.Adopt(value, _governor, _span);
     }
 
-    public PyProperty WithDeleter(LythonRuntime.ICallable deleter)
+    public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
-        var property = new PyProperty(_getter, _setter, deleter);
-        if (Name is not null)
+        switch (name)
         {
-            property.BindName(Name);
+            case "fget": value = _getter; return true;
+            case "fset": value = _setter; return true;
+            case "fdel": value = _deleter; return true;
+            case "__doc__": value = _doc; return true;
+            default: return TryGetDecoratorMember(name, out value);
         }
+    }
 
-        return property;
+    public bool TrySetMember(string name, object value)
+    {
+        if (name is "fget" or "fset" or "fdel") throw new LythonRuntimeException("AttributeError", "readonly attribute", _span);
+        if (name != "__doc__") return false;
+        Adopt(value); // Denial precedes changing the visible metadata.
+        _coupons?.Release(_doc, _governor);
+        _doc = value;
+        ChargeReclamationPool.NotifyStorageReplaced(this, CommittedBytes);
+        return true;
+    }
+
+    public bool TryDeleteMember(string name, LythonSourceSpan? span)
+    {
+        if (name is "fget" or "fset" or "fdel") throw new LythonRuntimeException("AttributeError", "readonly attribute", span);
+        return TrySetMember(name, PyNone.Instance);
     }
 
     public bool TryGetDecoratorMember(string name, [MaybeNullWhen(false)] out object value)
@@ -77,189 +149,100 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
 
     public void BindOwner(PyType owner)
     {
-        if (_getter is IClassOwnedMember getter)
-        {
-            getter.BindOwner(owner);
-        }
-
-        if (_setter is IClassOwnedMember setter)
-        {
-            setter.BindOwner(owner);
-        }
-
-        if (_deleter is IClassOwnedMember deleter)
-        {
-            deleter.BindOwner(owner);
-        }
+        if (_getter is IClassOwnedMember getter) getter.BindOwner(owner);
+        if (_setter is IClassOwnedMember setter) setter.BindOwner(owner);
+        if (_deleter is IClassOwnedMember deleter) deleter.BindOwner(owner);
     }
 
     public object Get(object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
     {
-        if (instance is null)
-        {
-            return this;
-        }
-
-        if (context is null || span is null)
-        {
-            throw new InvalidOperationException("Property access requires runtime context.");
-        }
-
-        var accessSpan = span;
-
-        if (_getter is null)
-        {
-            throw new LythonRuntimeException("AttributeError", BuildMissingGetterMessage(owner), accessSpan);
-        }
-
-        var callable = BindAccessor(_getter, instance, owner, context, accessSpan, PropertyAccessorKind.Getter);
-        return callable.Invoke(Array.Empty<CallArgumentValue>(), accessSpan, context);
+        if (instance is null) return this;
+        if (context is null || span is null) throw new InvalidOperationException("Property access requires runtime context.");
+        if (ReferenceEquals(_getter, PyNone.Instance)) throw new LythonRuntimeException("AttributeError", BuildMissingGetterMessage(owner), span);
+        return CallableInvocation.InvokeUnary(RequireCallable(_getter, span), instance, span, context);
     }
 
     public async ValueTask<object> GetAsync(object? instance, PyType owner, LythonRuntime.ExecutionContext? context, LythonSourceSpan? span)
     {
         if (instance is null) return this;
-        if (context is null || span is null)
-            throw new InvalidOperationException("Property access requires runtime context.");
-        if (_getter is null)
-            throw new LythonRuntimeException("AttributeError", BuildMissingGetterMessage(owner), span);
-        var callable = BindAccessor(_getter, instance, owner, context, span, PropertyAccessorKind.Getter);
-        return await callable.InvokeAsync([], span, context).ConfigureAwait(false);
-    }
-
-    internal async ValueTask SetAsync(PyInstance instance, object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-    {
-        if (_setter is null)
-            throw new LythonRuntimeException("AttributeError", BuildMissingSetterMessage(instance.Type), span);
-        var callable = BindAccessor(_setter, instance, instance.Type, context, span, PropertyAccessorKind.Setter);
-        _ = await CallableInvocation.InvokeUnaryAsync(callable, value, span, context).ConfigureAwait(false);
+        if (context is null || span is null) throw new InvalidOperationException("Property access requires runtime context.");
+        if (ReferenceEquals(_getter, PyNone.Instance)) throw new LythonRuntimeException("AttributeError", BuildMissingGetterMessage(owner), span);
+        return await CallableInvocation.InvokeUnaryAsync(RequireCallable(_getter, span), instance, span, context).ConfigureAwait(false);
     }
 
     public void Set(PyInstance instance, object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        if (_setter is null)
-        {
-            throw new LythonRuntimeException("AttributeError", BuildMissingSetterMessage(instance.Type), span);
-        }
-
-        var callable = BindAccessor(_setter, instance, instance.Type, context, span, PropertyAccessorKind.Setter);
-        _ = CallableInvocation.InvokeUnary(callable, value, span, context);
+        if (ReferenceEquals(_setter, PyNone.Instance)) throw new LythonRuntimeException("AttributeError", BuildMissingSetterMessage(instance.Type), span);
+        _ = CallableInvocation.InvokeBinary(RequireCallable(_setter, span), instance, value, span, context);
     }
 
-    internal async ValueTask DeleteAsync(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    internal async ValueTask SetAsync(PyInstance instance, object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        if (_deleter is null)
-            throw new LythonRuntimeException("AttributeError", BuildMissingDeleterMessage(instance.Type), span);
-        var callable = BindAccessor(_deleter, instance, instance.Type, context, span, PropertyAccessorKind.Deleter);
-        _ = await callable.InvokeAsync([], span, context).ConfigureAwait(false);
+        if (ReferenceEquals(_setter, PyNone.Instance)) throw new LythonRuntimeException("AttributeError", BuildMissingSetterMessage(instance.Type), span);
+        _ = await CallableInvocation.InvokeBinaryAsync(RequireCallable(_setter, span), instance, value, span, context).ConfigureAwait(false);
     }
 
     public void Delete(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        if (_deleter is null)
-        {
-            throw new LythonRuntimeException("AttributeError", BuildMissingDeleterMessage(instance.Type), span);
-        }
-
-        var callable = BindAccessor(_deleter, instance, instance.Type, context, span, PropertyAccessorKind.Deleter);
-        _ = callable.Invoke([], span, context);
+        if (ReferenceEquals(_deleter, PyNone.Instance)) throw new LythonRuntimeException("AttributeError", BuildMissingDeleterMessage(instance.Type), span);
+        _ = CallableInvocation.InvokeUnary(RequireCallable(_deleter, span), instance, span, context);
     }
 
-    public PyString RenderPython(PyRenderingContext context)
-    {
-        _ = context;
-        return PyString.FromString("<property object>");
-    }
-
+    public PyString RenderPython(PyRenderingContext context) => PyString.FromString("<property object>");
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
 
-    private LythonRuntime.ICallable BindAccessor(
-        LythonRuntime.ICallable accessor,
-        object instance,
-        PyType owner,
-        LythonRuntime.ExecutionContext context,
-        LythonSourceSpan span,
-        PropertyAccessorKind kind)
+    internal async ValueTask DeleteAsync(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        var resolved = accessor is IPyDescriptor descriptor
-            ? descriptor.Get(instance, owner, context, span)
-            : accessor;
-
-        if (resolved is not LythonRuntime.ICallable callable)
-        {
-            var name = kind switch
-            {
-                PropertyAccessorKind.Getter => "getter",
-                PropertyAccessorKind.Setter => "setter",
-                PropertyAccessorKind.Deleter => "deleter",
-                _ => throw new InvalidOperationException("Unknown property accessor kind.")
-            };
-            throw new LythonRuntimeException("TypeError", $"property {name} must be callable.", span);
-        }
-
-        return callable;
+        if (ReferenceEquals(_deleter, PyNone.Instance)) throw new LythonRuntimeException("AttributeError", BuildMissingDeleterMessage(instance.Type), span);
+        _ = await CallableInvocation.InvokeUnaryAsync(RequireCallable(_deleter, span), instance, span, context).ConfigureAwait(false);
     }
+
+    private static LythonRuntime.ICallable RequireCallable(object accessor, LythonSourceSpan span)
+        => accessor as LythonRuntime.ICallable ?? throw RuntimeErrors.NotCallable(span);
 
     private string BuildMissingGetterMessage(PyType owner)
-        => Name is null
-            ? $"property on '{owner.Name}' has no getter."
-            : $"property '{Name}' of '{owner.Name}' has no getter.";
-
+        => Name is null ? $"property on '{owner.Name}' has no getter." : $"property '{Name}' of '{owner.Name}' has no getter.";
     private string BuildMissingSetterMessage(PyType owner)
-        => Name is null
-            ? $"property on '{owner.Name}' has no setter."
-            : $"property '{Name}' of '{owner.Name}' has no setter.";
-
+        => Name is null ? $"property on '{owner.Name}' has no setter." : $"property '{Name}' of '{owner.Name}' has no setter.";
     private string BuildMissingDeleterMessage(PyType owner)
-        => Name is null
-            ? $"property on '{owner.Name}' has no deleter."
-            : $"property '{Name}' of '{owner.Name}' has no deleter.";
+        => Name is null ? $"property on '{owner.Name}' has no deleter." : $"property '{Name}' of '{owner.Name}' has no deleter.";
 
-    private enum PropertyAccessorKind
-    {
-        Getter,
-        Setter,
-        Deleter
-    }
+    private enum PropertyAccessorKind { Getter, Setter, Deleter }
 
     private sealed class PropertyDecoratorCallable(PyProperty property, PropertyAccessorKind kind) : LythonRuntime.ICallable
     {
-        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        private object Argument(CallArgumentValue[] args, LythonSourceSpan span)
         {
-            _ = context;
-            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not LythonRuntime.ICallable callable)
-            {
-                throw new LythonRuntimeException(
-                    "TypeError",
-                    kind switch
-                    {
-                        PropertyAccessorKind.Getter => "property.getter(func) expects one callable argument.",
-                        PropertyAccessorKind.Setter => "property.setter(func) expects one callable argument.",
-                        PropertyAccessorKind.Deleter => "property.deleter(func) expects one callable argument.",
-                        _ => throw new InvalidOperationException("Unknown property accessor kind.")
-                    },
-                    span);
-            }
+            if (args.Length != 1 || args[0].IsKeyword) throw new LythonRuntimeException("TypeError", $"property.{kind.ToString().ToLowerInvariant()}(func) expects one positional argument.", span);
+            return args[0].Value;
+        }
 
-            // Each derivation retains a fresh descriptor shell.
-            context.MemoryGovernor.Reserve(64L, span);
-            context.MemoryGovernor.Commit(64L);
-            return kind switch
-            {
-                PropertyAccessorKind.Getter => property.WithGetter(callable),
-                PropertyAccessorKind.Setter => property.WithSetter(callable),
-                PropertyAccessorKind.Deleter => property.WithDeleter(callable),
-                _ => throw new InvalidOperationException("Unknown property accessor kind.")
-            };
+        public object Invoke(CallArgumentValue[] args, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            var value = Argument(args, span);
+            var replace = !ReferenceEquals(value, PyNone.Instance);
+            var copy = Create(kind == PropertyAccessorKind.Getter && replace ? value : property._getter,
+                kind == PropertyAccessorKind.Setter && replace ? value : property._setter,
+                kind == PropertyAccessorKind.Deleter && replace ? value : property._deleter,
+                property._getterDoc ? PyNone.Instance : property._doc, context, span);
+            if (property.Name is { } name) copy.BindName(name);
+            return copy;
+        }
+
+        public async ValueTask<object> InvokeAsync(CallArgumentValue[] args, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            var value = Argument(args, span);
+            var replace = !ReferenceEquals(value, PyNone.Instance);
+            var copy = await CreateAsync(kind == PropertyAccessorKind.Getter && replace ? value : property._getter,
+                kind == PropertyAccessorKind.Setter && replace ? value : property._setter,
+                kind == PropertyAccessorKind.Deleter && replace ? value : property._deleter,
+                property._getterDoc ? PyNone.Instance : property._doc, context, span).ConfigureAwait(false);
+            if (property.Name is { } name) copy.BindName(name);
+            return copy;
         }
     }
 
-    private enum DescriptorMethodKind
-    {
-        Get,
-        Set,
-        Delete
-    }
+    private enum DescriptorMethodKind { Get, Set, Delete }
 
     private sealed class PropertyDescriptorMethodCallable(PyProperty property, DescriptorMethodKind kind) : LythonRuntime.ICallable
     {
@@ -274,41 +257,59 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
             };
         }
 
-        private object InvokeGet(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        public async ValueTask<object> InvokeAsync(CallArgumentValue[] args, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            if (arguments.Length != 2 || arguments[0].IsKeyword || arguments[1].IsKeyword)
+            if (kind == DescriptorMethodKind.Get)
             {
-                throw new LythonRuntimeException("TypeError", "property.__get__(instance, owner) expects two positional arguments.", span);
+                var (instance, owner) = GetArguments(args, span);
+                return await property.GetAsync(instance, owner, context, span).ConfigureAwait(false);
             }
-
-            var owner = arguments[1].Value as PyType
-                ?? throw new LythonRuntimeException("TypeError", "property.__get__(instance, owner) expects owner to be a class.", span);
-            var instance = ReferenceEquals(arguments[0].Value, PyNone.Instance) ? null : arguments[0].Value;
-            return property.Get(instance, owner, context, span);
-        }
-
-        private object InvokeSet(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        {
-            if (arguments.Length != 2 ||
-                arguments[0].IsKeyword ||
-                arguments[1].IsKeyword ||
-                arguments[0].Value is not PyInstance instance)
+            if (kind == DescriptorMethodKind.Set)
             {
-                throw new LythonRuntimeException("TypeError", "property.__set__(instance, value) expects an instance and a value.", span);
+                var instance = SetArguments(args, span);
+                await property.SetAsync(instance, args[1].Value, context, span).ConfigureAwait(false);
             }
-
-            property.Set(instance, arguments[1].Value, context, span);
+            else await property.DeleteAsync(DeleteArgument(args, span), context, span).ConfigureAwait(false);
             return PyNone.Instance;
         }
 
-        private object InvokeDelete(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        private static (object? Instance, PyType Owner) GetArguments(CallArgumentValue[] args, LythonSourceSpan span)
         {
-            if (arguments.Length != 1 || arguments[0].IsKeyword || arguments[0].Value is not PyInstance instance)
-            {
-                throw new LythonRuntimeException("TypeError", "property.__delete__(instance) expects one instance argument.", span);
-            }
+            if (args.Length != 2 || args[0].IsKeyword || args[1].IsKeyword)
+                throw new LythonRuntimeException("TypeError", "property.__get__(instance, owner) expects two positional arguments.", span);
+            var owner = args[1].Value as PyType ?? throw new LythonRuntimeException("TypeError", "property.__get__(instance, owner) expects owner to be a class.", span);
+            return (ReferenceEquals(args[0].Value, PyNone.Instance) ? null : args[0].Value, owner);
+        }
 
-            property.Delete(instance, context, span);
+        private static PyInstance SetArguments(CallArgumentValue[] args, LythonSourceSpan span)
+        {
+            if (args.Length != 2 || args[0].IsKeyword || args[1].IsKeyword || args[0].Value is not PyInstance instance)
+                throw new LythonRuntimeException("TypeError", "property.__set__(instance, value) expects an instance and a value.", span);
+            return instance;
+        }
+
+        private static PyInstance DeleteArgument(CallArgumentValue[] args, LythonSourceSpan span)
+        {
+            if (args.Length != 1 || args[0].IsKeyword || args[0].Value is not PyInstance instance)
+                throw new LythonRuntimeException("TypeError", "property.__delete__(instance) expects one instance argument.", span);
+            return instance;
+        }
+
+        private object InvokeGet(CallArgumentValue[] args, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            var (instance, owner) = GetArguments(args, span);
+            return property.Get(instance, owner, context, span);
+        }
+
+        private object InvokeSet(CallArgumentValue[] args, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            property.Set(SetArguments(args, span), args[1].Value, context, span);
+            return PyNone.Instance;
+        }
+
+        private object InvokeDelete(CallArgumentValue[] args, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            property.Delete(DeleteArgument(args, span), context, span);
             return PyNone.Instance;
         }
     }
