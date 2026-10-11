@@ -149,15 +149,23 @@ internal sealed partial class LythonRuntime
             object value,
             LythonSourceSpan span)
         {
+            var name = codeObject.LocalNames[slot];
+            var guestName = !name.StartsWith('<');
+            if (context.GlobalNamespace is not null && guestName)
+            {
+                StoreGlobalNamespaceName(context, name, value);
+                return;
+            }
+            if (guestName) NoteModuleBuiltinAlias(context, name, value, span);
             locals[slot] = value;
             if (localCells?[slot] is ExecutableCell localCell)
             {
                 localCell.Value = value;
             }
 
-            if (codeObject.RequiresLocalVariableMirroring || context.MirrorLocalStores)
+            if (guestName && (codeObject.RequiresLocalVariableMirroring || context.MirrorLocalStores))
             {
-                context.Variables[codeObject.LocalNames[slot]] = value;
+                context.Variables[name] = value;
             }
         }
 
@@ -200,7 +208,7 @@ internal sealed partial class LythonRuntime
                     break;
 
                 case ExecutableOpCode.LoadLocal:
-                    _stack.Push(LoadLocal(_codeObject, _locals, instruction.LocalSlot, instruction.Span));
+                    _stack.Push(LoadLocal(_codeObject, _locals, instruction.LocalSlot, instruction.Span, _context));
                     break;
 
                 case ExecutableOpCode.LoadClosure:
@@ -595,7 +603,7 @@ internal sealed partial class LythonRuntime
             var right = Pop(ref _stack, instruction.Span);
             var linkValue = EvaluateExecutableBinary(
                 instruction.BinaryOperator,
-                LoadLocal(_codeObject, _locals, instruction.ChainSlot, instruction.Span),
+                LoadLocal(_codeObject, _locals, instruction.ChainSlot, instruction.Span, _context),
                 right,
                 instruction.Span,
                 _context);

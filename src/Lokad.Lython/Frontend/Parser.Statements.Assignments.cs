@@ -101,12 +101,16 @@ internal sealed partial class Parser
             Merge(startPosition, (expression ?? annotation).Span)) { IsSimple = target is IdentifierExpressionSyntax };
     }
 
-    private StatementSyntax? TryParsePostfixAssignmentStatement()
+    private StatementSyntax? TryParsePostfixAssignmentStatement(bool reportUnsupportedAnnotationTarget = false)
     {
         var startPosition = _position;
         var startDiagnosticCount = _diagnostics.Count;
 
         var target = ParsePostfixExpression();
+        if (target is not null && reportUnsupportedAnnotationTarget && CurrentToken == Token.Colon)
+        {
+            return AddUnsupportedAssignmentTarget(target);
+        }
         if (target is null || CurrentToken != Token.Assign)
         {
             _position = startPosition;
@@ -142,26 +146,6 @@ internal sealed partial class Parser
                 startPosition),
             _ => AddUnsupportedAssignmentTarget(target)
         };
-    }
-
-    private StatementSyntax? TryParseUnsupportedAssignmentTargetStatement()
-    {
-        var startPosition = _position;
-        var startDiagnosticCount = _diagnostics.Count;
-
-        var target = ParsePostfixExpression();
-        if (target is not null && CurrentToken is Token.Assign or Token.Colon)
-        {
-            return AddUnsupportedAssignmentTarget(target);
-        }
-
-        _position = startPosition;
-        if (_diagnostics.Count > startDiagnosticCount)
-        {
-            _diagnostics.RemoveRange(startDiagnosticCount, _diagnostics.Count - startDiagnosticCount);
-        }
-
-        return null;
     }
 
     private StatementSyntax? AddUnsupportedAssignmentTarget(ExpressionSyntax target)

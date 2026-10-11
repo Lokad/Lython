@@ -714,6 +714,7 @@ internal sealed partial class LythonRuntime
             "float" or
             "list" or
             "tuple" or
+            "slice" or
             "dict" or
             "set" or
             "str" or
@@ -776,6 +777,7 @@ internal sealed partial class LythonRuntime
             "str" => value is PyString,
             "bytes" => value is PyBytes,
             "range" => value is PyRange,
+            "slice" => value is PySlice,
             "pathlib.Path" or "pathlib.PurePath" or "pathlib.PurePosixPath" or "pathlib.PosixPath" => value is PyPath,
             "datetime.timedelta" => value is PyTimedelta,
             "datetime.date" => value is PyDate,
@@ -930,29 +932,11 @@ internal sealed partial class LythonRuntime
         return BuildGlobalsDictionary(context, span);
     }
 
-    // Globals resolve through the root context like name loads: module
-    // assignments live in the module executable frame unless mirrored,
-    // so the frame wins over the context variables on collision.
+    // One live dictionary per actual module; locals() keeps its snapshot contract.
     private static PyDict BuildGlobalsDictionary(ExecutionContext context, LythonSourceSpan span)
     {
         var globalContext = GetGlobalContext(context);
-        var scope = new PyDict(context.MemoryGovernor, span);
-        foreach (var pair in globalContext.Variables)
-        {
-            if (!ExecutionState.BuiltinNames.Contains(pair.Key))
-            {
-                scope.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
-            }
-        }
-
-        if (globalContext.CurrentExecutableFrame is not null)
-        {
-            foreach (var pair in globalContext.CurrentExecutableFrame.EnumerateLocals())
-            {
-                scope.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
-            }
-        }
-
+        var scope = globalContext.GlobalNamespace ?? CreateGlobalNamespace(globalContext, span);
         context.ObserveCollectionCount(scope.Count, span);
         return scope;
     }

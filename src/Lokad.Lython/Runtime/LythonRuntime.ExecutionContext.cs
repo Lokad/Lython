@@ -16,6 +16,11 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext : ExecutionFrame
     {
+        internal PyDict? GlobalNamespace;
+        internal GlobalNamespaceStorage? GlobalNamespaceBacking;
+        internal HashSet<string>? ModuleBuiltinAliases;
+        internal int ModuleBuiltinAliasCapacity;
+        internal long ModuleBuiltinAliasBytes;
         // Only an active synchronous PyFunction body enables the direct lowered
         // routes. Child frames and asynchronous calls retain their own strategy.
         internal bool UseSynchronousLoweredFunctionDispatch { get; set; }

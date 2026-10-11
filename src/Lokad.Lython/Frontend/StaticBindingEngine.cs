@@ -9,8 +9,9 @@ internal static partial class StaticBindingEngine
         var mutatedReceivers = CollectMutatedReceiverNames(statement, bindings);
         // Aliases to mutable sequences are not tracked. Any known mutating path therefore invalidates
         // all sequence-shape facts before this statement establishes new bindings.
+        // Descriptor and item setters may also mutate captured sequences.
         if (mutatedReceivers.Any(bindings.IsKnownMutableSequence) ||
-            MutatesKnownMutableSequenceThroughAssignment(statement, bindings))
+            AssignmentMayMutateSequenceFacts(statement))
         {
             bindings.InvalidateMutableSequenceFacts();
         }
@@ -158,26 +159,14 @@ internal static partial class StaticBindingEngine
         }
     }
 
-    private static bool MutatesKnownMutableSequenceThroughAssignment(StatementSyntax statement, AbstractState bindings)
+    private static bool AssignmentMayMutateSequenceFacts(StatementSyntax statement)
     {
-        return statement switch
-        {
-            SubscriptAssignmentStatementSyntax { Target: IdentifierExpressionSyntax identifier } =>
-                bindings.IsKnownMutableSequence(identifier.Name),
-            SliceAssignmentStatementSyntax { Target: IdentifierExpressionSyntax identifier } =>
-                bindings.IsKnownMutableSequence(identifier.Name),
-            AugmentedAssignmentStatementSyntax { Target: NameAssignmentTargetSyntax identifier } =>
-                bindings.IsKnownMutableSequence(identifier.Name),
-            AugmentedAssignmentStatementSyntax
-            {
-                Target: SubscriptAssignmentTargetSyntax { Target: IdentifierExpressionSyntax identifier }
-            } => bindings.IsKnownMutableSequence(identifier.Name),
-            AugmentedAssignmentStatementSyntax
-            {
-                Target: SliceAssignmentTargetSyntax { Target: IdentifierExpressionSyntax identifier }
-            } => bindings.IsKnownMutableSequence(identifier.Name),
-            _ => false
-        };
+        return statement is SubscriptAssignmentStatementSyntax or SliceAssignmentStatementSyntax or
+            MemberAssignmentStatementSyntax or AugmentedAssignmentStatementSyntax or DeleteStatementSyntax or
+            UnpackingAssignmentStatementSyntax or
+            AnnotatedAssignmentStatementSyntax { Target: not NameAssignmentTargetSyntax } ||
+            statement is ChainedAssignmentStatementSyntax chained &&
+                chained.Targets.Any(target => target is not NameAssignmentTargetSyntax);
     }
 
     private static void UpdateAnnotatedTargetBinding(AssignmentTargetSyntax target, ExpressionSyntax value, AbstractState bindings)

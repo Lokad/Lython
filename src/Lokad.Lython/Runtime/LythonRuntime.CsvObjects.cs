@@ -309,12 +309,19 @@ internal sealed partial class LythonRuntime
         public int Count => _dict.Count;
 
         public IEnumerator<object> GetEnumerator()
+            => EnumerateItems(_dict.GetEnumerator()).GetEnumerator();
+
+        private IEnumerable<object> EnumerateItems(IEnumerator<KeyValuePair<object, object>> entries)
         {
-            foreach (var pair in _dict.Items)
+            using (entries)
             {
-                yield return _dict.OwnerMemoryGovernor is null
-                    ? PyTuple.FromOwnedArray([pair.Key, pair.Value])
-                    : PyTuple.FromOwnedArray([pair.Key, pair.Value], _dict.OwnerMemoryGovernor, _dict.AllocationSpan);
+                while (entries.MoveNext())
+                {
+                    var pair = entries.Current;
+                    yield return _dict.OwnerMemoryGovernor is null
+                        ? PyTuple.FromOwnedArray([pair.Key, pair.Value])
+                        : PyTuple.FromOwnedArray([pair.Key, pair.Value], _dict.OwnerMemoryGovernor, _dict.AllocationSpan);
+                }
             }
         }
 

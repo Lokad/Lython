@@ -169,7 +169,8 @@ internal sealed partial class LythonRuntime
             else
             {
                 value = new PyDict(context.MemoryGovernor, statement.Span);
-                context.Variables["__annotations__"] = value;
+                if (context.GlobalNamespace is not null) StoreGlobalNamespaceName(context, "__annotations__", value);
+                else context.Variables["__annotations__"] = value;
                 context.Services.State.CallTemporaries.TrackFreshMutable((PyDict)value, ((PyDict)value).CommittedStorageBytes, statement.Span);
             }
         }

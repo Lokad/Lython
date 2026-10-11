@@ -96,6 +96,7 @@ internal sealed partial class LythonRuntime
         {
             foreach (var pair in _codeObject.LocalNameToSlot)
             {
+                if (pair.Key.StartsWith('<')) continue;
                 var value = _locals[pair.Value];
                 if (!ReferenceEquals(value, UninitializedLocal))
                 {

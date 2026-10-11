@@ -7,11 +7,14 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private static object LoadLocal(ExecutableCodeObject codeObject, object[] locals, int slot, LythonSourceSpan span)
+    private static object LoadLocal(ExecutableCodeObject codeObject, object[] locals, int slot, LythonSourceSpan span, ExecutionContext context)
     {
         var value = locals[slot];
         if (ReferenceEquals(value, UninitializedLocal))
         {
+            if (!codeObject.IsFunctionScope && !codeObject.LocalNames[slot].StartsWith('<') &&
+                context.Variables.TryGetValue(codeObject.LocalNames[slot], out var globalValue))
+                return globalValue;
             throw codeObject.IsFunctionScope
                 ? RuntimeErrors.UnboundLocalVariable(codeObject.LocalNames[slot], span)
                 : RuntimeErrors.NameNotDefined(codeObject.LocalNames[slot], span);
@@ -595,6 +598,9 @@ internal sealed partial class LythonRuntime
     {
         for (var i = 0; i < codeObject.LocalNames.Count; i++)
         {
+            // Compiler slots belong to this frame, rather than the guest
+            // namespace. Fallback statements cannot rebind or delete them.
+            if (codeObject.LocalNames[i].StartsWith('<')) continue;
             if (!context.Variables.TryGetValue(codeObject.LocalNames[i], out var value))
             {
                 locals[i] = UninitializedLocal;
@@ -664,6 +670,12 @@ internal sealed partial class LythonRuntime
             return;
         }
 
+        if (context.GlobalNamespace is not null)
+        {
+            StoreGlobalNamespaceName(context, name, value);
+            return;
+        }
+        NoteModuleBuiltinAlias(context, name, value, span);
         SyncExecutableLocalFromValue(codeObject, locals, localCells, name, value);
         if (codeObject.RequiresLocalVariableMirroring || context.MirrorLocalStores || !codeObject.LocalNameToSlot.ContainsKey(name))
         {

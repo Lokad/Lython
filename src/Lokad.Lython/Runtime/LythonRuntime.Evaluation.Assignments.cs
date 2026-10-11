@@ -554,6 +554,12 @@ internal sealed partial class LythonRuntime
         LythonSourceSpan span,
         ExecutionContext context)
     {
+        if (target is PyInstance)
+        {
+            SetSubscriptValue(target, CreateSliceValue(start, end, step, span, context), value, span, context);
+            return;
+        }
+
         // Mappings store colon slices as keys like CPython; bounds stay raw.
         if (target is PyDict || target is PyCounter || target is PyDefaultDict || target is PyChainMap)
         {

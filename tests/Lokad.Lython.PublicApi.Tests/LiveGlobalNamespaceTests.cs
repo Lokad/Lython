@@ -88,6 +88,112 @@ public sealed class LiveGlobalNamespaceTests
             scope[1]='extra'
             print(globals()[1],isinstance(scope,dict))
             """, "extra True\n"];
+        yield return ["source_store_and_delete", """
+            scope=globals()
+            value=3
+            value=7
+            print(scope['value'])
+            del value
+            print('value' in scope)
+            """, "7\nFalse\n"];
+        yield return ["global_statement", """
+            value=1
+            scope=globals()
+            def change():
+                global value
+                value=9
+            change()
+            print(scope['value'])
+            """, "9\n"];
+        yield return ["definitions_after_view", """
+            scope=globals()
+            def get():return 3
+            class Box:pass
+            print(scope['get'] is get,scope['Box'] is Box)
+            """, "True True\n"];
+        yield return ["escaped_local_view", """
+            def capture():
+                local=7
+                return globals()
+            scope=capture()
+            value=3
+            print('local' in scope,scope['value'],scope is globals())
+            """, "False 3 True\n"];
+        yield return ["class_scope_view", """
+            scope=globals()
+            class Box:
+                local=7
+                view=globals()
+            print(Box.view is scope,'local' in scope)
+            """, "True False\n"];
+        yield return ["clear_and_repopulate", """
+            def clear(scope):
+                scope.clear()
+                scope['value']=3
+                return scope
+            scope=clear(globals())
+            print(value,scope is globals())
+            """, "3 True\n"];
+        yield return ["iterator_source_growth", """
+            scope=globals()
+            iterator=iter(scope)
+            value=3
+            try:next(iterator)
+            except RuntimeError:print('changed')
+            """, "changed\n"];
+        yield return ["explicit_builtin_alias", """
+            len=len
+            scope=globals()
+            print('len' in scope,scope['len'] is len)
+            del len
+            print('len' in scope,len([1]))
+            """, "True True\nFalse 1\n"];
+        yield return ["equal_protocol_key", """
+            value=1
+            scope=globals()
+            class Key:
+                def __hash__(self):return hash('value')
+                def __eq__(self,other):return other=='value'
+            key=Key()
+            scope[key]=3
+            print(value,scope['value'])
+            del scope[key]
+            print('value' in scope)
+            """, "3 3\nFalse\n"];
+        yield return ["compiler_temporaries_are_private", """
+            print(1<2<3)
+            scope=globals()
+            print(2<3<4)
+            match 3:
+                case value:pass
+            print([key for key in scope if key.startswith('<')])
+            """, "True\nTrue\n[]\n"];
+        yield return ["extra_key_cannot_change_compiler_temporary", """
+            scope=globals()
+            def stop():
+                scope['<chain_left:0>']=99
+                return 2
+            print(0<stop()<3,scope['<chain_left:0>'])
+            """, "True 99\n"];
+        yield return ["with_temporary_survives_fallback", """
+            scope=globals()
+            class Manager:
+                def __enter__(self):return 7
+                def __exit__(self,*args):return False
+            with Manager() as value:
+                def get():return value
+                print(value,[key for key in scope if key.startswith('<')])
+            print(get())
+            """, "7 []\n7\n"];
+        yield return ["class_annotation_namespace", """
+            from __future__ import annotations
+            scope=globals()
+            x:Module
+            class C:
+                global __annotations__
+                y:Class
+            print(scope['__annotations__'],C.__annotations__)
+            """, "{'x': 'Module'} {'y': 'Class'}\n"];
     }
 
     [Theory]

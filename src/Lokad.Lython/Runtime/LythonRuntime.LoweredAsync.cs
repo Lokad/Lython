@@ -479,14 +479,19 @@ internal sealed partial class LythonRuntime
         object value,
         ExecutionContext context)
     {
-        ExecuteSliceAssignment(
-            await EvaluateLoweredExpressionAsync(targetExpression, context).ConfigureAwait(false),
-            startExpression is null ? null : await EvaluateLoweredExpressionAsync(startExpression, context).ConfigureAwait(false),
-            endExpression is null ? null : await EvaluateLoweredExpressionAsync(endExpression, context).ConfigureAwait(false),
-            stepExpression is null ? null : await EvaluateLoweredExpressionAsync(stepExpression, context).ConfigureAwait(false),
-            value,
-            statement.Span,
-            context);
+        var target = await EvaluateLoweredExpressionAsync(targetExpression, context).ConfigureAwait(false);
+        var start = startExpression is null ? null : await EvaluateLoweredExpressionAsync(startExpression, context).ConfigureAwait(false);
+        var end = endExpression is null ? null : await EvaluateLoweredExpressionAsync(endExpression, context).ConfigureAwait(false);
+        var step = stepExpression is null ? null : await EvaluateLoweredExpressionAsync(stepExpression, context).ConfigureAwait(false);
+        if (target is PyInstance)
+        {
+            var key = CreateSliceValue(start, end, step, statement.Span, context);
+            await SetHeaderSubscriptAsync(target, key, value, statement.Span, context).ConfigureAwait(false);
+        }
+        else
+        {
+            ExecuteSliceAssignment(target, start, end, step, value, statement.Span, context);
+        }
     }
 
     private static async ValueTask ExecuteLoweredSubscriptAssignmentAsync(
@@ -498,6 +503,6 @@ internal sealed partial class LythonRuntime
     {
         var target = await EvaluateLoweredExpressionAsync(targetExpression, context).ConfigureAwait(false);
         var index = await EvaluateLoweredExpressionAsync(indexExpression, context).ConfigureAwait(false);
-        SetSubscriptValue(target, index, value, statement.Span, context);
+        await SetHeaderSubscriptAsync(target, index, value, statement.Span, context).ConfigureAwait(false);
     }
 }

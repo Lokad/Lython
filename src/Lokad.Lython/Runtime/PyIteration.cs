@@ -419,6 +419,10 @@ internal static class PyIteration
             _span = span;
             _userIterator = userIterator;
             _context = context;
+            // Dictionary iterators capture size/version at iter(), before any
+            // first pull. The views stay live until their iterator is created.
+            if (value is PyDict or LythonRuntime.DictKeysView or LythonRuntime.DictValuesView or LythonRuntime.DictItemsView)
+                _syncEnumerator = GetSyncEnumerable(value, span).GetEnumerator();
         }
 
         public static Cursor Create(object value, LythonSourceSpan span)

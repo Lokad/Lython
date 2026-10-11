@@ -128,14 +128,16 @@ internal static partial class StaticAbstractInterpreter
                     {
                         AnalyzeExpression(argument.Expression, diagnostics, bindings);
                     }
-                    if (diagnostics.Count == diagnosticsBeforeCall && StaticBindingEngine.CallMayMutateDictionaryFacts(call, bindings))
+                    if (diagnostics.Count == diagnosticsBeforeCall && StaticBindingEngine.CallMayMutateContainerFacts(call, bindings))
                     {
                         // Preserve a scalar return (e.g. dict.pop) evaluated
-                        // before mutation. Mapping returns may alias the changed
-                        // input, so their exact key facts cannot be retained.
+                        // before mutation. Container returns may alias the changed
+                        // input, so their exact shape facts cannot be retained.
                         var resolved = StaticAbstractValueResolver.TryResolve(call, bindings, out var returnValue) &&
-                            !AbstractState.ContainsDictionaryFacts(returnValue);
+                            !AbstractState.ContainsDictionaryFacts(returnValue) &&
+                            !AbstractState.ContainsMutableCollectionFacts(returnValue);
                         bindings.InvalidateDictionaryFacts();
+                        bindings.InvalidateMutableSequenceFacts();
                         if (resolved)
                         {
                             bindings.SetCachedAbstractValue(call, AbstractValueResolution.Resolved(returnValue));

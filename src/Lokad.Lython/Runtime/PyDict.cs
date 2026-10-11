@@ -37,6 +37,13 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     public PyDict(MemoryGovernor governor) : this(governor, null) { }
 
+    internal PyDict(IPyDictStorage storage, MemoryGovernor governor, LythonSourceSpan allocationSpan)
+    {
+        _items = storage;
+        _memoryGovernor = governor;
+        _allocationSpan = allocationSpan;
+    }
+
     public PyDict(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
         _memoryGovernor = governor;
@@ -114,39 +121,41 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     public IEnumerable<object> Keys
     {
-        get
-        {
-            var expectedVersion = _version;
-            using var enumerator = _items.GetEnumerator();
-            while (true)
-            {
-                EnsureUnmodified(expectedVersion);
-                if (!enumerator.MoveNext())
-                {
-                    yield break;
-                }
+        get => EnumerateKeys(_version);
+    }
 
-                yield return FromStorageKey(enumerator.Current.Key);
+    private IEnumerable<object> EnumerateKeys(int expectedVersion)
+    {
+        using var enumerator = _items.GetEnumerator();
+        while (true)
+        {
+            EnsureUnmodified(expectedVersion);
+            if (!enumerator.MoveNext())
+            {
+                yield break;
             }
+
+            yield return FromStorageKey(enumerator.Current.Key);
         }
     }
 
     public IEnumerable<object> Values
     {
-        get
-        {
-            var expectedVersion = _version;
-            using var enumerator = _items.GetEnumerator();
-            while (true)
-            {
-                EnsureUnmodified(expectedVersion);
-                if (!enumerator.MoveNext())
-                {
-                    yield break;
-                }
+        get => EnumerateValues(_version);
+    }
 
-                yield return FromStorageValue(enumerator.Current.Value);
+    private IEnumerable<object> EnumerateValues(int expectedVersion)
+    {
+        using var enumerator = _items.GetEnumerator();
+        while (true)
+        {
+            EnsureUnmodified(expectedVersion);
+            if (!enumerator.MoveNext())
+            {
+                yield break;
             }
+
+            yield return FromStorageValue(enumerator.Current.Value);
         }
     }
 
@@ -232,7 +241,12 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             // The original key object stays retained: only the value turns over.
             // Like CPython, replacement changes no size, so no version bump.
             AdoptIncoming(storageValue);
-            _ = _items.SetItem(storageKey, storageValue);
+            try { _ = _items.SetItem(storageKey, storageValue); }
+            catch
+            {
+                UnadoptIncoming(storageValue);
+                throw;
+            }
             ReleaseOutgoing(FromStorageValue(current));
             NoteGrowth(committedBefore);
             return;
@@ -251,7 +265,17 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             throw;
         }
 
-        _items.AddNew(storageKey, storageValue);
+        try
+        {
+            _items.AddNew(storageKey, storageValue);
+        }
+        catch
+        {
+            UnadoptIncoming(storageKey);
+            UnadoptIncoming(storageValue);
+            NoteGrowth(committedBefore);
+            throw;
+        }
         _version++;
         NoteGrowth(committedBefore);
     }
@@ -1026,6 +1050,20 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             return;
         }
 
+        if (_items is LythonRuntime.GlobalNamespaceStorage)
+        {
+            _items.Clear();
+            _version++;
+            if (_protocolBytes != 0) _memoryGovernor!.Release(_protocolBytes);
+            _sideIndex?.ReleaseAll(_memoryGovernor!);
+            _sideIndex = null;
+            _protocol = null;
+            _protocolBytes = 0;
+            ReleaseAllCoupons();
+            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
+            return;
+        }
+
 
         _version++;
         if (_memoryGovernor is not null)
@@ -1199,8 +1237,10 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     public PyString RenderInterpolated(PyRenderingContext context) => PyRendering.ToReprPyString(this, context);
 
     public IEnumerator<KeyValuePair<object, object>> GetEnumerator()
+        => EnumerateItems(_version).GetEnumerator();
+
+    private IEnumerable<KeyValuePair<object, object>> EnumerateItems(int expectedVersion)
     {
-        var expectedVersion = _version;
         using var enumerator = _items.GetEnumerator();
         while (true)
         {
@@ -1234,7 +1274,12 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         var committedBefore = CommittedStorageBytes;
         _ = _items.TryGetValue(storageKey, out var prior);
         AdoptIncoming(storageValue);
-        _ = _items.SetItem(storageKey, storageValue);
+        try { _ = _items.SetItem(storageKey, storageValue); }
+        catch
+        {
+            UnadoptIncoming(storageValue);
+            throw;
+        }
         ReleaseOutgoing(prior);
         NoteGrowth(committedBefore);
     }

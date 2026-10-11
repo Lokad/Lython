@@ -92,6 +92,12 @@ internal sealed partial class LythonRuntime
     internal static void StoreName(string name, object value, ExecutionContext context, LythonSourceSpan span)
     {
         var storageContext = ResolveNameStorageContext(name, context, span);
+        if (storageContext.GlobalNamespace is not null)
+        {
+            StoreGlobalNamespaceName(storageContext, name, value);
+            return;
+        }
+        NoteModuleBuiltinAlias(storageContext, name, value, span);
         storageContext.Variables[name] = value;
         storageContext.CurrentExecutableFrame?.TryStoreLocalOrClosure(name, value);
     }
@@ -99,6 +105,10 @@ internal sealed partial class LythonRuntime
     internal static bool DeleteName(string name, ExecutionContext context, LythonSourceSpan span)
     {
         var storageContext = ResolveNameStorageContext(name, context, span);
+        if (storageContext.GlobalNamespace is not null)
+            return storageContext.GlobalNamespaceBacking!.TryGetNameKey(name, out var key) &&
+                storageContext.GlobalNamespace.Remove(key);
+        storageContext.ModuleBuiltinAliases?.Remove(name);
         var removed = storageContext.Variables.Remove(name);
         removed |= storageContext.CurrentExecutableFrame?.TryDeleteLocalOrClosure(name) == true;
 

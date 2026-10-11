@@ -137,7 +137,7 @@ internal sealed partial class LythonRuntime
             {
                 var right = Pop(ref _stack, instruction.Span);
                 var result = await EvaluateBinaryOperatorAsync(MapExecutableBinary(instruction.BinaryOperator),
-                    LoadLocal(_codeObject, _locals, instruction.ChainSlot, instruction.Span), right, _context, instruction.Span).ConfigureAwait(false);
+                    LoadLocal(_codeObject, _locals, instruction.ChainSlot, instruction.Span, _context), right, _context, instruction.Span).ConfigureAwait(false);
                 StoreLocalValue(_codeObject, _locals, _localCells, _context, instruction.ChainSlot, right, instruction.Span);
                 if (await IsTruthyAsync(result, _context, instruction.Span).ConfigureAwait(false)) return false;
                 _currentBlockIndex = instruction.FailureBlockIndex;

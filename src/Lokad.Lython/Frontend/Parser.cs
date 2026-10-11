@@ -366,10 +366,10 @@ internal sealed partial class Parser
             {
                 return annotatedTarget;
             }
-            var unsupportedTargetAssignment = TryParseUnsupportedAssignmentTargetStatement();
-            if (unsupportedTargetAssignment is not null || _diagnostics.Count != startDiagnosticCount)
+            var targetAssignment = TryParsePostfixAssignmentStatement(reportUnsupportedAnnotationTarget: true);
+            if (targetAssignment is not null || _diagnostics.Count != startDiagnosticCount)
             {
-                return unsupportedTargetAssignment;
+                return targetAssignment;
             }
         }
 

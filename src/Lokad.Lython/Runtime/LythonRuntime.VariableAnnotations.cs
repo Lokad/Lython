@@ -11,7 +11,8 @@ internal sealed partial class LythonRuntime
         var span = statements[0].Span;
         var annotations = new PyDict(context.MemoryGovernor, span);
         context.Services.State.CallTemporaries.TrackFreshMutable(annotations, annotations.CommittedStorageBytes, span);
-        context.Variables["__annotations__"] = annotations;
+        if (context.GlobalNamespace is not null) StoreGlobalNamespaceName(context, "__annotations__", annotations);
+        else context.Variables["__annotations__"] = annotations;
 
         static bool ContainsAnnotation(IReadOnlyList<StatementSyntax> body)
             => body.Any(statement => statement is AnnotatedAssignmentStatementSyntax ||

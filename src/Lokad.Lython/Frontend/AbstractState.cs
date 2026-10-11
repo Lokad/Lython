@@ -203,6 +203,9 @@ internal sealed class AbstractState
         return clone;
     }
 
+    public static bool ContainsMutableCollectionFacts(AbstractValue value)
+        => ContainsMutableCollectionFacts(value, new HashSet<AbstractState>());
+
     private static bool ContainsMutableCollectionFacts(AbstractValue value, HashSet<AbstractState> visited)
         => value.Kind switch
         {

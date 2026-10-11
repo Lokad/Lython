@@ -2,21 +2,29 @@ namespace Lokad.Lython.Frontend;
 
 internal static partial class StaticBindingEngine
 {
-    public static bool CallMayMutateDictionaryFacts(CallExpressionSyntax call, AbstractState bindings)
+    public static bool CallMayMutateContainerFacts(CallExpressionSyntax call, AbstractState bindings)
     {
-        if (!call.Arguments.All(argument =>
-            StaticAbstractValueResolver.TryResolve(argument.Expression, bindings, out var value) && IsCallbackFreeValue(value)))
+        var callbackFreeArguments = call.Arguments.All(argument =>
+            StaticAbstractValueResolver.TryResolve(argument.Expression, bindings, out var value) && IsCallbackFreeValue(value));
+        if (!callbackFreeArguments)
         {
             return true;
+        }
+
+        if (call.Target is IdentifierExpressionSyntax builtin && !bindings.TryGet(builtin.Name, out _) &&
+            builtin.Name is "len" or "abs" or "chr" or "ord" or "hex" or "oct" or "bin" or
+                "int" or "float" or "bool" or "str" or "repr" or "type")
+        {
+            return false;
         }
 
         if (StaticContractEngine.TryResolveKnownCallableTarget(call.Target, bindings, out _))
         {
             // Module helpers can mutate supplied containers (operator.ior,
             // heapq operations, etc.). Their member contracts do not describe
-            // this effect, so keep only calls without reachable mapping facts.
+            // this effect, so keep only calls without reachable container facts.
             return call.Arguments.Any(argument =>
-                AbstractState.ContainsDictionaryFacts(StaticAbstractValueResolver.ResolveOrUnknown(argument.Expression, bindings)));
+                AbstractState.ContainsMutableCollectionFacts(StaticAbstractValueResolver.ResolveOrUnknown(argument.Expression, bindings)));
         }
 
         return call.Target is not MemberExpressionSyntax member ||

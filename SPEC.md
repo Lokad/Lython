@@ -733,9 +733,17 @@ Assignment behavior for supported target forms must follow Python semantics.
 The supported ordinary assignment targets are:
 
 - simple names
-- list, tuple, and dictionary subscripts
+- list and dictionary subscripts, and user objects implementing `__setitem__`
 - mutable list slices
 - object attributes
+
+Member, index and slice receivers may be call results or other supported
+expressions, such as `receiver().value = rhs()` and `receiver()[key()] = rhs()`.
+A bare call is not an assignment target. Ordinary stores evaluate the RHS first,
+then the receiver and index or bounds, each once. User slice stores pass an
+actual governed `slice` object with the original bounds and RHS to `__setitem__`;
+they do not coerce those bounds or iterate the RHS before calling the setter.
+Host-backed setters may suspend in asynchronous execution.
 
 Chained assignment may assign to any supported ordinary assignment target. The right-hand expression must be evaluated once, then stored into each target from left to right.
 
@@ -747,7 +755,9 @@ corresponding store, in source order. This broader ordinary-assignment grammar
 does not imply support for the excluded loop and context-manager targets in
 section 8.4.
 
-Annotated assignment is supported for simple names only. Annotated attribute and subscript targets such as `obj.value: T = x` and `items[0]: T = x` are not supported.
+Annotated assignment supports simple names and the supported attribute,
+subscript and slice targets. Only a simple module name stores an entry in
+`__annotations__`; annotations do not extend the ordinary target grammar.
 
 Augmented assignment is supported for simple names, subscript targets, mutable list slice targets, and object attribute targets. The supported operators are:
 
@@ -1060,6 +1070,8 @@ The builtin environment must include exactly the following builtins and builtin 
 - `zip`
 - `iter`
 - `next`
+- `globals`
+- `locals`
 - `reversed`
 - `map`
 - `filter`
@@ -1150,6 +1162,18 @@ The builtin environment must include exactly the following builtins and builtin 
 - `SystemExit`
 
 No builtin outside this set is supported unless it is explicitly added elsewhere in this specification.
+
+`globals()` returns one live dictionary for the actual module namespace.
+Assignments, deletions and dictionary mutations share that namespace, including
+after a defining frame returns and during function calls or generator resumes.
+Views remain live; iterators detect structural changes from their creation,
+including before their first advancement. An independent `copy()` is a snapshot.
+Inherited builtin fallbacks are absent from the dictionary unless explicitly
+bound in the module. Deleting a builtin shadow restores normal builtin lookup.
+Function and class locals and compiler temporaries do not enter the module
+dictionary. Extra dictionary keys cannot modify compiler temporary slots.
+The view, retained context and key metadata remain memory governed; rejected
+stores and clears leave the visible bindings intact.
 
 Implicit iteration resolves the type's `__iter__` slot. If that slot is absent,
 an object with a type-level `__getitem__` supports sequence iteration from
