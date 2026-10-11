@@ -50,10 +50,10 @@ public sealed class SampleCountsAccountingTests
         Assert.Equal(192, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
     }
     [Fact]
-    public void PopulationDrainCommitsExactBackingOnce()
+    public void PopulationDrainKeepsBackingFundedUntilCallerDisposes()
     {
-        // The shared population/weights drain commits reference slots exactly
-        // once up front for sized inputs; payloads stay owned elsewhere.
+        // Keep the same thousand-value input while checking the caller lifetime.
+        // Drained backing is reserved scratch, not a durable unowned commit.
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
@@ -64,10 +64,15 @@ public sealed class SampleCountsAccountingTests
         var data = Enumerable.Range(0, 1000).Select(static i => (object)new BigInteger(i)).ToList();
 
         var committedBefore = context.MemoryGovernor.CurrentCommittedBytes;
-        var values = Assert.IsType<List<object>>(drain.Invoke(null, [data, span, context]));
-
-        Assert.Equal(1000, values.Count);
+        using (var scratch = context.MemoryGovernor.ReserveTemporary(0, span))
+        {
+            var values = Assert.IsType<List<object>>(drain.Invoke(null, [data, span, context, scratch]));
+            Assert.Equal(1000, values.Count);
+            Assert.Same(data[0], values[0]);
+            Assert.Equal(8064, context.MemoryGovernor.CurrentReservedBytes);
+            Assert.Equal(committedBefore, context.MemoryGovernor.CurrentCommittedBytes);
+        }
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        Assert.Equal(8000, context.MemoryGovernor.CurrentCommittedBytes - committedBefore);
+        Assert.Equal(committedBefore, context.MemoryGovernor.CurrentCommittedBytes);
     }
 }
