@@ -495,6 +495,13 @@ internal sealed partial class LythonRuntime
                 var start = slice.Start is null ? null : EvaluateExpression(slice.Start, context);
                 var end = slice.End is null ? null : EvaluateExpression(slice.End, context);
                 var step = slice.Step is null ? null : EvaluateExpression(slice.Step, context);
+                if (sliceTarget is PyInstance instance)
+                {
+                    var sliceIndex = CreateSliceValue(start, end, step, slice.Span, context);
+                    var current = GetUserItem(instance, sliceIndex, context, slice.Span);
+                    return new AugmentedAssignmentTargetReference(current,
+                        value => SetSubscriptValue(instance, sliceIndex, value, slice.Span, context));
+                }
                 var sliceValue = PyIndexing.ReadSlice(sliceTarget, start, end, step, slice.Span, context);
                 return new AugmentedAssignmentTargetReference(
                     sliceValue,

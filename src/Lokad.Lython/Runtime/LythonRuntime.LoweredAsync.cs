@@ -437,7 +437,9 @@ internal sealed partial class LythonRuntime
                 var step = slice.Step is null
                     ? null
                     : await EvaluateLoweredExpressionAsync(slice.Step, context).ConfigureAwait(false);
-                var sliceIndex = new PySlice(start ?? PyNone.Instance, end ?? PyNone.Instance, step ?? PyNone.Instance);
+                var sliceIndex = sliceTarget is PyInstance
+                    ? CreateSliceValue(start, end, step, slice.Span, context)
+                    : new PySlice(start ?? PyNone.Instance, end ?? PyNone.Instance, step ?? PyNone.Instance);
                 var sliceValue = sliceTarget is PyInstance sliceInstance
                     ? await GetUserItemAsync(sliceInstance, sliceIndex, context, slice.Span).ConfigureAwait(false)
                     : PyIndexing.ReadSlice(sliceTarget, start, end, step, slice.Span, context);
