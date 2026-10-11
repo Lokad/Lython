@@ -4,6 +4,17 @@ Specification version **6**, used by the declared milestone collections. The cat
 and explicit correctness check are available. Persistent worker primitives are
 available, including supervised correctness/timer smokes, paired collection,
 machine checks and raw-evidence report rendering.
+The [explicit body-bytecode round](results/2026-10-11-method-body-bytecode/README.md)
+rejects a flat instruction-loop compiler: method time changes -2.12%/+5.99%,
+so its target gain does not repeat. Both producers pass 9,526 matching Debug and
+Release tests and seven canonical CPython cases each. Fourteen paired groups
+take about eight seconds, separate allocation/native groups about four seconds,
+all under 30-second caps. All controls and native tiers remain visible. Eleven
+independent control-flow/host boundary cases are added; an additional post-gate
+lifetime check passes separately on both producers. Production remains unchanged,
+and cold compiler costs and broader design work stay open. No full timing lane
+or favorable recollection ran.
+
 The [typed body-plan round](results/2026-10-11-method-body-plan/README.md)
 rejects the isolated compiler prototype: method time changes +1.36%/-8.68%,
 while keyword calls regress in both passes. Both producers pass 9,503 matching
