@@ -2669,6 +2669,17 @@ deny under budgets that previously accepted them; for example, `[0] * 100000`
 requires 6.4 MB of numeric allowance before backing. Long dropped/refill streams
 release live charges rather than accumulating total allocation forever.
 
+Governed sets likewise charge 64 bytes per retained numeric member through one
+storage subtotal. Equal duplicates add no charge, including Boolean/integer
+twins. Removal releases according to the actual stored member, preserving
+the distinction between an uncharged Boolean and a charged integer. Numeric
+admission precedes insertion; independently owned magnitudes still retain their
+separate payload charges and pay the member allowance. First attachment admits
+the existing shell, table, numeric members and protocol storage before publishing
+the governor. Existing protocol index capacity stays conservatively funded until
+clear or drop. These stricter admissions can deny scripts accepted by the older
+policy. Clear/refill and dropped-set streams release live charges.
+
 Random population, weight and state drains likewise fund temporary backing
 before allocation and release it when the operation exits, including validation
 failure or cancellation. Replacement arrays remain funded while they coexist;

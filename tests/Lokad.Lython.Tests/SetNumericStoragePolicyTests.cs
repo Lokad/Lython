@@ -99,4 +99,58 @@ public sealed class SetNumericStoragePolicyTests
             Assert.Equal(0, governor.CurrentReservedBytes);
         }
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void NumericTwinRemovalOfABooleanDoesNotReleaseAnUnfundedAllowance(bool truth)
+    {
+        var governor = new MemoryGovernor(4096);
+        var set = new PySet(governor);
+        Assert.True(set.Add(truth));
+        var before = governor.CurrentCommittedBytes;
+        Assert.True(set.Remove(truth ? BigInteger.One : BigInteger.Zero));
+        Assert.Equal(before, governor.CurrentCommittedBytes);
+        Assert.Equal(0, set.Count);
+    }
+
+    [Fact]
+    public void BooleanTwinRemovalRefreshesTheActualPoolSnapshot()
+    {
+        var governor = new MemoryGovernor(4096);
+        var pool = new ChargeReclamationPool(governor);
+        var set = new PySet(new object[] { BigInteger.One }, governor);
+        pool.TrackMutable(set, set.CommittedStorageBytes);
+        var before = governor.CurrentCommittedBytes;
+        Assert.True(set.Remove(true));
+        Assert.Equal(before - 64, governor.CurrentCommittedBytes);
+        Assert.Equal(set.CommittedStorageBytes + 128 + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
+        GC.KeepAlive(set);
+    }
+
+    [Fact]
+    public void AttachedProtocolCapacityRemainsFundedUntilClear()
+    {
+        var root = new PyType("object", [], new());
+        var type = new PyType("Key", [root], new() { ["__hash__"] = new ConstantHash() });
+        var member = new PyInstance(type);
+        var set = new PySet();
+        Assert.True(set.Add(member));
+        var governor = new MemoryGovernor(4096);
+        set.AttachMemoryGovernor(governor);
+        var before = governor.CurrentCommittedBytes;
+        Assert.True(before >= 128 + 64 + 96);
+        Assert.True(set.Remove(member));
+        Assert.Equal(before - 64, governor.CurrentCommittedBytes);
+        Assert.Equal(set.CommittedStorageBytes, governor.CurrentCommittedBytes);
+        set.Clear();
+        Assert.Equal(128, governor.CurrentCommittedBytes);
+        GC.KeepAlive(member);
+    }
+
+    private sealed class ConstantHash : LythonRuntime.ICallable
+    {
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+            => new BigInteger(7);
+    }
 }
