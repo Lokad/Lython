@@ -138,6 +138,7 @@ internal sealed record LoweredSetComprehensionExpression(
     IReadOnlyList<LoweredComprehensionClause> Clauses) : LoweredExpression
 {
     public override ExpressionSyntax Syntax => SetComprehension;
+    public ScopeDirectiveFacts ScopeFacts { get; } = ComprehensionSyntaxFacts.Bindings(Clauses.Select(clause => clause.Target));
 }
 
 internal sealed record LoweredComprehensionClause(
@@ -152,6 +153,7 @@ internal sealed record LoweredListComprehensionExpression(
     IReadOnlyList<LoweredComprehensionClause> Clauses) : LoweredExpression
 {
     public override ExpressionSyntax Syntax => ListComprehension;
+    public ScopeDirectiveFacts ScopeFacts { get; } = ComprehensionSyntaxFacts.Bindings(Clauses.Select(clause => clause.Target));
 }
 
 internal sealed record LoweredGeneratorExpression(
@@ -160,6 +162,8 @@ internal sealed record LoweredGeneratorExpression(
     IReadOnlyList<LoweredComprehensionClause> Clauses) : LoweredExpression
 {
     public override ExpressionSyntax Syntax => Generator;
+    public ScopeDirectiveFacts ScopeFacts { get; } = ComprehensionSyntaxFacts.Bindings(Clauses.Select(clause => clause.Target), generator: true)
+        with { RequiresClassCell = Generator.PreparedComprehensionScopeFacts?.RequiresClassCell == true };
 }
 
 internal abstract record LoweredDictionaryDisplayItem(
@@ -191,6 +195,7 @@ internal sealed record LoweredDictComprehensionExpression(
     IReadOnlyList<LoweredComprehensionClause> Clauses) : LoweredExpression
 {
     public override ExpressionSyntax Syntax => DictComprehension;
+    public ScopeDirectiveFacts ScopeFacts { get; } = ComprehensionSyntaxFacts.Bindings(Clauses.Select(clause => clause.Target));
 }
 
 internal sealed record LoweredMemberExpression(

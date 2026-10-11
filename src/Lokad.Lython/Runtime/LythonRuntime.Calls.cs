@@ -22,6 +22,11 @@ internal sealed partial class LythonRuntime
     private static object InvokeCall(CallExpressionSyntax call, ExecutionContext context)
     {
         var target = EvaluateExpression(call.Target, context);
+        if (call.PreloadImplicitSuperArguments)
+        {
+            context.CheckExecution(call.Span);
+            PreloadImplicitSuperArguments(context, call.Span);
+        }
         return InvokeCallableTarget(
             target,
             call.Target.Span,

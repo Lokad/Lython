@@ -137,13 +137,13 @@ internal sealed partial class LythonRuntime
     private static object EvaluateLoweredListComprehension(LoweredListComprehensionExpression comprehension, ExecutionContext context)
     {
         var result = new PyList([], context.MemoryGovernor, comprehension.Span);
-        var scope = ExecutionContext.CreateComprehension(context);
+        var outer = ToSequence(EvaluateLoweredExpression(comprehension.Clauses[0].Iterable, context), comprehension.Clauses[0].Iterable.Span, context);
+        using var scope = context.EnterComprehension(comprehension.ScopeFacts);
         EvaluateLoweredComprehensionClauses(
             comprehension.Clauses,
             0,
-            scope,
-            itemScope => result.Add(RuntimeValue(EvaluateLoweredExpression(comprehension.ItemExpression, itemScope))), context);
-        PropagateComprehensionBindings(scope, context, comprehension.Clauses.Select(clause => clause.Target), comprehension.Span);
+            context,
+            itemScope => result.Add(RuntimeValue(EvaluateLoweredExpression(comprehension.ItemExpression, itemScope))), outer);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
         context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
@@ -154,19 +154,19 @@ internal sealed partial class LythonRuntime
     {
         var result = new PySet(context.MemoryGovernor, comprehension.Span);
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, comprehension.Span);
-        var scope = ExecutionContext.CreateComprehension(context);
+        var outer = ToSequence(EvaluateLoweredExpression(comprehension.Clauses[0].Iterable, context), comprehension.Clauses[0].Iterable.Span, context);
+        using var scope = context.EnterComprehension(comprehension.ScopeFacts);
         EvaluateLoweredComprehensionClauses(
             comprehension.Clauses,
             0,
-            scope,
+            context,
             itemScope =>
             {
                 var item = ValidateSetItem(
                     EvaluateLoweredExpression(comprehension.ItemExpression, itemScope),
                     comprehension.ItemExpression.Span);
                 result.Add(item);
-            }, context);
-        PropagateComprehensionBindings(scope, context, comprehension.Clauses.Select(clause => clause.Target), comprehension.Span);
+            }, outer);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
         context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
@@ -177,17 +177,17 @@ internal sealed partial class LythonRuntime
     {
         var result = new PyDict(context.MemoryGovernor, comprehension.Span);
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, comprehension.Span);
-        var scope = ExecutionContext.CreateComprehension(context);
+        var outer = ToSequence(EvaluateLoweredExpression(comprehension.Clauses[0].Iterable, context), comprehension.Clauses[0].Iterable.Span, context);
+        using var scope = context.EnterComprehension(comprehension.ScopeFacts);
         EvaluateLoweredComprehensionClauses(
             comprehension.Clauses,
             0,
-            scope,
+            context,
             itemScope =>
             {
                 var key = ValidateDictionaryKey(EvaluateLoweredExpression(comprehension.KeyExpression, itemScope), comprehension.KeyExpression.Span);
                 result.SetItem(key, RuntimeValue(EvaluateLoweredExpression(comprehension.ValueExpression, itemScope)));
-            }, context);
-        PropagateComprehensionBindings(scope, context, comprehension.Clauses.Select(clause => clause.Target), comprehension.Span);
+            }, outer);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
         context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
@@ -199,12 +199,12 @@ internal sealed partial class LythonRuntime
         int index,
         ExecutionContext context,
         Action<ExecutionContext> emit,
-        ExecutionContext? outerContext = null)
+        IEnumerable<object>? outerSequence = null)
     {
         var clause = clauses[index];
-        var iterable = EvaluateLoweredExpression(clause.Iterable, outerContext ?? context);
+        var sequence = outerSequence ?? ToSequence(EvaluateLoweredExpression(clause.Iterable, context), clause.Iterable.Span, context);
 
-        foreach (var item in ToSequence(iterable, clause.Iterable.Span, context))
+        foreach (var item in sequence)
         {
             AssignLoopTarget(clause.Target, item, clause.Iterable.Span, context);
 

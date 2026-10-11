@@ -14,6 +14,9 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
     /// in its __iter__, are observed at creation, not at first advance.
     /// </summary>
     private readonly IEnumerable<object> _outerSequence;
+    private readonly object _outerIterator;
+    private readonly IAsyncEnumerable<object>? _acquiredAsyncSequence;
+    private readonly ScopeDirectiveFacts _scopeFacts;
     // Eager async outer for async-created generators over async iterables
     // (files and friends): resolving the async enumerator at creation
     // preserves creation-time effects and rebinding like the sync outer,
@@ -32,14 +35,17 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
         LoweredExpression itemExpression,
         LythonRuntime.ExecutionContext closure,
         LythonSourceSpan span,
-        IEnumerable<object> outerSequence)
+        PyIteration.GeneratorOuter outer, ScopeDirectiveFacts scopeFacts)
     {
         _clauses = clauses;
         _targets = clauses.Select(clause => clause.Target).ToArray();
         _itemExpression = itemExpression;
         _closure = closure;
         _span = span;
-        _outerSequence = outerSequence;
+        _outerSequence = outer.Sequence;
+        _outerIterator = outer.Iterator;
+        _acquiredAsyncSequence = outer.AsyncSequence;
+        _scopeFacts = scopeFacts;
         // Generator objects retain clauses, item, closure and sequence per live
         // generator; charge one constructed-value unit like other iterators.
         PyIteratorBase.ChargeIteratorValue(closure.MemoryGovernor, span);
@@ -53,7 +59,7 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
 
     public bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
-        _iterationScope ??= new LythonRuntime.ExecutionContext(_closure);
+        _iterationScope ??= CreateIterationScope();
         _iterator ??= IterateClauses(_clauses, 0, _iterationScope).GetEnumerator();
         if (_iterator.MoveNext())
         {
@@ -115,7 +121,7 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
             return PyIterationResult.End;
         }
 
-        _iterationScope ??= new LythonRuntime.ExecutionContext(_closure);
+        _iterationScope ??= CreateIterationScope();
         _asyncIterator ??= IterateClausesAsync(_clauses, 0, _iterationScope).GetAsyncEnumerator();
         if (await _asyncIterator.MoveNextAsync().ConfigureAwait(false))
         {
@@ -126,6 +132,16 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
         _asyncIterator = null;
         _asyncCompleted = true;
         return PyIterationResult.End;
+    }
+
+    private LythonRuntime.ExecutionContext CreateIterationScope()
+    {
+        var scope = new LythonRuntime.ExecutionContext(_closure, _scopeFacts)
+        {
+            FunctionName = "<genexpr>", FirstPositionalParameterName = ".0"
+        };
+        scope.Variables[".0"] = _outerIterator;
+        return scope;
     }
 
     private IEnumerable<object> IterateClauses(
@@ -180,7 +196,7 @@ internal sealed class PyGeneratorExpression : IPyTruthyValue, IPyAsyncIteratorVa
         var items = index == 0 && _outerAsyncEnumerator is not null
             ? EnumerateOuterAsync()
             : index == 0
-                ? LythonRuntime.ToSequenceAsync(_outerSequence, clause.Iterable.Span)
+                ? _acquiredAsyncSequence ?? LythonRuntime.ToSequenceAsync(_outerSequence, clause.Iterable.Span)
                 : LythonRuntime.ToSequenceAsync(await LythonRuntime.EvaluateLoweredExpressionAsync(clause.Iterable, scope).ConfigureAwait(false), clause.Iterable.Span, scope);
         await foreach (var item in items.ConfigureAwait(false))
         {

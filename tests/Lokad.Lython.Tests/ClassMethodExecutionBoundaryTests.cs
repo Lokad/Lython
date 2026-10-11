@@ -365,6 +365,152 @@ public sealed class ClassMethodExecutionBoundaryTests(ITestOutputHelper output)
         }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EagerComprehensionKeepsTheInvocationAndSeparateCapturedCells(bool asynchronous)
+    {
+        var (context, type, original, method, _) = await Define(1,
+            "        old=lambda:self\n        before(self)\n        values=[tap(self,old(),__class__,arg0) for self in [arg0]]\n        return values,self\n", asynchronous);
+        var replacement = new PyInstance(type);
+        Context? invocation = null;
+        context.Variables["before"] = new RecordingTap(frame => invocation = frame);
+        var tap = new RecordingTap(frame =>
+        {
+            Assert.Same(invocation, frame);
+            Assert.Same(context.Services, frame.Services);
+            Assert.Same(original, frame.Variables["self"]);
+            Assert.True(frame.TryResolveOwnLocal("self", out var current));
+            Assert.Same(replacement, current);
+            Assert.Same(type, frame.ImplicitSuperClassCell!.Value);
+            Assert.Same(replacement, frame.Variables["arg0"]);
+        });
+        context.Variables["tap"] = tap;
+        var result = Assert.IsType<PyTuple>(await Invoke(method, [CallArgumentValue.Positional(replacement)], context, asynchronous));
+        Assert.Same(replacement, Assert.Single(Assert.IsType<PyList>(result[0])));
+        Assert.Same(original, result[1]);
+        Assert.Same(replacement, tap.Arguments![0].Value);
+        Assert.Same(original, tap.Arguments[1].Value);
+        Assert.Same(type, tap.Arguments[2].Value);
+        Assert.Same(replacement, tap.Arguments[3].Value);
+        Assert.True(invocation!.TryResolveOwnLocal("self", out var restored));
+        Assert.Same(original, restored);
+        Assert.Same(invocation, invocation.FunctionClosureContext);
+        AssertUnwound(context);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EagerComprehensionRestoresItsBindingsAfterAsyncReentry(bool cancel)
+    {
+        using var cancellation = new CancellationTokenSource();
+        var (context, type, original, method, _) = await Define(1,
+            "        before(self)\n        return [tap(self,__class__,arg0) for self in [arg0]]\n    def identity(self,arg0):\n        return self\n", true, cancellation.Token);
+        var replacement = new PyInstance(type);
+        Context? invocation = null;
+        context.Variables["before"] = new RecordingTap(frame => invocation = frame);
+        var tap = new SuspendedTap(cancellation.Token);
+        context.Variables["tap"] = tap;
+        var active = new PyException("ValueError", "outer", PyNone.Instance);
+        context.Services.SetCurrentException(active);
+        var pending = method.InvokeAsync([CallArgumentValue.Positional(replacement)], CallSpan, context);
+        try
+        {
+            await tap.Started.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(pending.IsCompleted);
+            var frame = tap.Frame!;
+            Assert.Same(invocation, frame);
+            Assert.Same(context.Services, frame.Services);
+            Assert.True(frame.TryResolveOwnLocal("self", out var current));
+            Assert.Same(replacement, current);
+            Assert.Same(original, frame.Variables["self"]);
+            Assert.NotSame(frame, frame.FunctionClosureContext);
+            Assert.Same(replacement, frame.FunctionClosureContext.Variables["self"]);
+            Assert.True(type.TryGetOwnMember("identity", out var identity));
+            var second = Assert.IsType<PyBoundMethod>(Assert.IsAssignableFrom<PyFunctionBase>(identity).Bind(original));
+            Assert.Same(original, await second.InvokeAsync([CallArgumentValue.Positional(new object())], CallSpan, context));
+            Assert.Equal(1, context.Limits.CurrentRecursionDepth);
+            Assert.Same(replacement, tap.Arguments![0].Value);
+            Assert.Same(replacement, frame.Variables["arg0"]);
+            if (cancel)
+            {
+                cancellation.Cancel();
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await pending);
+            }
+            else
+            {
+                tap.Release.SetResult();
+                Assert.Same(replacement, Assert.Single(Assert.IsType<PyList>(await pending)));
+            }
+            Assert.True(frame.TryResolveOwnLocal("self", out var restored));
+            Assert.Same(original, restored);
+            Assert.Same(frame, frame.FunctionClosureContext);
+            Assert.Same(active, context.Services.CurrentException);
+            AssertUnwound(context);
+        }
+        finally { tap.Release.TrySetResult(); }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GeneratorOuterAcquisitionUsesRealAsyncCallsAndIteratorIdentity(bool cancel)
+    {
+        using var cancellation = new CancellationTokenSource();
+        var (context, type, original, method, _) = await Define(1,
+            "        before(self,arg0)\n        return (super().__self__ for _ in arg0)\n    def __iter__(self):\n        return tap(self)\n    def __next__(self):\n        return 1\n    def identity(self,arg0):\n        return self\n", true, cancellation.Token);
+        var iterator = new PyInstance(type);
+        Context? invocation = null;
+        context.Variables["before"] = new RecordingTap(frame => invocation = frame);
+        var tap = new SuspendedTap(cancellation.Token);
+        context.Variables["tap"] = tap;
+        var pending = method.InvokeAsync([CallArgumentValue.Positional(iterator)], CallSpan, context);
+        try
+        {
+            await tap.Started.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(pending.IsCompleted);
+            Assert.Same(iterator, tap.Frame!.Variables["self"]);
+            Assert.Null(tap.Frame.ImplicitSuperClassCell);
+            Assert.Same(iterator, invocation!.Variables["arg0"]);
+            Assert.Same(original, invocation.Variables["self"]);
+            Assert.Same(context.Services, invocation.Services);
+            Assert.Equal(2, context.Limits.CurrentRecursionDepth);
+            if (cancel)
+            {
+                cancellation.Cancel();
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await pending);
+            }
+            else
+            {
+                tap.Release.SetResult();
+                var generator = Assert.IsType<PyGeneratorExpression>(await pending);
+                var first = await generator.TryMoveNextAsync();
+                Assert.True(first.HasValue);
+                Assert.Same(iterator, first.Value);
+            }
+            AssertUnwound(context);
+        }
+        finally { tap.Release.TrySetResult(); }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InvalidGeneratorOuterDoesNotRetainAnIteratorCharge(bool asynchronous)
+    {
+        var (context, _, _, method, _) = await Define(1,
+            "        return (item for item in arg0)\n", asynchronous);
+        var before = context.MemoryGovernor.CurrentAccountedBytes;
+        for (var i = 0; i < 3; i++)
+        {
+            await Assert.ThrowsAnyAsync<LythonRuntimeException>(async () =>
+                await Invoke(method, [CallArgumentValue.Positional(new BigInteger(37))], context, asynchronous));
+            Assert.Equal(before, context.MemoryGovernor.CurrentAccountedBytes);
+            AssertUnwound(context);
+        }
+    }
+
     private sealed class ReplacementSuper(object result, Action<Context> inspect,
         CancellationToken cancellation = default, bool suspend = false) : LythonRuntime.ICallable
     {

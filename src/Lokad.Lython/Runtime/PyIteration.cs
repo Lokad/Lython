@@ -4,6 +4,33 @@ namespace Lokad.Lython.Runtime;
 
 internal static class PyIteration
 {
+    internal readonly record struct GeneratorOuter(object Iterator, IEnumerable<object> Sequence, IAsyncEnumerable<object>? AsyncSequence = null);
+
+    internal static GeneratorOuter AcquireGeneratorOuter(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        if (value is PyInstance instance)
+            return AcquiredUserOuter(new PyUserIterator(instance, context, span), span, context);
+        if (value is IPyIteratorValue) return new(value, ToSequence(value, span, context));
+        PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
+        PyEnumerableIterator iterator;
+        try { iterator = new PyEnumerableIterator(value, span, context); }
+        catch
+        {
+            context.MemoryGovernor.Release(PyIteratorBase.IteratorValueBytes);
+            throw;
+        }
+        context.Services.State.CallTemporaries.TrackFreshMutable(iterator, PyIteratorBase.IteratorValueBytes);
+        return new(iterator, iterator.Iterate(), EnumerateAsyncIterator(iterator));
+    }
+
+    internal static async ValueTask<GeneratorOuter> AcquireGeneratorOuterAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => value is PyInstance instance
+            ? AcquiredUserOuter(await PyUserIterator.CreateAsync(instance, context, span).ConfigureAwait(false), span, context)
+            : AcquireGeneratorOuter(value, span, context);
+
+    private static GeneratorOuter AcquiredUserOuter(PyUserIterator user, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => new(user.Iterator, WithCheckpoints(user.Iterate(), span, context), EnumerateAcquiredUserIteratorAsync(user, context, span));
+
     public static IEnumerable<object> ToSequence(object value, LythonSourceSpan span)
         => GetSyncEnumerable(value, span);
 
@@ -313,11 +340,21 @@ internal static class PyIteration
     public static async ValueTask<DrainLease> MaterializeLeasedAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         => await DrainLeasedAsync(ToSequenceAsync(value, span, context), span, context).ConfigureAwait(false);
 
+    internal static async ValueTask<IAsyncEnumerable<object>> AcquireComprehensionSequenceAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        => value is PyInstance instance
+            ? EnumerateAcquiredUserIteratorAsync(await PyUserIterator.CreateAsync(instance, context, span).ConfigureAwait(false), context, span)
+            : ToSequenceAsync(value, span, context);
+
     private static async IAsyncEnumerable<object> EnumerateUserIteratorAsync(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         // R08: both __iter__ resolution and __next__ advancement await real
         // suspension instead of routing through the synchronous protocol.
         var iterator = await PyUserIterator.CreateAsync(instance, context, span).ConfigureAwait(false);
+        await foreach (var value in EnumerateAcquiredUserIteratorAsync(iterator, context, span).ConfigureAwait(false)) yield return value;
+    }
+
+    private static async IAsyncEnumerable<object> EnumerateAcquiredUserIteratorAsync(PyUserIterator iterator, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    {
         var movesUntilCheckpoint = 0;
         while (true)
         {

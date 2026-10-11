@@ -38,7 +38,7 @@ public sealed class UnboundLocalVariableTests
     [InlineData("def f():\n value = 1\n if True:\n  try:\n   raise ValueError()\n  except ValueError as value:\n   pass\n return value\nf()", "UnboundLocalError")]
     [InlineData("def f():\n for value in []: pass\n yield value\nlist(f())", "UnboundLocalError")]
     [InlineData("def outer():\n def inner(): return value\n return inner()\n value = 1\nouter()", "NameError")]
-    [InlineData("def outer():\n for value in []: pass\n return [value for i in [1]]\nouter()", "NameError")]
+    [InlineData("def outer():\n for value in []: pass\n return [value for i in [1]]\nouter()", "UnboundLocalError")]
     [InlineData("def outer():\n for value in []: pass\n return (lambda: value)()\nouter()", "NameError")]
     [InlineData("def outer():\n for value in []: pass\n def inner():\n  nonlocal value\n  return value\n return inner()\nouter()", "NameError")]
     [InlineData("def outer():\n for value in []: pass\n def inner():\n  nonlocal value\n  del value\n inner()\nouter()", "NameError")]

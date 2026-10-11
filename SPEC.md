@@ -631,6 +631,17 @@ local or enclosing shadowing, and the `__class__` attribute suppress this form;
 aliases and explicit or starred arguments keep ordinary call behavior.
 Ordinary class-suite name lookup remains separate, including eager
 comprehension expressions; closures created there capture the class cell.
+Eager list, set and dictionary comprehensions run within the containing
+invocation, with isolated iteration bindings. Shadowing the first positional
+parameter changes the receiver seen by `super()` within the comprehension;
+existing closures keep their enclosing cells, and newly created closures retain
+the comprehension's changing bindings. Scope state unwinds on failure and
+cancellation. `locals()` and zero-argument `vars()` expose the active iteration
+bindings; function snapshots also include the containing function's locals.
+Generator expressions retain a separate scope whose hidden first positional
+argument is the iterator acquired at creation. Zero-argument `super()` uses
+that live iterator, independently of the defining function's receiver. Iterator
+acquisition follows normal host mediation, ownership and async dispatch.
 Shared cells and their retained enclosing contexts remain memory governed.
 
 Subscriptions accept ordered mixtures of scalar indices, slices, ellipsis and

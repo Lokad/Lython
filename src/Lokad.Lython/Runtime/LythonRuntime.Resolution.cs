@@ -17,8 +17,15 @@ internal sealed partial class LythonRuntime
     private static object ResolveIdentifier(IdentifierExpressionSyntax identifier, ExecutionContext context)
         => ResolveName(identifier.Name, identifier.Span, context);
 
-    internal static object ResolveName(string name, LythonSourceSpan span, ExecutionContext context)
+    internal static object ResolveName(string name, LythonSourceSpan span, ExecutionContext context, bool inlinedBindings = true)
     {
+        if (inlinedBindings && context.TryGetInlinedBinding(name, out var binding))
+        {
+            if (binding.Variables.TryGetValue(name, out var bound)) return bound;
+            throw RuntimeErrors.UnboundLocalVariable(name, span);
+        }
+        if (inlinedBindings && context.InlinedClassLookup is { } classLookup)
+            return ResolveName(name, span, classLookup);
         if (context.ScopeFacts.IsGlobal(name))
         {
             var globalContext = GetGlobalContext(context);
@@ -57,7 +64,7 @@ internal sealed partial class LythonRuntime
                 context.ScopeFacts.LocalNames.Contains(name) && current.ParentContext is not null) continue;
             if (!ReferenceEquals(current, context) &&
                 (current.ScopeFacts.IsGlobal(name) || current.ScopeFacts.IsNonlocal(name)))
-                return ResolveName(name, span, current);
+                return ResolveName(name, span, current, inlinedBindings: false);
             if (current.CurrentExecutableFrame is not null &&
                 current.CurrentExecutableFrame.TryResolveLocalOrClosure(name, out var executableValue))
             {
@@ -124,6 +131,7 @@ internal sealed partial class LythonRuntime
 
     internal static ExecutionContext ResolveNameStorageContext(string name, ExecutionContext context, LythonSourceSpan span)
     {
+        if (context.TryGetInlinedBinding(name, out var binding)) return binding;
         if (context.ScopeFacts.IsGlobal(name))
         {
             return GetGlobalContext(context);
@@ -397,11 +405,13 @@ internal sealed partial class LythonRuntime
     private static object EvaluateListComprehension(ListComprehensionExpressionSyntax comprehension, ExecutionContext context)
     {
         var result = new PyList([], context.MemoryGovernor, comprehension.Span);
+        var outer = ToSequence(EvaluateExpression(comprehension.Clauses[0].Iterable, context), comprehension.Clauses[0].Iterable.Span, context);
+        using var bindings = context.EnterComprehension(ComprehensionSyntaxFacts.Bindings(comprehension.Clauses.Select(clause => clause.Target)));
         EvaluateComprehensionClauses(
             comprehension.Clauses,
             0,
             context,
-            scope => result.Add(RuntimeValue(EvaluateExpression(comprehension.ItemExpression, scope))));
+            scope => result.Add(RuntimeValue(EvaluateExpression(comprehension.ItemExpression, scope))), outer);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
         context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
@@ -412,6 +422,8 @@ internal sealed partial class LythonRuntime
     {
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, comprehension.Span);
         var result = new PySet(context.MemoryGovernor, comprehension.Span);
+        var outer = ToSequence(EvaluateExpression(comprehension.Clauses[0].Iterable, context), comprehension.Clauses[0].Iterable.Span, context);
+        using var bindings = context.EnterComprehension(ComprehensionSyntaxFacts.Bindings(comprehension.Clauses.Select(clause => clause.Target)));
         EvaluateComprehensionClauses(
             comprehension.Clauses,
             0,
@@ -422,7 +434,7 @@ internal sealed partial class LythonRuntime
                     EvaluateExpression(comprehension.ItemExpression, scope),
                     comprehension.ItemExpression.Span);
                 result.Add(item);
-            });
+            }, outer);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
         context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
@@ -433,6 +445,8 @@ internal sealed partial class LythonRuntime
     {
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, comprehension.Span);
         var result = new PyDict(context.MemoryGovernor, comprehension.Span);
+        var outer = ToSequence(EvaluateExpression(comprehension.Clauses[0].Iterable, context), comprehension.Clauses[0].Iterable.Span, context);
+        using var bindings = context.EnterComprehension(ComprehensionSyntaxFacts.Bindings(comprehension.Clauses.Select(clause => clause.Target)));
         EvaluateComprehensionClauses(
             comprehension.Clauses,
             0,
@@ -441,7 +455,7 @@ internal sealed partial class LythonRuntime
             {
                 var key = ValidateDictionaryKey(EvaluateExpression(comprehension.KeyExpression, scope), comprehension.KeyExpression.Span);
                 result.SetItem(key, RuntimeValue(EvaluateExpression(comprehension.ValueExpression, scope)));
-            });
+            }, outer);
 
         context.ObserveCollectionCount(result.Count, comprehension.Span);
         context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
@@ -458,16 +472,14 @@ internal sealed partial class LythonRuntime
         // The outermost iterable is evaluated and acquired eagerly, matching
         // CPython; only element expressions, filters, and later clauses stay
         // deferred. Rebinding the source name later observes the old value.
-        var outer = ToSequence(
-            EvaluateLoweredExpression(clauses[0].Iterable, context),
-            clauses[0].Iterable.Span,
-            context);
+        var outer = PyIteration.AcquireGeneratorOuter(EvaluateLoweredExpression(clauses[0].Iterable, context), clauses[0].Iterable.Span, context);
         var produced = new PyGeneratorExpression(
             clauses,
             LoweredScript.LowerStandaloneExpression(generator.ItemExpression),
             context.FunctionClosureContext,
             generator.Span,
-            outer);
+            outer, ComprehensionSyntaxFacts.Bindings(clauses.Select(clause => clause.Target), generator: true)
+                with { RequiresClassCell = generator.PreparedComprehensionScopeFacts?.RequiresClassCell == true });
         context.Services.State.CallTemporaries.TrackFreshMutable(produced, PyIteratorBase.IteratorValueBytes);
         return produced;
     }
@@ -476,29 +488,29 @@ internal sealed partial class LythonRuntime
         IReadOnlyList<ComprehensionClauseSyntax> clauses,
         int index,
         ExecutionContext context,
-        Action<ExecutionContext> emit)
+        Action<ExecutionContext> emit,
+        IEnumerable<object>? outerSequence = null)
     {
         var clause = clauses[index];
-        var iterable = EvaluateExpression(clause.Iterable, context);
+        var sequence = outerSequence ?? ToSequence(EvaluateExpression(clause.Iterable, context), clause.Iterable.Span, context);
 
-        foreach (var item in ToSequence(iterable, clause.Iterable.Span, context))
+        foreach (var item in sequence)
         {
-            var scope = ExecutionContext.CreateComprehension(context);
-            AssignLoopTarget(clause.Target, item, clause.Iterable.Span, scope);
+            AssignLoopTarget(clause.Target, item, clause.Iterable.Span, context);
 
             if (clause.Condition is not null &&
-                !IsTruthy(EvaluateExpression(clause.Condition, scope), scope, clause.Condition.Span))
+                !IsTruthy(EvaluateExpression(clause.Condition, context), context, clause.Condition.Span))
             {
                 continue;
             }
 
             if (index + 1 == clauses.Count)
             {
-                emit(scope);
+                emit(context);
             }
             else
             {
-                EvaluateComprehensionClauses(clauses, index + 1, scope, emit);
+                EvaluateComprehensionClauses(clauses, index + 1, context, emit);
             }
         }
     }
@@ -605,7 +617,7 @@ internal sealed partial class LythonRuntime
 
         foreach (var pair in scope.Variables)
         {
-            if (!loopNames.Contains(pair.Key) && !ExecutionState.BuiltinNames.Contains(pair.Key))
+            if (pair.Key != ".0" && !loopNames.Contains(pair.Key) && !ExecutionState.BuiltinNames.Contains(pair.Key))
             {
                 StoreName(pair.Key, pair.Value, outer, span);
             }

@@ -132,7 +132,7 @@ internal sealed partial class LythonRuntime
                     generator.ItemExpression,
                     context.FunctionClosureContext,
                     generator.Span,
-                    LythonRuntime.ToSequence(outer, generator.Clauses[0].Iterable.Span, context));
+                    PyIteration.AcquireGeneratorOuter(outer, generator.Clauses[0].Iterable.Span, context), generator.ScopeFacts);
                 producedAsync.AttachAsyncOuter(outer);
                 context.Services.State.CallTemporaries.TrackFreshMutable(producedAsync, PyIteratorBase.IteratorValueBytes);
                 return producedAsync;

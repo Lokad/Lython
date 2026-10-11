@@ -952,7 +952,7 @@ internal sealed partial class LythonRuntime
     private static PyDict BuildScopeDictionary(ExecutionContext context, LythonSourceSpan span, bool includeFrameLocals)
     {
         var scope = new PyDict(context.MemoryGovernor, span);
-        foreach (var pair in context.Variables)
+        foreach (var pair in context.IncludeCallerLocals ? context.Variables : [])
         {
             if (!ExecutionState.BuiltinNames.Contains(pair.Key))
             {
@@ -960,13 +960,22 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        if (includeFrameLocals && context.CurrentExecutableFrame is not null)
+        if (includeFrameLocals && context.IncludeCallerLocals && context.CurrentExecutableFrame is not null)
         {
             foreach (var pair in context.CurrentExecutableFrame.EnumerateLocals())
             {
                 scope.SetItem(PyString.FromString(pair.Key, context.MemoryGovernor, span), pair.Value);
             }
         }
+
+        if (includeFrameLocals)
+            foreach (var binding in context.EnumerateInlinedBindings())
+                foreach (var name in binding.ScopeFacts.LocalNames)
+                {
+                    var key = PyString.FromString(name, context.MemoryGovernor, span);
+                    if (binding.Variables.TryGetValue(name, out var value)) scope.SetItem(key, value);
+                    else scope.Remove(key);
+                }
 
         context.ObserveCollectionCount(scope.Count, span);
         return scope;

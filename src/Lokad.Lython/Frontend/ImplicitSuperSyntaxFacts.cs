@@ -82,17 +82,23 @@ internal static class ImplicitSuperSyntaxFacts
                 lambda.PreparedClassCellRequirement = facts.RequiresClassCell && lambdaScope.HasEnclosingClassBinding();
                 pending.Push((lambda.Body, lambdaScope));
             }
-            else if (node is GeneratorExpressionSyntax generator)
+            else if (ComprehensionSyntaxFacts.TryGetParts(node, out var items, out var clauses, out var generator))
             {
-                pending.Push((generator.Clauses[0].Iterable, scope));
-                var generatorScope = new Scope(scope, ScopeDirectiveFacts.Empty, Function: true, Positional: true);
-                pending.Push((generator.ItemExpression, generatorScope));
-                for (var i = 0; i < generator.Clauses.Count; i++)
+                pending.Push((clauses[0].Iterable, scope));
+                var facts = ComprehensionSyntaxFacts.Bindings(clauses.Select(clause => clause.Target), generator);
+                var bodyScope = new Scope(scope, facts, Function: generator || scope.Function, Positional: generator || scope.Positional);
+                if (generator)
+                    facts = facts with { RequiresClassCell = !facts.LocalNames.Contains("__class__") && bodyScope.HasEnclosingClassBinding() &&
+                        ComprehensionSyntaxFacts.BodyReferencesClass(items, clauses) };
+                node.PreparedComprehensionScopeFacts = facts;
+                bodyScope = bodyScope with { Facts = facts };
+                foreach (var item in items) pending.Push((item, bodyScope));
+                for (var i = 0; i < clauses.Count; i++)
                 {
-                    var clause = generator.Clauses[i];
-                    if (i != 0) pending.Push((clause.Iterable, generatorScope));
-                    if (clause.Condition is { } condition) pending.Push((condition, generatorScope));
-                    foreach (var read in AssignmentTargetFacts.Reads(clause.Target)) pending.Push((read, generatorScope));
+                    var clause = clauses[i];
+                    if (i != 0) pending.Push((clause.Iterable, bodyScope));
+                    if (clause.Condition is { } condition) pending.Push((condition, bodyScope));
+                    foreach (var read in AssignmentTargetFacts.Reads(clause.Target)) pending.Push((read, bodyScope));
                 }
             }
             else foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(node)) pending.Push((child, scope));
@@ -179,7 +185,21 @@ internal static class ImplicitSuperSyntaxFacts
                     foreach (var parameter in lambda.Parameters)
                         if (parameter.DefaultValue is { } value) pending.Push((value, true));
                 }
-                else if (expression is GeneratorExpressionSyntax generator) pending.Push((generator.Clauses[0].Iterable, true));
+                else if (ComprehensionSyntaxFacts.TryGetParts(expression, out var items, out var clauses, out var generator))
+                {
+                    pending.Push((clauses[0].Iterable, true));
+                    if (!generator)
+                    {
+                        if (ComprehensionSyntaxFacts.Bindings(clauses.Select(clause => clause.Target)).LocalNames.Contains("super")) return true;
+                        foreach (var item in items) pending.Push((item, true));
+                        for (var i = 0; i < clauses.Count; i++)
+                        {
+                            if (i != 0) pending.Push((clauses[i].Iterable, true));
+                            if (clauses[i].Condition is { } condition) pending.Push((condition, true));
+                            foreach (var read in AssignmentTargetFacts.Reads(clauses[i].Target)) pending.Push((read, true));
+                        }
+                    }
+                }
                 else foreach (var child in ExpressionSyntaxTraversal.EnumerateChildren(expression)) pending.Push((child, true));
             }
         }

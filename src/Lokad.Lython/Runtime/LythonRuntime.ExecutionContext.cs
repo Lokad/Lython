@@ -74,26 +74,26 @@ internal sealed partial class LythonRuntime
             NonlocalTargets = EmptyNonlocalTargets;
         }
 
-        public static ExecutionContext CreateComprehension(ExecutionContext parent)
+        public static ExecutionContext CreateComprehension(ExecutionContext parent, ScopeDirectiveFacts? facts = null)
         {
-            var scope = new ExecutionContext(parent);
-            if (parent.IsClassBody)
+            var scope = facts is null ? new ExecutionContext(parent) : new ExecutionContext(parent, facts);
+            if (parent.IsClassBody || !ReferenceEquals(parent.FunctionClosureContext, parent))
             {
                 // Inlined eager comprehensions use ordinary class-suite name
                 // lookup. Functions they create still capture the class cell,
                 // and share the comprehension's changing iteration variables.
-                scope.FunctionClosureContext = new ExecutionContext(parent.FunctionClosureContext, scope.Variables);
+                scope.FunctionClosureContext = new ExecutionContext(parent.FunctionClosureContext, scope.Variables, facts);
             }
             return scope;
         }
 
-        private ExecutionContext(ExecutionContext parent, Dictionary<string, object> variables)
+        private ExecutionContext(ExecutionContext parent, Dictionary<string, object> variables, ScopeDirectiveFacts? facts = null)
             : base(parent.Frame, variables)
         {
             Services = parent.Services;
             SourcePath = parent.SourcePath;
             FunctionClosureContext = this;
-            ScopeFacts = ScopeDirectiveFacts.Empty;
+            ScopeFacts = facts ?? ScopeDirectiveFacts.Empty;
             NonlocalTargets = EmptyNonlocalTargets;
         }
 
@@ -302,9 +302,10 @@ internal sealed partial class LythonRuntime
         internal void LeaveExecutableSlots(ExecutableFrameState? previous) => CurrentExecutableFrame = previous;
 
         internal bool TryResolveOwnLocal(string name, [MaybeNullWhen(false)] out object value)
-            => CurrentExecutableFrame is { } frame
-                ? frame.TryResolveOwnLocal(name, out value)
-                : Frame.TryGetVariable(name, out value);
+        {
+            if (TryGetInlinedBinding(name, out var scope)) return scope.Frame.TryGetVariable(name, out value);
+            return CurrentExecutableFrame is { } frame ? frame.TryResolveOwnLocal(name, out value) : Frame.TryGetVariable(name, out value);
+        }
 
         internal bool TryResolveImplicitClassValue([MaybeNullWhen(false)] out object value)
         {

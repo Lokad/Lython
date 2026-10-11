@@ -429,6 +429,7 @@ internal sealed record TryStatementSyntax(
 internal abstract record ExpressionSyntax(
     LythonSourceSpan Span)
 {
+    internal ScopeDirectiveFacts? PreparedComprehensionScopeFacts { get; set; }
     // Filled once by the frontend for annotation roots in future-annotations
     // modules. Execution copies the text without evaluating the expression.
     public string? PostponedAnnotationText { get; internal set; }
