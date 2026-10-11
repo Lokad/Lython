@@ -234,21 +234,21 @@ public sealed class AdoptedScalarCouponTests
     }
 
     [Fact]
-    public void ListSteppedDeletionPreservesSurvivingAliasRefcounts()
+    public void ListSteppedDeletionReleasesEachNumericSlot()
     {
         var governor = new MemoryGovernor(65536);
         var pool = new ChargeReclamationPool(governor);
         object removed = new BigInteger(1);
         object kept = new BigInteger(2);
         var list = new PyList(new object[] { removed, kept, removed, kept, new BigInteger(3) }, governor);
-        var backing = list.CommittedStorageBytes - 3 * AdoptedScalarCoupons.CouponBytes;
+        var backing = list.CommittedStorageBytes - 5 * AdoptedScalarCoupons.CouponBytes;
         pool.TrackFreshMutable(list, list.CommittedStorageBytes);
 
         list.DeleteSlice(new PyIndexing.SliceBounds(0, 5, 2));
         Assert.Equal(2, list.Count);
         Assert.Same(kept, list[0]);
         Assert.Same(kept, list[1]);
-        Assert.Equal(backing + AdoptedScalarCoupons.CouponBytes, list.CommittedStorageBytes);
+        Assert.Equal(backing + 2 * AdoptedScalarCoupons.CouponBytes, list.CommittedStorageBytes);
         Assert.Equal(list.CommittedStorageBytes, PooledCharge(pool, list));
         list.RemoveAt(0);
         Assert.Equal(backing + AdoptedScalarCoupons.CouponBytes, list.CommittedStorageBytes);

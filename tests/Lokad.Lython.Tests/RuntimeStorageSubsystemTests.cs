@@ -34,15 +34,32 @@ public sealed class RuntimeStorageSubsystemTests
     }
 
     [Fact]
-    public void PyList_GovernedGrowthFailsBeforePromotionAllocationCanRunAway()
+    public void PyList_GovernorAttachmentPreflightsExistingNumericSlots()
     {
         var list = new PyList(Enumerable.Range(0, PyListStorage.SmallCapacity).Select(i => (object)new BigInteger(i)));
-        list.AttachMemoryGovernor(new MemoryGovernor(32), null);
+        var governor = new MemoryGovernor(32);
 
-        var ex = Assert.Throws<LythonRuntimeException>(() => list.Add(new BigInteger(99)));
+        var ex = Assert.Throws<LythonRuntimeException>(() => list.AttachMemoryGovernor(governor, null));
 
         Assert.Equal("MemoryError", ex.ExceptionType);
         Assert.Contains("execution memory budget exceeded", ex.Message, StringComparison.Ordinal);
+        Assert.Null(list.OwnerMemoryGovernor);
+        Assert.Equal(PyListStorage.SmallCapacity, list.Count);
+        Assert.Equal(0, governor.CurrentCommittedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+    }
+
+    [Fact]
+    public void PyList_ScalarFreePromotionIsPreflighted()
+    {
+        var list = new PyList(Enumerable.Repeat<object>(true, PyListStorage.SmallCapacity));
+        var governor = new MemoryGovernor(32);
+        list.AttachMemoryGovernor(governor);
+        var failure = Assert.Throws<LythonRuntimeException>(() => list.Add(false));
+        Assert.Equal("MemoryError", failure.ExceptionType);
+        Assert.Equal(PyListStorage.SmallCapacity, list.Count);
+        Assert.Equal(0, governor.CurrentCommittedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
     }
 
     [Fact]

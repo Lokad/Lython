@@ -2656,6 +2656,19 @@ Private list storage construction likewise refunds its current backing on
 population failure, including after small-list promotion. Live list extension
 keeps its successfully inserted prefix and its charges if later input fails.
 
+Governed lists add a fixed 64-byte allowance per occupied numeric slot to their
+existing storage charge, without scalar identity maps or refcounts. Aliases and
+independently owned integers pay this allowance per occurrence while preserving
+Python identity; large magnitudes keep their separate payload owner. Scalar-free
+slots and spare capacity retain their existing backing estimates. Positive net
+numeric growth is funded before mutation, and deletion releases the allowance
+for each removed numeric slot. Numeric-to-numeric replacement transfers the
+existing allowance. Attaching a governor to an ungoverned list preflights its
+existing numeric slots before publishing the owner. Alias-heavy scripts may now
+deny under budgets that previously accepted them; for example, `[0] * 100000`
+requires 6.4 MB of numeric allowance before backing. Long dropped/refill streams
+release live charges rather than accumulating total allocation forever.
+
 `int.from_bytes` preflights conversion storage before creating its result. Heap
 magnitudes own their payload through the same reclamation path as parsed and
 arithmetic integers: retained conversions count toward the execution budget,

@@ -3,10 +3,9 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// N06 (PyList half): governed lists adopt one uniform coupon per distinct
-// small-scalar identity they retain. A population of distinct boxes denies
-// before its retention exceeds the budget; aliases of one box share a single
-// coupon; released slots drop their coupons so refill loops stay bounded.
+// Governed lists carry a conservative allowance per occupied numeric slot.
+// Aliases keep Python identity while paying per occurrence; released slots
+// drop their allowances so refill loops stay bounded.
 public sealed class ListScalarAdoptionTests
 {
     private const long ThreeMib = 3145728;
@@ -36,18 +35,20 @@ public sealed class ListScalarAdoptionTests
     }
 
     [Fact]
-    public async Task AliasPopulationSharesOneCoupon()
+    public async Task AliasPopulationUsesConservativeSlotAllowances()
     {
-        // 100k aliases of one box hold a single coupon and stay green.
+        // Intentional admission change: the original program/cap are retained.
+        // 100k numeric slots now need 6.4 MB before backing, even for one box.
         var script = Compile("return len([0] * 100000)\n");
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
-        var expected = new BigInteger(100000);
         var sync = script.Run(new MockLythonHost(), options);
-        Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(expected, sync.ReturnValue);
+        Assert.False(sync.Success);
+        Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
+        Assert.True(sync.PeakExecutionMemoryBytes <= ThreeMib);
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
-        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(expected, asyncResult.ReturnValue);
+        Assert.False(asyncResult.Success);
+        Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= ThreeMib);
     }
 
     [Fact]
