@@ -209,16 +209,8 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "set(iterable) expects one argument.", span);
         }
 
-        var result = new PySet(context.MemoryGovernor, span);
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
-        foreach (var item in ToSequence(arguments[0], span, context))
-        {
-            result.Add(ValidateSetItem(item, span));
-            context.ObserveCollectionCount(result.Count, span);
-        }
-
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
-        return result;
+        return SetMembers.MaterializeSet(arguments[0], span, context);
     }
 
     private static async ValueTask<object> SetAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -235,16 +227,8 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "set(iterable) expects one argument.", span);
         }
 
-        var result = new PySet(context.MemoryGovernor, span);
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
-        await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
-        {
-            result.Add(ValidateSetItem(item, span));
-            context.ObserveCollectionCount(result.Count, span);
-        }
-
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
-        return result;
+        return await SetMembers.MaterializeSetAsync(arguments[0], span, context).ConfigureAwait(false);
     }
 
     private static object IsInstance(object[] arguments, LythonSourceSpan span, ExecutionContext context)

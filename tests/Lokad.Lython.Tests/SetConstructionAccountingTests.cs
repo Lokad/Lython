@@ -11,6 +11,78 @@ namespace Lokad.Lython.Tests;
 /// </summary>
 public sealed class SetConstructionAccountingTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FailedSourcePreservesOtherLiveCharges(bool sized)
+    {
+        var governor = new MemoryGovernor(4096);
+        var held = new PySet(governor);
+        held.Add(new BigInteger(7));
+        var heldBytes = governor.CurrentCommittedBytes;
+        var error = new InvalidOperationException("source failed");
+        IEnumerable<object> source = sized ? new FailingCollection(error) : FailedSequence(error);
+
+        Assert.Same(error, Assert.Throws<InvalidOperationException>(() => new PySet(source, governor)));
+        Assert.Equal(heldBytes, governor.CurrentCommittedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+        Assert.True(held.Contains(new BigInteger(7)));
+        GC.KeepAlive(held);
+    }
+
+    [Theory]
+    [InlineData(128)]
+    [InlineData(300)]
+    [InlineData(500)]
+    public void FailedInitialAdmissionRefundsEveryPrivateCharge(long budget)
+    {
+        var governor = new MemoryGovernor(budget);
+        var values = Enumerable.Range(0, 10).Select(static i => (object)new BigInteger(i)).ToArray();
+        var failure = Assert.Throws<LythonRuntimeException>(() => new PySet(values, governor));
+        Assert.Equal("MemoryError", failure.ExceptionType);
+        Assert.Equal(0, governor.CurrentCommittedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+    }
+
+    [Fact]
+    public void FailedCopyAdmissionLeavesItsSourceCharged()
+    {
+        var governor = new MemoryGovernor(2048);
+        var source = new PySet(Enumerable.Range(0, 10).Select(static i => (object)new BigInteger(i)), governor);
+        var heldBytes = governor.CurrentCommittedBytes;
+        // Retain a real reservation so the next copy can admit only its shell.
+        using var held = governor.ReserveTemporary(2048 - heldBytes - 128, null);
+        var failure = Assert.Throws<LythonRuntimeException>(() => new PySet(source, governor));
+        Assert.Equal("MemoryError", failure.ExceptionType);
+        Assert.Equal(heldBytes, governor.CurrentCommittedBytes);
+        Assert.Equal(2048 - heldBytes - 128, governor.CurrentReservedBytes);
+        Assert.Equal(10, source.Count);
+        GC.KeepAlive(source);
+    }
+
+    private static IEnumerable<object> FailedSequence(Exception error)
+    {
+        yield return new BigInteger(1);
+        throw error;
+    }
+
+    private sealed class FailingCollection(Exception error) : ICollection<object>
+    {
+        public int Count => 2;
+        public bool IsReadOnly => true;
+        public void CopyTo(object[] array, int index)
+        {
+            array[index] = new BigInteger(1);
+            throw error;
+        }
+        public IEnumerator<object> GetEnumerator() => FailedSequence(error).GetEnumerator();
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+        public void Add(object item) => throw new NotSupportedException();
+        public void Clear() => throw new NotSupportedException();
+        public bool Contains(object item) => throw new NotSupportedException();
+        public bool Remove(object item) => throw new NotSupportedException();
+    }
+
     [Fact]
     public void LazySourceConstructionStopsAtBudgetInsteadOfSnapshotting()
     {
@@ -29,6 +101,8 @@ public sealed class SetConstructionAccountingTests
         Assert.Equal("MemoryError", failure.ExceptionType);
         Assert.True(pulls < 100000, "Lazy source was drained into a snapshot before the budget check.");
         Assert.True(pulls > 100, "Construction made no incremental progress before failing.");
+        Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
     [Fact]

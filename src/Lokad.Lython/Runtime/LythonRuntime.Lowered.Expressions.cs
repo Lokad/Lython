@@ -114,10 +114,18 @@ internal sealed partial class LythonRuntime
     {
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, set.Span);
         var items = new PySet(context.MemoryGovernor, set.Span);
-        for (var i = 0; i < set.Items.Count; i++)
+        try
         {
-            var value = RuntimeValue(EvaluateLoweredExpression(set.Items[i].Expression, context));
-            AddSetLiteralItem(items, value, set.Items[i].IsUnpacking, set.Items[i].Span, set.Span, context);
+            for (var i = 0; i < set.Items.Count; i++)
+            {
+                var value = RuntimeValue(EvaluateLoweredExpression(set.Items[i].Expression, context));
+                AddSetLiteralItem(items, value, set.Items[i].IsUnpacking, set.Items[i].Span, set.Span, context);
+            }
+        }
+        catch
+        {
+            items.ReleaseUnpublishedStorage();
+            throw;
         }
 
         context.Services.State.CallTemporaries.TrackFreshMutable(items, items.CommittedStorageBytes);
@@ -154,21 +162,30 @@ internal sealed partial class LythonRuntime
     {
         var result = new PySet(context.MemoryGovernor, comprehension.Span);
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, comprehension.Span);
-        var outer = ToSequence(EvaluateLoweredExpression(comprehension.Clauses[0].Iterable, context), comprehension.Clauses[0].Iterable.Span, context);
-        using var scope = context.EnterComprehension(comprehension.ScopeFacts);
-        EvaluateLoweredComprehensionClauses(
-            comprehension.Clauses,
-            0,
-            context,
-            itemScope =>
-            {
-                var item = ValidateSetItem(
-                    EvaluateLoweredExpression(comprehension.ItemExpression, itemScope),
-                    comprehension.ItemExpression.Span);
-                result.Add(item);
-            }, outer);
+        try
+        {
+            var outer = ToSequence(EvaluateLoweredExpression(comprehension.Clauses[0].Iterable, context), comprehension.Clauses[0].Iterable.Span, context);
+            using var scope = context.EnterComprehension(comprehension.ScopeFacts);
+            EvaluateLoweredComprehensionClauses(
+                comprehension.Clauses,
+                0,
+                context,
+                itemScope =>
+                {
+                    var item = ValidateSetItem(
+                        EvaluateLoweredExpression(comprehension.ItemExpression, itemScope),
+                        comprehension.ItemExpression.Span);
+                    result.Add(item);
+                }, outer);
 
-        context.ObserveCollectionCount(result.Count, comprehension.Span);
+            context.ObserveCollectionCount(result.Count, comprehension.Span);
+        }
+        catch
+        {
+            result.ReleaseUnpublishedStorage();
+            throw;
+        }
+
         context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }

@@ -77,68 +77,76 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     public PySet(IEnumerable<object> items, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
         : this(governor, allocationSpan)
     {
-        // Reserve the table before any copy exists. Sized snapshots then ride
-        // a transient reservation while they coexist with the table; the
-        // snapshot keeps enumeration robust when reentrant user equality code
-        // mutates the source mid-copy.
-        if (items is object[] array)
+        try
         {
-            EnsureCapacity(array.Length);
-            foreach (var item in array)
+            // Reserve the table before any copy exists. Sized snapshots then ride
+            // a transient reservation while they coexist with the table; the
+            // snapshot keeps enumeration robust when reentrant user equality code
+            // mutates the source mid-copy.
+            if (items is object[] array)
             {
-                _items.Add(item);
-            }
+                EnsureCapacity(array.Length);
+                foreach (var item in array)
+                {
+                    _items.Add(item);
+                }
 
-            AdoptInitialItems();
-            return;
-        }
-
-        if (items is PySet other)
-        {
-            EnsureCapacity(other.Count);
-            if (other.Count == 0)
-            {
+                AdoptInitialItems();
                 return;
             }
 
-            using var scratch = governor.ReserveTemporary(EstimateSnapshotBytes(other.Count), allocationSpan);
-            var materialized = other._items.ToArray();
-            foreach (var item in materialized)
+            if (items is PySet other)
             {
-                _items.Add(item);
-            }
+                EnsureCapacity(other.Count);
+                if (other.Count == 0)
+                {
+                    return;
+                }
 
-            AdoptInitialItems();
-            return;
-        }
+                using var scratch = governor.ReserveTemporary(EstimateSnapshotBytes(other.Count), allocationSpan);
+                var materialized = other._items.ToArray();
+                foreach (var item in materialized)
+                {
+                    _items.Add(item);
+                }
 
-        if (items is ICollection<object> collection)
-        {
-            EnsureCapacity(collection.Count);
-            if (collection.Count == 0)
-            {
+                AdoptInitialItems();
                 return;
             }
 
-            using var scratch = governor.ReserveTemporary(EstimateSnapshotBytes(collection.Count), allocationSpan);
-            var materialized = new object[collection.Count];
-            collection.CopyTo(materialized, 0);
-            foreach (var item in materialized)
+            if (items is ICollection<object> collection)
             {
-                _items.Add(item);
+                EnsureCapacity(collection.Count);
+                if (collection.Count == 0)
+                {
+                    return;
+                }
+
+                using var scratch = governor.ReserveTemporary(EstimateSnapshotBytes(collection.Count), allocationSpan);
+                var materialized = new object[collection.Count];
+                collection.CopyTo(materialized, 0);
+                foreach (var item in materialized)
+                {
+                    _items.Add(item);
+                }
+
+                AdoptInitialItems();
+                return;
             }
 
-            AdoptInitialItems();
-            return;
+            // Lazy source: no count exists to pre-size from, so Add governs each
+            // growth step with the committed-capacity atomicity above instead of
+            // draining the whole source into an uncharged array first. Add adopts
+            // each insertion, so no bulk pass is needed here.
+            foreach (var item in items)
+            {
+                _ = Add(item);
+            }
         }
-
-        // Lazy source: no count exists to pre-size from, so Add governs each
-        // growth step with the committed-capacity atomicity above instead of
-        // draining the whole source into an uncharged array first. Add adopts
-        // each insertion, so no bulk pass is needed here.
-        foreach (var item in items)
+        catch
         {
-            _ = Add(item);
+            ReleaseUnpublishedStorage();
+            throw;
         }
     }
 
@@ -166,24 +174,32 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
 
     public PySet(PySet other)
     {
-        _items = new HashSet<object>(other._items, PyValueComparer.Instance);
-        _protocol = other._protocol is null ? null : new List<ProtocolEntry>(other._protocol);
-        _protocolBytes = 0;
-        _protocolSeq = other._protocolSeq;
-        if (other._sideIndex is not null)
+        try
         {
-            _sideIndex = new ProtocolSideIndex();
-            _sideIndex.CloneFrom(other._sideIndex, null, null);
-        }
-        _memoryGovernor = other._memoryGovernor;
-        _allocationSpan = other._allocationSpan;
-        if (_memoryGovernor is not null)
-        {
-            EnsureCapacity(other.Count);
-            AdoptInitialItems();
-        }
+            _items = new HashSet<object>(other._items, PyValueComparer.Instance);
+            _protocol = other._protocol is null ? null : new List<ProtocolEntry>(other._protocol);
+            _protocolBytes = 0;
+            _protocolSeq = other._protocolSeq;
+            if (other._sideIndex is not null)
+            {
+                _sideIndex = new ProtocolSideIndex();
+                _sideIndex.CloneFrom(other._sideIndex, null, null);
+            }
+            _memoryGovernor = other._memoryGovernor;
+            _allocationSpan = other._allocationSpan;
+            if (_memoryGovernor is not null)
+            {
+                EnsureCapacity(other.Count);
+                AdoptInitialItems();
+            }
 
-        ChargeShell();
+            ChargeShell();
+        }
+        catch
+        {
+            ReleaseUnpublishedStorage();
+            throw;
+        }
     }
 
     public PySet(PySet other, MemoryGovernor governor) : this(other, governor, null) { }
@@ -191,22 +207,30 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     public PySet(PySet other, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
         : this(other._items, governor, allocationSpan)
     {
-        // The enumerating ctor above homes every entry fast by identity;
-        // re-index protocol items with their contextual hashes.
-        if (other._protocol is not null)
+        try
         {
-            _protocol = new List<ProtocolEntry>(other._protocol);
-            _protocolSeq = other._protocolSeq;
-            var bytes = checked(ProtocolEntryBytes * _protocol.Count);
-            governor.Reserve(bytes, allocationSpan);
-            governor.Commit(bytes);
-            _protocolBytes = bytes;
-        }
+            // The enumerating ctor above homes every entry fast by identity;
+            // re-index protocol items with their contextual hashes.
+            if (other._protocol is not null)
+            {
+                _protocol = new List<ProtocolEntry>(other._protocol);
+                _protocolSeq = other._protocolSeq;
+                var bytes = checked(ProtocolEntryBytes * _protocol.Count);
+                governor.Reserve(bytes, allocationSpan);
+                governor.Commit(bytes);
+                _protocolBytes = bytes;
+            }
 
-        if (other._sideIndex is not null)
+            if (other._sideIndex is not null)
+            {
+                _sideIndex = new ProtocolSideIndex();
+                _sideIndex.CloneFrom(other._sideIndex, governor, allocationSpan);
+            }
+        }
+        catch
         {
-            _sideIndex = new ProtocolSideIndex();
-            _sideIndex.CloneFrom(other._sideIndex, governor, allocationSpan);
+            ReleaseUnpublishedStorage();
+            throw;
         }
     }
 
@@ -1023,26 +1047,19 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         }
     }
 
-    // Adopts construction contents with a refund of the orphaned charges when
-    // a coupon denies: callers publish nothing on failure. AdoptAll rolls its
-    // own coupons back, so only shell, backing and protocol refund here.
+    // AdoptAll rolls its own coupons back. The construction boundary refunds
+    // all other private storage on any failure, including enumeration and sizing.
     private void AdoptInitialItems()
     {
         var incoming = new AdoptedScalarCoupons();
-        try
-        {
-            incoming.AdoptAll(_items, _memoryGovernor!, _allocationSpan);
-        }
-        catch
-        {
-            RefundAbortedConstruction();
-            throw;
-        }
+        incoming.AdoptAll(_items, _memoryGovernor!, _allocationSpan);
 
         _scalarCoupons = incoming.CommittedBytes > 0 ? incoming : null;
     }
 
-    private void RefundAbortedConstruction()
+    // Only for a private result that has neither escaped nor been registered.
+    // Registration denial has its own refund; live mutation must keep charges.
+    internal void ReleaseUnpublishedStorage()
     {
         if (_memoryGovernor is not null)
         {

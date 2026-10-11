@@ -206,7 +206,16 @@ internal sealed partial class LythonRuntime
             var result = governor is null
                 ? new PySet(leftSet)
                 : new PySet(leftSet, governor, allocationSpan);
-            result.ExceptWith(rightSet);
+            try
+            {
+                result.ExceptWith(rightSet);
+            }
+            catch
+            {
+                result.ReleaseUnpublishedStorage();
+                throw;
+            }
+
             context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
             return result;
         }

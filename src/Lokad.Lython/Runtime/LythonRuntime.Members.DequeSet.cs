@@ -483,16 +483,33 @@ internal sealed partial class LythonRuntime
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     var result = new PySet(set, context.MemoryGovernor, span);
-                    Update(result, arguments, span, context);
+                    try
+                    {
+                        Update(result, arguments, span, context);
+                    }
+                    catch
+                    {
+                        result.ReleaseUnpublishedStorage();
+                        throw;
+                    }
+
                     return result;
                 }, SetUnionSignature),
                 "intersection" => BoundCallable.Create((arguments, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     var result = new PySet(set, context.MemoryGovernor, span);
-                    foreach (var argument in arguments)
+                    try
                     {
-                        IntersectWithIterable(result, argument, span, context);
+                        foreach (var argument in arguments)
+                        {
+                            IntersectWithIterable(result, argument, span, context);
+                        }
+                    }
+                    catch
+                    {
+                        result.ReleaseUnpublishedStorage();
+                        throw;
                     }
 
                     return result;
@@ -501,9 +518,17 @@ internal sealed partial class LythonRuntime
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     var result = new PySet(set, context.MemoryGovernor, span);
-                    foreach (var argument in arguments)
+                    try
                     {
-                        result.ExceptWith(MaterializeSet(argument, span, context));
+                        foreach (var argument in arguments)
+                        {
+                            result.ExceptWith(MaterializeSet(argument, span, context));
+                        }
+                    }
+                    catch
+                    {
+                        result.ReleaseUnpublishedStorage();
+                        throw;
                     }
 
                     return result;
@@ -512,8 +537,17 @@ internal sealed partial class LythonRuntime
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
                     var result = new PySet(set, context.MemoryGovernor, span);
-                    result.SymmetricExceptWith(MaterializeSet(arguments[0], span, context));
-                    context.ObserveCollectionCount(result.Count, span);
+                    try
+                    {
+                        result.SymmetricExceptWith(MaterializeSet(arguments[0], span, context));
+                        context.ObserveCollectionCount(result.Count, span);
+                    }
+                    catch
+                    {
+                        result.ReleaseUnpublishedStorage();
+                        throw;
+                    }
+
                     return result;
                 }, SetSymmetricDifferenceSignature),
                 "isdisjoint" => BoundCallable.Create((arguments, span, context) =>
@@ -933,28 +967,44 @@ internal sealed partial class LythonRuntime
         internal static PySet AsSetOperand(object value, LythonSourceSpan span, ExecutionContext context)
             => value as PySet ?? MaterializeSet(value, span, context);
 
-        private static PySet MaterializeSet(object value, LythonSourceSpan span, ExecutionContext context)
+        internal static PySet MaterializeSet(object value, LythonSourceSpan span, ExecutionContext context)
         {
             var result = new PySet(context.MemoryGovernor, span);
-            foreach (var item in ToSequence(value, span, context))
+            try
             {
-                result.Add(ValidateSetItem(item, span));
-                context.ObserveCollectionCount(result.Count, span);
+                foreach (var item in ToSequence(value, span, context))
+                {
+                    result.Add(ValidateSetItem(item, span));
+                    context.ObserveCollectionCount(result.Count, span);
+                }
+            }
+            catch
+            {
+                result.ReleaseUnpublishedStorage();
+                throw;
             }
 
             context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
             return result;
         }
 
-        private static async ValueTask<PySet> MaterializeSetAsync(object value, LythonSourceSpan span, ExecutionContext context)
+        internal static async ValueTask<PySet> MaterializeSetAsync(object value, LythonSourceSpan span, ExecutionContext context)
         {
             // Async twin of the materializer above: validation and accounting
             // stay identical while each pull can suspend.
             var result = new PySet(context.MemoryGovernor, span);
-            await foreach (var item in ToSequenceAsync(value, span, context).ConfigureAwait(false))
+            try
             {
-                result.Add(ValidateSetItem(item, span));
-                context.ObserveCollectionCount(result.Count, span);
+                await foreach (var item in ToSequenceAsync(value, span, context).ConfigureAwait(false))
+                {
+                    result.Add(ValidateSetItem(item, span));
+                    context.ObserveCollectionCount(result.Count, span);
+                }
+            }
+            catch
+            {
+                result.ReleaseUnpublishedStorage();
+                throw;
             }
 
             context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
@@ -973,21 +1023,28 @@ internal sealed partial class LythonRuntime
             }
 
             var retained = new PySet(context.MemoryGovernor, span);
-            await foreach (var item in ToSequenceAsync(value, span, context).ConfigureAwait(false))
+            try
             {
-                var candidate = ValidateSetItem(item, span);
-                if (target.Contains(candidate))
+                await foreach (var item in ToSequenceAsync(value, span, context).ConfigureAwait(false))
                 {
-                    retained.Add(candidate);
-                    context.ObserveCollectionCount(retained.Count, span);
-                    if (target.Count > 0 && retained.Count == target.Count)
+                    var candidate = ValidateSetItem(item, span);
+                    if (target.Contains(candidate))
                     {
-                        break;
+                        retained.Add(candidate);
+                        context.ObserveCollectionCount(retained.Count, span);
+                        if (target.Count > 0 && retained.Count == target.Count)
+                        {
+                            break;
+                        }
                     }
                 }
-            }
 
-            target.IntersectWith(retained);
+                target.IntersectWith(retained);
+            }
+            finally
+            {
+                retained.ReleaseUnpublishedStorage();
+            }
         }
 
         private static void IntersectWithIterable(PySet target, object value, LythonSourceSpan span, ExecutionContext context)
@@ -999,21 +1056,28 @@ internal sealed partial class LythonRuntime
             }
 
             var retained = new PySet(context.MemoryGovernor, span);
-            foreach (var item in ToSequence(value, span, context))
+            try
             {
-                var candidate = ValidateSetItem(item, span);
-                if (target.Contains(candidate))
+                foreach (var item in ToSequence(value, span, context))
                 {
-                    retained.Add(candidate);
-                    context.ObserveCollectionCount(retained.Count, span);
-                    if (target.Count > 0 && retained.Count == target.Count)
+                    var candidate = ValidateSetItem(item, span);
+                    if (target.Contains(candidate))
                     {
-                        break;
+                        retained.Add(candidate);
+                        context.ObserveCollectionCount(retained.Count, span);
+                        if (target.Count > 0 && retained.Count == target.Count)
+                        {
+                            break;
+                        }
                     }
                 }
-            }
 
-            target.IntersectWith(retained);
+                target.IntersectWith(retained);
+            }
+            finally
+            {
+                retained.ReleaseUnpublishedStorage();
+            }
         }
 
         private static bool IsSubsetOfIterable(PySet set, object value, LythonSourceSpan span, ExecutionContext context)
@@ -1024,21 +1088,28 @@ internal sealed partial class LythonRuntime
             }
 
             var found = new PySet(context.MemoryGovernor, span);
-            foreach (var item in ToSequence(value, span, context))
+            try
             {
-                var candidate = ValidateSetItem(item, span);
-                if (set.Contains(candidate))
+                foreach (var item in ToSequence(value, span, context))
                 {
-                    found.Add(candidate);
-                    context.ObserveCollectionCount(found.Count, span);
-                    if (set.Count > 0 && found.Count == set.Count)
+                    var candidate = ValidateSetItem(item, span);
+                    if (set.Contains(candidate))
                     {
-                        return true;
+                        found.Add(candidate);
+                        context.ObserveCollectionCount(found.Count, span);
+                        if (set.Count > 0 && found.Count == set.Count)
+                        {
+                            return true;
+                        }
                     }
                 }
-            }
 
-            return found.Count == set.Count;
+                return found.Count == set.Count;
+            }
+            finally
+            {
+                found.ReleaseUnpublishedStorage();
+            }
         }
 
         private static void Update(PySet target, object[] iterables, LythonSourceSpan span, ExecutionContext context)

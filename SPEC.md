@@ -2646,6 +2646,12 @@ Catching `MemoryError` does not release retained values or guarantee room for a
 new result container. Scripts that recover under a saturated budget must reuse
 funded storage or release storage before allocating again.
 
+Set construction refunds its private shell, backing storage and scalar charges
+if population fails before publication. Internal intersection and subset scratch
+sets release their charges when the operation exits, including on failure.
+These releases preserve charges for live receivers and any guest-visible partial
+mutation; catching an exception does not undo callback side effects.
+
 Lython does not need to promise a perfect hard memory ceiling from inside the same managed process, but it must provide conservative in-process resource controls that make runaway allocation materially harder.
 
 #### 14.6.1 Combined Peak Envelope

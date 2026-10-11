@@ -132,19 +132,27 @@ internal sealed partial class LythonRuntime
     {
         var items = new PySet(context.MemoryGovernor, set.Span);
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, set.Span);
-        for (var i = 0; i < set.Items.Count; i++)
+        try
         {
-            var value = RuntimeValue(await EvaluateLoweredExpressionAsync(set.Items[i].Expression, context).ConfigureAwait(false));
-            if (!set.Items[i].IsUnpacking)
+            for (var i = 0; i < set.Items.Count; i++)
             {
-                AddSetLiteralValue(items, value, set.Items[i].Span, set.Span, context);
-                continue;
-            }
+                var value = RuntimeValue(await EvaluateLoweredExpressionAsync(set.Items[i].Expression, context).ConfigureAwait(false));
+                if (!set.Items[i].IsUnpacking)
+                {
+                    AddSetLiteralValue(items, value, set.Items[i].Span, set.Span, context);
+                    continue;
+                }
 
-            await foreach (var item in ToSequenceAsync(value, set.Items[i].Span, context).ConfigureAwait(false))
-            {
-                AddSetLiteralValue(items, RuntimeValue(item), set.Items[i].Span, set.Span, context);
+                await foreach (var item in ToSequenceAsync(value, set.Items[i].Span, context).ConfigureAwait(false))
+                {
+                    AddSetLiteralValue(items, RuntimeValue(item), set.Items[i].Span, set.Span, context);
+                }
             }
+        }
+        catch
+        {
+            items.ReleaseUnpublishedStorage();
+            throw;
         }
 
         context.Services.State.CallTemporaries.TrackFreshMutable(items, items.CommittedStorageBytes);
@@ -181,22 +189,31 @@ internal sealed partial class LythonRuntime
     {
         var result = new PySet(context.MemoryGovernor, comprehension.Span);
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, comprehension.Span);
-        var outer = await PyIteration.AcquireComprehensionSequenceAsync(await EvaluateLoweredExpressionAsync(comprehension.Clauses[0].Iterable, context).ConfigureAwait(false), comprehension.Clauses[0].Iterable.Span, context).ConfigureAwait(false);
-        using var scope = context.EnterComprehension(comprehension.ScopeFacts);
-        await EvaluateLoweredComprehensionClausesAsync(
-                comprehension.Clauses,
-                0,
-                context,
-                async itemScope =>
-                {
-                    var item = ValidateSetItem(
-                        await EvaluateLoweredExpressionAsync(comprehension.ItemExpression, itemScope).ConfigureAwait(false),
-                        comprehension.ItemExpression.Span);
-                    result.Add(item);
-                }, outer)
-            .ConfigureAwait(false);
+        try
+        {
+            var outer = await PyIteration.AcquireComprehensionSequenceAsync(await EvaluateLoweredExpressionAsync(comprehension.Clauses[0].Iterable, context).ConfigureAwait(false), comprehension.Clauses[0].Iterable.Span, context).ConfigureAwait(false);
+            using var scope = context.EnterComprehension(comprehension.ScopeFacts);
+            await EvaluateLoweredComprehensionClausesAsync(
+                    comprehension.Clauses,
+                    0,
+                    context,
+                    async itemScope =>
+                    {
+                        var item = ValidateSetItem(
+                            await EvaluateLoweredExpressionAsync(comprehension.ItemExpression, itemScope).ConfigureAwait(false),
+                            comprehension.ItemExpression.Span);
+                        result.Add(item);
+                    }, outer)
+                .ConfigureAwait(false);
 
-        context.ObserveCollectionCount(result.Count, comprehension.Span);
+            context.ObserveCollectionCount(result.Count, comprehension.Span);
+        }
+        catch
+        {
+            result.ReleaseUnpublishedStorage();
+            throw;
+        }
+
         context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }

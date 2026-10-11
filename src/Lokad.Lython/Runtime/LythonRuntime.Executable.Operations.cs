@@ -41,14 +41,23 @@ internal sealed partial class LythonRuntime
         var start = stack.Count - count;
         var set = new PySet(context.MemoryGovernor, span);
         using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
-        for (var i = start; i < stack.Count; i++)
+        try
         {
-            set.Add(ValidateSetItem(stack[i], span));
+            for (var i = start; i < stack.Count; i++)
+            {
+                set.Add(ValidateSetItem(stack[i], span));
+            }
+
+            stack.RemoveTail(count);
+
+            context.ObserveCollectionCount(set.Count, span);
+        }
+        catch
+        {
+            set.ReleaseUnpublishedStorage();
+            throw;
         }
 
-        stack.RemoveTail(count);
-
-        context.ObserveCollectionCount(set.Count, span);
         context.Services.State.CallTemporaries.TrackFreshMutable(set, set.CommittedStorageBytes);
         return set;
     }
