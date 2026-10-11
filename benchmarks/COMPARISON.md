@@ -4,6 +4,16 @@ Specification version **6**, used by the declared milestone collections. The cat
 and explicit correctness check are available. Persistent worker primitives are
 available, including supervised correctness/timer smokes, paired collection,
 machine checks and raw-evidence report rendering.
+The [lowered operation-selection round](results/2026-10-11-lowered-kind-dispatch/README.md)
+rejects preselected node dispatch: method time changes +3.2%/-3.4%, with the
+second gain inside its 3.9% spread. Fourteen paired micros take 8.04–8.05s
+including cleanup; separate allocation/native groups take about four seconds.
+Both producers pass 9,466 matching Windows Debug and Linux Release tests plus
+seven complete canonical CPython cases each. Eight existing fixed checkpoint
+fixtures now exercise both shared and direct function dispatch. Every control
+and native tier remains visible; production stays unchanged and the broader
+method-body compiler remains pending. No full timing lane or recollection ran.
+
 The [prepared augmented-target round](results/2026-10-11-prepared-augmented-target/README.md)
 rejected; the prototype remains isolated. It compares identical slice-protocol/governance corrections
 on both producers, with 42 independent pre-prototype checks. Fourteen paired
