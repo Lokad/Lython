@@ -6,9 +6,9 @@ using Lokad.Lython.Benchmarks.Comparison;
 
 // Deliberately controlled process faults, with no Python installation needed.
 // This executable is a test build dependency, never a runtime package input.
-if (args[0] == "stack-telemetry")
+if (args[0] == "stack-guard")
 {
-    return StackTelemetryFixture.Run(args[1]);
+    return await StackGuardFixture.RunAsync(args[1], args[2]);
 }
 if (args[0] == "echo-environment")
 {

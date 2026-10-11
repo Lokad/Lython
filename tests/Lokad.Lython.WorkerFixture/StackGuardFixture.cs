@@ -1,0 +1,54 @@
+using System.Security.Cryptography;
+using System.Text.Json;
+using Lokad.Lython;
+using Lokad.Lython.Tests.Harness;
+
+// A fatal regression stays inside this owned fixture process. Host I/O really
+// yields; a successful async prefix alone does not exercise continuation stacks.
+internal static class StackGuardFixture
+{
+    internal static async Task<int> RunAsync(string libraryPath, string scenario)
+    {
+        var actual = typeof(LythonEngine).Assembly.Location;
+        var libraryHash = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(actual)));
+        if (libraryHash != Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(libraryPath))))
+            throw new InvalidOperationException("Fixture and requested library bytes differ.");
+        const string suspension = "with open('/ready', 'r') as stream:\n stream.read()\n";
+        const string lists = "x = 7\ny = 7\nfor _ in range(512):\n x = [x]\n y = [y]\n";
+        var body = scenario switch
+        {
+            "comparison" => lists + "failures = 0\nfor _ in range(3):\n try:\n  assert x == y\n except RecursionError:\n  failures += 1\n assert [[1, 2]] == [[1, 2]]\nreturn failures\n",
+            "callback" => "class Loop:\n def __bool__(self): return bool(self)\nfailures = 0\nfor _ in range(3):\n try:\n  bool(Loop())\n except (RuntimeError, RecursionError):\n  failures += 1\n assert bool([1])\nreturn failures\n",
+            "copyhook" => "import copy\nclass Loop:\n def __deepcopy__(self, memo): return copy.deepcopy(self, memo)\nfailures = 0\nfor _ in range(3):\n try:\n  copy.deepcopy(Loop())\n except (RuntimeError, RecursionError):\n  failures += 1\n assert copy.deepcopy([1]) == [1]\nreturn failures\n",
+            "cancellation" => lists + "while True:\n try:\n  equal = x == y\n except RecursionError:\n  pass\n",
+            _ => throw new ArgumentOutOfRangeException(nameof(scenario))
+        };
+        var script = new LythonEngine().Compile(suspension + body);
+        if (!script.IsValid) throw new InvalidOperationException("Stack fixture source did not compile.");
+        var host = new DelayedLythonHost();
+        host.SeedFile("/ready", "ready");
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        if (scenario == "cancellation") host.OnTextReadCompleted = () => cancellation.CancelAfter(TimeSpan.FromMilliseconds(100));
+        var options = new LythonRunOptions
+        {
+            MaxExecutionMemoryBytes = 2 * 1024 * 1024,
+            CancellationToken = scenario == "cancellation" ? cancellation.Token : CancellationToken.None,
+        };
+        var result = await script.RunAsync(host, options);
+        Console.WriteLine(JsonSerializer.Serialize(new
+        {
+            scenario, result.Success,
+            value = result.ReturnValue?.ToString(),
+            error = result.Failure?.ExceptionType,
+            message = result.Failure?.Message,
+            completedAsynchronously = host.CompletedAsynchronously,
+            libraryHash, processId = Environment.ProcessId,
+        }));
+        if (host.CompletedAsynchronously == 0) return 2;
+        if (scenario == "cancellation")
+            return !result.Success && result.Failure?.Message == "execution canceled" ? 0 : 3;
+        if (!result.Success) return 4;
+        var count = int.Parse(result.ReturnValue!.ToString()!);
+        return scenario == "comparison" ? count is >= 0 and <= 3 ? 0 : 5 : count == 3 ? 0 : 6;
+    }
+}
