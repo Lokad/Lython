@@ -41,7 +41,7 @@ Bounded streaming remains live-memory accounting: 5,000 discarded tuple or
 namedtuple rows complete under 1 MiB, although their cumulative record charges
 alone exceed the cap. Retaining the rows denies under the same cap. This change
 does not eliminate the CLR collection dependency of weak-target reclamation.
-The contract is documented in [SPEC.md](../../../SPEC.md#146-memory-budgeting).
+The contract is documented in [SPEC.md](../../../SPEC.md#146-memory-budgets).
 
 ## Producers and validation
 
