@@ -32,7 +32,7 @@ internal sealed partial class LythonRuntime
                 var end = slice.End is null ? PyNone.Instance : await Read(slice.End).ConfigureAwait(false);
                 var step = slice.Step is null ? PyNone.Instance : await Read(slice.Step).ConfigureAwait(false);
                 if (sequence is PyInstance)
-                    await SetHeaderSubscriptAsync(sequence, new PySlice(start, end, step), value, slice.Span, context).ConfigureAwait(false);
+                    await SetHeaderSubscriptAsync(sequence, CreateSliceValue(start, end, step, slice.Span, context), value, slice.Span, context).ConfigureAwait(false);
                 else ExecuteSliceAssignment(sequence, start, end, step, value, slice.Span, context);
                 break;
             case UnpackingAssignmentTargetGroupSyntax group:

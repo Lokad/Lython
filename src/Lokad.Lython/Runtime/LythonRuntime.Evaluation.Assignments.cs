@@ -563,7 +563,7 @@ internal sealed partial class LythonRuntime
         // Mappings store colon slices as keys like CPython; bounds stay raw.
         if (target is PyDict || target is PyCounter || target is PyDefaultDict || target is PyChainMap)
         {
-            SetSubscriptValue(target, PyIndexing.CreateMappingSliceKey(start, end, step, context.MemoryGovernor, span), value, span, context);
+            SetSubscriptValue(target, PyIndexing.CreateMappingSliceKey(start, end, step, context, span), value, span, context);
             return;
         }
 
@@ -631,13 +631,13 @@ internal sealed partial class LythonRuntime
     {
         if (target is PyInstance instance)
         {
-            InvokeItemMutation(instance, "__delitem__", [CallArgumentValue.Positional(new PySlice(start ?? PyNone.Instance, end ?? PyNone.Instance, step ?? PyNone.Instance))], context, span);
+            InvokeItemMutation(instance, "__delitem__", [CallArgumentValue.Positional(CreateSliceValue(start, end, step, span, context))], context, span);
             return;
         }
         // Mappings delete colon slices as keys like CPython; bounds stay raw.
         if (target is PyDict || target is PyCounter || target is PyDefaultDict || target is PyChainMap)
         {
-            var key = ValidateDictionaryKey(PyIndexing.CreateMappingSliceKey(start, end, step, context.MemoryGovernor, span), span);
+            var key = ValidateDictionaryKey(PyIndexing.CreateMappingSliceKey(start, end, step, context, span), span);
             switch (target)
             {
                 case PyChainMap chainMap:

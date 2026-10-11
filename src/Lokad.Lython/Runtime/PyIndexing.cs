@@ -119,14 +119,16 @@ internal static class PyIndexing
         };
     }
 
-    // Colon-slice keys on mappings materialize exactly like explicit slice()
-    // calls: the bounds stay raw (no __index__ coercion) and the 64B shell
-    // is owned when a governor is available.
-    internal static PySlice CreateMappingSliceKey(object? start, object? end, object? step, MemoryGovernor? governor, LythonSourceSpan span)
+    // Guest-visible colon keys keep raw bounds, like explicit slice() calls.
+    // Fund and register the actual key before exposing it to a user or mapping;
+    // temporary lookups and escaped keys then follow their own weak lifetime.
+    internal static PySlice CreateMappingSliceKey(object? start, object? end, object? step, LythonRuntime.ExecutionContext? context, LythonSourceSpan span)
     {
-        governor?.Reserve(64L, span);
-        governor?.Commit(64L);
-        return new PySlice(start ?? PyNone.Instance, end ?? PyNone.Instance, step ?? PyNone.Instance);
+        context?.MemoryGovernor.Reserve(64L, span);
+        context?.MemoryGovernor.Commit(64L);
+        var value = new PySlice(start ?? PyNone.Instance, end ?? PyNone.Instance, step ?? PyNone.Instance);
+        context?.Services.State.CallTemporaries.TrackFreshMutable(value, 64L, span);
+        return value;
     }
 
     public static object ReadSlice(object target, object? start, object? end, object? step, LythonSourceSpan span, LythonRuntime.ExecutionContext? context = null)
@@ -142,7 +144,7 @@ internal static class PyIndexing
         // bound coercion or sequence slicing.
         if (target is PyDict || target is PyCounter || target is PyDefaultDict || target is PyChainMap)
         {
-            var key = CreateMappingSliceKey(start, end, step, context?.MemoryGovernor, span);
+            var key = CreateMappingSliceKey(start, end, step, context, span);
             if (target is PyDict dict)
             {
                 return ReadDictIndex(dict, key, span);

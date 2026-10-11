@@ -726,6 +726,21 @@ Negative indices for strings, lists, and tuples must behave as in Python.
 
 The supported subset must support Python-style slicing for strings, lists, and tuples. Mutable list slices must also support assignment and deletion as described in section 11.6.
 
+Colon slices delivered to a user object's item methods retain the original
+start, stop and step objects without `__index__` coercion. Each fresh guest-visible
+key owns its 64-byte shell and the ordinary weak-registry fees before a user
+getter, setter or deleter runs, including loop and unpacking targets. `RunAsync`
+awaits the actual user mutation and host suspension with the same receiver, key
+and value. Cancellation unwinds that call normally. Escaped keys remain owned
+while their actual references survive.
+
+Colon keys on `dict`, `Counter`, `defaultdict` and `ChainMap` use the same ownership
+route. Lookup, equal-key replacement and deletion keys are reclaimed when their
+actual references disappear; inserting an equal key preserves the mapping's
+original key object. A denied fresh-key registration refunds its unpublished
+shell and reaches no user mutation or mapping store. Mapping backing storage
+and registry tier capacity retain their own accounted fees.
+
 ### 9.3.1 Assignment Semantics
 
 Assignment behavior for supported target forms must follow Python semantics.
@@ -751,9 +766,8 @@ Tuple-shaped, parenthesized and list-shaped unpacking assignments are supported,
 including nested destructuring and a trailing comma for a one-item tuple.
 Leaves may be supported ordinary assignment targets. Each unpacking level may
 contain at most one starred target. Receivers and indices are evaluated at the
-corresponding store, in source order. This broader ordinary-assignment grammar
-does not imply support for the excluded loop and context-manager targets in
-section 8.4.
+corresponding store, in source order. Loop, comprehension and context-manager
+binding use the same target forms as described in section 8.7.
 
 Annotated assignment supports simple names and the supported attribute,
 subscript and slice targets. Only a simple module name stores an entry in

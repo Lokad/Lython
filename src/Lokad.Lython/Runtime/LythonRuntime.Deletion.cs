@@ -17,7 +17,7 @@ internal sealed partial class LythonRuntime
     private static ValueTask ExecuteSliceDeletionAsync(object target, object? start, object? end, object? step, LythonSourceSpan span, ExecutionContext context)
     {
         if (target is PyInstance)
-            return ExecuteResolvedSubscriptDeletionAsync(target, new PySlice(start ?? PyNone.Instance, end ?? PyNone.Instance, step ?? PyNone.Instance), span, context);
+            return ExecuteResolvedSubscriptDeletionAsync(target, CreateSliceValue(start, end, step, span, context), span, context);
         ExecuteSliceDeletion(target, start, end, step, span, context);
         return ValueTask.CompletedTask;
     }

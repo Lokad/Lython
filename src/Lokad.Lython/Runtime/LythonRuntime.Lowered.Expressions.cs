@@ -249,11 +249,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static PySlice CreateSliceValue(object? start, object? end, object? step, LythonSourceSpan span, ExecutionContext context)
-    {
-        var value = PyIndexing.CreateMappingSliceKey(start, end, step, context.MemoryGovernor, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(value, 64L, span);
-        return value;
-    }
+        => PyIndexing.CreateMappingSliceKey(start, end, step, context, span);
 
     private static object ReadSliceValue(object target, object? start, object? end, object? step, LythonSourceSpan span, ExecutionContext context)
         => target is PyInstance instance
