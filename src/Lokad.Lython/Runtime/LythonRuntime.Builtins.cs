@@ -338,7 +338,7 @@ internal sealed partial class LythonRuntime
         {
             return arguments[0] switch
             {
-                BigInteger integer => integer,
+                BigInteger => arguments[0],
                 _ when PyNumberOps.TryAsInteger(arguments[0], out var integer) => OwnFreshInteger(integer, context.MemoryGovernor, context.Services.State.CallTemporaries, span),
                 double floating => OwnFreshInteger(FloatToInteger(floating, span, Math.Truncate), context.MemoryGovernor, context.Services.State.CallTemporaries, span),
                 PyDecimal decimalValue => OwnFreshInteger(new BigInteger(decimal.Truncate(decimalValue.Value)), context.MemoryGovernor, context.Services.State.CallTemporaries, span),
@@ -391,6 +391,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "bad operand type for abs(): '" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "'", span);
         }
 
+        if (value is BigInteger integer && integer.Sign >= 0) return value;
         return number.IsFloat ? Math.Abs(number.Floating) : OwnHeapInteger(BigInteger.Abs(number.Integer), context.MemoryGovernor, context.Services.State.CallTemporaries, span);
     }
 
@@ -778,7 +779,7 @@ internal sealed partial class LythonRuntime
     // the deprecated __trunc__ hook (whose result still coerces through
     // __index__). Every present hook is called like CPython, so a
     // non-callable hook raises the typed not-callable error.
-    private static BigInteger ConvertInstanceToInteger(
+    private static object ConvertInstanceToInteger(
         PyInstance instance,
         ExecutionContext context,
         LythonSourceSpan span)
@@ -796,7 +797,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "__int__ returned non-int (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
             }
 
-            return integer;
+            return converted is BigInteger ? converted : integer;
         }
 
         if (instance.TryGetAttribute("__index__", context, span, out var indexMember))
@@ -809,7 +810,7 @@ internal sealed partial class LythonRuntime
             // The shared choke either returns an integer or raises the shaped
             // __index__ error; the callable check above rules out its
             // missing-hook passthrough.
-            return (BigInteger)CoerceIndexProtocol(instance, context, span);
+            return CoerceIndexProtocol(instance, context, span);
         }
 
         if (instance.TryGetAttribute("__trunc__", context, span, out var truncMember))
@@ -831,7 +832,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "__trunc__ returned non-Integral (type " + UnboundTypeMethod.PythonTypeName(truncated, context) + ")", span);
             }
 
-            return truncatedInteger;
+            return indexed is BigInteger ? indexed : truncatedInteger;
         }
 
         throw IntegerConversionError(instance, context, span);

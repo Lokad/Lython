@@ -1011,7 +1011,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "int.conjugate() takes no arguments (" + arguments.Length + " given)", span);
                     }
 
-                    return integer.Value;
+                    return receiver is BigInteger ? receiver : integer.Value;
                 }, IntConjugateSignature),
                 "as_integer_ratio" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -1020,7 +1020,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "int.as_integer_ratio() takes no arguments (" + arguments.Length + " given)", span);
                     }
 
-                    return new PyTuple([integer.Value, BigInteger.One], context.MemoryGovernor, span);
+                    return new PyTuple([receiver is BigInteger ? receiver : integer.Value, BigInteger.One], context.MemoryGovernor, span);
                 }, IntAsIntegerRatioSignature),
                 "is_integer" => BoundCallable.Create((arguments, span, context) =>
                 {
@@ -1031,9 +1031,8 @@ internal sealed partial class LythonRuntime
 
                     return true;
                 }, IntIsIntegerSignature),
-                "numerator" => integer.Value,
+                "numerator" or "real" => receiver is BigInteger ? receiver : integer.Value,
                 "denominator" => BigInteger.One,
-                "real" => integer.Value,
                 "imag" => BigInteger.Zero,
                 "to_bytes" => new RawBoundCallable((arguments, span, context) => IntToBytes(integer.Value, arguments, span, context)) { BoundName = "int.to_bytes", BoundReceiver = receiver },
                 "from_bytes" => receiver is bool
@@ -1148,7 +1147,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "int.__int__() expects no arguments.", span);
                     }
 
-                    return integer.Value;
+                    return receiver is BigInteger ? receiver : integer.Value;
                 }, IntIntSignature),
                 "__index__" => BoundCallable.Create((arguments, span, _) =>
                 {
@@ -1157,7 +1156,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "int.__index__() expects no arguments.", span);
                     }
 
-                    return integer.Value;
+                    return receiver is BigInteger ? receiver : integer.Value;
                 }, IntIndexSignature),
                 "__trunc__" => BoundCallable.Create((arguments, span, _) =>
                 {
@@ -1166,7 +1165,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "int.__trunc__() expects no arguments.", span);
                     }
 
-                    return integer.Value;
+                    return receiver is BigInteger ? receiver : integer.Value;
                 }, IntTruncSignature),
                 "__floor__" => BoundCallable.Create((arguments, span, _) =>
                 {
@@ -1175,7 +1174,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "int.__floor__() expects no arguments.", span);
                     }
 
-                    return integer.Value;
+                    return receiver is BigInteger ? receiver : integer.Value;
                 }, IntFloorSignature),
                 "__ceil__" => BoundCallable.Create((arguments, span, _) =>
                 {
@@ -1184,7 +1183,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "int.__ceil__() expects no arguments.", span);
                     }
 
-                    return integer.Value;
+                    return receiver is BigInteger ? receiver : integer.Value;
                 }, IntCeilSignature),
                 "__float__" => BoundCallable.Create((arguments, span, _) =>
                 {
@@ -1214,7 +1213,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", "'NoneType' object cannot be interpreted as an integer", span);
                     }
 
-                    return Round(arguments.Length == 0 ? [integer.Value] : [integer.Value, arguments[0]], span, context);
+                    return Round(arguments.Length == 0 ? [receiver] : [receiver, arguments[0]], span, context);
                 }, IntRoundSignature),
                 _ => MissingMemberValue.Instance,
             };

@@ -42,6 +42,8 @@ internal sealed partial class LythonRuntime
             digits = ToInt32(digitsValue, "round(number[, ndigits])", span);
         }
 
+        if (arguments[0] is BigInteger && (digits is null || digits >= 0)) return arguments[0];
+
         var rounded = arguments[0] switch
         {
             bool boolean => RoundInteger(boolean ? BigInteger.One : BigInteger.Zero, digits, span),

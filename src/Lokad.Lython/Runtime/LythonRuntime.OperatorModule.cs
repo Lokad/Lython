@@ -309,7 +309,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "'" + RuntimeErrors.DatetimeQualifiedTypeName(value, context) + "' object cannot be interpreted as an integer", span);
         }
 
-        return integer;
+        return converted is BigInteger ? converted : integer;
     }
 
     private static object EvaluateConcat(object left, object right, ExecutionContext context, LythonSourceSpan span)

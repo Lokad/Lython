@@ -366,7 +366,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "__index__ returned non-int (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
         }
 
-        return integer;
+        return converted is BigInteger ? converted : integer;
     }
 
     private static PyString CoercePathLike(object value, ExecutionContext context, LythonSourceSpan span, string owner)

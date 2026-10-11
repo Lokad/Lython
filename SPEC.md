@@ -2663,6 +2663,13 @@ while dropped conversions can reclaim their charge. The byte-length estimate is
 conservative, so heavily sign-padded input can require more admission headroom
 than the final integer's payload. This does not charge total allocation forever.
 
+Alias-valued integer operations preserve the exact integer object and its payload
+owner, including numeric views, conversion/index hooks and nonrounding integer
+results. Positive integer `abs` likewise preserves its input. Changed magnitudes
+keep their own preflight and payload charges. Retaining integer aliases therefore
+retains their original funding even after the source reference disappears;
+repeated aliases do not create new payload owners.
+
 Lython does not need to promise a perfect hard memory ceiling from inside the same managed process, but it must provide conservative in-process resource controls that make runaway allocation materially harder.
 
 #### 14.6.1 Combined Peak Envelope

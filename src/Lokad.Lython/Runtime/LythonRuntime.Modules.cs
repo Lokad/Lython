@@ -765,7 +765,7 @@ internal sealed partial class LythonRuntime
 
             if (!number.IsFloat)
             {
-                return number.Integer;
+                return value is BigInteger ? value : number.Integer;
             }
 
             return OwnHeapInteger(FloatToInteger(number.Floating, span, func), context.MemoryGovernor, context.Services.State.CallTemporaries, span);

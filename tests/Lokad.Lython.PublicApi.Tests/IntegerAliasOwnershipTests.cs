@@ -68,4 +68,48 @@ public sealed class IntegerAliasOwnershipTests
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
         Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
     }
+
+    [Theory]
+    [InlineData("x.real", false)]
+    [InlineData("x.real", true)]
+    [InlineData("int(x)", false)]
+    [InlineData("int(x)", true)]
+    [InlineData("round(x)", false)]
+    [InlineData("round(x)", true)]
+    [InlineData("operator.index(AsIndex())", false)]
+    [InlineData("operator.index(AsIndex())", true)]
+    public async Task DroppedAliasesKeepTheirStreamingBudget(string expression, bool asyncMode)
+    {
+        var script = new LythonEngine().Compile(Prelude + "for _ in range(4000):\n x = 1 << 4000\n y = " + expression + "\nreturn y.bit_length()\n");
+        Assert.True(script.IsValid);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var result = asyncMode ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal("4001", result.ReturnValue?.ToString());
+        Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
+    }
+
+    [Fact]
+    public async Task EscapedAliasAndBoundMethodSurviveGenuineHostSuspension()
+    {
+        const string code = """
+            x = 1 << 4000
+            method = x.conjugate
+            y = x.real
+            del x
+            with open('/value', 'r') as stream:
+                stream.read()
+            for _ in range(4000):
+                z = 1 << 4000
+            return method() is y
+            """;
+        var host = new DelayedLythonHost();
+        host.SeedFile("/value", "ready");
+        var script = new LythonEngine().Compile(code);
+        Assert.True(script.IsValid);
+        var result = await script.RunAsync(host, new LythonRunOptions { MaxExecutionMemoryBytes = 262144 });
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.True(Assert.IsType<bool>(result.ReturnValue));
+        Assert.True(host.CompletedAsynchronously > 0);
+    }
 }
