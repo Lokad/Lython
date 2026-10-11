@@ -17,6 +17,9 @@ command with a 30-second process-group cap. Full lanes are reserved for infreque
 declared milestones. The [second milestone](results/2026-10-10-second-milestone/README.md)
 qualifies the current basic loop and four application workloads against CPython;
 its reference control failure keeps old/new improvement ratios unqualified.
+The [byte-to-integer round](results/2026-10-11-byte-integer-conversion/README.md)
+replaces repeated magnitude assembly with one funded conversion, reproduces the
+original retained-payload accounting defect and records short CPython controls.
 The `core-loop` profile narrows milestone collection to a basic integer reduction
 at three sizes and two controls, with scalar checksum output and the same
 public invocation boundary.
