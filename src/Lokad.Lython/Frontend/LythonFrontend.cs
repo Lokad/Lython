@@ -66,6 +66,7 @@ internal static class LythonFrontend
             .Concat(AnnotationDiagnostics.Analyze(parsed.Script))
             .Concat(StaticAnalyzer.Analyze(parsed.Script))
             .ToArray();
+        ImplicitSuperSyntaxFacts.Prepare(parsed.Script);
         return new FrontendResult(parsed.Script, diagnostics);
     }
 

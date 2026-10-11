@@ -502,7 +502,8 @@ internal sealed partial class LythonRuntime
             loweredParameters,
             lambda.Body,
             context.FunctionClosureContext,
-            BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)), lambda.GeneratorCode);
+            BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)),
+            lambda.GeneratorCode, ScopeDirectiveFactsCollector.ForLambda(lambda.Lambda));
         ChargeFunctionValue(context, lambda.Span);
         ChargeDefaultArguments(loweredParameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, lambda.Span);
         var closureRetentionBytes = ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, lambda.Span);
@@ -520,6 +521,11 @@ internal sealed partial class LythonRuntime
     private static object InvokeLoweredCall(LoweredCallExpression call, ExecutionContext context)
     {
         var target = EvaluateLoweredExpression(call.Target, context);
+        if (call.Call.PreloadImplicitSuperArguments)
+        {
+            context.CheckExecution(call.Span);
+            PreloadImplicitSuperArguments(context, call.Span);
+        }
         return InvokeCallableTarget(
             target,
             call.Call.Target.Span,

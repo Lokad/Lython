@@ -120,7 +120,7 @@ public sealed class FunctionClassCellBoundaryTests
         try
         {
             Assert.Null(frame.ImplicitSuperClassCell);
-            Assert.True(frame.MissingImplicitSuperClassCell);
+            Assert.False(frame.MissingImplicitSuperClassCell);
             Assert.Equal("receiver", frame.FirstPositionalParameterName);
         }
         finally { frame.LeaveFunctionCall(); }
@@ -147,7 +147,7 @@ public sealed class FunctionClassCellBoundaryTests
 
     private static Context Enter(Context closure, IReadOnlyList<LoweredFunctionParameter> parameters,
         object[] values, bool mirror, PyType? owner = null, ScopeDirectiveFacts? facts = null)
-        => PyFunctionBinding.EnterInvocationFrame(closure, facts ?? ScopeDirectiveFacts.Empty,
+        => PyFunctionBinding.EnterInvocationFrame(closure, facts ?? ScopeDirectiveFacts.Empty with { RequiresClassCell = true },
             new FunctionBindingPlan("f", PythonCallableKind.Function, parameters, new Dictionary<string, object>()),
             new BoundCallArguments(values, default), mirror, owner, Span);
 

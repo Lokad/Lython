@@ -21,8 +21,9 @@ internal sealed partial class ExecutableScript
         return new ExecutableScript(lowered, new Builder().CompileCodeObject("<module>", lowered.Statements));
     }
 
-    internal static ExecutableCodeObject CompileGenerator(IReadOnlyList<LoweredFunctionParameter> parameters, IReadOnlyList<LoweredStatement> body)
-        => new Builder(parameters, true).CompileCodeObject("<generator>", body);
+    internal static ExecutableCodeObject CompileGenerator(IReadOnlyList<LoweredFunctionParameter> parameters, IReadOnlyList<LoweredStatement> body,
+        ScopeDirectiveFacts? scopeFacts = null)
+        => new Builder(parameters, true, scopeFacts).CompileCodeObject("<generator>", body);
 
     private sealed partial class Builder
     {
@@ -57,16 +58,20 @@ internal sealed partial class ExecutableScript
         private readonly IReadOnlyList<LoweredFunctionParameter>? _functionParameters;
         private readonly HashSet<string> _parentClosureCandidates;
         private ScopeDirectiveFacts _scopeFacts = ScopeDirectiveFacts.Empty;
+        private readonly ScopeDirectiveFacts? _declaredScopeFacts;
 
         internal Builder() : this(null, null) { }
 
         internal Builder(IReadOnlyList<LoweredFunctionParameter>? functionParameters) : this(functionParameters, null) { }
-        internal Builder(IReadOnlyList<LoweredFunctionParameter> functionParameters, bool generator) : this(functionParameters, null) { _generator = generator; }
+        internal Builder(IReadOnlyList<LoweredFunctionParameter> functionParameters, bool generator, ScopeDirectiveFacts? scopeFacts = null)
+            : this(functionParameters, null, scopeFacts) { _generator = generator; }
 
         internal Builder(
             IReadOnlyList<LoweredFunctionParameter>? functionParameters,
-            IEnumerable<string>? parentClosureCandidates)
+            IEnumerable<string>? parentClosureCandidates,
+            ScopeDirectiveFacts? scopeFacts = null)
         {
+            _declaredScopeFacts = scopeFacts;
             _functionParameters = functionParameters;
             _parentClosureCandidates = parentClosureCandidates is null
                 ? new HashSet<string>(StringComparer.Ordinal)
@@ -75,7 +80,14 @@ internal sealed partial class ExecutableScript
 
         public ExecutableCodeObject CompileCodeObject(string name, IReadOnlyList<LoweredStatement> statements)
         {
-            _scopeFacts = ScopeDirectiveFactsCollector.ForLoweredStatements(_functionParameters, statements);
+            _scopeFacts = _declaredScopeFacts ?? ScopeDirectiveFactsCollector.ForLoweredStatements(_functionParameters, statements);
+            // A lexical super read also requests the hidden free __class__ cell.
+            // Ordinary enclosing locals must be retained like explicit reads.
+            // Generator bodies retain their invocation context and resolve this
+            // hidden name through its live lexical chain. Their separately built
+            // code has no parent closure candidates or captured-cell array.
+            if (!_generator && _scopeFacts.RequiresClassCell && (_declaredScopeFacts is not null || _parentClosureCandidates.Contains("__class__")))
+                InternClosure("__class__");
             CollectLocals(statements);
             if (_functionParameters is not null)
             {

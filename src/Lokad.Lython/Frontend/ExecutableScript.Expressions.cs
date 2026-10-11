@@ -307,6 +307,8 @@ internal sealed partial class ExecutableScript
             }
 
             exitBlock = CompileExpression(call.Target, exitBlock);
+            if (call.Call.PreloadImplicitSuperArguments)
+                AddInstruction(exitBlock, ExecutableInstruction.PreloadImplicitSuperArguments(call.Span));
             foreach (var argument in call.Arguments)
             {
                 exitBlock = CompileExpression(argument.Expression, exitBlock);

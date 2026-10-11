@@ -618,6 +618,17 @@ stores and deletes share the same cell; reading an empty cell raises NameError.
 Zero-argument `super()` uses the current cell value and the invocation's current
 first positional local, including reassignment and captured-cell updates.
 Keyword-only and variadic parameters do not supply an implicit receiver.
+Functions capture this cell only when their lexical scope requires it; another
+method's cell use does not supply an unrelated function with an implicit cell.
+An ordinary enclosing function's `__class__` binding can supply the same live
+free cell. Missing arguments, a deleted first argument and a missing class cell
+raise `RuntimeError` for ordinary zero-argument builtin calls.
+Eligible direct `super().attribute` reads follow Python 3.13's lexical preloads:
+they read the free class cell and first positional local before calling the
+resolved callable. An empty cell raises `NameError` before a deleted local's
+`UnboundLocalError`. Module references to `super`, explicit global declarations,
+local or enclosing shadowing, and the `__class__` attribute suppress this form;
+aliases and explicit or starred arguments keep ordinary call behavior.
 Ordinary class-suite name lookup remains separate, including eager
 comprehension expressions; closures created there capture the class cell.
 Shared cells and their retained enclosing contexts remain memory governed.

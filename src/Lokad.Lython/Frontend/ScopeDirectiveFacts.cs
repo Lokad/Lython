@@ -5,6 +5,10 @@ internal sealed record ScopeDirectiveFacts(
     IReadOnlySet<string> NonlocalNames,
     IReadOnlySet<string> LocalNames)
 {
+    // A free __class__ cell is required only by lexical reads in this function
+    // or an enclosed scope. A neighboring method does not supply that demand.
+    public bool RequiresClassCell { get; init; }
+
     public static ScopeDirectiveFacts Empty { get; } = new(
         new HashSet<string>(StringComparer.Ordinal),
         new HashSet<string>(StringComparer.Ordinal),
@@ -37,7 +41,8 @@ internal static class ScopeDirectiveFactsCollector
 
     public static ScopeDirectiveFacts ForFunction(
         IReadOnlyList<LoweredFunctionParameter> parameters,
-        IReadOnlyList<StatementSyntax> body)
+        IReadOnlyList<StatementSyntax> body,
+        bool includeClassCellRequirement = true)
     {
         var globalNames = new HashSet<string>(StringComparer.Ordinal);
         var nonlocalNames = new HashSet<string>(StringComparer.Ordinal);
@@ -53,20 +58,32 @@ internal static class ScopeDirectiveFactsCollector
         localNames.ExceptWith(globalNames);
         localNames.ExceptWith(nonlocalNames);
 
-        return new ScopeDirectiveFacts(globalNames, nonlocalNames, localNames);
+        return new ScopeDirectiveFacts(globalNames, nonlocalNames, localNames)
+        {
+            RequiresClassCell = includeClassCellRequirement && !globalNames.Contains("__class__") && !localNames.Contains("__class__") &&
+                ClassCellSyntaxFacts.ReferencesFromFunction(body)
+        };
     }
 
     public static ScopeDirectiveFacts ForClass(ClassDefinitionStatementSyntax definition)
         => ForFunction([], definition.Body);
 
     public static ScopeDirectiveFacts ForFunction(FunctionDefinitionStatementSyntax functionDefinition)
-        => ForFunction(
+    {
+        var facts = ForFunction(
             functionDefinition.Parameters.Select(parameter => new LoweredFunctionParameter(
                 parameter.Name,
                 parameter.Kind,
                 Annotation: null,
                 DefaultValue: null)).ToArray(),
-            functionDefinition.Body);
+            functionDefinition.Body, includeClassCellRequirement: functionDefinition.PreparedClassCellRequirement is null);
+        return functionDefinition.PreparedClassCellRequirement is { } required
+            ? facts with { RequiresClassCell = required } : facts;
+    }
+
+    internal static ScopeDirectiveFacts ForFunctionBindings(FunctionDefinitionStatementSyntax definition)
+        => ForFunction(definition.Parameters.Select(p => new LoweredFunctionParameter(p.Name, p.Kind, null, null)).ToArray(),
+            definition.Body, includeClassCellRequirement: false);
 
     public static HashSet<string> CollectLambdaLocalNames(LambdaExpressionSyntax lambda)
     {
@@ -76,6 +93,24 @@ internal static class ScopeDirectiveFactsCollector
         CollectExpressionBindings(lambda.Body, localNames);
         return localNames;
     }
+
+    public static ScopeDirectiveFacts ForLambda(IReadOnlyList<LoweredFunctionParameter> parameters, ExpressionSyntax body)
+    {
+        var locals = new HashSet<string>(parameters.Select(p => p.Name), StringComparer.Ordinal);
+        CollectExpressionBindings(body, locals);
+        return new ScopeDirectiveFacts(EmptyNames, EmptyNames, locals)
+        {
+            RequiresClassCell = !locals.Contains("__class__") && ClassCellSyntaxFacts.ReferencesFromExpression(body)
+        };
+    }
+
+    public static ScopeDirectiveFacts ForLambda(LambdaExpressionSyntax lambda)
+    {
+        var facts = ForLambda(lambda.Parameters.Select(p => new LoweredFunctionParameter(p.Name, p.Kind, null, null)).ToArray(), lambda.Body);
+        return lambda.PreparedClassCellRequirement is { } required ? facts with { RequiresClassCell = required } : facts;
+    }
+
+    private static readonly IReadOnlySet<string> EmptyNames = new HashSet<string>(StringComparer.Ordinal);
 
     public static ScopeDirectiveFacts ForLoweredStatements(
         IReadOnlyList<LoweredFunctionParameter>? parameters,

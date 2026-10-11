@@ -245,6 +245,153 @@ public sealed class ClassMethodExecutionBoundaryTests(ITestOutputHelper output)
         finally { tap.Release.TrySetResult(); }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DirectSuperPreloadsPreserveTheActualCallAndLogicalFunding(bool asynchronous)
+    {
+        var observations = new List<(long Bytes, long Steps)>();
+        foreach (var suppressPreload in new[] { false, true })
+        {
+            // An explicit global declaration suppresses Python's lexical
+            // preload. Both calls still resolve the same replacement callable.
+            var body = (suppressPreload ? "        global super\n" : "") +
+                "        nonlocal __class__\n        __class__=None\n        self=None\n        return super().answer\n";
+            var (context, type, receiver, method, _) = await Define(0, body, asynchronous);
+            var result = new object();
+            receiver.SetAttribute("answer", result);
+            var tap = new ReplacementSuper(receiver, frame =>
+            {
+                Assert.NotSame(context, frame);
+                Assert.Same(context.Services, frame.Services);
+                Assert.Equal("/class-method.py", frame.SourcePath);
+                Assert.True(frame.TryResolveOwnLocal("self", out var value));
+                Assert.Same(PyNone.Instance, value);
+                Assert.Same(PyNone.Instance, frame.ImplicitSuperClassCell!.Value);
+                Assert.Same(frame.ParentContext!.ClassCell, frame.ImplicitSuperClassCell);
+                Assert.Equal(1, frame.Limits.CurrentRecursionDepth);
+            });
+            context.Variables["super"] = tap;
+            var before = context.MemoryGovernor.CurrentAccountedBytes;
+            context.Limits.ExecutionStepCount = 0;
+            Assert.Same(result, await Invoke(method, [], context, asynchronous));
+            Assert.Equal(1, tap.Calls);
+            Assert.Equal(asynchronous, tap.UsedAsyncEntry);
+            observations.Add((context.MemoryGovernor.CurrentAccountedBytes - before,
+                context.Limits.ExecutionStepCount));
+            AssertUnwound(context);
+        }
+        Assert.Equal(observations[1].Bytes, observations[0].Bytes);
+        Assert.Equal(observations[1].Steps + 1, observations[0].Steps);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DirectSuperDeletedOperandsFailBeforeTheReplacementCall(bool asynchronous)
+    {
+        foreach (var removeClass in new[] { false, true })
+        {
+            var body = (removeClass ? "        nonlocal __class__\n        del __class__\n" : "") +
+                "        del self\n        return super().answer\n";
+            var (context, _, receiver, method, _) = await Define(0, body, asynchronous);
+            var tap = new ReplacementSuper(receiver, _ => throw new InvalidOperationException("Deleted preload reached the callable."));
+            context.Variables["super"] = tap;
+            var active = new PyException("ValueError", "outer", PyNone.Instance);
+            context.Services.SetCurrentException(active);
+            var error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await Invoke(method, [], context, asynchronous));
+            Assert.Equal(removeClass ? "NameError" : "UnboundLocalError", error.ExceptionType);
+            Assert.Equal(removeClass
+                ? "cannot access free variable '__class__' where it is not associated with a value in enclosing scope"
+                : "cannot access local variable 'self' where it is not associated with a value", error.Message);
+            Assert.Equal(0, tap.Calls);
+            Assert.Same(active, context.Services.CurrentException);
+            AssertUnwound(context);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReplacementSuperKeepsItsAsyncFrameAcrossReentry(bool cancel)
+    {
+        using var cancellation = new CancellationTokenSource();
+        var (context, type, receiver, method, _) = await Define(1,
+            "        return super().answer\n    def identity(self,arg0):\n        return self\n", true, cancellation.Token);
+        receiver.SetAttribute("answer", receiver);
+        var tap = new ReplacementSuper(receiver, _ => { }, cancellation.Token, suspend: true);
+        context.Variables["super"] = tap;
+        var active = new PyException("ValueError", "outer", PyNone.Instance);
+        context.Services.SetCurrentException(active);
+        var argument = new object();
+        var pending = method.InvokeAsync([CallArgumentValue.Positional(argument)], CallSpan, context);
+        try
+        {
+            await tap.Started.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(pending.IsCompleted);
+            var frame = tap.Frame!;
+            Assert.Same(context.Services, frame.Services);
+            Assert.Same(receiver, frame.Variables["self"]);
+            Assert.Same(argument, frame.Variables["arg0"]);
+            var cell = frame.ImplicitSuperClassCell!;
+            Assert.Same(type, cell.Value);
+            // Change the actual shared cell while the real async call owns its
+            // binder lease, then reenter a neighboring method with no cell use.
+            cell.Value = PyNone.Instance;
+            Assert.True(type.TryGetOwnMember("identity", out var identity));
+            var secondReceiver = new PyInstance(type);
+            var second = Assert.IsType<PyBoundMethod>(Assert.IsAssignableFrom<PyFunctionBase>(identity).Bind(secondReceiver));
+            Assert.Same(secondReceiver, await second.InvokeAsync([CallArgumentValue.Positional(new object())], CallSpan, context));
+            Assert.Same(argument, frame.Variables["arg0"]);
+            Assert.Same(cell, frame.ImplicitSuperClassCell);
+            Assert.Same(PyNone.Instance, cell.Value);
+            Assert.Equal(1, context.Limits.CurrentRecursionDepth);
+            if (cancel)
+            {
+                cancellation.Cancel();
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await pending);
+            }
+            else
+            {
+                tap.Release.SetResult();
+                Assert.Same(receiver, await pending);
+            }
+            Assert.Same(active, context.Services.CurrentException);
+            AssertUnwound(context);
+        }
+        finally
+        {
+            tap.Release.TrySetResult();
+        }
+    }
+
+    private sealed class ReplacementSuper(object result, Action<Context> inspect,
+        CancellationToken cancellation = default, bool suspend = false) : LythonRuntime.ICallable
+    {
+        public int Calls { get; private set; }
+        public bool UsedAsyncEntry { get; private set; }
+        public Context? Frame { get; private set; }
+        public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
+        {
+            Calls++;
+            Assert.Empty(arguments);
+            Frame = context;
+            inspect(context);
+            return result;
+        }
+        public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, Context context)
+        {
+            UsedAsyncEntry = true;
+            var value = Invoke(arguments, span, context);
+            Started.SetResult();
+            if (suspend) await Release.Task.WaitAsync(cancellation);
+            else await Task.Yield();
+            return value;
+        }
+    }
+
     private sealed class RecordingTap(Action<Context> inspect) : LythonRuntime.ICallable
     {
         public int Calls { get; private set; }

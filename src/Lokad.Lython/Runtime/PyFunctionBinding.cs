@@ -32,7 +32,7 @@ internal static class PyFunctionBinding
         // barriers, so keep their existing discovery and unavailable-super path.
         var needsImplicitSuper = ownerType is not null || closure.ParentContext is not null ||
             closure.ClassCell is not null || closure.IsClassBody;
-        if (needsImplicitSuper && frame.FirstPositionalParameterName is not null)
+        if (needsImplicitSuper && scopeFacts.RequiresClassCell && frame.FirstPositionalParameterName is not null)
         {
             if (frame.TryGetLexicalClassCell(out var classCell)) frame.BindImplicitSuper(classCell);
             else if (ownerType is not null || closure.TryGetLexicalClassCell(out _)) frame.BindUnavailableImplicitSuper();

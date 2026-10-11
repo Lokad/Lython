@@ -332,6 +332,7 @@ internal sealed record FunctionDefinitionStatementSyntax(
     LythonSourceSpan Span,
     IReadOnlyList<TypeParameterSyntax>? TypeParameters = null) : StatementSyntax(Span)
 {
+    internal bool? PreparedClassCellRequirement { get; set; }
     public string? OriginalName { get; init; }
     public string DeclaredName => OriginalName ?? Name;
 }
@@ -645,7 +646,12 @@ internal sealed record MemberExpressionSyntax(
 internal sealed record CallExpressionSyntax(
     ExpressionSyntax Target,
     IReadOnlyList<CallArgumentSyntax> Arguments,
-    LythonSourceSpan Span) : ExpressionSyntax(Span);
+    LythonSourceSpan Span) : ExpressionSyntax(Span)
+{
+    // Prepared once before the frontend publishes the syntax graph. Copies
+    // made for class-name mangling retain this static lexical decision.
+    internal bool PreloadImplicitSuperArguments { get; set; }
+}
 
 internal enum CallArgumentKind
 {
@@ -774,7 +780,10 @@ internal sealed record AssignmentExpressionSyntax(
 internal sealed record LambdaExpressionSyntax(
     IReadOnlyList<FunctionParameterSyntax> Parameters,
     ExpressionSyntax Body,
-    LythonSourceSpan Span) : ExpressionSyntax(Span);
+    LythonSourceSpan Span) : ExpressionSyntax(Span)
+{
+    internal bool? PreparedClassCellRequirement { get; set; }
+}
 
 internal abstract record PatternSyntax(
     LythonSourceSpan Span)

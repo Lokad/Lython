@@ -306,6 +306,41 @@ internal sealed partial class LythonRuntime
                 ? frame.TryResolveOwnLocal(name, out value)
                 : Frame.TryGetVariable(name, out value);
 
+        internal bool TryResolveImplicitClassValue([MaybeNullWhen(false)] out object value)
+        {
+            if (ScopeFacts.RequiresClassCell)
+            {
+                if (CurrentExecutableFrame is { } frame && frame.TryGetCell("__class__", out var captured))
+                {
+                    value = captured.Value;
+                    return true;
+                }
+                for (var parent = ParentContext; parent?.ParentContext is not null; parent = parent.ParentContext)
+                {
+                    if (parent.IsClassBody) continue;
+                    if (parent.ClassCell is { } classCell)
+                    {
+                        value = classCell.Value;
+                        return true;
+                    }
+                    if (parent.ScopeFacts.IsGlobal("__class__")) break;
+                    if (parent.ScopeFacts.LocalNames.Contains("__class__"))
+                    {
+                        value = parent.TryResolveOwnLocal("__class__", out var local) ? local : UninitializedLocal;
+                        return true;
+                    }
+                    if (parent.FunctionName is not null && parent.Frame.ContainsVariable("__class__")) break;
+                }
+            }
+            if (!MissingImplicitSuperClassCell && ImplicitSuperClassCell is { } bound)
+            {
+                value = bound.Value;
+                return true;
+            }
+            value = null;
+            return false;
+        }
+
         internal void BindImplicitSuper(ExecutableCell cell)
         {
             ImplicitSuperClassCell = cell;

@@ -246,7 +246,8 @@ internal sealed partial class LythonRuntime
             loweredParameters,
             LoweredScript.LowerStandaloneExpression(lambda.Body),
             context.FunctionClosureContext,
-            BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)));
+            BuildDefaultArgumentMap(loweredParameters, expression => EvaluateLoweredExpression(expression, context)),
+            scopeFacts: ScopeDirectiveFactsCollector.ForLambda(lambda));
         ChargeFunctionValue(context, lambda.Span);
         ChargeDefaultArguments(loweredParameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, lambda.Span);
         var closureRetentionBytes = ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, lambda.Span);

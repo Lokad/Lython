@@ -10,6 +10,18 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
+    internal static void PreloadImplicitSuperArguments(ExecutionContext context, LythonSourceSpan span)
+    {
+        // Python's direct-member form loads the free class cell and first local
+        // before calling the resolved callable, even if it shadows the builtin.
+        // These reads do not validate types or replace the ordinary call path.
+        _ = ResolveName("__class__", span, context);
+        if (context.FirstPositionalParameterName is not { } first)
+            throw new LythonRuntimeException("RuntimeError", "super(): no arguments", span);
+        if (!context.TryResolveOwnLocal(first, out _))
+            throw RuntimeErrors.UnboundLocalVariable(first, span);
+    }
+
     private static object Super(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         if (arguments.Length == 0)
@@ -18,9 +30,8 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("RuntimeError", "super(): no arguments", span);
             if (!context.TryResolveOwnLocal(firstName, out var receiver))
                 throw new LythonRuntimeException("RuntimeError", "super(): arg[0] deleted", span);
-            if (context.MissingImplicitSuperClassCell || context.ImplicitSuperClassCell is not { } cell)
+            if (!context.TryResolveImplicitClassValue(out var anchor))
                 throw new LythonRuntimeException("RuntimeError", "super(): __class__ cell not found", span);
-            var anchor = cell.Value;
             if (ReferenceEquals(anchor, UninitializedLocal))
                 throw new LythonRuntimeException("RuntimeError", "super(): empty __class__ cell", span);
             if (anchor is not PyType)

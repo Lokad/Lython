@@ -257,6 +257,10 @@ internal sealed partial class LythonRuntime
                     _stack.Push(memberValue);
                     break;
 
+                case ExecutableOpCode.PreloadImplicitSuperArguments:
+                    PreloadImplicitSuperArguments(_context, instruction.Span);
+                    break;
+
                 case ExecutableOpCode.StoreLocal:
                     StoreLocalValue(_codeObject, _locals, _localCells, _context, instruction.LocalSlot, Pop(ref _stack, instruction.Span), instruction.Span);
                     break;
@@ -698,6 +702,7 @@ internal sealed partial class LythonRuntime
                                  ExecutableOpCode.LoadName or
                                  ExecutableOpCode.EvaluateFallbackExpression or
                                  ExecutableOpCode.LoadMember or
+                                 ExecutableOpCode.PreloadImplicitSuperArguments or
                                  ExecutableOpCode.StoreLocal or
                                  ExecutableOpCode.StoreClosure or
                                  ExecutableOpCode.StoreGlobal or

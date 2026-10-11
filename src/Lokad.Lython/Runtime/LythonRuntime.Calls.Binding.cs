@@ -930,13 +930,16 @@ internal sealed partial class LythonRuntime
         private readonly FunctionBindingPlan _bindingPlan;
         private readonly ExecutionContext _closure;
         private PyDict? _annotations;
+        private readonly ScopeDirectiveFacts _scopeFacts;
 
-        public LambdaFunction(IReadOnlyList<LoweredFunctionParameter> parameters, LoweredExpression body, ExecutionContext closure, Dictionary<string, object> defaultValues, ExecutableCodeObject? generatorCode = null)
+        public LambdaFunction(IReadOnlyList<LoweredFunctionParameter> parameters, LoweredExpression body, ExecutionContext closure,
+            Dictionary<string, object> defaultValues, ExecutableCodeObject? generatorCode = null, ScopeDirectiveFacts? scopeFacts = null)
         {
             _generatorCode = generatorCode;
             _body = body;
             _closure = closure;
             _bindingPlan = new FunctionBindingPlan("<lambda>", PythonCallableKind.Lambda, parameters, defaultValues);
+            _scopeFacts = scopeFacts ?? ScopeDirectiveFactsCollector.ForLambda(parameters, body.Syntax);
         }
 
         // Lambdas report CPython-style names from their binding plan and defining
@@ -995,7 +998,7 @@ internal sealed partial class LythonRuntime
             {
                 frame = PyFunctionBinding.EnterInvocationFrame(
                     _closure,
-                    ScopeDirectiveFacts.Empty,
+                    _scopeFacts,
                     _bindingPlan,
                     boundArguments,
                     mirrorBoundArguments: true,
@@ -1035,7 +1038,7 @@ internal sealed partial class LythonRuntime
             {
                 frame = PyFunctionBinding.EnterInvocationFrame(
                     _closure,
-                    ScopeDirectiveFacts.Empty,
+                    _scopeFacts,
                     _bindingPlan,
                     boundArguments,
                     mirrorBoundArguments: true,

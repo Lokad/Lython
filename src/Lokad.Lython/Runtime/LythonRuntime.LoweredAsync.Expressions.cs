@@ -467,7 +467,8 @@ internal sealed partial class LythonRuntime
             loweredParameters,
             lambda.Body,
             context.FunctionClosureContext,
-            await BuildDefaultArgumentMapAsync(loweredParameters, expression => EvaluateLoweredExpressionAsync(expression, context)).ConfigureAwait(false), lambda.GeneratorCode);
+            await BuildDefaultArgumentMapAsync(loweredParameters, expression => EvaluateLoweredExpressionAsync(expression, context)).ConfigureAwait(false),
+            lambda.GeneratorCode, ScopeDirectiveFactsCollector.ForLambda(lambda.Lambda));
         ChargeFunctionValue(context, lambda.Span);
         ChargeDefaultArguments(loweredParameters.Count(static p => p.DefaultValue is not null), context.MemoryGovernor, lambda.Span);
         var closureRetentionBytes = ChargeClosureRetention(context.FunctionClosureContext, context.MemoryGovernor, lambda.Span);
@@ -479,6 +480,11 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> InvokeLoweredCallAsync(LoweredCallExpression call, ExecutionContext context)
     {
         var target = await EvaluateLoweredExpressionAsync(call.Target, context).ConfigureAwait(false);
+        if (call.Call.PreloadImplicitSuperArguments)
+        {
+            context.CheckExecution(call.Span);
+            PreloadImplicitSuperArguments(context, call.Span);
+        }
         return await InvokeCallableTargetAsync(
                 target,
                 call.Call.Target.Span,
