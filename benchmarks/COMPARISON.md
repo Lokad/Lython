@@ -4,6 +4,15 @@ Specification version **6**, used by the declared milestone collections. The cat
 and explicit correctness check are available. Persistent worker primitives are
 available, including supervised correctness/timer smokes, paired collection,
 machine checks and raw-evidence report rendering.
+The [typed body-plan round](results/2026-10-11-method-body-plan/README.md)
+rejects the isolated compiler prototype: method time changes +1.36%/-8.68%,
+while keyword calls regress in both passes. Both producers pass 9,503 matching
+Debug and Release tests and seven canonical CPython cases each. Fourteen paired
+groups take about eight seconds; separate allocation/native groups take about
+four seconds, all under 30-second caps. Every control and native tier is retained.
+Production stays unchanged; broader compiler/design work remains open. No full
+timing lane or favorable recollection ran.
+
 The [lowered operation-selection round](results/2026-10-11-lowered-kind-dispatch/README.md)
 rejects preselected node dispatch: method time changes +3.2%/-3.4%, with the
 second gain inside its 3.9% spread. Fourteen paired micros take 8.04–8.05s
