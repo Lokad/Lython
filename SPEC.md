@@ -2600,6 +2600,22 @@ The runtime must therefore enforce an explicit recursion budget before host stac
 
 If internal implementation strategies introduce additional recursive paths, those paths must be bounded or rewritten so they cannot bypass the script-level recursion limit.
 
+Function and interpreter nesting keep independent logical counters, with a fixed
+512-level interpreter ceiling even when default limits are disabled. Structural
+traversal and recursive copying share that ceiling and retain cycle detection.
+Each nesting entry also checks the current thread's stack through the managed
+runtime's `TryEnsureSufficientExecutionStack` result before descending or
+publishing traversal state. This includes host continuations after genuine async
+suspension; the runtime does not sample native stack addresses or cache OS ranges.
+
+The CLR stack backstop reports `RuntimeError` with the interpreter-stack-depth
+message. Explicit configured recursion exhaustion retains `RecursionError`, as
+do structural/copy depth or stack-headroom failures. The backstop does not predict
+which logical counter might eventually reach its limit. Available depth can vary
+between the dedicated startup stack and a continuation stack, so sufficient
+logical budget alone does not promise that a deep operation will be admitted.
+Refused entries restore their counters and leave traversal state unpublished.
+
 ### 14.5 Execution Deadlines and Optional Fuel
 
 Ordinary execution has no implicit instruction allowance. The embedding application owns its execution deadline and must provide and cancel a token when finite execution time is required. Cancellation checkpoints must remain effective for pure computation, including non-allocating loops that avoid host calls. Memory bounds alone do not terminate such a loop.
