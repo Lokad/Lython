@@ -27,7 +27,7 @@ public sealed class FunctionClassCellBoundaryTests
             Assert.Equal(closure.SourcePath, frame.SourcePath);
             Assert.Equal("f", frame.FunctionName);
             Assert.Null(frame.ImplicitSuperClassCell);
-            Assert.Null(frame.ImplicitSuperReceiver);
+            Assert.Equal("value", frame.FirstPositionalParameterName);
             Assert.False(frame.MissingImplicitSuperClassCell);
             Assert.Equal(mirror, frame.Frame.ContainsVariable("value"));
             if (mirror) Assert.Same(receiver, frame.Variables["value"]);
@@ -44,7 +44,7 @@ public sealed class FunctionClassCellBoundaryTests
     [InlineData((int)FunctionParameterKind.KeywordOnly)]
     [InlineData((int)FunctionParameterKind.VariadicList)]
     [InlineData((int)FunctionParameterKind.VariadicDictionary)]
-    public void OwnedModuleFunctionsKeepTheirFirstDeclaredReceiver(int parameterKind)
+    public void OwnedModuleFunctionsUseOnlyPositionalReceiverMetadata(int parameterKind)
     {
         var kind = (FunctionParameterKind)parameterKind;
         var root = Root();
@@ -59,8 +59,9 @@ public sealed class FunctionClassCellBoundaryTests
         try
         {
             Assert.Null(frame.ImplicitSuperClassCell);
-            Assert.True(frame.MissingImplicitSuperClassCell);
-            Assert.Same(receiver, frame.ImplicitSuperReceiver);
+            var positional = kind is FunctionParameterKind.Positional or FunctionParameterKind.PositionalOnly;
+            Assert.Equal(positional, frame.MissingImplicitSuperClassCell);
+            Assert.Equal(positional ? "receiver" : null, frame.FirstPositionalParameterName);
         }
         finally { frame.LeaveFunctionCall(); }
     }
@@ -74,7 +75,7 @@ public sealed class FunctionClassCellBoundaryTests
         var frame = Enter(root, [], [], false, owned ? new PyType("Owner", [], []) : null);
         try
         {
-            Assert.Null(frame.ImplicitSuperReceiver);
+            Assert.Null(frame.FirstPositionalParameterName);
             Assert.Null(frame.ImplicitSuperClassCell);
             Assert.False(frame.MissingImplicitSuperClassCell);
         }
@@ -99,7 +100,7 @@ public sealed class FunctionClassCellBoundaryTests
             try
             {
                 Assert.Same(blocked ? null : cellScope.ClassCell, frame.ImplicitSuperClassCell);
-                Assert.Same(blocked ? null : receiver, frame.ImplicitSuperReceiver);
+                Assert.Equal("receiver", frame.FirstPositionalParameterName);
                 Assert.False(frame.MissingImplicitSuperClassCell);
             }
             finally { frame.LeaveFunctionCall(); }
@@ -120,7 +121,7 @@ public sealed class FunctionClassCellBoundaryTests
         {
             Assert.Null(frame.ImplicitSuperClassCell);
             Assert.True(frame.MissingImplicitSuperClassCell);
-            Assert.Same(receiver, frame.ImplicitSuperReceiver);
+            Assert.Equal("receiver", frame.FirstPositionalParameterName);
         }
         finally { frame.LeaveFunctionCall(); }
     }

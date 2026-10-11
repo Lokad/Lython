@@ -25,7 +25,12 @@ public sealed class SuperDescriptorFundingBoundaryTests
         var derived = new PyType("Derived", [anchor], []);
         var instance = new PyInstance(derived);
         var receiver = shape == 3 ? (object)derived : instance;
-        if (shape == 0) context.BindImplicitSuper(new LythonRuntime.ExecutableCell(anchor), receiver);
+        if (shape == 0)
+        {
+            context.FirstPositionalParameterName = "self";
+            context.Variables["self"] = receiver;
+            context.BindImplicitSuper(new LythonRuntime.ExecutableCell(anchor));
+        }
         CallArgumentValue[] arguments = shape == 0 ? [] : shape == 1
             ? [CallArgumentValue.Positional(anchor)]
             : [CallArgumentValue.Positional(anchor), CallArgumentValue.Positional(receiver)];
@@ -72,7 +77,9 @@ public sealed class SuperDescriptorFundingBoundaryTests
         var definition = Assert.IsType<ClassDefinitionStatementSyntax>(Assert.Single(frontend.Script.RequireNotNull().Statements));
         var cell = Context.CreateClassBody(context, definition).ClassCell!;
         if (invalid) cell.Value = PyNone.Instance;
-        context.BindImplicitSuper(cell, new object());
+        context.FirstPositionalParameterName = "self";
+        context.Variables["self"] = new object();
+        context.BindImplicitSuper(cell);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["super"]);
         var error = Assert.Throws<LythonRuntimeException>(() => callable.Invoke([], Span, context));
@@ -89,8 +96,10 @@ public sealed class SuperDescriptorFundingBoundaryTests
         var context = Root();
         var anchor = new PyType("Base", [], []);
         var receiver = new PyInstance(anchor);
-        context.BindUnavailableImplicitSuper(receiver);
-        context.BindImplicitSuper(new LythonRuntime.ExecutableCell(anchor), receiver);
+        context.FirstPositionalParameterName = "self";
+        context.Variables["self"] = receiver;
+        context.BindUnavailableImplicitSuper();
+        context.BindImplicitSuper(new LythonRuntime.ExecutableCell(anchor));
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["super"]);
         var error = Assert.Throws<LythonRuntimeException>(() => callable.Invoke([], Span, context));
@@ -98,6 +107,49 @@ public sealed class SuperDescriptorFundingBoundaryTests
         Assert.Equal("super(): __class__ cell not found", error.Message);
         Assert.Same(Span, error.Span);
         Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void LiveReceiverChangesAndDeletionPrecedeClassCellChecksAndFunding(bool deleted)
+    {
+        var context = Root();
+        var anchor = new PyType("Base", [], []);
+        var original = new PyInstance(anchor);
+        var replacement = new PyInstance(anchor);
+        context.FirstPositionalParameterName = "self";
+        context.Variables["self"] = original;
+        context.BindImplicitSuper(new LythonRuntime.ExecutableCell(anchor));
+        if (deleted)
+        {
+            context.Variables.Remove("self");
+            context.BindUnavailableImplicitSuper();
+        }
+        else context.Variables["self"] = replacement;
+        var active = new PyException("ValueError", "outer", PyNone.Instance);
+        context.Services.SetCurrentException(active);
+        var governor = context.MemoryGovernor;
+        var before = governor.CurrentCommittedBytes;
+        var callable = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["super"]);
+        if (deleted)
+        {
+            var error = Assert.Throws<LythonRuntimeException>(() => callable.Invoke([], Span, context));
+            Assert.Equal("RuntimeError", error.ExceptionType);
+            Assert.Equal("super(): arg[0] deleted", error.Message);
+            Assert.Same(Span, error.Span);
+            Assert.Equal(before, governor.CurrentCommittedBytes);
+        }
+        else
+        {
+            var value = Assert.IsType<PySuper>(callable.Invoke([], Span, context));
+            Assert.Same(replacement, value.BoundObject);
+            Assert.Same(anchor, value.AnchorType);
+            Assert.Equal(before + 64, governor.CurrentCommittedBytes);
+        }
+        Assert.Equal(0, governor.CurrentReservedBytes);
+        Assert.Same(active, context.Services.CurrentException);
+        Assert.Equal(1, context.Limits.ExecutionStepCount);
     }
 
     private static Context Root() => new(new MockLythonHost(), new LythonRunOptions

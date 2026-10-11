@@ -28,6 +28,13 @@ internal class ExecutionFrame
 
     internal bool ContainsVariable(string name) => _variables?.ContainsKey(name) == true;
 
+    internal bool TryGetVariable(string name, [MaybeNullWhen(false)] out object value)
+    {
+        if (_variables is not null) return _variables.TryGetValue(name, out value);
+        value = null;
+        return false;
+    }
+
     private Dictionary<string, object> InitializeVariables()
     {
         var variables = new Dictionary<string, object>(StringComparer.Ordinal);

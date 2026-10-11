@@ -129,7 +129,9 @@ public sealed class ClassMethodExecutionBoundaryTests(ITestOutputHelper output)
                 Assert.Same(context.MemoryGovernor, local.OwnerMemoryGovernor);
                 Assert.Same(type, frame.ImplicitSuperClassCell!.Value);
                 Assert.Same(frame.ParentContext!.ClassCell, frame.ImplicitSuperClassCell);
-                Assert.Same(receiver, frame.ImplicitSuperReceiver);
+                Assert.Equal("self", frame.FirstPositionalParameterName);
+                Assert.True(frame.TryResolveOwnLocal("self", out var liveReceiver));
+                Assert.Same(receiver, liveReceiver);
                 Assert.Equal(1, frame.Limits.CurrentRecursionDepth);
                 for (var i = 0; i < width; i++) Assert.Same(arguments[i].Value, frame.Variables[$"arg{i}"]);
             });
@@ -199,6 +201,48 @@ public sealed class ClassMethodExecutionBoundaryTests(ITestOutputHelper output)
         AssertUnwound(context);
         Assert.Same(active, context.Services.CurrentException);
         Assert.Equal(0, retainedFrame.Limits.CurrentRecursionDepth);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SuperReadsTheFirstLocalAfterARealAsyncSuspension(bool cancel)
+    {
+        using var cancellation = new CancellationTokenSource();
+        var (context, type, original, method, _) = await Define(1,
+            "        self = tap(arg0)\n        return super().__self__\n", true, cancellation.Token);
+        var replacement = new PyInstance(type);
+        var tap = new SuspendedTap(cancellation.Token);
+        context.Variables["tap"] = tap;
+        var active = new PyException("ValueError", "outer", PyNone.Instance);
+        context.Services.SetCurrentException(active);
+        var pending = method.InvokeAsync([CallArgumentValue.Positional(replacement)], CallSpan, context);
+        try
+        {
+            await tap.Started.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(pending.IsCompleted);
+            var frame = tap.Frame!;
+            Assert.NotSame(context, frame);
+            Assert.Same(context.Services, frame.Services);
+            Assert.Same(type, frame.ImplicitSuperClassCell!.Value);
+            Assert.Equal("self", frame.FirstPositionalParameterName);
+            Assert.True(frame.TryResolveOwnLocal("self", out var current));
+            Assert.Same(original, current);
+            if (cancel)
+            {
+                cancellation.Cancel();
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await pending);
+            }
+            else
+            {
+                tap.Release.SetResult();
+                Assert.Same(replacement, await pending);
+                Assert.Same(replacement, frame.Variables["self"]);
+            }
+            AssertUnwound(context);
+            Assert.Same(active, context.Services.CurrentException);
+        }
+        finally { tap.Release.TrySetResult(); }
     }
 
     private sealed class RecordingTap(Action<Context> inspect) : LythonRuntime.ICallable

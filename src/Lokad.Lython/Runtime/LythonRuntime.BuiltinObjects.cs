@@ -14,32 +14,18 @@ internal sealed partial class LythonRuntime
     {
         if (arguments.Length == 0)
         {
-            if (context.MissingImplicitSuperClassCell)
+            if (context.FirstPositionalParameterName is not { } firstName)
+                throw new LythonRuntimeException("RuntimeError", "super(): no arguments", span);
+            if (!context.TryResolveOwnLocal(firstName, out var receiver))
+                throw new LythonRuntimeException("RuntimeError", "super(): arg[0] deleted", span);
+            if (context.MissingImplicitSuperClassCell || context.ImplicitSuperClassCell is not { } cell)
                 throw new LythonRuntimeException("RuntimeError", "super(): __class__ cell not found", span);
-            if (context.ImplicitSuperClassCell is { } cell && context.ImplicitSuperReceiver is { } receiver)
-            {
-                if (ReferenceEquals(cell.Value, UninitializedLocal))
-                    throw new LythonRuntimeException("RuntimeError", "super(): empty __class__ cell", span);
-                if (cell.Value is not PyType)
-                    throw new LythonRuntimeException("RuntimeError", "super(): __class__ is not a supported type", span);
-                return Super([cell.Value, receiver], span, context);
-            }
-            if (context.ImplicitSuperAnchorType is null || context.ImplicitSuperReceiver is null)
-            {
-                throw new LythonRuntimeException("TypeError", "zero-argument super() is only supported inside instance methods, classmethods, and property accessors in Lython.", span);
-            }
-
-            var zeroResult = context.ImplicitSuperReceiver switch
-            {
-                PyInstance instance => new PySuper(context.ImplicitSuperAnchorType, instance, instance.Type),
-                PyType type => new PySuper(context.ImplicitSuperAnchorType, type, type),
-                _ => throw new LythonRuntimeException("TypeError", "zero-argument super() could not resolve the current receiver.", span)
-            };
-
-            // The anchor and receiver stay aliased; own the descriptor shell.
-            context.MemoryGovernor.Reserve(64L, span);
-            context.MemoryGovernor.Commit(64L);
-            return zeroResult;
+            var anchor = cell.Value;
+            if (ReferenceEquals(anchor, UninitializedLocal))
+                throw new LythonRuntimeException("RuntimeError", "super(): empty __class__ cell", span);
+            if (anchor is not PyType)
+                throw new LythonRuntimeException("RuntimeError", "super(): __class__ is not a supported type", span);
+            return Super([anchor, receiver], span, context);
         }
 
         if (arguments.Length == 1)
@@ -68,6 +54,7 @@ internal sealed partial class LythonRuntime
 
         var result = arguments[1] switch
         {
+            PyNone => new PySuper(anchorType, null, null),
             PyInstance instance when instance.Type.IsSubtypeOf(anchorType) => new PySuper(anchorType, instance, instance.Type),
             PyType type when type.IsSubtypeOf(anchorType) => new PySuper(anchorType, type, type),
             PyInstance => throw new LythonRuntimeException("TypeError", "super(type, object) expects the instance to be an instance of the given class or its subclass.", span),

@@ -272,9 +272,9 @@ internal sealed partial class LythonRuntime
         // propagation abandons, mirroring CPython deleting them on suite exit.
         internal Stack<(string Name, int SuiteStart, int SuiteEnd)>? ActiveHandlerVariables { get; set; }
 
-        public PyType? ImplicitSuperAnchorType { get; private set; }
-
-        public object? ImplicitSuperReceiver { get; private set; }
+        // Static argument metadata only. The receiver itself stays in the actual
+        // invocation's locals/cells and is read when zero-argument super runs.
+        internal string? FirstPositionalParameterName { get; set; }
         internal ExecutableCell? ImplicitSuperClassCell { get; private set; }
         internal bool MissingImplicitSuperClassCell { get; private set; }
 
@@ -301,22 +301,19 @@ internal sealed partial class LythonRuntime
 
         internal void LeaveExecutableSlots(ExecutableFrameState? previous) => CurrentExecutableFrame = previous;
 
-        public void BindImplicitSuper(PyType anchorType, object receiver)
-        {
-            ImplicitSuperAnchorType = anchorType;
-            ImplicitSuperReceiver = receiver;
-        }
+        internal bool TryResolveOwnLocal(string name, [MaybeNullWhen(false)] out object value)
+            => CurrentExecutableFrame is { } frame
+                ? frame.TryResolveOwnLocal(name, out value)
+                : Frame.TryGetVariable(name, out value);
 
-        internal void BindImplicitSuper(ExecutableCell cell, object receiver)
+        internal void BindImplicitSuper(ExecutableCell cell)
         {
             ImplicitSuperClassCell = cell;
-            ImplicitSuperReceiver = receiver;
         }
 
-        internal void BindUnavailableImplicitSuper(object receiver)
+        internal void BindUnavailableImplicitSuper()
         {
             MissingImplicitSuperClassCell = true;
-            ImplicitSuperReceiver = receiver;
         }
 
         public ReadOnlyMemory<byte> ReadTextUtf8(string path, LythonSourceSpan? span)

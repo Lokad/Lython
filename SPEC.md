@@ -615,8 +615,10 @@ implicit lexical `__class__` cell. It is filled with the defining class before
 `__init_subclass__` and decorators run, so inheritance, decorator replacement
 and later rebinding of the class name do not change that identity. Nonlocal
 stores and deletes share the same cell; reading an empty cell raises NameError.
-Zero-argument `super()` uses the current cell value and the invocation's first
-parameter. Ordinary class-suite name lookup remains separate, including eager
+Zero-argument `super()` uses the current cell value and the invocation's current
+first positional local, including reassignment and captured-cell updates.
+Keyword-only and variadic parameters do not supply an implicit receiver.
+Ordinary class-suite name lookup remains separate, including eager
 comprehension expressions; closures created there capture the class cell.
 Shared cells and their retained enclosing contexts remain memory governed.
 

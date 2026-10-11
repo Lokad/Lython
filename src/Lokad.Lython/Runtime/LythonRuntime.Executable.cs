@@ -66,6 +66,18 @@ internal sealed partial class LythonRuntime
 
         public bool RequiresLocalVariableMirroring => _codeObject.RequiresLocalVariableMirroring;
 
+        public bool TryResolveOwnLocal(string name, [MaybeNullWhen(false)] out object value)
+        {
+            if (_codeObject.LocalNameToSlot.TryGetValue(name, out var slot))
+            {
+                value = _localCells?[slot] is { } cell ? cell.Value : _locals[slot];
+                if (!ReferenceEquals(value, UninitializedLocal)) return true;
+            }
+
+            value = null;
+            return false;
+        }
+
         public bool TryResolveLocalOrClosure(string name, [MaybeNullWhen(false)] out object value)
         {
             if (_codeObject.LocalNameToSlot.TryGetValue(name, out var localSlot))

@@ -1645,7 +1645,7 @@ __lython_file.close()
     }
 
     [Fact]
-    public void Super_ZeroArgumentFormFailsPreciselyOutsideMethodLikeContexts()
+    public void Super_ParameterlessStaticMethodRaisesNoArguments()
     {
         var result = new LythonEngine().Run(
             """
@@ -1660,8 +1660,8 @@ Demo.bad()
 
         Assert.False(result.Success);
         var failure = result.Failure;
-        Assert.Equal("TypeError", failure?.ExceptionType);
-        Assert.Contains("only supported inside instance methods", failure?.Message, StringComparison.Ordinal);
+        Assert.Equal("RuntimeError", failure?.ExceptionType);
+        Assert.Equal("super(): no arguments", failure?.Message);
     }
 
     [Fact]

@@ -15,6 +15,8 @@ internal static class PyFunctionBinding
     {
         var frame = new LythonRuntime.ExecutionContext(closure, scopeFacts);
         frame.FunctionName = bindingPlan.CallableName;
+        frame.FirstPositionalParameterName = bindingPlan.PositionalParameters.Count == 0
+            ? null : bindingPlan.PositionalParameters[0].Name;
         if (mirrorBoundArguments)
         {
             var layoutNames = bindingPlan.LayoutParameterNames;
@@ -30,26 +32,14 @@ internal static class PyFunctionBinding
         // barriers, so keep their existing discovery and unavailable-super path.
         var needsImplicitSuper = ownerType is not null || closure.ParentContext is not null ||
             closure.ClassCell is not null || closure.IsClassBody;
-        if (needsImplicitSuper && bindingPlan.Parameters.Count > 0 && TryGetReceiver(boundArguments, bindingPlan, out var receiver))
+        if (needsImplicitSuper && frame.FirstPositionalParameterName is not null)
         {
-            if (frame.TryGetLexicalClassCell(out var classCell)) frame.BindImplicitSuper(classCell, receiver);
-            else if (ownerType is not null || closure.TryGetLexicalClassCell(out _)) frame.BindUnavailableImplicitSuper(receiver);
+            if (frame.TryGetLexicalClassCell(out var classCell)) frame.BindImplicitSuper(classCell);
+            else if (ownerType is not null || closure.TryGetLexicalClassCell(out _)) frame.BindUnavailableImplicitSuper();
         }
 
         frame.EnterFunctionCall(span);
         return frame;
-    }
-
-    private static bool TryGetReceiver(BoundCallArguments boundArguments, FunctionBindingPlan bindingPlan, [MaybeNullWhen(false)] out object receiver)
-    {
-        receiver = null;
-        if (!bindingPlan.LayoutParameterIndex.TryGetValue(bindingPlan.Parameters[0].Name, out var index))
-        {
-            return false;
-        }
-
-        receiver = boundArguments.Values[index];
-        return true;
     }
 
     /// <summary>
