@@ -1,0 +1,1271 @@
+{
+  "schemaVersion": 1,
+  "diagnosticOnly": true,
+  "milestoneQualified": false,
+  "fullLanes": 0,
+  "recollection": false,
+  "baseline": "f77d60d1b173c2cead329014178bb337f526009c",
+  "candidate": "8501f02c825e3dbdee9d898903483981aeb17159",
+  "baselineProductionTree": "f006f62cad79f63bc1b2564494ce742b6fe74000",
+  "candidateProductionTree": "264fe4372001ed71082e3b7c172973211b613ebb",
+  "testsTree": "32b6163661305c9e1e10979f5b0b9656839ff948",
+  "harnessTree": "c194ce88a7e4d52c576f3929ef82bce60bf37e2d",
+  "independentPrePrototypeChecks": 42,
+  "baselineWindowsFullChecks": 9462,
+  "baselineAdditionalNewChecks": 2,
+  "candidateWindowsFullChecks": 9464,
+  "eachLinuxReleaseChecks": 9464,
+  "sourceIntegrated": false,
+  "acceptance": "Require method gains beyond max(2%, retained spread) in both passes, no repeated control timing regression beyond that bound, and no repeated complete-job allocation growth above 0.5%.",
+  "targetTimePassed": false,
+  "repeatedMaterialRegressions": [],
+  "repeatedMaterialAllocationRegressions": [],
+  "rows": [
+    {
+      "case": "calls.keyword.medium",
+      "changesPercent": [
+        -0.9484840300885367,
+        0.8663450427660591
+      ],
+      "spreadsPercent": [
+        2.9034947963867306,
+        0.5120220881488108
+      ],
+      "passes": [
+        {
+          "replica": 1,
+          "wholeSeconds": 8.04057,
+          "summaries": [
+            {
+              "engine": "baseline",
+              "medianMicroseconds": 475.3873928571429,
+              "iqrFraction": 0.029034947963867307
+            },
+            {
+              "engine": "candidate",
+              "medianMicroseconds": 470.8784193548387,
+              "iqrFraction": 0.011096916257610891
+            },
+            {
+              "engine": "CPython",
+              "medianMicroseconds": 135.68572361809044,
+              "iqrFraction": 0.020018677509241373
+            }
+          ]
+        },
+        {
+          "replica": 2,
+          "wholeSeconds": 8.044496,
+          "summaries": [
+            {
+              "engine": "baseline",
+              "medianMicroseconds": 457.66764615384614,
+              "iqrFraction": 0.003968163393812338
+            },
+            {
+              "engine": "candidate",
+              "medianMicroseconds": 461.63262711864405,
+              "iqrFraction": 0.005120220881488107
+            },
+            {
+              "engine": "CPython",
+              "medianMicroseconds": 135.23166046511628,
+              "iqrFraction": 0.003892751549477208
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case": "calls.method.medium",
+      "changesPercent": [
+        -0.8146891953335067,
+        -3.084534594376276
+      ],
+      "spreadsPercent": [
+        1.5185615451879144,
+        0.9915336758093615
+      ],
+      "passes": [
+        {
+          "replica": 1,
+          "wholeSeconds": 8.03766,
+          "summaries": [
+            {
+              "engine": "baseline",
+              "medianMicroseconds": 1142.0804444444443,
+              "iqrFraction": 0.015185615451879145
+            },
+            {
+              "engine": "candidate",
+              "medianMicroseconds": 1132.7760384615385,
+              "iqrFraction": 0.00939273521274839
+            },
+            {
+              "engine": "CPython",
+              "medianMicroseconds": 114.73973282442748,
+              "iqrFraction": 0.005287472710392346
+            }
+          ]
+        },
+        {
+          "replica": 2,
+          "wholeSeconds": 8.048692,
+          "summaries": [
+            {
+              "engine": "baseline",
+              "medianMicroseconds": 1201.1352,
+              "iqrFraction": 0.009915336758093614
+            },
+            {
+              "engine": "candidate",
+              "medianMicroseconds": 1164.0857692307693,
+              "iqrFraction": 0.009489255847193335
+            },
+            {
+              "engine": "CPython",
+              "medianMicroseconds": 115.13757794676806,
+              "iqrFraction": 0.004990029616742464
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case": "calls.positional.medium",
+      "changesPercent": [
+        0.478173758338718,
+        -2.870671851480211
+      ],
+      "spreadsPercent": [
+        1.0225508921269628,
+        1.1621153078777942
+      ],
+      "passes": [
+        {
+          "replica": 1,
+          "wholeSeconds": 8.048011,
+          "summaries": [
+            {
+              "engine": "baseline",
+              "medianMicroseconds": 421.1827230769231,
+              "iqrFraction": 0.010225508921269628
+            },
+            {
+              "engine": "candidate",
+              "medianMicroseconds": 423.1967083333334,
+              "iqrFraction": 0.006403871223137333
+            },
+            {
+              "engine": "CPython",
+              "medianMicroseconds": 127.70479090909093,
+              "iqrFraction": 0.008478040298480906
+            }
+          ]
+        },
+        {
+          "replica": 2,
+          "wholeSeconds": 8.038219,
+          "summaries": [
+            {
+              "engine": "baseline",
+              "medianMicroseconds": 434.87330158730157,
+              "iqrFraction": 0.007486891456581192
+            },
+            {
+              "engine": "candidate",
+              "medianMicroseconds": 422.38951612903224,
+              "iqrFraction": 0.011621153078777941
+            },
+            {
+              "engine": "CPython",
+              "medianMicroseconds": 119.4777783018868,
+              "iqrFraction": 0.007023845004097796
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case": "control.empty.control",
+      "changesPercent": [
+        3.9299292018097898,
+        -1.2582523420457181
+      ],
+      "spreadsPercent": [
+        5.101844957747818,
+        4.017964232893235
+      ],
+      "passes": [
+        {
+          "replica": 1,
+          "wholeSeconds": 8.039715,
+          "summaries": [
+            {
+              "engine": "baseline",
+              "medianMicroseconds": 22.918857785778577,
+              "iqrFraction": 0.04158634867713749
+            },
+            {
+              "engine": "candidate",
+              "medianMicroseconds": 23.819552670623146,
+              "iqrFraction": 0.05101844957747818
+            },
+            {
+              "engine": "CPython",
+              "medianMicroseconds": 1.4607884705222836,
+              "iqrFraction": 0.0009605483760316982
+            }
+          ]
+        },
+        {
+          "replica": 2,
+          "wholeSeconds": 8.045673,
+          "summaries": [
+            {
+              "engine": "baseline",
+              "medianMicroseconds": 23.681533918595374,
+              "iqrFraction": 0.04017964232893234
+            },
+            {
+              "engine": "candidate",
+              "medianMicroseconds": 23.383560463432296,
+              "iqrFraction": 0.008780514677978083
+            },
+            {
+              "engine": "CPython",
+              "medianMicroseconds": 1.5004626480191023,
+              "iqrFraction": 0.018746374345693415
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case": "lists.stable-sort.medium",
+      "changesPercent": [
+        2.6706928195164625,
+        -1.0972751780941814
+      ],
+      "spreadsPercent": [
+        7.9013955595338,
+        5.628710329435997
+      ],
+      "passes": [
+        {
+          "replica": 1,
+          "wholeSeconds": 8.048761,
+          "summaries": [
+            {
+              "engine": "baseline",
+              "medianMicroseconds": 2704.408909090909,
+              "iqrFraction": 0.079013955595338
+            },
+            {
+              "engine": "candidate",
+              "medianMicroseconds": 2776.6353636363638,
+              "iqrFraction": 0.055668012714799986
+            },
+            {
+              "engine": "CPython",
+              "medianMicroseconds": 307.8624615384615,
+              "iqrFraction": 0.004071052279517906
+            }
+          ]
+        },
+        {
+          "replica": 2,
+          "wholeSeconds": 8.041093,
+          "summaries": [
+            {
+              "engine": "baseline",
+              "medianMicroseconds": 2640.938,
+              "iqrFraction": 0.056287103294359965
+            },
+            {
+              "engine": "candidate",
+              "medianMicroseconds": 2611.959642857143,
+              "iqrFraction": 0.040809684901333645
+            },
+            {
+              "engine": "CPython",
+              "medianMicroseconds": 305.45132,
+              "iqrFraction": 0.010956312122010082
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case": "loops.integer.large",
+      "changesPercent": [
+        0.1850187126224201,
+        4.558468228085832
+      ],
+      "spreadsPercent": [
+        1.435278025652907,
+        0.9414383825329162
+      ],
+      "passes": [
+        {
+          "replica": 1,
+          "wholeSeconds": 8.046694,
+          "summaries": [
+            {
+              "engine": "baseline",
+              "medianMicroseconds": 1044.703275862069,
+              "iqrFraction": 0.01435278025652907
+            },
+            {
+              "engine": "candidate",
+              "medianMicroseconds": 1046.6361724137932,
+              "iqrFraction": 0.008612171624108376
+            },
+            {
+              "engine": "CPython",
+              "medianMicroseconds": 595.4158076923078,
+              "iqrFraction": 0.003418247919957176
+            }
+          ]
+        },
+        {
+          "replica": 2,
+          "wholeSeconds": 8.045959,
+          "summaries": [
+            {
+              "engine": "baseline",
+              "medianMicroseconds": 1033.0502333333334,
+              "iqrFraction": 0.00637566608167844
+            },
+            {
+              "engine": "candidate",
+              "medianMicroseconds": 1080.1415,
+              "iqrFraction": 0.009414383825329163
+            },
+            {
+              "engine": "CPython",
+              "medianMicroseconds": 666.1123958333334,
+              "iqrFraction": 0.0665348018250798
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case": "strings.pipeline-ascii.medium",
+      "changesPercent": [
+        0.010797694099529132,
+        -6.406770020501074
+      ],
+      "spreadsPercent": [
+        2.5553055753470675,
+        2.2303695251537383
+      ],
+      "passes": [
+        {
+          "replica": 1,
+          "wholeSeconds": 8.038117,
+          "summaries": [
+            {
+              "engine": "baseline",
+              "medianMicroseconds": 138.13229078014183,
+              "iqrFraction": 0.025553055753470676
+            },
+            {
+              "engine": "candidate",
+              "medianMicroseconds": 138.14720588235295,
+              "iqrFraction": 0.020843734464834528
+            },
+            {
+              "engine": "CPython",
+              "medianMicroseconds": 41.20093121693122,
+              "iqrFraction": 0.0038318950771132686
+            }
+          ]
+        },
+        {
+          "replica": 2,
+          "wholeSeconds": 8.040133,
+          "summaries": [
+            {
+              "engine": "baseline",
+              "medianMicroseconds": 145.481,
+              "iqrFraction": 0.022303695251537383
+            },
+            {
+              "engine": "candidate",
+              "medianMicroseconds": 136.16036690647482,
+              "iqrFraction": 0.021951791822285727
+            },
+            {
+              "engine": "CPython",
+              "medianMicroseconds": 41.342142483660126,
+              "iqrFraction": 0.006664566334202162
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "allocations": [
+    {
+      "replica": 1,
+      "case": "control.empty.control",
+      "baselineBytes": 29392,
+      "candidateBytes": 29392,
+      "savedBytes": 0,
+      "savedFraction": 0.0
+    },
+    {
+      "replica": 1,
+      "case": "loops.integer.large",
+      "baselineBytes": 1079424.64,
+      "candidateBytes": 1079424.64,
+      "savedBytes": 0.0,
+      "savedFraction": 0.0
+    },
+    {
+      "replica": 1,
+      "case": "calls.positional.medium",
+      "baselineBytes": 523752.96,
+      "candidateBytes": 523752.96,
+      "savedBytes": 0.0,
+      "savedFraction": 0.0
+    },
+    {
+      "replica": 1,
+      "case": "calls.keyword.medium",
+      "baselineBytes": 524015.92,
+      "candidateBytes": 524015.92,
+      "savedBytes": 0.0,
+      "savedFraction": 0.0
+    },
+    {
+      "replica": 1,
+      "case": "calls.method.medium",
+      "baselineBytes": 1844052.96,
+      "candidateBytes": 1411934.96,
+      "savedBytes": 432118.0,
+      "savedFraction": 0.23433058018030029
+    },
+    {
+      "replica": 1,
+      "case": "lists.stable-sort.medium",
+      "baselineBytes": 3501064.24,
+      "candidateBytes": 3508634.8,
+      "savedBytes": -7570.55999999959,
+      "savedFraction": -0.00216235963725131
+    },
+    {
+      "replica": 1,
+      "case": "strings.pipeline-ascii.medium",
+      "baselineBytes": 461800,
+      "candidateBytes": 461800,
+      "savedBytes": 0,
+      "savedFraction": 0.0
+    },
+    {
+      "replica": 2,
+      "case": "control.empty.control",
+      "baselineBytes": 29224,
+      "candidateBytes": 29224,
+      "savedBytes": 0,
+      "savedFraction": 0.0
+    },
+    {
+      "replica": 2,
+      "case": "loops.integer.large",
+      "baselineBytes": 1079210.64,
+      "candidateBytes": 1079210.64,
+      "savedBytes": 0.0,
+      "savedFraction": 0.0
+    },
+    {
+      "replica": 2,
+      "case": "calls.positional.medium",
+      "baselineBytes": 523660.56,
+      "candidateBytes": 523661.68,
+      "savedBytes": -1.1199999999953434,
+      "savedFraction": -2.138790059058593e-06
+    },
+    {
+      "replica": 2,
+      "case": "calls.keyword.medium",
+      "baselineBytes": 523847.92,
+      "candidateBytes": 523951.28,
+      "savedBytes": -103.36000000004424,
+      "savedFraction": -0.0001973091732425658
+    },
+    {
+      "replica": 2,
+      "case": "calls.method.medium",
+      "baselineBytes": 1787533.12,
+      "candidateBytes": 1345095.76,
+      "savedBytes": 442437.3600000001,
+      "savedFraction": 0.24751281811214776
+    },
+    {
+      "replica": 2,
+      "case": "lists.stable-sort.medium",
+      "baselineBytes": 3420711.92,
+      "candidateBytes": 3420711.92,
+      "savedBytes": 0.0,
+      "savedFraction": 0.0
+    },
+    {
+      "replica": 2,
+      "case": "strings.pipeline-ascii.medium",
+      "baselineBytes": 461800,
+      "candidateBytes": 461800,
+      "savedBytes": 0,
+      "savedFraction": 0.0
+    }
+  ],
+  "microWholeSeconds": [
+    8.039715,
+    8.046694,
+    8.048011,
+    8.04057,
+    8.03766,
+    8.048761,
+    8.038117,
+    8.045673,
+    8.045959,
+    8.038219,
+    8.044496,
+    8.048692,
+    8.041093,
+    8.040133
+  ],
+  "allocationWholeSeconds": [
+    4.034397,
+    4.031044
+  ],
+  "nativeWholeSeconds": [
+    4.040638,
+    4.034765
+  ],
+  "selectedNativeBodies": [
+    {
+      "role": "baseline",
+      "method": "Lokad.Lython.Runtime.LythonRuntime:ExecuteLoweredAssignment(Lokad.Lython.Frontend.LoweredAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)",
+      "tier": "Instrumented Tier0",
+      "inlineSummary": null,
+      "callTargets": [
+        "call     [Lokad.Lython.Frontend.LoweredStatement:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:CheckExecution(Lokad.Lython.LythonSourceSpan):this]",
+        "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+        "call     CORINFO_HELP_COUNTPROFILE32",
+        "call     [Lokad.Lython.Frontend.LoweredNameAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.AssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.AssignmentStatementSyntax:get_Name():System.String:this]",
+        "call     [Lokad.Lython.Frontend.LoweredNameAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateLoweredExpression(Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StoreName(System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan)]",
+        "call     [Lokad.Lython.Frontend.LoweredChainedAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredChainedAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.ChainedAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.ChainedAssignmentStatementSyntax:get_Targets():System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.AssignmentTargetSyntax]:this]",
+        "call     CORINFO_HELP_CLASSPROFILE32",
+        "call     [r11]System.Collections.Generic.IEnumerable`1[System.__Canon]:GetEnumerator():System.Collections.Generic.IEnumerator`1[System.__Canon]:this",
+        "call     [r11]System.Collections.Generic.IEnumerator`1[System.__Canon]:get_Current():System.__Canon:this",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:AssignTarget(Lokad.Lython.Frontend.AssignmentTargetSyntax,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     CORINFO_HELP_PATCHPOINT",
+        "call     [r11]System.Collections.IEnumerator:MoveNext():bool:this",
+        "call     G_M000_IG37",
+        "call     [Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.AnnotatedAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.AnnotatedAssignmentStatementSyntax:get_Target():Lokad.Lython.Frontend.AssignmentTargetSyntax:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateAnnotationTargetReadsAsync(Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool):System.Threading.Tasks.ValueTask]",
+        "call     [System.Threading.Tasks.ValueTask:GetAwaiter():System.Runtime.CompilerServices.ValueTaskAwaiter:this]",
+        "call     [System.Runtime.CompilerServices.ValueTaskAwaiter:GetResult():this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StoreModuleAnnotationAsync(Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool):System.Threading.Tasks.ValueTask]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StoreModernClassAnnotationAsync(Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool):System.Threading.Tasks.ValueTask]",
+        "call     [Lokad.Lython.Frontend.LoweredAugmentedAssignmentStatement:get_Target():Lokad.Lython.Frontend.LoweredAugmentedAssignmentTarget:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ResolveLoweredAugmentedAssignmentTarget(Lokad.Lython.Frontend.LoweredAugmentedAssignmentTarget,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.LythonRuntime+AugmentedAssignmentTargetReference]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+AugmentedAssignmentTargetReference:get_Store():System.Action`1[System.Object]:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+AugmentedAssignmentTargetReference:get_CurrentValue():System.Object:this]",
+        "call     [Lokad.Lython.Frontend.LoweredAugmentedAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredAugmentedAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.AugmentedAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.AugmentedAssignmentStatementSyntax:get_Operator():int:this]",
+        "call     CORINFO_HELP_DELEGATEPROFILE32",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateAugmentedAssignment(System.Object,System.Object,int,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object]",
+        "call     [rax+0x18]System.Action`1[System.__Canon]:Invoke(System.__Canon):this",
+        "call     [Lokad.Lython.Frontend.LoweredUnpackingAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.UnpackingAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.UnpackingAssignmentStatementSyntax:get_Targets():System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.UnpackingTargetSyntax]:this]",
+        "call     [Lokad.Lython.Frontend.LoweredUnpackingAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredExpression:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:AssignTargets(System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.UnpackingTargetSyntax],System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.SubscriptAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAssignmentStatement:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAssignmentStatement:get_Index():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ExecuteLoweredSubscriptAssignment(Lokad.Lython.Frontend.SubscriptAssignmentStatementSyntax,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.SliceAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_Start():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_End():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_Step():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ExecuteLoweredSliceAssignment(Lokad.Lython.Frontend.SliceAssignmentStatementSyntax,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Frontend.LoweredMemberAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredMemberAssignmentStatement:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredMemberAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.MemberAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.MemberAssignmentStatementSyntax:get_MemberName():System.String:this]",
+        "call     [Lokad.Lython.Runtime.PyMemberAccess:TryAssign(System.Object,System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):bool]",
+        "call     CORINFO_HELP_NEWSFAST",
+        "call     [CORINFO_HELP_STRCNS]",
+        "call     [Lokad.Lython.Runtime.LythonRuntimeException:.ctor(System.String,System.String,Lokad.Lython.LythonSourceSpan):this]",
+        "call     CORINFO_HELP_THROW",
+        "call     [System.Object:GetType():System.Type:this]",
+        "call     [rax+0x30]System.Reflection.MemberInfo:get_Name():System.String:this",
+        "call     [System.String:Concat(System.String,System.String):System.String]",
+        "call     [System.InvalidOperationException:.ctor(System.String):this]",
+        "call     [r11]System.IDisposable:Dispose():this"
+      ],
+      "codeBytes": 2920
+    },
+    {
+      "role": "baseline",
+      "method": "Lokad.Lython.Runtime.LythonRuntime:ResolveLoweredAugmentedAssignmentTarget(Lokad.Lython.Frontend.LoweredAugmentedAssignmentTarget,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.LythonRuntime+AugmentedAssignmentTargetReference",
+      "tier": "Tier0",
+      "inlineSummary": null,
+      "callTargets": [
+        "call     CORINFO_HELP_NEWSFAST",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+<>c__DisplayClass973_0:.ctor():this]",
+        "call     CORINFO_HELP_ASSIGN_REF",
+        "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+        "call     [Lokad.Lython.Frontend.LoweredNameAugmentedAssignmentTarget:get_Target():Lokad.Lython.Frontend.NameAssignmentTargetSyntax:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ResolveAugmentedAssignmentTarget(Lokad.Lython.Frontend.AssignmentTargetSyntax,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.LythonRuntime+AugmentedAssignmentTargetReference]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAugmentedAssignmentTarget:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateLoweredExpression(Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAugmentedAssignmentTarget:get_Index():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredAugmentedAssignmentTarget:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ReadSubscriptValue(System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [System.MulticastDelegate:CtorClosed(System.Object,nint):this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+AugmentedAssignmentTargetReference:.ctor(System.Object,System.Action`1[System.Object],System.Func`2[System.Object,System.Threading.Tasks.ValueTask]):this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAugmentedAssignmentTarget:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAugmentedAssignmentTarget:get_Start():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAugmentedAssignmentTarget:get_End():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAugmentedAssignmentTarget:get_Step():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+<>c__DisplayClass973_1:.ctor():this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:CreateSliceValue(System.Object,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.PySlice]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:GetUserItem(Lokad.Lython.Runtime.PyInstance,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object]",
+        "call     [Lokad.Lython.Runtime.PyIndexing:ReadSlice(System.Object,System.Object,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [Lokad.Lython.Frontend.LoweredMemberAugmentedAssignmentTarget:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredMemberAugmentedAssignmentTarget:get_Target():Lokad.Lython.Frontend.MemberAssignmentTargetSyntax:this]",
+        "call     [Lokad.Lython.Frontend.MemberAssignmentTargetSyntax:get_MemberName():System.String:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:TryResolveRuntimeMember(System.Object,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool]",
+        "call     [Lokad.Lython.Runtime.PyMemberAccess:CreateMissingMemberError(System.Object,System.String,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,int):Lokad.Lython.Runtime.LythonRuntimeException]",
+        "call     CORINFO_HELP_THROW",
+        "call     [CORINFO_HELP_STRCNS]",
+        "call     [System.Object:GetType():System.Type:this]",
+        "call     [rax+0x30]System.Reflection.MemberInfo:get_Name():System.String:this",
+        "call     [System.String:Concat(System.String,System.String):System.String]",
+        "call     [System.InvalidOperationException:.ctor(System.String):this]"
+      ],
+      "codeBytes": 2503
+    },
+    {
+      "role": "baseline",
+      "method": "Lokad.Lython.Runtime.LythonRuntime:ExecuteLoweredAssignment(Lokad.Lython.Frontend.LoweredAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)",
+      "tier": "Instrumented Tier0",
+      "inlineSummary": null,
+      "callTargets": [
+        "call     [Lokad.Lython.Frontend.LoweredStatement:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:CheckExecution(Lokad.Lython.LythonSourceSpan):this]",
+        "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+        "call     CORINFO_HELP_COUNTPROFILE32",
+        "call     [Lokad.Lython.Frontend.LoweredNameAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.AssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.AssignmentStatementSyntax:get_Name():System.String:this]",
+        "call     [Lokad.Lython.Frontend.LoweredNameAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateLoweredExpression(Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StoreName(System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan)]",
+        "call     [Lokad.Lython.Frontend.LoweredChainedAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredChainedAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.ChainedAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.ChainedAssignmentStatementSyntax:get_Targets():System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.AssignmentTargetSyntax]:this]",
+        "call     CORINFO_HELP_CLASSPROFILE32",
+        "call     [r11]System.Collections.Generic.IEnumerable`1[System.__Canon]:GetEnumerator():System.Collections.Generic.IEnumerator`1[System.__Canon]:this",
+        "call     [r11]System.Collections.Generic.IEnumerator`1[System.__Canon]:get_Current():System.__Canon:this",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:AssignTarget(Lokad.Lython.Frontend.AssignmentTargetSyntax,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     CORINFO_HELP_PATCHPOINT",
+        "call     [r11]System.Collections.IEnumerator:MoveNext():bool:this",
+        "call     G_M000_IG37",
+        "call     [Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.AnnotatedAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.AnnotatedAssignmentStatementSyntax:get_Target():Lokad.Lython.Frontend.AssignmentTargetSyntax:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateAnnotationTargetReadsAsync(Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool):System.Threading.Tasks.ValueTask]",
+        "call     [System.Threading.Tasks.ValueTask:GetAwaiter():System.Runtime.CompilerServices.ValueTaskAwaiter:this]",
+        "call     [System.Runtime.CompilerServices.ValueTaskAwaiter:GetResult():this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StoreModuleAnnotationAsync(Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool):System.Threading.Tasks.ValueTask]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StoreModernClassAnnotationAsync(Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool):System.Threading.Tasks.ValueTask]",
+        "call     [Lokad.Lython.Frontend.LoweredAugmentedAssignmentStatement:get_Target():Lokad.Lython.Frontend.LoweredAugmentedAssignmentTarget:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ResolveLoweredAugmentedAssignmentTarget(Lokad.Lython.Frontend.LoweredAugmentedAssignmentTarget,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.LythonRuntime+AugmentedAssignmentTargetReference]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+AugmentedAssignmentTargetReference:get_Store():System.Action`1[System.Object]:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+AugmentedAssignmentTargetReference:get_CurrentValue():System.Object:this]",
+        "call     [Lokad.Lython.Frontend.LoweredAugmentedAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredAugmentedAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.AugmentedAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.AugmentedAssignmentStatementSyntax:get_Operator():int:this]",
+        "call     CORINFO_HELP_DELEGATEPROFILE32",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateAugmentedAssignment(System.Object,System.Object,int,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object]",
+        "call     [rax+0x18]System.Action`1[System.__Canon]:Invoke(System.__Canon):this",
+        "call     [Lokad.Lython.Frontend.LoweredUnpackingAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.UnpackingAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.UnpackingAssignmentStatementSyntax:get_Targets():System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.UnpackingTargetSyntax]:this]",
+        "call     [Lokad.Lython.Frontend.LoweredUnpackingAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredExpression:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:AssignTargets(System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.UnpackingTargetSyntax],System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.SubscriptAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAssignmentStatement:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAssignmentStatement:get_Index():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ExecuteLoweredSubscriptAssignment(Lokad.Lython.Frontend.SubscriptAssignmentStatementSyntax,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.SliceAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_Start():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_End():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_Step():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ExecuteLoweredSliceAssignment(Lokad.Lython.Frontend.SliceAssignmentStatementSyntax,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Frontend.LoweredMemberAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredMemberAssignmentStatement:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredMemberAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.MemberAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.MemberAssignmentStatementSyntax:get_MemberName():System.String:this]",
+        "call     [Lokad.Lython.Runtime.PyMemberAccess:TryAssign(System.Object,System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):bool]",
+        "call     CORINFO_HELP_NEWSFAST",
+        "call     [CORINFO_HELP_STRCNS]",
+        "call     [Lokad.Lython.Runtime.LythonRuntimeException:.ctor(System.String,System.String,Lokad.Lython.LythonSourceSpan):this]",
+        "call     CORINFO_HELP_THROW",
+        "call     [System.Object:GetType():System.Type:this]",
+        "call     [rax+0x30]System.Reflection.MemberInfo:get_Name():System.String:this",
+        "call     [System.String:Concat(System.String,System.String):System.String]",
+        "call     [System.InvalidOperationException:.ctor(System.String):this]",
+        "call     [r11]System.IDisposable:Dispose():this"
+      ],
+      "codeBytes": 2920
+    },
+    {
+      "role": "baseline",
+      "method": "Lokad.Lython.Runtime.LythonRuntime:ResolveLoweredAugmentedAssignmentTarget(Lokad.Lython.Frontend.LoweredAugmentedAssignmentTarget,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.LythonRuntime+AugmentedAssignmentTargetReference",
+      "tier": "Instrumented Tier0",
+      "inlineSummary": null,
+      "callTargets": [
+        "call     CORINFO_HELP_NEWSFAST",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+<>c__DisplayClass973_0:.ctor():this]",
+        "call     CORINFO_HELP_ASSIGN_REF",
+        "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+        "call     CORINFO_HELP_COUNTPROFILE32",
+        "call     [Lokad.Lython.Frontend.LoweredNameAugmentedAssignmentTarget:get_Target():Lokad.Lython.Frontend.NameAssignmentTargetSyntax:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ResolveAugmentedAssignmentTarget(Lokad.Lython.Frontend.AssignmentTargetSyntax,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.LythonRuntime+AugmentedAssignmentTargetReference]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAugmentedAssignmentTarget:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateLoweredExpression(Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAugmentedAssignmentTarget:get_Index():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredAugmentedAssignmentTarget:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ReadSubscriptValue(System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [System.MulticastDelegate:CtorClosed(System.Object,nint):this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+AugmentedAssignmentTargetReference:.ctor(System.Object,System.Action`1[System.Object],System.Func`2[System.Object,System.Threading.Tasks.ValueTask]):this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAugmentedAssignmentTarget:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAugmentedAssignmentTarget:get_Start():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAugmentedAssignmentTarget:get_End():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAugmentedAssignmentTarget:get_Step():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+<>c__DisplayClass973_1:.ctor():this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:CreateSliceValue(System.Object,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.PySlice]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:GetUserItem(Lokad.Lython.Runtime.PyInstance,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object]",
+        "call     [Lokad.Lython.Runtime.PyIndexing:ReadSlice(System.Object,System.Object,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [Lokad.Lython.Frontend.LoweredMemberAugmentedAssignmentTarget:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredMemberAugmentedAssignmentTarget:get_Target():Lokad.Lython.Frontend.MemberAssignmentTargetSyntax:this]",
+        "call     [Lokad.Lython.Frontend.MemberAssignmentTargetSyntax:get_MemberName():System.String:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:TryResolveRuntimeMember(System.Object,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool]",
+        "call     [Lokad.Lython.Runtime.PyMemberAccess:CreateMissingMemberError(System.Object,System.String,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,int):Lokad.Lython.Runtime.LythonRuntimeException]",
+        "call     CORINFO_HELP_THROW",
+        "call     [CORINFO_HELP_STRCNS]",
+        "call     [System.Object:GetType():System.Type:this]",
+        "call     CORINFO_HELP_CLASSPROFILE32",
+        "call     [rax+0x30]System.Reflection.MemberInfo:get_Name():System.String:this",
+        "call     [System.String:Concat(System.String,System.String):System.String]",
+        "call     [System.InvalidOperationException:.ctor(System.String):this]"
+      ],
+      "codeBytes": 2645
+    },
+    {
+      "role": "baseline",
+      "method": "Lokad.Lython.Runtime.LythonRuntime:ExecuteLoweredAssignment(Lokad.Lython.Frontend.LoweredAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)",
+      "tier": "Tier1",
+      "inlineSummary": "9 inlinees with PGO data; 66 single block inlinees; 1 inlinees without PGO data",
+      "callTargets": [
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateLoweredExpression(Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StoreName(System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan)]",
+        "call     [r11]System.Collections.Generic.IEnumerable`1[System.__Canon]:GetEnumerator():System.Collections.Generic.IEnumerator`1[System.__Canon]:this",
+        "call     [r11]System.Collections.IEnumerator:MoveNext():bool:this",
+        "call     [r11]System.Collections.Generic.IEnumerator`1[System.__Canon]:get_Current():System.__Canon:this",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:AssignTarget(Lokad.Lython.Frontend.AssignmentTargetSyntax,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [r11]System.IDisposable:Dispose():this",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StoreModuleAnnotationAsync(Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool):System.Threading.Tasks.ValueTask]",
+        "call     [System.Threading.Tasks.ValueTask:GetAwaiter():System.Runtime.CompilerServices.ValueTaskAwaiter:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StoreModernClassAnnotationAsync(Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool):System.Threading.Tasks.ValueTask]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateAnnotationTargetReadsAsync(Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool):System.Threading.Tasks.ValueTask]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ResolveLoweredAugmentedAssignmentTarget(Lokad.Lython.Frontend.LoweredAugmentedAssignmentTarget,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.LythonRuntime+AugmentedAssignmentTargetReference]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateAugmentedAssignment(System.Object,System.Object,int,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object]",
+        "call     [Lokad.Lython.Runtime.PyMemberAccess:TryAssign(System.Object,System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):bool]",
+        "call     [rax+0x28]Lokad.Lython.Frontend.LoweredExpression:get_Syntax():Lokad.Lython.Frontend.ExpressionSyntax:this",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:AssignTargets(System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.UnpackingTargetSyntax],System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ExecuteLoweredSubscriptAssignment(Lokad.Lython.Frontend.SubscriptAssignmentStatementSyntax,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Runtime.ExecutionGuards:SweepCheckpointTemporaries():this]",
+        "call     [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionStepLimit(long,Lokad.Lython.LythonSourceSpan)]",
+        "call     [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ExecuteLoweredSliceAssignment(Lokad.Lython.Frontend.SliceAssignmentStatementSyntax,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     CORINFO_HELP_NEWSFAST",
+        "call     [CORINFO_HELP_STRCNS]",
+        "call     [System.Object:GetType():System.Type:this]",
+        "call     [System.RuntimeType:get_Name():System.String:this]",
+        "call     [System.String:Concat(System.String,System.String):System.String]",
+        "call     [System.InvalidOperationException:.ctor(System.String):this]",
+        "call     CORINFO_HELP_THROW",
+        "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+        "call     [System.Runtime.CompilerServices.TaskAwaiter:HandleNonSuccessAndDebuggerNotification(System.Threading.Tasks.Task,int)]",
+        "call     [r11]System.Threading.Tasks.Sources.IValueTaskSource:GetResult(short):this",
+        "call     [Lokad.Lython.Runtime.LythonRuntimeException:.ctor(System.String,System.String,Lokad.Lython.LythonSourceSpan):this]",
+        "call     [r15+0x18]System.Action`1[System.__Canon]:Invoke(System.__Canon):this"
+      ],
+      "codeBytes": 1710
+    },
+    {
+      "role": "baseline",
+      "method": "Lokad.Lython.Runtime.LythonRuntime:ResolveLoweredAugmentedAssignmentTarget(Lokad.Lython.Frontend.LoweredAugmentedAssignmentTarget,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.LythonRuntime+AugmentedAssignmentTargetReference",
+      "tier": "Tier1",
+      "inlineSummary": "3 inlinees with PGO data; 39 single block inlinees; 0 inlinees without PGO data",
+      "callTargets": [
+        "call     CORINFO_HELP_NEWSFAST",
+        "call     CORINFO_HELP_ASSIGN_REF",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ResolveAugmentedAssignmentTarget(Lokad.Lython.Frontend.AssignmentTargetSyntax,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.LythonRuntime+AugmentedAssignmentTargetReference]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateLoweredExpression(Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [Lokad.Lython.Runtime.PyMemberAccess:TryResolveNonContextual(System.Object,System.String,byref):bool]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+PathMembers:TryGetMember(Lokad.Lython.Runtime.PyPath,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+PathStatMembers:TryGetMember(Lokad.Lython.LythonPathStat,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+OpenPyxlWorksheet:TryGetMember(System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool:this]",
+        "call     [Lokad.Lython.Runtime.PyAttributeLookup:TryResolveSuperMember(Lokad.Lython.Runtime.PySuper,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool]",
+        "call     [Lokad.Lython.Runtime.PyAttributeLookup:TryResolveInstanceMember(Lokad.Lython.Runtime.PyInstance,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool]",
+        "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+        "call     [Lokad.Lython.Runtime.PyAttributeLookup:TryResolveTypeMember(Lokad.Lython.Runtime.PyType,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool]",
+        "call     [System.String:Equals(System.String,System.String):bool]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:TryGetBuiltin(System.String,byref):bool:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:TryGetValueClass(System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,byref):bool]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+ExceptionInstanceMembers:TryGetMember(Lokad.Lython.Runtime.PyException,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool]",
+        "call     [Lokad.Lython.Runtime.PyAttributeLookup:TryResolveObjectSlot(System.Object,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool]",
+        "call     [CORINFO_HELP_STRCNS]",
+        "call     [System.Object:GetType():System.Type:this]",
+        "call     [System.RuntimeType:get_Name():System.String:this]",
+        "call     [System.String:Concat(System.String,System.String):System.String]",
+        "call     [System.InvalidOperationException:.ctor(System.String):this]",
+        "call     CORINFO_HELP_THROW",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ReadSubscriptValue(System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [System.MulticastDelegate:CtorClosed(System.Object,nint):this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+AugmentedAssignmentTargetReference:.ctor(System.Object,System.Action`1[System.Object],System.Func`2[System.Object,System.Threading.Tasks.ValueTask]):this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:CreateSliceValue(System.Object,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.PySlice]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:GetUserItem(Lokad.Lython.Runtime.PyInstance,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object]",
+        "call     [Lokad.Lython.Runtime.PyIndexing:ReadSlice(System.Object,System.Object,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     CORINFO_HELP_ISINSTANCEOFINTERFACE",
+        "call     [r11]Lokad.Lython.Runtime.IPyContextualDynamicAttributes:TryGetMember(System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool:this",
+        "call     [Lokad.Lython.Frontend.LoweredAugmentedAssignmentTarget:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+        "call     [Lokad.Lython.Runtime.PyMemberAccess:CreateMissingMemberError(System.Object,System.String,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,int):Lokad.Lython.Runtime.LythonRuntimeException]"
+      ],
+      "codeBytes": 2279
+    },
+    {
+      "role": "candidate",
+      "method": "Lokad.Lython.Runtime.LythonRuntime:ExecuteLoweredAssignment(Lokad.Lython.Frontend.LoweredAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)",
+      "tier": "Instrumented Tier0",
+      "inlineSummary": null,
+      "callTargets": [
+        "call     [Lokad.Lython.Frontend.LoweredStatement:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:CheckExecution(Lokad.Lython.LythonSourceSpan):this]",
+        "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+        "call     CORINFO_HELP_COUNTPROFILE32",
+        "call     [Lokad.Lython.Frontend.LoweredNameAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.AssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.AssignmentStatementSyntax:get_Name():System.String:this]",
+        "call     [Lokad.Lython.Frontend.LoweredNameAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateLoweredExpression(Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StoreName(System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan)]",
+        "call     [Lokad.Lython.Frontend.LoweredChainedAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredChainedAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.ChainedAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.ChainedAssignmentStatementSyntax:get_Targets():System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.AssignmentTargetSyntax]:this]",
+        "call     CORINFO_HELP_CLASSPROFILE32",
+        "call     [r11]System.Collections.Generic.IEnumerable`1[System.__Canon]:GetEnumerator():System.Collections.Generic.IEnumerator`1[System.__Canon]:this",
+        "call     [r11]System.Collections.Generic.IEnumerator`1[System.__Canon]:get_Current():System.__Canon:this",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:AssignTarget(Lokad.Lython.Frontend.AssignmentTargetSyntax,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     CORINFO_HELP_PATCHPOINT",
+        "call     [r11]System.Collections.IEnumerator:MoveNext():bool:this",
+        "call     G_M000_IG37",
+        "call     [Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.AnnotatedAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.AnnotatedAssignmentStatementSyntax:get_Target():Lokad.Lython.Frontend.AssignmentTargetSyntax:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateAnnotationTargetReadsAsync(Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool):System.Threading.Tasks.ValueTask]",
+        "call     [System.Threading.Tasks.ValueTask:GetAwaiter():System.Runtime.CompilerServices.ValueTaskAwaiter:this]",
+        "call     [System.Runtime.CompilerServices.ValueTaskAwaiter:GetResult():this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StoreModuleAnnotationAsync(Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool):System.Threading.Tasks.ValueTask]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StoreModernClassAnnotationAsync(Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool):System.Threading.Tasks.ValueTask]",
+        "call     [Lokad.Lython.Frontend.LoweredAugmentedAssignmentStatement:get_Target():Lokad.Lython.Frontend.LoweredAugmentedAssignmentTarget:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ResolveLoweredAugmentedAssignmentTarget(Lokad.Lython.Frontend.LoweredAugmentedAssignmentTarget,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.LythonRuntime+PreparedAugmentedAssignmentTarget]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+PreparedAugmentedAssignmentTarget:get_CurrentValue():System.Object:this]",
+        "call     [Lokad.Lython.Frontend.LoweredAugmentedAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredAugmentedAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.AugmentedAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.AugmentedAssignmentStatementSyntax:get_Operator():int:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateAugmentedAssignment(System.Object,System.Object,int,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+PreparedAugmentedAssignmentTarget:StoreValue(System.Object):this]",
+        "call     [Lokad.Lython.Frontend.LoweredUnpackingAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.UnpackingAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.UnpackingAssignmentStatementSyntax:get_Targets():System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.UnpackingTargetSyntax]:this]",
+        "call     [Lokad.Lython.Frontend.LoweredUnpackingAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredExpression:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:AssignTargets(System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.UnpackingTargetSyntax],System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.SubscriptAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAssignmentStatement:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAssignmentStatement:get_Index():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ExecuteLoweredSubscriptAssignment(Lokad.Lython.Frontend.SubscriptAssignmentStatementSyntax,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.SliceAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_Start():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_End():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_Step():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ExecuteLoweredSliceAssignment(Lokad.Lython.Frontend.SliceAssignmentStatementSyntax,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Frontend.LoweredMemberAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredMemberAssignmentStatement:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredMemberAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.MemberAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.MemberAssignmentStatementSyntax:get_MemberName():System.String:this]",
+        "call     [Lokad.Lython.Runtime.PyMemberAccess:TryAssign(System.Object,System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):bool]",
+        "call     CORINFO_HELP_NEWSFAST",
+        "call     [CORINFO_HELP_STRCNS]",
+        "call     [Lokad.Lython.Runtime.LythonRuntimeException:.ctor(System.String,System.String,Lokad.Lython.LythonSourceSpan):this]",
+        "call     CORINFO_HELP_THROW",
+        "call     [System.Object:GetType():System.Type:this]",
+        "call     [rax+0x30]System.Reflection.MemberInfo:get_Name():System.String:this",
+        "call     [System.String:Concat(System.String,System.String):System.String]",
+        "call     [System.InvalidOperationException:.ctor(System.String):this]",
+        "call     [r11]System.IDisposable:Dispose():this"
+      ],
+      "codeBytes": 2956
+    },
+    {
+      "role": "candidate",
+      "method": "Lokad.Lython.Runtime.LythonRuntime:ResolveLoweredAugmentedAssignmentTarget(Lokad.Lython.Frontend.LoweredAugmentedAssignmentTarget,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.LythonRuntime+PreparedAugmentedAssignmentTarget",
+      "tier": "Tier0",
+      "inlineSummary": null,
+      "callTargets": [
+        "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+        "call     [Lokad.Lython.Frontend.LoweredNameAugmentedAssignmentTarget:get_Target():Lokad.Lython.Frontend.NameAssignmentTargetSyntax:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ResolveAugmentedAssignmentTarget(Lokad.Lython.Frontend.AssignmentTargetSyntax,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.LythonRuntime+PreparedAugmentedAssignmentTarget]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAugmentedAssignmentTarget:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateLoweredExpression(Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAugmentedAssignmentTarget:get_Index():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredAugmentedAssignmentTarget:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ReadSubscriptValue(System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAugmentedAssignmentTarget:get_Target():Lokad.Lython.Frontend.SubscriptAssignmentTargetSyntax:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+PreparedAugmentedAssignmentTarget:.ctor(System.Object,Lokad.Lython.Frontend.AssignmentTargetSyntax,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,System.Object,System.Object,System.Object,System.Object):this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAugmentedAssignmentTarget:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAugmentedAssignmentTarget:get_Start():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAugmentedAssignmentTarget:get_End():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAugmentedAssignmentTarget:get_Step():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:CreateSliceValue(System.Object,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.PySlice]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:GetUserItem(Lokad.Lython.Runtime.PyInstance,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAugmentedAssignmentTarget:get_Target():Lokad.Lython.Frontend.SliceAssignmentTargetSyntax:this]",
+        "call     [Lokad.Lython.Runtime.PyIndexing:ReadSlice(System.Object,System.Object,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [Lokad.Lython.Frontend.LoweredMemberAugmentedAssignmentTarget:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredMemberAugmentedAssignmentTarget:get_Target():Lokad.Lython.Frontend.MemberAssignmentTargetSyntax:this]",
+        "call     [Lokad.Lython.Frontend.MemberAssignmentTargetSyntax:get_MemberName():System.String:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:TryResolveRuntimeMember(System.Object,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool]",
+        "call     [Lokad.Lython.Runtime.PyMemberAccess:CreateMissingMemberError(System.Object,System.String,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,int):Lokad.Lython.Runtime.LythonRuntimeException]",
+        "call     CORINFO_HELP_THROW",
+        "call     CORINFO_HELP_NEWSFAST",
+        "call     [CORINFO_HELP_STRCNS]",
+        "call     [System.Object:GetType():System.Type:this]",
+        "call     [rax+0x30]System.Reflection.MemberInfo:get_Name():System.String:this",
+        "call     [System.String:Concat(System.String,System.String):System.String]",
+        "call     [System.InvalidOperationException:.ctor(System.String):this]"
+      ],
+      "codeBytes": 1761
+    },
+    {
+      "role": "candidate",
+      "method": "Lokad.Lython.Runtime.LythonRuntime+PreparedAugmentedAssignmentTarget:StoreValue(System.Object):this",
+      "tier": "Tier0",
+      "inlineSummary": null,
+      "callTargets": [
+        "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+        "call     [Lokad.Lython.Frontend.NameAssignmentTargetSyntax:get_Name():System.String:this]",
+        "call     [Lokad.Lython.Frontend.AssignmentTargetSyntax:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StoreName(System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan)]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:SetSubscriptValue(System.Object,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ExecuteSliceAssignment(System.Object,System.Object,System.Object,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Frontend.MemberAssignmentTargetSyntax:get_MemberName():System.String:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:SetMemberValue(System.Object,System.String,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     CORINFO_HELP_NEWSFAST",
+        "call     [CORINFO_HELP_STRCNS]",
+        "call     [System.Object:GetType():System.Type:this]",
+        "call     [rax+0x30]System.Reflection.MemberInfo:get_Name():System.String:this",
+        "call     [System.String:Concat(System.String,System.String):System.String]",
+        "call     [System.InvalidOperationException:.ctor(System.String):this]",
+        "call     CORINFO_HELP_THROW"
+      ],
+      "codeBytes": 885
+    },
+    {
+      "role": "candidate",
+      "method": "Lokad.Lython.Runtime.LythonRuntime:ExecuteLoweredAssignment(Lokad.Lython.Frontend.LoweredAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)",
+      "tier": "Instrumented Tier0",
+      "inlineSummary": null,
+      "callTargets": [
+        "call     [Lokad.Lython.Frontend.LoweredStatement:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:CheckExecution(Lokad.Lython.LythonSourceSpan):this]",
+        "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+        "call     CORINFO_HELP_COUNTPROFILE32",
+        "call     [Lokad.Lython.Frontend.LoweredNameAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.AssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.AssignmentStatementSyntax:get_Name():System.String:this]",
+        "call     [Lokad.Lython.Frontend.LoweredNameAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateLoweredExpression(Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StoreName(System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan)]",
+        "call     [Lokad.Lython.Frontend.LoweredChainedAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredChainedAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.ChainedAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.ChainedAssignmentStatementSyntax:get_Targets():System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.AssignmentTargetSyntax]:this]",
+        "call     CORINFO_HELP_CLASSPROFILE32",
+        "call     [r11]System.Collections.Generic.IEnumerable`1[System.__Canon]:GetEnumerator():System.Collections.Generic.IEnumerator`1[System.__Canon]:this",
+        "call     [r11]System.Collections.Generic.IEnumerator`1[System.__Canon]:get_Current():System.__Canon:this",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:AssignTarget(Lokad.Lython.Frontend.AssignmentTargetSyntax,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     CORINFO_HELP_PATCHPOINT",
+        "call     [r11]System.Collections.IEnumerator:MoveNext():bool:this",
+        "call     G_M000_IG37",
+        "call     [Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.AnnotatedAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.AnnotatedAssignmentStatementSyntax:get_Target():Lokad.Lython.Frontend.AssignmentTargetSyntax:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateAnnotationTargetReadsAsync(Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool):System.Threading.Tasks.ValueTask]",
+        "call     [System.Threading.Tasks.ValueTask:GetAwaiter():System.Runtime.CompilerServices.ValueTaskAwaiter:this]",
+        "call     [System.Runtime.CompilerServices.ValueTaskAwaiter:GetResult():this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StoreModuleAnnotationAsync(Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool):System.Threading.Tasks.ValueTask]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StoreModernClassAnnotationAsync(Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool):System.Threading.Tasks.ValueTask]",
+        "call     [Lokad.Lython.Frontend.LoweredAugmentedAssignmentStatement:get_Target():Lokad.Lython.Frontend.LoweredAugmentedAssignmentTarget:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ResolveLoweredAugmentedAssignmentTarget(Lokad.Lython.Frontend.LoweredAugmentedAssignmentTarget,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.LythonRuntime+PreparedAugmentedAssignmentTarget]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+PreparedAugmentedAssignmentTarget:get_CurrentValue():System.Object:this]",
+        "call     [Lokad.Lython.Frontend.LoweredAugmentedAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredAugmentedAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.AugmentedAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.AugmentedAssignmentStatementSyntax:get_Operator():int:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateAugmentedAssignment(System.Object,System.Object,int,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+PreparedAugmentedAssignmentTarget:StoreValue(System.Object):this]",
+        "call     [Lokad.Lython.Frontend.LoweredUnpackingAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.UnpackingAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.UnpackingAssignmentStatementSyntax:get_Targets():System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.UnpackingTargetSyntax]:this]",
+        "call     [Lokad.Lython.Frontend.LoweredUnpackingAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredExpression:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:AssignTargets(System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.UnpackingTargetSyntax],System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.SubscriptAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAssignmentStatement:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAssignmentStatement:get_Index():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ExecuteLoweredSubscriptAssignment(Lokad.Lython.Frontend.SubscriptAssignmentStatementSyntax,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.SliceAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_Start():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_End():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_Step():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ExecuteLoweredSliceAssignment(Lokad.Lython.Frontend.SliceAssignmentStatementSyntax,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Frontend.LoweredMemberAssignmentStatement:get_Expression():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredMemberAssignmentStatement:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredMemberAssignmentStatement:get_Assignment():Lokad.Lython.Frontend.MemberAssignmentStatementSyntax:this]",
+        "call     [Lokad.Lython.Frontend.MemberAssignmentStatementSyntax:get_MemberName():System.String:this]",
+        "call     [Lokad.Lython.Runtime.PyMemberAccess:TryAssign(System.Object,System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):bool]",
+        "call     CORINFO_HELP_NEWSFAST",
+        "call     [CORINFO_HELP_STRCNS]",
+        "call     [Lokad.Lython.Runtime.LythonRuntimeException:.ctor(System.String,System.String,Lokad.Lython.LythonSourceSpan):this]",
+        "call     CORINFO_HELP_THROW",
+        "call     [System.Object:GetType():System.Type:this]",
+        "call     [rax+0x30]System.Reflection.MemberInfo:get_Name():System.String:this",
+        "call     [System.String:Concat(System.String,System.String):System.String]",
+        "call     [System.InvalidOperationException:.ctor(System.String):this]",
+        "call     [r11]System.IDisposable:Dispose():this"
+      ],
+      "codeBytes": 2956
+    },
+    {
+      "role": "candidate",
+      "method": "Lokad.Lython.Runtime.LythonRuntime:ResolveLoweredAugmentedAssignmentTarget(Lokad.Lython.Frontend.LoweredAugmentedAssignmentTarget,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.LythonRuntime+PreparedAugmentedAssignmentTarget",
+      "tier": "Instrumented Tier0",
+      "inlineSummary": null,
+      "callTargets": [
+        "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+        "call     CORINFO_HELP_COUNTPROFILE32",
+        "call     [Lokad.Lython.Frontend.LoweredNameAugmentedAssignmentTarget:get_Target():Lokad.Lython.Frontend.NameAssignmentTargetSyntax:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ResolveAugmentedAssignmentTarget(Lokad.Lython.Frontend.AssignmentTargetSyntax,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.LythonRuntime+PreparedAugmentedAssignmentTarget]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAugmentedAssignmentTarget:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateLoweredExpression(Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAugmentedAssignmentTarget:get_Index():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredAugmentedAssignmentTarget:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ReadSubscriptValue(System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [Lokad.Lython.Frontend.LoweredSubscriptAugmentedAssignmentTarget:get_Target():Lokad.Lython.Frontend.SubscriptAssignmentTargetSyntax:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+PreparedAugmentedAssignmentTarget:.ctor(System.Object,Lokad.Lython.Frontend.AssignmentTargetSyntax,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,System.Object,System.Object,System.Object,System.Object):this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAugmentedAssignmentTarget:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAugmentedAssignmentTarget:get_Start():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAugmentedAssignmentTarget:get_End():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAugmentedAssignmentTarget:get_Step():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:CreateSliceValue(System.Object,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.PySlice]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:GetUserItem(Lokad.Lython.Runtime.PyInstance,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object]",
+        "call     [Lokad.Lython.Frontend.LoweredSliceAugmentedAssignmentTarget:get_Target():Lokad.Lython.Frontend.SliceAssignmentTargetSyntax:this]",
+        "call     [Lokad.Lython.Runtime.PyIndexing:ReadSlice(System.Object,System.Object,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [Lokad.Lython.Frontend.LoweredMemberAugmentedAssignmentTarget:get_Receiver():Lokad.Lython.Frontend.LoweredExpression:this]",
+        "call     [Lokad.Lython.Frontend.LoweredMemberAugmentedAssignmentTarget:get_Target():Lokad.Lython.Frontend.MemberAssignmentTargetSyntax:this]",
+        "call     [Lokad.Lython.Frontend.MemberAssignmentTargetSyntax:get_MemberName():System.String:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:TryResolveRuntimeMember(System.Object,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool]",
+        "call     [Lokad.Lython.Runtime.PyMemberAccess:CreateMissingMemberError(System.Object,System.String,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,int):Lokad.Lython.Runtime.LythonRuntimeException]",
+        "call     CORINFO_HELP_THROW",
+        "call     CORINFO_HELP_NEWSFAST",
+        "call     [CORINFO_HELP_STRCNS]",
+        "call     [System.Object:GetType():System.Type:this]",
+        "call     CORINFO_HELP_CLASSPROFILE32",
+        "call     [rax+0x30]System.Reflection.MemberInfo:get_Name():System.String:this",
+        "call     [System.String:Concat(System.String,System.String):System.String]",
+        "call     [System.InvalidOperationException:.ctor(System.String):this]"
+      ],
+      "codeBytes": 1903
+    },
+    {
+      "role": "candidate",
+      "method": "Lokad.Lython.Runtime.LythonRuntime+PreparedAugmentedAssignmentTarget:StoreValue(System.Object):this",
+      "tier": "Instrumented Tier0",
+      "inlineSummary": null,
+      "callTargets": [
+        "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+        "call     CORINFO_HELP_COUNTPROFILE32",
+        "call     [Lokad.Lython.Frontend.NameAssignmentTargetSyntax:get_Name():System.String:this]",
+        "call     [Lokad.Lython.Frontend.AssignmentTargetSyntax:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StoreName(System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan)]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:SetSubscriptValue(System.Object,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ExecuteSliceAssignment(System.Object,System.Object,System.Object,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Frontend.MemberAssignmentTargetSyntax:get_MemberName():System.String:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:SetMemberValue(System.Object,System.String,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     CORINFO_HELP_NEWSFAST",
+        "call     [CORINFO_HELP_STRCNS]",
+        "call     [System.Object:GetType():System.Type:this]",
+        "call     CORINFO_HELP_CLASSPROFILE32",
+        "call     [rax+0x30]System.Reflection.MemberInfo:get_Name():System.String:this",
+        "call     [System.String:Concat(System.String,System.String):System.String]",
+        "call     [System.InvalidOperationException:.ctor(System.String):this]",
+        "call     CORINFO_HELP_THROW"
+      ],
+      "codeBytes": 982
+    },
+    {
+      "role": "candidate",
+      "method": "Lokad.Lython.Runtime.LythonRuntime:ExecuteLoweredAssignment(Lokad.Lython.Frontend.LoweredAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)",
+      "tier": "Tier1",
+      "inlineSummary": "10 inlinees with PGO data; 66 single block inlinees; 1 inlinees without PGO data",
+      "callTargets": [
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateLoweredExpression(Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StoreName(System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan)]",
+        "call     [r11]System.Collections.Generic.IEnumerable`1[System.__Canon]:GetEnumerator():System.Collections.Generic.IEnumerator`1[System.__Canon]:this",
+        "call     [r11]System.Collections.IEnumerator:MoveNext():bool:this",
+        "call     [r11]System.Collections.Generic.IEnumerator`1[System.__Canon]:get_Current():System.__Canon:this",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:AssignTarget(Lokad.Lython.Frontend.AssignmentTargetSyntax,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [r11]System.IDisposable:Dispose():this",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StoreModuleAnnotationAsync(Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool):System.Threading.Tasks.ValueTask]",
+        "call     [System.Threading.Tasks.ValueTask:GetAwaiter():System.Runtime.CompilerServices.ValueTaskAwaiter:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:StoreModernClassAnnotationAsync(Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool):System.Threading.Tasks.ValueTask]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateAnnotationTargetReadsAsync(Lokad.Lython.Frontend.LoweredAnnotatedAssignmentStatement,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,bool):System.Threading.Tasks.ValueTask]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ResolveLoweredAugmentedAssignmentTarget(Lokad.Lython.Frontend.LoweredAugmentedAssignmentTarget,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.LythonRuntime+PreparedAugmentedAssignmentTarget]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateAugmentedAssignment(System.Object,System.Object,int,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:SetSubscriptValue(System.Object,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     CORINFO_HELP_NEWSFAST",
+        "call     [CORINFO_HELP_STRCNS]",
+        "call     [System.Object:GetType():System.Type:this]",
+        "call     [System.RuntimeType:get_Name():System.String:this]",
+        "call     [System.String:Concat(System.String,System.String):System.String]",
+        "call     [System.InvalidOperationException:.ctor(System.String):this]",
+        "call     CORINFO_HELP_THROW",
+        "call     [rax+0x28]Lokad.Lython.Frontend.LoweredExpression:get_Syntax():Lokad.Lython.Frontend.ExpressionSyntax:this",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:AssignTargets(System.Collections.Generic.IReadOnlyList`1[Lokad.Lython.Frontend.UnpackingTargetSyntax],System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ExecuteLoweredSubscriptAssignment(Lokad.Lython.Frontend.SubscriptAssignmentStatementSyntax,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Runtime.ExecutionGuards:SweepCheckpointTemporaries():this]",
+        "call     [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionStepLimit(long,Lokad.Lython.LythonSourceSpan)]",
+        "call     [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ExecuteLoweredSliceAssignment(Lokad.Lython.Frontend.SliceAssignmentStatementSyntax,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Frontend.LoweredExpression,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Runtime.PyMemberAccess:TryAssign(System.Object,System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):bool]",
+        "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+        "call     [System.Runtime.CompilerServices.TaskAwaiter:HandleNonSuccessAndDebuggerNotification(System.Threading.Tasks.Task,int)]",
+        "call     [r11]System.Threading.Tasks.Sources.IValueTaskSource:GetResult(short):this",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ExecuteSliceAssignment(System.Object,System.Object,System.Object,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Runtime.LythonRuntimeException:.ctor(System.String,System.String,Lokad.Lython.LythonSourceSpan):this]"
+      ],
+      "codeBytes": 2045
+    },
+    {
+      "role": "candidate",
+      "method": "Lokad.Lython.Runtime.LythonRuntime:ResolveLoweredAugmentedAssignmentTarget(Lokad.Lython.Frontend.LoweredAugmentedAssignmentTarget,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.LythonRuntime+PreparedAugmentedAssignmentTarget",
+      "tier": "Tier1",
+      "inlineSummary": "2 inlinees with PGO data; 38 single block inlinees; 0 inlinees without PGO data",
+      "callTargets": [
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ResolveAugmentedAssignmentTarget(Lokad.Lython.Frontend.AssignmentTargetSyntax,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.LythonRuntime+PreparedAugmentedAssignmentTarget]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:EvaluateLoweredExpression(Lokad.Lython.Frontend.LoweredExpression,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ReadSubscriptValue(System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+PreparedAugmentedAssignmentTarget:.ctor(System.Object,Lokad.Lython.Frontend.AssignmentTargetSyntax,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,System.Object,System.Object,System.Object,System.Object):this]",
+        "call     CORINFO_HELP_ISINSTANCEOFCLASS",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:CreateSliceValue(System.Object,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):Lokad.Lython.Runtime.PySlice]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:GetUserItem(Lokad.Lython.Runtime.PyInstance,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object]",
+        "call     [Lokad.Lython.Runtime.PyIndexing:ReadSlice(System.Object,System.Object,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object]",
+        "call     [Lokad.Lython.Runtime.PyMemberAccess:TryResolveNonContextual(System.Object,System.String,byref):bool]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+PathMembers:TryGetMember(Lokad.Lython.Runtime.PyPath,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+PathStatMembers:TryGetMember(Lokad.Lython.LythonPathStat,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+OpenPyxlWorksheet:TryGetMember(System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool:this]",
+        "call     [Lokad.Lython.Runtime.PyAttributeLookup:TryResolveSuperMember(Lokad.Lython.Runtime.PySuper,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool]",
+        "call     [Lokad.Lython.Runtime.PyAttributeLookup:TryResolveInstanceMember(Lokad.Lython.Runtime.PyInstance,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool]",
+        "call     CORINFO_HELP_ASSIGN_REF",
+        "call     [Lokad.Lython.Runtime.PyAttributeLookup:TryResolveTypeMember(Lokad.Lython.Runtime.PyType,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool]",
+        "call     [System.String:Equals(System.String,System.String):bool]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:TryGetBuiltin(System.String,byref):bool:this]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime:TryGetValueClass(System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,byref):bool]",
+        "call     [Lokad.Lython.Runtime.LythonRuntime+ExceptionInstanceMembers:TryGetMember(Lokad.Lython.Runtime.PyException,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool]",
+        "call     [Lokad.Lython.Runtime.PyAttributeLookup:TryResolveObjectSlot(System.Object,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool]",
+        "call     CORINFO_HELP_NEWSFAST",
+        "call     [CORINFO_HELP_STRCNS]",
+        "call     [System.Object:GetType():System.Type:this]",
+        "call     [System.RuntimeType:get_Name():System.String:this]",
+        "call     [System.String:Concat(System.String,System.String):System.String]",
+        "call     [System.InvalidOperationException:.ctor(System.String):this]",
+        "call     CORINFO_HELP_THROW",
+        "call     CORINFO_HELP_ISINSTANCEOFINTERFACE",
+        "call     [r11]Lokad.Lython.Runtime.IPyContextualDynamicAttributes:TryGetMember(System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool:this",
+        "call     [Lokad.Lython.Frontend.LoweredAugmentedAssignmentTarget:get_Span():Lokad.Lython.LythonSourceSpan:this]",
+        "call     [Lokad.Lython.Runtime.PyMemberAccess:CreateMissingMemberError(System.Object,System.String,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,int):Lokad.Lython.Runtime.LythonRuntimeException]"
+      ],
+      "codeBytes": 2084
+    },
+    {
+      "role": "candidate",
+      "method": "Lokad.Lython.Runtime.LythonRuntime+PreparedAugmentedAssignmentTarget:StoreValue(System.Object):this",
+      "tier": "Tier1",
+      "inlineSummary": "0 inlinees with PGO data; 7 single block inlinees; 1 inlinees without PGO data",
+      "callTargets": [
+        "call     [Lokad.Lython.Runtime.LythonRuntime:ExecuteSliceAssignment(System.Object,System.Object,System.Object,System.Object,System.Object,Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext)]",
+        "call     [Lokad.Lython.Runtime.PyMemberAccess:TryAssign(System.Object,System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):bool]",
+        "call     CORINFO_HELP_NEWSFAST",
+        "call     [CORINFO_HELP_STRCNS]",
+        "call     [System.Object:GetType():System.Type:this]",
+        "call     [System.RuntimeType:get_Name():System.String:this]",
+        "call     [System.String:Concat(System.String,System.String):System.String]",
+        "call     [System.InvalidOperationException:.ctor(System.String):this]",
+        "call     CORINFO_HELP_THROW",
+        "call     [Lokad.Lython.Runtime.LythonRuntimeException:.ctor(System.String,System.String,Lokad.Lython.LythonSourceSpan):this]"
+      ],
+      "codeBytes": 504
+    }
+  ],
+  "allNativeBodiesAndTiersRetained": true,
+  "noCodeSizeCausalityClaim": true,
+  "terminalOwnedServices": 20,
+  "recordedAbsentPids": 66,
+  "rawEvidencePrivate": true,
+  "proofSha256": {
+    "preparation-declaration.json": "2b2e83493a016b50f43f7d4fed27ce0c6667778061cac9cc699dac184234b4b1",
+    "micro-declaration.json": "e5e26993fbbbe187eb5c441d915e4d5276c42a238e00b21b3afea3ccc3a8aec1",
+    "assessment-policy.json": "d4e2fb80cc0e015d1dfb5d3ef03b04d5217280a777233a04551c6720f2a0220d",
+    "decision-policy-code-proof.json": "e99e57a40ae0a1d50a351dc91aace68b2bd0c6062aed459250587ccdaac63808",
+    "micros-audit.json": "31ef78fec5db412c4660e5326815329287a11a4f537475f5ef33136536aea46f",
+    "allocation-audit.json": "54e431eca015761afe8ce864dab93c03a62917bdf7b6ac8e097a0cf4486d6230",
+    "native-audit.json": "8468c1037b5486deac88ad6a1493fb17e1e295568896ebad2570fe6ec1da6467",
+    "decision.json": "d003ded9746f1fe17befb2ce224e45a17eaf2a2353a5c8e34a1d83727b862113",
+    "review.json": "58136b6f254c33eb59763f931a1c265ca6fd540e4c9e061e5f0b669ff80988a5"
+  }
+}

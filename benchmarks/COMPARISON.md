@@ -4,6 +4,13 @@ Specification version **6**, used by the declared milestone collections. The cat
 and explicit correctness check are available. Persistent worker primitives are
 available, including supervised correctness/timer smokes, paired collection,
 machine checks and raw-evidence report rendering.
+The [prepared augmented-target round](results/2026-10-11-prepared-augmented-target/README.md)
+rejected; the prototype remains isolated. It compares identical slice-protocol/governance corrections
+on both producers, with 42 independent pre-prototype checks. Fourteen paired
+micros take 8.04–8.05s including cleanup; separate allocation/native
+checks and all controls remain visible. No full lane or favorable recollection
+is added; the next milestone remains deferred.
+
 The [corrected function-scoped dispatch round](results/2026-10-11-scoped-dispatch-corrected/README.md)
 accepts direct lowered dispatch only inside active synchronous function bodies.
 Method jobs take 4.4% / 10.1% less time and allocate 1.3% / 4.4% less in two passes,
