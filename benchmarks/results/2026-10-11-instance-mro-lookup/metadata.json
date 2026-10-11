@@ -1,0 +1,2854 @@
+{
+  "publishedUtc": "2026-10-11T11:43:53.258863+00:00",
+  "status": "Integrated",
+  "baseline": "5dc90ad430ba27ebe57826066fc967b2deb655cb",
+  "candidate": "95835ddea546cc0d0d1af17d641e79961e808ab8",
+  "baselineProductionTree": "87eaf4983d2762e10d2c61a047e835234e2ea291",
+  "candidateProductionTree": "cd9dc4b4db4f8f2a2f171c149e61338cc18f4c3c",
+  "tests": "57d066d494d28b397fcb93ed846ec3ce645dec10",
+  "harness": "c194ce88a7e4d52c576f3929ef82bce60bf37e2d",
+  "decision": {
+    "decidedUtc": "2026-10-11T11:42:10.164502+00:00",
+    "sourceIntegrated": true,
+    "reason": "Integrated: calls.keyword.medium: -1.86%/+1.26%; calls.method.medium: -5.06%/-2.86%; calls.positional.medium: +0.69%/-2.40%; control.empty.control: -1.26%/-1.11%; lists.stable-sort.medium: +8.21%/-0.63%; loops.integer.large: -3.77%/+0.70%; strings.pipeline-ascii.medium: -1.03%/-1.57%. Method gains above max(2%, spread) in both passes: True; repeated timing regressions: []; repeated allocation growth above 0.5%: []. All controls retained; no full lanes or favorable recollection.",
+    "changesPercent": {
+      "calls.keyword.medium": [
+        -1.861491616926969,
+        1.255120996070258
+      ],
+      "calls.method.medium": [
+        -5.0636223955941695,
+        -2.85773268279943
+      ],
+      "calls.positional.medium": [
+        0.694648983333912,
+        -2.4014803922832284
+      ],
+      "control.empty.control": [
+        -1.2612125043183542,
+        -1.1062971411706757
+      ],
+      "lists.stable-sort.medium": [
+        8.210963481142208,
+        -0.6292778826447298
+      ],
+      "loops.integer.large": [
+        -3.7684055300674757,
+        0.7036055220531523
+      ],
+      "strings.pipeline-ascii.medium": [
+        -1.0289841424203194,
+        -1.5652818141880354
+      ]
+    },
+    "spreadsPercent": {
+      "calls.keyword.medium": [
+        0.8854211747606515,
+        2.944156158799573
+      ],
+      "calls.method.medium": [
+        0.9606535251380558,
+        1.0212501307590138
+      ],
+      "calls.positional.medium": [
+        1.5240316597994972,
+        1.372530068060933
+      ],
+      "control.empty.control": [
+        3.6595024337848003,
+        4.385694643948096
+      ],
+      "lists.stable-sort.medium": [
+        16.318953497978324,
+        6.908162109822323
+      ],
+      "loops.integer.large": [
+        0.9310622589754258,
+        2.67883622601822
+      ],
+      "strings.pipeline-ascii.medium": [
+        2.4358083192613322,
+        3.1134420201433923
+      ]
+    },
+    "targetTimePassed": true,
+    "repeatedMaterialRegressions": [],
+    "repeatedMaterialAllocationRegressions": [],
+    "allocationResults": [
+      {
+        "replica": 1,
+        "case": "control.empty.control",
+        "baselineBytes": 29448,
+        "candidateBytes": 29448,
+        "savedBytes": 0,
+        "savedFraction": 0.0
+      },
+      {
+        "replica": 1,
+        "case": "loops.integer.large",
+        "baselineBytes": 1079480.4,
+        "candidateBytes": 1079480.64,
+        "savedBytes": -0.23999999999068677,
+        "savedFraction": -2.2232918728271045e-07
+      },
+      {
+        "replica": 1,
+        "case": "calls.positional.medium",
+        "baselineBytes": 605717.44,
+        "candidateBytes": 605717.2,
+        "savedBytes": 0.23999999999068677,
+        "savedFraction": 3.962243517730002e-07
+      },
+      {
+        "replica": 1,
+        "case": "calls.keyword.medium",
+        "baselineBytes": 605992.48,
+        "candidateBytes": 605991.28,
+        "savedBytes": 1.1999999999534339,
+        "savedFraction": 1.9802225927900707e-06
+      },
+      {
+        "replica": 1,
+        "case": "calls.method.medium",
+        "baselineBytes": 1940235.68,
+        "candidateBytes": 1943926.56,
+        "savedBytes": -3690.880000000121,
+        "savedFraction": -0.0019022843657838795
+      },
+      {
+        "replica": 1,
+        "case": "lists.stable-sort.medium",
+        "baselineBytes": 3577524.72,
+        "candidateBytes": 3579891.44,
+        "savedBytes": -2366.7199999997392,
+        "savedFraction": -0.0006615523819495372
+      },
+      {
+        "replica": 1,
+        "case": "strings.pipeline-ascii.medium",
+        "baselineBytes": 461856,
+        "candidateBytes": 461856,
+        "savedBytes": 0,
+        "savedFraction": 0.0
+      },
+      {
+        "replica": 2,
+        "case": "control.empty.control",
+        "baselineBytes": 29347.84,
+        "candidateBytes": 29280,
+        "savedBytes": 67.84000000000015,
+        "savedFraction": 0.002311584089323082
+      },
+      {
+        "replica": 2,
+        "case": "loops.integer.large",
+        "baselineBytes": 1079266.64,
+        "candidateBytes": 1079266.64,
+        "savedBytes": 0.0,
+        "savedFraction": 0.0
+      },
+      {
+        "replica": 2,
+        "case": "calls.positional.medium",
+        "baselineBytes": 605506.64,
+        "candidateBytes": 605533.28,
+        "savedBytes": -26.64000000001397,
+        "savedFraction": -4.3996214475816586e-05
+      },
+      {
+        "replica": 2,
+        "case": "calls.keyword.medium",
+        "baselineBytes": 605770.64,
+        "candidateBytes": 605770.64,
+        "savedBytes": 0.0,
+        "savedFraction": 0.0
+      },
+      {
+        "replica": 2,
+        "case": "calls.method.medium",
+        "baselineBytes": 1869589.12,
+        "candidateBytes": 1869493.12,
+        "savedBytes": 96.0,
+        "savedFraction": 5.1348180716837e-05
+      },
+      {
+        "replica": 2,
+        "case": "lists.stable-sort.medium",
+        "baselineBytes": 3502727.92,
+        "candidateBytes": 3502727.92,
+        "savedBytes": 0.0,
+        "savedFraction": 0.0
+      },
+      {
+        "replica": 2,
+        "case": "strings.pipeline-ascii.medium",
+        "baselineBytes": 461856,
+        "candidateBytes": 461856,
+        "savedBytes": 0,
+        "savedFraction": 0.0
+      }
+    ],
+    "fullLanes": 0,
+    "recollection": false,
+    "milestoneQualified": false
+  },
+  "assessmentPolicy": {
+    "declaredUtc": "2026-10-11T11:27:56.943699+00:00",
+    "candidate": "95835ddea546cc0d0d1af17d641e79961e808ab8",
+    "target": [
+      "calls.method.medium"
+    ],
+    "acceptance": "Require method gains beyond max(2%, retained spread) in both passes, no repeated control timing regression beyond that bound, and no repeated complete-job allocation growth above 0.5%.",
+    "rationale": "Reuse the current operation first live class-MRO result across the side-effect-free own-attribute dictionary lookup in sync and awaited readers. Preserve data descriptor precedence, live slot/member mutations, exact receiver/context/span, fees/checkpoints, shadowing, engine fallback and actual suspension/reentry. No persistent guest-value cache, compiler/frame/namespace change or reduced fees.",
+    "controls": "Empty, integer loop, positional/keyword calls, full stable sort/output and ASCII pipeline; preserve all seven canonical cases.",
+    "semanticGates": "Eighteen independently pinned original MRO/descriptor/context/funding/checkpoint/real-host checks and four CPython public goldens, existing default-slot and call tests, full matching Debug/VM Release suites per producer before timing.",
+    "normalTimingCollections": 14,
+    "hardCapPerCollectionSeconds": 30,
+    "fullLanes": 0,
+    "recollectToChaseNoise": false,
+    "milestoneQualified": false,
+    "earlierGlobalDispatchDecisionUnchanged": true,
+    "nativeCode": "Keep every native body/tier, inline summary and call/jump transfer for instance readers, MRO lookup, binding, frame entry, execution and guards. No size-speed forecast.",
+    "genuineAsync": "Actual awaited descriptor/host suspension and cancellation preserve the current receiver/context/span and later fresh class lookup."
+  },
+  "microRows": [
+    {
+      "index": 0,
+      "replica": 1,
+      "case": "control.empty.control",
+      "seconds": 6.486798,
+      "wholeSeconds": 8.043103,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 23.990918309859158,
+          "iqrFraction": 0.036595024337848
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 23.688341848234412,
+          "iqrFraction": 0.022764195951414275
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1.4652216290276858,
+          "iqrFraction": 0.005213156430065341
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "replica": 1,
+      "case": "loops.integer.large",
+      "seconds": 6.945234,
+      "wholeSeconds": 8.050611,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 1150.7804827586206,
+          "iqrFraction": 0.009310622589754259
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1107.4144074074075,
+          "iqrFraction": 0.008050668174706257
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 589.6713921568628,
+          "iqrFraction": 0.010822661248915738
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "replica": 1,
+      "case": "calls.positional.medium",
+      "seconds": 6.889121,
+      "wholeSeconds": 8.038859,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 438.04398437500004,
+          "iqrFraction": 0.008741844738408309
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 441.08685245901637,
+          "iqrFraction": 0.015240316597994972
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 122.54055458515285,
+          "iqrFraction": 0.0038853192065065813
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "replica": 1,
+      "case": "calls.keyword.medium",
+      "seconds": 6.851723,
+      "wholeSeconds": 8.050845,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 479.77842105263153,
+          "iqrFraction": 0.007105418180980375
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 470.84738596491223,
+          "iqrFraction": 0.008854211747606516
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 137.56725773195873,
+          "iqrFraction": 0.0034779801055513
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "replica": 1,
+      "case": "calls.method.medium",
+      "seconds": 6.896949,
+      "wholeSeconds": 8.040899,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 1221.3394,
+          "iqrFraction": 0.009606535251380558
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1159.4953846153846,
+          "iqrFraction": 0.00733223471218262
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 117.92377642276423,
+          "iqrFraction": 0.002097503454846325
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "replica": 1,
+      "case": "lists.stable-sort.medium",
+      "seconds": 7.046397,
+      "wholeSeconds": 8.048303,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2641.5106666666666,
+          "iqrFraction": 0.0735258056879573
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2858.4041428571427,
+          "iqrFraction": 0.16318953497978325
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 311.3250111111111,
+          "iqrFraction": 0.007026347706439307
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "replica": 1,
+      "case": "strings.pipeline-ascii.medium",
+      "seconds": 6.789385,
+      "wholeSeconds": 8.038074,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 140.39053333333334,
+          "iqrFraction": 0.007973353379002894
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 138.94593700787402,
+          "iqrFraction": 0.024358083192613324
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 41.88090312965723,
+          "iqrFraction": 0.007886958996567071
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "replica": 2,
+      "case": "control.empty.control",
+      "seconds": 6.427523,
+      "wholeSeconds": 8.044501,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 23.33482883475971,
+          "iqrFraction": 0.04385694643948096
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 23.07667629046369,
+          "iqrFraction": 0.015924639532380266
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 1.47463483224931,
+          "iqrFraction": 0.006739660550958749
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "replica": 2,
+      "case": "loops.integer.large",
+      "seconds": 6.892669,
+      "wholeSeconds": 8.046249,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 1122.825888888889,
+          "iqrFraction": 0.026788362260182202
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1130.7261538461537,
+          "iqrFraction": 0.007729325062723428
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 608.2070980392157,
+          "iqrFraction": 0.0014472946876130997
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "replica": 2,
+      "case": "calls.positional.medium",
+      "seconds": 6.905145,
+      "wholeSeconds": 8.04405,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 440.3320857142857,
+          "iqrFraction": 0.011510046670619866
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 429.75759701492535,
+          "iqrFraction": 0.013725300680609329
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 127.81545495495496,
+          "iqrFraction": 0.005248998670697496
+        }
+      ]
+    },
+    {
+      "index": 10,
+      "replica": 2,
+      "case": "calls.keyword.medium",
+      "seconds": 6.885834,
+      "wholeSeconds": 8.044833,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 508.8663888888888,
+          "iqrFraction": 0.01115418676626355
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 515.2532777777778,
+          "iqrFraction": 0.02944156158799573
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 146.49699999999999,
+          "iqrFraction": 0.00576532283937545
+        }
+      ]
+    },
+    {
+      "index": 11,
+      "replica": 2,
+      "case": "calls.method.medium",
+      "seconds": 6.909694,
+      "wholeSeconds": 8.041089,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 1210.6240799999998,
+          "iqrFraction": 0.010212501307590138
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 1176.02768,
+          "iqrFraction": 0.007795717869497688
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 115.109196,
+          "iqrFraction": 0.0043520415171694705
+        }
+      ]
+    },
+    {
+      "index": 12,
+      "replica": 2,
+      "case": "lists.stable-sort.medium",
+      "seconds": 7.149001,
+      "wholeSeconds": 8.041698,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 2570.099333333333,
+          "iqrFraction": 0.04663671884017962
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 2553.926266666667,
+          "iqrFraction": 0.06908162109822323
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 303.75987999999995,
+          "iqrFraction": 0.008823301484053919
+        }
+      ]
+    },
+    {
+      "index": 13,
+      "replica": 2,
+      "case": "strings.pipeline-ascii.medium",
+      "seconds": 6.695275,
+      "wholeSeconds": 8.051341,
+      "summaries": [
+        {
+          "engine": "baseline",
+          "medianMicroseconds": 141.50396638655462,
+          "iqrFraction": 0.020245980574111148
+        },
+        {
+          "engine": "candidate",
+          "medianMicroseconds": 139.28903053435113,
+          "iqrFraction": 0.031134420201433925
+        },
+        {
+          "engine": "CPython",
+          "medianMicroseconds": 41.38276945668135,
+          "iqrFraction": 0.00460515712591292
+        }
+      ]
+    }
+  ],
+  "microAttempts": 597,
+  "allocationResults": [
+    {
+      "replica": 1,
+      "case": "control.empty.control",
+      "baselineBytes": 29448,
+      "candidateBytes": 29448,
+      "savedBytes": 0,
+      "savedFraction": 0.0
+    },
+    {
+      "replica": 1,
+      "case": "loops.integer.large",
+      "baselineBytes": 1079480.4,
+      "candidateBytes": 1079480.64,
+      "savedBytes": -0.23999999999068677,
+      "savedFraction": -2.2232918728271045e-07
+    },
+    {
+      "replica": 1,
+      "case": "calls.positional.medium",
+      "baselineBytes": 605717.44,
+      "candidateBytes": 605717.2,
+      "savedBytes": 0.23999999999068677,
+      "savedFraction": 3.962243517730002e-07
+    },
+    {
+      "replica": 1,
+      "case": "calls.keyword.medium",
+      "baselineBytes": 605992.48,
+      "candidateBytes": 605991.28,
+      "savedBytes": 1.1999999999534339,
+      "savedFraction": 1.9802225927900707e-06
+    },
+    {
+      "replica": 1,
+      "case": "calls.method.medium",
+      "baselineBytes": 1940235.68,
+      "candidateBytes": 1943926.56,
+      "savedBytes": -3690.880000000121,
+      "savedFraction": -0.0019022843657838795
+    },
+    {
+      "replica": 1,
+      "case": "lists.stable-sort.medium",
+      "baselineBytes": 3577524.72,
+      "candidateBytes": 3579891.44,
+      "savedBytes": -2366.7199999997392,
+      "savedFraction": -0.0006615523819495372
+    },
+    {
+      "replica": 1,
+      "case": "strings.pipeline-ascii.medium",
+      "baselineBytes": 461856,
+      "candidateBytes": 461856,
+      "savedBytes": 0,
+      "savedFraction": 0.0
+    },
+    {
+      "replica": 2,
+      "case": "control.empty.control",
+      "baselineBytes": 29347.84,
+      "candidateBytes": 29280,
+      "savedBytes": 67.84000000000015,
+      "savedFraction": 0.002311584089323082
+    },
+    {
+      "replica": 2,
+      "case": "loops.integer.large",
+      "baselineBytes": 1079266.64,
+      "candidateBytes": 1079266.64,
+      "savedBytes": 0.0,
+      "savedFraction": 0.0
+    },
+    {
+      "replica": 2,
+      "case": "calls.positional.medium",
+      "baselineBytes": 605506.64,
+      "candidateBytes": 605533.28,
+      "savedBytes": -26.64000000001397,
+      "savedFraction": -4.3996214475816586e-05
+    },
+    {
+      "replica": 2,
+      "case": "calls.keyword.medium",
+      "baselineBytes": 605770.64,
+      "candidateBytes": 605770.64,
+      "savedBytes": 0.0,
+      "savedFraction": 0.0
+    },
+    {
+      "replica": 2,
+      "case": "calls.method.medium",
+      "baselineBytes": 1869589.12,
+      "candidateBytes": 1869493.12,
+      "savedBytes": 96.0,
+      "savedFraction": 5.1348180716837e-05
+    },
+    {
+      "replica": 2,
+      "case": "lists.stable-sort.medium",
+      "baselineBytes": 3502727.92,
+      "candidateBytes": 3502727.92,
+      "savedBytes": 0.0,
+      "savedFraction": 0.0
+    },
+    {
+      "replica": 2,
+      "case": "strings.pipeline-ascii.medium",
+      "baselineBytes": 461856,
+      "candidateBytes": 461856,
+      "savedBytes": 0,
+      "savedFraction": 0.0
+    }
+  ],
+  "nativeSummaries": [
+    {
+      "role": "baseline",
+      "jitSha256": "81c003d202ba5918a3b44fe7d664a0860039c536296522cf2be5a8e1741c31bb",
+      "bodies": [
+        {
+          "method": "Lokad.Lython.Runtime.ExecutionThreads+WorkItem:Execute(System.Threading.ExecutionContext):this",
+          "tier": "Tier0",
+          "codeBytes": 365,
+          "inlineSummary": null,
+          "transferTargetsCount": 9,
+          "transferTargetsSha256": "8bf85a7d8cfd9d80822656ad843ea7460dbe154e4722c59bc0862d95ef04f2b1",
+          "transfersCount": 13,
+          "transfersSha256": "1ee3944c8a8664af191695694847d52761b3fb2a2fcef8c379ee3b061e8c4113",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.ExecutionGuards:CheckExecution(Lokad.Lython.LythonSourceSpan):this",
+          "tier": "Tier0",
+          "codeBytes": 235,
+          "inlineSummary": null,
+          "transferTargetsCount": 11,
+          "transferTargetsSha256": "9ec435503b1361017b393a1ca57cb9d5364fd01d1688698d964595b9e8171eb2",
+          "transfersCount": 11,
+          "transfersSha256": "9ec435503b1361017b393a1ca57cb9d5364fd01d1688698d964595b9e8171eb2",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 3144,
+          "inlineSummary": null,
+          "transferTargetsCount": 63,
+          "transferTargetsSha256": "13909e2c739088d16c9e4ba370e2e7f04806d63faa94a26524ede4243ba5e472",
+          "transfersCount": 121,
+          "transfersSha256": "c62b282b7f88ad997696ea3eb0f07d9d8cc4a5502137b078cdcd1006b21b5809",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.ExecutionServices:CheckExecution(Lokad.Lython.LythonSourceSpan):this",
+          "tier": "Tier0",
+          "codeBytes": 61,
+          "inlineSummary": null,
+          "transferTargetsCount": 2,
+          "transferTargetsSha256": "87bf15af0e5420e736959dc490310a2f254d2b15decf834a9cf75dd931c7dc68",
+          "transfersCount": 2,
+          "transfersSha256": "87bf15af0e5420e736959dc490310a2f254d2b15decf834a9cf75dd931c7dc68",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStackTransfer(byref):this",
+          "tier": "Tier0",
+          "codeBytes": 2884,
+          "inlineSummary": null,
+          "transferTargetsCount": 42,
+          "transferTargetsSha256": "114aa758ef31dd39c6c8e0fb4c057c01e74f9a491f659454793d7a2873117094",
+          "transfersCount": 103,
+          "transfersSha256": "8e7dee0300498ce00e9ea916454f26798790816829cf6dd85d811df18b1712f1",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteValueOperation(byref):bool:this",
+          "tier": "Tier0",
+          "codeBytes": 2353,
+          "inlineSummary": null,
+          "transferTargetsCount": 37,
+          "transferTargetsSha256": "fdcc78e44ce67598a919e195c67f96229546c451e5da529333dc5a80dd4f2e0f",
+          "transfersCount": 88,
+          "transfersSha256": "34aeafa41afda89582d8728b7b5b6b80f20e84cfd7411a3089fc7cc95045f65e",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:CheckExecution(Lokad.Lython.LythonSourceSpan):this",
+          "tier": "Tier0",
+          "codeBytes": 61,
+          "inlineSummary": null,
+          "transferTargetsCount": 2,
+          "transferTargetsSha256": "70702a277ccaef8dc082967e1091a3fc8818681d97b8d72582a7775e5f4b6c0b",
+          "transfersCount": 2,
+          "transfersSha256": "70702a277ccaef8dc082967e1091a3fc8818681d97b8d72582a7775e5f4b6c0b",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+BoundArgumentsCallable:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier0",
+          "codeBytes": 364,
+          "inlineSummary": null,
+          "transferTargetsCount": 12,
+          "transferTargetsSha256": "bae7f666f6a8eaf2b5ed69e3ecbbef4a42c2ecb570125907480049bf6528aac5",
+          "transfersCount": 13,
+          "transfersSha256": "8e4c516565336c6c6143758cfc016a2ab9b08702932e544ad2fe04c5b7e18ce2",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+          "tier": "Tier1-OSR",
+          "codeBytes": 7515,
+          "inlineSummary": "67 inlinees with PGO data; 227 single block inlinees; 56 inlinees without PGO data",
+          "transferTargetsCount": 117,
+          "transferTargetsSha256": "c5ee039cb885e1d03e7efea13ee5e94fc652b5f1bbfeb4db8b6bbd7b85fc13d1",
+          "transfersCount": 252,
+          "transfersSha256": "6d1fa10bc34d92e3f7b4bc775d95f0e78ecf148002e3f160c2c8a36a9d25cc0b",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+PrintCallable:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 651,
+          "inlineSummary": null,
+          "transferTargetsCount": 15,
+          "transferTargetsSha256": "af5163c841b187b8171fbf2a520b03a8029b9c3c948d657ddc9b4884c160f31c",
+          "transfersCount": 24,
+          "transfersSha256": "4c8fcba817c3241646bbaa64e1d1f25808c26ab79c40c8bacff29cac0a013e4f",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteValueOperation(byref):bool:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 2728,
+          "inlineSummary": null,
+          "transferTargetsCount": 39,
+          "transferTargetsSha256": "f7a7091e0117a7a435e184910c8d94940289a7c1a91ec9b95d78214b9685afca",
+          "transfersCount": 104,
+          "transfersSha256": "d7aaf77de6f3ac4a701aeeeff3a83109d75e181e46e8629a9f29c0dc4661a132",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.ExecutionGuards:CheckExecution(Lokad.Lython.LythonSourceSpan):this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 312,
+          "inlineSummary": null,
+          "transferTargetsCount": 13,
+          "transferTargetsSha256": "620a3efe227a9e057aa35ee516a000412c688c07b75b036b04d094baa865e40b",
+          "transfersCount": 17,
+          "transfersSha256": "eb466d9e9ddd85da5d968f8ddf9d5e4c8b65265493e899c2c98ca376dd36ba9a",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.ExecutionServices:CheckExecution(Lokad.Lython.LythonSourceSpan):this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 61,
+          "inlineSummary": null,
+          "transferTargetsCount": 2,
+          "transferTargetsSha256": "87bf15af0e5420e736959dc490310a2f254d2b15decf834a9cf75dd931c7dc68",
+          "transfersCount": 2,
+          "transfersSha256": "87bf15af0e5420e736959dc490310a2f254d2b15decf834a9cf75dd931c7dc68",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:CheckExecution(Lokad.Lython.LythonSourceSpan):this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 61,
+          "inlineSummary": null,
+          "transferTargetsCount": 2,
+          "transferTargetsSha256": "70702a277ccaef8dc082967e1091a3fc8818681d97b8d72582a7775e5f4b6c0b",
+          "transfersCount": 2,
+          "transfersSha256": "70702a277ccaef8dc082967e1091a3fc8818681d97b8d72582a7775e5f4b6c0b",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteValueOperation(byref):bool:this",
+          "tier": "Tier1",
+          "codeBytes": 1887,
+          "inlineSummary": "4 inlinees with PGO data; 68 single block inlinees; 4 inlinees without PGO data",
+          "transferTargetsCount": 44,
+          "transferTargetsSha256": "25a6fde2467a0370658507d81035fcd62c0ee353672ccf6bf31a54121517c409",
+          "transfersCount": 82,
+          "transfersSha256": "9053356bb4aea8e49f54a30adbca2473fbf9f4418f5bb567f44e656dc5c7e394",
+          "tailTransfers": [
+            "tail.jmp [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteForNext(byref):bool:this]"
+          ]
+        },
+        {
+          "method": "Lokad.Lython.Runtime.ExecutionGuards:CheckExecution(Lokad.Lython.LythonSourceSpan):this",
+          "tier": "Tier1",
+          "codeBytes": 124,
+          "inlineSummary": "1 inlinees with PGO data; 10 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 5,
+          "transferTargetsSha256": "f8f7b27b137f1db326c767e5d202d9682f12a266a60a458655957c518cafc7d7",
+          "transfersCount": 5,
+          "transfersSha256": "f8f7b27b137f1db326c767e5d202d9682f12a266a60a458655957c518cafc7d7",
+          "tailTransfers": [
+            "tail.jmp [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]"
+          ]
+        },
+        {
+          "method": "Lokad.Lython.Runtime.ExecutionServices:CheckExecution(Lokad.Lython.LythonSourceSpan):this",
+          "tier": "Tier1",
+          "codeBytes": 128,
+          "inlineSummary": "2 inlinees with PGO data; 11 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 5,
+          "transferTargetsSha256": "f8f7b27b137f1db326c767e5d202d9682f12a266a60a458655957c518cafc7d7",
+          "transfersCount": 5,
+          "transfersSha256": "f8f7b27b137f1db326c767e5d202d9682f12a266a60a458655957c518cafc7d7",
+          "tailTransfers": [
+            "tail.jmp [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]"
+          ]
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:CheckExecution(Lokad.Lython.LythonSourceSpan):this",
+          "tier": "Tier1",
+          "codeBytes": 132,
+          "inlineSummary": "2 inlinees with PGO data; 13 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 5,
+          "transferTargetsSha256": "f8f7b27b137f1db326c767e5d202d9682f12a266a60a458655957c518cafc7d7",
+          "transfersCount": 5,
+          "transfersSha256": "f8f7b27b137f1db326c767e5d202d9682f12a266a60a458655957c518cafc7d7",
+          "tailTransfers": [
+            "tail.jmp [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]"
+          ]
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyFunctionBase:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier0",
+          "codeBytes": 421,
+          "inlineSummary": null,
+          "transferTargetsCount": 14,
+          "transferTargetsSha256": "6d4132bd83b7b2a180c5d78949a781328c23a364437102536a7190c44e792447",
+          "transfersCount": 18,
+          "transfersSha256": "560b67086f77abb9071744bfcf96c242f1b3e7c99a9bb1d0c41800980e958765",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyFunctionBase:EnterInvocationFrame(Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this",
+          "tier": "Tier0",
+          "codeBytes": 184,
+          "inlineSummary": null,
+          "transferTargetsCount": 3,
+          "transferTargetsSha256": "11d9dc68cf7c3c0e21182f93e6ea2f4378cd3431e569c6e388e8f0b738aabc6a",
+          "transfersCount": 3,
+          "transfersSha256": "11d9dc68cf7c3c0e21182f93e6ea2f4378cd3431e569c6e388e8f0b738aabc6a",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyFunctionBinding:EnterInvocationFrame(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts,Lokad.Lython.Runtime.FunctionBindingPlan,Lokad.Lython.Runtime.BoundCallArguments,bool,Lokad.Lython.Runtime.PyType,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 1042,
+          "inlineSummary": null,
+          "transferTargetsCount": 27,
+          "transferTargetsSha256": "13175851a47a4e1cdb869c0ca60334dc61a4fe395f5eb29917568e3059e7a07c",
+          "transfersCount": 45,
+          "transfersSha256": "e09bb6d1ac593ecff727d131e172434af19c2a3af0d7ea87073885659a62129f",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+          "tier": "Tier1-OSR",
+          "codeBytes": 4594,
+          "inlineSummary": "35 inlinees with PGO data; 87 single block inlinees; 12 inlinees without PGO data",
+          "transferTargetsCount": 93,
+          "transferTargetsSha256": "6b277ec07829aed4cbcbc13c00d4d966a39b45e9812f672e244aec18d3fd0b6e",
+          "transfersCount": 166,
+          "transfersSha256": "7746523708bbcbfbbb434ab6fb4c0ae7b7f65e9c4a29172c34522965b4bf04eb",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStackTransfer(byref):this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 3489,
+          "inlineSummary": null,
+          "transferTargetsCount": 44,
+          "transferTargetsSha256": "304979647bbc62b60d3016a59ca3c911e542c7458469fbc5acc970f7567c45bc",
+          "transfersCount": 128,
+          "transfersSha256": "684d694c8d556dd3d027ca699678a2d2d3ab1750656add59555373bccb20d94f",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+PrintCallable:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 651,
+          "inlineSummary": null,
+          "transferTargetsCount": 15,
+          "transferTargetsSha256": "af5163c841b187b8171fbf2a520b03a8029b9c3c948d657ddc9b4884c160f31c",
+          "transfersCount": 24,
+          "transfersSha256": "4c8fcba817c3241646bbaa64e1d1f25808c26ab79c40c8bacff29cac0a013e4f",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyType:TryLookupInMro(System.String,int,byref,byref):bool:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 393,
+          "inlineSummary": null,
+          "transferTargetsCount": 9,
+          "transferTargetsSha256": "d6758ffde3a62c5598a568faf2fbd5d06e5e98c50b431afea870354b84ac84e7",
+          "transfersCount": 14,
+          "transfersSha256": "6918c3b9ccf3d44dde66c34ad28d3723dfa121b65d0d148a2048e113c374d298",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyBoundMethod:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier0",
+          "codeBytes": 201,
+          "inlineSummary": null,
+          "transferTargetsCount": 6,
+          "transferTargetsSha256": "97128b73ceb78d960172f9dc4849cdf77fa1160c5f42f5b6e909e23aeb4d88f3",
+          "transfersCount": 7,
+          "transfersSha256": "efbe9c89f269c70f15dae281108fc35d46261dca8964b259d617f2f1f807c0ef",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ObjectInitSubclassMethod:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier0",
+          "codeBytes": 217,
+          "inlineSummary": null,
+          "transferTargetsCount": 6,
+          "transferTargetsSha256": "ebf52f6289234c716654dd38c4637e00bf888dc28b58bfa14cc4473d934cb5f6",
+          "transfersCount": 7,
+          "transfersSha256": "e4d5531af7693eb9ebbd4d320d03dc9019999bae829589fb1a3a6aeeeacddb55",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyType:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier0",
+          "codeBytes": 1415,
+          "inlineSummary": null,
+          "transferTargetsCount": 29,
+          "transferTargetsSha256": "2204df49fe0278c60f55741d61ec74e4da8cc3293b25120ac0e1112118898680",
+          "transfersCount": 54,
+          "transfersSha256": "7b3982b8165fa8cd54d2c5aee7e5297b684e56d6a2a8ebcdf209947cbd9071ce",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ObjectNewMethod:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier0",
+          "codeBytes": 316,
+          "inlineSummary": null,
+          "transferTargetsCount": 10,
+          "transferTargetsSha256": "c75bb7a013cdb4641c881f7cf0500a1b4583ce4cfc8339cb5c4c25b5968eedf6",
+          "transfersCount": 12,
+          "transfersSha256": "2bdca46e61d4a697f0573e43cf26598c1dab1ea0d77d09af80a12ccd0c26e5ec",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyMemberAccess:TryAssign(System.Object,System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):bool",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 4588,
+          "inlineSummary": null,
+          "transferTargetsCount": 70,
+          "transferTargetsSha256": "f44c2c243bdbd263d7124fc194f91aa6d4f01d807c53e272ac30134609281955",
+          "transfersCount": 198,
+          "transfersSha256": "c1e28cdbac8f354ba0d023f848acb55e516373145cabee0221373973b5f7256d",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime:SetObjectInstanceAttribute(Lokad.Lython.Runtime.PyInstance,System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan)",
+          "tier": "Tier0",
+          "codeBytes": 161,
+          "inlineSummary": null,
+          "transferTargetsCount": 4,
+          "transferTargetsSha256": "b53b45e7716fa2acb36790cc1d79177820be88be88631c020e1c8293c1f2d297",
+          "transfersCount": 4,
+          "transfersSha256": "b53b45e7716fa2acb36790cc1d79177820be88be88631c020e1c8293c1f2d297",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyAttributeLookup:TryResolveInstanceMember(Lokad.Lython.Runtime.PyInstance,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool",
+          "tier": "Tier0",
+          "codeBytes": 1067,
+          "inlineSummary": null,
+          "transferTargetsCount": 19,
+          "transferTargetsSha256": "023fe97abc7f20c0e471b0c32341c8053d856bcaf093453870197793538caccb",
+          "transfersCount": 34,
+          "transfersSha256": "dd7d7ca8ab0e1e05b1fc45a3b06458edce4bd7ea1bd75af0c199d1820c2f5f27",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime:GetObjectInstanceAttribute(Lokad.Lython.Runtime.PyInstance,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object",
+          "tier": "Tier0",
+          "codeBytes": 106,
+          "inlineSummary": null,
+          "transferTargetsCount": 3,
+          "transferTargetsSha256": "976d9183fb23d5be2241df266320966725587b923c32c78580790b8493f3f1d9",
+          "transfersCount": 3,
+          "transfersSha256": "976d9183fb23d5be2241df266320966725587b923c32c78580790b8493f3f1d9",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyAttributeLookup:TryResolveInstanceMemberWithoutGetAttrFallback(Lokad.Lython.Runtime.PyInstance,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool",
+          "tier": "Tier0",
+          "codeBytes": 478,
+          "inlineSummary": null,
+          "transferTargetsCount": 11,
+          "transferTargetsSha256": "530e6ef1db723f956effc636d3e40b733c3051d30e27d43b427d849edff75468",
+          "transfersCount": 22,
+          "transfersSha256": "61cd21cecc7db4239d4d4ea40b4b57b686f6d4ce749a7f590167251759d30012",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyInstance:TryGetOwnAttribute(System.String,byref):bool:this",
+          "tier": "Tier0",
+          "codeBytes": 53,
+          "inlineSummary": null,
+          "transferTargetsCount": 1,
+          "transferTargetsSha256": "b078e6f11b0b429974fc494cec3c131ad89b07a2958ff11f00cc0cbb1a0c25ae",
+          "transfersCount": 1,
+          "transfersSha256": "b078e6f11b0b429974fc494cec3c131ad89b07a2958ff11f00cc0cbb1a0c25ae",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyAttributeLookup:BindForInstance(Lokad.Lython.Runtime.PyInstance,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object",
+          "tier": "Tier0",
+          "codeBytes": 106,
+          "inlineSummary": null,
+          "transferTargetsCount": 2,
+          "transferTargetsSha256": "35f89d4daca78b3fce7b6857ae9e6a3c7a49b8d48c655b895325a76281352b87",
+          "transfersCount": 2,
+          "transfersSha256": "35f89d4daca78b3fce7b6857ae9e6a3c7a49b8d48c655b895325a76281352b87",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.ExecutionThreads+WorkItem:Execute(System.Threading.ExecutionContext):this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 379,
+          "inlineSummary": null,
+          "transferTargetsCount": 9,
+          "transferTargetsSha256": "6b5a2e455ae20058c40f10921bb57cc801c392bc8311c234366d2aa57a980d15",
+          "transfersCount": 15,
+          "transfersSha256": "c6d2fa2bea33a7dc07d41557ff06c79bfb432625f7dddbfff2b2177c51320bfb",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 3142,
+          "inlineSummary": null,
+          "transferTargetsCount": 63,
+          "transferTargetsSha256": "2b57690d77c49b726dc0c1ed303e7512a5bb408a2fba3be1148a4e0ee24fbb2c",
+          "transfersCount": 121,
+          "transfersSha256": "b903de86b115bc4d698df481ee20a68253e170a06135226d0eff0c444ebe4551",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+BoundArgumentsCallable:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 529,
+          "inlineSummary": null,
+          "transferTargetsCount": 14,
+          "transferTargetsSha256": "15974b26cfac1e87cd83e18454200f027c4d66797ae8a1d011940eebe14a9d9f",
+          "transfersCount": 18,
+          "transfersSha256": "381a642ec8701ce5b1b424573d4193d42a7f7aa218973eef4195dce7e0e7ee00",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+          "tier": "Tier1-OSR",
+          "codeBytes": 4575,
+          "inlineSummary": "35 inlinees with PGO data; 87 single block inlinees; 12 inlinees without PGO data",
+          "transferTargetsCount": 92,
+          "transferTargetsSha256": "5854237cfc595cce633a5d3dd13dd9e24c07c5611c4404994dc5cb0bcc9dc79b",
+          "transfersCount": 166,
+          "transfersSha256": "7f5ea1b996e38212d8c4076dddcc21795113a1ab5b093d718304d3b545528535",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyFunctionBase:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 498,
+          "inlineSummary": null,
+          "transferTargetsCount": 16,
+          "transferTargetsSha256": "b3f307c7504410704243b770ac6cf7dffad7e320b521b8b446d0661ab56e6e5c",
+          "transfersCount": 22,
+          "transfersSha256": "5aaa295fb929ca0c0a5db9f38f3ed7648db0ed9a3d69ba1640f6d02215d00b3c",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyFunctionBase:EnterInvocationFrame(Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 210,
+          "inlineSummary": null,
+          "transferTargetsCount": 4,
+          "transferTargetsSha256": "f1cb254a6420daa0df7a16c37343d6f51131c279e89d8842f5b491a0ada7ad92",
+          "transfersCount": 4,
+          "transfersSha256": "f1cb254a6420daa0df7a16c37343d6f51131c279e89d8842f5b491a0ada7ad92",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyFunctionBinding:EnterInvocationFrame(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts,Lokad.Lython.Runtime.FunctionBindingPlan,Lokad.Lython.Runtime.BoundCallArguments,bool,Lokad.Lython.Runtime.PyType,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 1042,
+          "inlineSummary": null,
+          "transferTargetsCount": 27,
+          "transferTargetsSha256": "13175851a47a4e1cdb869c0ca60334dc61a4fe395f5eb29917568e3059e7a07c",
+          "transfersCount": 45,
+          "transfersSha256": "e09bb6d1ac593ecff727d131e172434af19c2a3af0d7ea87073885659a62129f",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStackTransfer(byref):this",
+          "tier": "Tier1",
+          "codeBytes": 2458,
+          "inlineSummary": "23 inlinees with PGO data; 75 single block inlinees; 8 inlinees without PGO data",
+          "transferTargetsCount": 48,
+          "transferTargetsSha256": "05e9710d3f92bac203bb81ae20293485953ba8deb3180c2abbf1fcab5d74e200",
+          "transfersCount": 105,
+          "transfersSha256": "c599a6269fc9ec88af57aec0bd22227dadb40bc66924652c5f0728b367fe6808",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+PrintCallable:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier1",
+          "codeBytes": 1650,
+          "inlineSummary": "13 inlinees with PGO data; 51 single block inlinees; 1 inlinees without PGO data",
+          "transferTargetsCount": 45,
+          "transferTargetsSha256": "76c2333c57225e510a81aa295ea72b4e435ec9d91b7e7f65d1ff22680d468a1d",
+          "transfersCount": 58,
+          "transfersSha256": "1197903e76284d3ab0f1d21cc4505014ecfe16532624dd0fb673fe1b84b38312",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyType:TryLookupInMro(System.String,int,byref,byref):bool:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 393,
+          "inlineSummary": null,
+          "transferTargetsCount": 9,
+          "transferTargetsSha256": "d6758ffde3a62c5598a568faf2fbd5d06e5e98c50b431afea870354b84ac84e7",
+          "transfersCount": 14,
+          "transfersSha256": "6918c3b9ccf3d44dde66c34ad28d3723dfa121b65d0d148a2048e113c374d298",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyAttributeLookup:TryResolveInstanceMember(Lokad.Lython.Runtime.PyInstance,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 1271,
+          "inlineSummary": null,
+          "transferTargetsCount": 21,
+          "transferTargetsSha256": "94440f28d1ac1b2c00820748e1719d7c83dfb1cf3b7f0f1a0b468b2eef930b7b",
+          "transfersCount": 44,
+          "transfersSha256": "d56ca4505b1127be04ed8cd0a534d4f354f58216fd76bf5a84e6bc80d6d7dd9a",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime:GetObjectInstanceAttribute(Lokad.Lython.Runtime.PyInstance,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 106,
+          "inlineSummary": null,
+          "transferTargetsCount": 3,
+          "transferTargetsSha256": "976d9183fb23d5be2241df266320966725587b923c32c78580790b8493f3f1d9",
+          "transfersCount": 3,
+          "transfersSha256": "976d9183fb23d5be2241df266320966725587b923c32c78580790b8493f3f1d9",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyAttributeLookup:TryResolveInstanceMemberWithoutGetAttrFallback(Lokad.Lython.Runtime.PyInstance,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 657,
+          "inlineSummary": null,
+          "transferTargetsCount": 14,
+          "transferTargetsSha256": "5a1e17e51d0f046d06265c6077f2549a33637c7beb8344356ba97ba450f3e4f0",
+          "transfersCount": 33,
+          "transfersSha256": "5643162560043fe6e15defeb52c5e6d67f3c06ca7fff0da76ceff9f0d6306790",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyInstance:TryGetOwnAttribute(System.String,byref):bool:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 53,
+          "inlineSummary": null,
+          "transferTargetsCount": 1,
+          "transferTargetsSha256": "b078e6f11b0b429974fc494cec3c131ad89b07a2958ff11f00cc0cbb1a0c25ae",
+          "transfersCount": 1,
+          "transfersSha256": "b078e6f11b0b429974fc494cec3c131ad89b07a2958ff11f00cc0cbb1a0c25ae",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyMemberAccess:TryAssign(System.Object,System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):bool",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 4588,
+          "inlineSummary": null,
+          "transferTargetsCount": 70,
+          "transferTargetsSha256": "f44c2c243bdbd263d7124fc194f91aa6d4f01d807c53e272ac30134609281955",
+          "transfersCount": 198,
+          "transfersSha256": "c1e28cdbac8f354ba0d023f848acb55e516373145cabee0221373973b5f7256d",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime:SetObjectInstanceAttribute(Lokad.Lython.Runtime.PyInstance,System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan)",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 207,
+          "inlineSummary": null,
+          "transferTargetsCount": 5,
+          "transferTargetsSha256": "7ad3453996fd756d92442058fa61248fd7fe3beca39f822d1f99f404e4ed75ec",
+          "transfersCount": 7,
+          "transfersSha256": "fab71dfde8b9da53b073b7a06f47e6f256b1a924dc3d9bf380384ae80efec69c",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyAttributeLookup:BindForInstance(Lokad.Lython.Runtime.PyInstance,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 136,
+          "inlineSummary": null,
+          "transferTargetsCount": 3,
+          "transferTargetsSha256": "3a046a9e0e167ba3be88ab3760eff1c5147bf400f3a775ac3cae597d9b00990a",
+          "transfersCount": 4,
+          "transfersSha256": "3a7e8efaa45ca30a3694fe8b3c0540dd7e1a174d306006b57480a208eb39e198",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyBoundMethod:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 245,
+          "inlineSummary": null,
+          "transferTargetsCount": 7,
+          "transferTargetsSha256": "da1696c3141d287889a6cd2c332f1c65a9825f14c1a9ff5df6f9e9ec9a1e3857",
+          "transfersCount": 8,
+          "transfersSha256": "0b774496fb1dfbd5f5ca16965a03503822a25efbf12a25f4371117a017f84965",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyFunctionBase:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier1",
+          "codeBytes": 2819,
+          "inlineSummary": "14 inlinees with PGO data; 80 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 63,
+          "transferTargetsSha256": "dd324a230e2e0ee589278cadffd5df073b59d61ebdbf92300623f1c57fabc6ce",
+          "transfersCount": 87,
+          "transfersSha256": "775848bb2b522b0c3cf761b479176e3a43f976fdb24d0cc996c527ba3a529626",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyFunctionBase:EnterInvocationFrame(Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this",
+          "tier": "Tier1",
+          "codeBytes": 156,
+          "inlineSummary": "0 inlinees with PGO data; 2 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 3,
+          "transferTargetsSha256": "bd4e5ba0627c197dfb422135c29f0426ac53b14890a11b5a73303a204b078e17",
+          "transfersCount": 3,
+          "transfersSha256": "bd4e5ba0627c197dfb422135c29f0426ac53b14890a11b5a73303a204b078e17",
+          "tailTransfers": [
+            "tail.jmp [Lokad.Lython.Runtime.PyFunctionBinding:EnterInvocationFrame(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts,Lokad.Lython.Runtime.FunctionBindingPlan,Lokad.Lython.Runtime.BoundCallArguments,bool,Lokad.Lython.Runtime.PyType,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext]"
+          ]
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyFunctionBinding:EnterInvocationFrame(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts,Lokad.Lython.Runtime.FunctionBindingPlan,Lokad.Lython.Runtime.BoundCallArguments,bool,Lokad.Lython.Runtime.PyType,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext",
+          "tier": "Tier1",
+          "codeBytes": 1972,
+          "inlineSummary": "8 inlinees with PGO data; 43 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 40,
+          "transferTargetsSha256": "17c925a71d485647d62a899e658bd4ad6ed77d1068db73ca78c2da202a3ab9d6",
+          "transfersCount": 58,
+          "transfersSha256": "0c89832d923bdb4736ed3d6d2abdc37aebccce6c3c800fa0da092e56f873daa4",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.ExecutionThreads+WorkItem:Execute(System.Threading.ExecutionContext):this",
+          "tier": "Tier1",
+          "codeBytes": 225,
+          "inlineSummary": "1 inlinees with PGO data; 0 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 8,
+          "transferTargetsSha256": "0a248833724fd5111cb464c69958940496e88d8adc62fa2951ee9d85ed2c443b",
+          "transfersCount": 9,
+          "transfersSha256": "7e759fb1fab2a14e307e89b3bab966a0c1f468cb95814368701d33c89c7e5483",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ObjectInitSubclassMethod:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 247,
+          "inlineSummary": null,
+          "transferTargetsCount": 7,
+          "transferTargetsSha256": "6c75b4e66a7dde356c64c18df6e4b29f9749a49fc02b7330f97bc4c01e9c058b",
+          "transfersCount": 9,
+          "transfersSha256": "e8960c595ee35cb1445a61c5f8e67283e2d198017072d172badbae3f8cca2c6d",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyType:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 1834,
+          "inlineSummary": null,
+          "transferTargetsCount": 31,
+          "transferTargetsSha256": "8614ae60477cc55520c93c8369c3fab1540b1807bfabb7e93c6bb299b88227a3",
+          "transfersCount": 68,
+          "transfersSha256": "9064116a5394f3a4106c357351d0a77448451450ad86f8975c90b48d6ccfee76",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ObjectNewMethod:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 346,
+          "inlineSummary": null,
+          "transferTargetsCount": 11,
+          "transferTargetsSha256": "f042ae520540d19c093b0e5793f35fc9ed73d9870f7ef24cfeba1e0d7c7b95db",
+          "transfersCount": 14,
+          "transfersSha256": "61859d628f49d1f6f50c61a6318371c9429876aa8c192ea4ca70e15687ae0c6e",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+          "tier": "Tier1",
+          "codeBytes": 4584,
+          "inlineSummary": "35 inlinees with PGO data; 87 single block inlinees; 12 inlinees without PGO data",
+          "transferTargetsCount": 93,
+          "transferTargetsSha256": "131150dc27cc7b7d3780e063db5fc13646cf1b6bd89d674d19ed89f797412fb0",
+          "transfersCount": 166,
+          "transfersSha256": "1f7bfcab0c90b71a78f6e7048a6e7459b0cb795ec18e0a84a94043bdb2e8a6c3",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+BoundArgumentsCallable:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier1",
+          "codeBytes": 597,
+          "inlineSummary": "4 inlinees with PGO data; 24 single block inlinees; 1 inlinees without PGO data",
+          "transferTargetsCount": 19,
+          "transferTargetsSha256": "59f378ca89961d340b3bd27c82a4ef5cb9cda8101b191f498f1965d1c52b04d4",
+          "transfersCount": 20,
+          "transfersSha256": "8dbee7f5e19e29bc15583efe207e286e59cfa8ca0bfd05bb69e6bbf9cc92be6a",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyType:TryLookupInMro(System.String,int,byref,byref):bool:this",
+          "tier": "Tier1",
+          "codeBytes": 980,
+          "inlineSummary": "6 inlinees with PGO data; 9 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 19,
+          "transferTargetsSha256": "d4a7eb6bcad2c6b6c51473353c9c786b9e29c15fc9a6149dbf10fe38653f847e",
+          "transfersCount": 25,
+          "transfersSha256": "cbf987873077403ec7134735b428a85a25251db0f6288f1f241faf41a5a6ce19",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyAttributeLookup:TryResolveInstanceMember(Lokad.Lython.Runtime.PyInstance,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool",
+          "tier": "Tier1",
+          "codeBytes": 4642,
+          "inlineSummary": "29 inlinees with PGO data; 44 single block inlinees; 1 inlinees without PGO data",
+          "transferTargetsCount": 64,
+          "transferTargetsSha256": "85b56e330914c15b6e9b40e376d2d20fe3a3239f371edf245f27511a05bd55b2",
+          "transfersCount": 112,
+          "transfersSha256": "4cc553d05420d71f944caec724a5460d6a411f39608bb582006fd00cb91bb3d3",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime:GetObjectInstanceAttribute(Lokad.Lython.Runtime.PyInstance,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object",
+          "tier": "Tier1",
+          "codeBytes": 108,
+          "inlineSummary": null,
+          "transferTargetsCount": 3,
+          "transferTargetsSha256": "976d9183fb23d5be2241df266320966725587b923c32c78580790b8493f3f1d9",
+          "transfersCount": 3,
+          "transfersSha256": "976d9183fb23d5be2241df266320966725587b923c32c78580790b8493f3f1d9",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyAttributeLookup:TryResolveInstanceMemberWithoutGetAttrFallback(Lokad.Lython.Runtime.PyInstance,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool",
+          "tier": "Tier1",
+          "codeBytes": 3265,
+          "inlineSummary": "23 inlinees with PGO data; 35 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 42,
+          "transferTargetsSha256": "6c70b5f3fe72d066a23a2290e07bfcc0b8a909cac6e20daac219706c3b03b8eb",
+          "transfersCount": 67,
+          "transfersSha256": "585d308c231027f8fef1e886d14dc53f726ff0e00800a9ba98e2a59d1e986a91",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyInstance:TryGetOwnAttribute(System.String,byref):bool:this",
+          "tier": "Tier1",
+          "codeBytes": 654,
+          "inlineSummary": "5 inlinees with PGO data; 6 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 15,
+          "transferTargetsSha256": "2ce56141506f7230a0dd408e6555e1615481864390779e1761d6bf5aa2074ecb",
+          "transfersCount": 19,
+          "transfersSha256": "90b49b079830e9457a73234de93501f9f81782c0529a151ca6d49762ee029f07",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyMemberAccess:TryAssign(System.Object,System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):bool",
+          "tier": "Tier1",
+          "codeBytes": 6239,
+          "inlineSummary": "25 inlinees with PGO data; 125 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 96,
+          "transferTargetsSha256": "19f840e61f75a4dc2cc8179fcf4d3e4c4c3f6f3c7193853a9ce41afa2950bf2e",
+          "transfersCount": 179,
+          "transfersSha256": "e595ac1722105c240e1ced3ebe3112eee4eeaeaa93d8b29f0ba860d7ad27290d",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime:SetObjectInstanceAttribute(Lokad.Lython.Runtime.PyInstance,System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan)",
+          "tier": "Tier1",
+          "codeBytes": 3181,
+          "inlineSummary": "19 inlinees with PGO data; 38 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 44,
+          "transferTargetsSha256": "4a3feb80179f34f4e6ab1b845e901908c8a577231d262975d2561c05bf50ba31",
+          "transfersCount": 65,
+          "transfersSha256": "99c0799b4aec1a1b4a7c0185c946fccf6f03bd5d2cdfe7ffb2b0f981995bb65b",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyAttributeLookup:BindForInstance(Lokad.Lython.Runtime.PyInstance,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object",
+          "tier": "Tier1",
+          "codeBytes": 353,
+          "inlineSummary": "3 inlinees with PGO data; 5 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 11,
+          "transferTargetsSha256": "a3233eff0630a5d3ba67effd6e63155141ea15530610ec644c214f7b5d205907",
+          "transfersCount": 13,
+          "transfersSha256": "c6f1de6f73027e90c808c5a0853a32243779c1e42920b4f0df46200e923f50b4",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyBoundMethod:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier1",
+          "codeBytes": 222,
+          "inlineSummary": "0 inlinees with PGO data; 2 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 6,
+          "transferTargetsSha256": "1e7082bd867717278433a5bef4d915efc19b32f961db2af6265fac76768369c0",
+          "transfersCount": 6,
+          "transfersSha256": "1e7082bd867717278433a5bef4d915efc19b32f961db2af6265fac76768369c0",
+          "tailTransfers": [
+            "tail.jmp [Lokad.Lython.Runtime.PyFunctionBase:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this]",
+            "tail.jmp [r11]Lokad.Lython.Runtime.LythonRuntime+ICallable:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this"
+          ]
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyIteration+Cursor:CheckExecution():this",
+          "tier": "Tier0",
+          "codeBytes": 100,
+          "inlineSummary": null,
+          "transferTargetsCount": 1,
+          "transferTargetsSha256": "1bdfac5840372e243b21b6a7f82290c31e0f56652e214d0b338d398cf1170240",
+          "transfersCount": 1,
+          "transfersSha256": "1bdfac5840372e243b21b6a7f82290c31e0f56652e214d0b338d398cf1170240",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+LambdaFunction:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier0",
+          "codeBytes": 424,
+          "inlineSummary": null,
+          "transferTargetsCount": 14,
+          "transferTargetsSha256": "41f6bb83756557271d4455bb60c674f9ea0ee4193d21dd37fa3976477acb6a75",
+          "transfersCount": 17,
+          "transfersSha256": "2d016f99a850d33840a53ea6bc38f8e31db86c9c108c9fadc4c645b5c9402732",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ObjectInitSubclassMethod:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier1",
+          "codeBytes": 143,
+          "inlineSummary": "0 inlinees with PGO data; 2 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 4,
+          "transferTargetsSha256": "5236ad3e72fb6820db53f25721267c6a002bb365c323920bc08d8d2af3ad4d73",
+          "transfersCount": 5,
+          "transfersSha256": "12132729ba6bdb0bf83981104af71863533421f9afaced4ca117a6ff65f37318",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyType:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier1",
+          "codeBytes": 4231,
+          "inlineSummary": "40 inlinees with PGO data; 105 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 88,
+          "transferTargetsSha256": "b82b6d79c49d71598ae5dabbb943ad77a78aedd60573f91504cb65ea50b5e618",
+          "transfersCount": 153,
+          "transfersSha256": "7242b0206b5cafb8912198bd65d9286718457a1755bb043571c9b02d9023e9ab",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ObjectNewMethod:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier1",
+          "codeBytes": 498,
+          "inlineSummary": "4 inlinees with PGO data; 29 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 11,
+          "transferTargetsSha256": "d2c46702b4b3a9d7a6279d807abb483229641819307f2e19f6593566e1c7d92a",
+          "transfersCount": 19,
+          "transfersSha256": "6433a46248fb7342db78b32cde1c40a88180daf07fa269f73fafac3d78d12464",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyIteration+Cursor:CheckExecution():this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 147,
+          "inlineSummary": null,
+          "transferTargetsCount": 3,
+          "transferTargetsSha256": "6466e65bc759e10593c8a76f6d47088dc132525db855aecdce2cd1f7fb492b93",
+          "transfersCount": 5,
+          "transfersSha256": "fd5f3888ea3074e8794dd6a7480f29d2e373b1c06ad2299a1bb19a239ef7ba3a",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+LambdaFunction:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 469,
+          "inlineSummary": null,
+          "transferTargetsCount": 15,
+          "transferTargetsSha256": "668aa7719358d4829faeaac477c841228801c873315601d47b97f7b234cfec1a",
+          "transfersCount": 20,
+          "transfersSha256": "b101fc24e8ca8b72864fab9633604be34b9d18ff752dfc96a6ce5e9c8e17ab34",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyIteration+Cursor:CheckExecution():this",
+          "tier": "Tier1",
+          "codeBytes": 166,
+          "inlineSummary": "2 inlinees with PGO data; 14 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 6,
+          "transferTargetsSha256": "0238140c89228125d78696469edbc8cf7453f46235c70388d81e6efdb340b504",
+          "transfersCount": 6,
+          "transfersSha256": "0238140c89228125d78696469edbc8cf7453f46235c70388d81e6efdb340b504",
+          "tailTransfers": [
+            "tail.jmp [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]"
+          ]
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+LambdaFunction:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier1",
+          "codeBytes": 2656,
+          "inlineSummary": "12 inlinees with PGO data; 72 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 56,
+          "transferTargetsSha256": "a46603d1194f0a9f3cd562cdd1479a278a37fa6fc20d705098bdd363945eb890",
+          "transfersCount": 81,
+          "transfersSha256": "4c3207755cf8a4b2c92bd996919e0f9b4f3b82c7a1fe460cf1ff1ad0be9fe1e9",
+          "tailTransfers": []
+        }
+      ]
+    },
+    {
+      "role": "candidate",
+      "jitSha256": "5d28badc3418d539960d433c36ee9cbb663743eb4781c78172300b4b69d6a49d",
+      "bodies": [
+        {
+          "method": "Lokad.Lython.Runtime.ExecutionThreads+WorkItem:Execute(System.Threading.ExecutionContext):this",
+          "tier": "Tier0",
+          "codeBytes": 365,
+          "inlineSummary": null,
+          "transferTargetsCount": 9,
+          "transferTargetsSha256": "8bf85a7d8cfd9d80822656ad843ea7460dbe154e4722c59bc0862d95ef04f2b1",
+          "transfersCount": 13,
+          "transfersSha256": "1ee3944c8a8664af191695694847d52761b3fb2a2fcef8c379ee3b061e8c4113",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.ExecutionGuards:CheckExecution(Lokad.Lython.LythonSourceSpan):this",
+          "tier": "Tier0",
+          "codeBytes": 235,
+          "inlineSummary": null,
+          "transferTargetsCount": 11,
+          "transferTargetsSha256": "9ec435503b1361017b393a1ca57cb9d5364fd01d1688698d964595b9e8171eb2",
+          "transfersCount": 11,
+          "transfersSha256": "9ec435503b1361017b393a1ca57cb9d5364fd01d1688698d964595b9e8171eb2",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 3144,
+          "inlineSummary": null,
+          "transferTargetsCount": 63,
+          "transferTargetsSha256": "13909e2c739088d16c9e4ba370e2e7f04806d63faa94a26524ede4243ba5e472",
+          "transfersCount": 121,
+          "transfersSha256": "c62b282b7f88ad997696ea3eb0f07d9d8cc4a5502137b078cdcd1006b21b5809",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.ExecutionServices:CheckExecution(Lokad.Lython.LythonSourceSpan):this",
+          "tier": "Tier0",
+          "codeBytes": 61,
+          "inlineSummary": null,
+          "transferTargetsCount": 2,
+          "transferTargetsSha256": "87bf15af0e5420e736959dc490310a2f254d2b15decf834a9cf75dd931c7dc68",
+          "transfersCount": 2,
+          "transfersSha256": "87bf15af0e5420e736959dc490310a2f254d2b15decf834a9cf75dd931c7dc68",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStackTransfer(byref):this",
+          "tier": "Tier0",
+          "codeBytes": 2884,
+          "inlineSummary": null,
+          "transferTargetsCount": 42,
+          "transferTargetsSha256": "114aa758ef31dd39c6c8e0fb4c057c01e74f9a491f659454793d7a2873117094",
+          "transfersCount": 103,
+          "transfersSha256": "8e7dee0300498ce00e9ea916454f26798790816829cf6dd85d811df18b1712f1",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteValueOperation(byref):bool:this",
+          "tier": "Tier0",
+          "codeBytes": 2353,
+          "inlineSummary": null,
+          "transferTargetsCount": 37,
+          "transferTargetsSha256": "fdcc78e44ce67598a919e195c67f96229546c451e5da529333dc5a80dd4f2e0f",
+          "transfersCount": 88,
+          "transfersSha256": "34aeafa41afda89582d8728b7b5b6b80f20e84cfd7411a3089fc7cc95045f65e",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:CheckExecution(Lokad.Lython.LythonSourceSpan):this",
+          "tier": "Tier0",
+          "codeBytes": 61,
+          "inlineSummary": null,
+          "transferTargetsCount": 2,
+          "transferTargetsSha256": "70702a277ccaef8dc082967e1091a3fc8818681d97b8d72582a7775e5f4b6c0b",
+          "transfersCount": 2,
+          "transfersSha256": "70702a277ccaef8dc082967e1091a3fc8818681d97b8d72582a7775e5f4b6c0b",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+BoundArgumentsCallable:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier0",
+          "codeBytes": 364,
+          "inlineSummary": null,
+          "transferTargetsCount": 12,
+          "transferTargetsSha256": "bae7f666f6a8eaf2b5ed69e3ecbbef4a42c2ecb570125907480049bf6528aac5",
+          "transfersCount": 13,
+          "transfersSha256": "8e4c516565336c6c6143758cfc016a2ab9b08702932e544ad2fe04c5b7e18ce2",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+          "tier": "Tier1-OSR",
+          "codeBytes": 7515,
+          "inlineSummary": "67 inlinees with PGO data; 227 single block inlinees; 56 inlinees without PGO data",
+          "transferTargetsCount": 117,
+          "transferTargetsSha256": "c5ee039cb885e1d03e7efea13ee5e94fc652b5f1bbfeb4db8b6bbd7b85fc13d1",
+          "transfersCount": 252,
+          "transfersSha256": "6d1fa10bc34d92e3f7b4bc775d95f0e78ecf148002e3f160c2c8a36a9d25cc0b",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+PrintCallable:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 651,
+          "inlineSummary": null,
+          "transferTargetsCount": 15,
+          "transferTargetsSha256": "af5163c841b187b8171fbf2a520b03a8029b9c3c948d657ddc9b4884c160f31c",
+          "transfersCount": 24,
+          "transfersSha256": "4c8fcba817c3241646bbaa64e1d1f25808c26ab79c40c8bacff29cac0a013e4f",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteValueOperation(byref):bool:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 2728,
+          "inlineSummary": null,
+          "transferTargetsCount": 39,
+          "transferTargetsSha256": "f7a7091e0117a7a435e184910c8d94940289a7c1a91ec9b95d78214b9685afca",
+          "transfersCount": 104,
+          "transfersSha256": "d7aaf77de6f3ac4a701aeeeff3a83109d75e181e46e8629a9f29c0dc4661a132",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:CheckExecution(Lokad.Lython.LythonSourceSpan):this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 61,
+          "inlineSummary": null,
+          "transferTargetsCount": 2,
+          "transferTargetsSha256": "70702a277ccaef8dc082967e1091a3fc8818681d97b8d72582a7775e5f4b6c0b",
+          "transfersCount": 2,
+          "transfersSha256": "70702a277ccaef8dc082967e1091a3fc8818681d97b8d72582a7775e5f4b6c0b",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.ExecutionServices:CheckExecution(Lokad.Lython.LythonSourceSpan):this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 61,
+          "inlineSummary": null,
+          "transferTargetsCount": 2,
+          "transferTargetsSha256": "87bf15af0e5420e736959dc490310a2f254d2b15decf834a9cf75dd931c7dc68",
+          "transfersCount": 2,
+          "transfersSha256": "87bf15af0e5420e736959dc490310a2f254d2b15decf834a9cf75dd931c7dc68",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.ExecutionGuards:CheckExecution(Lokad.Lython.LythonSourceSpan):this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 312,
+          "inlineSummary": null,
+          "transferTargetsCount": 13,
+          "transferTargetsSha256": "620a3efe227a9e057aa35ee516a000412c688c07b75b036b04d094baa865e40b",
+          "transfersCount": 17,
+          "transfersSha256": "eb466d9e9ddd85da5d968f8ddf9d5e4c8b65265493e899c2c98ca376dd36ba9a",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteValueOperation(byref):bool:this",
+          "tier": "Tier1",
+          "codeBytes": 1887,
+          "inlineSummary": "4 inlinees with PGO data; 68 single block inlinees; 4 inlinees without PGO data",
+          "transferTargetsCount": 44,
+          "transferTargetsSha256": "25a6fde2467a0370658507d81035fcd62c0ee353672ccf6bf31a54121517c409",
+          "transfersCount": 82,
+          "transfersSha256": "9053356bb4aea8e49f54a30adbca2473fbf9f4418f5bb567f44e656dc5c7e394",
+          "tailTransfers": [
+            "tail.jmp [Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteForNext(byref):bool:this]"
+          ]
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:CheckExecution(Lokad.Lython.LythonSourceSpan):this",
+          "tier": "Tier1",
+          "codeBytes": 132,
+          "inlineSummary": "2 inlinees with PGO data; 13 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 5,
+          "transferTargetsSha256": "f8f7b27b137f1db326c767e5d202d9682f12a266a60a458655957c518cafc7d7",
+          "transfersCount": 5,
+          "transfersSha256": "f8f7b27b137f1db326c767e5d202d9682f12a266a60a458655957c518cafc7d7",
+          "tailTransfers": [
+            "tail.jmp [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]"
+          ]
+        },
+        {
+          "method": "Lokad.Lython.Runtime.ExecutionServices:CheckExecution(Lokad.Lython.LythonSourceSpan):this",
+          "tier": "Tier1",
+          "codeBytes": 128,
+          "inlineSummary": "2 inlinees with PGO data; 11 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 5,
+          "transferTargetsSha256": "f8f7b27b137f1db326c767e5d202d9682f12a266a60a458655957c518cafc7d7",
+          "transfersCount": 5,
+          "transfersSha256": "f8f7b27b137f1db326c767e5d202d9682f12a266a60a458655957c518cafc7d7",
+          "tailTransfers": [
+            "tail.jmp [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]"
+          ]
+        },
+        {
+          "method": "Lokad.Lython.Runtime.ExecutionGuards:CheckExecution(Lokad.Lython.LythonSourceSpan):this",
+          "tier": "Tier1",
+          "codeBytes": 124,
+          "inlineSummary": "1 inlinees with PGO data; 10 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 5,
+          "transferTargetsSha256": "f8f7b27b137f1db326c767e5d202d9682f12a266a60a458655957c518cafc7d7",
+          "transfersCount": 5,
+          "transfersSha256": "f8f7b27b137f1db326c767e5d202d9682f12a266a60a458655957c518cafc7d7",
+          "tailTransfers": [
+            "tail.jmp [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]"
+          ]
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyFunctionBase:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier0",
+          "codeBytes": 421,
+          "inlineSummary": null,
+          "transferTargetsCount": 14,
+          "transferTargetsSha256": "6d4132bd83b7b2a180c5d78949a781328c23a364437102536a7190c44e792447",
+          "transfersCount": 18,
+          "transfersSha256": "560b67086f77abb9071744bfcf96c242f1b3e7c99a9bb1d0c41800980e958765",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyFunctionBase:EnterInvocationFrame(Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this",
+          "tier": "Tier0",
+          "codeBytes": 184,
+          "inlineSummary": null,
+          "transferTargetsCount": 3,
+          "transferTargetsSha256": "11d9dc68cf7c3c0e21182f93e6ea2f4378cd3431e569c6e388e8f0b738aabc6a",
+          "transfersCount": 3,
+          "transfersSha256": "11d9dc68cf7c3c0e21182f93e6ea2f4378cd3431e569c6e388e8f0b738aabc6a",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyFunctionBinding:EnterInvocationFrame(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts,Lokad.Lython.Runtime.FunctionBindingPlan,Lokad.Lython.Runtime.BoundCallArguments,bool,Lokad.Lython.Runtime.PyType,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 1042,
+          "inlineSummary": null,
+          "transferTargetsCount": 27,
+          "transferTargetsSha256": "13175851a47a4e1cdb869c0ca60334dc61a4fe395f5eb29917568e3059e7a07c",
+          "transfersCount": 45,
+          "transfersSha256": "e09bb6d1ac593ecff727d131e172434af19c2a3af0d7ea87073885659a62129f",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+          "tier": "Tier1-OSR",
+          "codeBytes": 4594,
+          "inlineSummary": "35 inlinees with PGO data; 87 single block inlinees; 12 inlinees without PGO data",
+          "transferTargetsCount": 93,
+          "transferTargetsSha256": "5c7fe8e4098a80fe9cf44b4cfcba32f61a886f63d4e9e4b2295e71d075040697",
+          "transfersCount": 166,
+          "transfersSha256": "03a4752794dd0f4901da1ae6bd78468139babcb653b1050721e03c774eeddd98",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStackTransfer(byref):this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 3489,
+          "inlineSummary": null,
+          "transferTargetsCount": 44,
+          "transferTargetsSha256": "304979647bbc62b60d3016a59ca3c911e542c7458469fbc5acc970f7567c45bc",
+          "transfersCount": 128,
+          "transfersSha256": "684d694c8d556dd3d027ca699678a2d2d3ab1750656add59555373bccb20d94f",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+PrintCallable:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 651,
+          "inlineSummary": null,
+          "transferTargetsCount": 15,
+          "transferTargetsSha256": "af5163c841b187b8171fbf2a520b03a8029b9c3c948d657ddc9b4884c160f31c",
+          "transfersCount": 24,
+          "transfersSha256": "4c8fcba817c3241646bbaa64e1d1f25808c26ab79c40c8bacff29cac0a013e4f",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.ExecutionThreads+WorkItem:Execute(System.Threading.ExecutionContext):this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 379,
+          "inlineSummary": null,
+          "transferTargetsCount": 9,
+          "transferTargetsSha256": "6b5a2e455ae20058c40f10921bb57cc801c392bc8311c234366d2aa57a980d15",
+          "transfersCount": 15,
+          "transfersSha256": "c6d2fa2bea33a7dc07d41557ff06c79bfb432625f7dddbfff2b2177c51320bfb",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyType:TryLookupInMro(System.String,int,byref,byref):bool:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 393,
+          "inlineSummary": null,
+          "transferTargetsCount": 9,
+          "transferTargetsSha256": "d6758ffde3a62c5598a568faf2fbd5d06e5e98c50b431afea870354b84ac84e7",
+          "transfersCount": 14,
+          "transfersSha256": "6918c3b9ccf3d44dde66c34ad28d3723dfa121b65d0d148a2048e113c374d298",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyBoundMethod:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier0",
+          "codeBytes": 201,
+          "inlineSummary": null,
+          "transferTargetsCount": 6,
+          "transferTargetsSha256": "97128b73ceb78d960172f9dc4849cdf77fa1160c5f42f5b6e909e23aeb4d88f3",
+          "transfersCount": 7,
+          "transfersSha256": "efbe9c89f269c70f15dae281108fc35d46261dca8964b259d617f2f1f807c0ef",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ObjectInitSubclassMethod:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier0",
+          "codeBytes": 217,
+          "inlineSummary": null,
+          "transferTargetsCount": 6,
+          "transferTargetsSha256": "ebf52f6289234c716654dd38c4637e00bf888dc28b58bfa14cc4473d934cb5f6",
+          "transfersCount": 7,
+          "transfersSha256": "e4d5531af7693eb9ebbd4d320d03dc9019999bae829589fb1a3a6aeeeacddb55",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyType:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier0",
+          "codeBytes": 1415,
+          "inlineSummary": null,
+          "transferTargetsCount": 29,
+          "transferTargetsSha256": "2204df49fe0278c60f55741d61ec74e4da8cc3293b25120ac0e1112118898680",
+          "transfersCount": 54,
+          "transfersSha256": "7b3982b8165fa8cd54d2c5aee7e5297b684e56d6a2a8ebcdf209947cbd9071ce",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ObjectNewMethod:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier0",
+          "codeBytes": 316,
+          "inlineSummary": null,
+          "transferTargetsCount": 10,
+          "transferTargetsSha256": "c75bb7a013cdb4641c881f7cf0500a1b4583ce4cfc8339cb5c4c25b5968eedf6",
+          "transfersCount": 12,
+          "transfersSha256": "2bdca46e61d4a697f0573e43cf26598c1dab1ea0d77d09af80a12ccd0c26e5ec",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyMemberAccess:TryAssign(System.Object,System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):bool",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 4588,
+          "inlineSummary": null,
+          "transferTargetsCount": 70,
+          "transferTargetsSha256": "f44c2c243bdbd263d7124fc194f91aa6d4f01d807c53e272ac30134609281955",
+          "transfersCount": 198,
+          "transfersSha256": "c1e28cdbac8f354ba0d023f848acb55e516373145cabee0221373973b5f7256d",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime:SetObjectInstanceAttribute(Lokad.Lython.Runtime.PyInstance,System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan)",
+          "tier": "Tier0",
+          "codeBytes": 161,
+          "inlineSummary": null,
+          "transferTargetsCount": 4,
+          "transferTargetsSha256": "b53b45e7716fa2acb36790cc1d79177820be88be88631c020e1c8293c1f2d297",
+          "transfersCount": 4,
+          "transfersSha256": "b53b45e7716fa2acb36790cc1d79177820be88be88631c020e1c8293c1f2d297",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyAttributeLookup:TryResolveInstanceMember(Lokad.Lython.Runtime.PyInstance,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool",
+          "tier": "Tier0",
+          "codeBytes": 1067,
+          "inlineSummary": null,
+          "transferTargetsCount": 19,
+          "transferTargetsSha256": "023fe97abc7f20c0e471b0c32341c8053d856bcaf093453870197793538caccb",
+          "transfersCount": 34,
+          "transfersSha256": "dd7d7ca8ab0e1e05b1fc45a3b06458edce4bd7ea1bd75af0c199d1820c2f5f27",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime:GetObjectInstanceAttribute(Lokad.Lython.Runtime.PyInstance,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object",
+          "tier": "Tier0",
+          "codeBytes": 106,
+          "inlineSummary": null,
+          "transferTargetsCount": 3,
+          "transferTargetsSha256": "976d9183fb23d5be2241df266320966725587b923c32c78580790b8493f3f1d9",
+          "transfersCount": 3,
+          "transfersSha256": "976d9183fb23d5be2241df266320966725587b923c32c78580790b8493f3f1d9",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyAttributeLookup:TryResolveInstanceMemberWithoutGetAttrFallback(Lokad.Lython.Runtime.PyInstance,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool",
+          "tier": "Tier0",
+          "codeBytes": 440,
+          "inlineSummary": null,
+          "transferTargetsCount": 11,
+          "transferTargetsSha256": "2df646e26bb591e374e6c27740b5ac18b66f1bb683cb56006d7d7af1e9f87bea",
+          "transfersCount": 20,
+          "transfersSha256": "9a6514e1ac3408d96897be08cde31c0857b48e20d00ca544fbea5a9bff4f1626",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyInstance:TryGetOwnAttribute(System.String,byref):bool:this",
+          "tier": "Tier0",
+          "codeBytes": 53,
+          "inlineSummary": null,
+          "transferTargetsCount": 1,
+          "transferTargetsSha256": "b078e6f11b0b429974fc494cec3c131ad89b07a2958ff11f00cc0cbb1a0c25ae",
+          "transfersCount": 1,
+          "transfersSha256": "b078e6f11b0b429974fc494cec3c131ad89b07a2958ff11f00cc0cbb1a0c25ae",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyAttributeLookup:BindForInstance(Lokad.Lython.Runtime.PyInstance,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object",
+          "tier": "Tier0",
+          "codeBytes": 106,
+          "inlineSummary": null,
+          "transferTargetsCount": 2,
+          "transferTargetsSha256": "35f89d4daca78b3fce7b6857ae9e6a3c7a49b8d48c655b895325a76281352b87",
+          "transfersCount": 2,
+          "transfersSha256": "35f89d4daca78b3fce7b6857ae9e6a3c7a49b8d48c655b895325a76281352b87",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 3142,
+          "inlineSummary": null,
+          "transferTargetsCount": 63,
+          "transferTargetsSha256": "2b57690d77c49b726dc0c1ed303e7512a5bb408a2fba3be1148a4e0ee24fbb2c",
+          "transfersCount": 121,
+          "transfersSha256": "b903de86b115bc4d698df481ee20a68253e170a06135226d0eff0c444ebe4551",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+BoundArgumentsCallable:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 529,
+          "inlineSummary": null,
+          "transferTargetsCount": 14,
+          "transferTargetsSha256": "15974b26cfac1e87cd83e18454200f027c4d66797ae8a1d011940eebe14a9d9f",
+          "transfersCount": 18,
+          "transfersSha256": "381a642ec8701ce5b1b424573d4193d42a7f7aa218973eef4195dce7e0e7ee00",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+          "tier": "Tier1-OSR",
+          "codeBytes": 4575,
+          "inlineSummary": "35 inlinees with PGO data; 87 single block inlinees; 12 inlinees without PGO data",
+          "transferTargetsCount": 92,
+          "transferTargetsSha256": "ca0eab49f6299abca8ef642c618a0af418578f3375a0c6dae2d7343a743fd15b",
+          "transfersCount": 166,
+          "transfersSha256": "fe938e7e57f799defe57de888e938f1816ce7c9f3e4ae0802bf625112ab2ac5c",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyFunctionBase:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 498,
+          "inlineSummary": null,
+          "transferTargetsCount": 16,
+          "transferTargetsSha256": "b3f307c7504410704243b770ac6cf7dffad7e320b521b8b446d0661ab56e6e5c",
+          "transfersCount": 22,
+          "transfersSha256": "5aaa295fb929ca0c0a5db9f38f3ed7648db0ed9a3d69ba1640f6d02215d00b3c",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyFunctionBase:EnterInvocationFrame(Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 210,
+          "inlineSummary": null,
+          "transferTargetsCount": 4,
+          "transferTargetsSha256": "f1cb254a6420daa0df7a16c37343d6f51131c279e89d8842f5b491a0ada7ad92",
+          "transfersCount": 4,
+          "transfersSha256": "f1cb254a6420daa0df7a16c37343d6f51131c279e89d8842f5b491a0ada7ad92",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyFunctionBinding:EnterInvocationFrame(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts,Lokad.Lython.Runtime.FunctionBindingPlan,Lokad.Lython.Runtime.BoundCallArguments,bool,Lokad.Lython.Runtime.PyType,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 1042,
+          "inlineSummary": null,
+          "transferTargetsCount": 27,
+          "transferTargetsSha256": "13175851a47a4e1cdb869c0ca60334dc61a4fe395f5eb29917568e3059e7a07c",
+          "transfersCount": 45,
+          "transfersSha256": "e09bb6d1ac593ecff727d131e172434af19c2a3af0d7ea87073885659a62129f",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:ExecuteStackTransfer(byref):this",
+          "tier": "Tier1",
+          "codeBytes": 2458,
+          "inlineSummary": "23 inlinees with PGO data; 75 single block inlinees; 8 inlinees without PGO data",
+          "transferTargetsCount": 48,
+          "transferTargetsSha256": "05e9710d3f92bac203bb81ae20293485953ba8deb3180c2abbf1fcab5d74e200",
+          "transfersCount": 105,
+          "transfersSha256": "c599a6269fc9ec88af57aec0bd22227dadb40bc66924652c5f0728b367fe6808",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+PrintCallable:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier1",
+          "codeBytes": 1650,
+          "inlineSummary": "13 inlinees with PGO data; 51 single block inlinees; 1 inlinees without PGO data",
+          "transferTargetsCount": 45,
+          "transferTargetsSha256": "76c2333c57225e510a81aa295ea72b4e435ec9d91b7e7f65d1ff22680d468a1d",
+          "transfersCount": 58,
+          "transfersSha256": "1197903e76284d3ab0f1d21cc4505014ecfe16532624dd0fb673fe1b84b38312",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.ExecutionThreads+WorkItem:Execute(System.Threading.ExecutionContext):this",
+          "tier": "Tier1",
+          "codeBytes": 225,
+          "inlineSummary": "1 inlinees with PGO data; 0 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 8,
+          "transferTargetsSha256": "0a248833724fd5111cb464c69958940496e88d8adc62fa2951ee9d85ed2c443b",
+          "transfersCount": 9,
+          "transfersSha256": "7e759fb1fab2a14e307e89b3bab966a0c1f468cb95814368701d33c89c7e5483",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyType:TryLookupInMro(System.String,int,byref,byref):bool:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 393,
+          "inlineSummary": null,
+          "transferTargetsCount": 9,
+          "transferTargetsSha256": "d6758ffde3a62c5598a568faf2fbd5d06e5e98c50b431afea870354b84ac84e7",
+          "transfersCount": 14,
+          "transfersSha256": "6918c3b9ccf3d44dde66c34ad28d3723dfa121b65d0d148a2048e113c374d298",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyAttributeLookup:TryResolveInstanceMember(Lokad.Lython.Runtime.PyInstance,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 1271,
+          "inlineSummary": null,
+          "transferTargetsCount": 21,
+          "transferTargetsSha256": "94440f28d1ac1b2c00820748e1719d7c83dfb1cf3b7f0f1a0b468b2eef930b7b",
+          "transfersCount": 44,
+          "transfersSha256": "d56ca4505b1127be04ed8cd0a534d4f354f58216fd76bf5a84e6bc80d6d7dd9a",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime:GetObjectInstanceAttribute(Lokad.Lython.Runtime.PyInstance,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 106,
+          "inlineSummary": null,
+          "transferTargetsCount": 3,
+          "transferTargetsSha256": "976d9183fb23d5be2241df266320966725587b923c32c78580790b8493f3f1d9",
+          "transfersCount": 3,
+          "transfersSha256": "976d9183fb23d5be2241df266320966725587b923c32c78580790b8493f3f1d9",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyAttributeLookup:TryResolveInstanceMemberWithoutGetAttrFallback(Lokad.Lython.Runtime.PyInstance,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 619,
+          "inlineSummary": null,
+          "transferTargetsCount": 14,
+          "transferTargetsSha256": "5a1e17e51d0f046d06265c6077f2549a33637c7beb8344356ba97ba450f3e4f0",
+          "transfersCount": 31,
+          "transfersSha256": "e707d6ebad788bd7fc5593b33211b5c4ebb6f75d8aaafb16ff773ee1fc7be321",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyInstance:TryGetOwnAttribute(System.String,byref):bool:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 53,
+          "inlineSummary": null,
+          "transferTargetsCount": 1,
+          "transferTargetsSha256": "b078e6f11b0b429974fc494cec3c131ad89b07a2958ff11f00cc0cbb1a0c25ae",
+          "transfersCount": 1,
+          "transfersSha256": "b078e6f11b0b429974fc494cec3c131ad89b07a2958ff11f00cc0cbb1a0c25ae",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyMemberAccess:TryAssign(System.Object,System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):bool",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 4588,
+          "inlineSummary": null,
+          "transferTargetsCount": 70,
+          "transferTargetsSha256": "f44c2c243bdbd263d7124fc194f91aa6d4f01d807c53e272ac30134609281955",
+          "transfersCount": 198,
+          "transfersSha256": "c1e28cdbac8f354ba0d023f848acb55e516373145cabee0221373973b5f7256d",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime:SetObjectInstanceAttribute(Lokad.Lython.Runtime.PyInstance,System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan)",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 207,
+          "inlineSummary": null,
+          "transferTargetsCount": 5,
+          "transferTargetsSha256": "7ad3453996fd756d92442058fa61248fd7fe3beca39f822d1f99f404e4ed75ec",
+          "transfersCount": 7,
+          "transfersSha256": "fab71dfde8b9da53b073b7a06f47e6f256b1a924dc3d9bf380384ae80efec69c",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyAttributeLookup:BindForInstance(Lokad.Lython.Runtime.PyInstance,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 136,
+          "inlineSummary": null,
+          "transferTargetsCount": 3,
+          "transferTargetsSha256": "3a046a9e0e167ba3be88ab3760eff1c5147bf400f3a775ac3cae597d9b00990a",
+          "transfersCount": 4,
+          "transfersSha256": "3a7e8efaa45ca30a3694fe8b3c0540dd7e1a174d306006b57480a208eb39e198",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyBoundMethod:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 245,
+          "inlineSummary": null,
+          "transferTargetsCount": 7,
+          "transferTargetsSha256": "da1696c3141d287889a6cd2c332f1c65a9825f14c1a9ff5df6f9e9ec9a1e3857",
+          "transfersCount": 8,
+          "transfersSha256": "0b774496fb1dfbd5f5ca16965a03503822a25efbf12a25f4371117a017f84965",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyFunctionBase:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier1",
+          "codeBytes": 2819,
+          "inlineSummary": "14 inlinees with PGO data; 80 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 63,
+          "transferTargetsSha256": "ee986426029b32a9b1feda6ea14f057ee2faf7dce08074eb0b5b20de102e9fce",
+          "transfersCount": 87,
+          "transfersSha256": "2387a48164d0c5da09cf77b3b52f382f04f3ceff7c6e354919b09952fdbc5953",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyFunctionBase:EnterInvocationFrame(Lokad.Lython.Runtime.BoundCallArguments,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext:this",
+          "tier": "Tier1",
+          "codeBytes": 156,
+          "inlineSummary": "0 inlinees with PGO data; 2 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 3,
+          "transferTargetsSha256": "bd4e5ba0627c197dfb422135c29f0426ac53b14890a11b5a73303a204b078e17",
+          "transfersCount": 3,
+          "transfersSha256": "bd4e5ba0627c197dfb422135c29f0426ac53b14890a11b5a73303a204b078e17",
+          "tailTransfers": [
+            "tail.jmp [Lokad.Lython.Runtime.PyFunctionBinding:EnterInvocationFrame(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts,Lokad.Lython.Runtime.FunctionBindingPlan,Lokad.Lython.Runtime.BoundCallArguments,bool,Lokad.Lython.Runtime.PyType,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext]"
+          ]
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyFunctionBinding:EnterInvocationFrame(Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.Frontend.ScopeDirectiveFacts,Lokad.Lython.Runtime.FunctionBindingPlan,Lokad.Lython.Runtime.BoundCallArguments,bool,Lokad.Lython.Runtime.PyType,Lokad.Lython.LythonSourceSpan):Lokad.Lython.Runtime.LythonRuntime+ExecutionContext",
+          "tier": "Tier1",
+          "codeBytes": 1972,
+          "inlineSummary": "8 inlinees with PGO data; 43 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 40,
+          "transferTargetsSha256": "abd15feac3ea2e76faa6be7d0c70e6960902914c4a00ec98f1b05ff28ca04187",
+          "transfersCount": 58,
+          "transfersSha256": "068851b9fd474536c7d6806a846203f8f736d2b594fd005a6df0e4b8016d79a3",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ObjectInitSubclassMethod:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 247,
+          "inlineSummary": null,
+          "transferTargetsCount": 7,
+          "transferTargetsSha256": "6c75b4e66a7dde356c64c18df6e4b29f9749a49fc02b7330f97bc4c01e9c058b",
+          "transfersCount": 9,
+          "transfersSha256": "e8960c595ee35cb1445a61c5f8e67283e2d198017072d172badbae3f8cca2c6d",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyType:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 1834,
+          "inlineSummary": null,
+          "transferTargetsCount": 31,
+          "transferTargetsSha256": "8614ae60477cc55520c93c8369c3fab1540b1807bfabb7e93c6bb299b88227a3",
+          "transfersCount": 68,
+          "transfersSha256": "9064116a5394f3a4106c357351d0a77448451450ad86f8975c90b48d6ccfee76",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ObjectNewMethod:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 346,
+          "inlineSummary": null,
+          "transferTargetsCount": 11,
+          "transferTargetsSha256": "f042ae520540d19c093b0e5793f35fc9ed73d9870f7ef24cfeba1e0d7c7b95db",
+          "transfersCount": 14,
+          "transfersSha256": "61859d628f49d1f6f50c61a6318371c9429876aa8c192ea4ca70e15687ae0c6e",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter:Execute():this",
+          "tier": "Tier1",
+          "codeBytes": 4584,
+          "inlineSummary": "35 inlinees with PGO data; 87 single block inlinees; 12 inlinees without PGO data",
+          "transferTargetsCount": 93,
+          "transferTargetsSha256": "216468026a7e925280894d7ff0e7ed5df67187c54ec94ddbec622705dd1faec2",
+          "transfersCount": 166,
+          "transfersSha256": "7122c9b80bff6706610eda1f8c0c3d3a466f9abd44e19dfa13b89f84f8229806",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+BoundArgumentsCallable:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier1",
+          "codeBytes": 597,
+          "inlineSummary": "4 inlinees with PGO data; 24 single block inlinees; 1 inlinees without PGO data",
+          "transferTargetsCount": 19,
+          "transferTargetsSha256": "59f378ca89961d340b3bd27c82a4ef5cb9cda8101b191f498f1965d1c52b04d4",
+          "transfersCount": 20,
+          "transfersSha256": "8dbee7f5e19e29bc15583efe207e286e59cfa8ca0bfd05bb69e6bbf9cc92be6a",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyType:TryLookupInMro(System.String,int,byref,byref):bool:this",
+          "tier": "Tier1",
+          "codeBytes": 980,
+          "inlineSummary": "6 inlinees with PGO data; 9 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 19,
+          "transferTargetsSha256": "d4a7eb6bcad2c6b6c51473353c9c786b9e29c15fc9a6149dbf10fe38653f847e",
+          "transfersCount": 25,
+          "transfersSha256": "cbf987873077403ec7134735b428a85a25251db0f6288f1f241faf41a5a6ce19",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyAttributeLookup:TryResolveInstanceMember(Lokad.Lython.Runtime.PyInstance,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool",
+          "tier": "Tier1",
+          "codeBytes": 3902,
+          "inlineSummary": "22 inlinees with PGO data; 34 single block inlinees; 1 inlinees without PGO data",
+          "transferTargetsCount": 60,
+          "transferTargetsSha256": "67a46dec95885aa9f7bb7e4acde51400885b27d3c0c4ffe5ab1acebb9d5cdac6",
+          "transfersCount": 101,
+          "transfersSha256": "a07addcaef2d71cb0558661edc272b6c8f314cdbc2558f58473aee74c9706d79",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime:GetObjectInstanceAttribute(Lokad.Lython.Runtime.PyInstance,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object",
+          "tier": "Tier1",
+          "codeBytes": 108,
+          "inlineSummary": null,
+          "transferTargetsCount": 3,
+          "transferTargetsSha256": "976d9183fb23d5be2241df266320966725587b923c32c78580790b8493f3f1d9",
+          "transfersCount": 3,
+          "transfersSha256": "976d9183fb23d5be2241df266320966725587b923c32c78580790b8493f3f1d9",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyAttributeLookup:TryResolveInstanceMemberWithoutGetAttrFallback(Lokad.Lython.Runtime.PyInstance,System.String,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan,byref):bool",
+          "tier": "Tier1",
+          "codeBytes": 2523,
+          "inlineSummary": "16 inlinees with PGO data; 25 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 38,
+          "transferTargetsSha256": "4131f16e226f7137ed642b6f30fc8021a9b3565e907dfb0f42a6b5fc1158a240",
+          "transfersCount": 56,
+          "transfersSha256": "db54ec8ce3857f33e1dcbf4deb545acbff2fe29194ee4eb0b2fc1edc3ae4ce31",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyInstance:TryGetOwnAttribute(System.String,byref):bool:this",
+          "tier": "Tier1",
+          "codeBytes": 654,
+          "inlineSummary": "5 inlinees with PGO data; 6 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 15,
+          "transferTargetsSha256": "2ce56141506f7230a0dd408e6555e1615481864390779e1761d6bf5aa2074ecb",
+          "transfersCount": 19,
+          "transfersSha256": "90b49b079830e9457a73234de93501f9f81782c0529a151ca6d49762ee029f07",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyMemberAccess:TryAssign(System.Object,System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):bool",
+          "tier": "Tier1",
+          "codeBytes": 6239,
+          "inlineSummary": "25 inlinees with PGO data; 125 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 96,
+          "transferTargetsSha256": "9d1837504bd1be07086c8b97f86ba00a3e5ea431009671e669228b3465a6ceed",
+          "transfersCount": 179,
+          "transfersSha256": "9e502da1a5edf958be92b1f379b56036d48bed129cfb86314197f0e66a0c9ae6",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime:SetObjectInstanceAttribute(Lokad.Lython.Runtime.PyInstance,System.String,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan)",
+          "tier": "Tier1",
+          "codeBytes": 3181,
+          "inlineSummary": "19 inlinees with PGO data; 38 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 44,
+          "transferTargetsSha256": "4a3feb80179f34f4e6ab1b845e901908c8a577231d262975d2561c05bf50ba31",
+          "transfersCount": 65,
+          "transfersSha256": "99c0799b4aec1a1b4a7c0185c946fccf6f03bd5d2cdfe7ffb2b0f981995bb65b",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyAttributeLookup:BindForInstance(Lokad.Lython.Runtime.PyInstance,System.Object,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext,Lokad.Lython.LythonSourceSpan):System.Object",
+          "tier": "Tier1",
+          "codeBytes": 353,
+          "inlineSummary": "3 inlinees with PGO data; 5 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 11,
+          "transferTargetsSha256": "a3233eff0630a5d3ba67effd6e63155141ea15530610ec644c214f7b5d205907",
+          "transfersCount": 13,
+          "transfersSha256": "c6f1de6f73027e90c808c5a0853a32243779c1e42920b4f0df46200e923f50b4",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyBoundMethod:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier1",
+          "codeBytes": 222,
+          "inlineSummary": "0 inlinees with PGO data; 2 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 6,
+          "transferTargetsSha256": "e491f2ef59d77a15b404e14ee668081eb27ba9897eaed4100c70924f267fa123",
+          "transfersCount": 6,
+          "transfersSha256": "e491f2ef59d77a15b404e14ee668081eb27ba9897eaed4100c70924f267fa123",
+          "tailTransfers": [
+            "tail.jmp [Lokad.Lython.Runtime.LythonRuntime+ObjectInitSubclassMethod:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this]",
+            "tail.jmp [r11]Lokad.Lython.Runtime.LythonRuntime+ICallable:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this"
+          ]
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyIteration+Cursor:CheckExecution():this",
+          "tier": "Tier0",
+          "codeBytes": 100,
+          "inlineSummary": null,
+          "transferTargetsCount": 1,
+          "transferTargetsSha256": "1bdfac5840372e243b21b6a7f82290c31e0f56652e214d0b338d398cf1170240",
+          "transfersCount": 1,
+          "transfersSha256": "1bdfac5840372e243b21b6a7f82290c31e0f56652e214d0b338d398cf1170240",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+LambdaFunction:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier0",
+          "codeBytes": 424,
+          "inlineSummary": null,
+          "transferTargetsCount": 14,
+          "transferTargetsSha256": "41f6bb83756557271d4455bb60c674f9ea0ee4193d21dd37fa3976477acb6a75",
+          "transfersCount": 17,
+          "transfersSha256": "2d016f99a850d33840a53ea6bc38f8e31db86c9c108c9fadc4c645b5c9402732",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyIteration+Cursor:CheckExecution():this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 147,
+          "inlineSummary": null,
+          "transferTargetsCount": 3,
+          "transferTargetsSha256": "6466e65bc759e10593c8a76f6d47088dc132525db855aecdce2cd1f7fb492b93",
+          "transfersCount": 5,
+          "transfersSha256": "fd5f3888ea3074e8794dd6a7480f29d2e373b1c06ad2299a1bb19a239ef7ba3a",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+LambdaFunction:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Instrumented Tier0",
+          "codeBytes": 469,
+          "inlineSummary": null,
+          "transferTargetsCount": 15,
+          "transferTargetsSha256": "668aa7719358d4829faeaac477c841228801c873315601d47b97f7b234cfec1a",
+          "transfersCount": 20,
+          "transfersSha256": "b101fc24e8ca8b72864fab9633604be34b9d18ff752dfc96a6ce5e9c8e17ab34",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyIteration+Cursor:CheckExecution():this",
+          "tier": "Tier1",
+          "codeBytes": 166,
+          "inlineSummary": "2 inlinees with PGO data; 14 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 6,
+          "transferTargetsSha256": "0238140c89228125d78696469edbc8cf7453f46235c70388d81e6efdb340b504",
+          "transfersCount": 6,
+          "transfersSha256": "0238140c89228125d78696469edbc8cf7453f46235c70388d81e6efdb340b504",
+          "tailTransfers": [
+            "tail.jmp [Lokad.Lython.Runtime.ExecutionGuards:ThrowExecutionCanceled(Lokad.Lython.LythonSourceSpan)]"
+          ]
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+LambdaFunction:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier1",
+          "codeBytes": 2656,
+          "inlineSummary": "12 inlinees with PGO data; 72 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 56,
+          "transferTargetsSha256": "a46603d1194f0a9f3cd562cdd1479a278a37fa6fc20d705098bdd363945eb890",
+          "transfersCount": 81,
+          "transfersSha256": "4c3207755cf8a4b2c92bd996919e0f9b4f3b82c7a1fe460cf1ff1ad0be9fe1e9",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ObjectInitSubclassMethod:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier1",
+          "codeBytes": 143,
+          "inlineSummary": "0 inlinees with PGO data; 2 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 4,
+          "transferTargetsSha256": "5236ad3e72fb6820db53f25721267c6a002bb365c323920bc08d8d2af3ad4d73",
+          "transfersCount": 5,
+          "transfersSha256": "12132729ba6bdb0bf83981104af71863533421f9afaced4ca117a6ff65f37318",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.PyType:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier1",
+          "codeBytes": 4161,
+          "inlineSummary": "40 inlinees with PGO data; 105 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 90,
+          "transferTargetsSha256": "93b07506be7405256f5730cf351ab00b7b4ea9d4f49de9fe8e3238acf7af54aa",
+          "transfersCount": 152,
+          "transfersSha256": "94a263a91297e1f8740740410b7cdfa6de5b7a8825a420827726123ed655738d",
+          "tailTransfers": []
+        },
+        {
+          "method": "Lokad.Lython.Runtime.LythonRuntime+ObjectNewMethod:Invoke(Lokad.Lython.Runtime.CallArgumentValue[],Lokad.Lython.LythonSourceSpan,Lokad.Lython.Runtime.LythonRuntime+ExecutionContext):System.Object:this",
+          "tier": "Tier1",
+          "codeBytes": 498,
+          "inlineSummary": "4 inlinees with PGO data; 29 single block inlinees; 0 inlinees without PGO data",
+          "transferTargetsCount": 11,
+          "transferTargetsSha256": "d2c46702b4b3a9d7a6279d807abb483229641819307f2e19f6593566e1c7d92a",
+          "transfersCount": 19,
+          "transfersSha256": "6433a46248fb7342db78b32cde1c40a88180daf07fa269f73fafac3d78d12464",
+          "tailTransfers": []
+        }
+      ]
+    }
+  ],
+  "services": {
+    "micro": [
+      {
+        "unit": "lython-instance-mro-lookup-micro-0-20261011",
+        "started": "2026-10-11T11:39:48.416505+00:00",
+        "stopped": "2026-10-11T11:39:56.459608+00:00",
+        "wholeSeconds": 8.043103
+      },
+      {
+        "unit": "lython-instance-mro-lookup-micro-1-20261011",
+        "started": "2026-10-11T11:39:56.535507+00:00",
+        "stopped": "2026-10-11T11:40:04.586118+00:00",
+        "wholeSeconds": 8.050611
+      },
+      {
+        "unit": "lython-instance-mro-lookup-micro-2-20261011",
+        "started": "2026-10-11T11:40:04.655507+00:00",
+        "stopped": "2026-10-11T11:40:12.694366+00:00",
+        "wholeSeconds": 8.038859
+      },
+      {
+        "unit": "lython-instance-mro-lookup-micro-3-20261011",
+        "started": "2026-10-11T11:40:12.763506+00:00",
+        "stopped": "2026-10-11T11:40:20.814351+00:00",
+        "wholeSeconds": 8.050845
+      },
+      {
+        "unit": "lython-instance-mro-lookup-micro-4-20261011",
+        "started": "2026-10-11T11:40:20.884513+00:00",
+        "stopped": "2026-10-11T11:40:28.925412+00:00",
+        "wholeSeconds": 8.040899
+      },
+      {
+        "unit": "lython-instance-mro-lookup-micro-5-20261011",
+        "started": "2026-10-11T11:40:28.990519+00:00",
+        "stopped": "2026-10-11T11:40:37.038822+00:00",
+        "wholeSeconds": 8.048303
+      },
+      {
+        "unit": "lython-instance-mro-lookup-micro-6-20261011",
+        "started": "2026-10-11T11:40:37.113510+00:00",
+        "stopped": "2026-10-11T11:40:45.151584+00:00",
+        "wholeSeconds": 8.038074
+      },
+      {
+        "unit": "lython-instance-mro-lookup-micro-7-20261011",
+        "started": "2026-10-11T11:40:45.225526+00:00",
+        "stopped": "2026-10-11T11:40:53.270027+00:00",
+        "wholeSeconds": 8.044501
+      },
+      {
+        "unit": "lython-instance-mro-lookup-micro-8-20261011",
+        "started": "2026-10-11T11:40:53.334517+00:00",
+        "stopped": "2026-10-11T11:41:01.380766+00:00",
+        "wholeSeconds": 8.046249
+      },
+      {
+        "unit": "lython-instance-mro-lookup-micro-9-20261011",
+        "started": "2026-10-11T11:41:01.445521+00:00",
+        "stopped": "2026-10-11T11:41:09.489571+00:00",
+        "wholeSeconds": 8.04405
+      },
+      {
+        "unit": "lython-instance-mro-lookup-micro-10-20261011",
+        "started": "2026-10-11T11:41:09.564521+00:00",
+        "stopped": "2026-10-11T11:41:17.609354+00:00",
+        "wholeSeconds": 8.044833
+      },
+      {
+        "unit": "lython-instance-mro-lookup-micro-11-20261011",
+        "started": "2026-10-11T11:41:17.686520+00:00",
+        "stopped": "2026-10-11T11:41:25.727609+00:00",
+        "wholeSeconds": 8.041089
+      },
+      {
+        "unit": "lython-instance-mro-lookup-micro-12-20261011",
+        "started": "2026-10-11T11:41:25.802512+00:00",
+        "stopped": "2026-10-11T11:41:33.844210+00:00",
+        "wholeSeconds": 8.041698
+      },
+      {
+        "unit": "lython-instance-mro-lookup-micro-13-20261011",
+        "started": "2026-10-11T11:41:33.911519+00:00",
+        "stopped": "2026-10-11T11:41:41.962860+00:00",
+        "wholeSeconds": 8.051341
+      }
+    ],
+    "allocation": [
+      {
+        "unit": "lython-instance-mro-lookup-invocation-allocation-baseline-20261011",
+        "started": "2026-10-11T11:41:44.372510+00:00",
+        "stopped": "2026-10-11T11:41:48.404026+00:00",
+        "wholeSeconds": 4.031516
+      },
+      {
+        "unit": "lython-instance-mro-lookup-invocation-allocation-candidate-20261011",
+        "started": "2026-10-11T11:41:48.446508+00:00",
+        "stopped": "2026-10-11T11:41:52.486260+00:00",
+        "wholeSeconds": 4.039752
+      }
+    ],
+    "native": [
+      {
+        "unit": "lython-instance-mro-lookup-native-code-baseline-20261011",
+        "started": "2026-10-11T11:41:54.157520+00:00",
+        "stopped": "2026-10-11T11:41:58.188940+00:00",
+        "wholeSeconds": 4.03142
+      },
+      {
+        "unit": "lython-instance-mro-lookup-native-code-candidate-20261011",
+        "started": "2026-10-11T11:41:58.228515+00:00",
+        "stopped": "2026-10-11T11:42:02.257739+00:00",
+        "wholeSeconds": 4.029224
+      }
+    ]
+  },
+  "cleanup": {
+    "bothSourcesClean": true,
+    "inputsRehashed": true,
+    "ownedServicesTerminal": 20,
+    "allRecordedPidsAbsent": true,
+    "recordedPids": [
+      2123496,
+      2145109,
+      2167682,
+      2167703,
+      2167718,
+      2167668,
+      2167762,
+      2167783,
+      2167798,
+      2167748,
+      2167844,
+      2167865,
+      2167880,
+      2167830,
+      2167928,
+      2167949,
+      2167964,
+      2167914,
+      2168007,
+      2168028,
+      2168043,
+      2167993,
+      2168090,
+      2168111,
+      2168126,
+      2168076,
+      2168171,
+      2168192,
+      2168207,
+      2168157,
+      2168251,
+      2168272,
+      2168287,
+      2168237,
+      2168330,
+      2168351,
+      2168366,
+      2168316,
+      2168413,
+      2168434,
+      2168449,
+      2168399,
+      2168492,
+      2168513,
+      2168528,
+      2168478,
+      2168570,
+      2168591,
+      2168606,
+      2168556,
+      2168649,
+      2168670,
+      2168685,
+      2168635,
+      2168729,
+      2168750,
+      2168765,
+      2168715,
+      2168985,
+      2168983,
+      2169011,
+      2169009,
+      2169212,
+      2169210,
+      2169240,
+      2169238
+    ],
+    "sharedLeaseAvailableAtAuditStart": true,
+    "fullLanes": 0
+  },
+  "fullDebugAndReleasePassedPerProducer": 9840,
+  "fullLanes": 0,
+  "milestoneQualified": false,
+  "testReceipts": {
+    "baseline-full-debug": [
+      {
+        "path": "baseline-full-debug/public.trx",
+        "sha256": "1c0222ff8f739cb83ae72128e70c5219495f152456c85057a6234e3b6bd96035",
+        "passed": 7978
+      },
+      {
+        "path": "baseline-full-debug/white.trx",
+        "sha256": "bb11c773730e74f9d0e9e6371d28332944ec09ff70baafb8c68c82304bf8fb81",
+        "passed": 1862
+      }
+    ],
+    "candidate-full-debug": [
+      {
+        "path": "candidate-full-debug/public.trx",
+        "sha256": "206da5e74b6ba0273a854073ff8dfe52393b88b58581bcde8f35f9182afd4e6e",
+        "passed": 7978
+      },
+      {
+        "path": "candidate-full-debug/white.trx",
+        "sha256": "1b72398d556e3714605e016021059f97c380b3b20c4f7bbda23af174c707010b",
+        "passed": 1862
+      }
+    ],
+    "vm/candidate-white-vm": [
+      {
+        "path": "vm/candidate-white-vm/_lython-bench_2026-10-11_11_34_13_net10.0.trx",
+        "sha256": "e05b42428994adbedfdeab5880c842b639547e7e0f12b1cfef19207723d6c5fa",
+        "passed": 1862
+      }
+    ],
+    "vm/candidate-public-vm": [
+      {
+        "path": "vm/candidate-public-vm/_lython-bench_2026-10-11_11_34_45_net10.0.trx",
+        "sha256": "d373b56d466581a37d52c896339c5f02c813336c232e2bf243c153bd8f61768b",
+        "passed": 7978
+      }
+    ],
+    "vm/baseline-white-vm": [
+      {
+        "path": "vm/baseline-white-vm/_lython-bench_2026-10-11_11_28_38_net10.0.trx",
+        "sha256": "ad5dab012b2170371ca627e1a335bff772a39223cd12bab4a42e825901609127",
+        "passed": 1862
+      }
+    ],
+    "vm/baseline-public-vm": [
+      {
+        "path": "vm/baseline-public-vm/_lython-bench_2026-10-11_11_29_11_net10.0.trx",
+        "sha256": "0de40910e3c20222357b63952c2d50324fb52d1af36d2ef3bc19a063b2b8d0b1",
+        "passed": 7978
+      }
+    ]
+  },
+  "microReceipts": [
+    {
+      "path": "vm/micro-0/micro.json",
+      "sha256": "2f1a7904227ed182c1514e918a0ca369bb8e8ef87886874a64871bf48643387a"
+    },
+    {
+      "path": "vm/micro-1/micro.json",
+      "sha256": "4b8aa034638f138cb6782d83a990e252072795bb47f5320b913bb4640794a249"
+    },
+    {
+      "path": "vm/micro-2/micro.json",
+      "sha256": "2d42a4c2cbde2117fd78f535a7c0f5d65e656cc4fe67ae20a833444508ea7c67"
+    },
+    {
+      "path": "vm/micro-3/micro.json",
+      "sha256": "938fef2c688d0c483da2f4e834e98da1d6eb654b86953eb96f0ed7796c0d166b"
+    },
+    {
+      "path": "vm/micro-4/micro.json",
+      "sha256": "fa4a8b6dd421651852dae45cc6e7fcf55bafbbe910935d89f7ef583153c1b78f"
+    },
+    {
+      "path": "vm/micro-5/micro.json",
+      "sha256": "c9c01f3172b662955d4b138e92fb35195ff05ab0d3f8d30bd7e470f8db39b167"
+    },
+    {
+      "path": "vm/micro-6/micro.json",
+      "sha256": "8cdd253b6f829610845d0955ec9afd69a9b84c43836ca4b24f1012d5c1937291"
+    },
+    {
+      "path": "vm/micro-7/micro.json",
+      "sha256": "4528ece0b4626788918843911d4d90986dadd768c61341ab5fec5f3f93d97ac9"
+    },
+    {
+      "path": "vm/micro-8/micro.json",
+      "sha256": "49ada7547a68616283dbe760d5ede8bd67c9389e66dd659403b2abe0c1618966"
+    },
+    {
+      "path": "vm/micro-9/micro.json",
+      "sha256": "237fb4197dc35b2249681cf57eabd2b2d72e825c5919bcf3be27e76552b0201e"
+    },
+    {
+      "path": "vm/micro-10/micro.json",
+      "sha256": "8170aa4c5861e90196fd5c609fdef3b78255c65910db77576372c5cdebc33506"
+    },
+    {
+      "path": "vm/micro-11/micro.json",
+      "sha256": "3fdd2006e687da75f994af8ea27e468f2ff3987c06f40b537c0b7a3244e2b7a8"
+    },
+    {
+      "path": "vm/micro-12/micro.json",
+      "sha256": "5a78751aa069737ad43d5a904176e0d3eabbc9491da0698bcebd2707a7c4a95f"
+    },
+    {
+      "path": "vm/micro-13/micro.json",
+      "sha256": "316e6e63f662ac98fcc2a9347c68c8ff3382238ca4a705a04418623451f48178"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "original-control-contracts.json",
+      "sha256": "4cf5a1d86333fd40d50e64304c2afaa14fa0237d7e6a2189527633717faecd90"
+    },
+    {
+      "path": "original-public-goldens.json",
+      "sha256": "341e2a15cec40ae0db6458b58a68b43e7be292ab17f62cf4ea11bdb55bd5f7d0"
+    },
+    {
+      "path": "assessment-policy.json",
+      "sha256": "471e864ef8bc71db275d6c492bdf3ae2bbb0eab5da758710bfe26e75e506f274"
+    },
+    {
+      "path": "decision-policy-code-proof.json",
+      "sha256": "47c721005e6b6928d1d808245816627bc92852908c85a066aaba1d6a858f8d2d"
+    },
+    {
+      "path": "preparation-declaration.json",
+      "sha256": "60d3db59f806474536929b45ccacc634397160f16bcf677bf1b3feb1960895b8"
+    },
+    {
+      "path": "micro-declaration.json",
+      "sha256": "349b994af1691eaf4b0941d7ace51d415bbc5dd87d54a0b76e0f2c43ab9d3e30"
+    },
+    {
+      "path": "invocation-allocation-declaration.json",
+      "sha256": "00afabc31c2a3f93d41cb27551d4fbccb746c5357957b133dc1f6277176f08d9"
+    },
+    {
+      "path": "native-code-declaration.json",
+      "sha256": "3eaa2b5a5098a0349dcdcd2fb2328efb9ee3a6059e48e57076ba87b2de335903"
+    },
+    {
+      "path": "micros-audit.json",
+      "sha256": "1420a3aa385300327a0a66940ebef70751f95af7c41ec850bda55e34f5b2fc2d"
+    },
+    {
+      "path": "allocation-audit.json",
+      "sha256": "1dd4e5b2dce124ab7d06da5e0d096b33b9be6c3ba4ce0a0e89e725413e3d96b5"
+    },
+    {
+      "path": "native-audit.json",
+      "sha256": "67fc133c91c41b5e49238b7600757d9841d8e0fb557e78ac3ecbde919c562043"
+    },
+    {
+      "path": "native-transfer-review.json",
+      "sha256": "5f81de8d30ff0f406b96ed2c843eff22b95fc917538934ac9fae185c36e30db1"
+    },
+    {
+      "path": "decision.json",
+      "sha256": "ab6401570d7c019bbadd19405736973fe29c793bd4644d2c7d60ef7fd47f98c7"
+    }
+  ]
+}
