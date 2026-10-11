@@ -16,6 +16,13 @@ The original delivery failed Linux CI; both new producers include the same stack
 publication and exception-propagation corrections. Its original measurements,
 failed qualification and diagnostic trials remain visible in the reports.
 
+The [current class-method design assessment](results/2026-10-11-class-method-design/README.md)
+adds two ten-second CPU traces (14–17s including cleanup) and 23 independent
+checks on unchanged production. Attribute lookup, assignment and method invocation
+remain substantial sampled costs. Real class-factory checks pin fuel/funding/cell
+boundaries and genuine async suspension with same-run reentry. Executable
+class-method bodies remain pending; no new timing ratio or full lane is added.
+
 The [2026-10-09 bounded run](results/2026-10-09-quick/README.md) completed all four
 lanes within ten minutes each. Its raw-evidence review found no qualified
 workload ratios; its exclusions remain unchanged.
