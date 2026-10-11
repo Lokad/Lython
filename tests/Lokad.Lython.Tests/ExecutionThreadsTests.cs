@@ -40,16 +40,24 @@ public sealed class ExecutionThreadsTests
         using var entered = new CountdownEvent(3);
         using var release = new ManualResetEventSlim();
         var workers = new Thread[3];
-        var calls = Enumerable.Range(0, 3).Select(i => Task.Run(() => threads.Run(() =>
+        // These callers block in Run. Give each its own thread so the test
+        // measures Lython worker admission, independent of ThreadPool ramp-up
+        // and other test collections occupying pool threads.
+        var calls = Enumerable.Range(0, 3).Select(i => Task.Factory.StartNew(() => threads.Run(() =>
         {
             workers[i] = Thread.CurrentThread;
             entered.Signal();
             Assert.True(release.Wait(TimeSpan.FromSeconds(10)));
             return Success();
-        }))).ToArray();
+        }), CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default)).ToArray();
         try { Assert.True(entered.Wait(TimeSpan.FromSeconds(10))); }
-        finally { release.Set(); }
-        await Task.WhenAll(calls).WaitAsync(TimeSpan.FromSeconds(15));
+        finally
+        {
+            release.Set();
+            // Do not dispose the callback's events before every caller exits,
+            // including when the entry assertion fails.
+            await Task.WhenAll(calls).WaitAsync(TimeSpan.FromSeconds(15));
+        }
         Assert.Equal(3, workers.Distinct().Count());
         Assert.True(SpinWait.SpinUntil(() => workers.Count(t => t.IsAlive) <= 2, TimeSpan.FromSeconds(10)));
         Assert.Equal(2, workers.Count(t => t.IsAlive));
@@ -64,20 +72,23 @@ public sealed class ExecutionThreadsTests
         using var entered = new ManualResetEventSlim();
         using var release = new ManualResetEventSlim();
         Thread? worker = null;
-        var run = Task.Run(() => threads.Run(() =>
+        var run = Task.Factory.StartNew(() => threads.Run(() =>
         {
             worker = Thread.CurrentThread;
             entered.Set();
             Assert.True(release.Wait(TimeSpan.FromSeconds(10)));
             return Success();
-        }));
+        }), CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         try
         {
             Assert.True(entered.Wait(TimeSpan.FromSeconds(10)));
             threads.Dispose();
         }
-        finally { release.Set(); }
-        Assert.True((await run.WaitAsync(TimeSpan.FromSeconds(15))).Success);
+        finally
+        {
+            release.Set();
+            Assert.True((await run.WaitAsync(TimeSpan.FromSeconds(15))).Success);
+        }
         Assert.True(worker!.Join(TimeSpan.FromSeconds(10)));
     }
 

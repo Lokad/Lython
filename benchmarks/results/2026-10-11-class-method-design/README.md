@@ -40,7 +40,8 @@ Both traces retain their complete leaf/inclusive tables, allocation ticks and GC
 event accounting in [evidence.json](evidence.json). Sampled allocations include
 execution contexts, integers, compiler display classes, dictionaries and argument
 arrays. Allocation ticks are sampled evidence, without exact per-type byte claims;
-the display-class row has not been tied to a specific source closure. GC event
+at initial publication, the display-class row had not been tied to a specific
+source closure (see the follow-up below). GC event
 pairs are incomplete, so complete collection counts and pause totals are withheld.
 Raw traces, responses, receipts, helper versions and journals remain retained;
 their hashes are included in the evidence.
@@ -92,3 +93,41 @@ Executable class-method bodies remain open. Defaults, decorators, annotations an
 generic type scopes, transitive closures, globals/nonlocal behavior, generator
 lifetime and public host suspension must retain their own baseline proofs before
 integration. No body prototype or gain prediction is introduced by this report.
+
+## Delivery correction and allocation-source lead
+
+Initial delivery `fa405f52` [CI failed on Windows](https://github.com/Lokad/Lython/actions/runs/38097662050)
+in the existing `ExecutionThreadsTests.ConcurrentCallsDoNotQueueAndIdleRetentionIsBounded`
+entry assertion. Ubuntu passed. Windows passed all 23 new checks and the complete
+7,825-test public suite, with 1,596 white tests passing and one failing. Seven
+authenticated requests retained the status/jobs and one failed-step log; the
+workflow was not rerun.
+
+The test launched blocking callers with `Task.Run` while synchronously waiting
+for all three to enter Lython. Its admission assertion consequently depended on
+ThreadPool scheduling outside Lython. A controlled child with one pool worker
+reproduces this failure using the actual frozen white-box test and production
+code. Dedicated `LongRunning` caller tasks make both the concurrency and disposal
+checks pass under the same pool constraint. Caller completion is now awaited
+before disposing their callback events, including assertion failure cleanup.
+The original ten-second entry and fifteen-second completion deadlines remain.
+The three-child diagnostic takes **10.48s including cleanup**, under a 30-second
+group deadline; all recorded PIDs are absent. Corrected focused checks pass six
+tests, followed by the complete **1,597-test Windows Debug white suite**.
+This corrects the test fixture and leaves production tree `5acf16eb` intact.
+The constrained child demonstrates the scheduling dependence without measuring
+the pool state of the original CI runner.
+
+Metadata-only inspection of the exact frozen profiled DLL matches its SHA-256
+and MVID. Its `<>c__DisplayClass973_0` methods belong to
+`ResolveLoweredAugmentedAssignmentTarget`, capturing actual receivers, indices,
+slices and context for store delegates. This supplies a concrete source lead for
+the canonical method's augmented assignment. Allocation event type names omit
+assembly qualification; exact aggregate ownership and per-type byte totals
+remain unproven. The next assessment will consider prepared augmented targets
+while retaining evaluation/store order, funding, spans and genuine async stores.
+No prototype or new performance result is introduced.
+
+[Follow-up evidence](follow-up-evidence.json) retains the failed delivery,
+controlled diagnostic, corrected fixture gate, metadata result and artifact
+hashes. The original capture evidence remains unchanged.

@@ -22,6 +22,10 @@ checks on unchanged production. Attribute lookup, assignment and method invocati
 remain substantial sampled costs. Real class-factory checks pin fuel/funding/cell
 boundaries and genuine async suspension with same-run reentry. Executable
 class-method bodies remain pending; no new timing ratio or full lane is added.
+Initial Windows CI exposed an existing concurrency test's dependency on caller
+ThreadPool scheduling. A 10.5s isolated diagnostic reproduces that dependence;
+dedicated test callers preserve the deadlines and pass under a one-thread pool.
+Production and original capture evidence remain unchanged.
 
 The [2026-10-09 bounded run](results/2026-10-09-quick/README.md) completed all four
 lanes within ten minutes each. Its raw-evidence review found no qualified

@@ -1,0 +1,203 @@
+{
+  "productionTree": "5acf16ebcbc079b5f164c9c7cbb73deddfeb732c",
+  "runtimeChange": false,
+  "normalTimingCollections": 0,
+  "fullPerformanceLanes": 0,
+  "failedDelivery": {
+    "head": "fa405f52e6166485ea4965ed73318db3df8e397b",
+    "run": 38097662050,
+    "url": "https://github.com/Lokad/Lython/actions/runs/38097662050",
+    "attempt": 1,
+    "jobs": [
+      {
+        "name": "tests (ubuntu-latest)",
+        "conclusion": "success"
+      },
+      {
+        "name": "tests (windows-latest)",
+        "conclusion": "failure"
+      }
+    ],
+    "authenticatedRequests": 7,
+    "sameHeadRerun": false,
+    "failure": "Existing concurrency test did not admit all three Task.Run callers before its entry deadline",
+    "whiteWindowsPassed": 1596,
+    "whiteWindowsFailed": 1,
+    "newClassMethodChecksPassed": 23,
+    "publicWindowsPassed": 7825,
+    "windowsLogSha256": "1eb0fab85ac7d80c2f182b325aaeae0facb0b7062349bea2ef8101df5dcda0b6",
+    "requestLedgerSha256": "d33182563e7dd7c9fe779110da3c9e585d885ea670dc760ceadf65712093292c"
+  },
+  "isolatedDiagnostic": {
+    "state": "Audited",
+    "started": "2026-10-11T00:30:34.8686001+00:00",
+    "stopped": "2026-10-11T00:30:45.3470566+00:00",
+    "wholeGroupSeconds": 10.4792087,
+    "hardGroupCapSeconds": 30,
+    "originalFailureReproduced": true,
+    "correctedConcurrencyPasses": true,
+    "correctedDisposalPasses": true,
+    "allRecordedPidsAbsent": true,
+    "receipts": [
+      {
+        "role": "original-concurrency",
+        "pid": 942176,
+        "exitCode": 1,
+        "expectedExitCode": 1,
+        "terminal": true
+      },
+      {
+        "role": "corrected-concurrency",
+        "pid": 776868,
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "terminal": true
+      },
+      {
+        "role": "corrected-disposal",
+        "pid": 1140432,
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "terminal": true
+      }
+    ],
+    "normalPerfCollections": 0
+  },
+  "diagnosticChildren": [
+    {
+      "role": "original-concurrency",
+      "test": "ConcurrentCallsDoNotQueueAndIdleRetentionIsBounded",
+      "minimumWorkers": 1,
+      "maximumWorkers": 1,
+      "minimumIo": 1,
+      "maximumIo": 1,
+      "assemblySha256": "3383450778746ac28c33edaf68e9b767b53f521e65ddfbccc4c160a6b589c91f",
+      "assemblyVersion": "1.0.0+f33a4119ecb177330cce42913196fb061ec70061",
+      "succeeded": false,
+      "failureType": "Xunit.Sdk.TrueException",
+      "failureMessage": "Assert.True() Failure\r\nExpected: True\r\nActual:   False",
+      "outputSha256": "ecb8d30e822ee471f4b94d8f17339a8a84730c2b2ff505309a3a1751af8ce9f7"
+    },
+    {
+      "role": "corrected-concurrency",
+      "test": "ConcurrentCallsDoNotQueueAndIdleRetentionIsBounded",
+      "minimumWorkers": 1,
+      "maximumWorkers": 1,
+      "minimumIo": 1,
+      "maximumIo": 1,
+      "assemblySha256": "c784e51566e7d7b5a33b244eca476380a13bb58d051426ef80ecb3f4e0d79bac",
+      "assemblyVersion": "1.0.0+fa405f52e6166485ea4965ed73318db3df8e397b",
+      "succeeded": true,
+      "failureType": null,
+      "failureMessage": null,
+      "outputSha256": "c1225126fe5c9a60a19cfdd32b5243a46123947dc19547923129c85192936f90"
+    },
+    {
+      "role": "corrected-disposal",
+      "test": "DisposingDuringRunAllowsItToFinishAndRetiresWorker",
+      "minimumWorkers": 1,
+      "maximumWorkers": 1,
+      "minimumIo": 1,
+      "maximumIo": 1,
+      "assemblySha256": "c784e51566e7d7b5a33b244eca476380a13bb58d051426ef80ecb3f4e0d79bac",
+      "assemblyVersion": "1.0.0+fa405f52e6166485ea4965ed73318db3df8e397b",
+      "succeeded": true,
+      "failureType": null,
+      "failureMessage": null,
+      "outputSha256": "c7db9a3a60ce8f740e844206880577a29e434ad41b91537bcc1420eee7e4fdc9"
+    }
+  ],
+  "correctedFixture": {
+    "dedicatedBlockingCallers": true,
+    "deadlinesChanged": false,
+    "poolLimitsChangedInParentOrRuntime": false,
+    "callersJoinedBeforeEventDisposal": true,
+    "focusedPassed": 6,
+    "fullWhiteDebug": {
+      "total": 1597,
+      "executed": 1597,
+      "passed": 1597,
+      "failed": 0,
+      "error": 0,
+      "timeout": 0,
+      "aborted": 0,
+      "inconclusive": 0,
+      "passedButRunAborted": 0,
+      "notRunnable": 0,
+      "notExecuted": 0,
+      "disconnected": 0,
+      "warning": 0,
+      "completed": 0,
+      "inProgress": 0,
+      "pending": 0
+    },
+    "fullWhiteTrxSha256": "16633b1a6cf6fbdb765e9d416bcfc83de9eb996a2ee6c1203124afaf45266087",
+    "testSourceSha256": "1eecf6d0ac9cbd1aaf5f8529fe4abcbf866b941ee99d6e5f9d2ce56e8f00c23f"
+  },
+  "allocationOwnerMetadata": {
+    "state": "MetadataOwnerVerified",
+    "productionTree": "5acf16ebcbc079b5f164c9c7cbb73deddfeb732c",
+    "assemblySha256": "756acc411b3d922fc893678ac1c903aa9a9d2e114d62da09b4c1390c413e395b",
+    "moduleId": "903f515c-8023-4ace-8f25-17310ddb8979",
+    "type": "<>c__DisplayClass973_0",
+    "methods": [
+      ".ctor",
+      "<ResolveLoweredAugmentedAssignmentTarget>b__0",
+      "<ResolveLoweredAugmentedAssignmentTarget>b__1",
+      "<ResolveLoweredAugmentedAssignmentTarget>b__2"
+    ],
+    "fields": [
+      "context",
+      "subscriptTarget",
+      "index",
+      "<subscript>5__2",
+      "sliceTarget",
+      "start",
+      "end",
+      "step",
+      "<slice>5__3",
+      "memberTarget",
+      "<member>5__4"
+    ],
+    "metadataOnly": true,
+    "loadedOrExecutedRuntimeAssembly": false,
+    "exactAllocationBytesClaim": false,
+    "providerNamesAreNotAssemblyQualified": true,
+    "normalTimingCollections": 0,
+    "sourceSha256": "9d6365edb5ece70047baa78460621e5a8ca4f2a79d9f4e9f0093826c1438c2ee",
+    "helperSourceSha256": "de0acfc6f78bf47e6ed7e55c6ae5fc234dc563f914321c6de8aa7168f26043b7",
+    "helperBinarySha256": "d48d065b97b3e713c6a2ab1b17930273d465d8165a78f3d08415ac3897ba6b9a",
+    "outputSha256": "7d77ecef6f06e4d29c8ccb4ebd92cda759c92f71cc4115f5a3e98675f1048a96"
+  },
+  "limitations": [
+    "Controlled pool starvation reproduces the test scheduling dependence; it does not measure the CI runner pool state",
+    "Provider allocation labels omit assembly qualification, so the source owner is a lead without exact aggregate allocation attribution",
+    "No new method-body prototype or performance result"
+  ],
+  "retainedHelperHashes": [
+    {
+      "path": "declaration.json",
+      "sha256": "5b7561b8aed495d83326902daf796a197f02adcc8e6a3d617a9f8d4738a4588b"
+    },
+    {
+      "path": "diagnose.ps1",
+      "sha256": "80d288a55c5b23ba37b84902eada19d62eadad2bffb406a5a10818feede724be"
+    },
+    {
+      "path": "StarvationFixture\\Program.cs",
+      "sha256": "5505b9433841fcd8bfffdb18191805c90482f3ed4f8c18840c9adc710c15e375"
+    },
+    {
+      "path": "StarvationFixture\\StarvationFixture.csproj",
+      "sha256": "cdd6f0b4e4b9c72196431282fc7f42508e52e0f6a10b88a948a157bbdabd220b"
+    },
+    {
+      "path": "StarvationFixture\\bin\\Debug\\net10.0\\StarvationFixture.dll",
+      "sha256": "5e4e66cf8439169e5af3a675f886ba171bb657d7ac73c42610c5cfa77db3c15a"
+    },
+    {
+      "path": "diagnostic-group-audit.json",
+      "sha256": "7aed4be1d317836d2636c96da59a7ca91e53e373f03b8a763a1eb7d2c8ba5dcf"
+    }
+  ]
+}
