@@ -13,9 +13,11 @@ public sealed class ExecutionThreadContextTests
         CultureInfo.CurrentUICulture.Name, Thread.CurrentPrincipal?.Identity?.Name, SynchronizationContext.Current is null);
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void CallerContextMatchesFreshThreadBoundary(bool suppressFlow)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void CallerContextMatchesFreshThreadBoundary(bool suppressFlow, bool asyncRun)
     {
         var original = Observe();
         var principal = Thread.CurrentPrincipal;
@@ -30,9 +32,9 @@ public sealed class ExecutionThreadContextTests
             var caller = Observe();
             if (suppressFlow)
             {
-                using (System.Threading.ExecutionContext.SuppressFlow()) CheckBoundary();
+                using (System.Threading.ExecutionContext.SuppressFlow()) CheckBoundary(asyncRun);
             }
-            else CheckBoundary();
+            else CheckBoundary(asyncRun);
             Assert.Equal(caller, Observe());
         }
         finally
@@ -45,7 +47,7 @@ public sealed class ExecutionThreadContextTests
         }
     }
 
-    private static void CheckBoundary()
+    private static void CheckBoundary(bool asyncRun = false)
     {
         Observation? expected = null;
         var thread = new Thread(() => expected = Observe(), 16 * 1024 * 1024) { IsBackground = true };
@@ -64,7 +66,8 @@ public sealed class ExecutionThreadContextTests
             Thread.CurrentPrincipal = new GenericPrincipal(new GenericIdentity("host-mutation"), []);
             SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
         };
-        var result = new LythonEngine().Compile("print('capture')").Run(host);
+        var script = new LythonEngine().Compile("print('capture')");
+        var result = asyncRun ? script.RunAsync(host).GetAwaiter().GetResult() : script.Run(host);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(expected, actual);
     }

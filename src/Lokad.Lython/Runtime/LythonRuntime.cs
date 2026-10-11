@@ -346,18 +346,19 @@ internal sealed partial class LythonRuntime
     // recursion that never genuinely yields) runs with the large reserve,
     // while continuations after genuine host yields resume on pool threads.
     // Those hops start shallow with the persisted counters intact, so the
-    // caps keep bounding them. The worker parks (it never pumps user code),
-    // and completions flow through ConfigureAwait(false) continuations, so
-    // blocking on the returned task cannot deadlock the worker.
+    // caps keep bounding them. At the first incomplete await the startup
+    // thread exits, releasing its stack instead of parking throughout I/O.
+    // The relay catches failures from both the prefix and continuations;
+    // asynchronous completion never requires pumping the caller's context.
     internal static Task<LythonExecutionResult> RunAsyncOnDedicatedStack(Func<Task<LythonExecutionResult>> runner)
     {
         var completion = new TaskCompletionSource<LythonExecutionResult>(TaskCreationOptions.RunContinuationsAsynchronously);
         var thread = new Thread(
-            () =>
+            async () =>
             {
                 try
                 {
-                    completion.TrySetResult(runner().GetAwaiter().GetResult());
+                    completion.TrySetResult(await runner().ConfigureAwait(false));
                 }
                 catch (Exception ex)
                 {
