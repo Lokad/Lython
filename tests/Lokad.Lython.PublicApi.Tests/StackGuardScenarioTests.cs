@@ -24,7 +24,7 @@ public sealed class StackGuardScenarioTests
         if (string.IsNullOrEmpty(executable)) executable = "dotnet";
         var result = SubprocessProbeRunner.Run(executable,
             [fixture, "stack-guard", typeof(LythonEngine).Assembly.Location, scenario], timeout: TimeSpan.FromSeconds(25));
-        Assert.Equal(0, result.ExitCode);
+        Assert.True(result.ExitCode == 0, "fixture exited with " + result.ExitCode + ": " + result.StandardError);
         Assert.Equal("", result.StandardError);
         using var document = JsonDocument.Parse(result.StandardOutput);
         var value = document.RootElement;
