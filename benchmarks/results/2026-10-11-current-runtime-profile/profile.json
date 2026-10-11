@@ -1,0 +1,593 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Current accepted-runtime basic-loop CPU attribution",
+  "diagnosticOnly": true,
+  "performanceQualified": false,
+  "qualifiedBeforeAfterCpuClaim": false,
+  "producer": "ed512fff187e10a0cad66940c553418deddf88ce",
+  "productionTree": "87eaf4983d2762e10d2c61a047e835234e2ea291",
+  "testTree": "479265d46e226252c459b2dd82a8c5fabaccedc8",
+  "harnessTree": "c194ce88a7e4d52c576f3929ef82bce60bf37e2d",
+  "case": {
+    "id": "loops.integer.large",
+    "family": "loops",
+    "category": "core",
+    "scale": "large",
+    "size": 16384,
+    "source": "N = 16384\ntotal = 0\nfor i in range(N):\n    total += i\nprint(total)\n",
+    "fixtureJson": "{\"size\":16384,\"text\":null}",
+    "expectedOutput": "134209536\n",
+    "sourceUtf8Bytes": 67,
+    "expectedOutputUtf8Bytes": 10,
+    "fixtureTextUtf8Bytes": 0,
+    "fixtureTextCodePoints": 0,
+    "sourceSha256": "a07b1a8ef5b104e808d7cf79269d969544cff102ad5c89e8009f361b265d13fb",
+    "fixtureSha256": "c1c16fa8a40dac165afc8c9915fab90012d9af6a9836b6a2e03812eb3f441155",
+    "expectedOutputSha256": "c7939ac0ea0d28651f4d14f9dc0ebe2f3071fdac68b0a490b64651b863de6cb9"
+  },
+  "preparation": {
+    "localDebug": 9802,
+    "vmRelease": {
+      "white": 1832,
+      "public": 7970
+    },
+    "matchingReleaseProbe": true,
+    "canonicalCasesVerifiedAgainstCPython": 7,
+    "correctnessResponses": 70,
+    "dotnetSdk": "10.0.401",
+    "dotnetRuntime": "10.0.12",
+    "cpython": "3.13.16",
+    "sourceFirstAttemptCiRun": 38125158662
+  },
+  "capture": {
+    "wholeGroupSeconds": 14.071856,
+    "controllerSeconds": 13.824635,
+    "profileSeconds": 11.44367165901349,
+    "samples": 1394,
+    "eventsLost": 0,
+    "missingStacks": 0,
+    "unknownLeaves": 65,
+    "unknownPercent": 4.66284074605452,
+    "checkedResponses": 304,
+    "completedInvocations": 9636
+  },
+  "requestedTraceSeconds": 10,
+  "hardOwnedGroupCapSeconds": 30,
+  "normalTimingCollections": 0,
+  "fullLanes": 0,
+  "runtime": {
+    "workerOverrides": null,
+    "serverGc": false,
+    "gcLatencyMode": "Interactive",
+    "benchmarkDotNetLoaded": false
+  },
+  "leaf": [
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::Execute()",
+      "samples": 603,
+      "percent": 43.25681492109039
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteValueOperation(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)",
+      "samples": 86,
+      "percent": 6.169296987087518
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime::OwnFreshInteger(object,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.Runtime.ChargeReclamationPool,class Lokad.Lython.LythonSourceSpan)",
+      "samples": 72,
+      "percent": 5.164992826398852
+    },
+    {
+      "name": "System.Runtime.CompilerServices.CastHelpers::StelemRef(object[],native int,object)",
+      "samples": 58,
+      "percent": 4.160688665710187
+    },
+    {
+      "name": "[unresolved] ",
+      "samples": 46,
+      "percent": 3.2998565279770444
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteControlFlow(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)",
+      "samples": 44,
+      "percent": 3.1563845050215207
+    },
+    {
+      "name": "Lokad.Lython.Runtime.PyRange+<IterateChecked>d__23::MoveNext()",
+      "samples": 41,
+      "percent": 2.9411764705882355
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime::EvaluateAugmentedAssignment(object,object,valuetype Lokad.Lython.Frontend.AugmentedAssignmentOperatorSyntax,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)",
+      "samples": 35,
+      "percent": 2.5107604017216643
+    },
+    {
+      "name": "Lokad.Lython.Runtime.MemoryGovernor::EnsureCanReserve(int64,class Lokad.Lython.LythonSourceSpan)",
+      "samples": 29,
+      "percent": 2.0803443328550935
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime::AddExactIntegers(valuetype [System.Runtime.Numerics]System.Numerics.BigInteger,valuetype [System.Runtime.Numerics]System.Numerics.BigInteger,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)",
+      "samples": 29,
+      "percent": 2.0803443328550935
+    },
+    {
+      "name": "System.Numerics.BigInteger::.ctor(int64)",
+      "samples": 20,
+      "percent": 1.4347202295552368
+    },
+    {
+      "name": "_raw_spin_unlock_irqrestore",
+      "samples": 20,
+      "percent": 1.4347202295552368
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime::MapExecutableAugmented(valuetype Lokad.Lython.Frontend.ExecutableAugmentedOperator)",
+      "samples": 16,
+      "percent": 1.1477761836441893
+    },
+    {
+      "name": "RhpNewFast",
+      "samples": 14,
+      "percent": 1.0043041606886658
+    },
+    {
+      "name": "copy_from_user_nmi",
+      "samples": 11,
+      "percent": 0.7890961262553802
+    },
+    {
+      "name": "finish_task_switch.isra.0",
+      "samples": 11,
+      "percent": 0.7890961262553802
+    },
+    {
+      "name": "ThreadNative_SpinWait",
+      "samples": 11,
+      "percent": 0.7890961262553802
+    },
+    {
+      "name": "__tls_get_addr",
+      "samples": 10,
+      "percent": 0.7173601147776184
+    },
+    {
+      "name": "[unresolved] libc.so.6",
+      "samples": 8,
+      "percent": 0.5738880918220947
+    },
+    {
+      "name": "srso_safe_ret",
+      "samples": 7,
+      "percent": 0.5021520803443329
+    },
+    {
+      "name": "perf_callchain_kernel",
+      "samples": 6,
+      "percent": 0.430416068866571
+    },
+    {
+      "name": "Compiler::fgInterBlockLocalVarLiveness()",
+      "samples": 5,
+      "percent": 0.3586800573888092
+    },
+    {
+      "name": "update_stack_state",
+      "samples": 5,
+      "percent": 0.3586800573888092
+    },
+    {
+      "name": "[unresolved] libcoreclr.so",
+      "samples": 5,
+      "percent": 0.3586800573888092
+    },
+    {
+      "name": "__schedule",
+      "samples": 5,
+      "percent": 0.3586800573888092
+    },
+    {
+      "name": "perf_output_copy",
+      "samples": 5,
+      "percent": 0.3586800573888092
+    },
+    {
+      "name": "Lokad.Lython.Runtime.ChargeReclamationPool::SweepOldQuantum()",
+      "samples": 5,
+      "percent": 0.3586800573888092
+    },
+    {
+      "name": "do_writev",
+      "samples": 4,
+      "percent": 0.28694404591104733
+    },
+    {
+      "name": "perf_output_sample",
+      "samples": 4,
+      "percent": 0.28694404591104733
+    },
+    {
+      "name": "do_syscall_64",
+      "samples": 4,
+      "percent": 0.28694404591104733
+    },
+    {
+      "name": "__pi_memcpy",
+      "samples": 4,
+      "percent": 0.28694404591104733
+    },
+    {
+      "name": "[unresolved] vmlinux",
+      "samples": 4,
+      "percent": 0.28694404591104733
+    },
+    {
+      "name": "write_event_2(Thread*, _EventPipeEvent*, _EventPipeEventPayload*, unsigned char const*, unsigned char const*, Thread*, _EventPipeStackContents*)",
+      "samples": 3,
+      "percent": 0.2152080344332855
+    },
+    {
+      "name": "fault_in_iov_iter_readable",
+      "samples": 3,
+      "percent": 0.2152080344332855
+    },
+    {
+      "name": "perf_prepare_sample",
+      "samples": 3,
+      "percent": 0.2152080344332855
+    },
+    {
+      "name": "ObjectNative::Monitor_TryEnter_FastPath(Object*)",
+      "samples": 3,
+      "percent": 0.2152080344332855
+    },
+    {
+      "name": "GenTreeVisitor<LocalAddressVisitor>::WalkTree(GenTree**, GenTree*)",
+      "samples": 2,
+      "percent": 0.14347202295552366
+    },
+    {
+      "name": "Compiler::lvaSortByRefCount()",
+      "samples": 2,
+      "percent": 0.14347202295552366
+    },
+    {
+      "name": "perf_trace_buf_update",
+      "samples": 2,
+      "percent": 0.14347202295552366
+    },
+    {
+      "name": "jitNativeCode(CORINFO_METHOD_STRUCT_*, CORINFO_MODULE_STRUCT_*, ICorJitInfo*, CORINFO_METHOD_INFO*, void**, unsigned int*, JitFlags*, void*)",
+      "samples": 2,
+      "percent": 0.14347202295552366
+    },
+    {
+      "name": "is_vmalloc_addr",
+      "samples": 2,
+      "percent": 0.14347202295552366
+    },
+    {
+      "name": "user_event_perf",
+      "samples": 2,
+      "percent": 0.14347202295552366
+    },
+    {
+      "name": "unwind_next_frame",
+      "samples": 2,
+      "percent": 0.14347202295552366
+    },
+    {
+      "name": "_copy_from_iter_nocache",
+      "samples": 2,
+      "percent": 0.14347202295552366
+    },
+    {
+      "name": "CrstBase::Enter()",
+      "samples": 2,
+      "percent": 0.14347202295552366
+    },
+    {
+      "name": "[unresolved] [vdso]",
+      "samples": 2,
+      "percent": 0.14347202295552366
+    },
+    {
+      "name": "Compiler::impLoadArg(unsigned int, unsigned int)",
+      "samples": 2,
+      "percent": 0.14347202295552366
+    },
+    {
+      "name": "GenTreeVisitor<Rationalizer::RationalizeVisitor>::WalkTree(GenTree**, GenTree*)",
+      "samples": 2,
+      "percent": 0.14347202295552366
+    },
+    {
+      "name": "TGcInfoEncoder<AMD64GcInfoEncoding>::Build()",
+      "samples": 2,
+      "percent": 0.14347202295552366
+    },
+    {
+      "name": "user_events_write_core.isra.0",
+      "samples": 2,
+      "percent": 0.14347202295552366
+    }
+  ],
+  "inclusive": [
+    {
+      "name": "CorUnix::CPalThread::ThreadEntry(void*)",
+      "samples": 1383,
+      "percent": 99.21090387374461
+    },
+    {
+      "name": "ManagedThreadBase::KickOff(void (*)(void*), void*)",
+      "samples": 1376,
+      "percent": 98.70875179340028
+    },
+    {
+      "name": "CallDescrWorkerInternal",
+      "samples": 1315,
+      "percent": 94.33285509325681
+    },
+    {
+      "name": "DispatchCallSimple(unsigned long*, unsigned int, unsigned long, unsigned int)",
+      "samples": 1315,
+      "percent": 94.33285509325681
+    },
+    {
+      "name": "KickOffThread_Worker(void*)",
+      "samples": 1278,
+      "percent": 91.67862266857962
+    },
+    {
+      "name": "KickOffThread(void*)",
+      "samples": 1278,
+      "percent": 91.67862266857962
+    },
+    {
+      "name": "System.Threading.ExecutionContext::RunInternal(class System.Threading.ExecutionContext,class System.Threading.ContextCallback,object)",
+      "samples": 1255,
+      "percent": 90.0286944045911
+    },
+    {
+      "name": "Lokad.Lython.Runtime.ExecutionThreads+Worker::Run()",
+      "samples": 1222,
+      "percent": 87.66140602582496
+    },
+    {
+      "name": "Lokad.Lython.Runtime.ExecutionThreads+WorkItem::Execute(class [System.Threading]System.Threading.ExecutionContext)",
+      "samples": 1215,
+      "percent": 87.15925394548063
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime+<>c__DisplayClass674_0::<Run>b__0()",
+      "samples": 1214,
+      "percent": 87.08751793400288
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime::ExecuteExecutableCodeObject(class Lokad.Lython.Frontend.ExecutableCodeObject,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,valuetype Lokad.Lython.Runtime.BoundCallArguments,int32[],class [System.Runtime]System.Collections.Generic.IReadOnlyList`1<class Lokad.Lython.Runtime.LythonRuntime/ExecutableCell>)",
+      "samples": 1185,
+      "percent": 85.00717360114777
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::Execute()",
+      "samples": 1111,
+      "percent": 79.6987087517934
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime+ExecutableFrameInterpreter::ExecuteValueOperation(valuetype Lokad.Lython.Frontend.ExecutableInstruction&)",
+      "samples": 262,
+      "percent": 18.7948350071736
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime::EvaluateAugmentedAssignment(object,object,valuetype Lokad.Lython.Frontend.AugmentedAssignmentOperatorSyntax,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)",
+      "samples": 157,
+      "percent": 11.262553802008608
+    },
+    {
+      "name": "do_syscall_64",
+      "samples": 141,
+      "percent": 10.11477761836442
+    },
+    {
+      "name": "entry_SYSCALL_64_after_hwframe",
+      "samples": 141,
+      "percent": 10.11477761836442
+    },
+    {
+      "name": "x64_sys_call",
+      "samples": 137,
+      "percent": 9.827833572453372
+    },
+    {
+      "name": "Lokad.Lython.Runtime.PyRange+<IterateChecked>d__23::MoveNext()",
+      "samples": 118,
+      "percent": 8.464849354375897
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime::AddExactIntegers(valuetype [System.Runtime.Numerics]System.Numerics.BigInteger,valuetype [System.Runtime.Numerics]System.Numerics.BigInteger,class Lokad.Lython.Runtime.LythonRuntime/ExecutionContext,class Lokad.Lython.LythonSourceSpan)",
+      "samples": 105,
+      "percent": 7.532281205164993
+    },
+    {
+      "name": "write_event_2(Thread*, _EventPipeEvent*, _EventPipeEventPayload*, unsigned char const*, unsigned char const*, Thread*, _EventPipeStackContents*)",
+      "samples": 99,
+      "percent": 7.1018651362984215
+    },
+    {
+      "name": "ep_write_event(_EventPipeEvent*, unsigned char*, unsigned int, unsigned char const*, unsigned char const*)",
+      "samples": 99,
+      "percent": 7.1018651362984215
+    },
+    {
+      "name": "writev",
+      "samples": 96,
+      "percent": 6.886657101865136
+    },
+    {
+      "name": "ep_session_write_event(_EventPipeSession*, Thread*, _EventPipeEvent*, _EventPipeEventPayload*, unsigned char const*, unsigned char const*, Thread*, _EventPipeStackContents*)",
+      "samples": 96,
+      "percent": 6.886657101865136
+    },
+    {
+      "name": "do_writev",
+      "samples": 93,
+      "percent": 6.671449067431851
+    },
+    {
+      "name": "__x64_sys_writev",
+      "samples": 93,
+      "percent": 6.671449067431851
+    },
+    {
+      "name": "vfs_writev",
+      "samples": 88,
+      "percent": 6.312769010043041
+    },
+    {
+      "name": "do_iter_readv_writev",
+      "samples": 80,
+      "percent": 5.738880918220947
+    },
+    {
+      "name": "user_events_write_core.isra.0",
+      "samples": 79,
+      "percent": 5.667144906743185
+    },
+    {
+      "name": "user_events_write_iter",
+      "samples": 79,
+      "percent": 5.667144906743185
+    },
+    {
+      "name": "Lokad.Lython.Runtime.LythonRuntime::OwnFreshInteger(object,class Lokad.Lython.Runtime.MemoryGovernor,class Lokad.Lython.Runtime.ChargeReclamationPool,class Lokad.Lython.LythonSourceSpan)",
+      "samples": 72,
+      "percent": 5.164992826398852
+    },
+    {
+      "name": "RhpGcAlloc",
+      "samples": 72,
+      "percent": 5.164992826398852
+    },
+    {
+      "name": "RhpNewObject",
+      "samples": 72,
+      "percent": 5.164992826398852
+    },
+    {
+      "name": "user_event_perf",
+      "samples": 71,
+      "percent": 5.09325681492109
+    },
+    {
+      "name": "AllocateObject(MethodTable*, GC_ALLOC_FLAGS)",
+      "samples": 71,
+      "percent": 5.09325681492109
+    },
+    {
+      "name": "WKS::gc_heap::try_allocate_more_space(alloc_context*, unsigned long, unsigned int, int)",
+      "samples": 70,
+      "percent": 5.0215208034433285
+    },
+    {
+      "name": "WKS::GCHeap::Alloc(gc_alloc_context*, unsigned long, unsigned int)",
+      "samples": 70,
+      "percent": 5.0215208034433285
+    },
+    {
+      "name": "Alloc(ee_alloc_context*, unsigned long, GC_ALLOC_FLAGS)",
+      "samples": 70,
+      "percent": 5.0215208034433285
+    },
+    {
+      "name": "perf_tp_event",
+      "samples": 65,
+      "percent": 4.66284074605452
+    },
+    {
+      "name": "perf_swevent_event",
+      "samples": 62,
+      "percent": 4.4476327116212335
+    },
+    {
+      "name": "perf_event_output_forward",
+      "samples": 61,
+      "percent": 4.375896700143472
+    },
+    {
+      "name": "__perf_event_overflow",
+      "samples": 61,
+      "percent": 4.375896700143472
+    },
+    {
+      "name": "TieredCompilationManager::CompileCodeVersion(NativeCodeVersion)",
+      "samples": 59,
+      "percent": 4.232424677187948
+    },
+    {
+      "name": "TieredCompilationManager::DoBackgroundWork(long*, long, long)",
+      "samples": 59,
+      "percent": 4.232424677187948
+    },
+    {
+      "name": "TieredCompilationManager::BackgroundWorkerStart()",
+      "samples": 59,
+      "percent": 4.232424677187948
+    },
+    {
+      "name": "TieredCompilationManager::BackgroundWorkerBootstrapper1(void*)",
+      "samples": 59,
+      "percent": 4.232424677187948
+    },
+    {
+      "name": "TieredCompilationManager::BackgroundWorkerBootstrapper0(void*)",
+      "samples": 59,
+      "percent": 4.232424677187948
+    },
+    {
+      "name": "MethodDesc::JitCompileCodeLockedEventWrapper(PrepareCodeConfig*, ListLockEntryBase<NativeCodeVersion>*)",
+      "samples": 58,
+      "percent": 4.160688665710187
+    },
+    {
+      "name": "MethodDesc::JitCompileCode(PrepareCodeConfig*)",
+      "samples": 58,
+      "percent": 4.160688665710187
+    },
+    {
+      "name": "MethodDesc::PrepareILBasedCode(PrepareCodeConfig*)",
+      "samples": 58,
+      "percent": 4.160688665710187
+    },
+    {
+      "name": "System.Runtime.CompilerServices.CastHelpers::StelemRef(object[],native int,object)",
+      "samples": 58,
+      "percent": 4.160688665710187
+    }
+  ],
+  "cleanup": {
+    "ownedServicesTerminal": 1,
+    "recordedPidsAbsent": 3,
+    "sourceClean": true,
+    "inputsRehashed": true,
+    "leaseAvailable": true
+  },
+  "evidenceSha256": {
+    "trace": "1d5b43fe47d38417b1d71e0a0efa7fdac6ddb0d7170c716f3ba5892a6a9dc131",
+    "summary": "c99d64552abef95c9a368473630fff688aa0aa0a6fc5199f1d608cb50fa7f72c",
+    "declaration": "55334dd91858f6e78e26c6e5e4180bf57c33f0da44de2ffbb3a9bb9b65a55728",
+    "diagnostic": "0b20a73fa32b0d15afc9f6ad077dd85b934ae8dd28fddee388e5af40ee54961d",
+    "responses": "3a8b0bb52182d41bbd7a32addf5a3acbe9f009534329d3eecad8f1a71dde20db",
+    "correctness": "305de040dc8299e4578de6ba7abcde0e5f28c9468c46f2f55e59e4ce56218506",
+    "preparedInputs": "1cb8361a9cf87b62a057af3f6c6ef336d4c88736d6080782ca6844713f0d36ec"
+  },
+  "limitations": [
+    "Inclusive stacks overlap",
+    "Kernel/profiler and background JIT overhead are visible",
+    "Incomplete GC event pairs cannot establish complete GC counts or pauses",
+    "Allocation ticks do not establish exact per-type counts",
+    "The reused parser reports the highest 50 leaf and inclusive rows; all percentages use the complete sample denominator and unlisted samples remain in the raw trace"
+  ],
+  "reportedLeafSamples": 1267,
+  "unlistedLeafSamples": 127
+}
