@@ -2652,6 +2652,10 @@ sets release their charges when the operation exits, including on failure.
 These releases preserve charges for live receivers and any guest-visible partial
 mutation; catching an exception does not undo callback side effects.
 
+Private list storage construction likewise refunds its current backing on
+population failure, including after small-list promotion. Live list extension
+keeps its successfully inserted prefix and its charges if later input fails.
+
 Lython does not need to promise a perfect hard memory ceiling from inside the same managed process, but it must provide conservative in-process resource controls that make runaway allocation materially harder.
 
 #### 14.6.1 Combined Peak Envelope
