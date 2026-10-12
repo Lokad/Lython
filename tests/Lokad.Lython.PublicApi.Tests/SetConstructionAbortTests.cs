@@ -3,6 +3,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
+[Collection("RuntimeStress")]
 public sealed class SetConstructionAbortTests
 {
     private const long OneMib = 1048576;
@@ -79,24 +80,35 @@ public sealed class SetConstructionAbortTests
             return caught
             """);
         var run = script.RunAsync(host, new LythonRunOptions { MaxExecutionMemoryBytes = OneMib, CancellationToken = cancellation.Token });
-        await timing.Started.Task.WaitAsync(TimeSpan.FromSeconds(10));
-        Assert.False(run.IsCompleted);
-        if (cancel) cancellation.Cancel();
-        else timing.Release.TrySetResult();
-        var result = await run.WaitAsync(TimeSpan.FromSeconds(20));
-        Assert.InRange(result.PeakExecutionMemoryBytes, 1, OneMib);
-        if (cancel)
+        try
         {
-            Assert.False(result.Success);
-            Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-            Assert.Contains("execution canceled", result.Failure?.Message, StringComparison.Ordinal);
-            Assert.Equal(1, timing.Calls);
+            await timing.Started.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Assert.False(run.IsCompleted);
+            if (cancel) cancellation.Cancel();
+            else timing.Release.TrySetResult();
+            var result = await run.WaitAsync(TimeSpan.FromSeconds(20));
+            Assert.InRange(result.PeakExecutionMemoryBytes, 1, OneMib);
+            if (cancel)
+            {
+                Assert.False(result.Success);
+                Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
+                Assert.Contains("execution canceled", result.Failure?.Message, StringComparison.Ordinal);
+                Assert.Equal(1, timing.Calls);
+            }
+            else
+            {
+                Assert.True(result.Success, result.Failure?.Message);
+                Assert.Equal(new BigInteger(5000), result.ReturnValue);
+                Assert.Equal(5000, timing.Calls);
+            }
         }
-        else
+        finally
         {
-            Assert.True(result.Success, result.Failure?.Message);
-            Assert.Equal(new BigInteger(5000), result.ReturnValue);
-            Assert.Equal(5000, timing.Calls);
+            if (!run.IsCompleted)
+            {
+                cancellation.Cancel();
+                await run.WaitAsync(TimeSpan.FromSeconds(5));
+            }
         }
     }
 
