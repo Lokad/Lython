@@ -165,7 +165,8 @@ public sealed class InstanceStorageOwnershipTests
     {
         using var cancellation = new CancellationTokenSource();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { CancellationToken = cancellation.Token });
-        var hookType = new PyType("Cancel", [], new() { ["__deepcopy__"] = new CancelCopy(cancellation) });
+        var hook = new CancelCopy(cancellation);
+        var hookType = new PyType("Cancel", [], new() { ["__deepcopy__"] = hook });
         var child = new PyInstance(hookType, context.MemoryGovernor, Span);
         var source = new PyInstance(Type(), context.MemoryGovernor, Span);
         source.SetAttribute("child", child);
@@ -177,7 +178,12 @@ public sealed class InstanceStorageOwnershipTests
         try
         {
             var copy = typeof(LythonRuntime).GetMethod("CopyValue", BindingFlags.NonPublic | BindingFlags.Static)!;
-            var error = Assert.Throws<TargetInvocationException>(() => copy.Invoke(null, [source, LythonRuntime.CopyDepth.Deep, context, Span, memo, 0]));
+            Assert.Equal(1, source.OwnAttributeCount);
+            Assert.Equal(cancellation.Token, context.Limits.CancellationToken);
+            var failure = Record.Exception(() => copy.Invoke(null, [source, LythonRuntime.CopyDepth.Deep, context, Span, memo, 0]));
+            Assert.Equal(1, hook.Calls);
+            Assert.True(cancellation.IsCancellationRequested);
+            var error = Assert.IsType<TargetInvocationException>(failure);
             Assert.IsAssignableFrom<OperationCanceledException>(error.InnerException);
         }
         finally
@@ -191,8 +197,10 @@ public sealed class InstanceStorageOwnershipTests
 
     private sealed class CancelCopy(CancellationTokenSource cancellation) : LythonRuntime.ICallable
     {
+        public int Calls { get; private set; }
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
+            Calls++;
             cancellation.Cancel();
             return System.Numerics.BigInteger.One;
         }
