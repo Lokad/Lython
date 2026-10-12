@@ -1987,6 +1987,21 @@ the target module. Cache invalidation is a contained no-op because Lython does
 not maintain ambient importer caches. Helpers that construct specs from
 arbitrary files/loaders or execute arbitrary loaders must fail explicitly.
 
+`LythonRunOptions.AllowedBuiltinModules` optionally restricts this inventory per
+invocation. Null preserves existing availability; an empty set denies all
+built-in module imports. Names are canonical, ordinal and case-sensitive; unknown
+names and grants without every registered dotted ancestor raise
+`ArgumentException` before guest execution. Each execution takes an immutable
+snapshot of the caller's set. The policy applies before cached imports and fresh
+resolution, to child module attributes, module dictionaries and discovery.
+Denied imports and child attributes raise catchable `ImportError`; discovery
+omits denied modules and returns `None` for their specs/loaders. A denied built-in
+or descendant cannot fall through to a local file. Local import controls remain
+independent, and grants never supply missing host capabilities. Intrinsics and
+`from __future__ import annotations` retain their existing semantics. Compiled
+scripts remain reusable across invocation policies. `__import__` remains
+unsupported; use the contained `importlib.import_module` API for dynamic imports.
+
 ### 11.15 Runtime Metadata
 
 Lython exposes a contained `sys` view for ordinary runtime feature checks.

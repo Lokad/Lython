@@ -89,6 +89,19 @@ internal static class PyMemberAccess
 
     public static bool TryResolve(object target, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
+        if (context.State.AllowedBuiltinModules is not null && target is PyModule module)
+        {
+            LythonRuntime.CheckBuiltinModuleGrant(module.Name, context, span);
+            LythonRuntime.CheckBuiltinModuleGrant(module.Name + "." + memberName, context, span);
+        }
+        var found = TryResolveContextualCore(target, memberName, context, span, out value);
+        if (found && value is PyModule resolvedModule)
+            LythonRuntime.CheckBuiltinModuleGrant(resolvedModule.Name, context, span);
+        return found;
+    }
+
+    private static bool TryResolveContextualCore(object target, string memberName, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+    {
         if (target is not IPyContextualDynamicAttributes &&
             target is not PyPath &&
             target is not LythonPathStat &&

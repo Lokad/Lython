@@ -1001,7 +1001,8 @@ internal sealed partial class LythonRuntime
             case PyModule module:
                 foreach (var name in module.MemberNames)
                 {
-                    if (module.TryGetMember(name, out var value))
+                    if (context.State.AllowedBuiltinModules is not null && IsDeniedBuiltinModule(module.Name + "." + name, context)) continue;
+                    if (TryResolveRuntimeMember(module, name, context, span, out var value))
                     {
                         result.SetItem(PyString.FromString(name, context.MemoryGovernor, span), value);
                         context.ObserveCollectionCount(result.Count, span);

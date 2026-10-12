@@ -75,6 +75,7 @@ internal sealed class ExecutionState
         Dictionary<string, object> builtinVariables)
     {
         Host = host;
+        AllowedBuiltinModules = LythonRuntime.SnapshotBuiltinModuleGrants(options?.AllowedBuiltinModules);
         Limits = LythonRuntime.ExecutionLimits.FromOptions(options);
         Guards = new ExecutionGuards(this);
         MemoryGovernor = new MemoryGovernor(Limits.MaxExecutionMemoryBytes);
@@ -167,6 +168,8 @@ internal sealed class ExecutionState
     public bool DisableLocalModuleImports { get; }
 
     public IReadOnlySet<string>? AllowedLocalModules { get; }
+
+    public IReadOnlySet<string>? AllowedBuiltinModules { get; }
 
     public IReadOnlyList<Text.PyString> Args { get; }
 

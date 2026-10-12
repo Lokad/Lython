@@ -95,10 +95,30 @@ internal sealed partial class LythonRuntime
         public static IReadOnlyList<string> Names => KnownNames;
 
         public static IReadOnlyList<string> GetDiscoverableNames(ExecutionContext context)
-            => context.Host.SubprocessRunner is null ? CapabilityFreeNames : KnownNames;
+            => context.State.AllowedBuiltinModules is null
+                ? context.Host.SubprocessRunner is null ? CapabilityFreeNames : KnownNames
+                : KnownNames.Where(name => IsDiscoverable(name, context)).ToArray();
+
+        public static bool IsKnown(string moduleName) => Registrations.ContainsKey(moduleName);
+
+        public static bool IsDenied(string moduleName, ExecutionContext context)
+            => GetDeniedName(moduleName, context) is not null;
+
+        public static string? GetDeniedName(string moduleName, ExecutionContext context)
+        {
+            if (context.State.AllowedBuiltinModules is not { } grants) return null;
+            if (IsKnown(moduleName) && !grants.Contains(moduleName)) return moduleName;
+            for (var dot = moduleName.IndexOf('.'); dot >= 0; dot = moduleName.IndexOf('.', dot + 1))
+            {
+                var parent = moduleName[..dot];
+                if (IsKnown(parent) && !grants.Contains(parent)) return parent;
+            }
+            return null;
+        }
 
         public static bool IsDiscoverable(string moduleName, ExecutionContext context)
             => Registrations.TryGetValue(moduleName, out var registration) &&
+                !IsDenied(moduleName, context) &&
                 (registration.RequiredCapability == BuiltinModuleCapability.None || context.Host.SubprocessRunner is not null);
 
         public static PyModule? Resolve(string moduleName, ExecutionContext context)
@@ -115,4 +135,31 @@ internal sealed partial class LythonRuntime
 
     internal static IReadOnlyList<string> GetKnownBuiltinModuleNames()
         => BuiltinModuleCatalog.Names;
+
+    internal static IReadOnlySet<string>? SnapshotBuiltinModuleGrants(IReadOnlySet<string>? grants)
+    {
+        if (grants is null) return null;
+        var snapshot = grants.ToFrozenSet(StringComparer.Ordinal);
+        foreach (var name in snapshot)
+        {
+            if (name is null || !BuiltinModuleCatalog.IsKnown(name))
+                throw new ArgumentException("AllowedBuiltinModules must contain supported canonical module names.", nameof(LythonRunOptions.AllowedBuiltinModules));
+            for (var dot = name.IndexOf('.'); dot >= 0; dot = name.IndexOf('.', dot + 1))
+            {
+                var parent = name[..dot];
+                if (BuiltinModuleCatalog.IsKnown(parent) && !snapshot.Contains(parent))
+                    throw new ArgumentException("AllowedBuiltinModules must explicitly include registered dotted ancestors.", nameof(LythonRunOptions.AllowedBuiltinModules));
+            }
+        }
+        return snapshot;
+    }
+
+    internal static void CheckBuiltinModuleGrant(string name, ExecutionContext context, LythonSourceSpan? span)
+    {
+        if (BuiltinModuleCatalog.GetDeniedName(name, context) is { } denied)
+            throw new LythonRuntimeException("ImportError", $"Built-in module '{denied}' is disabled by AllowedBuiltinModules.", span);
+    }
+
+    internal static bool IsDeniedBuiltinModule(string name, ExecutionContext context)
+        => BuiltinModuleCatalog.IsDenied(name, context);
 }

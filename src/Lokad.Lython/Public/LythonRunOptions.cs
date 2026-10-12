@@ -80,6 +80,17 @@ public sealed class LythonRunOptions
     /// <summary>Gets the allowlist of host-local module names or paths.</summary>
     public IReadOnlySet<string>? AllowedLocalModules { get; init; }
 
+    /// <summary>Gets the built-in modules available to this invocation.</summary>
+    /// <remarks>
+    /// Null preserves the supported inventory; an empty set denies all built-in
+    /// module imports. Names are ordinal and case-sensitive, must be supported,
+    /// and must include every registered dotted ancestor. Invalid sets raise
+    /// ArgumentException before guest execution. Admission takes an immutable
+    /// snapshot. Grants do not supply host capabilities or affect intrinsics,
+    /// future directives, or the independent local-module controls.
+    /// </remarks>
+    public IReadOnlySet<string>? AllowedBuiltinModules { get; init; }
+
     /// <summary>Gets an optional instruction allowance for callers requiring deterministic fuel.</summary>
     /// <remarks>
     /// Null leaves interpreter work unbounded regardless of <see cref="DisableDefaultLimits"/>.
@@ -130,6 +141,7 @@ public sealed class LythonRunOptions
             DisableDefaultLimits = DisableDefaultLimits,
             DisableLocalModuleImports = DisableLocalModuleImports,
             AllowedLocalModules = AllowedLocalModules,
+            AllowedBuiltinModules = AllowedBuiltinModules,
             MaxExecutionSteps = MaxExecutionSteps,
             MaxRecursionDepth = MaxRecursionDepth,
             MaxHostCalls = MaxHostCalls,

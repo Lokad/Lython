@@ -35,6 +35,7 @@ internal sealed partial class LythonRuntime
 
     private static PyModule ResolveImportedModule(string moduleName, ExecutionContext context, LythonSourceSpan span)
     {
+        CheckBuiltinModuleGrant(moduleName, context, span);
         if (TryResolveKnownImportedModule(moduleName, context, out var known))
         {
             return known;
@@ -82,6 +83,7 @@ internal sealed partial class LythonRuntime
 
     private static async ValueTask<PyModule> ResolveImportedModuleAsync(string moduleName, ExecutionContext context, LythonSourceSpan span)
     {
+        CheckBuiltinModuleGrant(moduleName, context, span);
         if (TryResolveKnownImportedModule(moduleName, context, out var known))
         {
             return known;
@@ -326,6 +328,7 @@ internal sealed partial class LythonRuntime
 
     private static bool IsLocalModuleImportAllowed(string moduleName, string modulePath, string allowlistPath, ExecutionContext context)
     {
+        if (IsDeniedBuiltinModule(moduleName, context)) return false;
         if (context.State.DisableLocalModuleImports)
         {
             return false;
@@ -388,6 +391,7 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         [MaybeNullWhen(false)] out PyModule module)
     {
+        CheckBuiltinModuleGrant(moduleName, context, null);
         if (context.State.ImportedModules.TryGetValue(moduleName, out module))
         {
             return true;

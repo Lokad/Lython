@@ -1433,6 +1433,7 @@ text = str(data)
             DisableDefaultLimits = true,
             DisableLocalModuleImports = true,
             AllowedLocalModules = new HashSet<string> { "helper" },
+            AllowedBuiltinModules = new HashSet<string> { "math" },
             MaxExecutionSteps = 11,
             MaxRecursionDepth = 12,
             MaxHostCalls = 13,
