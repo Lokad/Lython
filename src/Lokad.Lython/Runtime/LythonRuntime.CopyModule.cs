@@ -384,14 +384,28 @@ internal sealed partial class LythonRuntime
             var clone = new PyInstance(instance.Type, context.MemoryGovernor, span);
             context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes, span);
             memo.Remember(value, clone);
+            if (depth == CopyDepth.Shallow)
+            {
+                foreach (var pair in instance.EnumerateOwnAttributes())
+                    clone.SetAttribute(pair.Key, pair.Value);
+                return clone;
+            }
+
+            // Like copying Python's instance state, hooks see the memoized
+            // empty destination until every attribute value has been copied.
+            // The temporary buffer owns only references; copied values retain
+            // their independent owners even if a hook keeps a memo alias.
+            var count = instance.OwnAttributeCount;
+            using var scratch = context.MemoryGovernor.ReserveTemporary(checked(24L + 16L * count), span);
+            var attributes = new KeyValuePair<string, object>[count];
+            var index = 0;
             foreach (var pair in instance.EnumerateOwnAttributes())
             {
-                clone.SetAttribute(
-                    pair.Key,
-                    depth == CopyDepth.Deep
-                        ? CopyValue(pair.Value, CopyDepth.Deep, context, span, memo, graphDepth + 1)
-                        : pair.Value);
+                attributes[index++] = new(pair.Key, CopyValue(pair.Value, CopyDepth.Deep, context, span, memo, graphDepth + 1));
             }
+
+            foreach (var pair in attributes)
+                clone.SetAttribute(pair.Key, pair.Value);
 
             return clone;
         }

@@ -2765,6 +2765,11 @@ initialization. Instance deep-copy owners register before memo publication, and
 OrderedDict owners before constructor population. Metadata admission may therefore
 deny before callbacks at tight budgets. Kept partial results retain their charges;
 dropped failed construction/copy results remain reclaimable.
+Deep instance-copy callbacks see the empty memoized destination until every
+attribute value has been copied, following Python's state-publication order.
+The reference-pair staging array reserves 24 bytes plus 16 per attribute before
+allocation; failure releases that temporary storage while escaped copied values
+keep their independent owners. Shallow instance copies need no staging array.
 
 Properties retain a 128-byte shell plus a conservative 64-byte allowance for
 each numeric accessor or documentation field, including Boolean and CLR integer

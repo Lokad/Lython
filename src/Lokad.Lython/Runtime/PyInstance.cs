@@ -81,6 +81,8 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
 
     public IEnumerable<KeyValuePair<string, object>> EnumerateOwnAttributes() => _attributes;
 
+    internal int OwnAttributeCount => _attributes.Count;
+
     public bool TryGetAttribute(string name, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
         => PyAttributeLookup.TryResolveInstanceMember(this, name, context, span, out value);
 
