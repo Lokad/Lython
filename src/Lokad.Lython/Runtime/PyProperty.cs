@@ -1,4 +1,5 @@
 using Lokad.Lython.Runtime.Calls;
+using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -13,17 +14,18 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
     IPyDeletableDynamicAttributes, IPyGovernedValue, IPyOwnershipSnapshot
 {
     // Accessors, documentation and ownership metadata live in this shell.
-    // Alias payloads keep their existing ownership; unowned scalars are adopted.
+    // Numeric fields carry conservative storage allowances, without identity maps.
     internal const long ShellBytes = 128;
     private readonly object _getter, _setter, _deleter;
     private object _doc;
     private readonly bool _getterDoc;
     private readonly MemoryGovernor _governor;
     private readonly LythonSourceSpan _span;
-    private AdoptedScalarCoupons? _coupons;
+    private readonly long _accessorStorageBytes;
+    private long _docStorageBytes;
 
     private PyProperty(object getter, object setter, object deleter, object doc, bool getterDoc,
-        MemoryGovernor governor, LythonSourceSpan span)
+        MemoryGovernor governor, LythonSourceSpan span, long accessorStorageBytes, long docStorageBytes)
     {
         _getter = getter;
         _setter = setter;
@@ -32,11 +34,13 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
         _getterDoc = getterDoc;
         _governor = governor;
         _span = span;
+        _accessorStorageBytes = accessorStorageBytes;
+        _docStorageBytes = docStorageBytes;
     }
 
     public MemoryGovernor OwnerMemoryGovernor => _governor;
     public LythonSourceSpan? AllocationSpan => _span;
-    internal long CommittedBytes => ShellBytes + (_coupons?.CommittedBytes ?? 0);
+    internal long CommittedBytes => ShellBytes + _accessorStorageBytes + _docStorageBytes;
     bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes) { bytes = CommittedBytes; return true; }
     public string? Name { get; private set; }
     public void BindName(string name) => Name ??= name;
@@ -76,32 +80,32 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
     private static PyProperty CreateResolved(object getter, object setter, object deleter, object doc, bool getterDoc,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        context.MemoryGovernor.Reserve(ShellBytes, span);
-        var property = new PyProperty(getter, setter, deleter, doc, getterDoc, context.MemoryGovernor, span);
-        context.MemoryGovernor.Commit(ShellBytes);
+        var accessorBytes = FieldStorageBytes(getter) + FieldStorageBytes(setter) + FieldStorageBytes(deleter);
+        var docBytes = FieldStorageBytes(doc);
+        var bytes = ShellBytes + accessorBytes + docBytes;
+        context.MemoryGovernor.Reserve(bytes, span);
+        PyProperty property;
         try
         {
-            property.Adopt(getter);
-            property.Adopt(setter);
-            property.Adopt(deleter);
-            property.Adopt(doc);
+            property = new PyProperty(getter, setter, deleter, doc, getterDoc,
+                context.MemoryGovernor, span, accessorBytes, docBytes);
         }
         catch
         {
-            property._coupons?.ReleaseAll(context.MemoryGovernor);
-            context.MemoryGovernor.Release(ShellBytes);
+            context.MemoryGovernor.ReleaseReserved(bytes);
             throw;
         }
+        context.MemoryGovernor.Commit(bytes);
         context.Services.State.CallTemporaries.TrackFreshMutable(property, property.CommittedBytes, span);
         return property;
     }
 
-    private void Adopt(object value)
-    {
-        if (!AdoptedScalarCoupons.IsAdoptableScalar(value)) return;
-        _coupons ??= new AdoptedScalarCoupons();
-        _coupons.Adopt(value, _governor, _span);
-    }
+    // Only large integer payloads need an ownership lookup. Ordinary numeric
+    // fields are bounded, and aliases deliberately pay per retained field.
+    private static long FieldStorageBytes(object value) => value is System.Numerics.BigInteger
+        ? RuntimeMemoryEstimates.EstimateScalarStorageBytes(value)
+        : PyNumberOps.IsInteger(value) || value is double or PyDecimal
+            ? RuntimeMemoryEstimates.ScalarStorageBytes : 0;
 
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
@@ -119,9 +123,13 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
     {
         if (name is "fget" or "fset" or "fdel") throw new LythonRuntimeException("AttributeError", "readonly attribute", _span);
         if (name != "__doc__") return false;
-        Adopt(value); // Denial precedes changing the visible metadata.
-        _coupons?.Release(_doc, _governor);
+        var bytes = FieldStorageBytes(value);
+        var delta = bytes - _docStorageBytes;
+        _governor.Reserve(delta, _span); // Denial precedes changing the visible metadata.
         _doc = value;
+        _docStorageBytes = bytes;
+        if (delta > 0) _governor.Commit(delta);
+        else if (delta < 0) _governor.Release(-delta);
         ChargeReclamationPool.NotifyStorageReplaced(this, CommittedBytes);
         return true;
     }

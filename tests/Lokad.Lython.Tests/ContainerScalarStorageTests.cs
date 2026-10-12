@@ -5,11 +5,9 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-// N06: container-adopted distinct-scalar coupons. One uniform coupon per
-// distinct identity (reference equality); aliases share it through refcounts;
-// pool-owned boxes stay under their existing owner; denial leaves nothing
-// committed and nothing recorded.
-public sealed class AdoptedScalarCouponTests
+// Live container storage allowances: outgoing mutations refresh ownership
+// snapshots; denied growth leaves existing storage and metadata funded.
+public sealed class ContainerScalarStorageTests
 {
     private static (LythonRuntime.ExecutionContext Context, LythonSourceSpan Span) Budgeted(long maxBytes)
     {
@@ -18,78 +16,10 @@ public sealed class AdoptedScalarCouponTests
         return (context, new LythonSourceSpan(0, 0, 0, 0));
     }
 
-    [Fact]
-    public void DistinctIdentitiesCommitOneCouponEach()
-    {
-        var (context, span) = Budgeted(65536);
-        var coupons = new AdoptedScalarCoupons();
-        var before = context.MemoryGovernor.CurrentCommittedBytes;
-        coupons.Adopt(new BigInteger(1), context.MemoryGovernor, span);
-        coupons.Adopt(2.5, context.MemoryGovernor, span);
-        coupons.Adopt(7, context.MemoryGovernor, span);
-        Assert.Equal(3 * AdoptedScalarCoupons.CouponBytes, coupons.CommittedBytes);
-        Assert.Equal(3 * AdoptedScalarCoupons.CouponBytes, context.MemoryGovernor.CurrentCommittedBytes - before);
-        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-    }
 
-    [Fact]
-    public void AliasOfOneBoxSharesASingleCoupon()
-    {
-        var (context, span) = Budgeted(65536);
-        var coupons = new AdoptedScalarCoupons();
-        object box = new BigInteger(9);
-        coupons.Adopt(box, context.MemoryGovernor, span);
-        coupons.Adopt(box, context.MemoryGovernor, span);
-        coupons.Adopt(box, context.MemoryGovernor, span);
-        Assert.Equal(AdoptedScalarCoupons.CouponBytes, coupons.CommittedBytes);
-        coupons.Release(box, context.MemoryGovernor);
-        Assert.Equal(AdoptedScalarCoupons.CouponBytes, coupons.CommittedBytes);
-        coupons.Release(box, context.MemoryGovernor);
-        coupons.Release(box, context.MemoryGovernor);
-        Assert.Equal(0, coupons.CommittedBytes);
-    }
 
-    [Fact]
-    public void NonScalarsStayFree()
-    {
-        var (context, span) = Budgeted(65536);
-        var coupons = new AdoptedScalarCoupons();
-        var before = context.MemoryGovernor.CurrentCommittedBytes;
-        coupons.Adopt("text", context.MemoryGovernor, span);
-        coupons.Adopt(true, context.MemoryGovernor, span);
-        coupons.Adopt(null, context.MemoryGovernor, span);
-        coupons.Adopt(new object(), context.MemoryGovernor, span);
-        Assert.Equal(0, coupons.CommittedBytes);
-        Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
-    }
 
-    [Fact]
-    public void PoolOwnedBoxStaysUnderItsOwner()
-    {
-        var (context, span) = Budgeted(65536);
-        var pool = new ChargeReclamationPool(context.MemoryGovernor);
-        object big = BigInteger.Pow(2, 100);
-        var before = context.MemoryGovernor.CurrentCommittedBytes;
-        LythonRuntime.OwnFreshInteger(big, context.MemoryGovernor, pool, span);
-        var owned = context.MemoryGovernor.CurrentCommittedBytes - before;
-        Assert.True(owned > 0);
-        var coupons = new AdoptedScalarCoupons();
-        coupons.Adopt(big, context.MemoryGovernor, span);
-        Assert.Equal(0, coupons.CommittedBytes);
-        Assert.Equal(owned, context.MemoryGovernor.CurrentCommittedBytes - before);
-    }
 
-    [Fact]
-    public void AdoptDenialCommitsAndRecordsNothing()
-    {
-        var (context, span) = Budgeted(AdoptedScalarCoupons.CouponBytes + 8);
-        var coupons = new AdoptedScalarCoupons();
-        coupons.Adopt(new BigInteger(1), context.MemoryGovernor, span);
-        Assert.Throws<LythonRuntimeException>(() => coupons.Adopt(new BigInteger(2), context.MemoryGovernor, span));
-        Assert.Equal(AdoptedScalarCoupons.CouponBytes, coupons.CommittedBytes);
-        coupons.Release(new BigInteger(1), context.MemoryGovernor);
-        Assert.Equal(AdoptedScalarCoupons.CouponBytes, coupons.CommittedBytes);
-    }
 
     private static long PooledCharge(ChargeReclamationPool pool, object value)
     {
@@ -120,7 +50,7 @@ public sealed class AdoptedScalarCouponTests
         var items = new object[] { new BigInteger(1), new BigInteger(2) };
         var before = governor.CurrentCommittedBytes;
         var list = new PyList(items, governor, span);
-        var coupons = 2 * AdoptedScalarCoupons.CouponBytes;
+        var coupons = 2 * RuntimeMemoryEstimates.ScalarStorageBytes;
         pool.TrackFreshMutable(list, list.CommittedStorageBytes, span);
         Assert.Equal(list.CommittedStorageBytes, PooledCharge(pool, list));
         var trackedBefore = PooledCharge(pool, list);
@@ -142,7 +72,7 @@ public sealed class AdoptedScalarCouponTests
         var pool = new ChargeReclamationPool(governor);
         var items = Enumerable.Range(0, 5).Select(i => (object)new BigInteger(i)).ToArray();
         var list = new PyList(items, governor);
-        var backing = list.CommittedStorageBytes - 5 * AdoptedScalarCoupons.CouponBytes;
+        var backing = list.CommittedStorageBytes - 5 * RuntimeMemoryEstimates.ScalarStorageBytes;
         pool.TrackFreshMutable(list, list.CommittedStorageBytes);
 
         list.DeleteSlice(new PyIndexing.SliceBounds(start, end, step));
@@ -166,7 +96,7 @@ public sealed class AdoptedScalarCouponTests
         var pool = new ChargeReclamationPool(governor);
         var items = Enumerable.Range(0, 32).Select(i => (object)new BigInteger(i)).ToArray();
         var list = new PyList(items, governor);
-        var backing = list.CommittedStorageBytes - items.Length * AdoptedScalarCoupons.CouponBytes;
+        var backing = list.CommittedStorageBytes - items.Length * RuntimeMemoryEstimates.ScalarStorageBytes;
         pool.TrackFreshMutable(list, list.CommittedStorageBytes);
 
         list.DeleteSlice(new PyIndexing.SliceBounds(0, items.Length, 2));
@@ -188,17 +118,17 @@ public sealed class AdoptedScalarCouponTests
         object removed = new BigInteger(1);
         object kept = new BigInteger(2);
         var list = new PyList(new object[] { removed, kept, removed, kept, new BigInteger(3) }, governor);
-        var backing = list.CommittedStorageBytes - 5 * AdoptedScalarCoupons.CouponBytes;
+        var backing = list.CommittedStorageBytes - 5 * RuntimeMemoryEstimates.ScalarStorageBytes;
         pool.TrackFreshMutable(list, list.CommittedStorageBytes);
 
         list.DeleteSlice(new PyIndexing.SliceBounds(0, 5, 2));
         Assert.Equal(2, list.Count);
         Assert.Same(kept, list[0]);
         Assert.Same(kept, list[1]);
-        Assert.Equal(backing + 2 * AdoptedScalarCoupons.CouponBytes, list.CommittedStorageBytes);
+        Assert.Equal(backing + 2 * RuntimeMemoryEstimates.ScalarStorageBytes, list.CommittedStorageBytes);
         Assert.Equal(list.CommittedStorageBytes, PooledCharge(pool, list));
         list.RemoveAt(0);
-        Assert.Equal(backing + AdoptedScalarCoupons.CouponBytes, list.CommittedStorageBytes);
+        Assert.Equal(backing + RuntimeMemoryEstimates.ScalarStorageBytes, list.CommittedStorageBytes);
         list.RemoveAt(0);
         Assert.Equal(backing, list.CommittedStorageBytes);
         Assert.Equal(backing, PooledCharge(pool, list));
@@ -239,7 +169,7 @@ public sealed class AdoptedScalarCouponTests
         var pool = new ChargeReclamationPool(governor);
         var before = governor.CurrentCommittedBytes;
         var set = new PySet(new object[] { new BigInteger(1), new BigInteger(2) }, governor, span);
-        var coupons = 2 * AdoptedScalarCoupons.CouponBytes;
+        var coupons = 2 * RuntimeMemoryEstimates.ScalarStorageBytes;
         pool.TrackFreshMutable(set, set.CommittedStorageBytes, span);
         Assert.Equal(set.CommittedStorageBytes, PooledCharge(pool, set));
         var trackedBefore = PooledCharge(pool, set);
@@ -269,7 +199,7 @@ public sealed class AdoptedScalarCouponTests
         var trackedBefore = PooledCharge(pool, set);
         Assert.False(set.Add(new BigInteger(7)));
         Assert.True(set.Remove(new BigInteger(7)));
-        Assert.Equal(trackedBefore - AdoptedScalarCoupons.CouponBytes, PooledCharge(pool, set));
+        Assert.Equal(trackedBefore - RuntimeMemoryEstimates.ScalarStorageBytes, PooledCharge(pool, set));
         Assert.Equal(0, set.Count);
     }
 
@@ -298,7 +228,7 @@ public sealed class AdoptedScalarCouponTests
         var measured = BuildSet(measureContext, span);
         var baseline = measureContext.MemoryGovernor.CurrentCommittedBytes;
         var denyContext = new LythonRuntime.ExecutionContext(
-            host, new LythonRunOptions { MaxExecutionMemoryBytes = baseline + AdoptedScalarCoupons.CouponBytes - 1 });
+            host, new LythonRunOptions { MaxExecutionMemoryBytes = baseline + RuntimeMemoryEstimates.ScalarStorageBytes - 1 });
         var denied = BuildSet(denyContext, span);
         Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(10, denied.Count);
@@ -437,7 +367,7 @@ public sealed class AdoptedScalarCouponTests
         Assert.Equal(10, measured.Count);
         var baseline = measureContext.MemoryGovernor.CurrentCommittedBytes;
         var denyContext = new LythonRuntime.ExecutionContext(
-            host, new LythonRunOptions { MaxExecutionMemoryBytes = baseline + AdoptedScalarCoupons.CouponBytes - 1 });
+            host, new LythonRunOptions { MaxExecutionMemoryBytes = baseline + RuntimeMemoryEstimates.ScalarStorageBytes - 1 });
         var denied = BuildDict(denyContext, span);
         Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(10, denied.Count);
@@ -482,7 +412,7 @@ public sealed class AdoptedScalarCouponTests
         var governor = context.MemoryGovernor;
         var before = governor.CurrentCommittedBytes;
         var items = new object[] { new BigInteger(1), new BigInteger(2), new BigInteger(3) };
-        var budget = PyTuple.EstimateApproximateBytes(items.Length) + AdoptedScalarCoupons.CouponBytes - 1;
+        var budget = PyTuple.EstimateApproximateBytes(items.Length) + RuntimeMemoryEstimates.ScalarStorageBytes - 1;
         var tight = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = budget });
         Assert.Throws<LythonRuntimeException>(() => new PyTuple(items, tight.MemoryGovernor, span));
         Assert.Equal(0, tight.MemoryGovernor.CurrentCommittedBytes);
@@ -535,7 +465,7 @@ public sealed class AdoptedScalarCouponTests
         _ = BuildDeque(measureContext, span);
         var baseline = measureContext.MemoryGovernor.CurrentCommittedBytes;
         var denyContext = new LythonRuntime.ExecutionContext(
-            host, new LythonRunOptions { MaxExecutionMemoryBytes = baseline + AdoptedScalarCoupons.CouponBytes - 1 });
+            host, new LythonRunOptions { MaxExecutionMemoryBytes = baseline + RuntimeMemoryEstimates.ScalarStorageBytes - 1 });
         var denied = BuildDeque(denyContext, span);
         Assert.Equal(baseline, denyContext.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(5, denied.Count);
@@ -570,16 +500,4 @@ public sealed class AdoptedScalarCouponTests
         Assert.Equal(before, governor.CurrentCommittedBytes);
     }
 
-    [Fact]
-    public void ReleaseAllDropsEveryCoupon()
-    {
-        var (context, span) = Budgeted(65536);
-        var coupons = new AdoptedScalarCoupons();
-        var before = context.MemoryGovernor.CurrentCommittedBytes;
-        coupons.Adopt(new BigInteger(1), context.MemoryGovernor, span);
-        coupons.Adopt(1.5, context.MemoryGovernor, span);
-        coupons.ReleaseAll(context.MemoryGovernor);
-        Assert.Equal(0, coupons.CommittedBytes);
-        Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
-    }
 }

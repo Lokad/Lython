@@ -2732,6 +2732,18 @@ iterators. Storage changes refresh the same charged owner, including after
 callback-visible partial mutation; unreachable wrapper/storage cycles remain
 collectible. Catching an exception does not undo prior callback side effects.
 
+Properties retain a 128-byte shell plus a conservative 64-byte allowance for
+each numeric accessor or documentation field, including Boolean and CLR integer
+ingress values. Aliased fields pay separately; ordinary callable, string and
+None fields keep their existing payload ownership without this allowance.
+Large integers retain their separate payload owner; an unowned large integer
+also contributes its byte-count estimate. Construction admits all field storage
+together. Documentation replacement funds only positive growth, reuses existing
+allowances and releases outgoing storage on shrink or deletion. Dropped properties
+reclaim their live storage through the existing ownership snapshot. This removes
+scalar identity/refcount accounting and can change tight-budget acceptance and
+peaks; it does not count cumulative allocations.
+
 `int.from_bytes` preflights conversion storage before creating its result. Heap
 magnitudes own their payload through the same reclamation path as parsed and
 arithmetic integers: retained conversions count toward the execution budget,

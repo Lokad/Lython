@@ -22,7 +22,7 @@ public sealed class SmallTupleAdoptionTests
         {
             var governor = new MemoryGovernor(null);
             var tuple = Make(items, governor, construction);
-            var slots = items.Count(AdoptedScalarCoupons.IsAdoptableScalar);
+            var slots = items.Count(item => RuntimeMemoryEstimates.EstimateScalarStorageBytes(item) > 0);
             var expected = PyTuple.EstimateApproximateBytes(items.Length) + slots * 64L;
             Assert.Equal(expected, tuple.CommittedStorageBytes);
             Assert.Equal(expected, governor.CurrentCommittedBytes);
@@ -42,14 +42,14 @@ public sealed class SmallTupleAdoptionTests
     public void DeniedStorageRefundsConstructionAndAllowsRecovery(int construction, int fundedCoupons)
     {
         object[] items = [new BigInteger(1), new BigInteger(2)];
-        var budget = PyTuple.EstimateApproximateBytes(2) + (fundedCoupons + 1) * AdoptedScalarCoupons.CouponBytes - 1;
+        var budget = PyTuple.EstimateApproximateBytes(2) + (fundedCoupons + 1) * RuntimeMemoryEstimates.ScalarStorageBytes - 1;
         var governor = new MemoryGovernor(budget);
         var failure = Assert.Throws<LythonRuntimeException>(() => Make(items, governor, construction));
         Assert.Equal("MemoryError", failure.ExceptionType);
         Assert.Equal(0, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
         var recovered = new PyTuple(new object[] { items[0] }, governor);
-        Assert.Equal(PyTuple.EstimateApproximateBytes(1) + AdoptedScalarCoupons.CouponBytes, governor.CurrentCommittedBytes);
+        Assert.Equal(PyTuple.EstimateApproximateBytes(1) + RuntimeMemoryEstimates.ScalarStorageBytes, governor.CurrentCommittedBytes);
         Assert.Same(items[0], recovered[0]);
         GC.KeepAlive(items);
         GC.KeepAlive(recovered);

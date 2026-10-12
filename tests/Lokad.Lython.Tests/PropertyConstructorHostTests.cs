@@ -13,16 +13,16 @@ public sealed class PropertyConstructorHostTests
     private static readonly LythonSourceSpan Span = new(0, 1, 1, 1);
 
     [Fact]
-    public void AliasedScalarMetadataSharesOneCouponAndRejectedUpdateKeepsValue()
+    public void AliasedNumericFieldsCarryAllowancesAndRejectedUpdateKeepsValue()
     {
         var root = new Context(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 1024 * 1024 });
         object scalar = new BigInteger(7);
         var property = PyProperty.Create(scalar, scalar, scalar, scalar, root, Span);
-        Assert.Equal(PyProperty.ShellBytes + AdoptedScalarCoupons.CouponBytes, property.CommittedBytes);
+        Assert.Equal(PyProperty.ShellBytes + 4 * RuntimeMemoryEstimates.ScalarStorageBytes, property.CommittedBytes);
         Assert.True(property.TryGetMember("fget", out var getter));
         Assert.Same(scalar, getter);
         Assert.True(property.TrySetMember("__doc__", PyNone.Instance));
-        Assert.Equal(PyProperty.ShellBytes + AdoptedScalarCoupons.CouponBytes, property.CommittedBytes);
+        Assert.Equal(PyProperty.ShellBytes + 3 * RuntimeMemoryEstimates.ScalarStorageBytes, property.CommittedBytes);
         using (root.MemoryGovernor.ReserveTemporary(root.MemoryGovernor.MaxAccountedBytes!.Value - root.MemoryGovernor.CurrentAccountedBytes, Span))
         {
             var error = Assert.Throws<LythonRuntimeException>(() => property.TrySetMember("__doc__", new BigInteger(9)));
@@ -35,7 +35,7 @@ public sealed class PropertyConstructorHostTests
     }
 
     [Fact]
-    public void ConstructorCouponDenialRollsBackUnpublishedShell()
+    public void ConstructorFieldDenialCommitsNoUnpublishedStorage()
     {
         var root = new Context(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 1024 });
         var before = root.MemoryGovernor.CurrentCommittedBytes;
@@ -48,7 +48,7 @@ public sealed class PropertyConstructorHostTests
     }
 
     [Fact]
-    public void DroppedDescriptorReclaimsShellCouponsAndRegistry()
+    public void DroppedDescriptorReclaimsShellFieldsAndRegistry()
     {
         var root = new Context(new MockLythonHost(), new LythonRunOptions());
         var weak = MakeDiscarded(root);
