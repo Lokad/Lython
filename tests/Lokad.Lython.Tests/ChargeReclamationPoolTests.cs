@@ -537,7 +537,7 @@ public sealed class ChargeReclamationPoolTests
         var instance = new PyInstance(type, governor, null);
         instance.SetAttribute("a", 1);
         Assert.Equal(64, instance.CommittedAttributeBytes);
-        pool.TrackGrowth(instance, instance.CommittedAttributeBytes, null);
+        pool.TrackGrowth(instance, instance.CommittedStorageBytes, null);
         Assert.Equal(entriesBefore + 1, pool.Count);
         instance.SetAttribute("b", 2);
         instance.RemoveAttribute("a");

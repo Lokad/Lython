@@ -5,12 +5,14 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonRuntime.ICallable, IPyGovernedValue, IPyOwnershipSnapshot
 {
-    private readonly Dictionary<string, object> _attributes = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, object> _attributes;
 
     // Attribute tables grow one CLR entry per guest attribute name; charge
     // each new key so retained attributes accumulate. The key strings
     // themselves are caller-owned (often shared parser constants); only the
-    // table slot is charged here. Empty instances stay free.
+    // table slot is charged here. Even an empty instance owns its shell and
+    // attribute table, so it can register before initialization/copy callbacks.
+    internal const long InstanceShellBytes = 160;
     private const long AttributeSlotBytes = 64;
     private MemoryGovernor? _memoryGovernor;
     private LythonSourceSpan? _allocationSpan;
@@ -18,11 +20,23 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
 
     public PyInstance(PyType type)
     {
+        _attributes = new(StringComparer.Ordinal);
         Type = type;
     }
 
     public PyInstance(PyType type, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
+        governor.Reserve(InstanceShellBytes, allocationSpan);
+        try
+        {
+            _attributes = new(StringComparer.Ordinal);
+        }
+        catch
+        {
+            governor.ReleaseReserved(InstanceShellBytes);
+            throw;
+        }
+        governor.Commit(InstanceShellBytes);
         Type = type;
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
@@ -33,12 +47,14 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
     public MemoryGovernor? OwnerMemoryGovernor => _memoryGovernor;
 
     bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes) =>
-        OwnershipSnapshot.Owned(OwnerMemoryGovernor, CommittedAttributeBytes, out chargeBytes);
+        OwnershipSnapshot.Owned(OwnerMemoryGovernor, CommittedStorageBytes, out chargeBytes);
 
     // Current committed attribute-slot charges, for pooled owners that release
     // them if this instance is dropped. Later growth re-snapshots through the
-    // shared table; adopted (ungoverned-table) attributes carry no charge.
+    // shared table. Attachment funds every existing slot before publication.
     internal long CommittedAttributeBytes => _committedAttributeBytes;
+
+    internal long CommittedStorageBytes => (_memoryGovernor is null ? 0 : InstanceShellBytes) + _committedAttributeBytes;
 
     public LythonSourceSpan? AllocationSpan => _allocationSpan;
 
@@ -47,8 +63,18 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
 
     public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
-        _memoryGovernor ??= governor;
-        _allocationSpan ??= allocationSpan;
+        if (_memoryGovernor is not null)
+        {
+            _allocationSpan ??= allocationSpan;
+            return;
+        }
+        var attributeBytes = checked((long)_attributes.Count * AttributeSlotBytes);
+        var storageBytes = checked(InstanceShellBytes + attributeBytes);
+        governor.Reserve(storageBytes, allocationSpan);
+        governor.Commit(storageBytes);
+        _committedAttributeBytes = attributeBytes;
+        _allocationSpan = allocationSpan;
+        _memoryGovernor = governor;
     }
 
     public bool TryGetOwnAttribute(string name, [MaybeNullWhen(false)] out object value) => _attributes.TryGetValue(name, out value);
@@ -65,7 +91,7 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
             _memoryGovernor.Reserve(AttributeSlotBytes, _allocationSpan);
             _memoryGovernor.Commit(AttributeSlotBytes);
             _committedAttributeBytes += AttributeSlotBytes;
-            ChargeReclamationPool.NotifyStorageReplaced(this, _committedAttributeBytes);
+            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
         }
 
         _attributes[name] = value;
@@ -78,13 +104,11 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
             return false;
         }
 
-        // Only release a matching reservation: attributes adopted from an
-        // ungoverned table (MG03 gap) hold no charge to return.
-        if (_memoryGovernor is not null && _committedAttributeBytes >= AttributeSlotBytes)
+        if (_memoryGovernor is not null)
         {
             _memoryGovernor.Release(AttributeSlotBytes);
             _committedAttributeBytes -= AttributeSlotBytes;
-            ChargeReclamationPool.NotifyStorageReplaced(this, _committedAttributeBytes);
+            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
         }
 
         return true;

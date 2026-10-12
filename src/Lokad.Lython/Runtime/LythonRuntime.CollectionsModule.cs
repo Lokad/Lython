@@ -842,6 +842,7 @@ internal sealed partial class LythonRuntime
         }
 
         var dict = new PyDict(context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(dict, dict.CommittedStorageBytes, span);
         if (hasSource)
         {
             PopulateDict(dict, source, "collections.OrderedDict([mapping], **kwargs)", span, context);

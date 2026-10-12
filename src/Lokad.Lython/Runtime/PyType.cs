@@ -243,7 +243,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             return InvokeBuiltInType(arguments, span, context);
         }
 
-        object instance = new PyInstance(this, context.MemoryGovernor, span);
+        object instance;
         if (TryGetMember("__new__", out var allocator))
         {
             if (allocator is not LythonRuntime.ICallable newCallable)
@@ -256,11 +256,19 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             Array.Copy(arguments, 0, newArguments, 1, arguments.Length);
             instance = newCallable.Invoke(newArguments, span, context);
         }
+        else
+        {
+            var fresh = new PyInstance(this, context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(fresh, fresh.CommittedStorageBytes, span);
+            instance = fresh;
+        }
 
         if (instance is not PyInstance pyInstance || !pyInstance.Type.IsSubtypeOf(this))
         {
             return instance;
         }
+
+        context.Services.State.CallTemporaries.TrackCallResult(pyInstance, span);
 
         if (JsonBase != JsonBaseKind.None && !LythonRuntime.JsonSubclassSupport.HasGuestInit(this, context))
         {
@@ -296,7 +304,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             return InvokeBuiltInType(arguments, span, context);
         }
 
-        object instance = new PyInstance(this, context.MemoryGovernor, span);
+        object instance;
         if (TryGetMember("__new__", out var allocator))
         {
             if (allocator is not LythonRuntime.ICallable newCallable)
@@ -309,11 +317,19 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             Array.Copy(arguments, 0, newArguments, 1, arguments.Length);
             instance = await newCallable.InvokeAsync(newArguments, span, context).ConfigureAwait(false);
         }
+        else
+        {
+            var fresh = new PyInstance(this, context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(fresh, fresh.CommittedStorageBytes, span);
+            instance = fresh;
+        }
 
         if (instance is not PyInstance pyInstance || !pyInstance.Type.IsSubtypeOf(this))
         {
             return instance;
         }
+
+        context.Services.State.CallTemporaries.TrackCallResult(pyInstance, span);
 
         if (JsonBase != JsonBaseKind.None && !LythonRuntime.JsonSubclassSupport.HasGuestInit(this, context))
         {

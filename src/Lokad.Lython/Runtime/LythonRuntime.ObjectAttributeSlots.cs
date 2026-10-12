@@ -43,6 +43,6 @@ internal sealed partial class LythonRuntime
         var attributesBefore = instance.CommittedAttributeBytes;
         instance.SetAttribute(name, value);
         if (instance.CommittedAttributeBytes != attributesBefore)
-            context.Services.State.CallTemporaries.TrackGrowth(instance, instance.CommittedAttributeBytes, span);
+            context.Services.State.CallTemporaries.TrackGrowth(instance, instance.CommittedStorageBytes, span);
     }
 }

@@ -2754,6 +2754,18 @@ Failed hooks leave dropped partial results reclaimable; memo aliases retained by
 callbacks keep their actual storage funded. Registration denial refunds the
 unpublished result, and cyclic/shared memo identity remains unchanged.
 
+Ordinary governed instances own a conservative 160-byte shell and attribute table,
+plus 64 bytes per own attribute slot. Empty instances therefore have an owner
+that can register before initialization or deep-copy callbacks. Attaching an
+ungoverned instance funds its shell and existing slots before publishing the
+governor; refusal leaves it unowned and retryable. Deleting every attribute keeps
+the shell funded. Class allocation creates a default instance only when there is
+no `__new__`; allocator-returned aliases use non-refunding registration before
+initialization. Instance deep-copy owners register before memo publication, and
+OrderedDict owners before constructor population. Metadata admission may therefore
+deny before callbacks at tight budgets. Kept partial results retain their charges;
+dropped failed construction/copy results remain reclaimable.
+
 Properties retain a 128-byte shell plus a conservative 64-byte allowance for
 each numeric accessor or documentation field, including Boolean and CLR integer
 ingress values. Aliased fields pay separately; ordinary callable, string and

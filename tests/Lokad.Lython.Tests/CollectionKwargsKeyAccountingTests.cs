@@ -73,8 +73,8 @@ public sealed class CollectionKwargsKeyAccountingTests
         var dict = Assert.IsType<PyDict>(InvokeFactory("OrderedDict", context, span, CallArgumentValue.Keyword("k", new BigInteger(1))));
         Assert.Equal("k", SingleKey(dict, context.MemoryGovernor).AsString());
         // Governed backing (192) and key (128 + 1); no extra shell.
-        // Plus the retained key/value entry allowance.
-        Assert.Equal(321L + 128L, context.MemoryGovernor.CurrentCommittedBytes);
+        // Plus the retained key/value allowance and the early owner entry/backing.
+        Assert.Equal(321L + 128L + 128L + 32L, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }

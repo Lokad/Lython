@@ -505,7 +505,7 @@ internal static partial class PyDataclass
         // the slot wrapper does; change-detected for steady state.
         if (instance.CommittedAttributeBytes != attributesBefore)
         {
-            context.Services.State.CallTemporaries.TrackGrowth(instance, instance.CommittedAttributeBytes, span);
+            context.Services.State.CallTemporaries.TrackGrowth(instance, instance.CommittedStorageBytes, span);
         }
     }
 

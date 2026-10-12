@@ -316,7 +316,7 @@ internal sealed class PyGenericAlias : IPyDynamicAttributes, IPySubscriptableVal
     {
         if (Origin is not LythonRuntime.ICallable callable) throw new LythonRuntimeException("TypeError", "Generic alias origin is not callable", span);
         var value = asynchronous ? await callable.InvokeAsync(arguments, span, context).ConfigureAwait(false) : callable.Invoke(arguments, span, context);
-        if (value is PyInstance instance) { instance.SetAttribute("__orig_class__", this); context.Services.State.CallTemporaries.TrackGrowth(instance, instance.CommittedAttributeBytes, span); }
+        if (value is PyInstance instance) { instance.SetAttribute("__orig_class__", this); context.Services.State.CallTemporaries.TrackGrowth(instance, instance.CommittedStorageBytes, span); }
         return value;
     }
     public IEnumerable<object> Iterate() { yield return _unpacked ??= new PyUnpackedType(this); }

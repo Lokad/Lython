@@ -382,6 +382,7 @@ internal sealed partial class LythonRuntime
             RejectUnsupportedCopyProtocols(instance, context, span);
 
             var clone = new PyInstance(instance.Type, context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes, span);
             memo.Remember(value, clone);
             foreach (var pair in instance.EnumerateOwnAttributes())
             {

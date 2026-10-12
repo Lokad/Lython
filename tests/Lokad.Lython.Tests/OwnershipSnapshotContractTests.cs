@@ -119,7 +119,7 @@ public sealed class OwnershipSnapshotContractTests
     }
 
     [Fact]
-    public void FreshInstanceSnapshotsZeroAttributeBytes()
+    public void FreshInstanceSnapshotsItsFundedShell()
     {
         var governor = new MemoryGovernor(null);
         var pool = new ChargeReclamationPool(governor);
@@ -130,11 +130,11 @@ public sealed class OwnershipSnapshotContractTests
 
         var snapshot = Assert.IsAssignableFrom<IPyOwnershipSnapshot>(instance);
         Assert.True(snapshot.TrySnapshotOwnership(out var charge));
-        Assert.Equal(0, charge);
+        Assert.Equal(160, charge);
 
-        // Owned but empty: no coupon, so nothing registers.
+        // The empty shell can register before any attribute callback.
         pool.TrackCallResult(instance);
-        Assert.Equal(0, pool.Count);
+        Assert.Equal(1, pool.Count);
         GC.KeepAlive(instance);
     }
 
