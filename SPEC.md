@@ -2704,6 +2704,18 @@ before allocation and release it when the operation exits, including validation
 failure or cancellation. Replacement arrays remain funded while they coexist;
 returned values retain their separate result and payload ownership.
 
+Governed deques charge 128 bytes per live node, including its links and
+conservative headroom for a retained small value, plus one 128-byte shell.
+Every node pays the same allowance, including aliases and nonnumeric values;
+large payloads retain their separate owners. This replaces scalar identity
+maps and may increase accounted peaks or reject previously accepted scripts
+under tight budgets. First attachment funds the shell and all existing nodes
+before publishing the governor. Growth preflights each new node; failed private
+construction refunds its storage. Full bounded eviction, indexed replacement
+and rotation reuse funded nodes without additional storage admission. Pop,
+removal and clear release live-node charges; dropped deques remain reclaimable.
+Streaming extension keeps its successfully inserted prefix if later input fails.
+
 `int.from_bytes` preflights conversion storage before creating its result. Heap
 magnitudes own their payload through the same reclamation path as parsed and
 arithmetic integers: retained conversions count toward the execution budget,

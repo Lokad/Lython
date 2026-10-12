@@ -3,10 +3,8 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 
-// N06 (PyDeque half): governed deques adopt one uniform coupon per distinct
-// small-scalar identity they retain, on both ends. Bounded eviction turns
-// coupons over (release-then-adopt stays flat); pops, removals, indexed writes
-// and clears release; repeats re-adopt.
+// Governed deques fund nodes and retained-value headroom together. Aliases pay
+// per node; eviction and indexed replacement transfer the funded storage.
 public sealed class DequeScalarAdoptionTests
 {
     private const long ThreeMib = 3145728;
@@ -40,11 +38,11 @@ public sealed class DequeScalarAdoptionTests
     }
 
     [Fact]
-    public async Task AliasAppendsShareOneCoupon()
+    public async Task AliasAppendsPreserveValuesWithinTheirFundedBudget()
     {
-        // Nodes never share (one charge per element), but 10000 aliases of one
-        // box hold a single coupon: nodes plus one coupon stay far under 1 MiB,
-        // while per-alias coupons would push the peak past it.
+        // Repeated aliases preserve Python identity but each node now includes
+        // its own retained-value allowance. The execution budget stays 3 MiB;
+        // the former <=1 MiB peak oracle no longer describes this contract.
         var script = Compile("""
             import collections
             d = collections.deque()
@@ -58,11 +56,11 @@ public sealed class DequeScalarAdoptionTests
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue);
-        Assert.True(sync.PeakExecutionMemoryBytes <= 1048576, $"peak {sync.PeakExecutionMemoryBytes}");
+        Assert.InRange(sync.PeakExecutionMemoryBytes, 1280000, ThreeMib);
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue);
-        Assert.True(asyncResult.PeakExecutionMemoryBytes <= 1048576, $"peak {asyncResult.PeakExecutionMemoryBytes}");
+        Assert.InRange(asyncResult.PeakExecutionMemoryBytes, 1280000, ThreeMib);
     }
 
     [Fact]

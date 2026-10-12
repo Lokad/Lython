@@ -26,13 +26,13 @@ public sealed class DequeReclamationTests
         var pool = new ChargeReclamationPool(governor);
         CreateTrackedDeque(pool, governor);
         // Shell plus three nodes beside the registry entry.
-        Assert.Equal(128L + 3L * 64L + 128L + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
+        Assert.Equal(128L + 3L * 128L + 128L + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
         // A partial sweep releases entries but keeps tier capacity: the
         // remainder reconciles explicitly against backing, which abandonment frees.
-        Assert.Equal(128L + 3L * 64L + 128L, pool.Sweep());
+        Assert.Equal(128L + 3L * 128L + 128L, pool.Sweep());
         Assert.Equal(pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
     }
 
@@ -47,7 +47,7 @@ public sealed class DequeReclamationTests
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-        Assert.Equal(128L + 2L * 64L + 128L, pool.Sweep());
+        Assert.Equal(128L + 2L * 128L + 128L, pool.Sweep());
         Assert.Equal(pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
     }
 
@@ -60,7 +60,7 @@ public sealed class DequeReclamationTests
         deque.Append(new object());
         pool.TrackFreshMutable(deque, deque.CommittedStorageBytes);
         deque.Pop();
-        Assert.Equal(128L + 2L * 64L + 128L + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
+        Assert.Equal(128L + 2L * 128L + 128L + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
     }
 
     [Fact]
@@ -74,8 +74,8 @@ public sealed class DequeReclamationTests
         deque.Append(new object());
         Assert.Equal(0, governor.CurrentCommittedBytes);
         deque.AttachMemoryGovernor(governor);
-        Assert.Equal(128L + 2L * 64L, governor.CurrentCommittedBytes);
-        Assert.Equal(128L + 2L * 64L, deque.CommittedStorageBytes);
+        Assert.Equal(128L + 2L * 128L, governor.CurrentCommittedBytes);
+        Assert.Equal(128L + 2L * 128L, deque.CommittedStorageBytes);
         GC.KeepAlive(deque);
     }
 }
