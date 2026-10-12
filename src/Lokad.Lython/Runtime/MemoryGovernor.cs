@@ -141,10 +141,22 @@ internal sealed class MemoryGovernor
             return;
         }
 
-        GC.Collect();
-        foreach (var pool in live)
+        // Most dropped streaming values are young. Collect only as far as
+        // needed to fund this reservation; old unreachable storage still gets
+        // a full collection before denial. CLR generations need no owner-age
+        // registry, and all existing live snapshots remain charged.
+        for (var generation = 0; generation <= GC.MaxGeneration; generation++)
         {
-            pool.Sweep(full: true);
+            GC.Collect(generation);
+            foreach (var pool in live)
+            {
+                pool.Sweep(full: true);
+            }
+
+            if (committedBefore - CurrentCommittedBytes >= shortfallBytes)
+            {
+                break;
+            }
         }
 
         // A full sweep may have collected the last aliases from an abandoned

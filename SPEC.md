@@ -2671,6 +2671,17 @@ Catching `MemoryError` does not release retained values or guarantee room for a
 new result container. Scripts that recover under a saturated budget must reuse
 funded storage or release storage before allocating again.
 
+Before denying a reservation, exhaustion relief first sweeps already-collected
+owners. If that does not cover the shortfall, it collects CLR generations from
+youngest to oldest, sweeping after each and stopping once enough committed
+storage has been reclaimed. Old unreachable storage can still require a full
+collection; live retained aliases and resources awaiting finalization stay
+funded. A pinned denial can therefore make several collection attempts. Repeated
+denials without allocation progress do not repeat relief. This automatic policy
+has no owner-age tracking or configuration switch. Accounting still depends on
+CLR collection and these collections affect the embedding process; it does not
+guarantee pause isolation or replace live-memory bounds with allocation totals.
+
 Set construction refunds its private shell, backing storage and scalar charges
 if population fails before publication. Internal intersection and subset scratch
 sets release their charges when the operation exits, including on failure.
