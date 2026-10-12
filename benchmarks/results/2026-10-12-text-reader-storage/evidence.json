@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "originalSource": "3c7a1124edeba792b124c65ae57b005ab6ca2c77",
+  "runtimeSource": "b031caaee0da57db59ece2daa2b36b3fd7269067",
+  "correctedTestSource": "fd741bd51ff81758121502b59cdb8bd2cc676350",
+  "productionTree": "71cfdab9b367743f23e85d34098ea9eb79eb01da",
+  "unchangedBetweenProducers": true,
+  "fixedScriptRepeats": 500,
+  "fixedMemoryCap": 262144,
+  "stateShellBytes": 192,
+  "fullDebugComplete": false,
+  "correctedWhiteDebugPassed": 2140,
+  "initialFocusedReleasePassed": 148,
+  "correctedCodecReleasePassed": 26,
+  "workerCases": 12,
+  "performanceQualified": false,
+  "frozenBinaries": [
+    {
+      "path": "src/Lokad.Lython/bin/Debug/net10.0/Lokad.Lython.dll",
+      "sha256": "61316EA15D61CABE802846DA2901256AB7D9BD3B5A07ECC69DC2EE322CE84C96"
+    },
+    {
+      "path": "tests/Lokad.Lython.Tests/bin/Debug/net10.0/Lokad.Lython.WhiteBox.Tests.dll",
+      "sha256": "698A67BFCDE040D39E61D8DDDD2AF53F70B740F86E102E33EF364DEC8B73B15A"
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/bin/Debug/net10.0/Lokad.Lython.PublicApi.Tests.dll",
+      "sha256": "7CAB44A86583E592C4C37508C23256EE3DD363F6DD72045C91BCF249114F5D95"
+    },
+    {
+      "path": "tests/Lokad.Lython.Tests/bin/Release/net10.0/Lokad.Lython.WhiteBox.Tests.dll",
+      "sha256": "A68CBC62E7675A944AD7D4710DD7A3146F1FCE1D324A0BA9E164A66C9FD9A69C"
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/bin/Release/net10.0/Lokad.Lython.PublicApi.Tests.dll",
+      "sha256": "A2189D7FE765C7ADC24BF77AD1E009F88BE92969D994098748832131F2BF61DD"
+    },
+    {
+      "path": "benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+      "sha256": "E202411A30FB7759A1388BB20B1623195641F77D08A603C89C2673B44EEC60C3"
+    }
+  ],
+  "receipts": [
+    {
+      "path": "original-text-jobs/process.receipt.json",
+      "sha256": "E817D096F2BA8717A4F71A817FBB94CAD59A3239F2C8280A66F376451A2F57D0"
+    },
+    {
+      "path": "original-text-jobs/tests.trx",
+      "sha256": "84BAB07640D310A5A0BDFAD66F75751CE26381A37344BDEDF563E8A64B052AFE"
+    },
+    {
+      "path": "candidate-reader-white/process.receipt.json",
+      "sha256": "F032294E0F55B63FA93E08E8453E29011927C67C09EABB633D2045CE8C58AB0B"
+    },
+    {
+      "path": "candidate-reader-white/tests.trx",
+      "sha256": "8B0DF443A59AACC108822EAFD4B7EA328DBD731C741FFC78775D86639FBB0B95"
+    },
+    {
+      "path": "committed-white-release/process.receipt.json",
+      "sha256": "920DDF9307067708F13F3CD23325DFC32025A2BCCB985FE07CD663301EE191A3"
+    },
+    {
+      "path": "committed-white-release/tests.trx",
+      "sha256": "22D50AC4B08BDF7F5FFD825A7BAE1E9852B29BAABC8E0C6AB354F2B394A8C6D7"
+    },
+    {
+      "path": "committed-public-release/process.receipt.json",
+      "sha256": "47FB54FD5A5BBDB59AAE1155D098A0013C6A0943C81B209AE11486518A3AE3E7"
+    },
+    {
+      "path": "committed-public-release/tests.trx",
+      "sha256": "5221EB31250724C08019F9C01BA1E59C6A0151F60EF192A96ADAA052A61E8528"
+    },
+    {
+      "path": "worker-verification.json",
+      "sha256": "74DCA260FBF5FF0A55B6D76ADB34033FABDA0717C8B119D0ADA57BE5C6B54D2F"
+    },
+    {
+      "path": "worker-verification/process.receipt.json",
+      "sha256": "F08C139C6BEE97EC2D2417DBAA1B84CD502083D409BC44A558E2DB1FAC90C6DD"
+    },
+    {
+      "path": "committed-full-debug/process.receipt.json",
+      "sha256": "715BCDFD167B19005C361E5D815C26B651FD95C532DB4BFC4FFCBDFB9434BB79"
+    },
+    {
+      "path": "committed-full-debug/stdout.txt",
+      "sha256": "1215F3288EA2875C11C52519B371381B51BDE867A10575F0FBB91E736FC0BB0D"
+    },
+    {
+      "path": "committed-full-debug/stderr.txt",
+      "sha256": "9B6202A331FF04A8614784FB51C9DE20B86CE1F14725627AF92A7BA70760FBBB"
+    },
+    {
+      "path": "isolated-set-suspension/process.receipt.json",
+      "sha256": "AD63F55A0C81EA7B22E433B71198D839CE8967713974FE1E3809850BAD709CCC"
+    },
+    {
+      "path": "isolated-set-suspension/tests.trx",
+      "sha256": "8180D67ACEC0E0B334B398A229937DAF1B26196219E342AD640C9731A69301E4"
+    },
+    {
+      "path": "corrected-full-white-debug/process.receipt.json",
+      "sha256": "A13880202805E87C4F2BB25D70086017104CA3DEF91F5AA00D653600CCB2ED99"
+    },
+    {
+      "path": "corrected-full-white-debug/tests.trx",
+      "sha256": "CF48ADAB85A68A7E9E2CB61FEBF32F9A849124EB09B1240001DEB5766450D6BF"
+    },
+    {
+      "path": "codec-funding-release/process.receipt.json",
+      "sha256": "A254FF4961F54052EB0AB86BDF40B9E5A578DD57DFE29A61EBD8C5AA05B70C04"
+    },
+    {
+      "path": "codec-funding-release/tests.trx",
+      "sha256": "911985585C9709A26DF9E2FAC0B5CFA7AAFBD590C7B0DE24FD0F03B28ADA4BEB"
+    }
+  ]
+}
