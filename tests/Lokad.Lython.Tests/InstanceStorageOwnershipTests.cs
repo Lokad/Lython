@@ -166,7 +166,8 @@ public sealed class InstanceStorageOwnershipTests
         using var cancellation = new CancellationTokenSource();
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { CancellationToken = cancellation.Token });
         var hook = new CancelCopy(cancellation);
-        var hookType = new PyType("Cancel", [], new() { ["__deepcopy__"] = hook });
+        var objectType = Assert.IsType<PyType>(context.State.BuiltinVariables["object"]);
+        var hookType = new PyType("Cancel", [objectType], new() { ["__deepcopy__"] = hook });
         var child = new PyInstance(hookType, context.MemoryGovernor, Span);
         var source = new PyInstance(Type(), context.MemoryGovernor, Span);
         source.SetAttribute("child", child);
