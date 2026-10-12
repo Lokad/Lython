@@ -24,6 +24,13 @@ and funded escaped storage after abandonment. A CSV body-conversion error leaves
 the reader resumable and its scratch funded until EOF or collection; this evidence
 does not establish GC-independent reclamation. Caller-retained readers may resume.
 
+The fixed file-retention control copies64 distinct8 KiB inputs at the same
+256 KiB execution cap, checking every output byte and an independently assembled
+manifest. Dropping buffers or keeping only the first buffer completes; retaining
+all input buffers rejects before manifest publication. This is containment
+evidence, not an additional timed comparison lane. Host-owned completed output
+files remain outside guest execution accounting.
+
 Check the same source and fixtures with an installed CPython:
 
 ```powershell
