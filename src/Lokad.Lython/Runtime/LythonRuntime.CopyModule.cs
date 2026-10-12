@@ -433,13 +433,13 @@ internal sealed partial class LythonRuntime
     private static object CopyList(PyList list, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth)
     {
         var clone = new PyList([], context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes, span);
         memo.Remember(list, clone);
         foreach (var item in list)
         {
             clone.Add(depth == CopyDepth.Deep ? CopyValue(item, CopyDepth.Deep, context, span, memo, graphDepth + 1) : item);
             context.ObserveCollectionCount(clone.Count, span);
         }
-        context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes);
 
         return clone;
     }
@@ -447,6 +447,7 @@ internal sealed partial class LythonRuntime
     private static object CopyDict(PyDict dict, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth)
     {
         var clone = new PyDict(context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes, span);
         memo.Remember(dict, clone);
         foreach (var pair in dict)
         {
@@ -455,7 +456,6 @@ internal sealed partial class LythonRuntime
             clone.SetItem(ValidateDictionaryKey(key, span), value);
             context.ObserveCollectionCount(clone.Count, span);
         }
-        context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes);
 
         return clone;
     }
@@ -463,6 +463,7 @@ internal sealed partial class LythonRuntime
     private static object CopySet(PySet set, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth)
     {
         var clone = new PySet(context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes, span);
         memo.Remember(set, clone);
         foreach (var item in set)
         {
@@ -471,7 +472,6 @@ internal sealed partial class LythonRuntime
                 span));
             context.ObserveCollectionCount(clone.Count, span);
         }
-        context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes);
 
         return clone;
     }
@@ -511,13 +511,13 @@ internal sealed partial class LythonRuntime
     private static object CopyDeque(PyDeque deque, CopyDepth depth, ExecutionContext context, LythonSourceSpan span, CopyMemo memo, int graphDepth)
     {
         var clone = new PyDeque(deque.MaxLength, context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes, span);
         memo.Remember(deque, clone);
         foreach (var item in deque)
         {
             clone.Append(depth == CopyDepth.Deep ? CopyValue(item, CopyDepth.Deep, context, span, memo, graphDepth + 1) : item);
         }
         context.ObserveCollectionCount(clone.Count, span);
-        context.Services.State.CallTemporaries.TrackFreshMutable(clone, clone.CommittedStorageBytes);
         return clone;
     }
 

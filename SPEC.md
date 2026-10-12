@@ -2748,6 +2748,12 @@ keeps its live charges. Registration can therefore deny earlier before input
 callbacks under tight budgets. Counter input uses the same key-hashability
 validation as dictionaries, rejecting unhashable collections and tuple contents.
 
+The same early ownership rule applies to mutable list, dictionary, set and deque
+deep-copy results: registration precedes memo publication and copying members.
+Failed hooks leave dropped partial results reclaimable; memo aliases retained by
+callbacks keep their actual storage funded. Registration denial refunds the
+unpublished result, and cyclic/shared memo identity remains unchanged.
+
 Properties retain a 128-byte shell plus a conservative 64-byte allowance for
 each numeric accessor or documentation field, including Boolean and CLR integer
 ingress values. Aliased fields pay separately; ordinary callable, string and
