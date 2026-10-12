@@ -104,14 +104,18 @@ public sealed class Utf16CodecAccountingTests
     {
         var host = new MockLythonHost();
         host.SeedBytes("/input", [0x3d, 0xd8, 0x00, 0xde]);
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 285 });
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 65536 });
         var state = new LythonRuntime.ExecutionContext.ChunkedTextFileReadState("/input", context,
             LythonRuntime.TextEncodingMode.Utf16LittleEndian, LythonRuntime.TextErrorMode.Strict,
             LythonRuntime.TextNewlineMode.PreserveUniversal, 1);
         var before = context.MemoryGovernor.CurrentCommittedBytes;
+        // Preserve the original post-construction decoder headroom.
+        using var pressure = context.MemoryGovernor.ReserveTemporary(65536 - context.MemoryGovernor.CurrentAccountedBytes
+            - (285 - ChargeReclamationPool.EntryChargeBytes), null);
         try { Assert.Equal("MemoryError", Assert.Throws<LythonRuntimeException>(state.Prime).ExceptionType); }
         finally { state.Release(); }
         Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
+        pressure.Dispose();
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }
