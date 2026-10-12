@@ -6,6 +6,21 @@ using Lokad.Lython.Benchmarks.Comparison;
 
 // Deliberately controlled process faults, with no Python installation needed.
 // This executable is a test build dependency, never a runtime package input.
+if (args[0] is "actual-worker" or "actual-once")
+{
+    var catalog = ComparisonManifest.Load(args[1]);
+    if (args[0] == "actual-worker")
+        await new LythonComparisonWorker(catalog).RunAsync(Console.OpenStandardInput(), Console.OpenStandardOutput());
+    else await LythonOnceWorker.RunAsync(catalog, Console.OpenStandardOutput());
+    return 0;
+}
+if (args[0] == "file-hold")
+{
+    using var heldFile = File.Create(Path.Combine(Environment.CurrentDirectory, "held.bin"));
+    Console.WriteLine(Environment.CurrentDirectory);
+    await Task.Delay(Timeout.Infinite);
+    return 0;
+}
 if (args[0] == "stack-guard")
 {
     return await StackGuardFixture.RunAsync(args[1], args[2]);

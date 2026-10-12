@@ -9,18 +9,21 @@ using Microsoft.Win32.SafeHandles;
 namespace Lokad.Lython.Benchmarks.Comparison;
 
 internal sealed record WorkerLaunch(string Executable, IReadOnlyList<string> Arguments, string WorkingDirectory,
-    bool RemoveSupervisorTieringOverride = false);
+    bool RemoveSupervisorTieringOverride = false, bool FileFixtures = false);
 
 // Trusted benchmark workers only. Ownership is established before worker code
 // runs, and survives the root exiting while a descendant still holds a pipe.
 // No name-based enumeration or machine-wide process termination is used.
 internal sealed class OwnedWorkerProcess : IAsyncDisposable
 {
+    internal const string FixtureDirectoryPrefix = "lython-comparison-files-";
+    internal string? FixtureDirectory => _fixtureDirectory;
     private Process? _linuxRoot;
     private NativeHandle? _windowsJob;
     private NativeHandle? _windowsRoot;
     private int _linuxGroup;
     private string? _bootstrapDirectory;
+    private string? _fixtureDirectory;
     private bool _disposed;
 
     public int ProcessId { get; private set; }
@@ -41,6 +44,11 @@ internal sealed class OwnedWorkerProcess : IAsyncDisposable
         var owned = new OwnedWorkerProcess();
         try
         {
+            if (launch.FileFixtures)
+            {
+                owned._fixtureDirectory = Directory.CreateTempSubdirectory(FixtureDirectoryPrefix).FullName;
+                launch = launch with { WorkingDirectory = owned._fixtureDirectory };
+            }
             if (OperatingSystem.IsWindows()) owned.StartWindows(launch);
             else if (OperatingSystem.IsLinux()) await owned.StartLinuxAsync(launch, cancellationToken).ConfigureAwait(false);
             else throw new PlatformNotSupportedException("Comparison process ownership requires Windows jobs or Linux sessions.");
@@ -223,7 +231,21 @@ internal sealed class OwnedWorkerProcess : IAsyncDisposable
                 File.Delete(Path.Combine(_bootstrapDirectory, "go"));
                 Directory.Delete(_bootstrapDirectory);
             }
+            if (_fixtureDirectory is not null)
+            {
+                ValidateFixtureDirectory(_fixtureDirectory);
+                if (Directory.Exists(_fixtureDirectory)) Directory.Delete(_fixtureDirectory, recursive: true);
+            }
         }
+    }
+
+    internal static void ValidateFixtureDirectory(string root)
+    {
+        var full = Path.GetFullPath(root);
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        if (!Path.IsPathFullyQualified(root) || !Path.GetFileName(full).StartsWith(FixtureDirectoryPrefix, StringComparison.Ordinal)
+            || !string.Equals(Path.GetDirectoryName(full), Path.TrimEndingDirectorySeparator(Path.GetFullPath(Path.GetTempPath())), comparison))
+            throw new InvalidDataException("File jobs require a supervisor-owned temporary directory.");
     }
 
     private static void Check(bool success)

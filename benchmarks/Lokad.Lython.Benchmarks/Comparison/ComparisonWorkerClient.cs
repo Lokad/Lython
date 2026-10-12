@@ -41,7 +41,8 @@ internal sealed class ComparisonWorkerClient : IAsyncDisposable
     }
 
     public static async Task<ComparisonWorkerClient> StartAsync(WorkerLaunch launch, string engine,
-        string catalogSha256, CancellationToken cancellationToken = default, TimeSpan? startupDeadline = null)
+        string catalogSha256, CancellationToken cancellationToken = default, TimeSpan? startupDeadline = null,
+        bool fileFixtures = false)
     {
         var deadline = startupDeadline ?? StartupDeadline;
         ValidateDeadline(deadline);
@@ -50,7 +51,7 @@ internal sealed class ComparisonWorkerClient : IAsyncDisposable
         ComparisonWorkerClient? client = null;
         try
         {
-            client = new ComparisonWorkerClient(await OwnedWorkerProcess.StartAsync(launch, startup.Token).ConfigureAwait(false));
+            client = new ComparisonWorkerClient(await OwnedWorkerProcess.StartAsync(launch with { FileFixtures = fileFixtures }, startup.Token).ConfigureAwait(false));
             client.Identity = await client.UnderDeadlineAsync(async token =>
             {
                 using var ready = await client._frames.Reader.ReadAsync(token).ConfigureAwait(false);
@@ -65,6 +66,8 @@ internal sealed class ComparisonWorkerClient : IAsyncDisposable
                     || identity.GetProperty("maximumBatchIterations").GetInt32() != ComparisonProtocol.MaximumBatchIterations
                     || identity.GetProperty("maximumBatchSeconds").GetInt32() != ComparisonProtocol.MaximumBatchSeconds)
                     throw new InvalidDataException("Wrong worker identity, catalog, process or protocol bounds.");
+                if (fileFixtures && identity.GetProperty("fileFixtureDirectory").GetString() != client._process.FixtureDirectory)
+                    throw new InvalidDataException("Worker did not enter its owned file fixture directory.");
                 client._clockFrequency = identity.GetProperty("clockFrequency").GetInt64();
                 if (client._clockFrequency is <= 0 or > 1_000_000_000_000)
                     throw new InvalidDataException("Invalid worker clock frequency.");
@@ -137,6 +140,7 @@ internal sealed class ComparisonWorkerClient : IAsyncDisposable
                             || (operation == "verify" ? result.ElapsedTicks is not null : result.ElapsedTicks is null or <= 0)
                             || (result.ElapsedTicks is { } ticks && (double)ticks / _clockFrequency > RequestDeadline.TotalSeconds)
                             || result.ActualOutputSha256 != (lane == "compile" ? null : workload.ExpectedOutputSha256)
+                            || result.ActualFilesSha256 != (lane == "compile" ? null : workload.ExpectedFilesSha256)
                             || result.Reason is not null)
                             throw new InvalidDataException("Incomplete or inconsistent successful worker result.");
                     }

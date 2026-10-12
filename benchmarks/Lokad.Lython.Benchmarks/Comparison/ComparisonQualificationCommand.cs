@@ -151,14 +151,14 @@ internal static class ComparisonQualificationCommand
                                     if (FileIdentity(payloadPath!).Sha256 != payload!.Sha256) throw new InvalidDataException("Prepared one-case payload changed.");
                                     var observation = await FreshProcessRunner.RunAsync(lython
                                         ? new(dotnet, [assembly, "--compare", "once", "--catalog", payloadPath!], root, RemoveSupervisorTieringOverride: true)
-                                        : new(python, ["-I", "-S", helper, "--once", "--catalog", payloadPath!], root, RemoveSupervisorTieringOverride: true), payload!,
+                                        : new(python, ["-I", "-S", .. (manifest.Cases.Values.Any(w => w.Files is not null) ? new[] { "-X", "utf8" } : Array.Empty<string>()), helper, "--once", "--catalog", payloadPath!], root, RemoveSupervisorTieringOverride: true), payload!,
                                         lython ? session.LythonIdentity : session.PythonIdentity, batchDeadline.Token).ConfigureAwait(false);
                                     session.Fresh.Add(new(lython, request, observation));
                                     if (observation.Status != "Equivalent") return observation.Response with { RequestId = request, ElapsedTicks = null };
                                     ticks = checked(ticks + observation.ElapsedTicks!.Value);
                                 }
                                 return new(ComparisonProtocol.Version, request, row.Workload.Id, "Completed", count, ticks, Stopwatch.Frequency,
-                                    row.Workload.SourceSha256, row.Workload.FixtureSha256, row.Workload.ExpectedOutputSha256, row.Workload.ExpectedOutputSha256, null);
+                                    row.Workload.SourceSha256, row.Workload.FixtureSha256, row.Workload.ExpectedOutputSha256, row.Workload.ExpectedOutputSha256, null, row.Workload.ExpectedFilesSha256);
                             }
                         }
                         finally
@@ -169,8 +169,8 @@ internal static class ComparisonQualificationCommand
 
                         async Task OpenAsync()
                         {
-                            left = await ComparisonWorkerClient.StartAsync(new(dotnet, [assembly, "--compare", "worker", "--catalog", catalog], root, RemoveSupervisorTieringOverride: true), "Lython", manifest.Sha256, caseDeadline.Token).ConfigureAwait(false);
-                            right = await ComparisonWorkerClient.StartAsync(new(python, ["-I", "-S", helper, "--catalog", catalog], root, RemoveSupervisorTieringOverride: true), "CPython", manifest.Sha256, caseDeadline.Token).ConfigureAwait(false);
+                            left = await ComparisonWorkerClient.StartAsync(new(dotnet, [assembly, "--compare", "worker", "--catalog", catalog], root, RemoveSupervisorTieringOverride: true), "Lython", manifest.Sha256, caseDeadline.Token, fileFixtures: manifest.Cases.Values.Any(w => w.Files is not null)).ConfigureAwait(false);
+                            right = await ComparisonWorkerClient.StartAsync(new(python, ["-I", "-S", .. (manifest.Cases.Values.Any(w => w.Files is not null) ? new[] { "-X", "utf8" } : Array.Empty<string>()), helper, "--catalog", catalog], root, RemoveSupervisorTieringOverride: true), "CPython", manifest.Sha256, caseDeadline.Token, fileFixtures: manifest.Cases.Values.Any(w => w.Files is not null)).ConfigureAwait(false);
                             QualificationEvidence.ValidateProfile(left.Identity, right.Identity, before, toolchains);
                             ValidateLythonFiles(left.Identity, FileIdentity(assembly), FileIdentity(typeof(LythonEngine).Assembly.Location));
                             CheckFiles();

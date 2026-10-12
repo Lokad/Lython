@@ -29,7 +29,7 @@ internal static class FreshProcessRunner
         int exitCode;
         try
         {
-            process = await OwnedWorkerProcess.StartAsync(launch, bounded.Token).ConfigureAwait(false);
+            process = await OwnedWorkerProcess.StartAsync(launch with { FileFixtures = manifest.Cases.Values.Single().Files is not null }, bounded.Token).ConfigureAwait(false);
             stdout = DrainAsync(process.Output, ComparisonProtocol.MaximumFrameBytes + 4, FailStream);
             stderr = DrainAsync(process.Error, 64 * 1024, FailStream);
             process.Input.Dispose(); // File payload; no stdin exchange in this lane.
@@ -66,6 +66,9 @@ internal static class FreshProcessRunner
         if (extra is not null) throw new InvalidDataException("Fresh worker emitted more than one result.");
         var root = frame.RootElement;
         var identity = root.GetProperty("identity");
+        if (manifest.Cases.Values.Single().Files is not null
+            && identity.GetProperty("fileFixtureDirectory").GetString() != process!.FixtureDirectory)
+            throw new InvalidDataException("Fresh worker did not enter its owned fixture directory.");
         ValidateIdentity(identity, preparedIdentity, manifest, process!.ProcessId);
         var workload = manifest.Cases.Values.Single();
         var row = root.GetProperty("response");
@@ -81,6 +84,7 @@ internal static class FreshProcessRunner
         if (response.Status == "Equivalent")
         {
             if (response.CompletedInvocations != 1 || response.ActualOutputSha256 != workload.ExpectedOutputSha256
+                || response.ActualFilesSha256 != workload.ExpectedFilesSha256
                 || response.Reason is not null || elapsed <= 0)
                 throw new InvalidDataException("A fresh process must complete exactly one correct invocation.");
         }

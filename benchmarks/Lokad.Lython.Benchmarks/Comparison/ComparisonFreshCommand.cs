@@ -63,10 +63,10 @@ internal static class ComparisonFreshCommand
             // samples. Shut both persistent workers down before launching once.
             await using (var lython = await ComparisonWorkerClient.StartAsync(new WorkerLaunch(dotnet,
                 [assembly, "--compare", "worker", "--catalog", catalog], Environment.CurrentDirectory),
-                "Lython", manifest.Sha256, cancellationToken).ConfigureAwait(false))
+                "Lython", manifest.Sha256, cancellationToken, fileFixtures: manifest.Cases.Values.Any(w => w.Files is not null)).ConfigureAwait(false))
             await using (var reference = await ComparisonWorkerClient.StartAsync(new WorkerLaunch(python,
-                ["-I", "-S", pythonWorker, "--catalog", catalog], Environment.CurrentDirectory),
-                "CPython", manifest.Sha256, cancellationToken).ConfigureAwait(false))
+                ["-I", "-S", .. (manifest.Cases.Values.Any(w => w.Files is not null) ? new[] { "-X", "utf8" } : Array.Empty<string>()), pythonWorker, "--catalog", catalog], Environment.CurrentDirectory),
+                "CPython", manifest.Sha256, cancellationToken, fileFixtures: manifest.Cases.Values.Any(w => w.Files is not null)).ConfigureAwait(false))
             {
                 lythonIdentity = lython.Identity;
                 pythonIdentity = reference.Identity;
@@ -102,7 +102,7 @@ internal static class ComparisonFreshCommand
                     rows.Add(new { engine = "Lython", payload.Path, payloadSha256 = payload.Manifest.Sha256, observation = left });
                     Checkpoint();
                     var right = await FreshProcessRunner.RunAsync(new WorkerLaunch(python,
-                        ["-I", "-S", pythonWorker, "--once", "--catalog", payload.Path], Environment.CurrentDirectory),
+                        ["-I", "-S", .. (manifest.Cases.Values.Any(w => w.Files is not null) ? new[] { "-X", "utf8" } : Array.Empty<string>()), pythonWorker, "--once", "--catalog", payload.Path], Environment.CurrentDirectory),
                         payload.Manifest, pythonIdentity!.Value, caseDeadline.Token).ConfigureAwait(false);
                     rows.Add(new { engine = "CPython", payload.Path, payloadSha256 = payload.Manifest.Sha256, observation = right });
                     if (left.Status != "Equivalent" || right.Status != "Equivalent") failures++;

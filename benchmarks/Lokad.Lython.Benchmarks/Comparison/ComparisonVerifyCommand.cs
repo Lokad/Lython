@@ -73,14 +73,14 @@ internal static class ComparisonVerifyCommand
         {
             await using var lython = await ComparisonWorkerClient.StartAsync(new WorkerLaunch(dotnet,
                 [assembly, "--compare", "worker", "--catalog", catalog], Environment.CurrentDirectory),
-                "Lython", manifest.Sha256, cancellationToken).ConfigureAwait(false);
+                "Lython", manifest.Sha256, cancellationToken, fileFixtures: manifest.Cases.Values.Any(w => w.Files is not null)).ConfigureAwait(false);
             lythonIdentity = lython.Identity;
             ValidateLythonFiles(lython.Identity, launched.adapter, launched.library);
             if (FileIdentity(dotnet).Sha256 != launched.dotnet.Sha256)
                 throw new InvalidDataException("The selected .NET executable changed during startup.");
             await using var reference = await ComparisonWorkerClient.StartAsync(new WorkerLaunch(python,
-                ["-I", "-S", pythonWorker, "--catalog", catalog], Environment.CurrentDirectory),
-                "CPython", manifest.Sha256, cancellationToken).ConfigureAwait(false);
+                ["-I", "-S", .. (manifest.Cases.Values.Any(w => w.Files is not null) ? new[] { "-X", "utf8" } : Array.Empty<string>()), pythonWorker, "--catalog", catalog], Environment.CurrentDirectory),
+                "CPython", manifest.Sha256, cancellationToken, fileFixtures: manifest.Cases.Values.Any(w => w.Files is not null)).ConfigureAwait(false);
             pythonIdentity = reference.Identity;
             if (reference.Identity.GetProperty("executableSha256").GetString() != launched.python.Sha256
                 || reference.Identity.GetProperty("adapterSha256").GetString() != launched.pythonWorker.Sha256

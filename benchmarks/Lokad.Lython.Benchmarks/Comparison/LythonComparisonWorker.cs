@@ -6,12 +6,14 @@ using System.Text.Json;
 
 namespace Lokad.Lython.Benchmarks.Comparison;
 
-internal sealed class LythonComparisonWorker(ComparisonManifest manifest)
+internal sealed class LythonComparisonWorker(ComparisonManifest manifest, string? fileDirectory = null)
 {
     private readonly LythonEngine _engine = new();
     private readonly ComparisonHost _host = new();
     private readonly Dictionary<string, LythonCompiledScript> _compiled = new(StringComparer.Ordinal);
     private readonly HashSet<string> _verified = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, ComparisonFileHost> _files = new(StringComparer.Ordinal);
+    private IReadOnlyDictionary<string, byte[]>? _lastFiles;
     private int _lastRequestId;
 
     public async Task RunAsync(Stream input, Stream output, CancellationToken cancellationToken = default)
@@ -59,7 +61,8 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest)
         {
             // Reuse one compilation and prove fresh state twice before a batch.
             var script = _compiled.TryGetValue(workload.Id, out var existing) ? existing : Compile(workload);
-            for (; completed < 2; completed++) actual = Invoke(script, workload);
+            var files = FileHost(workload);
+            for (; completed < 2; completed++) actual = Invoke(script, workload, files);
             _compiled[workload.Id] = script;
             _verified.Add(workload.Id);
             return Response(workload, requestId, "Equivalent", completed, null, actual);
@@ -80,6 +83,7 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest)
         var completed = 0;
         string? actual = null;
         LythonCompiledScript? lastCompiled = null;
+        var files = FileHost(workload);
         var started = Stopwatch.GetTimestamp();
         try
         {
@@ -90,7 +94,7 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest)
                     throw new WorkerJobException("Timeout", "Batch exceeded its internal 60-second ceiling.");
                 var script = lane == "warm" ? _compiled[workload.Id] : Compile(workload);
                 if (lane == "compile") lastCompiled = script;
-                else actual = Invoke(script, workload);
+                else actual = Invoke(script, workload, files);
             }
             var elapsedTicks = Stopwatch.GetTimestamp() - started;
             // Retain the final compiled object; hashing/artifact encoding stays
@@ -113,17 +117,35 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest)
         return script;
     }
 
-    private string Invoke(LythonCompiledScript script, ComparisonWorkload workload)
+    private ComparisonFileHost? FileHost(ComparisonWorkload workload)
+    {
+        if (_files.TryGetValue(workload.Id, out var existing)) return existing;
+        if (workload.Files is not { } fixture) return null;
+        var host = new ComparisonFileHost(fixture, fileDirectory ?? Environment.CurrentDirectory);
+        _files.Add(workload.Id, host);
+        return host;
+    }
+
+    private string Invoke(LythonCompiledScript script, ComparisonWorkload workload, ComparisonFileHost? files)
     {
         // Default per-invocation public options/context/capture/projection stay
-        // inside timing. The host exposes no ambient IO or subprocess capability.
-        var result = script.Run(_host);
+        // inside timing. File cases expose only the declared fixture directory.
+        _lastFiles = null;
+        try { files?.Reset(); }
+        catch (IOException error) { throw new WorkerJobException("Failure", "File fixture reset failed: " + error.Message); }
+        var result = script.Run((ILythonHost?)files ?? _host);
         if (!result.Success)
             throw new WorkerJobException(result.DeniedReservationBytes > 0 || result.Failure?.ExceptionType == "MemoryError"
                 ? "BudgetDenied" : "Failure", result.Failure?.Message ?? "Lython execution failed.", result.StandardOutput);
         if (result.ExitCode is not null || result.ReturnValue is not null || result.StandardError.Length != 0
             || !string.Equals(result.StandardOutput, workload.ExpectedOutput, StringComparison.Ordinal))
             throw new WorkerJobException("Mismatch", "Complete public result differs from the independent golden.", result.StandardOutput);
+        if (files is not null)
+        {
+            try { _lastFiles = files.ReadOutputs(); }
+            catch (Exception error) when (error is IOException or InvalidDataException)
+            { throw new WorkerJobException("Mismatch", error.Message, result.StandardOutput); }
+        }
         return result.StandardOutput;
     }
 
@@ -131,7 +153,8 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest)
         long? elapsedTicks, string? actual, string? reason = null)
         => new(ComparisonProtocol.Version, requestId, workload.Id, status, completed, elapsedTicks,
             Stopwatch.Frequency, workload.SourceSha256, workload.FixtureSha256, workload.ExpectedOutputSha256,
-            actual is null ? null : ComparisonProtocol.Digest(actual), reason);
+            actual is null ? null : ComparisonProtocol.Digest(actual), reason,
+            actual is not null && reason is null && _lastFiles is not null ? ComparisonFileFixture.Digest(_lastFiles) : null);
 
     internal static object CreateIdentity(ComparisonManifest manifest, bool includeFileDigests = true)
     {
@@ -143,6 +166,7 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest)
             protocolVersion = ComparisonProtocol.Version, status = "Ready", engine = "Lython",
             catalogSha256 = manifest.Sha256, catalogVersion = WorkloadCatalog.Version,
             processId = Environment.ProcessId, runtime = RuntimeInformation.FrameworkDescription,
+            fileFixtureDirectory = manifest.Cases.Values.Any(c => c.Files is not null) ? Environment.CurrentDirectory : null,
             runtimeVersion = Environment.Version.ToString(), architecture = RuntimeInformation.ProcessArchitecture.ToString(),
             platform = RuntimeInformation.OSDescription, processorCount = Environment.ProcessorCount,
             serverGc = GCSettings.IsServerGC, gcLatencyMode = GCSettings.LatencyMode.ToString(),
@@ -192,7 +216,9 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest)
 
 internal sealed record WorkerResponse(int ProtocolVersion, int RequestId, string CaseId, string Status,
     int CompletedInvocations, long? ElapsedTicks, long ClockFrequency, string SourceSha256, string FixtureSha256,
-    string ExpectedOutputSha256, string? ActualOutputSha256, string? Reason);
+    string ExpectedOutputSha256, string? ActualOutputSha256, string? Reason,
+    [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    string? ActualFilesSha256 = null);
 
 internal sealed class ComparisonHost : ILythonHost
 {

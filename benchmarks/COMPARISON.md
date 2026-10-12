@@ -66,6 +66,43 @@ local regression diagnostics. They do not provide a CPython comparison.
 
 ## Reference profile
 
+### Complete file scripts
+
+The `representative` catalog adds the four existing CSV, text, JSON-lines and
+file-manifest scripts at 0, 16 and 1,024 fixture repeats. It reuses the existing
+workers and verifier; it does not establish a timed baseline. Generate it with:
+
+```text
+dotnet <benchmark.dll> --compare list --profile representative --out <catalog.json>
+```
+
+File fixtures declare bounded canonical-base64 input maps and independent output
+goldens. Both engines use actual disk files in a supervisor-owned temporary cwd.
+Every execution resets/stages its inputs, then checks all declared output bytes
+and rejects unexpected files. **Reset, staging and byte checks are inside both
+persistent execution clocks**; file-digest encoding, transport and hashing stay
+outside. Compilation-only batches do not execute or stage files. Fresh-process
+timing additionally includes directory creation and launch. Parent-owned directory
+cleanup follows pipe drain and exit, outside the sample but inside the group deadline.
+The parent removes its directory after normal exit, faults or cancellation;
+workers never create an unowned temporary root. Sources are unchanged and host
+effects in Lython remain mediated through the fixture host, including ranged reads.
+
+The reference is launched with `-I -S -X utf8` for catalogs containing file jobs,
+matching Lython's default UTF-8 text contract on Windows and Linux. Pure catalogs
+retain `-I -S`. Worker identities and receipts retain the actual flags and cwd;
+qualification still requires a matching frozen machine/reference profile and
+all existing eligibility checks. A local correctness/timer smoke does not qualify
+comparative timings. Old workers without file-digest support cannot be used as
+successful file-job baselines.
+
+Successful responses include a separate file SHA-256 alongside stdout SHA-256:
+32-bit big-endian file count, then each ordinal UTF-16-sorted path's UTF-8 length
+and bytes, followed by content length and bytes. Missing, wrong-length,
+equal-length-but-wrong or extra output files cannot become timing samples.
+
+### Pinned milestone toolchains
+
 The first reference is independently built **CPython 3.13.16**, Linux x86_64,
 ordinary GIL-enabled Release, with **PGO and LTO**, no debug build and no
 experimental JIT. Both engines run on the same dedicated Linux VM, initially

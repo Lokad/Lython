@@ -85,19 +85,19 @@ internal static class ComparisonMicroCommand
             var removeOverride = OperatingSystem.IsLinux() && Environment.GetEnvironmentVariable("DOTNET_TieredCompilation") == "0";
             await using var baseline = await ComparisonWorkerClient.StartAsync(new WorkerLaunch(dotnet,
                 [oldAdapter, "--compare", "worker", "--catalog", catalog], Environment.CurrentDirectory, removeOverride),
-                "Lython", manifest.Sha256, token).ConfigureAwait(false);
+                "Lython", manifest.Sha256, token, fileFixtures: manifest.Cases.Values.Any(w => w.Files is not null)).ConfigureAwait(false);
             identities.Add("baseline", baseline.Identity);
             ComparisonVerifyCommand.ValidateLythonFiles(baseline.Identity,
                 ComparisonVerifyCommand.FileIdentity(oldAdapter), ComparisonVerifyCommand.FileIdentity(oldLibrary));
             await using var candidate = await ComparisonWorkerClient.StartAsync(new WorkerLaunch(dotnet,
                 [newAdapter, "--compare", "worker", "--catalog", catalog], Environment.CurrentDirectory, removeOverride),
-                "Lython", manifest.Sha256, token).ConfigureAwait(false);
+                "Lython", manifest.Sha256, token, fileFixtures: manifest.Cases.Values.Any(w => w.Files is not null)).ConfigureAwait(false);
             identities.Add("candidate", candidate.Identity);
             ComparisonVerifyCommand.ValidateLythonFiles(candidate.Identity,
                 ComparisonVerifyCommand.FileIdentity(newAdapter), ComparisonVerifyCommand.FileIdentity(newLibrary));
             await using var reference = await ComparisonWorkerClient.StartAsync(new WorkerLaunch(python,
-                ["-I", "-S", pythonWorker, "--catalog", catalog], Environment.CurrentDirectory, removeOverride),
-                "CPython", manifest.Sha256, token).ConfigureAwait(false);
+                ["-I", "-S", .. (manifest.Cases.Values.Any(w => w.Files is not null) ? new[] { "-X", "utf8" } : Array.Empty<string>()), pythonWorker, "--catalog", catalog], Environment.CurrentDirectory, removeOverride),
+                "CPython", manifest.Sha256, token, fileFixtures: manifest.Cases.Values.Any(w => w.Files is not null)).ConfigureAwait(false);
             identities.Add("CPython", reference.Identity);
             if (reference.Identity.GetProperty("executableSha256").GetString() != ComparisonVerifyCommand.FileIdentity(python).Sha256
                 || reference.Identity.GetProperty("adapterSha256").GetString() != ComparisonVerifyCommand.FileIdentity(pythonWorker).Sha256
@@ -146,6 +146,7 @@ internal static class ComparisonMicroCommand
                 || response.CompletedInvocations != count || response.ActualOutputSha256 != workload.ExpectedOutputSha256
                 || response.SourceSha256 != workload.SourceSha256 || response.FixtureSha256 != workload.FixtureSha256
                 || response.ExpectedOutputSha256 != workload.ExpectedOutputSha256 || response.ClockFrequency <= 0
+                || response.ActualFilesSha256 != workload.ExpectedFilesSha256
                 || (phase == "verify" ? response.ElapsedTicks is not null : response.ElapsedTicks is null or <= 0))
                 throw new InvalidDataException("Unsuccessful, incomplete or mismatched microbenchmark response.");
             return response.ElapsedTicks is { } ticks ? (double)ticks / response.ClockFrequency : 0;

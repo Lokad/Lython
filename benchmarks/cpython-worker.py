@@ -16,6 +16,100 @@ MAX_CATALOG_BYTES = 64 * 1024 * 1024
 MAX_BATCH_ITERATIONS = 1_000_000
 MAX_BATCH_SECONDS = 60
 MAX_OUTPUT_BYTES = 16 * 1024 * 1024
+MAX_FIXTURE_FILES = 64
+FIXTURE_DIRECTORY_PREFIX = 'lython-comparison-files-'
+
+
+def file_digest(files):
+    result = hashlib.sha256()
+    result.update(struct.pack('>i', len(files)))
+    for name in sorted(files, key=lambda value: value.encode('utf-16-be', errors='strict')):
+        path = name.encode('utf-8', errors='strict')
+        result.update(struct.pack('>i', len(path)))
+        result.update(path)
+        result.update(struct.pack('>i', len(files[name])))
+        result.update(files[name])
+    return result.hexdigest()
+
+
+def file_fixture(fixture):
+    if 'inputFiles' not in fixture and 'outputFiles' not in fixture:
+        return None
+    import base64
+    names, byte_count = set(), 0
+    def read(rows):
+        nonlocal byte_count
+        if type(rows) is not dict:
+            raise ValueError('Invalid file fixture map')
+        result = {}
+        for name, encoded in rows.items():
+            if (not 1 <= len(name.encode('utf-16-le', errors='strict')) // 2 <= 256
+                    or any(ord(c) < 32 or c in '\\:<>"|?*' for c in name)):
+                raise ValueError('Invalid fixture path')
+            for part in name.split('/'):
+                stem = part.split('.')[0].upper()
+                if (not part or part in ('.', '..') or part.endswith(('.', ' '))
+                        or stem in ('CON', 'PRN', 'AUX', 'NUL')
+                        or len(stem) == 4 and stem[:3] in ('COM', 'LPT') and stem[3] in '0123456789'):
+                    raise ValueError('Invalid fixture path segment')
+            folded = name.casefold()
+            if folded in names or len(names) >= MAX_FIXTURE_FILES:
+                raise ValueError('Duplicate or excessive file fixture paths')
+            names.add(folded)
+            if type(encoded) is not str or len(encoded) > 4 * ((MAX_OUTPUT_BYTES + 2) // 3):
+                raise ValueError('Invalid file payload')
+            payload = base64.b64decode(encoded, validate=True)
+            byte_count += len(payload)
+            if base64.b64encode(payload).decode('ascii') != encoded or byte_count > MAX_OUTPUT_BYTES:
+                raise ValueError('Noncanonical or excessive file fixture bytes')
+            result[name] = payload
+        return result
+    inputs, outputs = read(fixture['inputFiles']), read(fixture['outputFiles'])
+    for name in names:
+        parts = name.split('/')
+        if any('/'.join(parts[:n]) in names for n in range(1, len(parts))):
+            raise ValueError('Fixture file is also a parent directory')
+    return inputs, outputs
+
+
+def reset_files(case):
+    # The supervisor owns this cwd and removes it after normal exit or kill.
+    import shutil
+    root = os.getcwd()
+    if not os.path.basename(root).startswith(FIXTURE_DIRECTORY_PREFIX):
+        raise JobFailure('Failure', 'File jobs require a supervisor-owned temporary directory')
+    stage = os.path.abspath(os.path.join(root, 'job'))
+    if os.path.dirname(stage) != root:
+        raise JobFailure('Failure', 'Fixture root changed')
+    if os.path.exists(stage):
+        shutil.rmtree(stage)
+    os.makedirs(stage)
+    for name, payload in case['_files'][0].items():
+        path = os.path.join(stage, *name.split('/'))
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, 'wb') as target:
+            target.write(payload)
+    return root, stage
+
+
+def read_file_outputs(case, stage):
+    inputs, expected = case['_files']
+    for directory, _, names in os.walk(stage):
+        for name in names:
+            relative = os.path.relpath(os.path.join(directory, name), stage).replace(os.sep, '/')
+            if relative not in inputs and relative not in expected:
+                raise JobFailure('Mismatch', 'Unexpected published file: ' + relative)
+    actual = {}
+    for name, payload in expected.items():
+        path = os.path.join(stage, *name.split('/'))
+        if not os.path.isfile(path) or os.path.getsize(path) != len(payload):
+            raise JobFailure('Mismatch', 'Missing or wrong-length output file: ' + name)
+        with open(path, 'rb') as source:
+            data = source.read(len(payload) + 1)
+        if data != payload:
+            raise JobFailure('Mismatch', 'Output bytes differ: ' + name)
+        actual[name] = data
+    return actual
 
 
 def digest(text):
@@ -123,6 +217,9 @@ def load_manifest(path):
         if (type(fixture['size']) is not int or fixture['size'] != case['size']
                 or (fixture['text'] is not None and type(fixture['text']) is not str)):
             raise ValueError('Invalid fixture size/text metadata')
+        case['_files'] = file_fixture(fixture)
+        if case['_files'] is not None and file_digest(case['_files'][1]) != case.get('expectedFilesSha256'):
+            raise ValueError('Catalog output-file digest mismatch')
         for source, checksum in (('source', 'sourceSha256'), ('fixtureJson', 'fixtureSha256'),
                                  ('expectedOutput', 'expectedOutputSha256')):
             if digest(case[source]) != case[checksum]:
@@ -130,6 +227,8 @@ def load_manifest(path):
         if case['id'] in cases:
             raise ValueError('Duplicate comparison case')
         cases[case['id']] = case
+    if any(c['_files'] is not None for c in cases.values()) and not sys.flags.utf8_mode:
+        raise ValueError('File comparisons require -X utf8 to match the Lython text contract')
     return hashlib.sha256(data).hexdigest(), cases
 
 
@@ -144,7 +243,11 @@ def invoke(code, case):
     # Fresh namespace, bounded text capture/extraction and full cheap output
     # equality belong to every timed invocation. Preserve ordinary cyclic GC.
     stdout, stderr = BoundedCapture(), BoundedCapture()
+    root = stage = None
     try:
+        if case['_files'] is not None:
+            root, stage = reset_files(case)
+            os.chdir(stage)
         with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
             exec(code, {'__name__': '__main__'})
     except JobFailure:
@@ -152,18 +255,27 @@ def invoke(code, case):
     except BaseException as failure:
         raise JobFailure('BudgetDenied' if isinstance(failure, MemoryError) else 'Failure',
                          type(failure).__name__ + ': ' + str(failure), stdout.getvalue()) from failure
+    finally:
+        if root is not None:
+            os.chdir(root)
     actual = stdout.getvalue()
     if actual != case['expectedOutput'] or stderr.getvalue():
         raise JobFailure('Mismatch', 'Complete result differs from the independent golden', actual)
-    return actual
+    return (actual, read_file_outputs(case, stage)) if stage is not None else actual
 
 
 def response(case, request_id, status, completed, elapsed=None, actual=None, reason=None):
-    return {'protocolVersion': PROTOCOL_VERSION, 'requestId': request_id, 'caseId': case['id'], 'status': status,
+    files = None
+    if isinstance(actual, tuple):
+        actual, files = actual
+    result = {'protocolVersion': PROTOCOL_VERSION, 'requestId': request_id, 'caseId': case['id'], 'status': status,
             'completedInvocations': completed, 'elapsedTicks': elapsed, 'clockFrequency': 1_000_000_000,
             'sourceSha256': case['sourceSha256'], 'fixtureSha256': case['fixtureSha256'],
             'expectedOutputSha256': case['expectedOutputSha256'],
             'actualOutputSha256': None if actual is None else digest(actual), 'reason': reason}
+    if files is not None:
+        result['actualFilesSha256'] = file_digest(files)
+    return result
 
 
 def serve(path, input_stream, output_stream):
@@ -183,6 +295,7 @@ def serve(path, input_stream, output_stream):
     write_frame(output_stream, {
         'protocolVersion': PROTOCOL_VERSION, 'status': 'Ready', 'engine': 'CPython', 'catalogSha256': catalog_hash,
         'catalogVersion': 1, 'processId': os.getpid(), 'version': sys.version, 'executable': sys.executable,
+        'fileFixtureDirectory': os.getcwd() if any(c['_files'] is not None for c in cases.values()) else None,
         'executableSha256': executable_hash, 'adapterSha256': adapter_hash,
         'architecture': platform.machine(), 'platform': platform.platform(), 'flags': repr(sys.flags),
         'paths': sys.path, 'configArgs': sysconfig.get_config_var('CONFIG_ARGS'),
@@ -269,6 +382,7 @@ def serve_once(path, output_stream):
     identity = {
         'protocolVersion': PROTOCOL_VERSION, 'status': 'Ready', 'engine': 'CPython',
         'catalogSha256': catalog_hash, 'catalogVersion': 1, 'processId': os.getpid(),
+        'fileFixtureDirectory': os.getcwd() if case['_files'] is not None else None,
         'version': sys.version, 'executable': sys.executable, 'isolated': bool(sys.flags.isolated),
         'noSite': bool(sys.flags.no_site), 'gcEnabled': gc.isenabled(),
         'gilEnabled': sys._is_gil_enabled() if hasattr(sys, '_is_gil_enabled') else True,

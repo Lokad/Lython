@@ -123,6 +123,8 @@ internal sealed class ComparisonManifest
                 || ComparisonProtocol.Digest(workload.FixtureJson) != Text("fixtureSha256")
                 || ComparisonProtocol.Digest(workload.ExpectedOutput) != Text("expectedOutputSha256"))
                 throw new InvalidDataException("Catalog digest mismatch: " + workload.Id);
+            if (workload.Files is not null && workload.ExpectedFilesSha256 != Text("expectedFilesSha256"))
+                throw new InvalidDataException("Catalog output-file digest mismatch: " + workload.Id);
             if (!cases.TryAdd(workload.Id, workload))
                 throw new InvalidDataException("Duplicate comparison case: " + workload.Id);
         }

@@ -26,6 +26,8 @@
     <Compile Include="..\Lokad.Lython.Tests\Harness\FixtureAssertions.cs" Link="Harness\FixtureAssertions.cs" />
     <Compile Include="..\Lokad.Lython.Tests\Harness\SubprocessProbeRunner.cs" Link="Harness\SubprocessProbeRunner.cs" />
     <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\WorkloadCatalog.cs" Link="Benchmarks\WorkloadCatalog.cs" />
+    <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\ComparisonFileFixture.cs" Link="Benchmarks\ComparisonFileFixture.cs" />
+    <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\ComparisonFileHost.cs" Link="Benchmarks\ComparisonFileHost.cs" />
     <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\ComparisonProtocol.cs" Link="Benchmarks\ComparisonProtocol.cs" />
     <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\LythonComparisonWorker.cs" Link="Benchmarks\LythonComparisonWorker.cs" />
     <Compile Include="..\..\benchmarks\Lokad.Lython.Benchmarks\Comparison\OwnedWorkerProcess.cs" Link="Benchmarks\OwnedWorkerProcess.cs" />

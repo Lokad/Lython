@@ -12,13 +12,16 @@ internal static class LythonOnceWorker
         var status = "Unsupported";
         string? actual = null, reason = null;
         var completed = 0;
+        string? fileDigest = null;
+        var files = workload.Files is { } fixture ? new ComparisonFileHost(fixture, Environment.CurrentDirectory) : null;
         var script = new LythonEngine().Compile(workload.Source);
         if (!script.IsValid) reason = string.Join(" | ", script.Diagnostics.Select(d => d.Message));
         else
         {
             // Exactly one public invocation, with ordinary limits and a fresh
             // context. No warmup or verification run precedes it in this process.
-            var result = script.Run(host ?? new ComparisonHost());
+            files?.Reset();
+            var result = script.Run(host ?? (ILythonHost?)files ?? new ComparisonHost());
             actual = result.StandardOutput;
             if (!result.Success)
             {
@@ -31,14 +34,23 @@ internal static class LythonOnceWorker
                 status = "Mismatch";
                 reason = "Complete public result differs from the independent golden.";
             }
-            else { status = "Equivalent"; completed = 1; }
+            else
+            {
+                try
+                {
+                    if (files is not null) fileDigest = ComparisonFileFixture.Digest(files.ReadOutputs());
+                    status = "Equivalent"; completed = 1;
+                }
+                catch (Exception error) when (error is IOException or InvalidDataException)
+                { status = "Mismatch"; reason = error.Message; }
+            }
         }
         await ComparisonProtocol.WriteAsync(output, new
         {
             identity = LythonComparisonWorker.CreateIdentity(manifest, includeFileDigests: false),
             response = new WorkerResponse(ComparisonProtocol.Version, 1, workload.Id, status, completed, null,
                 Stopwatch.Frequency, workload.SourceSha256, workload.FixtureSha256, workload.ExpectedOutputSha256,
-                actual is null ? null : ComparisonProtocol.Digest(actual), reason),
+                actual is null ? null : ComparisonProtocol.Digest(actual), reason, fileDigest),
         }, cancellationToken).ConfigureAwait(false);
     }
 }

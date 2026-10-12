@@ -12,6 +12,7 @@ public sealed class ComparisonMicroTests
     [InlineData("partial")]
     [InlineData("hash")]
     [InlineData("clock")]
+    [InlineData("files")]
     public async Task UnusableWarmupRemainsRecordedAndCannotProduceMeasurements(string defect)
     {
         var attempts = new List<ComparisonMicroCommand.Attempt>();
@@ -22,6 +23,7 @@ public sealed class ComparisonMicroTests
                 "partial" => Reply(count - 1, 100),
                 "hash" => Reply(count, 100) with { ActualOutputSha256 = new string('0', 64) },
                 "clock" => Reply(count, 100) with { ClockFrequency = 0 },
+                "files" => Reply(count, 100) with { ActualFilesSha256 = new string('0', 64) },
                 _ => Reply(count, null) with { Status = defect },
             }), attempts, () => saved++, default));
         Assert.Equal(2, saved);

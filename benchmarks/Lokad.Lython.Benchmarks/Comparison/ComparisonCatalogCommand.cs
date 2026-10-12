@@ -41,8 +41,8 @@ internal static class ComparisonCatalogCommand
         for (var i = 1; i < arguments.Length; i += 2)
             if (i + 1 == arguments.Length || arguments[i] is not ("--out" or "--profile")
                 || !options.TryAdd(arguments[i], arguments[i + 1])) return ListUsage();
-        if (options.TryGetValue("--profile", out var profile) && profile is not ("quick" or "full" or "core-loop")) return ListUsage();
-        IReadOnlyList<ComparisonWorkload> workloads = WorkloadCatalog.Create();
+        if (options.TryGetValue("--profile", out var profile) && profile is not ("quick" or "full" or "core-loop" or "representative")) return ListUsage();
+        IReadOnlyList<ComparisonWorkload> workloads = profile == "representative" ? WorkloadCatalog.CreateRepresentative() : WorkloadCatalog.Create();
         if (profile is "quick" or "core-loop")
         {
             var all = workloads.ToDictionary(w => w.Id, StringComparer.Ordinal);
@@ -62,7 +62,9 @@ internal static class ComparisonCatalogCommand
         {
             schemaVersion = 1,
             catalogVersion = WorkloadCatalog.Version,
-            fixtureEncoding = "immutable literals rendered into shared source; mutable state created per invocation",
+            fixtureEncoding = profile == "representative"
+                ? "canonical base64 file maps; fresh disk staging and exact output checks inside each execution"
+                : "immutable literals rendered into shared source; mutable state created per invocation",
             entropySeed = "0x5EED1234",
             performanceQualified = false,
             cases = workloads,
@@ -83,7 +85,7 @@ internal static class ComparisonCatalogCommand
 
     private static int ListUsage()
     {
-        Console.Error.WriteLine("Usage: --compare list [--profile <full|quick|core-loop>] [--out <catalog.json>]");
+        Console.Error.WriteLine("Usage: --compare list [--profile <full|quick|core-loop|representative>] [--out <catalog.json>]");
         return 2;
     }
 }

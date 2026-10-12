@@ -33,6 +33,10 @@ internal sealed record ComparisonWorkload(
     public string SourceSha256 => Digest(Source);
     public string FixtureSha256 => Digest(FixtureJson);
     public string ExpectedOutputSha256 => Digest(ExpectedOutput);
+    [System.Text.Json.Serialization.JsonIgnore]
+    public ComparisonFileFixture? Files => ComparisonFileFixture.Parse(FixtureJson);
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ExpectedFilesSha256 => Files is { } files ? ComparisonFileFixture.Digest(files.Outputs) : null;
     internal static string Digest(string value)
         => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
 }
@@ -49,6 +53,48 @@ internal static class WorkloadCatalog
     private static readonly int[] TextSizes = [128, 1024, 8192];
     private static readonly int[] RecordSizes = [16, 128, 1024];
     private static readonly string[] ScaleNames = ["small", "medium", "large"];
+
+    public static IReadOnlyList<ComparisonWorkload> CreateRepresentative()
+    {
+        var cases = new List<ComparisonWorkload>();
+        foreach (var n in new[] { 0, 16, 1024 })
+        foreach (var name in new[] { "csv-summary", "text-summary", "json-summary", "file-manifest" })
+        {
+            var inputs = new Dictionary<string, byte[]>();
+            var outputs = new Dictionary<string, byte[]>();
+            byte[] Utf8(string text) => ComparisonProtocol.Utf8.GetBytes(text);
+            string stdout;
+            switch (name)
+            {
+                case "csv-summary":
+                    inputs["input.csv"] = Utf8("kind,amount,note\n" + Repeat("red,3,\"café,\nquoted\"\nblue,2,😀\nred,-1,skip\nblue,5,ok\n", n));
+                    outputs["report.csv"] = Utf8("kind,total\n" + (n == 0 ? "" : $"blue,{7 * n}\nred,{3 * n}\n"));
+                    stdout = $"{3 * n}\n"; break;
+                case "text-summary":
+                    inputs["input.txt"] = Utf8(Repeat("Alpha café 😀\nalpha BETA café\n\n", n));
+                    outputs["report.txt"] = Utf8(n == 0 ? "" : $"alpha={2 * n}\nbeta={n}\ncafé={2 * n}\n😀={n}\n");
+                    stdout = $"{6 * n}\n"; break;
+                case "json-summary":
+                    inputs["input.jsonl"] = Utf8(Repeat("{\"kind\":\"red\",\"amount\":3}\n{\"kind\":\"blue\",\"amount\":2}\n{\"kind\":\"red\",\"amount\":-1}\n{\"kind\":\"blue\",\"amount\":5}\n\n", n));
+                    outputs["report.json"] = Utf8(n == 0 ? "{}\n" : $"{{\"blue\":{7 * n},\"red\":{3 * n}}}\n");
+                    stdout = $"{3 * n}\n"; break;
+                default:
+                    inputs["inbox/a.bin"] = Enumerable.Range(0, n).SelectMany(_ => new byte[] { 0, 127, 128, 255 }).ToArray();
+                    inputs["inbox/é.txt"] = Utf8("café 😀\n");
+                    outputs["outbox/a.bin"] = inputs["inbox/a.bin"];
+                    outputs["outbox/é.txt"] = inputs["inbox/é.txt"];
+                    outputs["manifest.json"] = Utf8($"[{{\"checksum\":{510 * n},\"name\":\"a.bin\",\"size\":{4 * n}}},{{\"checksum\":1383,\"name\":\"\\u00e9.txt\",\"size\":11}}]\n");
+                    stdout = "2\n"; break;
+            }
+            var fixture = JsonSerializer.Serialize(new { size = n, text = (string?)null,
+                inputFiles = inputs.ToDictionary(p => p.Key, p => Convert.ToBase64String(p.Value)),
+                outputFiles = outputs.ToDictionary(p => p.Key, p => Convert.ToBase64String(p.Value)) });
+            var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py"), ComparisonProtocol.Utf8).Replace("\r\n", "\n");
+            var scale = n == 0 ? "empty" : n == 16 ? "small" : "large";
+            cases.Add(new($"scripts.{name}.{scale}", "scripts", "whole-script", scale, n, source, fixture, stdout));
+        }
+        return cases;
+    }
 
     public static IReadOnlyList<ComparisonWorkload> Create()
     {

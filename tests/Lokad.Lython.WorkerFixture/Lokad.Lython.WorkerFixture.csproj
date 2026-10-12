@@ -8,5 +8,11 @@
     <Compile Include="../Lokad.Lython.Tests/Harness/MockLythonHost.cs" Link="Harness/MockLythonHost.cs" />
     <Compile Include="../Lokad.Lython.Tests/Harness/DelayedLythonHost.cs" Link="Harness/DelayedLythonHost.cs" />
     <Compile Include="../../benchmarks/Lokad.Lython.Benchmarks/Comparison/OwnedWorkerProcess.cs" Link="OwnedWorkerProcess.cs" />
+    <Compile Include="../../benchmarks/Lokad.Lython.Benchmarks/Comparison/ComparisonFileFixture.cs" Link="ComparisonFileFixture.cs" />
+    <Compile Include="../../benchmarks/Lokad.Lython.Benchmarks/Comparison/ComparisonFileHost.cs" Link="ComparisonFileHost.cs" />
+    <Compile Include="../../benchmarks/Lokad.Lython.Benchmarks/Comparison/ComparisonProtocol.cs" Link="ComparisonProtocol.cs" />
+    <Compile Include="../../benchmarks/Lokad.Lython.Benchmarks/Comparison/WorkloadCatalog.cs" Link="WorkloadCatalog.cs" />
+    <Compile Include="../../benchmarks/Lokad.Lython.Benchmarks/Comparison/LythonComparisonWorker.cs" Link="LythonComparisonWorker.cs" />
+    <Compile Include="../../benchmarks/Lokad.Lython.Benchmarks/Comparison/LythonOnceWorker.cs" Link="LythonOnceWorker.cs" />
   </ItemGroup>
 </Project>
