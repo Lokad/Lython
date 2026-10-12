@@ -7,6 +7,51 @@ namespace Lokad.Lython.Tests;
 
 public sealed class RepresentativeLeaseTests
 {
+    [Theory]
+    [InlineData("csv-summary", false)]
+    [InlineData("csv-summary", true)]
+    [InlineData("json-summary", false)]
+    [InlineData("json-summary", true)]
+    public async Task MidParserCancellationClosesSourceAndReleasesAbandonedScratch(string name, bool asynchronous)
+    {
+        var original = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py"));
+        var csv = name == "csv-summary";
+        var source = csv
+            ? "def checked_lines(file):\n    for line in file:\n        print('checkpoint')\n        yield line\n" + original.Replace("csv.DictReader(source)", "csv.DictReader(checked_lines(source))")
+            : "def inspect(record):\n    print('checkpoint')\n    return record\n" + original.Replace("json.loads(line)", "json.loads(line, object_hook=inspect)");
+        var input = csv ? "kind,amount,note\nred,3,\"café,\nquoted\"\n" : "{\"nested\":{\"value\":1},\"kind\":\"red\",\"amount\":3}\n";
+        var path = csv ? "/input.csv" : "/input.jsonl";
+        var delayed = asynchronous ? new DelayedLythonHost() : null;
+        var mock = asynchronous ? null : new MockLythonHost();
+        ILythonHost host = (ILythonHost?)delayed ?? mock!;
+        if (delayed is not null) delayed.SeedFile(path, input); else mock!.SeedFile(path, input);
+        using var cancellation = new CancellationTokenSource();
+        var writes = 0;
+        void CancelCheckpoint() { if (++writes == (csv ? 6 : 2)) cancellation.Cancel(); }
+        if (delayed is not null) delayed.OnStandardOutputWrite = CancelCheckpoint; else mock!.OnStandardOutputWrite = CancelCheckpoint;
+        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions
+        {
+            CancellationToken = cancellation.Token, MaxExecutionMemoryBytes = 262144,
+        });
+        var frontend = LythonFrontend.Compile(source);
+        Assert.DoesNotContain(frontend.Diagnostics, d => d.Severity == LythonDiagnosticSeverity.Error);
+        var script = LoweredScript.Lower(frontend.Script!);
+        LythonRuntimeException error;
+        if (asynchronous)
+            error = await Assert.ThrowsAsync<LythonRuntimeException>(async () => await LythonRuntime.ExecuteStatementsAsync(script.Statements, context));
+        else error = Assert.Throws<LythonRuntimeException>(() => LythonRuntime.ExecuteStatements(script.Statements, context));
+        Assert.Equal(LythonFailureReason.Cancelled, error.Attribution?.Reason);
+        Assert.True(LythonRuntime.TryResolveRuntimeMember(context.Variables["source"], "closed", context, new(0, 0, 0, 0), out var closed));
+        Assert.Equal(true, closed);
+        Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
+        Assert.Equal(0, context.Limits.CurrentRecursionDepth);
+        if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
+        GC.Collect();
+        foreach (var pool in context.State.LiveReclamationPools()) pool.Sweep(full: true);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.True(context.MemoryGovernor.PeakAccountedBytes <= 262144);
+    }
+
     public static IEnumerable<object[]> Cases()
     {
         foreach (var name in new[] { "csv-summary", "json-summary" })

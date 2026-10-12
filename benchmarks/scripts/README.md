@@ -31,6 +31,13 @@ all input buffers rejects before manifest publication. This is containment
 evidence, not an additional timed comparison lane. Host-owned completed output
 files remain outside guest execution accounting.
 
+Protocol cancellation controls wrap CSV physical lines in a guest generator and
+use a JSON `object_hook`. Cancellation occurs with a quoted CSV record pending
+or a parent JSON object still parsing, through a specified mediated-output
+checkpoint. Both modes report typed cancellation before a completed report is
+published. These checks preserve the separate native-cleanup/ownership contract;
+they do not establish a general cancellation-latency or host SLO guarantee.
+
 Check the same source and fixtures with an installed CPython:
 
 ```powershell
