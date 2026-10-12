@@ -1,0 +1,451 @@
+{
+  "version": 1,
+  "date": "2026-10-12",
+  "purpose": "Wrapper construction/copy ownership simplification and bounded failure lifetimes",
+  "implementation": "9af982c315cca964d7c92885f67baaa2a786bfba",
+  "qualifiedSource": {
+    "source": "2c351cb1706ace3d1fc9651527777f365a80ceb8",
+    "production": "28ba4d503bf68f0d9f5c52b57477c9d45d5068b2",
+    "white": "5fb6703a36a3bba555aaf2e538579a73383254bf",
+    "public": "3151ec58e80767555109203bc229afc0b94eb955",
+    "probe": "bfd4ee12ae4532e0a65a85db86792da8183eec9d",
+    "benchmark": "c194ce88a7e4d52c576f3929ef82bce60bf37e2d",
+    "productionNetRemoved": 20,
+    "actualBuildProducers": {
+      "releaseAll": "2c351cb1706ace3d1fc9651527777f365a80ceb8",
+      "debugWhiteWorkerProbe": "9af982c315cca964d7c92885f67baaa2a786bfba",
+      "debugLibraryPublic": "2c351cb1706ace3d1fc9651527777f365a80ceb8"
+    },
+    "status": "CompleteDebug10310=2100white+8210public and116focusedRelease pass."
+  },
+  "qualifiedBinaries": [
+    {
+      "path": "src/Lokad.Lython/bin/Debug/net10.0/Lokad.Lython.dll",
+      "sha256": "8F56CB5FA39898745C6C2A8152BECEBA9C4CD462CDC384F9EE4CF93FCD05D67B"
+    },
+    {
+      "path": "tests/Lokad.Lython.Tests/bin/Debug/net10.0/Lokad.Lython.WhiteBox.Tests.dll",
+      "sha256": "BCDAC24C954A4BDAF498A53C3B71A805B246C1253124EFEB9311F8C3E0AAC795"
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/bin/Debug/net10.0/Lokad.Lython.PublicApi.Tests.dll",
+      "sha256": "8985D635BD103C6D32FE5BE73D1752FD751F1FC4C5735D341BB1E09484DC8D5B"
+    },
+    {
+      "path": "tests/Lokad.Lython.WorkerFixture/bin/Debug/net10.0/Lokad.Lython.WorkerFixture.dll",
+      "sha256": "84BFA014B1DFC62806F27EC8A4D8433B8B048A7914943D372F579CC82D943DBE"
+    },
+    {
+      "path": "tools/LythonProbe/bin/Debug/net10.0/LythonProbe.dll",
+      "sha256": "E147C328B6D95D2DAC9FCCB93F2B0CEAEDBE3E2FE1B1842FB2200BD8D166B929"
+    },
+    {
+      "path": "src/Lokad.Lython/bin/Release/net10.0/Lokad.Lython.dll",
+      "sha256": "162551C955CFD113B1A32052D861CDDB22D107B891FFC192945044978BB73DB8"
+    },
+    {
+      "path": "tests/Lokad.Lython.Tests/bin/Release/net10.0/Lokad.Lython.WhiteBox.Tests.dll",
+      "sha256": "44D52B5381CA2B03C8BA05D3E07D120712719A673FB57DACD2249F604B325588"
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/bin/Release/net10.0/Lokad.Lython.PublicApi.Tests.dll",
+      "sha256": "F8EB00EFC5F677A578CBE7ED6CE41E8BA1316083DA0B98FC13B33F95DBA0054B"
+    },
+    {
+      "path": "tests/Lokad.Lython.WorkerFixture/bin/Release/net10.0/Lokad.Lython.WorkerFixture.dll",
+      "sha256": "C1ED84129C46721A84253DE917679B25CEF3B9EED8F19A307846F396091186E8"
+    },
+    {
+      "path": "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+      "sha256": "32791CDBF77BA1D06D9643CE69A7ADA16555E5F8B40336066FD350BB9C3C5C1B"
+    }
+  ],
+  "fullDebug": [
+    {
+      "file": "complete_net10.0_20261012063421.trx",
+      "sha256": "FEC613A8D4F933591D37F0986E7ECC78402C50DF07AE65AB2706C3225DCDBC47",
+      "total": 2100,
+      "passed": 2100,
+      "failed": 0,
+      "cases": []
+    },
+    {
+      "file": "complete_net10.0_20261012064128.trx",
+      "sha256": "16204AF9BCA830EE0F1AFFAE5BB505BC189C4D1DF900B132469BCE5D000975C4",
+      "total": 8210,
+      "passed": 8210,
+      "failed": 0,
+      "cases": []
+    }
+  ],
+  "focused": [
+    {
+      "stage": "root-focused-white-debug",
+      "process": {
+        "source": "9af982c315cca964d7c92885f67baaa2a786bfba",
+        "production": "28ba4d503bf68f0d9f5c52b57477c9d45d5068b2",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "BCDAC24C954A4BDAF498A53C3B71A805B246C1253124EFEB9311F8C3E0AAC795",
+        "filter": "FullyQualifiedName~WrapperConstructionTests|FullyQualifiedName~DictEntryStorageTests|FullyQualifiedName~DictWrapperSnapshotOriginalTests",
+        "pid": 222520,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2104,
+        "stdoutSha256": "94F44BAFE80280C5BF0A6D22C4EE3F8C4FED70D410C3BBC1EBE220797C3AA633",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "C4B13A0F2DB61B5FF3E5587269905E6D6F1F7906FB1AE9FCB9BDEBBB142D1C60",
+        "total": 20,
+        "passed": 20,
+        "failed": 0,
+        "cases": []
+      }
+    },
+    {
+      "stage": "root-core-public-debug",
+      "process": {
+        "source": "9af982c315cca964d7c92885f67baaa2a786bfba",
+        "production": "28ba4d503bf68f0d9f5c52b57477c9d45d5068b2",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "7980555DCC838706B44A124160A573C39A85F1B2EF2E206A37E8A56E66AE4928",
+        "filter": "FullyQualifiedName~CollectionsModuleFunctionTests|FullyQualifiedName~CopyModuleFunctionTests|FullyQualifiedName~CopyHookInvocationScenarioTests|FullyQualifiedName~CopyHookBudgetScenarioTests|FullyQualifiedName~CopyMemoViewAccountingScenarioTests",
+        "pid": 548948,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 3348,
+        "stdoutSha256": "4C64E76C0D71A9A1EF97686A7C87EE0A896C5EF0C88E2E8915BF4B90D59E695F",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "06512835FAA768825C4193FD99C3B36BADC9A084982BD04722ED8300A9677A2E",
+        "total": 68,
+        "passed": 68,
+        "failed": 0,
+        "cases": []
+      }
+    },
+    {
+      "stage": "root-refined-lifetime-public-debug",
+      "process": {
+        "source": "2c351cb1706ace3d1fc9651527777f365a80ceb8",
+        "production": "28ba4d503bf68f0d9f5c52b57477c9d45d5068b2",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "8985D635BD103C6D32FE5BE73D1752FD751F1FC4C5735D341BB1E09484DC8D5B",
+        "filter": "FullyQualifiedName~WrapperOwnershipLifetimeTests|FullyQualifiedName~CounterHashabilityTests",
+        "pid": 1112552,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 6724,
+        "stdoutSha256": "597662BF3828BDC7E83FE1BB14C1900B3D0C6CBBB77515E7F8BE9D6C1C60F29B",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "4A534A83408F5652153903293265049E4D84B3178B57339A93ECB02D51C4C1FC",
+        "total": 12,
+        "passed": 12,
+        "failed": 0,
+        "cases": []
+      }
+    },
+    {
+      "stage": "root-focused-white-release",
+      "process": {
+        "source": "2c351cb1706ace3d1fc9651527777f365a80ceb8",
+        "production": "28ba4d503bf68f0d9f5c52b57477c9d45d5068b2",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "44D52B5381CA2B03C8BA05D3E07D120712719A673FB57DACD2249F604B325588",
+        "filter": "FullyQualifiedName~WrapperConstructionTests|FullyQualifiedName~PyCollectionsPrimitiveTests|FullyQualifiedName~CounterDecimalAccountingTests|FullyQualifiedName~CopyMemoAccountingTests|FullyQualifiedName~DictEntryStorageTests",
+        "pid": 808688,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2135,
+        "stdoutSha256": "902C1B278A2B0E6F5AF4D8EDD16DD1F545CC2C2A73CC3C420414D90E4ACB7072",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "524D1A130E0A949C2153E7EFDEA55171092FBDA0BC0D88DEE21E922A7DD1F806",
+        "total": 36,
+        "passed": 36,
+        "failed": 0,
+        "cases": []
+      }
+    },
+    {
+      "stage": "root-core-public-release",
+      "process": {
+        "source": "2c351cb1706ace3d1fc9651527777f365a80ceb8",
+        "production": "28ba4d503bf68f0d9f5c52b57477c9d45d5068b2",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "F8EB00EFC5F677A578CBE7ED6CE41E8BA1316083DA0B98FC13B33F95DBA0054B",
+        "filter": "FullyQualifiedName~CollectionsModuleFunctionTests|FullyQualifiedName~CopyModuleFunctionTests|FullyQualifiedName~CopyHookInvocationScenarioTests|FullyQualifiedName~CopyHookBudgetScenarioTests|FullyQualifiedName~CopyMemoViewAccountingScenarioTests",
+        "pid": 10848,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 3897,
+        "stdoutSha256": "505DFBBC245474FB89CD4F6B8C213455787448362641289212A8A4FFE7692215",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "E16FED14B529FD6C8AB7ED2DE3A0A7653C7217F6E0CBE104B2D58FFDC4777700",
+        "total": 68,
+        "passed": 68,
+        "failed": 0,
+        "cases": []
+      }
+    },
+    {
+      "stage": "root-lifetime-public-release",
+      "process": {
+        "source": "2c351cb1706ace3d1fc9651527777f365a80ceb8",
+        "production": "28ba4d503bf68f0d9f5c52b57477c9d45d5068b2",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "F8EB00EFC5F677A578CBE7ED6CE41E8BA1316083DA0B98FC13B33F95DBA0054B",
+        "filter": "FullyQualifiedName~WrapperOwnershipLifetimeTests|FullyQualifiedName~CounterHashabilityTests",
+        "pid": 624816,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 7440,
+        "stdoutSha256": "47B49A4AD83F7A2FDC4CA8BB7D9C584355F91E64E82E3DF512C0765048EF80EA",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "D7FD0CCFE7D56E47633BEB0D423151671AFF7258826BDF9352C7A834E552315C",
+        "total": 12,
+        "passed": 12,
+        "failed": 0,
+        "cases": []
+      }
+    }
+  ],
+  "original": {
+    "baselineProduction": "a03c7bf73723df522eb45292d5dc4a8056bbe836",
+    "phases": [
+      {
+        "stage": "original-wrapper-debug",
+        "process": {
+          "source": "7c6c085a41e5f797679a69e21e82735979648f83",
+          "production": "a03c7bf73723df522eb45292d5dc4a8056bbe836",
+          "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\primitive-storage-20261012\\original\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+          "assemblySha256": "2562201A823FCD20A9F1199B24FAC2087565DBCF60966B734355DAD580777A16",
+          "filter": "FullyQualifiedName~WrapperConstructionOriginalTests",
+          "pid": 496544,
+          "hasExited": true,
+          "exitCode": 1,
+          "timedOut": false,
+          "elapsedMillisecondsIncludingCleanup": 1206,
+          "stdoutSha256": "1FC4B4719EF9279498B1A288BA6A5E5F5012BA068FDE023F1BB8541412A9438E",
+          "stderrSha256": "D719868322666FDB2FB17F62A50AF0E034FD38FC622567EE690F6EC96F0F222F"
+        },
+        "trxSha256": "5C6EDA5EC85F3FEC8D6CBD99ADE1876F4FACB6E1BA24CE1DC2AA63D5E5A0F4C0",
+        "cases": [
+          {
+            "name": "Lokad.Lython.Tests.WrapperConstructionOriginalTests.InvalidDefaultFactoryCommitsNoUnpublishedShell",
+            "outcome": "Failed",
+            "error": "Assert.Equal() Failure: Values differ\r\nExpected: 0\r\nActual:   64"
+          },
+          {
+            "name": "Lokad.Lython.Tests.WrapperConstructionOriginalTests.RepeatedCaughtInvalidFactoriesKeepTheirBoundedBudget",
+            "outcome": "Failed",
+            "error": "MemoryError:execution memory budget exceeded (65536)"
+          },
+          {
+            "name": "Lokad.Lython.Tests.WrapperConstructionOriginalTests.InheritedCounterCopySnapshotMatchesActualAdmission",
+            "outcome": "Failed",
+            "error": "Assert.Equal() Failure: Values differ\r\nExpected: 384\r\nActual:   320"
+          },
+          {
+            "name": "Lokad.Lython.Tests.WrapperConstructionOriginalTests.EmptyWrapperInnerDenialRefundsItsShell(counter: True)",
+            "outcome": "Failed",
+            "error": "Assert.Equal() Failure: Values differ\r\nExpected: 0\r\nActual:   64"
+          },
+          {
+            "name": "Lokad.Lython.Tests.WrapperConstructionOriginalTests.ExplicitCounterCopyInnerDenialRefundsItsShell",
+            "outcome": "Failed",
+            "error": "Assert.Equal() Failure: Values differ\r\nExpected: 0\r\nActual:   64"
+          },
+          {
+            "name": "Lokad.Lython.Tests.WrapperConstructionOriginalTests.EmptyWrapperInnerDenialRefundsItsShell(counter: False)",
+            "outcome": "Failed",
+            "error": "Assert.Equal() Failure: Values differ\r\nExpected: 0\r\nActual:   64"
+          },
+          {
+            "name": "Lokad.Lython.Tests.WrapperConstructionOriginalTests.InheritedDefaultDictionaryCopySnapshotMatchesActualAdmission",
+            "outcome": "Failed",
+            "error": "Assert.Equal() Failure: Values differ\r\nExpected: 384\r\nActual:   320"
+          }
+        ]
+      },
+      {
+        "stage": "original-wrapper-population-debug",
+        "process": {
+          "source": "a4d176c656b3f19b3011e1a9d279e4155b3b915a",
+          "production": "a03c7bf73723df522eb45292d5dc4a8056bbe836",
+          "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\primitive-storage-20261012\\original\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+          "assemblySha256": "BD5F4A942718A2483F76F65F8CE0FE28527FA45A75ABBA2BB7336094B486B867",
+          "filter": "FullyQualifiedName~RepeatedFailedPopulationKeepsItsBoundedBudget|FullyQualifiedName~RepeatedDroppedDefaultDictionaryCopiesKeepTheirBoundedBudget",
+          "pid": 581800,
+          "hasExited": true,
+          "exitCode": 1,
+          "timedOut": false,
+          "elapsedMillisecondsIncludingCleanup": 1360,
+          "stdoutSha256": "2CB08F02B90FF2680948087255D8BF7BCE5D5062C7D7C58794C78C769CC3947F",
+          "stderrSha256": "7C248FBE583A368B6AC247E79D5EA35F5F6D6C6A108A186966A2926E4DCAF43A"
+        },
+        "trxSha256": "FBD15664A270F99E113B6A0788E9D8F2BE2868120A1EBA162DE5888A8419581B",
+        "cases": [
+          {
+            "name": "Lokad.Lython.Tests.WrapperConstructionOriginalTests.RepeatedFailedPopulationKeepsItsBoundedBudget(counter: True)",
+            "outcome": "Failed",
+            "error": "AssertionError:"
+          },
+          {
+            "name": "Lokad.Lython.Tests.WrapperConstructionOriginalTests.RepeatedDroppedDefaultDictionaryCopiesKeepTheirBoundedBudget",
+            "outcome": "Failed",
+            "error": "MemoryError:execution memory budget exceeded (65536)"
+          },
+          {
+            "name": "Lokad.Lython.Tests.WrapperConstructionOriginalTests.RepeatedFailedPopulationKeepsItsBoundedBudget(counter: False)",
+            "outcome": "Failed",
+            "error": "MemoryError:execution memory budget exceeded (65536)"
+          }
+        ]
+      },
+      {
+        "stage": "original-wrapper-counter-corrected-debug",
+        "process": {
+          "source": "06f604fdfa8529412e6c500c29d35912006a0ede",
+          "production": "a03c7bf73723df522eb45292d5dc4a8056bbe836",
+          "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\primitive-storage-20261012\\original\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+          "assemblySha256": "C836E33F131BD0B725C3ACB90A44D7D3788BF445715D04789D181519D1BE582E",
+          "filter": "FullyQualifiedName~RepeatedFailedPopulationKeepsItsBoundedBudget",
+          "pid": 202960,
+          "hasExited": true,
+          "exitCode": 1,
+          "timedOut": false,
+          "elapsedMillisecondsIncludingCleanup": 1383,
+          "stdoutSha256": "096A3F552464858E41AF9192B6A5847D5A55FA10D74F3D70075DE6830F505E7F",
+          "stderrSha256": "D96BF5ABFD1FBC10C28FEEC57865F4145AA981AE3181EEC1810E884877D1802E"
+        },
+        "trxSha256": "5068F330D975398F5FBA4C663B1604233833DF5B5BE5CDF2629935C11B25C601",
+        "cases": [
+          {
+            "name": "Lokad.Lython.Tests.WrapperConstructionOriginalTests.RepeatedFailedPopulationKeepsItsBoundedBudget(counter: True)",
+            "outcome": "Failed",
+            "error": "MemoryError:execution memory budget exceeded (65536)"
+          },
+          {
+            "name": "Lokad.Lython.Tests.WrapperConstructionOriginalTests.RepeatedFailedPopulationKeepsItsBoundedBudget(counter: False)",
+            "outcome": "Failed",
+            "error": "MemoryError:execution memory budget exceeded (65536)"
+          }
+        ]
+      }
+    ],
+    "accountingFaultCases": 10,
+    "excludedOldCounterInput": "AssertionError because unhashable list input was accepted; not memory evidence.",
+    "ignoredFilterMistake": "original-wrapper-counter-generator-debug matches zero tests; receipt preserved, not qualification.",
+    "counterCorrection": "Generator yields one valid key then raises ValueError; 2000iterations/65536 cap unchanged.",
+    "semanticCounter": {
+      "output": "== Lython ==\r\nSuccess: True\r\nstdout:\r\naccepted 1\r\npeak execution memory: 2870 bytes\r\npeak projection memory: 54 bytes\r\n== CPython ==\r\nSuccess: True\r\nstdout:\r\nTypeError\r\nParity: DIFFERENT\r\n",
+      "actualProbeProducer": "9db0922944c8786ad63bda2c5e77cd11a1f02829",
+      "binaries": [
+        {
+          "path": "tools/LythonProbe/bin/Debug/net10.0/LythonProbe.dll",
+          "sha256": "D8635AC15B932B6B935A0CDF1772B6DDCE1ACBF4CA3DA68D496089EA056F1985"
+        },
+        {
+          "path": "src/Lokad.Lython/bin/Debug/net10.0/Lokad.Lython.dll",
+          "sha256": "852DA52C48B54F80EAEC6D7ECF9A2A57A598030FE0D28C5E53D28BB4D02EE204"
+        }
+      ],
+      "sha256": "8A3A0DA8223473DBDF912221377F4E0AB22A64509E1D2F40EFA039368BE7BE83",
+      "production": "f62c6b9cbe24f97f1b6cd14f4aede74993699c70",
+      "delivery": "b921ee806353ad4367000624df6129cc405e6bac"
+    },
+    "pythonControls": {
+      "counterListKey": "TypeError",
+      "failedCounterIterations": 2000,
+      "failedDefaultdictIterations": 2000,
+      "interpreter": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]"
+    }
+  },
+  "excludedInitialChecks": [
+    {
+      "stage": "root-focused-public-debug",
+      "process": {
+        "source": "9af982c315cca964d7c92885f67baaa2a786bfba",
+        "production": "28ba4d503bf68f0d9f5c52b57477c9d45d5068b2",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "7980555DCC838706B44A124160A573C39A85F1B2EF2E206A37E8A56E66AE4928",
+        "filter": "FullyQualifiedName~CollectionsModuleTests|FullyQualifiedName~CopyModuleTests|FullyQualifiedName~DefaultDict|FullyQualifiedName~Counter",
+        "pid": 57676,
+        "hasExited": true,
+        "exitCode": -1,
+        "timedOut": true,
+        "elapsedMillisecondsIncludingCleanup": 28049,
+        "stdoutSha256": "721E903EE6ED01A0D66CAC883A5F33D43DF77EEE394CA122000B42FAD254523D",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "interpretation": "Overbroad selector reached28s; killed; not qualification",
+      "trx": null
+    },
+    {
+      "stage": "root-lifetime-public-debug",
+      "process": {
+        "source": "d7b87c03ace78545d91c391f76485a97e6f523a5",
+        "production": "28ba4d503bf68f0d9f5c52b57477c9d45d5068b2",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "C71428E058423F35C5B294ABB8192C44AE97BE78DDE7A1455DF9CE7620189155",
+        "filter": "FullyQualifiedName~WrapperOwnershipLifetimeTests|FullyQualifiedName~CounterHashabilityTests",
+        "pid": 1125924,
+        "hasExited": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 5387,
+        "stdoutSha256": "A383D8F4901460F30B6B951B85AC8FF5A1244DB1A5855469148529F3B795B903",
+        "stderrSha256": "EACC6F3C0E26C35BAFBE3CADD58B9C18AC841CB87B6DD5A9872A43D7122FAA60"
+      },
+      "interpretation": "Two test-only error-kind catch mismatches; raw source/binary retained",
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "A00BDC34EA8D9E9568D92234BDF2400DB3B6447B8D32C7D4B922B2DB49AE2866",
+        "total": 12,
+        "passed": 10,
+        "failed": 2,
+        "cases": [
+          {
+            "testName": "Lokad.Lython.PublicApi.Tests.WrapperOwnershipLifetimeTests.FailedPopulationReclaimsItsUnpublishedOwner(counter: False, asynchronous: False)",
+            "outcome": "Failed"
+          },
+          {
+            "testName": "Lokad.Lython.PublicApi.Tests.WrapperOwnershipLifetimeTests.FailedPopulationReclaimsItsUnpublishedOwner(counter: False, asynchronous: True)",
+            "outcome": "Failed"
+          }
+        ]
+      }
+    }
+  ],
+  "gcPolicyChanged": false,
+  "performanceClaim": false,
+  "comparisonLaneCollected": false,
+  "pending": [
+    "Counter custom hash/equality callback count and async dispatch",
+    "Malformed defaultdict pair error category",
+    "Weak-reclamation dependency/forced-GC independence",
+    "Other unassessed construction/copy ownership paths",
+    "Broader runtime/benchmark work and external Utf8Regex"
+  ]
+}
