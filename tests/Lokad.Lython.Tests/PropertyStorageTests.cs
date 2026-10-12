@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
 
@@ -130,5 +131,36 @@ public sealed class PropertyStorageTests
             Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
         }
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+    }
+
+    [Fact]
+    public void EscapedLargeDocumentationKeepsItsOwnerAfterDescriptorCollection()
+    {
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions());
+        var (weak, escaped) = MakeEscapedDocumentation(context);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        Assert.False(weak.TryGetTarget(out _));
+        var pool = context.Services.State.CallTemporaries;
+        pool.Sweep(full: true);
+        Assert.Equal(1, pool.Count);
+        Assert.True(context.MemoryGovernor.CurrentCommittedBytes >=
+            RuntimeMemoryEstimates.EstimateBigIntegerBytes((BigInteger)escaped));
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
+        GC.KeepAlive(escaped);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static (WeakReference<PyProperty>, object) MakeEscapedDocumentation(
+        LythonRuntime.ExecutionContext context)
+    {
+        object large = BigInteger.One << 4096;
+        LythonRuntime.OwnFreshInteger(large, context.MemoryGovernor,
+            context.Services.State.CallTemporaries, Span);
+        var property = PyProperty.Create(PyNone.Instance, PyNone.Instance, PyNone.Instance, large, context, Span);
+        Assert.True(property.TryGetMember("__doc__", out var escaped));
+        Assert.Same(large, escaped);
+        return (new WeakReference<PyProperty>(property), escaped);
     }
 }
