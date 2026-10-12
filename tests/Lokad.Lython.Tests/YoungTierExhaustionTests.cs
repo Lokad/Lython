@@ -10,7 +10,7 @@ public sealed class YoungTierExhaustionTests
     {
         var governor = new MemoryGovernor(65536);
         var pool = new ChargeReclamationPool(governor);
-        governor.LivePoolProvider = () => new[] { pool };
+        governor.ReclamationPool = pool;
         var retained = RegisterDeadThenLive(governor, pool);
         var pressure = 65536 - governor.CurrentCommittedBytes - 1;
         governor.Reserve(pressure, null);

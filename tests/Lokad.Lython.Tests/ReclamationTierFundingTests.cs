@@ -17,7 +17,7 @@ public sealed class ReclamationTierFundingTests
         // available for the new publication without any backing growth.
         var governor = new MemoryGovernor(708);
         var pool = new ChargeReclamationPool(governor);
-        governor.LivePoolProvider = () => new[] { pool };
+        governor.ReclamationPool = pool;
         var (retained, dead) = FillYoung(governor, pool);
         GC.Collect();
         GC.WaitForPendingFinalizers();
@@ -46,7 +46,7 @@ public sealed class ReclamationTierFundingTests
     {
         var governor = new MemoryGovernor(65536);
         var pool = new ChargeReclamationPool(governor);
-        governor.LivePoolProvider = () => new[] { pool };
+        governor.ReclamationPool = pool;
         var span = new LythonSourceSpan(0, 0, 0, 0);
         var list = LythonRuntime.OwnFreshStringSplitListResult(
             PyStringOps.Split(PyString.FromString("x|y"), PyString.FromString("|"), governor, span), span, pool);
@@ -81,7 +81,7 @@ public sealed class ReclamationTierFundingTests
     {
         var governor = new MemoryGovernor(708);
         var pool = new ChargeReclamationPool(governor);
-        governor.LivePoolProvider = () => new[] { pool };
+        governor.ReclamationPool = pool;
         var retained = Enumerable.Range(0, 4).Select(_ => new object()).ToArray();
         foreach (var value in retained)
         {

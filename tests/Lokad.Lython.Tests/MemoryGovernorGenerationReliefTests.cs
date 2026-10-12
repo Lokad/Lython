@@ -13,7 +13,7 @@ public sealed class MemoryGovernorGenerationReliefTests
     {
         var governor = new MemoryGovernor(16384);
         var pool = new ChargeReclamationPool(governor);
-        governor.LivePoolProvider = () => [pool];
+        governor.ReclamationPool = pool;
         var target = CreateOldStorage(pool, governor, retainAnother: false).Dropped;
         var pinned = PinRemaining(governor);
         Assert.True(IsAlive(target));
@@ -31,7 +31,7 @@ public sealed class MemoryGovernorGenerationReliefTests
     {
         var governor = new MemoryGovernor(16384);
         var pool = new ChargeReclamationPool(governor);
-        governor.LivePoolProvider = () => [pool];
+        governor.ReclamationPool = pool;
         var storage = CreateOldStorage(pool, governor, retainAnother: true);
         var retained = Assert.IsType<PyList>(storage.Retained);
         var pinned = PinRemaining(governor);

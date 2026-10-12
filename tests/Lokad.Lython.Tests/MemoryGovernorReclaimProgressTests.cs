@@ -3,6 +3,7 @@ using Lokad.Lython.Runtime;
 
 namespace Lokad.Lython.Tests;
 
+[Collection("AllocationSensitive")]
 public sealed class MemoryGovernorReclaimProgressTests
 {
     [Theory]
@@ -12,7 +13,7 @@ public sealed class MemoryGovernorReclaimProgressTests
     {
         var governor = new MemoryGovernor(320 + previousCharge);
         var pool = new ChargeReclamationPool(governor);
-        governor.LivePoolProvider = () => [pool];
+        governor.ReclamationPool = pool;
         var target = DenyWhileRetainedThenReplaceAndDrop(governor, pool, previousCharge, replacementCharge);
 
         // The replacement has made allocation progress, but the committed
@@ -32,8 +33,7 @@ public sealed class MemoryGovernorReclaimProgressTests
     {
         var governor = new MemoryGovernor(336);
         var pool = new ChargeReclamationPool(governor);
-        var enumerations = 0;
-        governor.LivePoolProvider = () => { enumerations++; return [pool]; };
+        governor.ReclamationPool = pool;
         var value = new object();
         governor.Reserve(128, null);
         governor.Commit(128);
@@ -41,11 +41,12 @@ public sealed class MemoryGovernorReclaimProgressTests
         governor.Reserve(16, null);
         governor.Commit(16);
 
+        var before = GC.CollectionCount(GC.MaxGeneration);
         Assert.Throws<LythonRuntimeException>(() => governor.EnsureCanReserve(64, null));
-        Assert.True(enumerations > 0);
-        var afterFirstRelief = enumerations;
+        var afterFirstRelief = GC.CollectionCount(GC.MaxGeneration);
+        Assert.True(afterFirstRelief > before);
         Assert.Throws<LythonRuntimeException>(() => governor.EnsureCanReserve(64, null));
-        Assert.Equal(afterFirstRelief, enumerations);
+        Assert.Equal(afterFirstRelief, GC.CollectionCount(GC.MaxGeneration));
         Assert.Equal(304, governor.CurrentCommittedBytes);
         GC.KeepAlive(value);
     }

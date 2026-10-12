@@ -13,7 +13,7 @@ public sealed class MemoryGovernorReservationProgressTests
     {
         var governor = new MemoryGovernor(600);
         var pool = new ChargeReclamationPool(governor);
-        governor.LivePoolProvider = () => [pool];
+        governor.ReclamationPool = pool;
         var targets = CreateCollectedAndUncollectedValues(governor, pool, retainSecond: false);
         Assert.False(IsAlive(targets.Collected));
         Assert.True(IsAlive(targets.Uncollected));
@@ -44,19 +44,18 @@ public sealed class MemoryGovernorReservationProgressTests
     {
         var governor = new MemoryGovernor(600);
         var pool = new ChargeReclamationPool(governor);
-        var enumerations = 0;
-        governor.LivePoolProvider = () => { enumerations++; return [pool]; };
+        governor.ReclamationPool = pool;
         var targets = CreateCollectedAndUncollectedValues(governor, pool, retainSecond: true);
         using var scratch = governor.ReserveTemporary(200, null);
         Assert.Equal(288, governor.CurrentCommittedBytes);
         Assert.Equal(200, governor.CurrentReservedBytes);
-        var beforeDenial = enumerations;
+        var beforeDenial = GC.CollectionCount(GC.MaxGeneration);
 
         Assert.Throws<LythonRuntimeException>(() => governor.EnsureCanReserve(150, null));
-        Assert.True(enumerations > beforeDenial);
-        var afterDenial = enumerations;
+        var afterDenial = GC.CollectionCount(GC.MaxGeneration);
+        Assert.True(afterDenial > beforeDenial);
         Assert.Throws<LythonRuntimeException>(() => governor.EnsureCanReserve(150, null));
-        Assert.Equal(afterDenial, enumerations);
+        Assert.Equal(afterDenial, GC.CollectionCount(GC.MaxGeneration));
 
         // Merely checking capacity or making a zero-byte reservation cannot
         // manufacture progress and make caught, pinned failures collect again.
@@ -64,7 +63,7 @@ public sealed class MemoryGovernorReservationProgressTests
         governor.Reserve(0, null);
         governor.Commit(0);
         Assert.Throws<LythonRuntimeException>(() => governor.EnsureCanReserve(150, null));
-        Assert.Equal(afterDenial, enumerations);
+        Assert.Equal(afterDenial, GC.CollectionCount(GC.MaxGeneration));
         Assert.Equal(288, governor.CurrentCommittedBytes);
         Assert.Equal(200, governor.CurrentReservedBytes);
         Assert.Equal(150, governor.LastDeniedReservationBytes);

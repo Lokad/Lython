@@ -390,7 +390,7 @@ public sealed class DeferredSplitOwnershipTests
     private static (PyString, long) TransferAfterPinnedDenial(MemoryGovernor governor, ChargeReclamationPool pool)
     {
         var list = Fresh(governor, pool, 2);
-        governor.LivePoolProvider = () => new[] { pool };
+        governor.ReclamationPool = pool;
         var pressure = 65536 - governor.CurrentCommittedBytes - 1;
         governor.Reserve(pressure, Span);
         Assert.Equal("MemoryError", Assert.Throws<LythonRuntimeException>(() => governor.Reserve(2, Span)).ExceptionType);

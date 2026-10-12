@@ -78,10 +78,7 @@ internal sealed class ExecutionState
         Guards = new ExecutionGuards(this);
         MemoryGovernor = new MemoryGovernor(Limits.MaxExecutionMemoryBytes);
         CallTemporaries = new ChargeReclamationPool(MemoryGovernor);
-        // All guest storage owners use the shared pool. Keep one cached
-        // inventory for the governor rather than rebuilding it during relief.
-        ChargeReclamationPool[] reclamationPools = [CallTemporaries];
-        MemoryGovernor.LivePoolProvider = () => reclamationPools;
+        MemoryGovernor.ReclamationPool = CallTemporaries;
         RandomState = new PyRandomState();
         DecimalContext = PyDecimalContext.Default();
         DisableLocalModuleImports = options?.DisableLocalModuleImports ?? false;

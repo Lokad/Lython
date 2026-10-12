@@ -31,14 +31,9 @@ internal sealed class MemoryGovernor
     // Stays zero when nothing was ever denied; a later denial overwrites it.
     public long LastDeniedReservationBytes { get; private set; }
 
-    // Pools whose tracked charges may release once unreachable. On a denied
-    // reservation the governor may force a collection, sweep them fully, and
-    // retries once, so garbage pressure fails only when retention is real.
-    // Live pools enumerated from the owning run (call temporaries plus
-    // registered CSV/file sources) for exhaustion relief. The provider
-    // retains abandoned registrations only while their returned values need
-    // tracking, so no second registry can grow here.
-    internal Func<IEnumerable<ChargeReclamationPool>>? LivePoolProvider { get; set; }
+    // The run's one storage pool. Untracked standalone charges still deny
+    // without forcing a collection that cannot release accounted storage.
+    internal ChargeReclamationPool? ReclamationPool { get; set; }
 
     // Successful reservation or commit since the last relief. Scratch can
     // reserve before a following payload commits; both need an opportunity to
@@ -47,10 +42,6 @@ internal sealed class MemoryGovernor
     // become collectible. Repeated pinned denials without new allocation still
     // fail fast instead of paying a collection per caught trip.
     private bool _hasAllocatedSinceReclaim;
-
-    // A provider can run while relief enumerates registered owners. A nested
-    // reservation must fail fast instead of recursively entering relief.
-    private bool _inExhaustionRelief;
 
     public void EnsureCanReserve(long bytes, LythonSourceSpan? span)
     {
@@ -71,20 +62,12 @@ internal sealed class MemoryGovernor
                     LythonFailureReason.ExecutionMemoryLimit, maxAccountedBytes, CurrentAccountedBytes, bytes);
             }
 
-            if (_hasAllocatedSinceReclaim && !_inExhaustionRelief)
+            if (_hasAllocatedSinceReclaim)
             {
-                _inExhaustionRelief = true;
-                try
-                {
-                    ReclaimForExhaustion(nextAccounted - maxAccountedBytes);
-                }
-                finally
-                {
-                    _inExhaustionRelief = false;
-                    // Relief itself does not warrant another attempt when the
-                    // pending allocation still fails.
-                    _hasAllocatedSinceReclaim = false;
-                }
+                // Sweep/collection makes no admissions or guest callbacks.
+                // A failed pending allocation does not authorize another retry.
+                _hasAllocatedSinceReclaim = false;
+                ReclaimForExhaustion(nextAccounted - maxAccountedBytes);
             }
             nextAccounted = AddChecked(CurrentAccountedBytes, bytes, span);
             if (nextAccounted > maxAccountedBytes)
@@ -100,28 +83,11 @@ internal sealed class MemoryGovernor
     // cannot release their charges until collected, and a quiet loop may never
     // trigger a collection before the budget trips. Collecting and sweeping
     // fully before failing attributes the denial to live retention rather
-    // than garbage pressure — but only for charges tracked through registered
-    // pools; untracked retained charges still deny, correctly, without relief.
+    // than garbage pressure for tracked storage. Untracked retained charges
+    // still deny without relief.
     private void ReclaimForExhaustion(long shortfallBytes)
     {
-        if (LivePoolProvider is not { } provider)
-        {
-            return;
-        }
-
-        List<ChargeReclamationPool>? live = null;
-        foreach (var pool in provider())
-        {
-            if (pool.Count > 0)
-            {
-                live ??= new List<ChargeReclamationPool>();
-                live.Add(pool);
-            }
-        }
-
-        // No tracked charges anywhere: a collection could not release
-        // anything accounted, so fail fast instead of pausing the process.
-        if (live is null)
+        if (ReclamationPool is not { Count: > 0 } pool)
         {
             return;
         }
@@ -131,10 +97,7 @@ internal sealed class MemoryGovernor
         // skip the process-wide pause. The net committed comparison keeps this
         // exact; sweeps themselves allocate nothing and require no funding.
         var committedBefore = CurrentCommittedBytes;
-        foreach (var pool in live)
-        {
-            pool.Sweep(full: true);
-        }
+        pool.Sweep(full: true);
 
         if (committedBefore - CurrentCommittedBytes >= shortfallBytes)
         {
@@ -148,17 +111,13 @@ internal sealed class MemoryGovernor
         for (var generation = 0; generation <= GC.MaxGeneration; generation++)
         {
             GC.Collect(generation);
-            foreach (var pool in live)
-            {
-                pool.Sweep(full: true);
-            }
+            pool.Sweep(full: true);
 
             if (committedBefore - CurrentCommittedBytes >= shortfallBytes)
             {
                 break;
             }
         }
-
     }
 
     public void Reserve(long bytes, LythonSourceSpan? span)
