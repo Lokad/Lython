@@ -2716,6 +2716,22 @@ and rotation reuse funded nodes without additional storage admission. Pop,
 removal and clear release live-node charges; dropped deques remain reclaimable.
 Streaming extension keeps its successfully inserted prefix if later input fails.
 
+Governed dictionaries add a fixed 128-byte allowance per retained key/value
+entry to their backing and protocol storage charges. Entry allowance is
+independent of scalar identity, value type and prior payload registration.
+Repeated aliases and nonnumeric entries pay the same allowance; larger payloads
+keep their separate owners. These conservative estimates can increase accounted
+peaks and reject scripts accepted under the former identity-based policy.
+New insertion preflights entry storage, replacement transfers the existing
+allowance, and deletion releases it even when the lookup key is an equal but
+distinct object. First attachment admits existing storage before publishing its
+governor; copying funds a fresh entry subtotal. Clear and dropped-container
+reclamation release live charges rather than total historical allocation.
+Counter/defaultdict storage remains funded through escaped mapping views and
+iterators. Storage changes refresh the same charged owner, including after
+callback-visible partial mutation; unreachable wrapper/storage cycles remain
+collectible. Catching an exception does not undo prior callback side effects.
+
 `int.from_bytes` preflights conversion storage before creating its result. Heap
 magnitudes own their payload through the same reclamation path as parsed and
 arithmetic integers: retained conversions count toward the execution budget,

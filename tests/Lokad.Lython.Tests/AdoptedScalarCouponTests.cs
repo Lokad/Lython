@@ -91,59 +91,6 @@ public sealed class AdoptedScalarCouponTests
         Assert.Equal(AdoptedScalarCoupons.CouponBytes, coupons.CommittedBytes);
     }
 
-    [Fact]
-    public void AdoptAllDenialRollsBackTheBatch()
-    {
-        var (context, span) = Budgeted(AdoptedScalarCoupons.CouponBytes + 8);
-        var coupons = new AdoptedScalarCoupons();
-        var before = context.MemoryGovernor.CurrentCommittedBytes;
-        var values = new object[] { new BigInteger(1), new BigInteger(2), new BigInteger(3) };
-        Assert.Throws<LythonRuntimeException>(() => coupons.AdoptAll(values, context.MemoryGovernor, span));
-        Assert.Equal(0, coupons.CommittedBytes);
-        Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
-    }
-
-    [Fact]
-    public void AdoptAllDenialRestoresPreheldAlias()
-    {
-        // N27: the rollback record precedes each coupon, so a batch denied
-        // after touching a pre-held alias unwinds to that alias alone.
-        var (context, span) = Budgeted(2 * AdoptedScalarCoupons.CouponBytes + 8);
-        var coupons = new AdoptedScalarCoupons();
-        object box = new BigInteger(4);
-        coupons.Adopt(box, context.MemoryGovernor, span);
-        var before = context.MemoryGovernor.CurrentCommittedBytes;
-        var values = new object[] { box, new BigInteger(5), new BigInteger(6) };
-        Assert.Throws<LythonRuntimeException>(() => coupons.AdoptAll(values, context.MemoryGovernor, span));
-        Assert.Equal(AdoptedScalarCoupons.CouponBytes, coupons.CommittedBytes);
-        Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        coupons.Release(box, context.MemoryGovernor);
-        Assert.Equal(0, coupons.CommittedBytes);
-    }
-
-    [Fact]
-    public void AddRefMovesOnlyRefcounts()
-    {
-        var (context, span) = Budgeted(65536);
-        var coupons = new AdoptedScalarCoupons();
-        object box = new BigInteger(4);
-        var before = context.MemoryGovernor.CurrentCommittedBytes;
-        coupons.Adopt(box, context.MemoryGovernor, span);
-        coupons.AddRef(box, 99);
-        Assert.Equal(AdoptedScalarCoupons.CouponBytes, coupons.CommittedBytes);
-        Assert.Equal(AdoptedScalarCoupons.CouponBytes, context.MemoryGovernor.CurrentCommittedBytes - before);
-        for (var i = 0; i < 99; i++)
-        {
-            coupons.Release(box, context.MemoryGovernor);
-        }
-
-        Assert.Equal(AdoptedScalarCoupons.CouponBytes, coupons.CommittedBytes);
-        coupons.Release(box, context.MemoryGovernor);
-        Assert.Equal(0, coupons.CommittedBytes);
-        Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
-    }
-
     private static long PooledCharge(ChargeReclamationPool pool, object value)
     {
         // Read the shared registration lookup so this checks the same snapshot
@@ -389,11 +336,10 @@ public sealed class AdoptedScalarCouponTests
     }
 
     [Fact]
-    public void DictTwinKeyRemovesValueOnly()
+    public void DictTwinKeyRemovalReleasesTheWholeEntry()
     {
         // Removing via a structural twin (7.0 for stored 7) evicts the held pair
-        // but releases only the stored value coupon: the twin argument was never
-        // adopted, and the stored key coupon strands conservatively till drop.
+        // and releases its allowance without retaining a key identity map.
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
@@ -405,18 +351,15 @@ public sealed class AdoptedScalarCouponTests
         pool.TrackFreshMutable(dict, dict.CommittedStorageBytes, span);
         var trackedBefore = PooledCharge(pool, dict);
         Assert.True(dict.Remove(7.0));
-        Assert.Equal(trackedBefore - AdoptedScalarCoupons.CouponBytes, PooledCharge(pool, dict));
+        Assert.Equal(trackedBefore - 128L, PooledCharge(pool, dict));
         Assert.Equal(0, dict.Count);
     }
 
     [Fact]
-    public void DictGrowThenShrinkToOneRetainsSingleCoupon()
+    public void DictGrowThenShrinkRetainsOnlyLiveEntryAllowances()
     {
-        // N27: the helper survives a grow/shrink cycle retaining one adopted identity (it is
-        // discarded only when its committed total reaches zero). Six pairs stay on the small
-        // store so the only moving charges are coupons; promotion replace-and-release has its
-        // own coverage. Same-reference removals release exactly, leaving two coupons; dropping
-        // the last identity refunds everything with no stranding.
+        // Six pairs stay on the small backing. Removing each entry releases its
+        // allowance; the backing remains funded through empty/refill cycles.
         var (context, span) = Budgeted(1L << 20);
         var governor = context.MemoryGovernor;
         var dict = new PyDict(governor, span);
@@ -437,21 +380,14 @@ public sealed class AdoptedScalarCouponTests
         }
 
         Assert.Equal(1, dict.Length);
-        var coupons = ReadScalarCoupons(dict);
-        Assert.NotNull(coupons);
-        Assert.Equal(2 * AdoptedScalarCoupons.CouponBytes, coupons!.CommittedBytes);
+        Assert.Equal(emptySnapshot + 128L, dict.CommittedStorageBytes);
         Assert.Equal(baseline + (dict.CommittedStorageBytes - emptySnapshot), governor.CurrentCommittedBytes);
         Assert.True(dict.Remove(keys[5]));
-        Assert.Null(ReadScalarCoupons(dict));
+        Assert.Equal(emptySnapshot, dict.CommittedStorageBytes);
         Assert.Equal(baseline, governor.CurrentCommittedBytes);
         dict.SetItem(keys[2], values[2]);
-        Assert.Equal(2 * AdoptedScalarCoupons.CouponBytes, ReadScalarCoupons(dict)!.CommittedBytes);
+        Assert.Equal(emptySnapshot + 128L, dict.CommittedStorageBytes);
     }
-
-    private static AdoptedScalarCoupons? ReadScalarCoupons(PyDict dict)
-        => (AdoptedScalarCoupons?)typeof(PyDict)
-            .GetField("_scalarCoupons", BindingFlags.NonPublic | BindingFlags.Instance)!
-            .GetValue(dict);
 
     [Fact]
     public void DictCopyAdoptsSharedPairs()

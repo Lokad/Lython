@@ -1,4 +1,4 @@
-﻿using Lokad.Lython.Frontend;
+using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Tests.Harness;
 
@@ -51,15 +51,10 @@ public sealed class ExecutionPathOwnershipParityTests
         Assert.Equal(executableResult.PeakExecutionMemoryBytes, loweredResult.PeakExecutionMemoryBytes);
     }
 
-    // N06: identical int literals as both key and value diverge by box identity.
-    // The executable engine interns constants per compilation (key and value share
-    // one box: one coupon per entry), while lowered integer literals unbox into
-    // fresh boxes per evaluation (two coupons per entry). Both peaks faithfully
-    // cover their own retained graphs; the delta below pins the divergence exactly
-    // (200 entries x one extra coupon) instead of pretending the paths coincide.
-    // The async lowered path rebuilding literals per evaluation is the same family.
+    // Literal boxing differs between evaluators; retained-entry storage makes
+    // admission independent of that implementation detail.
     [Fact]
-    public void IntDictDisplayDivergesByBoxIdentity()
+    public void IntDictDisplayOwnershipIsIndependentOfBoxIdentity()
     {
         const string source = "x = {0: 0}\nreturn len(x)\n";
         var frontend = LythonFrontend.Compile(source);
@@ -83,6 +78,6 @@ public sealed class ExecutionPathOwnershipParityTests
         Assert.True(executableResult.Success, executableResult.Failure?.Message);
         Assert.True(loweredResult.Success, loweredResult.Failure?.Message);
         Assert.Equal(executableResult.ReturnValue, loweredResult.ReturnValue);
-        Assert.Equal(64L, loweredResult.PeakExecutionMemoryBytes - executableResult.PeakExecutionMemoryBytes);
+        Assert.Equal(executableResult.PeakExecutionMemoryBytes, loweredResult.PeakExecutionMemoryBytes);
     }
 }

@@ -64,101 +64,6 @@ internal sealed class AdoptedScalarCoupons
         }
     }
 
-    // All-or-nothing batch adoption: the rollback record precedes each coupon,
-    // so a denied coupon (or a failed record allocation) rolls back to pre-held
-    // counts and the caller either owns the whole batch or nothing beyond them.
-    // The values enumerable may be consumed twice on the rollback path only;
-    // callers pass materialized inputs.
-    public void AdoptAll(IEnumerable<object> values, MemoryGovernor governor, LythonSourceSpan? span)
-    {
-        List<object>? staged = null;
-        try
-        {
-            foreach (var value in values)
-            {
-                if (!IsAdoptableScalar(value) || ChargeReclamationPool.IsTrackedValue(value!))
-                {
-                    continue;
-                }
-
-                // Record before adopting: a record-allocation failure then
-                // commits nothing, and a denied adoption still unwinds through
-                // UnadoptOne, which ignores recorded-but-unadopted identities.
-                staged ??= new List<object>();
-                staged.Add(value!);
-                AdoptStaged(value!, governor, span);
-            }
-        }
-        catch
-        {
-            if (staged is not null)
-            {
-                for (var i = staged.Count - 1; i >= 0; i--)
-                {
-                    UnadoptOne(staged[i], governor);
-                }
-            }
-
-            throw;
-        }
-    }
-
-    // All-or-nothing batch adoption over stored pairs: both halves adopt per
-    // entry with the same rollback as AdoptAll. Callers pass materialized pairs.
-    public void AdoptAllPairs(IEnumerable<KeyValuePair<object, object>> pairs, MemoryGovernor governor, LythonSourceSpan? span)
-    {
-        List<object>? staged = null;
-        try
-        {
-            foreach (var pair in pairs)
-            {
-                if (IsAdoptableScalar(pair.Key) && !ChargeReclamationPool.IsTrackedValue(pair.Key!))
-                {
-                    // Record before adopting (see AdoptAll): the rollback
-                    // tolerates recorded-but-unadopted entries.
-                    staged ??= new List<object>();
-                    staged.Add(pair.Key);
-                    AdoptStaged(pair.Key, governor, span);
-                }
-
-                if (IsAdoptableScalar(pair.Value) && !ChargeReclamationPool.IsTrackedValue(pair.Value!))
-                {
-                    staged ??= new List<object>();
-                    staged.Add(pair.Value);
-                    AdoptStaged(pair.Value, governor, span);
-                }
-            }
-        }
-        catch
-        {
-            if (staged is not null)
-            {
-                for (var i = staged.Count - 1; i >= 0; i--)
-                {
-                    UnadoptOne(staged[i], governor);
-                }
-            }
-
-            throw;
-        }
-    }
-
-    // Replicates already-held references without adopting: every identity flows
-    // through this container already, so only refcounts move and no coupon can
-    // commit. Identities the container never adopted stay unadopted.
-    public void AddRef(object? value, int extra)
-    {
-        if (value is null || extra <= 0 || _refcounts is null)
-        {
-            return;
-        }
-
-        if (_refcounts.TryGetValue(value, out var held))
-        {
-            _refcounts[value] = checked(held + extra);
-        }
-    }
-
     // Releases one outgoing reference. Map-gated (never a type gate): only an
     // adopted identity can hold a coupon, so unknown values are a no-op and a
     // box that gained pool ownership after adoption still releases exactly once.
@@ -184,35 +89,9 @@ internal sealed class AdoptedScalarCoupons
         _refcounts?.Clear();
     }
 
-    private void AdoptStaged(object value, MemoryGovernor governor, LythonSourceSpan? span)
-    {
-        if (_refcounts is not null && _refcounts.TryGetValue(value, out var held))
-        {
-            _refcounts[value] = checked(held + 1);
-            return;
-        }
-
-        governor.Reserve(CouponBytes, span);
-        governor.Commit(CouponBytes);
-        _committedBytes += CouponBytes;
-        try
-        {
-            _refcounts ??= new Dictionary<object, int>(ReferenceEqualityComparer.Instance);
-            _refcounts.Add(value, 1);
-        }
-        catch
-        {
-            _committedBytes -= CouponBytes;
-            governor.Release(CouponBytes);
-            throw;
-        }
-    }
-
     private void UnadoptOne(object value, MemoryGovernor governor)
     {
-        // A batch rollback may name an identity whose adoption denied before
-        // the refcount map existed (the record precedes the coupon): nothing
-        // to release, matching the Release/ReleaseAll guards above.
+        // Unknown or already-released identities carry no coupon.
         if (_refcounts is null || !_refcounts.TryGetValue(value, out var held))
         {
             return;

@@ -8,7 +8,11 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     private MemoryGovernor? _memoryGovernor;
     private LythonSourceSpan? _allocationSpan;
     private int _version;
-    private AdoptedScalarCoupons? _scalarCoupons;
+    private long _entryStorageBytes;
+    private const long EntryStorageBytes = 128;
+    // Wrapped storage keeps its charged owner alive through escaped views and
+    // iterators. All storage mutations refresh that one existing snapshot.
+    internal IPyOwnershipSnapshot? StorageOwner { get; set; }
 
     // Protocol-key side table (R13b): keys needing __hash__/__eq__ dispatch
     // bypass Dictionary probing (which cannot run guest code) and scan with
@@ -51,51 +55,35 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         _items = PyDictStorage.Create(0, governor, allocationSpan);
     }
 
-    public PyDict(PyDict other)
-    {
-        _memoryGovernor = other._memoryGovernor;
-        _allocationSpan = other._allocationSpan;
-        _items = other._memoryGovernor is null
-            ? other._items.Clone()
-            : PyDictStorage.Create(other._items, other._memoryGovernor, other._allocationSpan);
-        _protocol = other._protocol is null ? null : new List<ProtocolEntry>(other._protocol);
-        _protocolBytes = 0;
-        _protocolSeq = other._protocolSeq;
-        if (other._sideIndex is not null)
-        {
-            _sideIndex = new ProtocolSideIndex();
-            _sideIndex.CloneFrom(other._sideIndex, null, null);
-        }
-
-        if (_memoryGovernor is not null)
-        {
-            AdoptInitialItems();
-        }
-    }
+    public PyDict(PyDict other) : this(other, other._memoryGovernor, other._allocationSpan) { }
 
     public PyDict(PyDict other, MemoryGovernor governor) : this(other, governor, null) { }
 
-    public PyDict(PyDict other, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+    public PyDict(PyDict other, MemoryGovernor? governor, LythonSourceSpan? allocationSpan)
     {
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
         _items = PyDictStorage.Create(other._items, governor, allocationSpan);
-        _protocol = other._protocol is null ? null : new List<ProtocolEntry>(other._protocol);
         _protocolSeq = other._protocolSeq;
-        if (other._protocolBytes > 0)
+        try
         {
-            governor.Reserve(other._protocolBytes, allocationSpan);
-            governor.Commit(other._protocolBytes);
-            _protocolBytes = other._protocolBytes;
+            ChargeInitialEntries();
+            var protocolBytes = checked((long)(other._protocol?.Count ?? 0) * ProtocolEntryBytes);
+            governor?.Reserve(protocolBytes, allocationSpan);
+            governor?.Commit(protocolBytes);
+            _protocolBytes = governor is null ? 0 : protocolBytes;
+            _protocol = other._protocol is null ? null : new List<ProtocolEntry>(other._protocol);
+            if (other._sideIndex is not null)
+            {
+                _sideIndex = new ProtocolSideIndex();
+                _sideIndex.CloneFrom(other._sideIndex, governor, allocationSpan);
+            }
         }
-
-        if (other._sideIndex is not null)
+        catch
         {
-            _sideIndex = new ProtocolSideIndex();
-            _sideIndex.CloneFrom(other._sideIndex, governor, allocationSpan);
+            RefundAbortedConstruction();
+            throw;
         }
-
-        AdoptInitialItems();
     }
 
     // The side index holds shadows of fast-store entries, never additional
@@ -107,8 +95,9 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     // Current committed backing charges, for pooled owners that release them
     // if this dictionary is dropped without wholesale storage replacement.
-    // Adopted scalar coupons fold in, so snapshots and drop sweeps carry them.
-    internal long CommittedStorageBytes => _items.CommittedBytes + _protocolBytes + (_sideIndex?.CommittedBytes ?? 0) + (_scalarCoupons?.CommittedBytes ?? 0);
+    // Every retained pair carries the same small-value headroom. Larger payloads
+    // keep their separate owners; aliases never require identity bookkeeping.
+    internal long CommittedStorageBytes => _items.CommittedBytes + _protocolBytes + (_sideIndex?.CommittedBytes ?? 0) + _entryStorageBytes;
 
     public int Length => Count;
 
@@ -236,48 +225,35 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         var storageKey = ToStorageKey(key);
         var storageValue = ToStorageValue(value);
         var committedBefore = CommittedStorageBytes;
-        if (_items.TryGetValue(storageKey, out var current))
+        if (_items.ContainsKey(storageKey))
         {
             // The original key object stays retained: only the value turns over.
             // Like CPython, replacement changes no size, so no version bump.
-            AdoptIncoming(storageValue);
-            try { _ = _items.SetItem(storageKey, storageValue); }
-            catch
-            {
-                UnadoptIncoming(storageValue);
-                throw;
-            }
-            ReleaseOutgoing(FromStorageValue(current));
-            NoteGrowth(committedBefore);
+            ReplaceStoredValue(storageKey, storageValue);
             return;
         }
 
-        AdoptIncoming(storageKey);
-        AdoptIncoming(storageValue);
+        var entryBytes = _memoryGovernor is null ? 0 : EntryStorageBytes;
+        _memoryGovernor?.Reserve(entryBytes, _allocationSpan);
+        var countBefore = Count;
         try
         {
             _items = PyDictStorage.EnsureCapacity(_items, Count + 1, _memoryGovernor, _allocationSpan);
-        }
-        catch (Exception)
-        {
-            UnadoptIncoming(storageKey);
-            UnadoptIncoming(storageValue);
-            throw;
-        }
-
-        try
-        {
             _items.AddNew(storageKey, storageValue);
         }
-        catch
+        finally
         {
-            UnadoptIncoming(storageKey);
-            UnadoptIncoming(storageValue);
+            // A storage adapter may publish before throwing. Preserve that
+            // visible entry and its funding; refusal before publication refunds.
+            if (Count > countBefore)
+            {
+                _memoryGovernor?.Commit(entryBytes);
+                _entryStorageBytes += entryBytes;
+                _version++;
+            }
+            else _memoryGovernor?.ReleaseReserved(entryBytes);
             NoteGrowth(committedBefore);
-            throw;
         }
-        _version++;
-        NoteGrowth(committedBefore);
     }
 
     public void AttachMemoryGovernor(MemoryGovernor governor)
@@ -285,8 +261,42 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     public void AttachMemoryGovernor(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
-        _memoryGovernor ??= governor;
-        _allocationSpan ??= allocationSpan;
+        if (_memoryGovernor is not null)
+        {
+            _allocationSpan ??= allocationSpan;
+            return;
+        }
+        var span = _allocationSpan ?? allocationSpan;
+        IPyDictStorage? storage = null;
+        ProtocolSideIndex? sideIndex = null;
+        var entryBytes = checked((long)Count * EntryStorageBytes);
+        var protocolBytes = checked((long)(_protocol?.Count ?? 0) * ProtocolEntryBytes);
+        var valueBytes = checked(entryBytes + protocolBytes);
+        governor.Reserve(valueBytes, span);
+        try
+        {
+            using var scratch = governor.ReserveTemporary(checked(16L * Count), span);
+            storage = PyDictStorage.Create(_items, governor, span);
+            if (_sideIndex is not null)
+            {
+                sideIndex = new ProtocolSideIndex();
+                sideIndex.CloneFrom(_sideIndex, governor, span);
+            }
+        }
+        catch
+        {
+            governor.ReleaseReserved(valueBytes);
+            if (storage is not null) governor.Release(storage.ReleaseCommittedBytes());
+            sideIndex?.ReleaseAll(governor);
+            throw;
+        }
+        governor.Commit(valueBytes);
+        _items = storage;
+        _sideIndex = sideIndex;
+        _entryStorageBytes = entryBytes;
+        _protocolBytes = protocolBytes;
+        _memoryGovernor = governor;
+        _allocationSpan = span;
     }
 
     public bool Remove(object key)
@@ -296,11 +306,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         {
             _ = _items.Remove(ToStorageKey(key));
             RemoveProtocolShadow(key);
-            // A structural-twin argument was never adopted (only retained keys
-            // earn coupons), so releasing by argument is exact for same-reference
-            // removals and a safe no-op otherwise; the stored value always is.
-            ReleaseOutgoing(key);
-            ReleaseOutgoing(FromStorageValue(storedValue));
+            ReleaseEntryStorage();
             _version++;
             NoteGrowth(committedBefore);
             return true;
@@ -345,16 +351,14 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     }
 
     // Deletes an already-resolved stored entry: no guest dispatch, version
-    // bumped exactly once, pool snapshots refreshed. The twin-argument rule
-    // matches Remove: exact for same-reference removals, a safe no-op for
-    // structural twins while the stored value always releases.
+    // bumped exactly once, pool snapshots refreshed. Entry funding is independent
+    // of the identity or type of the lookup argument.
     private void RemoveResolvedEntry(object storageKey, object releaseKey, object storedValue)
     {
         var committedBefore = CommittedStorageBytes;
         _ = _items.Remove(storageKey);
         RemoveProtocolShadow(releaseKey);
-        ReleaseOutgoing(releaseKey);
-        ReleaseOutgoing(FromStorageValue(storedValue));
+        ReleaseEntryStorage();
         _version++;
         NoteGrowth(committedBefore);
     }
@@ -707,7 +711,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         _memoryGovernor.Reserve(bytes, _allocationSpan);
         _memoryGovernor.Commit(bytes);
         _protocolBytes += bytes;
-        ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
+        NotifyStorageChanged();
     }
 
     private void ReleaseSideBytes(long bytes)
@@ -719,7 +723,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
         _memoryGovernor.Release(bytes);
         _protocolBytes -= bytes;
-        ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
+        NotifyStorageChanged();
     }
 
     // Protocol insert: update in place wherever the logical key already
@@ -826,46 +830,40 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
     {
         var committedBefore = CommittedStorageBytes;
         var storageKey = ToStorageKey(key);
-        AdoptIncoming(storageKey);
-        AdoptIncoming(storageValue);
-        EnsureSideTable();
-        var position = _protocol!.Count;
+        var entryBytes = _memoryGovernor is null ? 0 : EntryStorageBytes;
+        var protocolBytes = _memoryGovernor is null ? 0 : ProtocolEntryBytes;
+        var bytes = entryBytes + protocolBytes;
+        _memoryGovernor?.Reserve(bytes, _allocationSpan);
+        var countBefore = Count;
         try
         {
+            EnsureSideTable();
+            var position = _protocol!.Count;
             _sideIndex!.Add(position, hash, structuralHash, _memoryGovernor, _allocationSpan);
+            try
+            {
+                _items = PyDictStorage.EnsureCapacity(_items, checked(Count + 1), _memoryGovernor, _allocationSpan);
+                _items.AddNew(storageKey, storageValue);
+                _protocol.Add(new ProtocolEntry(_protocolSeq++, hash, structuralHash, storageKey));
+            }
+            catch
+            {
+                if (Count == countBefore) _sideIndex.RemoveForRollback(position, hash, structuralHash, _memoryGovernor);
+                throw;
+            }
         }
-        catch (Exception)
+        finally
         {
-            UnadoptIncoming(storageKey);
-            UnadoptIncoming(storageValue);
-            throw;
+            if (Count > countBefore)
+            {
+                _memoryGovernor?.Commit(bytes);
+                _entryStorageBytes += entryBytes;
+                _protocolBytes += protocolBytes;
+                _version++;
+            }
+            else _memoryGovernor?.ReleaseReserved(bytes);
+            NoteGrowth(committedBefore);
         }
-
-        try
-        {
-            _items = PyDictStorage.EnsureCapacity(_items, checked(_items.Count + 1), _memoryGovernor, _allocationSpan);
-        }
-        catch (Exception)
-        {
-            _sideIndex.RemoveForRollback(position, hash, structuralHash, _memoryGovernor);
-            UnadoptIncoming(storageKey);
-            UnadoptIncoming(storageValue);
-            throw;
-        }
-
-        _items.AddNew(storageKey, storageValue);
-        _protocol.Add(new ProtocolEntry(_protocolSeq++, hash, structuralHash, storageKey));
-        _version++;
-        if (_memoryGovernor is not null)
-        {
-            _memoryGovernor.Reserve(ProtocolEntryBytes, _allocationSpan);
-            _memoryGovernor.Commit(ProtocolEntryBytes);
-            _protocolBytes += ProtocolEntryBytes;
-        }
-
-        // A denied protocol charge needs no extra rollback: the stranded entry
-        // stays retained (side list and index alike), exactly what the coupons cover.
-        NoteGrowth(committedBefore);
     }
 
     // Removes a protocol key wherever it lives; returns whether anything
@@ -948,8 +946,7 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
                     var committedBefore = CommittedStorageBytes;
                     _items.Remove(ToStorageKey(pair.Key));
                     RemoveProtocolShadow(pair.Key);
-                    ReleaseOutgoing(FromStorageKey(pair.Key));
-                    ReleaseOutgoing(FromStorageValue(pair.Value));
+                    ReleaseEntryStorage();
                     NoteGrowth(committedBefore);
                     return true;
                 }
@@ -999,27 +996,12 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     private void RemoveSideEntry(object key)
     {
-        // Callers always pass the stored entry key (side-scan and structural
-        // matches resolve it first), so the released coupons are the evicted pair.
-        if (_protocol is not null)
-        {
-            for (var i = 0; i < _protocol.Count; i++)
-            {
-                if (ReferenceEquals(_protocol[i].Key, key))
-                {
-                    var evicted = _protocol[i];
-                    _ = _items.TryGetValue(ToStorageKey(evicted.Key), out var storedValue);
-                    ReleaseOutgoing(FromStorageKey(evicted.Key));
-                    ReleaseOutgoing(storedValue);
-                    _protocol.RemoveAt(i);
-                    _sideIndex?.RemoveAt(i, evicted.Hash, evicted.StructuralHash);
-                    break;
-                }
-            }
-        }
-
-        _items.Remove(ToStorageKey(key));
-        ReleaseSideBytes(ProtocolEntryBytes);
+        // An equality callback may already have removed the matched entry.
+        // Only a successful deletion can release this entry's storage.
+        if (!_items.Remove(ToStorageKey(key))) return;
+        ReleaseEntryStorage();
+        RemoveProtocolShadow(key);
+        NotifyStorageChanged();
     }
 
     public bool TryRemoveLast([MaybeNullWhen(false)] out object key, [MaybeNullWhen(false)] out object value)
@@ -1059,8 +1041,8 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
             _sideIndex = null;
             _protocol = null;
             _protocolBytes = 0;
-            ReleaseAllCoupons();
-            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
+            ReleaseAllEntryStorage();
+            NotifyStorageChanged();
             return;
         }
 
@@ -1076,11 +1058,11 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
             _sideIndex?.ReleaseAll(_memoryGovernor);
             _sideIndex = null;
-            ReleaseAllCoupons();
+            ReleaseAllEntryStorage();
             _items = PyDictStorage.Create(0, _memoryGovernor, _allocationSpan);
             _protocol = null;
             _protocolBytes = 0;
-            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
+            NotifyStorageChanged();
             return;
         }
 
@@ -1265,52 +1247,60 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
 
     private static object FromStorageValue(object value) => value;
 
-    // Replaces the value held under an already-stored key: adopts the incoming
-    // value before swapping (a denial keeps the old value), then releases the
-    // displaced one. The stored key object never turns over. Callers resolve the
+    // Replacement transfers existing entry funding. The stored key never turns
+    // over. If a callback removed the resolved entry, fund its insertion afresh.
+    // Callers resolve the
     // stored key first; no version bump (size unchanged, like CPython).
     private void ReplaceStoredValue(object storageKey, object storageValue)
     {
         var committedBefore = CommittedStorageBytes;
-        _ = _items.TryGetValue(storageKey, out var prior);
-        AdoptIncoming(storageValue);
-        try { _ = _items.SetItem(storageKey, storageValue); }
-        catch
+        var entryBytes = _memoryGovernor is not null && !_items.ContainsKey(storageKey) ? EntryStorageBytes : 0;
+        _memoryGovernor?.Reserve(entryBytes, _allocationSpan);
+        var countBefore = Count;
+        try
         {
-            UnadoptIncoming(storageValue);
-            throw;
+            if (entryBytes > 0)
+                _items = PyDictStorage.EnsureCapacity(_items, checked(Count + 1), _memoryGovernor, _allocationSpan);
+            _ = _items.SetItem(storageKey, storageValue);
         }
-        ReleaseOutgoing(prior);
-        NoteGrowth(committedBefore);
+        finally
+        {
+            if (Count > countBefore)
+            {
+                _memoryGovernor?.Commit(entryBytes);
+                _entryStorageBytes += entryBytes;
+                _version++;
+            }
+            else _memoryGovernor?.ReleaseReserved(entryBytes);
+            NoteGrowth(committedBefore);
+        }
     }
 
     // Refreshes the tracked snapshot when the owned total moved (storage or
-    // coupons): a stale snapshot would over-release on a later drop sweep.
+    // entry allowances): a stale snapshot would over-release on a later drop sweep.
     private void NoteGrowth(long committedBefore)
     {
         if (CommittedStorageBytes != committedBefore)
         {
-            ChargeReclamationPool.NotifyStorageReplaced(this, CommittedStorageBytes);
+            NotifyStorageChanged();
         }
     }
 
-    // Adopts construction contents with a refund of the orphaned charges when
-    // a coupon denies: callers publish nothing on failure. AdoptAllPairs rolls
-    // its own coupons back, so only backing and protocol refund here.
-    private void AdoptInitialItems()
+    private void NotifyStorageChanged()
     {
-        var incoming = new AdoptedScalarCoupons();
-        try
-        {
-            incoming.AdoptAllPairs(_items, _memoryGovernor!, _allocationSpan);
-        }
-        catch
-        {
-            RefundAbortedConstruction();
-            throw;
-        }
+        var owner = StorageOwner;
+        var bytes = CommittedStorageBytes;
+        if (owner is not null && owner.TrySnapshotOwnership(out var ownerBytes)) bytes = ownerBytes;
+        ChargeReclamationPool.NotifyStorageReplaced(owner ?? (object)this, bytes);
+    }
 
-        _scalarCoupons = incoming.CommittedBytes > 0 ? incoming : null;
+    private void ChargeInitialEntries()
+    {
+        if (_memoryGovernor is null) return;
+        var bytes = checked((long)Count * EntryStorageBytes);
+        _memoryGovernor.Reserve(bytes, _allocationSpan);
+        _memoryGovernor.Commit(bytes);
+        _entryStorageBytes = bytes;
     }
 
     private void RefundAbortedConstruction()
@@ -1327,70 +1317,20 @@ internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTru
         _ = _items.ReleaseCommittedBytes();
         _protocolBytes = 0;
         _sideIndex = null;
-        _scalarCoupons = null;
+        _entryStorageBytes = 0;
     }
 
-    // Adopts one incoming value when governed; denies before the caller mutates.
-    private void AdoptIncoming(object value)
+    private void ReleaseEntryStorage()
     {
-        if (_memoryGovernor is null || !AdoptedScalarCoupons.IsAdoptableScalar(value))
-        {
-            return;
-        }
-
-        _scalarCoupons ??= new AdoptedScalarCoupons();
-        _scalarCoupons.Adopt(value, _memoryGovernor, _allocationSpan);
-        if (_scalarCoupons.CommittedBytes == 0)
-        {
-            _scalarCoupons = null;
-        }
+        if (_memoryGovernor is null) return;
+        _memoryGovernor.Release(EntryStorageBytes);
+        _entryStorageBytes -= EntryStorageBytes;
     }
 
-    private void UnadoptIncoming(object value)
+    private void ReleaseAllEntryStorage()
     {
-        if (_scalarCoupons is null || _memoryGovernor is null)
-        {
-            return;
-        }
-
-        _scalarCoupons.Release(value, _memoryGovernor);
-        if (_scalarCoupons.CommittedBytes == 0)
-        {
-            _scalarCoupons = null;
-        }
-    }
-
-    // Releases one outgoing reference and refreshes the snapshot when the owned
-    // total moved, so drops never sweep a stale charge.
-    private void ReleaseOutgoing(object? value)
-    {
-        if (_scalarCoupons is null || _memoryGovernor is null)
-        {
-            return;
-        }
-
-        var committedBefore = CommittedStorageBytes;
-        _scalarCoupons.Release(value, _memoryGovernor);
-        if (_scalarCoupons.CommittedBytes == 0)
-        {
-            _scalarCoupons = null;
-        }
-
-        NoteGrowth(committedBefore);
-    }
-
-    private void ReleaseAllCoupons()
-    {
-        if (_scalarCoupons is null || _memoryGovernor is null)
-        {
-            _scalarCoupons = null;
-            return;
-        }
-
-        var committedBefore = CommittedStorageBytes;
-        _scalarCoupons.ReleaseAll(_memoryGovernor);
-        _scalarCoupons = null;
-        NoteGrowth(committedBefore);
+        _memoryGovernor?.Release(_entryStorageBytes);
+        _entryStorageBytes = 0;
     }
 
     private void EnsureUnmodified(int expectedVersion)

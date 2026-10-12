@@ -20,6 +20,12 @@ internal sealed class DelayedLythonHost : ILythonHost
 
     public Action? OnTextReadCompleted { get; set; }
 
+    public Action? OnStandardOutputWrite
+    {
+        get => _inner.OnStandardOutputWrite;
+        set => _inner.OnStandardOutputWrite = value;
+    }
+
     public string Cwd => _inner.Cwd;
 
     public DateTimeOffset LocalNow => _inner.LocalNow;
