@@ -122,7 +122,7 @@ internal sealed partial class LythonRuntime
     {
         if (context.Host.SubprocessRunner is null)
         {
-            throw new LythonRuntimeException("RuntimeError", "subprocess is not available in this host.", span);
+            throw RuntimeErrors.Capability("subprocess is not available in this host.", span);
         }
 
         var invocation = BuildSubprocessInvocation(new BoundSubprocessArguments(arguments), span, context, owner, policy);
@@ -142,7 +142,7 @@ internal sealed partial class LythonRuntime
     {
         if (context.Host.SubprocessRunner is null)
         {
-            throw new LythonRuntimeException("RuntimeError", "subprocess is not available in this host.", span);
+            throw RuntimeErrors.Capability("subprocess is not available in this host.", span);
         }
 
         var invocation = BuildSubprocessInvocation(new BoundSubprocessArguments(arguments), span, context, owner, policy);
@@ -167,10 +167,10 @@ internal sealed partial class LythonRuntime
 
         var shell = ParseSubprocessOptionalBool(arguments.Shell, false, owner, "shell", span);
         var runner = context.Host.SubprocessRunner ??
-            throw new LythonRuntimeException("RuntimeError", "subprocess is not available in this host.", span);
+            throw RuntimeErrors.Capability("subprocess is not available in this host.", span);
         if (shell && !runner.AllowsShellInvocation)
         {
-            throw new LythonRuntimeException("RuntimeError", "subprocess shell invocation is not available in this host.", span);
+            throw RuntimeErrors.Capability("subprocess shell invocation is not available in this host.", span);
         }
 
         var args = ParseSubprocessArgs(arguments.Args, shell, owner, span, context);

@@ -136,7 +136,7 @@ internal sealed partial class LythonRuntime
                     var bufferedLength = checked(_bufferedRuneLength + additionalLength);
                     if (_context.Limits.MaxStringLength is { } maximumLength && bufferedLength > maximumLength)
                     {
-                        throw RuntimeErrors.Runtime($"maximum string length exceeded ({maximumLength})", null);
+                        throw RuntimeErrors.StringLength(maximumLength, bufferedLength, null);
                     }
                 }
 

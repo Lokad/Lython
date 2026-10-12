@@ -49,6 +49,8 @@ internal class LythonRuntimeException : Exception
 
     public object? Payload { get; }
 
+    internal LythonFailureAttribution? Attribution { get; set; }
+
     public PyException? OriginalPythonException { get; set; }
 
     public PyException? PythonCause { get; set; }

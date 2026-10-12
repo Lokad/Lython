@@ -215,8 +215,8 @@ internal sealed partial class LythonRuntime
                     stat.Size > new BigInteger(maxHostReadBytes))
                 {
                     throw UsesBinaryTextTransport(encoding)
-                        ? RuntimeErrors.Runtime($"host binary read exceeded maximum bytes ({maxHostReadBytes})", null)
-                        : RuntimeErrors.Runtime($"host text read exceeded maximum bytes ({maxHostReadBytes})", null);
+                        ? RuntimeErrors.HostRead($"host binary read exceeded maximum bytes ({maxHostReadBytes})", maxHostReadBytes, stat.Size, null)
+                        : RuntimeErrors.HostRead($"host text read exceeded maximum bytes ({maxHostReadBytes})", maxHostReadBytes, stat.Size, null);
                 }
 
                 // No execution-budget prereserve against the stat size: windows

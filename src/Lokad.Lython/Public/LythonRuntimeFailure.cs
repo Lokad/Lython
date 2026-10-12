@@ -13,6 +13,9 @@ public sealed record LythonRuntimeFailure(
     IReadOnlyList<LythonStackFrame> StackTrace,
     string? SourcePath)
 {
+    /// <summary>Gets origin metadata for an actual runtime check, when present.</summary>
+    public LythonFailureAttribution? Attribution { get; init; }
+
     /// <summary>Creates failure details without source-path metadata.</summary>
     public LythonRuntimeFailure(
         string exceptionType,

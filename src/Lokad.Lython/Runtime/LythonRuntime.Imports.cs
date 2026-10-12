@@ -43,7 +43,7 @@ internal sealed partial class LythonRuntime
 
         if (!TryResolveLocalImportPath(moduleName, context, span, out var path, out _))
         {
-            throw RuntimeErrors.NoModuleNamed(moduleName, span);
+            throw MissingImportedModule(moduleName, context, span);
         }
 
         using var loadingScope = EnterModuleLoading(moduleName, context, span);
@@ -92,7 +92,7 @@ internal sealed partial class LythonRuntime
         var localImport = await TryResolveLocalImportPathAsync(moduleName, context, span).ConfigureAwait(false);
         if (localImport is null)
         {
-            throw RuntimeErrors.NoModuleNamed(moduleName, span);
+            throw MissingImportedModule(moduleName, context, span);
         }
 
         var path = localImport.Value.Path;
@@ -501,6 +501,14 @@ internal sealed partial class LythonRuntime
 
     private static bool IsDiscoverableBuiltinModuleName(string moduleName, ExecutionContext context)
         => BuiltinModuleCatalog.IsDiscoverable(moduleName, context);
+
+    private static LythonRuntimeException MissingImportedModule(string moduleName, ExecutionContext context, LythonSourceSpan span)
+    {
+        var failure = RuntimeErrors.NoModuleNamed(moduleName, span);
+        if (BuiltinModuleCatalog.HasUnavailableCapability(moduleName, context))
+            failure.Attribution = new(LythonFailureReason.HostCapabilityUnavailable);
+        return failure;
+    }
 
     private static bool ImportsOnlyFutureAnnotations(IReadOnlyList<ImportedMemberSyntax> importedMembers)
     {

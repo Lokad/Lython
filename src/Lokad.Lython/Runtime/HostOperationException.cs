@@ -10,5 +10,6 @@ internal sealed class HostOperationException : LythonRuntimeException
     public HostOperationException(string message, LythonSourceSpan? span, Exception? innerException)
         : base("RuntimeError", message, span, innerException)
     {
+        Attribution = new(LythonFailureReason.HostOperationFailed);
     }
 }

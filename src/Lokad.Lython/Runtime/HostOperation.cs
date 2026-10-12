@@ -34,12 +34,13 @@ internal static class HostOperation
             var task = valueTask.AsTask();
             if (!task.IsCompleted)
             {
-                throw RuntimeErrors.Runtime($"{name} violated its synchronous host capability contract.", span);
+                throw RuntimeErrors.Attributed("RuntimeError", $"{name} violated its synchronous host capability contract.", span,
+                    LythonFailureReason.HostOperationFailed);
             }
 
             if (task.IsCanceled)
             {
-                throw RuntimeErrors.Runtime("execution canceled", span);
+                throw RuntimeErrors.Cancelled(span);
             }
 
             if (task.IsFaulted)
@@ -73,12 +74,13 @@ internal static class HostOperation
             var task = valueTask.AsTask();
             if (!task.IsCompleted)
             {
-                throw RuntimeErrors.Runtime($"{name} violated its synchronous host capability contract.", span);
+                throw RuntimeErrors.Attributed("RuntimeError", $"{name} violated its synchronous host capability contract.", span,
+                    LythonFailureReason.HostOperationFailed);
             }
 
             if (task.IsCanceled)
             {
-                throw RuntimeErrors.Runtime("execution canceled", span);
+                throw RuntimeErrors.Cancelled(span);
             }
 
             if (task.IsFaulted)
@@ -129,7 +131,7 @@ internal static class HostOperation
     {
         if (capability is not ILythonSynchronousHostCapability { CompletesSynchronously: true })
         {
-            throw RuntimeErrors.Runtime(
+            throw RuntimeErrors.Capability(
                 $"{name} cannot run synchronously; use RunAsync because the host capability is asynchronous.",
                 span);
         }
@@ -145,9 +147,10 @@ internal static class HostOperation
         LythonSourceSpan? span)
         => exception switch
         {
-            OperationCanceledException => throw RuntimeErrors.Runtime("execution canceled", span),
-            LythonSubprocessOutputLimitException outputLimit => throw RuntimeErrors.Runtime(outputLimit.Message, span),
-            LythonHostCapabilityUnavailableException unavailable => throw RuntimeErrors.Runtime($"host {unavailable.Capability} is not available in this host.", span),
+            OperationCanceledException => throw RuntimeErrors.Cancelled(span),
+            LythonSubprocessOutputLimitException outputLimit => throw RuntimeErrors.Attributed("RuntimeError", outputLimit.Message, span,
+                LythonFailureReason.SubprocessOutputLimit, outputLimit.MaximumBytes, outputLimit.ActualBytes),
+            LythonHostCapabilityUnavailableException unavailable => throw RuntimeErrors.Capability($"host {unavailable.Capability} is not available in this host.", span),
             _ => throw RuntimeErrors.Host(name, exception, span),
         };
 }

@@ -34,7 +34,7 @@ internal static class RuntimeFailureProjection
             message,
             exception.Span,
             frames,
-            exception.SourcePath);
+            exception.SourcePath) { Attribution = exception.Attribution };
     }
 
     // Mapping misses carry their key as the payload; like CPython and the

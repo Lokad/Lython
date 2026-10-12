@@ -120,7 +120,9 @@ internal static class PyStructuralGuard
 
         if (state.Depth >= limit)
         {
-            throw RuntimeErrors.Recursion("maximum recursion depth exceeded in comparison", span);
+            throw RuntimeErrors.Attributed("RecursionError", "maximum recursion depth exceeded in comparison", span,
+                limit < LythonRuntime.ExecutionLimits.MaxInterpreterDepth ? LythonFailureReason.RecursionDepthLimit : LythonFailureReason.InterpreterStackLimit,
+                limit, state.Depth, state.Depth + 1L);
         }
 
         if (context is not null)
@@ -128,18 +130,23 @@ internal static class PyStructuralGuard
             var recBudget = context.Limits.MaxRecursionDepth ?? LythonRuntime.ExecutionLimits.MaxInterpreterDepth;
             if (context.Limits.CurrentRecursionDepth + state.Depth >= recBudget)
             {
-                throw RuntimeErrors.Recursion("maximum recursion depth exceeded in comparison", span);
+                throw RuntimeErrors.Attributed("RecursionError", "maximum recursion depth exceeded in comparison", span,
+                    context.Limits.MaxRecursionDepth.HasValue ? LythonFailureReason.RecursionDepthLimit : LythonFailureReason.InterpreterStackLimit,
+                    recBudget, context.Limits.CurrentRecursionDepth + state.Depth, context.Limits.CurrentRecursionDepth + state.Depth + 1L);
             }
 
             if (context.Limits.CurrentInterpreterDepth + state.Depth >= LythonRuntime.ExecutionLimits.MaxInterpreterDepth)
             {
-                throw RuntimeErrors.Runtime("maximum interpreter stack depth exceeded", span);
+                throw RuntimeErrors.Attributed("RuntimeError", "maximum interpreter stack depth exceeded", span,
+                    LythonFailureReason.InterpreterStackLimit, LythonRuntime.ExecutionLimits.MaxInterpreterDepth,
+                    context.Limits.CurrentInterpreterDepth + state.Depth, context.Limits.CurrentInterpreterDepth + state.Depth + 1L);
             }
         }
 
         if (!RuntimeHelpers.TryEnsureSufficientExecutionStack())
         {
-            throw RuntimeErrors.Recursion("maximum recursion depth exceeded in comparison", span);
+            throw RuntimeErrors.Attributed("RecursionError", "maximum recursion depth exceeded in comparison", span,
+                LythonFailureReason.InterpreterStackLimit);
         }
 
         var pairs = state.Pairs ??= new HashSet<StructuralPair>(StructuralPairComparer.Instance);
@@ -177,7 +184,9 @@ internal static class PyStructuralGuard
 
         if (state.Depth >= limit)
         {
-            throw RuntimeErrors.Recursion("maximum recursion depth exceeded", span);
+            throw RuntimeErrors.Attributed("RecursionError", "maximum recursion depth exceeded", span,
+                limit < LythonRuntime.ExecutionLimits.MaxInterpreterDepth ? LythonFailureReason.RecursionDepthLimit : LythonFailureReason.InterpreterStackLimit,
+                limit, state.Depth, state.Depth + 1L);
         }
 
         if (context is not null)
@@ -185,18 +194,23 @@ internal static class PyStructuralGuard
             var recBudget = context.Limits.MaxRecursionDepth ?? LythonRuntime.ExecutionLimits.MaxInterpreterDepth;
             if (context.Limits.CurrentRecursionDepth + state.Depth >= recBudget)
             {
-                throw RuntimeErrors.Recursion("maximum recursion depth exceeded", span);
+                throw RuntimeErrors.Attributed("RecursionError", "maximum recursion depth exceeded", span,
+                    context.Limits.MaxRecursionDepth.HasValue ? LythonFailureReason.RecursionDepthLimit : LythonFailureReason.InterpreterStackLimit,
+                    recBudget, context.Limits.CurrentRecursionDepth + state.Depth, context.Limits.CurrentRecursionDepth + state.Depth + 1L);
             }
 
             if (context.Limits.CurrentInterpreterDepth + state.Depth >= LythonRuntime.ExecutionLimits.MaxInterpreterDepth)
             {
-                throw RuntimeErrors.Runtime("maximum interpreter stack depth exceeded", span);
+                throw RuntimeErrors.Attributed("RuntimeError", "maximum interpreter stack depth exceeded", span,
+                    LythonFailureReason.InterpreterStackLimit, LythonRuntime.ExecutionLimits.MaxInterpreterDepth,
+                    context.Limits.CurrentInterpreterDepth + state.Depth, context.Limits.CurrentInterpreterDepth + state.Depth + 1L);
             }
         }
 
         if (!RuntimeHelpers.TryEnsureSufficientExecutionStack())
         {
-            throw RuntimeErrors.Recursion("maximum recursion depth exceeded", span);
+            throw RuntimeErrors.Attributed("RecursionError", "maximum recursion depth exceeded", span,
+                LythonFailureReason.InterpreterStackLimit);
         }
 
         var singles = state.Singles ??= new HashSet<object>(ReferenceEqualityComparer.Instance);

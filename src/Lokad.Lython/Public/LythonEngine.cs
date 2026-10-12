@@ -92,7 +92,8 @@ public sealed class LythonEngine
                 exitCode: 1,
                 standardOutput: string.Empty,
                 standardError: string.Empty,
-                diagnostics: diagnostics.Concat(hostDiagnostics).ToArray());
+                diagnostics: diagnostics.Concat(hostDiagnostics).ToArray(),
+                attribution: new(LythonFailureReason.HostCapabilityUnavailable));
         }
 
         return new LythonCompiledScript(

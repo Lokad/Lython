@@ -59,7 +59,7 @@ internal sealed partial class LythonRuntime
                 if (operation == TextFileOperation.Read && !stat.Exists)
                     throw new LythonRuntimeException("FileNotFoundError", "No such file: " + path, span);
                 if (operation == TextFileOperation.Read && context.Limits.MaxHostReadBytes is { } maximum && stat.Size > maximum)
-                    throw RuntimeErrors.Runtime($"host binary read exceeded maximum bytes ({maximum})", span);
+                    throw RuntimeErrors.HostRead($"host binary read exceeded maximum bytes ({maximum})", maximum, stat.Size, span);
                 var window = stat.Size < DefaultWindowBytes
                     ? Math.Max(256, (int)stat.Size) : DefaultWindowBytes;
                 var handle = new BinaryFileHandle(path, operation, context, window,

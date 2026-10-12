@@ -20,6 +20,10 @@ internal sealed record PyException(
 
     public string TypeName => Identity.TypeName;
 
+    // Internal provenance follows this actual exception across catches and
+    // reraises. Python attributes/args cannot manufacture or replace it.
+    internal LythonFailureAttribution? Attribution { get; init; }
+
     // Exceptions hash by identity like CPython, independent of
     // their record shape, so mutation never moves a live key.
     public int GetPyHashCode() => RuntimeHelpers.GetHashCode(this);

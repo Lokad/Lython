@@ -51,7 +51,8 @@ internal sealed class ExecutionValueObservation
     {
         if (Limits.MaxStringLength is { } maxStringLength && text.Length > maxStringLength)
         {
-            throw RuntimeErrors.Runtime($"maximum string length exceeded ({maxStringLength})", span);
+            throw RuntimeErrors.Attributed("RuntimeError", $"maximum string length exceeded ({maxStringLength})", span,
+                LythonFailureReason.StringLengthLimit, maxStringLength, text.Length);
         }
     }
 
@@ -59,7 +60,8 @@ internal sealed class ExecutionValueObservation
     {
         if (Limits.MaxCollectionSize is { } maxCollectionSize && count > maxCollectionSize)
         {
-            throw RuntimeErrors.Runtime($"maximum collection size exceeded ({maxCollectionSize})", span);
+            throw RuntimeErrors.Attributed("RuntimeError", $"maximum collection size exceeded ({maxCollectionSize})", span,
+                LythonFailureReason.CollectionSizeLimit, maxCollectionSize, count);
         }
     }
 

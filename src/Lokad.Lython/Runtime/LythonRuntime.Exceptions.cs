@@ -24,7 +24,7 @@ internal sealed partial class LythonRuntime
     // retained args tuple and rendered message through the pool instead: dropped
     // constructions reclaim on sweep while retained ones stay charged, and unbound
     // catching adds nothing beyond those construction transients.
-    private const long BoundExceptionBytes = 64;
+    private const long BoundExceptionBytes = 128;
 
     internal static void ChargeBoundException(MemoryGovernor? governor, LythonSourceSpan? span)
     {
@@ -53,6 +53,7 @@ internal sealed partial class LythonRuntime
             Context = exception.PythonContext,
             SuppressContext = exception.SuppressPythonContext,
             ExplicitArgs = exception.PythonExplicitArgs,
+            Attribution = exception.Attribution,
         };
         exception.OriginalPythonException = created;
         return created;

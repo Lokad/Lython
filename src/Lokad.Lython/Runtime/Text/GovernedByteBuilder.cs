@@ -19,6 +19,7 @@ internal sealed class GovernedByteBuilder
     private readonly LythonSourceSpan? _allocationSpan;
     private readonly int? _maxLengthBytes;
     private readonly string? _maxLengthOwner;
+    private readonly LythonFailureReason _lengthLimitReason;
 
     public GovernedByteBuilder() : this(0) { }
 
@@ -40,12 +41,14 @@ internal sealed class GovernedByteBuilder
         LythonSourceSpan? allocationSpan,
         int capacity,
         int? maxLengthBytes,
-        string? maxLengthOwner)
+        string? maxLengthOwner,
+        LythonFailureReason lengthLimitReason = LythonFailureReason.ByteBufferCapacityLimit)
     {
         _memoryGovernor = governor;
         _allocationSpan = allocationSpan;
         _maxLengthBytes = maxLengthBytes;
         _maxLengthOwner = maxLengthOwner;
+        _lengthLimitReason = lengthLimitReason;
         if (capacity <= 0)
         {
             _buffer = [];
@@ -251,7 +254,8 @@ internal sealed class GovernedByteBuilder
         if (_maxLengthBytes is { } maxLengthBytes && requiredCapacity > maxLengthBytes)
         {
             var owner = _maxLengthOwner ?? "byte buffer";
-            throw RuntimeErrors.Runtime($"{owner} exceeded maximum captured output bytes ({maxLengthBytes})", _allocationSpan);
+            throw RuntimeErrors.Attributed("RuntimeError", $"{owner} exceeded maximum captured output bytes ({maxLengthBytes})", _allocationSpan,
+                _lengthLimitReason, maxLengthBytes, _length, requiredCapacity);
         }
     }
 }

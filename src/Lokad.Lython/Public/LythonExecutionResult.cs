@@ -40,13 +40,22 @@ public sealed class LythonExecutionResult
         string standardOutput,
         string standardError,
         IReadOnlyList<LythonDiagnostic> diagnostics)
+        => CompilationFailed(exitCode, standardOutput, standardError, diagnostics,
+            new LythonFailureAttribution(LythonFailureReason.Compilation));
+
+    internal static LythonExecutionResult CompilationFailed(
+        int exitCode,
+        string standardOutput,
+        string standardError,
+        IReadOnlyList<LythonDiagnostic> diagnostics,
+        LythonFailureAttribution attribution)
     {
         if (!diagnostics.Any(diagnostic => diagnostic.Severity == LythonDiagnosticSeverity.Error))
         {
             throw new ArgumentException("Compilation failure requires at least one error diagnostic.", nameof(diagnostics));
         }
 
-        return new(new CompilationFailedState(exitCode), standardOutput, standardError, diagnostics);
+        return new(new CompilationFailedState(exitCode, attribution), standardOutput, standardError, diagnostics);
     }
 
     /// <summary>Creates a runtime-failure result.</summary>
@@ -105,13 +114,22 @@ public sealed class LythonExecutionResult
 
     /// <summary>
     /// Gets the requested size in bytes of the most recent denied execution
-    /// memory reservation, for failure attribution. Zero when the run never
-    /// exceeded its execution budget; see the SPEC memory-budget section.
+    /// memory reservation, including a denial caught by guest code. This is
+    /// denial history, not the terminal failure's cause; use
+    /// <see cref="FailureAttribution"/> for that. Zero when nothing was denied.
     /// </summary>
     public long DeniedReservationBytes { get; internal set; }
 
     /// <summary>Gets projected Python exception details for a runtime failure.</summary>
     public LythonRuntimeFailure? Failure => (State as RuntimeFailedState)?.Failure;
+
+    /// <summary>Gets typed terminal-failure attribution, or null for a successful execution.</summary>
+    public LythonFailureAttribution? FailureAttribution => State switch
+    {
+        RuntimeFailedState failed => failed.Failure.Attribution ?? new(LythonFailureReason.GuestException),
+        CompilationFailedState failed => failed.Attribution,
+        _ => null,
+    };
 
     /// <summary>Represents one valid outcome-specific execution state.</summary>
     public abstract record ExecutionState
@@ -139,7 +157,17 @@ public sealed class LythonExecutionResult
     public sealed record CompilationFailedState : ExecutionState
     {
         /// <summary>Creates compilation-failure outcome state.</summary>
-        public CompilationFailedState(int exitCode) => ExitCode = exitCode;
+        public CompilationFailedState(int exitCode)
+            : this(exitCode, new(LythonFailureReason.Compilation)) { }
+
+        internal CompilationFailedState(int exitCode, LythonFailureAttribution attribution)
+        {
+            ExitCode = exitCode;
+            Attribution = attribution;
+        }
+
+        /// <summary>Gets the compile or host-preflight rejection origin.</summary>
+        public LythonFailureAttribution Attribution { get; }
 
         /// <summary>Gets the process-style failure code.</summary>
         public int ExitCode { get; }

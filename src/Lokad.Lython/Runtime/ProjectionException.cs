@@ -6,4 +6,7 @@ internal sealed class ProjectionException : Exception
         : base(message)
     {
     }
+
+    internal LythonFailureAttribution Attribution { get; init; }
+        = new(LythonFailureReason.ProjectionRejected);
 }

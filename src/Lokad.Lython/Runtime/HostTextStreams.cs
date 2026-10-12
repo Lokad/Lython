@@ -84,7 +84,7 @@ internal sealed class HostTextInputHandle : IPyRenderableValue
     {
         if (_state.Limits.MaxHostReadBytes is { } maxReadBytes && length > maxReadBytes)
         {
-            throw RuntimeErrors.Runtime($"standard input read exceeded maximum bytes ({maxReadBytes})", span);
+            throw RuntimeErrors.HostRead($"standard input read exceeded maximum bytes ({maxReadBytes})", maxReadBytes, length, span);
         }
     }
 

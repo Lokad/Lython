@@ -27,7 +27,7 @@ internal sealed class ExecutionGuards
         if (limits.MaxExecutionSteps is { } maxExecutionSteps &&
             ++limits.ExecutionStepCount > maxExecutionSteps)
         {
-            ThrowExecutionStepLimit(maxExecutionSteps, span);
+            ThrowExecutionStepLimit(maxExecutionSteps, limits.ExecutionStepCount, span);
         }
 
         if (limits.CancellationToken.IsCancellationRequested)
@@ -46,12 +46,13 @@ internal sealed class ExecutionGuards
     }
 
     [DoesNotReturn, MethodImpl(MethodImplOptions.NoInlining)]
-    private static void ThrowExecutionStepLimit(long maximum, LythonSourceSpan? span)
-        => throw RuntimeErrors.Runtime($"maximum execution step count exceeded ({maximum})", span);
+    private static void ThrowExecutionStepLimit(long maximum, long observed, LythonSourceSpan? span)
+        => throw RuntimeErrors.Attributed("RuntimeError", $"maximum execution step count exceeded ({maximum})", span,
+            LythonFailureReason.ExecutionStepLimit, maximum, observed);
 
     [DoesNotReturn, MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowExecutionCanceled(LythonSourceSpan? span)
-        => throw RuntimeErrors.Runtime("execution canceled", span);
+        => throw RuntimeErrors.Cancelled(span);
 
     public void RegisterHostCall(LythonSourceSpan? span)
     {
@@ -60,7 +61,8 @@ internal sealed class ExecutionGuards
         Limits.HostCallCount++;
         if (Limits.MaxHostCalls is { } maxHostCalls && Limits.HostCallCount > maxHostCalls)
         {
-            throw RuntimeErrors.Runtime($"maximum host call count exceeded ({maxHostCalls})", span);
+            throw RuntimeErrors.Attributed("RuntimeError", $"maximum host call count exceeded ({maxHostCalls})", span,
+                LythonFailureReason.HostCallLimit, maxHostCalls, Limits.HostCallCount);
         }
     }
 
@@ -70,7 +72,9 @@ internal sealed class ExecutionGuards
         if (Limits.MaxRecursionDepth is { } maxRecursionDepth &&
             Limits.CurrentRecursionDepth >= maxRecursionDepth)
         {
-            throw RuntimeErrors.Recursion("maximum recursion depth exceeded", span);
+            throw RuntimeErrors.Attributed("RecursionError", "maximum recursion depth exceeded", span,
+                LythonFailureReason.RecursionDepthLimit, maxRecursionDepth, Limits.CurrentRecursionDepth,
+                Limits.CurrentRecursionDepth + 1L);
         }
 
         EnsureInterpreterStack(span);
@@ -87,7 +91,8 @@ internal sealed class ExecutionGuards
             return;
         }
 
-        throw RuntimeErrors.Runtime("maximum interpreter stack depth exceeded", span);
+        throw RuntimeErrors.Attributed("RuntimeError", "maximum interpreter stack depth exceeded", span,
+            LythonFailureReason.InterpreterStackLimit);
     }
 
     public void LeaveFunctionCall()
@@ -103,7 +108,9 @@ internal sealed class ExecutionGuards
         CheckExecution(span);
         if (Limits.CurrentInterpreterDepth >= LythonRuntime.ExecutionLimits.MaxInterpreterDepth)
         {
-            throw RuntimeErrors.Runtime("maximum interpreter stack depth exceeded", span);
+            throw RuntimeErrors.Attributed("RuntimeError", "maximum interpreter stack depth exceeded", span,
+                LythonFailureReason.InterpreterStackLimit, LythonRuntime.ExecutionLimits.MaxInterpreterDepth,
+                Limits.CurrentInterpreterDepth, Limits.CurrentInterpreterDepth + 1L);
         }
 
         EnsureInterpreterStack(span);

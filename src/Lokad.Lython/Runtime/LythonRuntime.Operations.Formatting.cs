@@ -115,7 +115,7 @@ internal sealed partial class LythonRuntime
                 offset += consumed;
                 var width = rune.Value <= 0x7f ? 1 : rune.Value <= 0xff ? 4 : rune.Value <= 0xffff ? 6 : 10;
                 if (context.Services.Limits.MaxStringLength is { } limit && builder.Length > limit - width)
-                    throw RuntimeErrors.Runtime($"maximum string length exceeded ({limit})", span);
+                    throw RuntimeErrors.StringLength(limit, builder.Length + (long)width, span);
                 if (rune.Value <= 0x7f)
                 {
                     builder.Append((byte)rune.Value);

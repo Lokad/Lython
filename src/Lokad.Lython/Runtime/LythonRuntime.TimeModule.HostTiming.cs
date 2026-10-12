@@ -51,7 +51,7 @@ internal sealed partial class LythonRuntime
         }
 
         private ILythonTiming RequireHostTiming(LythonSourceSpan? span)
-            => Host.Timing ?? throw RuntimeErrors.Runtime(
+            => Host.Timing ?? throw RuntimeErrors.Capability(
                 "host timing/sleep capability is not available in this host.",
                 span);
 

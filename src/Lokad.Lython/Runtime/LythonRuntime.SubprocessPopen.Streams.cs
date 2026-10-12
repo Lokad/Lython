@@ -23,7 +23,8 @@ internal sealed partial class LythonRuntime
                 allocationSpan: null,
                 capacity: 0,
                 maxLengthBytes: context.Limits.MaxStringLength,
-                maxLengthOwner: "Popen stdin");
+                maxLengthOwner: "Popen stdin",
+                lengthLimitReason: LythonFailureReason.SubprocessInputLimit);
         }
 
         public bool IsClosed { get; private set; }

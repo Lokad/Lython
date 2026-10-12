@@ -217,10 +217,11 @@ internal sealed partial class LythonRuntime
             charge.Observe(builder.Length);
             if (depth >= ExecutionLimits.MaxInterpreterDepth || defaultDepth >= ExecutionLimits.MaxInterpreterDepth)
             {
-                throw new LythonRuntimeException(
+                throw RuntimeErrors.Attributed(
                     "RecursionError",
                     "maximum recursion depth exceeded while encoding a JSON object",
-                    span);
+                    span, LythonFailureReason.InterpreterStackLimit, ExecutionLimits.MaxInterpreterDepth,
+                    Math.Max(depth, defaultDepth));
             }
 
             switch (value)

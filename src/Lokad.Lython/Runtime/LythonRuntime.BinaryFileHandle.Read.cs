@@ -29,7 +29,7 @@ internal sealed partial class LythonRuntime
                     throw RuntimeErrors.Runtime("host binary range exceeded requested byte count", span);
                 var acquired = _acquiredBytes + payload.Length;
                 if (_context.Limits.MaxHostReadBytes is { } maximum && acquired > maximum)
-                    throw RuntimeErrors.Runtime($"host binary read exceeded maximum bytes ({maximum})", span);
+                    throw RuntimeErrors.HostRead($"host binary read exceeded maximum bytes ({maximum})", maximum, acquired, span);
                 if (_nextOffset > long.MaxValue - payload.Length)
                     throw new LythonRuntimeException("OverflowError", "binary file offset is too large", span);
                 payload.Span.CopyTo(_window);

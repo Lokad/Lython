@@ -74,7 +74,7 @@ internal sealed partial class LythonRuntime
 
         if (context.Host.SubprocessRunner is null)
         {
-            throw new LythonRuntimeException("RuntimeError", "subprocess is not available in this host.", span);
+            throw RuntimeErrors.Capability("subprocess is not available in this host.", span);
         }
 
         ValidateCompatibilityOptions(arguments, span);
@@ -633,7 +633,8 @@ internal sealed partial class LythonRuntime
             _cumulativePipelineOutputBytes = checked(_cumulativePipelineOutputBytes + ownCapturedBytes);
             if (_context.Limits.MaxStringLength is { } maximum && _cumulativePipelineOutputBytes > maximum)
             {
-                throw RuntimeErrors.Runtime($"maximum cumulative Popen pipeline output exceeded ({maximum})", span);
+                throw RuntimeErrors.Attributed("RuntimeError", $"maximum cumulative Popen pipeline output exceeded ({maximum})", span,
+                    LythonFailureReason.SubprocessPipelineLimit, maximum, _cumulativePipelineOutputBytes);
             }
         }
 

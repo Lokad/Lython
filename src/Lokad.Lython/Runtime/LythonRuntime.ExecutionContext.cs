@@ -450,7 +450,7 @@ internal sealed partial class LythonRuntime
             var runner = Host.SubprocessRunner;
             if (runner is null)
             {
-                throw new LythonRuntimeException("RuntimeError", "subprocess is not available in this host.", span);
+                throw RuntimeErrors.Capability("subprocess is not available in this host.", span);
             }
 
             var result = AwaitHost(runner, () => runner.RunAsync(request, Limits.CancellationToken), "subprocess.run", span);
@@ -463,7 +463,7 @@ internal sealed partial class LythonRuntime
             var runner = Host.SubprocessRunner;
             if (runner is null)
             {
-                throw new LythonRuntimeException("RuntimeError", "subprocess is not available in this host.", span);
+                throw RuntimeErrors.Capability("subprocess is not available in this host.", span);
             }
 
             var result = await AwaitHostAsync(() => runner.RunAsync(request, Limits.CancellationToken), "subprocess.run", span).ConfigureAwait(false);
@@ -483,16 +483,16 @@ internal sealed partial class LythonRuntime
 
             if (request.StandardOutput == LythonSubprocessStreamMode.Pipe && result.StandardOutputUtf8.Length > outputLimit.Bytes)
             {
-                throw RuntimeErrors.Runtime(
+                throw RuntimeErrors.Attributed("RuntimeError",
                     $"subprocess standard output exceeded maximum captured output bytes ({outputLimit.Bytes}); received {result.StandardOutputUtf8.Length} bytes.",
-                    span);
+                    span, LythonFailureReason.SubprocessOutputLimit, outputLimit.Bytes, result.StandardOutputUtf8.Length);
             }
 
             if (request.StandardError == LythonSubprocessStreamMode.Pipe && result.StandardErrorUtf8.Length > outputLimit.Bytes)
             {
-                throw RuntimeErrors.Runtime(
+                throw RuntimeErrors.Attributed("RuntimeError",
                     $"subprocess standard error exceeded maximum captured output bytes ({outputLimit.Bytes}); received {result.StandardErrorUtf8.Length} bytes.",
-                    span);
+                    span, LythonFailureReason.SubprocessOutputLimit, outputLimit.Bytes, result.StandardErrorUtf8.Length);
             }
 
             var combinedCapturedBytes =
@@ -500,9 +500,9 @@ internal sealed partial class LythonRuntime
                 (request.StandardError == LythonSubprocessStreamMode.Pipe ? result.StandardErrorUtf8.Length : 0L);
             if (combinedCapturedBytes > outputLimit.Bytes)
             {
-                throw RuntimeErrors.Runtime(
+                throw RuntimeErrors.Attributed("RuntimeError",
                     $"subprocess combined captured output exceeded maximum bytes ({outputLimit.Bytes}); received {combinedCapturedBytes} bytes.",
-                    span);
+                    span, LythonFailureReason.SubprocessOutputLimit, outputLimit.Bytes, combinedCapturedBytes);
             }
         }
 

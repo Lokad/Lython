@@ -65,7 +65,7 @@ internal sealed partial class LythonRuntime
         if (stat.Exists && stat.IsFile && context.Limits.MaxHostReadBytes is { } maxHostReadBytes &&
             stat.Size > new BigInteger(maxHostReadBytes))
         {
-            throw RuntimeErrors.Runtime($"host text read exceeded maximum bytes ({maxHostReadBytes})", span);
+            throw RuntimeErrors.HostRead($"host text read exceeded maximum bytes ({maxHostReadBytes})", maxHostReadBytes, stat.Size, span);
         }
 
         EnsureExecutionMemoryForKnownLength(stat, 128L, context, span);
@@ -73,7 +73,7 @@ internal sealed partial class LythonRuntime
         var utf8 = context.ReadTextUtf8(path, span);
         if (context.Limits.MaxHostReadBytes is { } maxReadBytes && utf8.Length > maxReadBytes)
         {
-            throw RuntimeErrors.Runtime($"host text read exceeded maximum bytes ({maxReadBytes})", span);
+            throw RuntimeErrors.HostRead($"host text read exceeded maximum bytes ({maxReadBytes})", maxReadBytes, utf8.Length, span);
         }
 
         var text = DecodeUtf8Text(utf8, context, span, errors, newline);
@@ -103,7 +103,7 @@ internal sealed partial class LythonRuntime
         if (stat.Exists && stat.IsFile && context.Limits.MaxHostReadBytes is { } maxHostReadBytes &&
             stat.Size > new BigInteger(maxHostReadBytes))
         {
-            throw RuntimeErrors.Runtime($"host text read exceeded maximum bytes ({maxHostReadBytes})", span);
+            throw RuntimeErrors.HostRead($"host text read exceeded maximum bytes ({maxHostReadBytes})", maxHostReadBytes, stat.Size, span);
         }
 
         EnsureExecutionMemoryForKnownLength(stat, 128L, context, span);
@@ -111,7 +111,7 @@ internal sealed partial class LythonRuntime
         var utf8 = await context.ReadTextUtf8Async(path, span).ConfigureAwait(false);
         if (context.Limits.MaxHostReadBytes is { } maxReadBytes && utf8.Length > maxReadBytes)
         {
-            throw RuntimeErrors.Runtime($"host text read exceeded maximum bytes ({maxReadBytes})", span);
+            throw RuntimeErrors.HostRead($"host text read exceeded maximum bytes ({maxReadBytes})", maxReadBytes, utf8.Length, span);
         }
 
         var text = DecodeUtf8Text(utf8, context, span, errors, newline);
@@ -145,7 +145,7 @@ internal sealed partial class LythonRuntime
         if (stat.Exists && stat.IsFile && context.Limits.MaxHostReadBytes is { } maxHostReadBytes &&
             stat.Size > new BigInteger(maxHostReadBytes))
         {
-            throw RuntimeErrors.Runtime($"host binary read exceeded maximum bytes ({maxHostReadBytes})", span);
+            throw RuntimeErrors.HostRead($"host binary read exceeded maximum bytes ({maxHostReadBytes})", maxHostReadBytes, stat.Size, span);
         }
 
         EnsureExecutionMemoryForKnownLength(stat, 32L, context, span);
@@ -153,7 +153,7 @@ internal sealed partial class LythonRuntime
         var payload = context.ReadHostBytes(path, span);
         if (context.Limits.MaxHostReadBytes is { } maxReadBytes && payload.Length > maxReadBytes)
         {
-            throw RuntimeErrors.Runtime($"host binary read exceeded maximum bytes ({maxReadBytes})", span);
+            throw RuntimeErrors.HostRead($"host binary read exceeded maximum bytes ({maxReadBytes})", maxReadBytes, payload.Length, span);
         }
 
         return new GovernedHostBytes(payload, context.MemoryGovernor, span);
@@ -176,7 +176,7 @@ internal sealed partial class LythonRuntime
         if (stat.Exists && stat.IsFile && context.Limits.MaxHostReadBytes is { } maxHostReadBytes &&
             stat.Size > new BigInteger(maxHostReadBytes))
         {
-            throw RuntimeErrors.Runtime($"host binary read exceeded maximum bytes ({maxHostReadBytes})", span);
+            throw RuntimeErrors.HostRead($"host binary read exceeded maximum bytes ({maxHostReadBytes})", maxHostReadBytes, stat.Size, span);
         }
 
         EnsureExecutionMemoryForKnownLength(stat, 32L, context, span);
@@ -184,7 +184,7 @@ internal sealed partial class LythonRuntime
         var payload = await context.ReadHostBytesAsync(path, span).ConfigureAwait(false);
         if (context.Limits.MaxHostReadBytes is { } maxReadBytes && payload.Length > maxReadBytes)
         {
-            throw RuntimeErrors.Runtime($"host binary read exceeded maximum bytes ({maxReadBytes})", span);
+            throw RuntimeErrors.HostRead($"host binary read exceeded maximum bytes ({maxReadBytes})", maxReadBytes, payload.Length, span);
         }
 
         return new GovernedHostBytes(payload, context.MemoryGovernor, span);
@@ -396,7 +396,8 @@ internal sealed partial class LythonRuntime
         {
             return AttachPeaks(LythonExecutionResult.RuntimeFailed(
                 exitCode: 1,
-                failure: new LythonRuntimeFailure("ProjectionError", ex.Message, null, Array.Empty<LythonStackFrame>(), context?.SourcePath),
+                failure: new LythonRuntimeFailure("ProjectionError", ex.Message, null, Array.Empty<LythonStackFrame>(), context?.SourcePath)
+                    { Attribution = ex.Attribution },
                 standardOutput: standardOutput,
                 standardError: standardError,
                 diagnostics: Array.Empty<LythonDiagnostic>()), context, budget);
@@ -422,7 +423,8 @@ internal sealed partial class LythonRuntime
         {
             return AttachPeaks(LythonExecutionResult.RuntimeFailed(
                 exitCode: 1,
-                failure: new LythonRuntimeFailure("ProjectionError", ex.Message, null, Array.Empty<LythonStackFrame>(), context?.SourcePath),
+                failure: new LythonRuntimeFailure("ProjectionError", ex.Message, null, Array.Empty<LythonStackFrame>(), context?.SourcePath)
+                    { Attribution = ex.Attribution },
                 standardOutput: standardOutput,
                 standardError: standardError,
                 diagnostics: Array.Empty<LythonDiagnostic>()), context, budget);
@@ -457,7 +459,8 @@ internal sealed partial class LythonRuntime
             // Even the truncated minimum overran (captures consumed the budget):
             // keep the original type with empty details, mirroring the success
             // path's fixed ProjectionError fallback allocation.
-            failure = new LythonRuntimeFailure(exception.ExceptionType, string.Empty, exception.Span, [], exception.SourcePath);
+            failure = new LythonRuntimeFailure(exception.ExceptionType, string.Empty, exception.Span, [], exception.SourcePath)
+                { Attribution = exception.Attribution };
         }
 
         return AttachPeaks(

@@ -827,6 +827,7 @@ internal sealed partial class LythonRuntime
     {
         var current = context.Services.CurrentException;
         thrown.OriginalPythonException = instance;
+        thrown.Attribution = instance.Attribution;
         thrown.PythonCause = instance.Cause;
         thrown.PythonContext = current is not null && !ReferenceEquals(instance, current) ? current : instance.Context;
         thrown.SuppressPythonContext = instance.SuppressContext;
@@ -849,6 +850,7 @@ internal sealed partial class LythonRuntime
             PythonContext = current.Context,
             SuppressPythonContext = current.SuppressContext,
             OriginalPythonException = current,
+            Attribution = current.Attribution,
         };
     }
 

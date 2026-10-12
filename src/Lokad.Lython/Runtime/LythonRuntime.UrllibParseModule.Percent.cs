@@ -143,7 +143,7 @@ internal sealed partial class LythonRuntime
         private static void CheckTextLength(long length, ExecutionContext context, LythonSourceSpan span)
         {
             if (context.Limits.MaxStringLength is { } maximum && length > maximum)
-                throw RuntimeErrors.Runtime($"maximum string length exceeded ({maximum})", span);
+                throw RuntimeErrors.StringLength(maximum, length, span);
         }
     }
 }

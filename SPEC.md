@@ -188,6 +188,28 @@ The runtime must expose a narrow host interface for controlled operations over a
 
 If a script attempts an unavailable capability or unsupported construct, the failure must be explicit and deterministic.
 
+`LythonExecutionResult.FailureAttribution` identifies the terminal origin without
+parsing exception names or messages: compilation, unavailable host capabilities,
+host-operation failure, module policy, cancellation, program exceptions, and the
+actual resource check. The immutable value includes a configured or fixed bound
+and observed/requested quantities when available and representable as Int64.
+Units follow the reason: checkpoints, calls, nesting, collection items, Python
+string characters or bytes. Managed stack admission has no native telemetry and
+may report no numeric bound. Projection rejection (cyclic/unsupported values),
+projection depth, and projection memory exhaustion are distinct.
+
+Provenance follows the same caught exception through `raise e`, bare `raise`,
+argument mutation and chaining; a new guest exception has its own program-error
+origin even with identical text. Caught denials followed by normal completion
+have no terminal attribution. `DeniedReservationBytes` remains the last denied
+reservation, including caught denials, and must not be used as a terminal cause.
+Diagnostic truncation or an exhausted failure-projection budget preserves the
+original attribution in the constant-size emergency result; projection failure
+that replaces an otherwise successful return reports its own projection origin.
+`SystemExit(0)` retains the existing unsuccessful runtime result with exit code0.
+Bound Python exception shells charge128 bytes (formerly64), including the inline
+origin fields; very small execution budgets may reject retained exceptions sooner.
+
 ---
 
 ## 6. Primary Use Case Bias

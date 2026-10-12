@@ -124,13 +124,15 @@ internal sealed class ExecutionState
             allocationSpan: null,
             capacity: 0,
             maxLengthBytes: Limits.MaxStandardOutputBytes,
-            maxLengthOwner: "standard output");
+            maxLengthOwner: "standard output",
+            lengthLimitReason: LythonFailureReason.StandardOutputLimit);
         StandardError = new Text.GovernedByteBuilder(
             MemoryGovernor,
             allocationSpan: null,
             capacity: 0,
             maxLengthBytes: Limits.MaxStandardErrorBytes,
-            maxLengthOwner: "standard error");
+            maxLengthOwner: "standard error",
+            lengthLimitReason: LythonFailureReason.StandardErrorLimit);
         Stdin = new HostTextInputHandle(host.StandardInput, this);
         Stdout = new HostTextOutputHandle(host.StandardOutput, StandardOutput, "<stdout>", this);
         Stderr = new HostTextOutputHandle(host.StandardError, StandardError, "<stderr>", this);

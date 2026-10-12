@@ -62,7 +62,8 @@ internal static class PublicProjection
     {
         if (!RuntimeHelpers.TryEnsureSufficientExecutionStack())
         {
-            throw new ProjectionException("insufficient stack headroom while projecting a nested value.");
+            throw new ProjectionException("insufficient stack headroom while projecting a nested value.")
+                { Attribution = new(LythonFailureReason.ProjectionDepthLimit) };
         }
 
         if (!active.Add(container))
@@ -73,7 +74,9 @@ internal static class PublicProjection
         if (active.Count > LythonRuntime.ExecutionLimits.MaxInterpreterDepth)
         {
             active.Remove(container);
-            throw new ProjectionException("maximum projection depth exceeded while projecting a nested value.");
+            throw new ProjectionException("maximum projection depth exceeded while projecting a nested value.")
+                { Attribution = new(LythonFailureReason.ProjectionDepthLimit, LythonRuntime.ExecutionLimits.MaxInterpreterDepth,
+                    active.Count + 1L) };
         }
     }
 

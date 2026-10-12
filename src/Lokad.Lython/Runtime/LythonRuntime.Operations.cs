@@ -732,7 +732,7 @@ internal sealed partial class LythonRuntime
         var resultLength = RuntimeMemoryEstimates.SaturatingAdd(left.Length, right.Length);
         if (context.Limits.MaxStringLength is { } maxStringLength && resultLength > maxStringLength)
         {
-            throw RuntimeErrors.Runtime($"maximum string length exceeded ({maxStringLength})", span);
+            throw RuntimeErrors.StringLength(maxStringLength, resultLength, span);
         }
 
         var result = left.Concat(right, context.MemoryGovernor, span);
@@ -877,7 +877,7 @@ internal sealed partial class LythonRuntime
         var resultLength = RuntimeMemoryEstimates.SaturatingMultiply(text.Length, (long)count);
         if (context.Limits.MaxStringLength is { } maxStringLength && resultLength > maxStringLength)
         {
-            throw RuntimeErrors.Runtime($"maximum string length exceeded ({maxStringLength})", span);
+            throw RuntimeErrors.StringLength(maxStringLength, resultLength, span);
         }
 
         var repeated = text.Repeat((int)count, context.MemoryGovernor, span);

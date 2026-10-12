@@ -14,7 +14,7 @@ internal sealed partial class LythonRuntime
             if (!stat.Exists) throw new LythonRuntimeException("FileNotFoundError", "No such file: " + path, span);
             if (stat.IsDir) throw new LythonRuntimeException("IsADirectoryError", "Is a directory: " + path, span);
             if (context.Limits.MaxHostReadBytes is { } maxRead && stat.Size > maxRead)
-                throw RuntimeErrors.Runtime($"host binary read exceeded maximum bytes ({maxRead})", span);
+                throw RuntimeErrors.HostRead($"host binary read exceeded maximum bytes ({maxRead})", maxRead, stat.Size, span);
             // The acquired host buffer and the independently owned guest bytes
             // coexist during copying. Fund both before requesting a known file.
             if (stat.Size > 0)

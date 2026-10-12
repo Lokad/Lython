@@ -101,6 +101,10 @@ internal sealed partial class LythonRuntime
 
         public static bool IsKnown(string moduleName) => Registrations.ContainsKey(moduleName);
 
+        public static bool HasUnavailableCapability(string moduleName, ExecutionContext context)
+            => Registrations.TryGetValue(moduleName, out var registration) &&
+                registration.RequiredCapability == BuiltinModuleCapability.Subprocess && context.Host.SubprocessRunner is null;
+
         public static bool IsDenied(string moduleName, ExecutionContext context)
             => GetDeniedName(moduleName, context) is not null;
 
@@ -157,7 +161,8 @@ internal sealed partial class LythonRuntime
     internal static void CheckBuiltinModuleGrant(string name, ExecutionContext context, LythonSourceSpan? span)
     {
         if (BuiltinModuleCatalog.GetDeniedName(name, context) is { } denied)
-            throw new LythonRuntimeException("ImportError", $"Built-in module '{denied}' is disabled by AllowedBuiltinModules.", span);
+            throw RuntimeErrors.Attributed("ImportError", $"Built-in module '{denied}' is disabled by AllowedBuiltinModules.", span,
+                LythonFailureReason.ModulePolicyDenied);
     }
 
     internal static bool IsDeniedBuiltinModule(string name, ExecutionContext context)

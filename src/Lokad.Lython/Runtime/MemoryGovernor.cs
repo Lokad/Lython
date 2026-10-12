@@ -59,8 +59,7 @@ internal sealed class MemoryGovernor
             return;
         }
 
-        var nextReserved = AddChecked(CurrentReservedBytes, bytes, span);
-        var nextAccounted = AddChecked(nextReserved, CurrentCommittedBytes, span);
+        var nextAccounted = AddChecked(CurrentAccountedBytes, bytes, span);
         if (MaxAccountedBytes is { } maxAccountedBytes && nextAccounted > maxAccountedBytes)
         {
             if (bytes > maxAccountedBytes)
@@ -68,7 +67,8 @@ internal sealed class MemoryGovernor
                 // The request alone exceeds the budget: no relief could fit
                 // it, so deny without pausing the process for a collection.
                 LastDeniedReservationBytes = bytes;
-                throw RuntimeErrors.Memory($"execution memory budget exceeded ({maxAccountedBytes})", span);
+                throw RuntimeErrors.Attributed("MemoryError", $"execution memory budget exceeded ({maxAccountedBytes})", span,
+                    LythonFailureReason.ExecutionMemoryLimit, maxAccountedBytes, CurrentAccountedBytes, bytes);
             }
 
             if (_hasAllocatedSinceReclaim && !_inExhaustionRelief)
@@ -86,12 +86,12 @@ internal sealed class MemoryGovernor
                     _hasAllocatedSinceReclaim = false;
                 }
             }
-            nextReserved = AddChecked(CurrentReservedBytes, bytes, span);
-            nextAccounted = AddChecked(nextReserved, CurrentCommittedBytes, span);
+            nextAccounted = AddChecked(CurrentAccountedBytes, bytes, span);
             if (nextAccounted > maxAccountedBytes)
             {
                 LastDeniedReservationBytes = bytes;
-                throw RuntimeErrors.Memory($"execution memory budget exceeded ({maxAccountedBytes})", span);
+                throw RuntimeErrors.Attributed("MemoryError", $"execution memory budget exceeded ({maxAccountedBytes})", span,
+                    LythonFailureReason.ExecutionMemoryLimit, maxAccountedBytes, CurrentAccountedBytes, bytes);
             }
         }
     }
@@ -262,11 +262,12 @@ internal sealed class MemoryGovernor
         CurrentReservedBytes = Math.Max(0, CurrentReservedBytes - bytes);
     }
 
-    private static long AddChecked(long left, long right, LythonSourceSpan? span)
+    private long AddChecked(long left, long right, LythonSourceSpan? span)
     {
         if (right > 0 && left > long.MaxValue - right)
         {
-            throw RuntimeErrors.Memory("execution memory budget exceeded", span);
+            throw RuntimeErrors.Attributed("MemoryError", "execution memory budget exceeded", span,
+                LythonFailureReason.ExecutionMemoryLimit, MaxAccountedBytes, CurrentAccountedBytes, right);
         }
 
         return left + right;
@@ -292,7 +293,7 @@ internal sealed class MemoryGovernor
 
             var governor = _governor ?? throw new ObjectDisposedException(nameof(TemporaryMemoryReservation));
             governor.Reserve(bytes, span);
-            _reservedBytes = AddChecked(_reservedBytes, bytes, span);
+            _reservedBytes = governor.AddChecked(_reservedBytes, bytes, span);
         }
 
         public void Shrink(long bytes)

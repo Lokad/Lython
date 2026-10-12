@@ -25,12 +25,14 @@ internal sealed class ProjectionBudget
         {
             if (bytes > maxBytes || CurrentBytes > maxBytes - bytes)
             {
-                throw new ProjectionException($"projection memory budget exceeded ({maxBytes})");
+                throw new ProjectionException($"projection memory budget exceeded ({maxBytes})")
+                    { Attribution = new(LythonFailureReason.ProjectionMemoryLimit, maxBytes, CurrentBytes, bytes) };
             }
         }
         else if (CurrentBytes > long.MaxValue - bytes)
         {
-            throw new ProjectionException("projection memory budget exceeded");
+            throw new ProjectionException("projection memory budget exceeded")
+                { Attribution = new(LythonFailureReason.ProjectionMemoryLimit, null, CurrentBytes, bytes) };
         }
 
         CurrentBytes += bytes;

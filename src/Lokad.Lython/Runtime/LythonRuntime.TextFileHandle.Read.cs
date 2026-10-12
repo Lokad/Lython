@@ -710,7 +710,7 @@ internal sealed partial class LythonRuntime
                 _cumulativeBytes = RuntimeMemoryEstimates.SaturatingAdd(_cumulativeBytes, take);
                 if (_context.Limits.MaxHostReadBytes is { } maxReadBytes && _cumulativeBytes > maxReadBytes)
                 {
-                    throw RuntimeErrors.Runtime($"host {TextReadKind()} read exceeded maximum bytes ({maxReadBytes})", null);
+                    throw RuntimeErrors.HostRead($"host {TextReadKind()} read exceeded maximum bytes ({maxReadBytes})", maxReadBytes, _cumulativeBytes, null);
                 }
 
                 payload.Span.Slice(0, take).CopyTo(_raw!.AsSpan(_rawLength));

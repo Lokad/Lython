@@ -282,7 +282,7 @@ internal sealed partial class LythonRuntime
         private static void CheckOutputLength(long scalars, LythonSourceSpan span, ExecutionServices services)
         {
             if (services.Limits.MaxStringLength is { } maximum && scalars > maximum)
-                throw RuntimeErrors.Runtime($"maximum string length exceeded ({maximum})", span);
+                throw RuntimeErrors.StringLength(maximum, scalars, span);
         }
 
         private static PyString Finish(GovernedByteBuilder builder, LythonSourceSpan span, ExecutionServices services)
