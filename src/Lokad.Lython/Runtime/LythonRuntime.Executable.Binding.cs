@@ -140,7 +140,7 @@ internal sealed partial class LythonRuntime
                     // A failed header replaces the in-flight exception and bypasses
                     // the remaining handlers of this try, while its finally and
                     // enclosing handlers still run.
-                    handlerError.PythonContext ??= CreatePythonExceptionInstance(exception);
+                    handlerError.PythonContext ??= CreatePythonExceptionInstance(exception, context);
                     abrupt = new PendingException(handlerError);
                     failedHandlerStart = region.ProtectedStartBlockIndex;
                     failedHandlerEnd = region.ProtectedEndBlockIndex;
@@ -153,11 +153,11 @@ internal sealed partial class LythonRuntime
                 RestoreExecutableStackForHandler(region, ref stack, blockEntryStackDepths, span);
                 pendingAbrupt = null;
                 matchedRegion = region;
-                var pyException = CreatePythonExceptionInstance(exception);
+                var pyException = CreatePythonExceptionInstance(exception, context);
                 UnwindAbandonedHandlerVars(context, span, exceptBlock);
                 if (region.ExceptionVariableName is not null)
                 {
-                    ChargeBoundException(context.MemoryGovernor, span);
+                    pyException.Adopt(context, span);
                     StoreName(region.ExceptionVariableName, pyException, context, span);
                     PushActiveHandlerVar(context, region);
                 }

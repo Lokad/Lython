@@ -1272,7 +1272,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 var value = arguments.Length == 0 ? PyNone.Instance : arguments[0].Value;
-                return new PyException(ExceptionIdentity, FormatSystemExitMessage(value), value);
+                return PyException.CreateOwned(ExceptionIdentity, FormatSystemExitMessage(value), value, context, span);
             }
 
             var values = arguments.Select(argument => argument.Value).ToArray();
@@ -1288,14 +1288,11 @@ internal sealed partial class LythonRuntime
                 _ => TakeMessageText(PyRendering.ToReprPyString(args, new PyRenderingContext(context)), context, span),
             };
             var payload = values.Length == 0 ? PyNone.Instance : values.Length == 1 ? values[0] : args;
-            var constructed = new PyException(ExceptionIdentity, message, payload, args);
-            // M05: the args tuple commits at construction but no call funnel owns
-            // a bare exception record, so dropped constructions (including every
-            // caught raise) stranded 32+16n B. Handler rewraps share this same
-            // tuple through ExplicitArgs, so the pool keys the tuple itself and
-            // dropped constructions reclaim once collected.
+            // Args own their backing independently from the exception shell.
+            // Register before shell admission so a failed or dropped constructor
+            // leaves no untracked tuple charge; handler rewraps keep the alias.
             context.Services.State.CallTemporaries.TrackFreshMutable(args, args.CommittedStorageBytes, span);
-            return constructed;
+            return PyException.CreateOwned(ExceptionIdentity, message, payload, context, span, args);
         }
     }
 

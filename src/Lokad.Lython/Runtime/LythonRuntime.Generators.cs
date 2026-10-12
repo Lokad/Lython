@@ -109,7 +109,7 @@ internal sealed partial class LythonRuntime
                     PyFunctionBinding.AnnotateException(exception, frame, frame.FunctionName ?? "<generator>", _span);
                     if (exception.ExceptionType == "StopIteration")
                         throw new LythonRuntimeException("RuntimeError", "generator raised StopIteration", _span, exception)
-                        { PythonCause = CreatePythonExceptionInstance(exception), SuppressPythonContext = true };
+                        { PythonCause = CreatePythonExceptionInstance(exception, frame), SuppressPythonContext = true };
                     throw;
                 }
                 catch { Complete(); throw; }
@@ -216,7 +216,9 @@ internal sealed partial class LythonRuntime
                         throw injected;
                     }
                     if (!PyMemberAccess.TryResolve(iterator, "throw", context, span, out var handler) || handler is not ICallable throwing) throw injected;
-                    value = await Call(throwing, [CallArgumentValue.Positional(CreatePythonExceptionInstance(injected))]).ConfigureAwait(false);
+                    var forwarded = CreatePythonExceptionInstance(injected, context);
+                    forwarded.Adopt(context, span);
+                    value = await Call(throwing, [CallArgumentValue.Positional(forwarded)]).ConfigureAwait(false);
                 }
                 else if (sent is PyNone)
                     value = asynchronous ? await NextAsync([iterator], span, context).ConfigureAwait(false) : Next([iterator], span, context);

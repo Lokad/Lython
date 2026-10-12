@@ -207,8 +207,14 @@ Diagnostic truncation or an exhausted failure-projection budget preserves the
 original attribution in the constant-size emergency result; projection failure
 that replaces an otherwise successful return reports its own projection origin.
 `SystemExit(0)` retains the existing unsuccessful runtime result with exit code0.
-Bound Python exception shells charge128 bytes (formerly64), including the inline
-origin fields; very small execution budgets may reject retained exceptions sooner.
+Guest-visible Python exception shells charge160 bytes, including origin fields
+and their owner link. Constructor results and exposed handler/control values share
+one owner in the existing pool; rebinding or rethrowing an alias pays no second
+shell fee. Dropped records reclaim their shell while args, attributes, payloads
+and exception chains retain their independent ownership. Transient interpreter
+control values remain available for native cleanup under exhaustion; binding,
+`sys.exc_info`, guest callbacks and retained chains adopt them before exposure.
+Very small execution budgets may reject shell or registry admission sooner.
 
 ---
 

@@ -73,7 +73,7 @@ internal sealed partial class LythonRuntime
             var output = GetArgument(bound, 2);
             var stderr = GetArgument(bound, 3);
             var payload = CreateCalledProcessErrorPayload(returnCode, bound[1], output, stderr, context, span);
-            return new PyException(ExceptionIdentity, $"Command failed with return code {returnCode}.", payload);
+            return PyException.CreateOwned(ExceptionIdentity, $"Command failed with return code {returnCode}.", payload, context, span);
         }
 
         public PyString RenderPython(PyRenderingContext context)
@@ -109,10 +109,10 @@ internal sealed partial class LythonRuntime
                 span,
                 LythonKnownCallableSignatures.SubprocessTimeoutExpired,
                 PythonCallableKind.Builtin);
-            return new PyException(
+            return PyException.CreateOwned(
                 ExceptionIdentity,
                 $"Command timed out after {bound[1]}.",
-                CreateTimeoutExpiredPayload(bound[0], bound[1], GetArgument(bound, 2), GetArgument(bound, 3), context, span));
+                CreateTimeoutExpiredPayload(bound[0], bound[1], GetArgument(bound, 2), GetArgument(bound, 3), context, span), context, span);
         }
 
         public PyString RenderPython(PyRenderingContext context)

@@ -40,7 +40,7 @@ internal sealed partial class LythonRuntime
                     (pendingException.CleanupId ?? -1) == instruction.CleanupId)
                 {
                     if (await PyContextManagers.ExitAsync(manager, ResolvePythonExceptionType(exception, _context),
-                        CreatePythonExceptionInstance(exception), PyNone.Instance, instruction.Span, _context).ConfigureAwait(false))
+                        CreatePythonExceptionInstance(exception, _context), PyNone.Instance, instruction.Span, _context).ConfigureAwait(false))
                     {
                         RestoreSuppressedCompletion();
                     }

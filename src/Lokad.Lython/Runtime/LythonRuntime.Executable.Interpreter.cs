@@ -342,7 +342,7 @@ internal sealed partial class LythonRuntime
                     {
                         if (exitingManager.Exit(
                                 ResolvePythonExceptionType(exception, _context),
-                                CreatePythonExceptionInstance(exception),
+                                CreatePythonExceptionInstance(exception, _context),
                                 PyNone.Instance))
                         {
                             RestoreSuppressedCompletion();
@@ -549,7 +549,7 @@ internal sealed partial class LythonRuntime
                 case ExecutableOpCode.BindException:
                     var bound = _context.Services.CurrentException
                         ?? throw new InvalidOperationException("Exception binding requires an active exception.");
-                    ChargeBoundException(_context.MemoryGovernor, instruction.Span);
+                    bound.Adopt(_context, instruction.Span);
                     var name = _codeObject.Names[instruction.NameIndex];
                     AssignExecutableBoundName(_codeObject, _locals, _localCells, name, bound, _context, instruction.Span);
                     var suite = SavedActiveExceptions().Peek();

@@ -19,42 +19,30 @@ internal sealed partial class LythonRuntime
         return new ExceptionTypeValue(exception.Identity);
     }
 
-    // MG03: an `except ... as` binding retains the exception value through guest
-    // code, so the record shell is owned at bind time. Construction commits the
-    // retained args tuple and rendered message through the pool instead: dropped
-    // constructions reclaim on sweep while retained ones stay charged, and unbound
-    // catching adds nothing beyond those construction transients.
-    private const long BoundExceptionBytes = 128;
-
-    internal static void ChargeBoundException(MemoryGovernor? governor, LythonSourceSpan? span)
-    {
-        if (governor is null)
-        {
-            return;
-        }
-
-        governor.Reserve(BoundExceptionBytes, span);
-        governor.Commit(BoundExceptionBytes);
-    }
-
-    internal static PyException CreatePythonExceptionInstance(LythonRuntimeException exception)
+    internal static PyException CreatePythonExceptionInstance(LythonRuntimeException exception, ExecutionContext? context = null)
     {
         if (exception.OriginalPythonException is { } original)
         {
+            if (context is not null && original.OwnerMemoryGovernor is not null)
+            {
+                exception.PythonCause?.Adopt(context, exception.Span);
+                exception.PythonContext?.Adopt(context, exception.Span);
+            }
             original.Cause = exception.PythonCause;
             original.Context = exception.PythonContext;
             original.SuppressContext = exception.SuppressPythonContext;
             return original;
         }
 
-        var created = new PyException(exception.Identity, exception.Message, exception.Payload ?? PyNone.Instance) with
-        {
-            Cause = exception.PythonCause,
-            Context = exception.PythonContext,
-            SuppressContext = exception.SuppressPythonContext,
-            ExplicitArgs = exception.PythonExplicitArgs,
-            Attribution = exception.Attribution,
-        };
+        // This transient control value is needed for bare raises and native
+        // cleanup even when no guest allocation can fit. Publication through
+        // a binding, sys.exc_info or guest callback adopts its actual shell.
+        var created = new PyException(exception.Identity, exception.Message, exception.Payload ?? PyNone.Instance,
+            exception.PythonExplicitArgs);
+        created.Cause = exception.PythonCause;
+        created.Context = exception.PythonContext;
+        created.SuppressContext = exception.SuppressPythonContext;
+        created.Attribution = exception.Attribution;
         exception.OriginalPythonException = created;
         return created;
     }

@@ -35,7 +35,7 @@ internal static class PyContextManagers
         {
             if (!protocol.Exit(
                     LythonRuntime.ResolvePythonExceptionType(ex, context),
-                    LythonRuntime.CreatePythonExceptionInstance(ex),
+                    LythonRuntime.CreatePythonExceptionInstance(ex, context),
                     PyNone.Instance))
             {
                 throw;
@@ -92,7 +92,7 @@ internal static class PyContextManagers
             if (!await ExitAsync(
                     protocol,
                     LythonRuntime.ResolvePythonExceptionType(ex, context),
-                    LythonRuntime.CreatePythonExceptionInstance(ex),
+                    LythonRuntime.CreatePythonExceptionInstance(ex, context),
                     PyNone.Instance,
                     span,
                     context).ConfigureAwait(false))
@@ -145,6 +145,7 @@ internal static class PyContextManagers
 
         public bool Exit(object exceptionType, object exceptionValue, object traceback)
         {
+            if (exceptionValue is PyException exception) exception.Adopt(context, span);
             var result = CallableInvocation.InvokeTernary(
                 exit,
                 exceptionType,
@@ -199,6 +200,7 @@ internal static class PyContextManagers
 
         public async ValueTask<bool> ExitAsync(object exceptionType, object exceptionValue, object traceback)
         {
+            if (exceptionValue is PyException exception) exception.Adopt(context, span);
             var result = await CallableInvocation.InvokeTernaryAsync(
                     exit,
                     exceptionType,

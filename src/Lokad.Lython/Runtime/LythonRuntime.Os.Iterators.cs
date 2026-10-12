@@ -487,13 +487,15 @@ internal sealed partial class LythonRuntime
             }
 
             var payload = PyString.FromString(message, _governor, _span);
+            _context.State.CallTemporaries.TrackFreshString(payload, _span);
             var callbackSpan = _span ?? new LythonSourceSpan(0, 0, 0, 0);
             _ = InvokeCallableTarget(
                 _onerror,
                 callbackSpan,
                 callbackSpan,
                 _context,
-                [CallArgumentValue.Positional(new PyException("RuntimeError", message, payload))]);
+                [CallArgumentValue.Positional(PyException.CreateOwned(PythonExceptionIdentity.FromRuntimeTypeName("RuntimeError"),
+                    message, payload, _context, callbackSpan))]);
         }
 
         private async ValueTask HandleWalkErrorAsync(string message)
@@ -504,13 +506,15 @@ internal sealed partial class LythonRuntime
             }
 
             var payload = PyString.FromString(message, _governor, _span);
+            _context.State.CallTemporaries.TrackFreshString(payload, _span);
             var callbackSpan = _span ?? new LythonSourceSpan(0, 0, 0, 0);
             _ = await InvokeCallableTargetAsync(
                 _onerror,
                 callbackSpan,
                 callbackSpan,
                 _context,
-                () => ValueTask.FromResult(new[] { CallArgumentValue.Positional(new PyException("RuntimeError", message, payload)) })).ConfigureAwait(false);
+                () => ValueTask.FromResult(new[] { CallArgumentValue.Positional(PyException.CreateOwned(PythonExceptionIdentity.FromRuntimeTypeName("RuntimeError"),
+                    message, payload, _context, callbackSpan)) })).ConfigureAwait(false);
         }
 
         private object CreateTuple(WalkFrame frame)
