@@ -1,0 +1,375 @@
+{
+  "version": 1,
+  "date": "2026-10-12",
+  "purpose": "Protection simplification and GC dependency evidence; no performance claim",
+  "implementation": "6963be02f3cbc1e0e7b6d1c5384b069bf60ab175",
+  "qualifiedSource": {
+    "source": "bdb3fe9a7d5b97d849cc5200553aac3eaa94c42c",
+    "production": "a03c7bf73723df522eb45292d5dc4a8056bbe836",
+    "white": "776b769f3a5be917c29b854327b3b6a361616a37",
+    "public": "2a305132c0f62a83fa105e5b560f28efd42844f3",
+    "probe": "bfd4ee12ae4532e0a65a85db86792da8183eec9d",
+    "benchmark": "c194ce88a7e4d52c576f3929ef82bce60bf37e2d",
+    "status": "Complete Debug10231 and107focused perconfiguration passed.",
+    "productionNetRemoved": 103
+  },
+  "qualifiedBinaries": [
+    {
+      "path": "src/Lokad.Lython/bin/Debug/net10.0/Lokad.Lython.dll",
+      "sha256": "A03F55459E6D3E326B9016CECDB37C7CA5D591335218E6989D41924D79DA398E"
+    },
+    {
+      "path": "tests/Lokad.Lython.Tests/bin/Debug/net10.0/Lokad.Lython.WhiteBox.Tests.dll",
+      "sha256": "3199BC68B4E605EDA19CF3B2B9AC1C7B421DA36DCA66E9604F24120B26DD9660"
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/bin/Debug/net10.0/Lokad.Lython.PublicApi.Tests.dll",
+      "sha256": "C6942BF8DC65CFA27076323D1F9C7C07B21E3F86BB87FA8566D7F41A03E520EB"
+    },
+    {
+      "path": "tests/Lokad.Lython.WorkerFixture/bin/Debug/net10.0/Lokad.Lython.WorkerFixture.dll",
+      "sha256": "FA8AC0B2EF96B9557A21E0C6AF10D93FD90BCF26B6538EE8301ABB3E9946DE8B"
+    },
+    {
+      "path": "tools/LythonProbe/bin/Debug/net10.0/LythonProbe.dll",
+      "sha256": "93C7889742F698398F71BD4CF95A65CDFE2ABA4C42D39E40CFE3338E04747DFE"
+    },
+    {
+      "path": "src/Lokad.Lython/bin/Release/net10.0/Lokad.Lython.dll",
+      "sha256": "5C598A476C569252835E1B7C7038652D0519AA70BF6E94F7FD4786793D20D440"
+    },
+    {
+      "path": "tests/Lokad.Lython.Tests/bin/Release/net10.0/Lokad.Lython.WhiteBox.Tests.dll",
+      "sha256": "265A2932DAE2D747D0315DE3512A799EB65CD97C5813127F30CCA1D5E7E2F4F1"
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/bin/Release/net10.0/Lokad.Lython.PublicApi.Tests.dll",
+      "sha256": "B9349B9E19479B3876FE971FBEC0195250EF7F0C9362DE3C524849AAA22B8EC2"
+    },
+    {
+      "path": "tests/Lokad.Lython.WorkerFixture/bin/Release/net10.0/Lokad.Lython.WorkerFixture.dll",
+      "sha256": "6EBEF3EDF139BD1C1B4D3943E7A454D8FAD91AF99183BEA19929B3A6351F5882"
+    },
+    {
+      "path": "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+      "sha256": "0DF9F4675BA8E73B29EEFD4C19CFC74726C7FC70B5CF5CE2EE87CB108A3302A4"
+    }
+  ],
+  "debugBuildProducers": {
+    "libraryPublicProbe": "6963be02f3cbc1e0e7b6d1c5384b069bf60ab175",
+    "white": "bdb3fe9a7d5b97d849cc5200553aac3eaa94c42c"
+  },
+  "releaseBuildProducer": "bdb3fe9a7d5b97d849cc5200553aac3eaa94c42c",
+  "originalProperty": {
+    "source": "f07f9ad2e15b44ff2c45bfd12d545e509eee2048",
+    "production": "5f6bf332759cab2cfb126960d0e12182579db842",
+    "receipt": {
+      "source": "f07f9ad2e15b44ff2c45bfd12d545e509eee2048",
+      "production": "5f6bf332759cab2cfb126960d0e12182579db842",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\property-storage-20261012\\original\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "22EE2FC236A9CCC0B84723B228CC813EF49C7CE429339098668A887CEC3E2337",
+      "filter": "FullyQualifiedName~PropertyStorageOriginalTests",
+      "pid": 462480,
+      "hasExited": true,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1598,
+      "stdoutSha256": "4D140D9307DB9BD4F69050AB94C2D3C67C8C203104119A523799F3490F1F46B6",
+      "stderrSha256": "8D47A7FEE6D02C5FD276DE8A47FD4010DF391D325639ECB2F574C34DBA58C910"
+    },
+    "interpretation": "Two prospective storage-policy failures, two original controls pass; not Python semantic bugs."
+  },
+  "originalPropertyCases": [
+    {
+      "testName": "Lokad.Lython.Tests.PropertyStorageOriginalTests.EmptyDescriptorKeepsItsShellOnly",
+      "outcome": "Passed"
+    },
+    {
+      "testName": "Lokad.Lython.Tests.PropertyStorageOriginalTests.EachRetainedNumericFieldCarriesItsOwnAllowance",
+      "outcome": "Failed"
+    },
+    {
+      "testName": "Lokad.Lython.Tests.PropertyStorageOriginalTests.NumericDocReplacementTransfersItsFundedStorageAtAFullBudget",
+      "outcome": "Failed"
+    },
+    {
+      "testName": "Lokad.Lython.Tests.PropertyStorageOriginalTests.PositiveFieldGrowthRefusalPreservesMetadata",
+      "outcome": "Passed"
+    }
+  ],
+  "originalPropertyTrxSha256": "BC29FC2C7F8983E295958F418D4FB075FAA1D40DE18D61DD29F1944CB4F3846A",
+  "fullDebug": [
+    {
+      "file": "complete_net10.0_20261012044511.trx",
+      "sha256": "21DD89D392F0FC1357BBA0716CED6643FC92C1206647D83B267F084E970C8E47",
+      "total": 2037,
+      "passed": 2037,
+      "outcome": "Completed"
+    },
+    {
+      "file": "complete_net10.0_20261012045224.trx",
+      "sha256": "2DCFAB570F74BB07FAE726C9B655B9DD69F0BE61668FDC4DD935031D3E46E7A7",
+      "total": 8194,
+      "passed": 8194,
+      "outcome": "Completed"
+    }
+  ],
+  "focused": [
+    {
+      "stage": "root-refined-focused-white-debug",
+      "process": {
+        "source": "bdb3fe9a7d5b97d849cc5200553aac3eaa94c42c",
+        "production": "a03c7bf73723df522eb45292d5dc4a8056bbe836",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "3199BC68B4E605EDA19CF3B2B9AC1C7B421DA36DCA66E9604F24120B26DD9660",
+        "filter": "FullyQualifiedName~PropertyStorageTests|FullyQualifiedName~PropertyConstructorHostTests|FullyQualifiedName~PropertyRegistrationOriginalAccountingTests|FullyQualifiedName~ContainerScalarStorageTests|FullyQualifiedName~SmallTupleAdoptionTests",
+        "pid": 75568,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1171,
+        "stdoutSha256": "0B7D7850089DE54E1F8D51F25826994D1CDBAD3EEC5FDF992BD957ADF67A90F0",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "counts": {
+        "total": 71,
+        "failed": 0,
+        "passed": 71
+      },
+      "trxSha256": "9E2345A759A54A5690AD3F9B2482E89983444BF5EB01914A6F92E91ECAC1D812"
+    },
+    {
+      "stage": "root-focused-public-debug",
+      "process": {
+        "source": "6963be02f3cbc1e0e7b6d1c5384b069bf60ab175",
+        "production": "a03c7bf73723df522eb45292d5dc4a8056bbe836",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "C6942BF8DC65CFA27076323D1F9C7C07B21E3F86BB87FA8566D7F41A03E520EB",
+        "filter": "FullyQualifiedName~PropertyConstructorCompatibilityTests",
+        "pid": 948840,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2104,
+        "stdoutSha256": "E2216C76F23FD9394ABDB4AEB5CBD1D8762F71FF6481786C0D4C880B17521228",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "counts": {
+        "total": 36,
+        "failed": 0,
+        "passed": 36
+      },
+      "trxSha256": "34EEF635390CCB14224A68C82581A1FF722A908654B57AE6591D483A70ECF5E0"
+    },
+    {
+      "stage": "root-focused-white-release",
+      "process": {
+        "source": "bdb3fe9a7d5b97d849cc5200553aac3eaa94c42c",
+        "production": "a03c7bf73723df522eb45292d5dc4a8056bbe836",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "265A2932DAE2D747D0315DE3512A799EB65CD97C5813127F30CCA1D5E7E2F4F1",
+        "filter": "FullyQualifiedName~PropertyStorageTests|FullyQualifiedName~PropertyConstructorHostTests|FullyQualifiedName~PropertyRegistrationOriginalAccountingTests|FullyQualifiedName~ContainerScalarStorageTests|FullyQualifiedName~SmallTupleAdoptionTests",
+        "pid": 290272,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1306,
+        "stdoutSha256": "D1A23655B83CB1EE6EA3F74EBC8E4E51A060AAAD1541FAE82A6A880A787F20E7",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "counts": {
+        "total": 71,
+        "failed": 0,
+        "passed": 71
+      },
+      "trxSha256": "D9B3A603F4FF6EEB0AC402C0A5D1505EF3C1B89679CA4CE9C1CB4EC8D71DA5D3"
+    },
+    {
+      "stage": "root-focused-public-release",
+      "process": {
+        "source": "bdb3fe9a7d5b97d849cc5200553aac3eaa94c42c",
+        "production": "a03c7bf73723df522eb45292d5dc4a8056bbe836",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "B9349B9E19479B3876FE971FBEC0195250EF7F0C9362DE3C524849AAA22B8EC2",
+        "filter": "FullyQualifiedName~PropertyConstructorCompatibilityTests",
+        "pid": 917208,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2242,
+        "stdoutSha256": "01A7309BCAEAFBD25C33877A531508AA23C235405E8C8F0A4DB0879B655C07BF",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "counts": {
+        "total": 36,
+        "failed": 0,
+        "passed": 36
+      },
+      "trxSha256": "B75E612433C4B94CFD3C202F800835A7AE8799EF216490C8C11B5371FD46D82B"
+    }
+  ],
+  "forcedGcDependency": [
+    {
+      "kind": "original",
+      "process": {
+        "source": "eac6826db772f66e0d86a3e89202e9e33dac4b61",
+        "production": "5f6bf332759cab2cfb126960d0e12182579db842",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\property-storage-20261012\\original\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "0A89AAA4F98F2E4BA68DD597EC1CFAB319824C5181E417331A73D875142DDA2D",
+        "filter": "FullyQualifiedName~ForcedGcDependencyDiagnosticTests",
+        "pid": 1029972,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1873,
+        "stdoutSha256": "4B434B64932610DBE760EFC31DE302E9D6281DD91524AB3F76CFEE65F562556F",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "outcomes": [
+        {
+          "asynchronous": false,
+          "retained": false,
+          "rows": 4000,
+          "cap": 262144,
+          "Success": true,
+          "exceptionType": null,
+          "PeakExecutionMemoryBytes": 262138,
+          "collections": [
+            33,
+            33,
+            33
+          ],
+          "elapsedMilliseconds": 202
+        },
+        {
+          "asynchronous": false,
+          "retained": true,
+          "rows": 4000,
+          "cap": 262144,
+          "Success": false,
+          "exceptionType": "MemoryError",
+          "PeakExecutionMemoryBytes": 262104,
+          "collections": [
+            1,
+            1,
+            1
+          ],
+          "elapsedMilliseconds": 67
+        },
+        {
+          "asynchronous": true,
+          "retained": false,
+          "rows": 4000,
+          "cap": 262144,
+          "Success": true,
+          "exceptionType": null,
+          "PeakExecutionMemoryBytes": 262138,
+          "collections": [
+            33,
+            33,
+            33
+          ],
+          "elapsedMilliseconds": 208
+        },
+        {
+          "asynchronous": true,
+          "retained": true,
+          "rows": 4000,
+          "cap": 262144,
+          "Success": false,
+          "exceptionType": "MemoryError",
+          "PeakExecutionMemoryBytes": 262099,
+          "collections": [
+            1,
+            1,
+            1
+          ],
+          "elapsedMilliseconds": 25
+        }
+      ],
+      "trxSha256": "ABC670BC79F841E864FA7FAC96C691759F8940E88C885F9A445320962C7CC74F"
+    },
+    {
+      "kind": "candidate",
+      "process": {
+        "source": "fec361e72b43d6d879ebaa26efa43d396f74f25d",
+        "production": "e31f3a0998c4df280b17da30b731b252b3be76ab",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\property-storage-20261012\\original\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "F01276840EA0A6EA18EF312C8E77951609C428574E13597090AD013BB4493B43",
+        "filter": "FullyQualifiedName~ForcedGcDependencyDiagnosticTests",
+        "pid": 557832,
+        "hasExited": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1469,
+        "stdoutSha256": "8055CCA9C91C46748419457B0716E21143DC3860517255954D3F6DFE974EE174",
+        "stderrSha256": "21851B06C79DF32FDC2E48D3FB573B8E533ABAA3D4E9D8D333DC1F1C27735ACB"
+      },
+      "outcomes": [
+        {
+          "asynchronous": false,
+          "retained": false,
+          "rows": 4000,
+          "cap": 262144,
+          "Success": false,
+          "exceptionType": "MemoryError",
+          "PeakExecutionMemoryBytes": 262113,
+          "collections": [
+            0,
+            0,
+            0
+          ],
+          "elapsedMilliseconds": 2
+        },
+        {
+          "asynchronous": false,
+          "retained": true,
+          "rows": 4000,
+          "cap": 262144,
+          "Success": false,
+          "exceptionType": "MemoryError",
+          "PeakExecutionMemoryBytes": 262104,
+          "collections": [
+            0,
+            0,
+            0
+          ],
+          "elapsedMilliseconds": 47
+        },
+        {
+          "asynchronous": true,
+          "retained": false,
+          "rows": 4000,
+          "cap": 262144,
+          "Success": false,
+          "exceptionType": "MemoryError",
+          "PeakExecutionMemoryBytes": 262113,
+          "collections": [
+            0,
+            0,
+            0
+          ],
+          "elapsedMilliseconds": 6
+        },
+        {
+          "asynchronous": true,
+          "retained": true,
+          "rows": 4000,
+          "cap": 262144,
+          "Success": false,
+          "exceptionType": "MemoryError",
+          "PeakExecutionMemoryBytes": 262099,
+          "collections": [
+            0,
+            0,
+            0
+          ],
+          "elapsedMilliseconds": 21
+        }
+      ],
+      "trxSha256": "8C99C644F4FD2733D791A3D87D38DDD45B52D3C5E3708544362AAAC7F32896CA"
+    }
+  ],
+  "rejectedChange": "Delete only MemoryGovernor.ReclaimForExhaustion GC.Collect; not integrated",
+  "originalDiagnosticSource": "using System.Diagnostics;\nusing System.Numerics;\nusing System.Text.Json;\nusing Lokad.Lython.Tests.Harness;\n\nnamespace Lokad.Lython.Tests;\n\npublic sealed class ForcedGcDependencyDiagnosticTests\n{\n    [Theory]\n    [InlineData(false, false)]\n    [InlineData(false, true)]\n    [InlineData(true, false)]\n    [InlineData(true, true)]\n    public async Task Scan(bool asynchronous, bool retained)\n    {\n        var source = \"import csv\\nr=csv.reader('a,b,c,d,e,f\\\\n' for i in range(4000))\\n\" +\n            (retained ? \"rows=list(r)\\nreturn len(rows)\\n\" : \"total=0\\nfor row in r:\\n total+=1\\nreturn total\\n\");\n        var script = new LythonEngine().Compile(source);\n        Assert.True(script.IsValid);\n        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };\n        var before = new[] { GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2) };\n        var watch = Stopwatch.StartNew();\n        var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);\n        watch.Stop();\n        var receipt = new\n        {\n            asynchronous, retained, rows = 4000, cap = 262144,\n            result.Success, exceptionType = result.Failure?.ExceptionType,\n            result.PeakExecutionMemoryBytes,\n            collections = Enumerable.Range(0, 3).Select(i => GC.CollectionCount(i) - before[i]).ToArray(),\n            elapsedMilliseconds = watch.ElapsedMilliseconds\n        };\n        var directory = Environment.GetEnvironmentVariable(\"LYTHON_GC_DIAG_DIR\")!;\n        Assert.False(string.IsNullOrEmpty(directory));\n        Directory.CreateDirectory(directory);\n        File.WriteAllText(Path.Combine(directory, $\"scan-{asynchronous}-{retained}.json\"), JsonSerializer.Serialize(receipt));\n        if (retained)\n        {\n            Assert.False(result.Success);\n            Assert.Equal(\"MemoryError\", result.Failure?.ExceptionType);\n        }\n        else\n        {\n            Assert.True(result.Success, result.Failure?.Message);\n            Assert.Equal(new BigInteger(4000), result.ReturnValue);\n        }\n    }\n}"
+}
