@@ -125,14 +125,15 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
         var steps = fixture.Context.Limits.ExecutionStepCount;
         var funded = fixture.Context.MemoryGovernor.CurrentAccountedBytes - before;
         Assert.Equal(48, steps);
-        Assert.Equal(10864, funded);
+        Assert.Equal(11120, funded);
         Assert.Equal(new[] { "top", "bottom", "default", "argument", "result", "bottom-apply", "top-apply" }, fixture.Tape.Events);
-        Assert.Equal(new[]
+        var expectedSnapshots = new[]
         {
             "top:14,6810,96,3,1", "bottom:20,6810,96,3,1", "default:27,6810,96,3,1",
-            "argument:34,10946,96,3,1", "result:44,11335,96,3,1",
-            "bottom-apply:47,11661,96,2,1", "top-apply:47,11661,96,2,1"
-        }, fixture.Tape.Snapshots);
+            "argument:34,10946,96,3,1", "result:44,11463,96,3,1",
+            "bottom-apply:47,11917,96,2,1", "top-apply:47,11917,96,2,1"
+        };
+        Assert.True(expectedSnapshots.SequenceEqual(fixture.Tape.Snapshots), string.Join("\n", fixture.Tape.Snapshots));
         var receiver = Assert.IsType<PyInstance>(inner.Invoke([], CallSpan, fixture.Context));
         var method = Bind(receiver, "run");
         var function = Assert.IsAssignableFrom<PyFunctionBase>(method.Function);

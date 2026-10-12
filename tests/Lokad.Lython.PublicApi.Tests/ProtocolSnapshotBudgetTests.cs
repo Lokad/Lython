@@ -23,6 +23,9 @@ public sealed class ProtocolSnapshotBudgetTests
     private const long SetOrdinaryBudgetBytes = 10_485_760;
     private const long DictAsymmetricBudgetBytes = 10_700_000;
     private const long DictOrdinaryBudgetBytes = 11_534_336;
+    // The original caps remain explicit admission controls. Fund the new
+    // per-entry allowance delta separately to continue exercising snapshots.
+    private const long DictEntryAllowanceDelta = 100_000L * (128L - 64L);
     private const long DictStoreSnapshotBytes = 1600032;
     private const long SetStoreSnapshotBytes = 800024;
 
@@ -163,23 +166,47 @@ public sealed class ProtocolSnapshotBudgetTests
     }
 
     [Fact]
-    public void DictStoreSnapshotDeniesBeforeCopying()
+    public void FormerDictSnapshotBudgetDeniesDuringPopulation()
     {
         var script = Compile(DictAsymmetricSource);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictAsymmetricBudgetBytes };
         var result = script.Run(new MockLythonHost(), options);
         AssertError(result, "MemoryError", "execution memory budget exceeded");
-        Assert.Equal(DictStoreSnapshotBytes, result.DeniedReservationBytes);
+        Assert.Equal(128L, result.DeniedReservationBytes);
     }
 
     [Fact]
-    public async Task DictStoreSnapshotDeniesBeforeCopyingAsync()
+    public async Task FormerDictSnapshotBudgetDeniesDuringPopulationAsync()
     {
         var script = Compile(DictAsymmetricSource);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictAsymmetricBudgetBytes };
         var result = await script.RunAsync(new MockLythonHost(), options);
         AssertError(result, "MemoryError", "execution memory budget exceeded");
+        Assert.Equal(128L, result.DeniedReservationBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DictStoreSnapshotDeniesAfterFundingEntryAllowances(bool asynchronous)
+    {
+        var script = Compile(DictAsymmetricSource);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictAsymmetricBudgetBytes + DictEntryAllowanceDelta };
+        var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
+        AssertError(result, "MemoryError", "execution memory budget exceeded");
         Assert.Equal(DictStoreSnapshotBytes, result.DeniedReservationBytes);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FormerOrdinaryDictBudgetDeniesDuringPopulation(bool asynchronous)
+    {
+        var script = Compile(DictOrdinarySource);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictOrdinaryBudgetBytes };
+        var result = asynchronous ? await script.RunAsync(new MockLythonHost(), options) : script.Run(new MockLythonHost(), options);
+        AssertError(result, "MemoryError", "execution memory budget exceeded");
+        Assert.Equal(128L, result.DeniedReservationBytes);
     }
 
     [Fact]
@@ -242,7 +269,7 @@ public sealed class ProtocolSnapshotBudgetTests
     public void DictOrdinaryPathsStayUncharged()
     {
         var script = Compile(DictOrdinarySource);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictOrdinaryBudgetBytes };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictOrdinaryBudgetBytes + DictEntryAllowanceDelta };
         var result = script.Run(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
@@ -254,7 +281,7 @@ public sealed class ProtocolSnapshotBudgetTests
     public async Task DictOrdinaryPathsStayUnchargedAsync()
     {
         var script = Compile(DictOrdinarySource);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictOrdinaryBudgetBytes };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = DictOrdinaryBudgetBytes + DictEntryAllowanceDelta };
         var result = await script.RunAsync(new MockLythonHost(), options);
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(
