@@ -85,6 +85,56 @@ public sealed class RepresentativeScriptTests
         => path.StartsWith("/outbox/", StringComparison.Ordinal) ? readBytes(path) : Encoding.UTF8.GetBytes(readText(path));
 
     [Theory]
+    [InlineData("csv-summary", "/report.csv")]
+    [InlineData("text-summary", "/report.txt")]
+    [InlineData("json-summary", "/report.json")]
+    [InlineData("file-manifest", "/manifest.json")]
+    public async Task CancelledPendingPublicationPreservesPreviousFileBytes(string name, string reportPath)
+    {
+        var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py"));
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
+        var host = new DelayedLythonHost();
+        host.SeedFile("/input.csv", "kind,amount,note\nred,3,café\nblue,2,😀\n");
+        host.SeedFile("/input.txt", "Alpha café 😀\n");
+        host.SeedFile("/input.jsonl", "{\"kind\":\"red\",\"amount\":3}\n");
+        host.SeedBytes("/inbox/a.bin", [0, 127, 128, 255]);
+        host.SeedBytes("/inbox/é.txt", Encoding.UTF8.GetBytes("café 😀\n"));
+        const string previous = "previous café 😀\n";
+        host.SeedFile(reportPath, previous);
+        var started = host.PauseWriteUntilCancellation(reportPath);
+        using var cancellation = new CancellationTokenSource();
+        var run = script.RunAsync(host, new LythonRunOptions
+        {
+            CancellationToken = cancellation.Token,
+            MaxExecutionMemoryBytes = 262144,
+        });
+        try
+        {
+            await started.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.False(run.IsCompleted);
+            Assert.True(host.CompletedAsynchronously > 0);
+            Assert.Equal(Encoding.UTF8.GetBytes(previous), Encoding.UTF8.GetBytes(host.ReadText(reportPath)));
+        }
+        finally { cancellation.Cancel(); }
+        var result = await run.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.False(result.Success);
+        Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+        Assert.Empty(result.StandardOutput);
+        Assert.Empty(result.StandardError);
+        Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
+        Assert.True(result.Consumption?.HostCalls > 0);
+        Assert.Equal(Encoding.UTF8.GetBytes(previous), Encoding.UTF8.GetBytes(host.ReadText(reportPath)));
+        // Each mediated replacement is atomic. Earlier successful files remain
+        // committed; the complete job does not promise a filesystem transaction.
+        if (name == "file-manifest")
+        {
+            Assert.Equal(new byte[] { 0, 127, 128, 255 }, host.ReadBytes("/outbox/a.bin"));
+            Assert.Equal(Encoding.UTF8.GetBytes("café 😀\n"), host.ReadBytes("/outbox/é.txt"));
+        }
+    }
+
+    [Theory]
     [InlineData("csv-summary", false)]
     [InlineData("csv-summary", true)]
     [InlineData("json-summary", false)]
