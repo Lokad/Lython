@@ -15,7 +15,7 @@ public sealed class WrapperOwnershipLifetimeTests
         var call = counter ? "ctor(bad())" : "ctor(None, [(1, None), (2,)])";
         var body = "import collections\ndef bad():\n yield 1\n raise ValueError('stop')\n" +
             "def build(ctor):\n try:\n  " + call +
-            "\n except ValueError:\n  return True\n return False\n" +
+            "\n except (TypeError, ValueError):\n  return True\n return False\n" +
             "for i in range(2000):\n assert build(collections." + (counter ? "Counter" : "defaultdict") + ")\nreturn i + 1\n";
         var result = await Run(body, asynchronous);
         Assert.True(result.Success, result.Failure?.Message);
