@@ -1,0 +1,780 @@
+{
+  "version": 1,
+  "date": "2026-10-12",
+  "purpose": "Consolidate ordinary instance and OrderedDict ownership; align copied-state publication",
+  "qualifiedSource": {
+    "source": "d7150f6d2619fc1e946cee3038843bcf584af133",
+    "implementation": "7fbcdd5c640956963ebccfde541862adadeb3c85",
+    "statePublicationImplementation": "5fdd15f1e45ffc244816ff0364dab7a5bd348d5c",
+    "publicationCheckpoint": "d7150f6d2619fc1e946cee3038843bcf584af133",
+    "production": "913eba9821d7238edd7190b1f6ba33146717bd60",
+    "white": "cd3815052f7fed8a371a10bd029a3a2995c9ac31",
+    "public": "2590adcf0cb2793c048f4ccf9c3e71bb850afd69",
+    "probe": "bfd4ee12ae4532e0a65a85db86792da8183eec9d",
+    "benchmark": "c194ce88a7e4d52c576f3929ef82bce60bf37e2d",
+    "worker": "fe209cb540a4187d82fbe1f6aa43aad294fbc128",
+    "productionLinesAdded": 85,
+    "productionLinesRemoved": 22,
+    "productionNetAdded": 63,
+    "actualBuildProducers": {
+      "releaseAll": "d7150f6d2619fc1e946cee3038843bcf584af133",
+      "debugAll": "d7150f6d2619fc1e946cee3038843bcf584af133"
+    }
+  },
+  "qualifiedBinaries": [
+    {
+      "path": "src/Lokad.Lython/bin/Debug/net10.0/Lokad.Lython.dll",
+      "sha256": "D8528420386A34C237819449E98E201FDD3CF5819EED2B367CD692D4C2DD907F"
+    },
+    {
+      "path": "tests/Lokad.Lython.Tests/bin/Debug/net10.0/Lokad.Lython.WhiteBox.Tests.dll",
+      "sha256": "23D8F610CC495F8F0818CD212192E832ED6B0E020760483E8B167E264389955B"
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/bin/Debug/net10.0/Lokad.Lython.PublicApi.Tests.dll",
+      "sha256": "E78DF1D4C0B38C84E4715D46523AD596353E7612623880B8E21121C0A9883FDD"
+    },
+    {
+      "path": "tests/Lokad.Lython.WorkerFixture/bin/Debug/net10.0/Lokad.Lython.WorkerFixture.dll",
+      "sha256": "2370EF4F6CDDE075F2E88A4E6B6BD6A85A3F6574B43403C7ACBA046650FCE637"
+    },
+    {
+      "path": "tools/LythonProbe/bin/Debug/net10.0/LythonProbe.dll",
+      "sha256": "08617823F03CF1EA03412102292427AB85E7D49D52AD99D10119034905F74E52"
+    },
+    {
+      "path": "src/Lokad.Lython/bin/Release/net10.0/Lokad.Lython.dll",
+      "sha256": "BCFB3CF7CF43DBCB9E58506703122E42F2AB3B3D2AD3918DE9EB25A4098F80DD"
+    },
+    {
+      "path": "tests/Lokad.Lython.Tests/bin/Release/net10.0/Lokad.Lython.WhiteBox.Tests.dll",
+      "sha256": "4A4A65F75EE2AE576239494D30B0DECABE34D27FEA290356ED70015D2098FA6A"
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/bin/Release/net10.0/Lokad.Lython.PublicApi.Tests.dll",
+      "sha256": "6F72A10F5305AD8871D9F354F22DCC2F03BCF6B6176D6E664827FB069E976F8E"
+    },
+    {
+      "path": "tests/Lokad.Lython.WorkerFixture/bin/Release/net10.0/Lokad.Lython.WorkerFixture.dll",
+      "sha256": "7294555D5362FC4F56B3B7EA29F80FB50BBF6C997B642C646EC3C2D043B80E8B"
+    },
+    {
+      "path": "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+      "sha256": "DC114BD88884B177145926CBD9D2A1B25BB59C3F3C6EB2DA128F716963089EEF"
+    }
+  ],
+  "fullDebug": [
+    {
+      "file": "complete_net10.0_20261012084625.trx",
+      "sha256": "09CA47306B839E7B44F90C21ECF8DEA6362F95B3DA98CC10D764112C661BF584",
+      "total": 2117,
+      "passed": 2117,
+      "failed": 0,
+      "cases": []
+    },
+    {
+      "file": "complete_net10.0_20261012085309.trx",
+      "sha256": "986E43EDF468C311D3959ABD23AFEFA167F6F1930CAED3BAC85FAB2443B976E8",
+      "total": 8260,
+      "passed": 8260,
+      "failed": 0,
+      "cases": []
+    }
+  ],
+  "focused": [
+    {
+      "stage": "root-qualified-white-debug",
+      "process": {
+        "source": "d7150f6d2619fc1e946cee3038843bcf584af133",
+        "production": "913eba9821d7238edd7190b1f6ba33146717bd60",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "23D8F610CC495F8F0818CD212192E832ED6B0E020760483E8B167E264389955B",
+        "filter": "FullyQualifiedName~InstanceStorageOwnershipTests|FullyQualifiedName~NextOwnerRegistrationTests|FullyQualifiedName~InstanceAttributeAccountingTests|FullyQualifiedName~DefaultObjectAttributeBoundaryTests|FullyQualifiedName~OwnershipSnapshotContractTests|FullyQualifiedName~CollectionKwargsKeyAccountingTests|FullyQualifiedName~ChargeReclamationPoolTests.InstanceAttribute|FullyQualifiedName~MethodBodyCompilationBoundaryTests|FullyQualifiedName~MethodBodyControlBoundaryTests|FullyQualifiedName~ClassMethodExecutionBoundaryTests",
+        "pid": 770236,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2107,
+        "stdoutSha256": "E5D4C93917FAA6151C7AA114AC20C1E410B60BC976CEFD711D9EBC2E637CBBE4",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "7648D5F53F371F666B160B5BFA457B859936DACBF4EDF1E971B495CD908CE538",
+        "total": 106,
+        "passed": 106,
+        "failed": 0,
+        "cases": []
+      }
+    },
+    {
+      "stage": "root-qualified-lifetime-public-debug",
+      "process": {
+        "source": "d7150f6d2619fc1e946cee3038843bcf584af133",
+        "production": "913eba9821d7238edd7190b1f6ba33146717bd60",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "E78DF1D4C0B38C84E4715D46523AD596353E7612623880B8E21121C0A9883FDD",
+        "filter": "FullyQualifiedName~InstanceOwnerLifetimeTests",
+        "pid": 1149132,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 10390,
+        "stdoutSha256": "83DB77C519D8B3F43B358862DC8A086CDFC531D80BDE4C713B459882FDA9E5CE",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "F88515899CE5FB9FA41FA04ADD9E53CE2D6DFFF5D7DA18BDD8DCD0BCFEE64D5F",
+        "total": 34,
+        "passed": 34,
+        "failed": 0,
+        "cases": []
+      }
+    },
+    {
+      "stage": "root-qualified-core-public-debug",
+      "process": {
+        "source": "d7150f6d2619fc1e946cee3038843bcf584af133",
+        "production": "913eba9821d7238edd7190b1f6ba33146717bd60",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "E78DF1D4C0B38C84E4715D46523AD596353E7612623880B8E21121C0A9883FDD",
+        "filter": "FullyQualifiedName~CopyModuleFunctionTests|FullyQualifiedName~CopyHookInvocationScenarioTests|FullyQualifiedName~CopyHookBudgetScenarioTests|FullyQualifiedName~CopyMemoViewAccountingScenarioTests|FullyQualifiedName~CopyExternalMemoAccountingScenarioTests|FullyQualifiedName~InstanceAttributeAccountingScenarioTests|FullyQualifiedName~CollectionKwargsKeyAccountingScenarioTests|FullyQualifiedName~CopyOwnerLifetimeTests",
+        "pid": 818344,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 8136,
+        "stdoutSha256": "416334104556667A7E484F950C1151A2B79144AC54B49ACEB830AEBBC1B5C37C",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "3D9D450031D407E89FFA477D0086ED9CE15FAA54D705A62393EA6325C8AE95E1",
+        "total": 43,
+        "passed": 43,
+        "failed": 0,
+        "cases": []
+      }
+    },
+    {
+      "stage": "root-qualified-white-release",
+      "process": {
+        "source": "d7150f6d2619fc1e946cee3038843bcf584af133",
+        "production": "913eba9821d7238edd7190b1f6ba33146717bd60",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "4A4A65F75EE2AE576239494D30B0DECABE34D27FEA290356ED70015D2098FA6A",
+        "filter": "FullyQualifiedName~InstanceStorageOwnershipTests|FullyQualifiedName~NextOwnerRegistrationTests|FullyQualifiedName~InstanceAttributeAccountingTests|FullyQualifiedName~DefaultObjectAttributeBoundaryTests|FullyQualifiedName~OwnershipSnapshotContractTests|FullyQualifiedName~CollectionKwargsKeyAccountingTests|FullyQualifiedName~ChargeReclamationPoolTests.InstanceAttribute|FullyQualifiedName~MethodBodyCompilationBoundaryTests|FullyQualifiedName~MethodBodyControlBoundaryTests|FullyQualifiedName~ClassMethodExecutionBoundaryTests",
+        "pid": 360812,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1932,
+        "stdoutSha256": "88325BC06BE1ED2F0706125EEA43CB4157DF8D36B529EF93913106BEE92E7601",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "F2BABC1686785720F745B434DFC72DD0862B7CF22FB46995C206D1B158858041",
+        "total": 106,
+        "passed": 106,
+        "failed": 0,
+        "cases": []
+      }
+    },
+    {
+      "stage": "root-qualified-lifetime-public-release",
+      "process": {
+        "source": "d7150f6d2619fc1e946cee3038843bcf584af133",
+        "production": "913eba9821d7238edd7190b1f6ba33146717bd60",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "6F72A10F5305AD8871D9F354F22DCC2F03BCF6B6176D6E664827FB069E976F8E",
+        "filter": "FullyQualifiedName~InstanceOwnerLifetimeTests",
+        "pid": 173136,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 9906,
+        "stdoutSha256": "4D2646498188EBB2B0770686D59386E92E164C7EA93A9A0064A9539B11F41907",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "8F9551EBE8D6F47CD9D15C92668084775637F331C455AA1AAF3A51DB8091FAC6",
+        "total": 34,
+        "passed": 34,
+        "failed": 0,
+        "cases": []
+      }
+    },
+    {
+      "stage": "root-qualified-core-public-release",
+      "process": {
+        "source": "d7150f6d2619fc1e946cee3038843bcf584af133",
+        "production": "913eba9821d7238edd7190b1f6ba33146717bd60",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "6F72A10F5305AD8871D9F354F22DCC2F03BCF6B6176D6E664827FB069E976F8E",
+        "filter": "FullyQualifiedName~CopyModuleFunctionTests|FullyQualifiedName~CopyHookInvocationScenarioTests|FullyQualifiedName~CopyHookBudgetScenarioTests|FullyQualifiedName~CopyMemoViewAccountingScenarioTests|FullyQualifiedName~CopyExternalMemoAccountingScenarioTests|FullyQualifiedName~InstanceAttributeAccountingScenarioTests|FullyQualifiedName~CollectionKwargsKeyAccountingScenarioTests|FullyQualifiedName~CopyOwnerLifetimeTests",
+        "pid": 538184,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 6420,
+        "stdoutSha256": "42AC8A41589B1F5213B55DF06E3A43F59C233F77E1E50C179CEE94365F4144FA",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "AE0086B0C80DF7A94D229E0512EC37F717057740BC2ED8B6BD1ED20A2B8EA488",
+        "total": 43,
+        "passed": 43,
+        "failed": 0,
+        "cases": []
+      }
+    }
+  ],
+  "originalOwnerFaults": {
+    "process": {
+      "source": "e4cbb4e41b28dae3075f01e394c0ce15399cae22",
+      "production": "28ba4d503bf68f0d9f5c52b57477c9d45d5068b2",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\copy-owner-registration-20261012\\original\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "C582B04E45662ACBA15AD4CC8B1B8D22FD999F91C34AE681E564B0DD012A3A70",
+      "filter": "FullyQualifiedName~NextOwnerRegistrationOriginalTests",
+      "pid": 1013832,
+      "hasExited": true,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1588,
+      "stdoutSha256": "3B6FF2EF7AC2E180D87FA75F2A783066C44B767762B2EB1743EE18F779DF73E0",
+      "stderrSha256": "7783FDD5A5C84229D4820FB11A744B83352870B71CEDE946706F3064F31B0E36"
+    },
+    "trxSha256": "2A7688BECB97BB663DF89DE8462751071EE2799F3760FDEFE90C2D5BC73F8154",
+    "cases": [
+      {
+        "name": "Lokad.Lython.Tests.NextOwnerRegistrationOriginalTests.DroppedFailedConstructionKeepsBoundedLiveMemory(kind: \"instance\")",
+        "outcome": "Failed",
+        "message": "MemoryError:execution memory budget exceeded (65536)"
+      },
+      {
+        "name": "Lokad.Lython.Tests.NextOwnerRegistrationOriginalTests.DroppedFailedConstructionKeepsBoundedLiveMemory(kind: \"ordered\")",
+        "outcome": "Failed",
+        "message": "MemoryError:execution memory budget exceeded (65536)"
+      }
+    ],
+    "inputs": {
+      "iterations": 1500,
+      "memoryCapBytes": 65536
+    },
+    "classification": "Both bounded dropped-owner workloads falsely deny; affected root method bodies are unchanged from this original production"
+  },
+  "rejectedMinimalRegistrationProbe": {
+    "process": {
+      "source": "3ca09455c5525c64ac2d2516e92c187677ab3a51",
+      "production": "43b1510b4d7b24100ecda436eaa617cadb58d4df",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\copy-owner-registration-20261012\\original\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "4F6A59112283DD5E1551CE38F9C83E3B253E16CBF42FA3B4F0B240C2CF4713F8",
+      "filter": "FullyQualifiedName~NextOwnerRegistrationOriginalTests",
+      "pid": 459200,
+      "hasExited": true,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1610,
+      "stdoutSha256": "C985C0D382805893EF64EBBDB8F5E835CD9204F3E27F003329C0596A5CBC55CF",
+      "stderrSha256": "F6752FC34337C1FE689DDAF62F7EB249C3E862557BE4D2454C12C1F682798655"
+    },
+    "trxSha256": "2FF81264C2EBE04DAA3049331E9304C004D670A78E0F0ABF5B2A38EE117BCE2D",
+    "cases": [
+      {
+        "name": "Lokad.Lython.Tests.NextOwnerRegistrationOriginalTests.DroppedFailedConstructionKeepsBoundedLiveMemory(kind: \"ordered\")",
+        "outcome": "Passed",
+        "message": null
+      },
+      {
+        "name": "Lokad.Lython.Tests.NextOwnerRegistrationOriginalTests.DroppedFailedConstructionKeepsBoundedLiveMemory(kind: \"instance\")",
+        "outcome": "Failed",
+        "message": "MemoryError:execution memory budget exceeded (65536)"
+      }
+    ],
+    "scope": "Two early TrackFreshMutable calls only",
+    "inputs": {
+      "iterations": 1500,
+      "memoryCapBytes": 65536
+    },
+    "classification": "OrderedDict corrected; zero-charge instance remains unregistered. Partial private probe, not root qualification."
+  },
+  "compatibilityProbes": {
+    "process": {
+      "source": "d7150f6d2619fc1e946cee3038843bcf584af133",
+      "production": "913eba9821d7238edd7190b1f6ba33146717bd60",
+      "probeProducer": "d7150f6d2619fc1e946cee3038843bcf584af133",
+      "probeSha256": "08617823F03CF1EA03412102292427AB85E7D49D52AD99D10119034905F74E52",
+      "pythonVersion": "Python 3.13.2",
+      "pid": 365112,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 621,
+      "inputSha256": "D4156827724AC0F88A70FF8C6E777E87C4BF98D13A7E6A6CF1C25063AB08FA9C",
+      "outputSha256": "AE5D05C5FD8BA3B5B37C22E259FBDD551F1DB133B5831FF29EB3D71F68EA24F4",
+      "cases": 4
+    },
+    "reports": [
+      {
+        "Index": 0,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "[[false, false, false, null]]\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 6138,
+          "PeakProjectionMemoryBytes": 92,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "[[false, false, false, null]]\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": 65536,
+          "Async": false
+        }
+      },
+      {
+        "Index": 1,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "True\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 3502,
+          "PeakProjectionMemoryBytes": 42,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "True\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": 65536,
+          "Async": false
+        }
+      },
+      {
+        "Index": 2,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "[1, 17]\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 3709,
+          "PeakProjectionMemoryBytes": 48,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "[1, 17]\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": 65536,
+          "Async": false
+        }
+      },
+      {
+        "Index": 3,
+        "Lython": {
+          "Success": true,
+          "StandardOutput": "True\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": 2604,
+          "PeakProjectionMemoryBytes": 42,
+          "DeniedReservationBytes": 0,
+          "Failure": null
+        },
+        "CPython": {
+          "Success": true,
+          "StandardOutput": "True\n",
+          "StandardError": "",
+          "ExitCode": null,
+          "Diagnostics": [],
+          "PeakExecutionMemoryBytes": null,
+          "PeakProjectionMemoryBytes": null,
+          "DeniedReservationBytes": null,
+          "Failure": null
+        },
+        "Matches": true,
+        "Note": null,
+        "Compared": true,
+        "Options": {
+          "MaxMemoryBytes": 65536,
+          "Async": false
+        }
+      }
+    ],
+    "initialDiscrepancy": {
+      "process": {
+        "source": "2e9e548101fbe7867d24f6c78333ae7c49596993",
+        "production": "d9fb03210a48f10800cb085e33e70ac95e624897",
+        "probeProducer": "7fbcdd5c640956963ebccfde541862adadeb3c85",
+        "probeSha256": "49CCE844650A4A593031ADD9E7BA0CDE2D61D9F46AEEDDFF3800A2370CE3F663",
+        "pythonVersion": "Python 3.13.2",
+        "pid": 643676,
+        "hasExited": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 596,
+        "inputSha256": "8F7572231D922CD3E5E48D0C2D515D006157ABE6E7DCA6F7D1CA66A0FD9F1D89",
+        "outputSha256": "A9614CD7C0CF528F26B33682BE400C928100DAFF649AF35D5FD7E0ED07F6D59F",
+        "cases": 4
+      },
+      "reports": [
+        {
+          "Index": 0,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "[[true, false, false, 1]]\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 6250,
+            "PeakProjectionMemoryBytes": 84,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": false,
+            "StandardOutput": "",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": {
+              "ExceptionType": "AttributeError",
+              "Message": "'Holder' object has no attribute 'first'",
+              "Span": null,
+              "Frames": null
+            }
+          },
+          "Matches": false,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 65536,
+            "Async": false
+          }
+        },
+        {
+          "Index": 1,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "True\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 3446,
+            "PeakProjectionMemoryBytes": 42,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "True\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 65536,
+            "Async": false
+          }
+        },
+        {
+          "Index": 2,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "[1, 17]\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 3709,
+            "PeakProjectionMemoryBytes": 48,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "[1, 17]\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 65536,
+            "Async": false
+          }
+        },
+        {
+          "Index": 3,
+          "Lython": {
+            "Success": true,
+            "StandardOutput": "True\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": 2604,
+            "PeakProjectionMemoryBytes": 42,
+            "DeniedReservationBytes": 0,
+            "Failure": null
+          },
+          "CPython": {
+            "Success": true,
+            "StandardOutput": "True\n",
+            "StandardError": "",
+            "ExitCode": null,
+            "Diagnostics": [],
+            "PeakExecutionMemoryBytes": null,
+            "PeakProjectionMemoryBytes": null,
+            "DeniedReservationBytes": null,
+            "Failure": null
+          },
+          "Matches": true,
+          "Note": null,
+          "Compared": true,
+          "Options": {
+            "MaxMemoryBytes": 65536,
+            "Async": false
+          }
+        }
+      ]
+    }
+  },
+  "initialFullDebug": {
+    "results": [
+      {
+        "file": "complete_net10.0_20261012080610.trx",
+        "sha256": "0BA85C3BBEBFE1220B119CA563B3FE777DD200CC7572DD2EE8C7082460D6CEC8",
+        "total": 2116,
+        "passed": 2105,
+        "failed": 11,
+        "cases": [
+          {
+            "testName": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.EscapedMethodClosuresKeepFundingAndEveryFuelBoundary(asynchronous: False)",
+            "outcome": "Failed"
+          },
+          {
+            "testName": "Lokad.Lython.Tests.MethodBodyControlBoundaryTests.EveryFuelCutoffPreservesSourceEffectsAndScopeCleanup(asynchronous: False)",
+            "outcome": "Failed"
+          },
+          {
+            "testName": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.EscapedMethodClosuresKeepFundingAndEveryFuelBoundary(asynchronous: True)",
+            "outcome": "Failed"
+          },
+          {
+            "testName": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.GenericMethodDefinitionsRetainDefaultsTypeScopesAndRealClassCells(asynchronous: True)",
+            "outcome": "Failed"
+          },
+          {
+            "testName": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.EscapedMethodGeneratorsKeepTheirOriginalDefaultAndClassCell(asynchronous: False)",
+            "outcome": "Failed"
+          },
+          {
+            "testName": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.EscapedMethodGeneratorsKeepTheirOriginalDefaultAndClassCell(asynchronous: True)",
+            "outcome": "Failed"
+          },
+          {
+            "testName": "Lokad.Lython.Tests.MethodBodyCompilationBoundaryTests.GenericMethodDefinitionsRetainDefaultsTypeScopesAndRealClassCells(asynchronous: False)",
+            "outcome": "Failed"
+          },
+          {
+            "testName": "Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.ClassCellsArgumentsAndLogicalFundingAgreeAcrossModes(width: 0)",
+            "outcome": "Failed"
+          },
+          {
+            "testName": "Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.ClassCellsArgumentsAndLogicalFundingAgreeAcrossModes(width: 2)",
+            "outcome": "Failed"
+          },
+          {
+            "testName": "Lokad.Lython.Tests.ClassMethodExecutionBoundaryTests.ClassCellsArgumentsAndLogicalFundingAgreeAcrossModes(width: 1)",
+            "outcome": "Failed"
+          },
+          {
+            "testName": "Lokad.Lython.Tests.MethodBodyControlBoundaryTests.EveryFuelCutoffPreservesSourceEffectsAndScopeCleanup(asynchronous: True)",
+            "outcome": "Failed"
+          }
+        ]
+      },
+      {
+        "file": "complete_net10.0_20261012081321.trx",
+        "sha256": "4C960E8BFFBB23DD7BB5C2E63A3111B4810DBC64BE869CE6B1970DD08377634F",
+        "total": 8256,
+        "passed": 8256,
+        "failed": 0,
+        "cases": []
+      }
+    ],
+    "interpretation": "Eleven old fee/backing-capacity snapshots failed; initial public suite passed. Final matching gates supersede this attempt."
+  },
+  "excludedCancellationFixtureChecks": [
+    {
+      "stage": "root-final-white-debug",
+      "process": {
+        "source": "74a22ed1317ce42dc65a6064742551c150f59a9a",
+        "production": "180ca231accde756cdf2c324fd238fd8eab9646b",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "EE4F7A735901FD9943D5A7CB6BC0D931A845DFAA7460B35AE47562DD239D45C7",
+        "filter": "FullyQualifiedName~InstanceStorageOwnershipTests|FullyQualifiedName~NextOwnerRegistrationTests|FullyQualifiedName~InstanceAttributeAccountingTests|FullyQualifiedName~DefaultObjectAttributeBoundaryTests|FullyQualifiedName~OwnershipSnapshotContractTests|FullyQualifiedName~CollectionKwargsKeyAccountingTests|FullyQualifiedName~ChargeReclamationPoolTests.InstanceAttribute|FullyQualifiedName~MethodBodyCompilationBoundaryTests|FullyQualifiedName~MethodBodyControlBoundaryTests|FullyQualifiedName~ClassMethodExecutionBoundaryTests",
+        "pid": 457180,
+        "hasExited": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2452,
+        "stdoutSha256": "76C332594AFD70AC8F691FD3A86F7FA4373AE898A0D577D517D7B8E6EEF237F0",
+        "stderrSha256": "2D4AE160C5C59D257BAC083E393339C1C26F8C9413EAE6052CE4CDCE62F6EFD7"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "8840A81AB4B27FF0BF207B2B8B64B67A58C56530A418D299CF374A53F5D7B3CA",
+        "total": 106,
+        "passed": 105,
+        "failed": 1,
+        "cases": [
+          {
+            "testName": "Lokad.Lython.Tests.InstanceStorageOwnershipTests.CancellationDuringDeepcopyReleasesStagingButKeepsPinnedScratch",
+            "outcome": "Failed"
+          }
+        ]
+      },
+      "interpretation": "Cancellation fixture used a type without object.__getattribute__; hook was not invoked. Production unchanged."
+    },
+    {
+      "stage": "root-cancellation-wiring-debug",
+      "process": {
+        "source": "ef00b6d145150b909985f511fc6b61afbe010649",
+        "production": "180ca231accde756cdf2c324fd238fd8eab9646b",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "85136D88A9A2A2D604853F5D118224D2000961AEB09D312B9580BD8A39398F4C",
+        "filter": "FullyQualifiedName~InstanceStorageOwnershipTests.CancellationDuringDeepcopy",
+        "pid": 61564,
+        "hasExited": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2013,
+        "stdoutSha256": "3819C5E87BB861B6BE276C05344314569CA9A6FF5D5868EFB31AB1CF0F410EE6",
+        "stderrSha256": "DA04C44F8C081F106125B47841BF36D227EA2B95C01CA74C91A50B2496EF3AA1"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "57ACCD9389367243A261E19438F290577C684CB611F96ADB638A417D84610007",
+        "total": 1,
+        "passed": 0,
+        "failed": 1,
+        "cases": [
+          {
+            "testName": "Lokad.Lython.Tests.InstanceStorageOwnershipTests.CancellationDuringDeepcopyReleasesStagingButKeepsPinnedScratch",
+            "outcome": "Failed"
+          }
+        ]
+      },
+      "interpretation": "Cancellation fixture used a type without object.__getattribute__; hook was not invoked. Production unchanged."
+    },
+    {
+      "stage": "root-cancellation-resolved-debug",
+      "process": {
+        "source": "c5c6f187e23038f4906f39b1a00ce577fb555ac9",
+        "production": "180ca231accde756cdf2c324fd238fd8eab9646b",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "FDA13719AAACA772DA6E581186D5D9A61E9DAF7A9368E2CC9EEFC59337324B95",
+        "filter": "FullyQualifiedName~InstanceStorageOwnershipTests.CancellationDuringDeepcopy",
+        "pid": 253828,
+        "hasExited": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 999,
+        "stdoutSha256": "B4854B447792247BDFD83162D94206748C595D3A15E0F58AA5782F12F2974A56",
+        "stderrSha256": "B2D65EE25F1C2BE1A3798CEBBE9A14CE6AF3E9D6CAA20DB3CD12FFDF1480443D"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "C46B7AF6B902A25D956C8C887706A68C0D0666D5EDA254F00F6E854C02363022",
+        "total": 1,
+        "passed": 0,
+        "failed": 1,
+        "cases": [
+          {
+            "testName": "Lokad.Lython.Tests.InstanceStorageOwnershipTests.CancellationDuringDeepcopyReleasesStagingButKeepsPinnedScratch",
+            "outcome": "Failed"
+          }
+        ]
+      },
+      "interpretation": "Cancellation fixture used a type without object.__getattribute__; hook was not invoked. Production unchanged."
+    }
+  ],
+  "initialBuildAndDriverErrors": [
+    "Mixed tuple array required explicit object type; test-only compile fix",
+    "First golden extractor also matched two SeedFile calls; corrected to extract only golden array before execution",
+    "First probe driver used PowerShell reserved Error variable; terminal attempt discarded before results could be recorded"
+  ],
+  "gcPolicyChanged": false,
+  "performanceClaim": false,
+  "comparisonLaneCollected": false,
+  "pending": [
+    "Weak-reclamation dependency/forced-GC independence",
+    "Separate fixed-generation relief assessment",
+    "Other unassessed storage ownership paths",
+    "Counter protocol fidelity and malformed defaultdict error category",
+    "Broader runtime/benchmark work and external Utf8Regex"
+  ]
+}
