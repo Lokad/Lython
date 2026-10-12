@@ -175,13 +175,14 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal sealed class CsvWriterObject
+    internal sealed class CsvWriterObject : IPyOwnershipSnapshot
     {
         public CsvWriterObject(CsvOptions options, ICallable? writeMethod, MemoryGovernor governor, LythonSourceSpan span)
         {
             // Own the shell beside the governed row history.
             governor.Reserve(128L, span);
             governor.Commit(128L);
+            MemoryGovernor = governor;
             Options = options;
             WriteMethod = writeMethod;
         }
@@ -189,12 +190,29 @@ internal sealed partial class LythonRuntime
         public readonly CsvOptions Options;
         public readonly ICallable? WriteMethod;
         public readonly List<CsvCell[]> Rows = new();
+        internal MemoryGovernor MemoryGovernor { get; }
+        internal long OwnedBytes { get; private set; } = 128L;
+
+        bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes)
+            => OwnershipSnapshot.Owned(MemoryGovernor, OwnedBytes, out chargeBytes);
+
+        internal void AppendHistory(CsvCell[] row, long charge, LythonSourceSpan span)
+        {
+            MemoryGovernor.Reserve(charge, span);
+            try { Rows.Add(row); }
+            catch { MemoryGovernor.ReleaseReserved(charge); throw; }
+            MemoryGovernor.Commit(charge);
+            OwnedBytes += charge;
+            ChargeReclamationPool.NotifyStorageReplaced(this, OwnedBytes);
+        }
     }
 
-    internal sealed class CsvDictWriterObject
+    internal sealed class CsvDictWriterObject : IPyOwnershipSnapshot
     {
-        public CsvDictWriterObject(CsvWriterObject writer, PyString[] fieldNames, object restValue, CsvExtrasAction extrasAction)
+        public CsvDictWriterObject(CsvWriterObject writer, PyString[] fieldNames, object restValue, CsvExtrasAction extrasAction, LythonSourceSpan? span = null)
         {
+            writer.MemoryGovernor.Reserve(64L, span);
+            writer.MemoryGovernor.Commit(64L);
             Writer = writer;
             FieldNames = fieldNames;
             RestValue = restValue;
@@ -208,6 +226,9 @@ internal sealed partial class LythonRuntime
         public object RestValue { get; }
 
         public CsvExtrasAction ExtrasAction { get; }
+
+        bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes)
+            => OwnershipSnapshot.Owned(Writer.MemoryGovernor, 64L, out chargeBytes);
     }
 
     internal readonly record struct CsvCell(PyString Text, CsvCellKind Kind);
@@ -443,11 +464,9 @@ internal sealed partial class LythonRuntime
                 // replacement array is transiently live beside the old one: hold
                 // that overlap first, then reserve the row charge, so a failed
                 // reservation retains nothing uncharged and leaks no reserve.
-                using var growth = context.MemoryGovernor.ReserveTemporary(PredictHistoryGrowthBytes(writer.Rows), span);
+                using var growth = writer.MemoryGovernor.ReserveTemporary(PredictHistoryGrowthBytes(writer.Rows), span);
                 var historyCharge = 64L + (16L * row.Length) + convertedBytes;
-                context.MemoryGovernor.Reserve(historyCharge, span);
-                writer.Rows.Add(row);
-                context.MemoryGovernor.Commit(historyCharge);
+                writer.AppendHistory(row, historyCharge, span);
             }
             // Intermediate field/row renders remain transient. The final string
             // can escape through a guest callback, so commit and track its owner.

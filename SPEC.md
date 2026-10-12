@@ -1817,6 +1817,13 @@ failed host write leaves no partial row and a run cancelled mid-stream leaves
 no file behind. Oversized fields, records and conversions trip the execution
 budget before unbounded growth rather than materializing first.
 
+Each native CSV writer funds its shell and any retained in-memory history through
+one ownership snapshot. Dictionary writers fund their wrapper separately from
+their child writer and field-name table. Dropped owners reclaim their charges;
+retained bound methods keep their writers funded. Construction registration
+precedes publication, and denied registration refunds only unpublished storage.
+The normal registration fee can reject a construction earlier at tiny budgets.
+
 If a script requests structured-text behavior outside the supported subset, the runtime must fail explicitly.
 
 ### 11.10 Filename Matching

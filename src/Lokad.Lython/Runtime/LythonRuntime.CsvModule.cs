@@ -161,7 +161,7 @@ internal sealed partial class LythonRuntime
             var write = arguments.Length == 0 || arguments[0] is PyNone
                 ? null : ResolveWrite(arguments[0], span, context);
             var options = GetOptions(arguments, CsvOptionArgumentLayout.Standard, span);
-            return new CsvWriterObject(options, write, context.MemoryGovernor, span);
+            return CreateWriter(options, write, span, context);
         }
 
         private async ValueTask<object> WriterAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -170,7 +170,14 @@ internal sealed partial class LythonRuntime
             var write = arguments.Length == 0 || arguments[0] is PyNone
                 ? null : await ResolveWriteAsync(arguments[0], span, context).ConfigureAwait(false);
             var options = GetOptions(arguments, CsvOptionArgumentLayout.Standard, span);
-            return new CsvWriterObject(options, write, context.MemoryGovernor, span);
+            return CreateWriter(options, write, span, context);
+        }
+
+        private static CsvWriterObject CreateWriter(CsvOptions options, ICallable? write, LythonSourceSpan span, ExecutionContext context)
+        {
+            var writer = new CsvWriterObject(options, write, context.MemoryGovernor, span);
+            context.State.CallTemporaries.TrackFreshMutable(writer, writer.OwnedBytes, span);
+            return writer;
         }
 
         private object DictWriter(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -205,10 +212,10 @@ internal sealed partial class LythonRuntime
         {
             var restVal = arguments.Length > 2 && arguments[2] is not PyNone ? arguments[2] : PyString.Empty;
             var options = GetOptions(arguments, CsvOptionArgumentLayout.Dictionary, span);
-            // Own the dictionary-writer shell beside the governed writer and field names.
-            context.MemoryGovernor.Reserve(64L, span);
-            context.MemoryGovernor.Commit(64L);
-            return new CsvDictWriterObject(new CsvWriterObject(options, write, context.MemoryGovernor, span), fieldNames, restVal, extrasAction);
+            var writer = CreateWriter(options, write, span, context);
+            var result = new CsvDictWriterObject(writer, fieldNames, restVal, extrasAction, span);
+            context.State.CallTemporaries.TrackFreshMutable(result, 64L, span);
+            return result;
         }
 
         // CPython captures write once at construction. Ordinary attribute lookup
