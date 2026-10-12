@@ -385,7 +385,7 @@ internal sealed partial class LythonRuntime
                 AddCsvFieldName(names, item, scratch, ref chargedCapacity, message, span);
             }
 
-            return FinishCsvFieldNames(names, context.MemoryGovernor, span);
+            return FinishCsvFieldNames(names, context, span);
         }
 
         private static async ValueTask<PyString[]> ToCsvFieldNamesAsync(object value, string message, LythonSourceSpan span, ExecutionContext context)
@@ -398,7 +398,7 @@ internal sealed partial class LythonRuntime
                 AddCsvFieldName(names, item, scratch, ref chargedCapacity, message, span);
             }
 
-            return FinishCsvFieldNames(names, context.MemoryGovernor, span);
+            return FinishCsvFieldNames(names, context, span);
         }
 
         private static void AddCsvFieldName(List<PyString> names, object item, MemoryGovernor.TemporaryMemoryReservation scratch,
@@ -423,13 +423,17 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        private static PyString[] FinishCsvFieldNames(List<PyString> names, MemoryGovernor governor, LythonSourceSpan span)
+        private static PyString[] FinishCsvFieldNames(List<PyString> names, ExecutionContext context, LythonSourceSpan span)
         {
+            var governor = context.MemoryGovernor;
             var owned = checked(32L + 16L * names.Count);
             governor.EnsureCanReserve(owned, span);
-            var result = names.ToArray();
+            // An empty table also needs a distinct storage owner: ToArray()
+            // would return a shared singleton that never becomes unreachable.
+            var result = names.Count == 0 ? new PyString[0] : names.ToArray();
             governor.Reserve(owned, span);
             governor.Commit(owned);
+            context.State.CallTemporaries.TrackFreshMutable(result, owned, span);
             return result;
         }
 
@@ -440,6 +444,7 @@ internal sealed partial class LythonRuntime
             context.MemoryGovernor.Reserve(owned, span);
             context.MemoryGovernor.Commit(owned);
             var names = new PyString[row.Count];
+            context.State.CallTemporaries.TrackFreshMutable(names, owned, span);
             for (var i = 0; i < row.Count; i++)
             {
                 if (!PyStringOps.TryAsString(row[i], out var name))
@@ -504,7 +509,6 @@ internal sealed partial class LythonRuntime
         private readonly MemoryGovernor.TemporaryMemoryReservation _fieldScratch;
         private readonly ChargeReclamationPool _pool;
         private PyList? _pushedBack;
-        private PyList? _headerRow;
         private long _pulls;
         private bool _completed;
 
@@ -537,9 +541,8 @@ internal sealed partial class LythonRuntime
 
         internal ChargeReclamationPool Pool => _pool;
 
-        // Pulls the first record for header inference; the header stays
-        // retained (its field aliases remain charged through live entries)
-        // while data rows stream past.
+        // The returned record stays live during conversion. The resulting
+        // field-name table retains its strings; no extra header holder is needed.
         public PyList? PullHeader()
         {
             if (!TryMoveNext(out var row))
@@ -547,7 +550,6 @@ internal sealed partial class LythonRuntime
                 return null;
             }
 
-            _headerRow = row;
             return row;
         }
 
@@ -615,11 +617,7 @@ internal sealed partial class LythonRuntime
             }
         }
 
-        public async ValueTask<PyList?> PullHeaderAsync()
-        {
-            _headerRow = await TryMoveNextAsync().ConfigureAwait(false);
-            return _headerRow;
-        }
+        public ValueTask<PyList?> PullHeaderAsync() => TryMoveNextAsync();
 
         private void Pull()
         {

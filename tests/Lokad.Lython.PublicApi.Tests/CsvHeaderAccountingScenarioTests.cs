@@ -3,7 +3,7 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 /// <summary>
-/// MG01: header tables are retained for the run. Explicit field-name lists
+/// MG01: header tables stay funded for their actual lifetime. Explicit field-name lists
 /// drain geometrically beside the owned array, and header rows commit their
 /// array at the slot rate; names themselves stay aliased to existing owners.
 /// </summary>

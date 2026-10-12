@@ -1795,6 +1795,14 @@ funded until its last values are collected; exhaustion relief also reconciles
 empty abandoned pools before retrying allocation. Dropping a reader must not
 strand charges for values that are dropped later.
 
+CSV field-name tables are preflighted and funded as actual array storage, with
+the normal reclamation registration fee. Their charges release when those arrays
+become unreachable, including after an abandoned reader or failed writer
+construction; retained tables remain funded. Empty tables have distinct owners.
+The tables and escaped `fieldnames` lists keep their string values aliased to
+their existing payload owners. Registration can reject a construction earlier
+under a tiny memory budget; dropped tables do not accumulate historical charges.
+
 Failed rows retain nothing uncharged and leave writers usable: a row that
 raises during conversion or reservation is dropped without keeping partial
 state, prior successful rows (including earlier `writerows` rows) stay valid,
