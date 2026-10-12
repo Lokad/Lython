@@ -156,49 +156,70 @@ public sealed class CsvFieldAccountingScenarioTests
         Assert.Equal(expected, asyncResult.ReturnValue);
     }
 
-    [Fact]
-    public async Task CancelledScanFailsDeterministically()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CancelledScanFailsDeterministically(bool asynchronous)
     {
-        // MG01/MG02: cancellation surfaces mid-scan as an explicit failure,
-        // never as budget-shaped or CLR leakage; a pre-cancelled token fails
-        // before any read. Pulls check the budget (and its token) per row.
-        var content = new StringBuilder();
-        for (var i = 0; i < 200000; i++)
-        {
-            content.Append("a,b,c,d\n");
-        }
-
+        // Cancel after a known record, independently of thread-pool/timer
+        // scheduling. The remaining records must never complete the scan.
+        var content = string.Concat(Enumerable.Repeat("a,b,c,d\n", 512));
         var script = new LythonEngine().Compile("""
             import csv
             with open("/data.csv") as f:
                 n = 0
                 for row in csv.reader(f):
                     n = n + 1
+                    if n == 100:
+                        print("checkpoint")
             return n
             """);
         Assert.True(script.IsValid);
-        using var cts = new CancellationTokenSource();
-        var host = new MockLythonHost();
-        host.SeedFile("/data.csv", content.ToString());
-        var runTask = Task.Run(() => script.Run(host, new LythonRunOptions { CancellationToken = cts.Token }));
-        await Task.Delay(25);
-        cts.Cancel();
-        var result = await runTask;
+        using var cancellation = new CancellationTokenSource();
+        var delayed = asynchronous ? new DelayedLythonHost() : null;
+        var mock = asynchronous ? null : new MockLythonHost();
+        ILythonHost host = (ILythonHost?)delayed ?? mock!;
+        var writes = 0;
+        void CancelAtCheckpoint()
+        {
+            // print writes the text and newline separately. Cancel after the
+            // full marker has reached the host and retained output capture.
+            if (++writes == 2) cancellation.Cancel();
+        }
+        if (delayed is not null)
+        {
+            delayed.SeedFile("/data.csv", content);
+            delayed.OnStandardOutputWrite = CancelAtCheckpoint;
+        }
+        else
+        {
+            mock!.SeedFile("/data.csv", content);
+            mock.OnStandardOutputWrite = CancelAtCheckpoint;
+        }
+        var options = new LythonRunOptions
+        {
+            CancellationToken = cancellation.Token,
+            MaxExecutionMemoryBytes = 262144,
+        };
+        var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
+        if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
+        Assert.Equal(2, writes);
         Assert.False(result.Success);
-        Assert.NotNull(result.Failure);
         Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
-        Assert.Contains("execution canceled", result.Failure?.Message, StringComparison.Ordinal);
+        Assert.Equal(LythonFailureReason.Cancelled, result.FailureAttribution?.Reason);
+        Assert.Equal("checkpoint\n", result.StandardOutput);
+        Assert.Empty(result.StandardError);
+        Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
 
         using var preCancelled = new CancellationTokenSource();
         preCancelled.Cancel();
-        var preHost = new MockLythonHost();
-        preHost.SeedFile("/data.csv", content.ToString());
-        var asyncResult = await script.RunAsync(
-            preHost,
-            new LythonRunOptions { CancellationToken = preCancelled.Token });
-        Assert.False(asyncResult.Success);
-        Assert.NotNull(asyncResult.Failure);
-        Assert.Equal("RuntimeError", asyncResult.Failure?.ExceptionType);
-        Assert.Contains("execution canceled", asyncResult.Failure?.Message, StringComparison.Ordinal);
+        var preHost = new MockLythonHost(); // no file: cancellation precedes host access
+        var preOptions = new LythonRunOptions { CancellationToken = preCancelled.Token };
+        var preResult = asynchronous ? await script.RunAsync(preHost, preOptions) : script.Run(preHost, preOptions);
+        Assert.False(preResult.Success);
+        Assert.Equal("RuntimeError", preResult.Failure?.ExceptionType);
+        Assert.Equal(LythonFailureReason.Cancelled, preResult.FailureAttribution?.Reason);
+        Assert.Equal(0, preResult.Consumption?.HostCalls);
+        Assert.Empty(preResult.StandardOutput);
     }
 }
