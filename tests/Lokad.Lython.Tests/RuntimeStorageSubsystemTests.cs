@@ -493,8 +493,10 @@ public sealed class RuntimeStorageSubsystemTests
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(
             host,
-            new LythonRunOptions { MaxExecutionMemoryBytes = 256 });
+            // Preserve the original buffer headroom while funding the owner entry.
+            new LythonRunOptions { MaxExecutionMemoryBytes = 256 + ChargeReclamationPool.EntryChargeBytes });
         var handle = LythonRuntime.ExecutionContext.TextFileHandle.ForWrite("/output.txt", context);
+        var owned = context.MemoryGovernor.CurrentAccountedBytes;
 
         for (var i = 0; i < 200; i++)
         {
@@ -503,8 +505,8 @@ public sealed class RuntimeStorageSubsystemTests
         }
 
         Assert.Equal(new BigInteger(200), handle.Tell());
-        // Buffers released; the open handle shell stays owned while live.
-        Assert.Equal(64, context.MemoryGovernor.CurrentAccountedBytes);
+        // Buffers released; the live shell and registration remain funded.
+        Assert.Equal(owned, context.MemoryGovernor.CurrentAccountedBytes);
         _ = handle.Exit();
         Assert.Equal(new string('x', 200), host.ReadText("/output.txt"));
     }
@@ -537,13 +539,14 @@ public sealed class RuntimeStorageSubsystemTests
         host.SeedBytes("/output.txt", Enumerable.Repeat((byte)'a', 1_000).ToArray());
         var context = new LythonRuntime.ExecutionContext(
             host,
-            new LythonRunOptions { MaxExecutionMemoryBytes = 256 });
+            new LythonRunOptions { MaxExecutionMemoryBytes = 256 + ChargeReclamationPool.EntryChargeBytes });
         var handle = await LythonRuntime.ExecutionContext.TextFileHandle.ForAppendAsync(
             "/output.txt",
             context,
             LythonRuntime.TextEncodingMode.Latin1,
             LythonRuntime.TextErrorMode.Strict,
             LythonRuntime.TextNewlineMode.TranslateUniversal);
+        var owned = context.MemoryGovernor.CurrentAccountedBytes;
 
         _ = handle.Write(PyString.FromString("é"));
         await handle.FlushAsync();
@@ -551,8 +554,8 @@ public sealed class RuntimeStorageSubsystemTests
         await handle.FlushAsync();
         await handle.ExitAsync();
 
-        // Buffers released; the handle shell stays owned for its lifetime.
-        Assert.Equal(64, context.MemoryGovernor.CurrentAccountedBytes);
+        // Buffers released; the live shell and registration remain funded.
+        Assert.Equal(owned, context.MemoryGovernor.CurrentAccountedBytes);
         Assert.Equal([.. Enumerable.Repeat((byte)'a', 1_000), 0xe9, 0x21], host.ReadBytes("/output.txt"));
         Assert.True(host.CompletedAsynchronously > 0);
     }
