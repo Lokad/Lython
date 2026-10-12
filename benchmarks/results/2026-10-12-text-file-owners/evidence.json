@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "runtimeSource": "f7dfb62113eb216bb773017bf2e4b998375b43d2",
+  "correctedWhiteSource": "6d7fe99c936b92b59f2ba81789e168bdf5fddf4b",
+  "productionTree": "2a4b4441a1556ed6d0ca52a5d1b84f1b101b2284",
+  "fixedChurnCap": 262144,
+  "discardedScans": 3,
+  "retainedControls": 3,
+  "originalDiscardedScansFailed": 3,
+  "debugScope": {
+    "publicTotal": 8381,
+    "publicFailed": 0,
+    "whiteTotal": 2134,
+    "whiteFailed": 2,
+    "publicTestTreeIdentical": true,
+    "productionTreeIdentical": true
+  },
+  "correctedWhiteDebugPassed": 2134,
+  "focusedReleasePassed": 123,
+  "singleHeadFullDebugClaim": false,
+  "performanceQualified": false,
+  "receipts": [
+    {
+      "path": "original-churn/process.receipt.json",
+      "sha256": "DAAE7BC42A47DDA8D35670AD7497942A912DBF4F9C6C150A32DBA47669F6FA10"
+    },
+    {
+      "path": "original-churn/tests.trx",
+      "sha256": "FC9601D1B60263323E82E1FA77C99594AF5061D58CA8784375C3C34920217F2A"
+    },
+    {
+      "path": "committed-full-debug/process.receipt.json",
+      "sha256": "EBF926BBDBDC1BD80F0B5FDAFF2E286C0D1AA08AB9212FE9270D1C5BCE6E8470"
+    },
+    {
+      "path": "committed-full-debug/tests.trx",
+      "sha256": "DB408C222B7C5D5A9381BB68C6556E784BDF54F49BA3A677D537C69C7E1DA674"
+    },
+    {
+      "path": "full-debug-scope.json",
+      "sha256": "48D0A7199A312FF2AC119B4EF3D69F94E25791BE0F7716D501A99873F2A37205"
+    },
+    {
+      "path": "corrected-white-debug/process.receipt.json",
+      "sha256": "B7A7CE69DFD2C9A8E7F1FB5D3105B542CD481A1241C5E7A3722ACB18B1C385EE"
+    },
+    {
+      "path": "corrected-white-debug/tests.trx",
+      "sha256": "FB45BFA3FB23B4249F3DD05985566EFACC3585DF74342CDA1EB046C965E84449"
+    },
+    {
+      "path": "corrected-white-release/process.receipt.json",
+      "sha256": "8F69C5275E12984C51C585B45D0C510CFEA0273A583933E9F5065E4A69F1A8E1"
+    },
+    {
+      "path": "corrected-white-release/tests.trx",
+      "sha256": "629D55FA8FD6CBEAACC6C64873B291AE7905E7D571A9933FFD13D128530047C6"
+    },
+    {
+      "path": "committed-public-release/process.receipt.json",
+      "sha256": "C2521D86FA2EE4459512AE20B64F8CDEC1E95C66C9D6A1A706CD0DBE29495F03"
+    },
+    {
+      "path": "committed-public-release/tests.trx",
+      "sha256": "BBDD1536521824ED41B8A42D806FBA1C3CF6C45B9DA5B84281D71BA43DDEE333"
+    }
+  ]
+}

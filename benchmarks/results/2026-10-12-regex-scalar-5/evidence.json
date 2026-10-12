@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "version": "0.4.0-scalar.5",
+  "producer": "f3366d535e005a9e9cce10af604f00f47b2a8d10",
+  "configurationClaim": "Release",
+  "packages": [
+    {
+      "Id": "Lokad.Utf8Regex",
+      "Version": "0.4.0-scalar.5",
+      "RelativePath": "feed/Lokad.Utf8Regex.0.4.0-scalar.5.nupkg",
+      "PackageSha256": "B81090B602BCF8D9274C510FF4B3367A8CEC381B54F6BC28A9A82EA1EC6DDC09",
+      "PackageSha512Base64": "hpiLZeq2kzp93cls5r+U47dKoh0Qju2uJ55Ajbdl9s+fEmgOJ/r1zHoASvMU4RJUJDjDmWkVAJFU8hgIDBluGA==",
+      "AssemblySha256": "2258213000EED1FDDC7F9DB52A666A43D56C6014DAA5EBEBD3B5FCE65D71A105",
+      "SymbolRelativePath": "feed/Lokad.Utf8Regex.0.4.0-scalar.5.snupkg",
+      "SymbolSha256": "3229DDB23AD7FEE5F808D6DA7249EC9FA5C4C90B6B507BEB750468ED9F89F8E8",
+      "PdbSha256": "67464283E479DA0DD0D407C5178AECAB452A900F9F98F7AAB1FA6A0CE61A930D"
+    },
+    {
+      "Id": "Lokad.Utf8Regex.PythonRe",
+      "Version": "0.4.0-scalar.5",
+      "RelativePath": "feed/Lokad.Utf8Regex.PythonRe.0.4.0-scalar.5.nupkg",
+      "PackageSha256": "D9D02B7D1F67CF56C419F65100A85B7AF873A842F6A4A35792E97DD2818A61E9",
+      "PackageSha512Base64": "D+/0cxHI+H3nxRrC/tFPK+rzPs5KFFpDZ50fVcZVsBTAt42M+D0ujB8qn692puh3JC5z8XTdfuQu+DvGsQoZdw==",
+      "AssemblySha256": "54B4DD32BE7BD6099CC1CD549AAD85637F57537293BFDEADE86351BD1DE2CBCB",
+      "SymbolRelativePath": "feed/Lokad.Utf8Regex.PythonRe.0.4.0-scalar.5.snupkg",
+      "SymbolSha256": "BA0A88E43E1185CB3DD12FFFAD92F0AF03C0E4D33851E9C826B25B481F925BED",
+      "PdbSha256": "0D3832F2E624C14C33A69938449CAE95F83125045DB5AD7910BB0F4883EFC2F7"
+    }
+  ],
+  "freeze": {
+    "version": "0.4.0-scalar.5",
+    "producer": "f3366d535e005a9e9cce10af604f00f47b2a8d10",
+    "packagesAndSymbolsVerified": true,
+    "dllAndPdbHashesVerified": true,
+    "dependencies": [
+      {
+        "id": "Lokad.Utf8Regex",
+        "version": "0.4.0-scalar.5"
+      }
+    ],
+    "frozenUtc": "2026-10-12T16:19:07.6378128+02:00"
+  },
+  "metadataGate": {
+    "managedOnly": false,
+    "assemblies": [
+      {
+        "name": "Lokad.Utf8Regex.PythonRe",
+        "informationalVersion": "0.4.0-scalar.5+f3366d535e005a9e9cce10af604f00f47b2a8d10",
+        "sha256": "54B4DD32BE7BD6099CC1CD549AAD85637F57537293BFDEADE86351BD1DE2CBCB"
+      },
+      {
+        "name": "Lokad.Utf8Regex",
+        "informationalVersion": "0.4.0-scalar.5+f3366d535e005a9e9cce10af604f00f47b2a8d10",
+        "sha256": "2258213000EED1FDDC7F9DB52A666A43D56C6014DAA5EBEBD3B5FCE65D71A105"
+      }
+    ],
+    "unsafeApiReferences": [
+      "Lokad.Utf8Regex:System.Runtime.CompilerServices.Unsafe.Add",
+      "Lokad.Utf8Regex:System.Runtime.CompilerServices.Unsafe.As",
+      "Lokad.Utf8Regex:System.Runtime.CompilerServices.Unsafe.AsRef",
+      "Lokad.Utf8Regex:System.Runtime.CompilerServices.Unsafe.ReadUnaligned",
+      "Lokad.Utf8Regex:System.Runtime.CompilerServices.Unsafe.SizeOf",
+      "Lokad.Utf8Regex:System.Runtime.Intrinsics.Vector128.LoadUnsafe",
+      "Lokad.Utf8Regex:System.Runtime.Intrinsics.Vector256.LoadUnsafe",
+      "Lokad.Utf8Regex.PythonRe:System.Runtime.CompilerServices.Unsafe.Add",
+      "Lokad.Utf8Regex.PythonRe:System.Runtime.CompilerServices.Unsafe.As",
+      "Lokad.Utf8Regex.PythonRe:System.Runtime.CompilerServices.Unsafe.AsRef"
+    ],
+    "semanticControlsRun": false
+  },
+  "consumerMatrixRun": false,
+  "promoted": false,
+  "manifestSha256": "347D03DC4EADCB97C4E203CA583AFB58315A6A3F6A7C8612CCE3D938CA851F14",
+  "provenanceSha256": "063CA4B878F5D99228488B481DCF74F19A44C4FEF37376FF4FCBF14461F833FF",
+  "metadataReceipt": {
+    "pid": 476536,
+    "exitCode": 0,
+    "hasExited": true,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 101,
+    "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+    "executableSha256": "21A46F1E5235CF4E844B9DE5429F0E198B9C97A41F0503A66442F1D639CA3EE6",
+    "arguments": [
+      "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\regex-scalar-5-20261012\\audit\\bin\\Release\\net10.0\\audit.dll"
+    ]
+  },
+  "handoffSha256": "E608701A0659665F4722DAE212BD5A40F406F2B4C14BD88420713E3610D74186"
+}
