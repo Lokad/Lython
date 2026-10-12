@@ -1,0 +1,23 @@
+{
+  "publicTests": {
+    "elapsedMillisecondsIncludingCleanup": 9818,
+    "assemblySha256": "B6EDF58923155BEE8313FD1DBE7CC07E7CB59F40EFEAD867093F0E23C195B789",
+    "passed": 32,
+    "total": 32,
+    "trxSha256": "2739295F3BA853F864EF3BB92FB9E46F276A03EA3608AAEB4C62C99F17DBF472"
+  },
+  "productionUnchanged": true,
+  "forcedGcDependencyRemoved": false,
+  "asyncImpactQualified": false,
+  "currentQualifiedJobs": [
+    "csv-summary",
+    "text-summary",
+    "json-summary"
+  ],
+  "windowsQualified": false,
+  "milestoneComplete": false,
+  "currentProduction": "ee8d8bb9ee92b5df2e808cb67bda3a483f70d12a",
+  "excludedJobs": [
+    "file-manifest"
+  ]
+}

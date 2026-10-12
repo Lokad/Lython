@@ -1,0 +1,32 @@
+diff --git a/src/Lokad.Lython/Runtime/MemoryGovernor.cs b/src/Lokad.Lython/Runtime/MemoryGovernor.cs
+index 370edbc4..4400d4c8 100644
+--- a/src/Lokad.Lython/Runtime/MemoryGovernor.cs
++++ b/src/Lokad.Lython/Runtime/MemoryGovernor.cs
+@@ -141,22 +141,12 @@ internal sealed class MemoryGovernor
+             return;
+         }
+ 
+-        // Most dropped streaming values are young. Collect only as far as
+-        // needed to fund this reservation; old unreachable storage still gets
+-        // a full collection before denial. CLR generations need no owner-age
+-        // registry, and all existing live snapshots remain charged.
+-        for (var generation = 0; generation <= GC.MaxGeneration; generation++)
++        // Diagnostic control only: restore full exhaustion relief while keeping
++        // all other current managed protections and ownership fixes identical.
++        GC.Collect();
++        foreach (var pool in live)
+         {
+-            GC.Collect(generation);
+-            foreach (var pool in live)
+-            {
+-                pool.Sweep(full: true);
+-            }
+-
+-            if (committedBefore - CurrentCommittedBytes >= shortfallBytes)
+-            {
+-                break;
+-            }
++            pool.Sweep(full: true);
+         }
+ 
+         // A full sweep may have collected the last aliases from an abandoned

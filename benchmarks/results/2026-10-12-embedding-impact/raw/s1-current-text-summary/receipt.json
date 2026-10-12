@@ -1,0 +1,67 @@
+{
+  "session": 1,
+  "variant": "current",
+  "name": "text-summary",
+  "startedUtc": "2026-10-12T09:39:44.828347+00:00",
+  "idleCpuPercent": [
+    0.0,
+    0.0
+  ],
+  "pid": 2242043,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedIncludingCleanupSeconds": 6.506277771957684,
+  "stdoutSha256": "86a3c9d846e4884812bf802ec1956e4b149e91aefea1202fe4f70a994db9a17a",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "noiseDelta": {
+    "pswpin": 0,
+    "pswpout": 0,
+    "pgmajfault": 0
+  },
+  "stealTicks": 0,
+  "eligible": true,
+  "exclusion": null,
+  "result": {
+    "policy": "embedding-v1",
+    "name": "text-summary",
+    "retained": false,
+    "observationSeconds": 4.0013932,
+    "completed": 215,
+    "peakBytes": 262142,
+    "modeledHostBytes": 134217728,
+    "modeledHostObjects": 131072,
+    "hostGenerationsBefore": [
+      0,
+      0,
+      131072
+    ],
+    "samples": 3553,
+    "requestChecksum": 469082,
+    "allocatedBytes": 1587178032,
+    "gcCollections": [
+      4085,
+      0,
+      0
+    ],
+    "cpuSeconds": 4.649507,
+    "cpuCoreFraction": 1.1619720351401608,
+    "processorCount": 4,
+    "runtime": "10.0.12",
+    "sourceSha256": "D34B08E1864B76F5BE1BEA22D8AEF6B43BE63262AED98E2AC5C0BC76E168253F",
+    "originalSourceSha256": "D34B08E1864B76F5BE1BEA22D8AEF6B43BE63262AED98E2AC5C0BC76E168253F",
+    "subjectInformationalVersion": "0.10.0+f4c6c3a8124a593d30f26fb51bce645ec61122d0",
+    "subjectDllSha256": "53925AE3004686187A8ACF3C1B94CB0CD6B8912BFC6B644424769338D506EF38"
+  },
+  "request": {
+    "p50": 0.059604,
+    "p95": 0.319607,
+    "p99": 0.361661,
+    "max": 0.439664
+  },
+  "heartbeat": {
+    "p50": 0.058292,
+    "p95": 0.317714,
+    "p99": 0.360518,
+    "max": 0.437761
+  }
+}

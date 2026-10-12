@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net10.0</TargetFramework><OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><AllowUnsafeBlocks>false</AllowUnsafeBlocks><IsPackable>false</IsPackable><UseSharedCompilation>false</UseSharedCompilation></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(SubjectRoot)/src/Lokad.Lython/Lokad.Lython.csproj"/>
+    <Compile Include="$(SubjectRoot)/tests/Lokad.Lython.Tests/Harness/MockLythonHost.cs" Link="MockLythonHost.cs"/>
+  </ItemGroup>
+</Project>

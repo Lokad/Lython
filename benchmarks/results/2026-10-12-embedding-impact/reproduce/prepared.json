@@ -1,0 +1,25 @@
+{
+  "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+  "identities": {
+    "current": {
+      "Lokad.Lython.dll": "53925ae3004686187a8acf3c1b94cb0cd6b8912bfc6b644424769338d506ef38",
+      "Lokad.Parsing.dll": "d71fea270f731e88cebea2263f9acd6f934f13c6b73f906bd07dada8d593ff12",
+      "Probe.runtimeconfig.json": "9950d4583cfc9a106857c0d5b8a75b53e8774852b57b80bc3823a74d44a4d87f",
+      "JetBrains.Annotations.dll": "a1b1edbdbf6c41b8e564e03da4014d09928bc86370b97ac6cd166a669127c77d",
+      "Lokad.Utf8Regex.dll": "aca1473ed739b255219cc877726f22a632482ad6471e267a15371b4abbf4a113",
+      "Lokad.Utf8Regex.PythonRe.dll": "74e534f682104217fca4dee22881ec8ca4b1a8e3d396bd5efc9af43f26869429",
+      "Probe.deps.json": "644aa9724d23577180c20488d8edd13a01bbbc4b3a65fadcae559d5c186b308f",
+      "Probe.dll": "90a0e420f0f549e10da2fa5d231b3aeaae04674d15851708209cdf5a24ce0258"
+    },
+    "control": {
+      "Lokad.Lython.dll": "29cc5aaca74a7c5a3edafa7f4836c65200988c3cee6f4b1e9ebb523ed8cfeed0",
+      "Lokad.Parsing.dll": "d71fea270f731e88cebea2263f9acd6f934f13c6b73f906bd07dada8d593ff12",
+      "Probe.runtimeconfig.json": "9950d4583cfc9a106857c0d5b8a75b53e8774852b57b80bc3823a74d44a4d87f",
+      "JetBrains.Annotations.dll": "a1b1edbdbf6c41b8e564e03da4014d09928bc86370b97ac6cd166a669127c77d",
+      "Lokad.Utf8Regex.dll": "aca1473ed739b255219cc877726f22a632482ad6471e267a15371b4abbf4a113",
+      "Lokad.Utf8Regex.PythonRe.dll": "74e534f682104217fca4dee22881ec8ca4b1a8e3d396bd5efc9af43f26869429",
+      "Probe.deps.json": "644aa9724d23577180c20488d8edd13a01bbbc4b3a65fadcae559d5c186b308f",
+      "Probe.dll": "329657449c65a3ecfb00e342b1f83f9a009d7a8804e60d14ccef7769e4f5083d"
+    }
+  }
+}

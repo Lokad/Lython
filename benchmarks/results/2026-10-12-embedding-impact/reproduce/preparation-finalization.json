@@ -1,0 +1,7 @@
+{
+  "preparedArtifactsVerified": true,
+  "originalPreparationExitStatus": 127,
+  "failureWasTrailingCR": true,
+  "wrapperCleanedWithoutRebuilding": true,
+  "toolchain": "10.0.401"
+}
