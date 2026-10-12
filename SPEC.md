@@ -2764,6 +2764,10 @@ collected owners in place. Recent registrations are scanned promptly, while
 retained populations are visited in bounded quanta outside exhaustion relief.
 Runtime storage owners share the execution's pool; source abandonment releases
 that source's storage snapshot without retiring a separate pool or its aliases.
+An exhausted CSV reader releases its original input and cursor references,
+including after a terminal parse error. Already parsed or pushed-back records
+and escaped fields keep their independent charges. Retained input aliases remain
+funded, and recoverable errors while reading a body keep the source resumable.
 Shared pool capacity remains accounted for its execution lifetime, avoiding
 repeated trim/regrow allocation. These metadata estimates can change accounted peaks.
 Escaping binary file handles retain their file storage and shared execution

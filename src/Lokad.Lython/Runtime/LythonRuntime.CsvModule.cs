@@ -504,10 +504,10 @@ internal sealed partial class LythonRuntime
     internal sealed class CsvRecordSource : IPyOwnershipSnapshot
     {
         private readonly CsvRecordParser _parser;
-        private readonly IEnumerator<object>? _cursor;
-        private readonly object _origin;
+        private IEnumerator<object>? _cursor;
+        private object? _origin;
         private IAsyncEnumerator<object>? _asyncCursor;
-        private readonly PyList? _indexed;
+        private PyList? _indexed;
         private int _position;
         private readonly ExecutionContext _context;
         private readonly LythonSourceSpan _span;
@@ -733,7 +733,7 @@ internal sealed partial class LythonRuntime
                 return;
             }
 
-            _asyncCursor ??= ToSequenceAsync(_origin, _span, _context).GetAsyncEnumerator();
+            _asyncCursor ??= ToSequenceAsync(_origin!, _span, _context).GetAsyncEnumerator();
             bool moved;
             try
             {
@@ -785,23 +785,7 @@ internal sealed partial class LythonRuntime
         }
 
         private void FinishExhausted()
-        {
-            _completed = true;
-            try
-            {
-                _parser.Finish();
-            }
-            catch
-            {
-                _parser.ResetRecord();
-                throw;
-            }
-            finally
-            {
-                _cursor?.Dispose();
-                _parser.ReleaseScratch();
-            }
-        }
+            => FinishExhaustedAsync().GetAwaiter().GetResult();
 
         private async ValueTask FinishExhaustedAsync()
         {
@@ -817,14 +801,29 @@ internal sealed partial class LythonRuntime
             }
             finally
             {
-                _cursor?.Dispose();
-                if (_asyncCursor is not null)
+                // Keep the producer alive through disposal, then detach it even
+                // on cleanup failure. Queued/replayed records stay independently
+                // funded. Body errors never reach this terminal path.
+                try
                 {
-                    await _asyncCursor.DisposeAsync().ConfigureAwait(false);
-                    _asyncCursor = null;
+                    _cursor?.Dispose();
                 }
-
-                _parser.ReleaseScratch();
+                finally
+                {
+                    try
+                    {
+                        if (_asyncCursor is not null)
+                            await _asyncCursor.DisposeAsync().ConfigureAwait(false);
+                    }
+                    finally
+                    {
+                        _cursor = null;
+                        _asyncCursor = null;
+                        _origin = null;
+                        _indexed = null;
+                        _parser.ReleaseScratch();
+                    }
+                }
             }
         }
     }
