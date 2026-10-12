@@ -32,7 +32,9 @@ public sealed class MethodBodyControlBoundaryTests(ITestOutputHelper output)
         new(192,2,11,16), new(204,6,12,10),
     ];
     private static readonly string[] OriginalEffects = Enumerable.Repeat("", 27).Concat(Enumerable.Repeat("value:0", 13)).Concat(Enumerable.Repeat("value:0,continue:1", 15)).Concat(Enumerable.Repeat("value:0,continue:1,value:2", 3)).ToArray();
-    private static readonly string[] OriginalSnapshots = ["value:27,2241,0,3,1", "continue:40,2241,0,4,1", "value:55,2241,0,3,1"];
+    // Original effect/fuel snapshots plus the receiver shell/entry (288) and
+    // the additional 32-byte pool growth triggered by its early registration.
+    private static readonly string[] OriginalSnapshots = ["value:27,2561,0,3,1", "continue:40,2561,0,4,1", "value:55,2561,0,3,1"];
     private const string Source = """
         class Runner:
          def run(self):
@@ -62,7 +64,7 @@ public sealed class MethodBodyControlBoundaryTests(ITestOutputHelper output)
         var steps = full.Root.Limits.ExecutionStepCount;
         var funded = full.Root.MemoryGovernor.CurrentAccountedBytes - before;
         Assert.Equal(58, steps);
-        Assert.Equal(192, funded);
+        Assert.Equal(224, funded);
         Assert.Equal(OriginalSnapshots, full.Tape.Snapshots);
         Assert.Equal(new[] { "value:0", "continue:1", "value:2" }, full.Tape.Events);
         AssertUnwound(full.Root);

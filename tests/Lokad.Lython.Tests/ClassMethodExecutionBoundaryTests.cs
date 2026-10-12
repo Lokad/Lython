@@ -151,10 +151,11 @@ public sealed class ClassMethodExecutionBoundaryTests(ITestOutputHelper output)
             AssertUnwound(context);
         }
         Assert.Equal(snapshots[0], snapshots[1]);
-        // Pinned from the unchanged production run before a body prototype:
+        // Receiver registration adds one 32-byte pool-growth quantum to the
+        // original body funding; all fuel and scope checkpoints stay pinned:
         // retained list funding, no outstanding reservation, exact checkpoints,
         // and the call-expression interpreter depth at the observation site.
-        Assert.Equal((384L, 0L, 13L + width, 1L), snapshots[0]);
+        Assert.Equal((416L, 0L, 13L + width, 1L), snapshots[0]);
     }
 
     [Theory]

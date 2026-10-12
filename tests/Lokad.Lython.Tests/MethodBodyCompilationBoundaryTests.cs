@@ -80,7 +80,8 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
         var steps = fixture.Context.Limits.ExecutionStepCount;
         var funded = fixture.Context.MemoryGovernor.CurrentAccountedBytes - before;
         Assert.Equal(40, steps);
-        Assert.Equal(2410, funded);
+        // Receiver registration now prefunds 32 bytes of pool backing.
+        Assert.Equal(2378, funded);
         Assert.Equal(new[] { "saved", "factory", "default", "factory-apply", "leaf" }, fixture.Tape.Events);
         AssertUnwound(fixture.Context);
         var retained = Assert.IsType<PyTuple>(await Invoke(leaf, fixture.Context, asynchronous));
@@ -129,9 +130,12 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
         Assert.Equal(new[] { "top", "bottom", "default", "argument", "result", "bottom-apply", "top-apply" }, fixture.Tape.Events);
         var expectedSnapshots = new[]
         {
-            "top:14,6810,96,3,1", "bottom:20,6810,96,3,1", "default:27,6810,96,3,1",
-            "argument:34,10946,96,3,1", "result:44,11463,96,3,1",
-            "bottom-apply:47,11917,96,2,1", "top-apply:47,11917,96,2,1"
+            // The receiver owns a 160-byte shell and 128-byte registry entry.
+            // Its extra entry crosses a 128-byte backing-growth boundary at
+            // the argument callback; both paths have grown by the result callback.
+            "top:14,7098,96,3,1", "bottom:20,7098,96,3,1", "default:27,7098,96,3,1",
+            "argument:34,11362,96,3,1", "result:44,11751,96,3,1",
+            "bottom-apply:47,12205,96,2,1", "top-apply:47,12205,96,2,1"
         };
         Assert.True(expectedSnapshots.SequenceEqual(fixture.Tape.Snapshots), string.Join("\n", fixture.Tape.Snapshots));
         var receiver = Assert.IsType<PyInstance>(inner.Invoke([], CallSpan, fixture.Context));
@@ -254,7 +258,8 @@ public sealed class MethodBodyCompilationBoundaryTests(ITestOutputHelper output)
         var steps = fixture.Context.Limits.ExecutionStepCount;
         var funded = fixture.Context.MemoryGovernor.CurrentAccountedBytes - before;
         Assert.Equal(26, steps);
-        Assert.Equal(2950, funded);
+        // Receiver registration now prefunds 32 bytes of pool backing.
+        Assert.Equal(2918, funded);
         Assert.Same(fixture.Context.MemoryGovernor, generator.OwnerMemoryGovernor);
         Assert.Equal(new[] { "saved", "default" }, fixture.Tape.Events);
         AssertUnwound(fixture.Context);
