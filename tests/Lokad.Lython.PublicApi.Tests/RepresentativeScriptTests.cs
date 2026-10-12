@@ -89,6 +89,51 @@ public sealed class RepresentativeScriptTests
     [InlineData("csv-summary", true)]
     [InlineData("json-summary", false)]
     [InlineData("json-summary", true)]
+    [InlineData("text-summary", false)]
+    [InlineData("text-summary", true)]
+    [InlineData("file-manifest", false)]
+    [InlineData("file-manifest", true)]
+    public async Task InvalidOrMissingInputFailsBeforeReportPublication(string name, bool asynchronous)
+    {
+        var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py"));
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
+        var delayed = asynchronous ? new DelayedLythonHost() : null;
+        var mock = asynchronous ? null : new MockLythonHost();
+        ILythonHost host = (ILythonHost?)delayed ?? mock!;
+        var inputPath = name == "csv-summary" ? "/input.csv" : "/input.jsonl";
+        var input = name == "csv-summary" ? "kind,amount,note\nred,nope,invalid\n" : "{\"kind\":\"red\",\"amount\":invalid}\n";
+        if (name is "csv-summary" or "json-summary")
+        {
+            if (delayed is not null) delayed.SeedFile(inputPath, input);
+            else mock!.SeedFile(inputPath, input);
+        }
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
+        // Check actual run I/O before the asynchronous output-existence checks.
+        if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
+        Assert.False(result.Success);
+        var expected = name switch
+        {
+            "csv-summary" => "ValueError",
+            "json-summary" => "JSONDecodeError",
+            // SPEC: generic host path/resource failures become RuntimeError.
+            // CPython's concrete filesystem reports FileNotFoundError instead.
+            _ => "RuntimeError"
+        };
+        Assert.Equal(expected, result.Failure?.ExceptionType);
+        Assert.Empty(result.StandardOutput);
+        Assert.Empty(result.StandardError);
+        Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
+        foreach (var output in new[] { "/report.csv", "/report.json", "/report.txt", "/manifest.json" })
+            Assert.False(await host.ExistsAsync(output, CancellationToken.None));
+    }
+
+    [Theory]
+    [InlineData("csv-summary", false)]
+    [InlineData("csv-summary", true)]
+    [InlineData("json-summary", false)]
+    [InlineData("json-summary", true)]
     public async Task RetainedRecordsRejectUnderTheSameBudgetAsCompletedStreamingJobs(string name, bool asynchronous)
     {
         var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py"))
