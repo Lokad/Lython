@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "forcedGcRemoved": false,
+  "source": "22b46a1fe426f6117c10d7fcab29d19dd0821e6c",
+  "embeddingLatencyMeasuredForThisProducer": false,
+  "focusedRelease": [
+    {
+      "passed": 23,
+      "configuration": "Release",
+      "elapsedMillisecondsIncludingCleanup": 1239,
+      "stage": "committed-csv-storage-release",
+      "hasExited": true,
+      "assemblySha256": "3D2A26F383197645466EF8658A5EF399125A360F8E959595C05D5D612E5CE396",
+      "total": 23,
+      "trxSha256": "9947A35F3C5CE42E3BDB0E4F05D9E5B2268C5D5451354A6C221812EC3675FF51"
+    },
+    {
+      "passed": 22,
+      "configuration": "Release",
+      "elapsedMillisecondsIncludingCleanup": 6058,
+      "stage": "committed-csv-lifetime-release",
+      "hasExited": true,
+      "assemblySha256": "19B226512C4DD8B0C9B02F83814FC23253B55CCFBEEF26A6DA968BB96F54274C",
+      "total": 22,
+      "trxSha256": "5BFED0E97ADA3E2F6C6DCA2A6CA96A361215360DFA765BBCFE2732467D7992AE"
+    },
+    {
+      "passed": 51,
+      "configuration": "Release",
+      "elapsedMillisecondsIncludingCleanup": 16295,
+      "stage": "representative-release",
+      "hasExited": true,
+      "assemblySha256": "19B226512C4DD8B0C9B02F83814FC23253B55CCFBEEF26A6DA968BB96F54274C",
+      "total": 51,
+      "trxSha256": "CDCA17BC0F11010C3B0A7EE59F090C23F8C10DD57A76186F8CC038F84CC4E3BF"
+    }
+  ],
+  "binaries": [
+    {
+      "sha256": "46F06DFA4BA9A042D03B59A93EE7C20056892C0B928BA65B781C43C6BC69317E",
+      "configuration": "Debug",
+      "path": "src/Lokad.Lython/bin/Debug/net10.0/Lokad.Lython.dll"
+    },
+    {
+      "sha256": "32AC5E0572F018F9B6C7321CD680CEED7A738E8F2C466679004010975F325931",
+      "configuration": "Debug",
+      "path": "tests/Lokad.Lython.Tests/bin/Debug/net10.0/Lokad.Lython.WhiteBox.Tests.dll"
+    },
+    {
+      "sha256": "484C916122FFCCA0D29AD10428F94C2B9874CB3C11F30FADD3889CDF11D073FF",
+      "configuration": "Debug",
+      "path": "tests/Lokad.Lython.PublicApi.Tests/bin/Debug/net10.0/Lokad.Lython.PublicApi.Tests.dll"
+    },
+    {
+      "sha256": "CAD1599FB5A5B937C2E512FAFDB49171430456D7405E60BF4F6CD1B761483587",
+      "configuration": "Release",
+      "path": "src/Lokad.Lython/bin/Release/net10.0/Lokad.Lython.dll"
+    },
+    {
+      "sha256": "3D2A26F383197645466EF8658A5EF399125A360F8E959595C05D5D612E5CE396",
+      "configuration": "Release",
+      "path": "tests/Lokad.Lython.Tests/bin/Release/net10.0/Lokad.Lython.WhiteBox.Tests.dll"
+    },
+    {
+      "sha256": "19B226512C4DD8B0C9B02F83814FC23253B55CCFBEEF26A6DA968BB96F54274C",
+      "configuration": "Release",
+      "path": "tests/Lokad.Lython.PublicApi.Tests/bin/Release/net10.0/Lokad.Lython.PublicApi.Tests.dll"
+    }
+  ],
+  "candidate": {
+    "results": [
+      {
+        "success": true,
+        "stdout": "4999\n",
+        "index": 0,
+        "failure": null
+      },
+      {
+        "success": true,
+        "stdout": "4999\n",
+        "index": 1,
+        "failure": null
+      },
+      {
+        "success": true,
+        "stdout": "4999\n",
+        "index": 2,
+        "failure": null
+      }
+    ],
+    "receiptSha256": "44AF536AA9FB8A9E762B0B369D7CC20960456A782DC3DFF7346D7E219F71FF76"
+  },
+  "productionNetLinesRemoved": 2,
+  "successfulWriterChurnFixed": false,
+  "productionTree": "457ebfee130070632fb6d938fead196ed15c8bf9",
+  "original": {
+    "repetitions": 5000,
+    "receiptSha256": "6A953772F9304A62B9CB12B8901359C74D154EE0EE97B3E147ECF51C01CF46A5",
+    "results": [
+      {
+        "success": false,
+        "stdout": "",
+        "index": 0,
+        "failure": {
+          "ExceptionType": "MemoryError",
+          "Message": "execution memory budget exceeded (262144)",
+          "Span": "line 3, column 4",
+          "Frames": [
+            "<module> (line 3)"
+          ]
+        }
+      },
+      {
+        "success": true,
+        "stdout": "4999\n",
+        "index": 1,
+        "failure": null
+      },
+      {
+        "success": false,
+        "stdout": "",
+        "index": 2,
+        "failure": {
+          "ExceptionType": "MemoryError",
+          "Message": "execution memory budget exceeded (262144)",
+          "Span": "line 3, column 4",
+          "Frames": [
+            "<module> (line 3)"
+          ]
+        }
+      }
+    ],
+    "source": "4404c9c146570186a8fc28552406936ea376f612",
+    "capBytes": 262144
+  },
+  "fullDebug": {
+    "receipts": [
+      {
+        "sha256": "10B76334B6BE3CFB2BE3646D90FB64D8C029BEAE99724248E4A3D86F20EE8440",
+        "passed": 2122,
+        "total": 2122
+      },
+      {
+        "sha256": "10C05865261A0EDA4EEF21A28929AF2DBA0784A93B7C521C0F335B0CE82B69C3",
+        "passed": 8314,
+        "total": 8314
+      }
+    ],
+    "passed": 10436,
+    "source": "22b46a1fe426f6117c10d7fcab29d19dd0821e6c",
+    "processSha256": "01582E0800C1179BBC16C27451AFA5F6118E9D58BD8A6459CFA96B1837E4B4DD",
+    "total": 10436
+  }
+}
