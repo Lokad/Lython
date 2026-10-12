@@ -103,14 +103,14 @@ public sealed class SetNumericStoragePolicyTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void NumericTwinRemovalOfABooleanDoesNotReleaseAnUnfundedAllowance(bool truth)
+    public void NumericTwinRemovalReleasesTheFundedBooleanAllowance(bool truth)
     {
         var governor = new MemoryGovernor(4096);
         var set = new PySet(governor);
         Assert.True(set.Add(truth));
         var before = governor.CurrentCommittedBytes;
         Assert.True(set.Remove(truth ? BigInteger.One : BigInteger.Zero));
-        Assert.Equal(before, governor.CurrentCommittedBytes);
+        Assert.Equal(before - 64, governor.CurrentCommittedBytes);
         Assert.Equal(0, set.Count);
     }
 

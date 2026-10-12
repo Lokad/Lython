@@ -100,14 +100,14 @@ public sealed class ListNumericStoragePolicyTests
     }
 
     [Fact]
-    public void ScalarFreeSlotsKeepTheOriginalBackingFee()
+    public void NonnumericSlotsKeepTheBackingFeeAndBooleanSlotsPayAllowances()
     {
         var governor = new MemoryGovernor(4096);
         var backing = new PyList([], governor).CommittedStorageBytes;
         var list = new PyList([true, false, new object(), new object()], governor);
-        Assert.Equal(backing, list.CommittedStorageBytes);
+        Assert.Equal(backing + 128, list.CommittedStorageBytes);
         list.Add(new object());
-        Assert.Equal(backing, list.CommittedStorageBytes);
+        Assert.Equal(backing + 128, list.CommittedStorageBytes);
     }
 
     [Fact]
