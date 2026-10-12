@@ -187,7 +187,10 @@ public sealed class InstanceStorageOwnershipTests
             Assert.Equal(1, hook.Calls);
             Assert.True(cancellation.IsCancellationRequested);
             var error = Assert.IsType<TargetInvocationException>(failure);
-            Assert.IsAssignableFrom<OperationCanceledException>(error.InnerException);
+            var canceled = Assert.IsType<LythonRuntimeException>(error.InnerException);
+            Assert.Equal("RuntimeError", canceled.ExceptionType);
+            Assert.Equal("execution canceled", canceled.Message);
+            Assert.Same(Span, canceled.Span);
         }
         finally
         {

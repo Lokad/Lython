@@ -2770,6 +2770,8 @@ attribute value has been copied, following Python's state-publication order.
 The reference-pair staging array reserves 24 bytes plus 16 per attribute before
 allocation; failure releases that temporary storage while escaped copied values
 keep their independent owners. Shallow instance copies need no staging array.
+Staged attribute publication uses ordinary execution checkpoints, preserving
+guest cancellation errors and charging explicit execution-step allowances.
 
 Properties retain a 128-byte shell plus a conservative 64-byte allowance for
 each numeric accessor or documentation field, including Boolean and CLR integer
