@@ -2643,6 +2643,12 @@ The runtime may approximate memory pressure conservatively rather than measuring
 
 Such approximations must lean on the safe side: it is acceptable to reject scripts earlier than a perfect memory model would require if doing so better protects the host.
 
+Numeric storage allowances include Boolean, all supported CLR integer ingress
+types, double and decimal values. Containers share the same numeric type rule;
+Boolean object identity and integer/Boolean equality remain unchanged. Repeated
+numeric aliases still pay per retained slot, so Boolean-heavy scripts can require
+more headroom than under the former partial type lists.
+
 Immutable tuples and named-tuple records include a conservative allowance for
 each retained numeric slot in their backing-storage charge. Repeated aliases
 are charged per occurrence without changing Python object identity. Large
@@ -2691,7 +2697,7 @@ release live charges rather than accumulating total allocation forever.
 Governed sets likewise charge 64 bytes per retained numeric member through one
 storage subtotal. Equal duplicates add no charge, including Boolean/integer
 twins. Removal releases according to the actual stored member, preserving
-the distinction between an uncharged Boolean and a charged integer. Numeric
+the same numeric allowance for equal Boolean and integer members. Numeric
 admission precedes insertion; independently owned magnitudes still retain their
 separate payload charges and pay the member allowance. First attachment admits
 the existing shell, table, numeric members and protocol storage before publishing

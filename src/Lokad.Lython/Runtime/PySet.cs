@@ -313,7 +313,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
             var capacity = _items.EnsureCapacity(0);
             var backingBytes = capacity == 0 ? 0 : EstimateSlots(0, capacity);
             long numericBytes = 0;
-            foreach (var item in _items) numericBytes = checked(numericBytes + NumericSlotBytes(item));
+            foreach (var item in _items) numericBytes = checked(numericBytes + RuntimeMemoryEstimates.EstimateNumericSlotBytes(item));
             // Existing index capacity gets a conservative charge in this owner.
             // It persists through removals and is released on clear or drop;
             // subsequent index growth retains its own ordinary committed charge.
@@ -1031,11 +1031,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
         }
     }
 
-    private static long NumericSlotBytes(object value) =>
-        value is System.Numerics.BigInteger or double or int or long or PyDecimal
-            ? RuntimeMemoryEstimates.ScalarStorageBytes : 0;
-
-    private long NumericBytes(object value) => _memoryGovernor is null ? 0 : NumericSlotBytes(value);
+    private long NumericBytes(object value) => _memoryGovernor is null ? 0 : RuntimeMemoryEstimates.EstimateNumericSlotBytes(value);
 
     private void ReserveNumericStorage(long bytes)
     {
@@ -1048,7 +1044,7 @@ internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableVa
     private void ChargeInitialNumericStorage()
     {
         long bytes = 0;
-        foreach (var item in _items) bytes = checked(bytes + NumericSlotBytes(item));
+        foreach (var item in _items) bytes = checked(bytes + RuntimeMemoryEstimates.EstimateNumericSlotBytes(item));
         ReserveNumericStorage(bytes);
         _numericStorageBytes = bytes;
     }

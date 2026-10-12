@@ -8,7 +8,6 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
     private MemoryGovernor? _memoryGovernor;
     private LythonSourceSpan? _allocationSpan;
     private long _numericStorageBytes;
-    private const long NumericSlotCharge = 64;
 
     // Keep the weak registration beside its owner, avoiding a second
     // ephemeron handle for each list. The entry never roots this list.
@@ -99,11 +98,8 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
 
     // Numeric slots conservatively cover small boxes without consulting identity
     // or payload tracking. Large magnitudes keep their independent actual owner.
-    private static bool IsNumericSlot(object value) =>
-        value is System.Numerics.BigInteger or double or int or long or PyDecimal;
-
     private long NumericBytes(object value) =>
-        _memoryGovernor is not null && IsNumericSlot(value) ? NumericSlotCharge : 0;
+        _memoryGovernor is null ? 0 : RuntimeMemoryEstimates.EstimateNumericSlotBytes(value);
 
     private long NumericBytes(IEnumerable<object> values)
     {
@@ -354,7 +350,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
         {
             long bytes = 0;
             foreach (var value in _items)
-                if (IsNumericSlot(value)) bytes = checked(bytes + NumericSlotCharge);
+                bytes = checked(bytes + RuntimeMemoryEstimates.EstimateNumericSlotBytes(value));
             governor.Reserve(bytes, allocationSpan);
             governor.Commit(bytes);
             _numericStorageBytes = bytes;

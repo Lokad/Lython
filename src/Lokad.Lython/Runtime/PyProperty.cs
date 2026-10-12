@@ -1,5 +1,4 @@
 using Lokad.Lython.Runtime.Calls;
-using Lokad.Lython.Runtime.Numbers;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -80,8 +79,10 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
     private static PyProperty CreateResolved(object getter, object setter, object deleter, object doc, bool getterDoc,
         LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
-        var accessorBytes = FieldStorageBytes(getter) + FieldStorageBytes(setter) + FieldStorageBytes(deleter);
-        var docBytes = FieldStorageBytes(doc);
+        var accessorBytes = RuntimeMemoryEstimates.EstimateScalarStorageBytes(getter)
+            + RuntimeMemoryEstimates.EstimateScalarStorageBytes(setter)
+            + RuntimeMemoryEstimates.EstimateScalarStorageBytes(deleter);
+        var docBytes = RuntimeMemoryEstimates.EstimateScalarStorageBytes(doc);
         var bytes = ShellBytes + accessorBytes + docBytes;
         context.MemoryGovernor.Reserve(bytes, span);
         PyProperty property;
@@ -100,13 +101,6 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
         return property;
     }
 
-    // Only large integer payloads need an ownership lookup. Ordinary numeric
-    // fields are bounded, and aliases deliberately pay per retained field.
-    private static long FieldStorageBytes(object value) => value is System.Numerics.BigInteger
-        ? RuntimeMemoryEstimates.EstimateScalarStorageBytes(value)
-        : PyNumberOps.IsInteger(value) || value is double or PyDecimal
-            ? RuntimeMemoryEstimates.ScalarStorageBytes : 0;
-
     public bool TryGetMember(string name, [MaybeNullWhen(false)] out object value)
     {
         switch (name)
@@ -123,7 +117,7 @@ internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettabl
     {
         if (name is "fget" or "fset" or "fdel") throw new LythonRuntimeException("AttributeError", "readonly attribute", _span);
         if (name != "__doc__") return false;
-        var bytes = FieldStorageBytes(value);
+        var bytes = RuntimeMemoryEstimates.EstimateScalarStorageBytes(value);
         var delta = bytes - _docStorageBytes;
         _governor.Reserve(delta, _span); // Denial precedes changing the visible metadata.
         _doc = value;

@@ -1,4 +1,5 @@
 using System.Numerics;
+using Lokad.Lython.Runtime.Numbers;
 
 namespace Lokad.Lython.Runtime;
 
@@ -11,12 +12,15 @@ internal static class RuntimeMemoryEstimates
     // only an unowned magnitude needs its byte-count estimate here.
     internal const long ScalarStorageBytes = 64;
 
+    // Mutable storage releases by stored type, independent of payload ownership.
+    internal static long EstimateNumericSlotBytes(object? value) =>
+        PyNumberOps.IsInteger(value) || value is double or PyDecimal ? ScalarStorageBytes : 0;
+
     internal static long EstimateScalarStorageBytes(object? value) => value switch
     {
         BigInteger integer => integer.GetByteCount() > 9 && !ChargeReclamationPool.IsTrackedValue(value)
             ? ScalarStorageBytes + integer.GetByteCount() : ScalarStorageBytes,
-        double or int or long or PyDecimal => ScalarStorageBytes,
-        _ => 0,
+        _ => EstimateNumericSlotBytes(value),
     };
 
     public static long EstimateBigIntegerBytes(BigInteger value)
