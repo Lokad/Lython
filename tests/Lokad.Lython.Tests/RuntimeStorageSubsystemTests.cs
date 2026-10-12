@@ -50,12 +50,25 @@ public sealed class RuntimeStorageSubsystemTests
     }
 
     [Fact]
-    public void PyList_ScalarFreePromotionIsPreflighted()
+    public void PyList_BooleanAttachmentIsPreflighted()
     {
         var list = new PyList(Enumerable.Repeat<object>(true, PyListStorage.SmallCapacity));
         var governor = new MemoryGovernor(32);
+        var failure = Assert.Throws<LythonRuntimeException>(() => list.AttachMemoryGovernor(governor));
+        Assert.Equal("MemoryError", failure.ExceptionType);
+        Assert.Null(list.OwnerMemoryGovernor);
+        Assert.Equal(PyListStorage.SmallCapacity, list.Count);
+        Assert.Equal(0, governor.CurrentCommittedBytes);
+        Assert.Equal(0, governor.CurrentReservedBytes);
+    }
+
+    [Fact]
+    public void PyList_NonnumericPromotionIsPreflighted()
+    {
+        var list = new PyList(Enumerable.Repeat<object>(PyNone.Instance, PyListStorage.SmallCapacity));
+        var governor = new MemoryGovernor(32);
         list.AttachMemoryGovernor(governor);
-        var failure = Assert.Throws<LythonRuntimeException>(() => list.Add(false));
+        var failure = Assert.Throws<LythonRuntimeException>(() => list.Add(PyNone.Instance));
         Assert.Equal("MemoryError", failure.ExceptionType);
         Assert.Equal(PyListStorage.SmallCapacity, list.Count);
         Assert.Equal(0, governor.CurrentCommittedBytes);

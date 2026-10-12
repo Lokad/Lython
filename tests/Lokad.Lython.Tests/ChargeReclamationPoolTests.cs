@@ -378,19 +378,12 @@ public sealed class ChargeReclamationPoolTests
 
 
     [Fact]
-    public void ReliefSurvivesNestedPromotionDenial()
+    public void ReliefReconcilesPartialCollectionBeforeFullyReclaimingDroppedTargets()
     {
-        // Old tier filled exactly to capacity plus a small young backlog, then
-        // everything dropped but deliberately left uncollected: relief's first
-        // sweep promotes the backlog first, which funds old-tier slots the
-        // headroom cannot spare. Without per-pool relief robustness that nested
-        // denial aborts relief before its collection; with it, relief collects,
-        // re-sweeps, and the denied reservation succeeds with every coupon and
-        // entry released. Headroom is pinned dynamically (a held reservation
-        // leaves exactly 15000 B) so context-setup residue cannot shift the
-        // trap: the 32768 B old-growth cannot fit while the 25000 B denial can
-        // after relief. No collection runs before the denial on this thread;
-        // a parallel GC could only make the pre-fix run pass vacuously.
+        // Former promotion bookkeeping could deny before exhaustion relief.
+        // Retain that original envelope. An already-collected subset can now
+        // cover the shortfall without forcing collection of every dropped target;
+        // check exact residual accounting, then fully reconcile after controlled GC.
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions { MaxExecutionMemoryBytes = 2000000 });
         var governor = context.MemoryGovernor;
@@ -408,10 +401,46 @@ public sealed class ChargeReclamationPoolTests
         headroom.Grow(hold, null);
         governor.Reserve(25000, null);
         Assert.Equal(hold + 25000, governor.CurrentReservedBytes);
+        Assert.True(governor.CurrentAccountedBytes <= 2000000);
+        Assert.Equal(baseline + pool.CommittedBackingBytes + pool.Count * 256L, governor.CurrentCommittedBytes);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        pool.Sweep(full: true);
         Assert.Equal(0, pool.Count);
         Assert.Equal(baseline + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
         GC.KeepAlive(oldKeys);
         GC.KeepAlive(youngKeys);
+    }
+
+    [Fact]
+    public void PartialReliefKeepsOtherRetainedTargetsFunded()
+    {
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
+            new LythonRunOptions { MaxExecutionMemoryBytes = 2000000 });
+        var governor = context.MemoryGovernor;
+        var pool = context.State.CallTemporaries;
+        var baseline = governor.CurrentCommittedBytes;
+        var dropped = TrackLive(pool, governor, 100);
+        var retained = TrackLive(pool, governor, 100);
+        DropAll(dropped);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        using var hold = governor.ReserveTemporary(2000000 - governor.CurrentAccountedBytes - 15000, null);
+        governor.Reserve(25000, null);
+        Assert.Equal(100, pool.Count);
+        Assert.Equal(baseline + pool.CommittedBackingBytes + 25600, governor.CurrentCommittedBytes);
+        DropAll(retained);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        pool.Sweep(full: true);
+        Assert.Equal(0, pool.Count);
+        Assert.Equal(baseline + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);
+        governor.ReleaseReserved(25000);
+        GC.KeepAlive(dropped);
+        GC.KeepAlive(retained);
     }
 
     [Theory]

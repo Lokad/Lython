@@ -2696,8 +2696,8 @@ release live charges rather than accumulating total allocation forever.
 
 Governed sets likewise charge 64 bytes per retained numeric member through one
 storage subtotal. Equal duplicates add no charge, including Boolean/integer
-twins. Removal releases according to the actual stored member, preserving
-the same numeric allowance for equal Boolean and integer members. Numeric
+twins. Removal releases the allowance of the actual stored member, including
+when the lookup uses an equal Boolean/integer twin. Numeric
 admission precedes insertion; independently owned magnitudes still retain their
 separate payload charges and pay the member allowance. First attachment admits
 the existing shell, table, numeric members and protocol storage before publishing
