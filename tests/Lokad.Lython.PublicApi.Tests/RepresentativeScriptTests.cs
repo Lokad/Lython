@@ -85,6 +85,51 @@ public sealed class RepresentativeScriptTests
         => path.StartsWith("/outbox/", StringComparison.Ordinal) ? readBytes(path) : Encoding.UTF8.GetBytes(readText(path));
 
     [Theory]
+    [InlineData("csv-summary", false)]
+    [InlineData("csv-summary", true)]
+    [InlineData("json-summary", false)]
+    [InlineData("json-summary", true)]
+    public async Task RetainedRecordsRejectUnderTheSameBudgetAsCompletedStreamingJobs(string name, bool asynchronous)
+    {
+        var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py"))
+            .Replace("totals = {}", "totals = {}\nretained = []");
+        string input, path;
+        if (name == "csv-summary")
+        {
+            source = source.Replace("        amount = int(row['amount'])", "        retained.append(row)\n        amount = int(row['amount'])");
+            input = "kind,amount,note\n" + string.Concat(Enumerable.Repeat("red,3,\"café,\nquoted\"\nblue,2,😀\nred,-1,skip\nblue,5,ok\n", 1024));
+            path = "/input.csv";
+        }
+        else
+        {
+            source = source.Replace("            record = json.loads(line)", "            record = json.loads(line)\n            retained.append(record)");
+            input = string.Concat(Enumerable.Repeat("{\"kind\":\"red\",\"amount\":3}\n{\"kind\":\"blue\",\"amount\":2}\n{\"kind\":\"red\",\"amount\":-1}\n{\"kind\":\"blue\",\"amount\":5}\n\n", 1024));
+            path = "/input.jsonl";
+        }
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        LythonExecutionResult result;
+        if (asynchronous)
+        {
+            var host = new DelayedLythonHost();
+            host.SeedFile(path, input);
+            result = await script.RunAsync(host, options);
+            Assert.True(host.CompletedAsynchronously > 0);
+        }
+        else
+        {
+            var host = new MockLythonHost();
+            host.SeedFile(path, input);
+            result = script.Run(host, options);
+        }
+        Assert.False(result.Success);
+        Assert.Equal("MemoryError", result.Failure?.ExceptionType);
+        Assert.Empty(result.StandardOutput);
+        Assert.InRange(result.PeakExecutionMemoryBytes, 1, 262144);
+    }
+
+    [Theory]
     [InlineData("csv-summary", "/input.csv")]
     [InlineData("text-summary", "/input.txt")]
     [InlineData("json-summary", "/input.jsonl")]
