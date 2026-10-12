@@ -1,0 +1,3 @@
+# Preserve frozen evidence and reproducer byte hashes across checkouts.
+*.json -text whitespace=cr-at-eol
+reproduce/* -text whitespace=cr-at-eol

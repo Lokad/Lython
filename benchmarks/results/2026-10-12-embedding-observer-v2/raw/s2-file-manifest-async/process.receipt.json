@@ -1,0 +1,15 @@
+{
+  "pid": 147848,
+  "exitCode": 0,
+  "hasExited": true,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 23533,
+  "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+  "executableSha256": "21A46F1E5235CF4E844B9DE5429F0E198B9C97A41F0503A66442F1D639CA3EE6",
+  "arguments": [
+    "C:\\Users\\JoannesVermorel\\code\\Lython\\benchmarks\\results\\2026-10-12-embedding-observer-v2\\reproduce\\bin\\Release\\net10.0\\Probe.dll",
+    "file-manifest-async",
+    "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\embedding-impact-20261012\\payload\\fixtures",
+    "C:\\Users\\JoannesVermorel\\code\\Lython\\benchmarks\\scripts"
+  ]
+}

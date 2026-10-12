@@ -1,0 +1,22 @@
+{
+  "receipt": {
+    "pid": 122748,
+    "exitCode": 0,
+    "hasExited": true,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 1987,
+    "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+    "executableSha256": "21A46F1E5235CF4E844B9DE5429F0E198B9C97A41F0503A66442F1D639CA3EE6",
+    "arguments": [
+      "build",
+      "benchmarks/results/2026-10-12-embedding-observer-v2/reproduce/Probe.csproj",
+      "-c",
+      "Release",
+      "-p:SubjectRoot=C:/Users/JoannesVermorel/code/Lython",
+      "--no-restore",
+      "--nologo"
+    ]
+  },
+  "stdout": "\r\nC:\\Program Files\\dotnet\\sdk\\10.0.300-preview.0.26177.108\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.NET.RuntimeIdentifierInference.targets(383,5): message NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy [C:\\Users\\JoannesVermorel\\code\\Lython\\benchmarks\\results\\2026-10-12-embedding-observer-v2\\reproduce\\Probe.csproj]\r\n  Lokad.Lython -> C:\\Users\\JoannesVermorel\\code\\Lython\\src\\Lokad.Lython\\bin\\Release\\net10.0\\Lokad.Lython.dll\r\n  Probe -> C:\\Users\\JoannesVermorel\\code\\Lython\\benchmarks\\results\\2026-10-12-embedding-observer-v2\\reproduce\\bin\\Release\\net10.0\\Probe.dll\r\n\r\nBuild succeeded.\r\n    0 Warning(s)\r\n    0 Error(s)\r\n\r\nTime Elapsed 00:00:01.79\r\n",
+  "stderr": ""
+}

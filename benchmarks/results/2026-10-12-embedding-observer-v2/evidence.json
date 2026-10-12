@@ -1,0 +1,432 @@
+{
+  "policy": "embedding-v2-windows-feasibility",
+  "qualification": "feasibility only; no quiet-machine/noise eligibility or latency acceptance",
+  "manifest": {
+    "source": "a29c64db1d6c8814adf78111c5c9eb998320a05f",
+    "production": "32b91f2209a861070f2d5aeccbc61c2fdf32adf2",
+    "machine": "LOKAD-0399",
+    "collectedUtc": "2026-10-12T18:27:08.7372048+00:00",
+    "qualification": "shared-Windows probe feasibility only",
+    "identities": [
+      {
+        "path": "benchmarks/results/2026-10-12-embedding-observer-v2/reproduce/Program.cs",
+        "sha256": "F5D74AD0EF42B3BE19C94CAA0D813D7C48296699C3B6D820262194F4910012CA"
+      },
+      {
+        "path": "benchmarks/results/2026-10-12-embedding-observer-v2/reproduce/Probe.csproj",
+        "sha256": "19BE0137488A992AECB0F534761CFEF853E823035FACEC75E6D63A07E5A15EE9"
+      },
+      {
+        "path": "benchmarks/results/2026-10-12-embedding-observer-v2/reproduce/bin/Release/net10.0/JetBrains.Annotations.dll",
+        "sha256": "A1B1EDBDBF6C41B8E564E03DA4014D09928BC86370B97AC6CD166A669127C77D"
+      },
+      {
+        "path": "benchmarks/results/2026-10-12-embedding-observer-v2/reproduce/bin/Release/net10.0/Lokad.Lython.dll",
+        "sha256": "146B13377E0FC1D7EDF346FD83C26648ACA96E113A02C73E1A99B825D4AE89F1"
+      },
+      {
+        "path": "benchmarks/results/2026-10-12-embedding-observer-v2/reproduce/bin/Release/net10.0/Lokad.Parsing.dll",
+        "sha256": "D71FEA270F731E88CEBEA2263F9ACD6F934F13C6B73F906BD07DADA8D593FF12"
+      },
+      {
+        "path": "benchmarks/results/2026-10-12-embedding-observer-v2/reproduce/bin/Release/net10.0/Lokad.Utf8Regex.dll",
+        "sha256": "ACA1473ED739B255219CC877726F22A632482AD6471E267A15371B4ABBF4A113"
+      },
+      {
+        "path": "benchmarks/results/2026-10-12-embedding-observer-v2/reproduce/bin/Release/net10.0/Lokad.Utf8Regex.PythonRe.dll",
+        "sha256": "74E534F682104217FCA4DEE22881EC8CA4B1A8E3D396BD5EFC9AF43F26869429"
+      },
+      {
+        "path": "benchmarks/results/2026-10-12-embedding-observer-v2/reproduce/bin/Release/net10.0/Probe.deps.json",
+        "sha256": "65C410AC7E4066C20710CAB77582F3890654B177D189CDBBD33673B7B2F930D1"
+      },
+      {
+        "path": "benchmarks/results/2026-10-12-embedding-observer-v2/reproduce/bin/Release/net10.0/Probe.dll",
+        "sha256": "BDAD7910AB327D7FCF3235D09C35732BA340A6E693C8352A888153EEA2E4981E"
+      },
+      {
+        "path": "benchmarks/results/2026-10-12-embedding-observer-v2/reproduce/bin/Release/net10.0/Probe.runtimeconfig.json",
+        "sha256": "C230A317A54DD960BCBEB5F347F52E18DC665A26F7EFDA2159FCED9A5AC7E097"
+      },
+      {
+        "path": "tests/Lokad.Lython.Tests/Harness/MockLythonHost.cs",
+        "sha256": "16E3784E93C006837E8A1F7E9191C8C67C6CE049320F78C3FD2ABE2106462921"
+      },
+      {
+        "path": "tests/Lokad.Lython.Tests/Harness/DelayedLythonHost.cs",
+        "sha256": "E4A389C762548490A24C92A51AD5F87ED063CAE175ABD8688E1E9166DD3C95D0"
+      }
+    ]
+  },
+  "allChildrenExited": true,
+  "childDeadlineSeconds": 28,
+  "cleanupDeadlineSeconds": 1,
+  "windowsObservationSeconds": 20,
+  "minimumSamples": 1000,
+  "preparation": "two forced blocking noncompacting Gen2 collections before warmup; separate counts",
+  "builds": [
+    {
+      "path": "preparation/observer-build/build.json",
+      "sha256": "c1ce8f4a84316661881e6414870c4c636468509f79197879abdc61ef6ad6b233",
+      "exitCode": 1
+    },
+    {
+      "path": "preparation/observer-build-2/build.json",
+      "sha256": "06074391e8a9e247b43d5efd4b2d5355034115dccf67a6ea76a184b51b29cec3",
+      "exitCode": 0
+    }
+  ],
+  "rows": [
+    {
+      "session": 1,
+      "name": "control",
+      "passed": true,
+      "exclusion": null,
+      "samples": 1241,
+      "completed": 0,
+      "yieldedJobs": 0,
+      "elapsed": 20.0221858,
+      "hostGenerationsBefore": [
+        0,
+        0,
+        131072
+      ],
+      "preparationCollections": [
+        2,
+        2,
+        2
+      ],
+      "measuredCollections": [
+        0,
+        0,
+        0
+      ],
+      "peakBytes": 262144,
+      "cpuCoreFraction": 0.0039019216373469075,
+      "subjectSha256": "146B13377E0FC1D7EDF346FD83C26648ACA96E113A02C73E1A99B825D4AE89F1",
+      "rawDirectory": "raw/s1-control",
+      "rawSha256": {
+        "stdout.json": "f5af64be8c9a5c27e4c13b246929f3f0fc27dc9bd3bd04d7ce592918bfceb689",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process.receipt.json": "da53140dd21ccd4ba3b4881d013cab3b166926fabb679019357f69d38dd319bf"
+      },
+      "runtime": "10.0.12",
+      "processorCount": 28,
+      "subjectInformationalVersion": "0.10.0+a29c64db1d6c8814adf78111c5c9eb998320a05f",
+      "allocatedBytes": 90976,
+      "delayedHostCalls": 0
+    },
+    {
+      "session": 1,
+      "name": "csv-summary-async",
+      "passed": true,
+      "exclusion": null,
+      "samples": 1231,
+      "completed": 72,
+      "yieldedJobs": 72,
+      "elapsed": 20.2239502,
+      "hostGenerationsBefore": [
+        0,
+        0,
+        131072
+      ],
+      "preparationCollections": [
+        2,
+        2,
+        2
+      ],
+      "measuredCollections": [
+        3382,
+        2,
+        0
+      ],
+      "peakBytes": 262144,
+      "cpuCoreFraction": 0.18851411135298385,
+      "subjectSha256": "146B13377E0FC1D7EDF346FD83C26648ACA96E113A02C73E1A99B825D4AE89F1",
+      "rawDirectory": "raw/s1-csv-summary-async",
+      "rawSha256": {
+        "stdout.json": "c3dac5b5dc15c5e138a861473de5b8c7a3d98abe04ab35f454e4135bdfeee854",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process.receipt.json": "e34df3d4a52224898be27fe1feb78fa8ba7417f96e668a1b141549a69fffac8a"
+      },
+      "runtime": "10.0.12",
+      "processorCount": 28,
+      "subjectInformationalVersion": "0.10.0+a29c64db1d6c8814adf78111c5c9eb998320a05f",
+      "allocatedBytes": 838973312,
+      "delayedHostCalls": 504
+    },
+    {
+      "session": 1,
+      "name": "file-manifest-async",
+      "passed": true,
+      "exclusion": null,
+      "samples": 1241,
+      "completed": 47,
+      "yieldedJobs": 47,
+      "elapsed": 20.1325798,
+      "hostGenerationsBefore": [
+        0,
+        0,
+        131072
+      ],
+      "preparationCollections": [
+        2,
+        2,
+        2
+      ],
+      "measuredCollections": [
+        1,
+        0,
+        0
+      ],
+      "peakBytes": 16418,
+      "cpuCoreFraction": 0.03570083949201582,
+      "subjectSha256": "146B13377E0FC1D7EDF346FD83C26648ACA96E113A02C73E1A99B825D4AE89F1",
+      "rawDirectory": "raw/s1-file-manifest-async",
+      "rawSha256": {
+        "stdout.json": "ecfad5f054af3cdd098278be56e12040a7eed63605cb1a3d9678ac0244cd0caf",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process.receipt.json": "89f1281657ce61848eb7a779664b4ef23deaf17369423a9eadde63353607980f"
+      },
+      "runtime": "10.0.12",
+      "processorCount": 28,
+      "subjectInformationalVersion": "0.10.0+a29c64db1d6c8814adf78111c5c9eb998320a05f",
+      "allocatedBytes": 19902528,
+      "delayedHostCalls": 611
+    },
+    {
+      "session": 2,
+      "name": "file-manifest-async",
+      "passed": true,
+      "exclusion": null,
+      "samples": 1225,
+      "completed": 47,
+      "yieldedJobs": 47,
+      "elapsed": 20.0431683,
+      "hostGenerationsBefore": [
+        0,
+        0,
+        131072
+      ],
+      "preparationCollections": [
+        2,
+        2,
+        2
+      ],
+      "measuredCollections": [
+        1,
+        0,
+        0
+      ],
+      "peakBytes": 16418,
+      "cpuCoreFraction": 0.03040312743370019,
+      "subjectSha256": "146B13377E0FC1D7EDF346FD83C26648ACA96E113A02C73E1A99B825D4AE89F1",
+      "rawDirectory": "raw/s2-file-manifest-async",
+      "rawSha256": {
+        "stdout.json": "94c3de7efb0e6a6c3b94a85f1dfe832b2bc62c3a43788aadff87713dbf5f9248",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process.receipt.json": "43ac10197c2138146a87dd4e6e6f41cd082b6d3d11c89f0ea75cdf6876e83bb5"
+      },
+      "runtime": "10.0.12",
+      "processorCount": 28,
+      "subjectInformationalVersion": "0.10.0+a29c64db1d6c8814adf78111c5c9eb998320a05f",
+      "allocatedBytes": 19909032,
+      "delayedHostCalls": 611
+    },
+    {
+      "session": 2,
+      "name": "csv-summary-async",
+      "passed": true,
+      "exclusion": null,
+      "samples": 1245,
+      "completed": 73,
+      "yieldedJobs": 73,
+      "elapsed": 20.2603039,
+      "hostGenerationsBefore": [
+        0,
+        0,
+        131072
+      ],
+      "preparationCollections": [
+        2,
+        2,
+        2
+      ],
+      "measuredCollections": [
+        3446,
+        4,
+        0
+      ],
+      "peakBytes": 262144,
+      "cpuCoreFraction": 0.1727516041849698,
+      "subjectSha256": "146B13377E0FC1D7EDF346FD83C26648ACA96E113A02C73E1A99B825D4AE89F1",
+      "rawDirectory": "raw/s2-csv-summary-async",
+      "rawSha256": {
+        "stdout.json": "2222d1d428f1d6d15399f959688c91164bb52571cbc91e4220636b8fdb214f7a",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process.receipt.json": "8a64297d45917917ccb7ae8275d5f9ba4d46927148319d6235912be57407018d"
+      },
+      "runtime": "10.0.12",
+      "processorCount": 28,
+      "subjectInformationalVersion": "0.10.0+a29c64db1d6c8814adf78111c5c9eb998320a05f",
+      "allocatedBytes": 849673240,
+      "delayedHostCalls": 511
+    },
+    {
+      "session": 2,
+      "name": "control",
+      "passed": true,
+      "exclusion": null,
+      "samples": 1255,
+      "completed": 0,
+      "yieldedJobs": 0,
+      "elapsed": 20.0173138,
+      "hostGenerationsBefore": [
+        0,
+        0,
+        131072
+      ],
+      "preparationCollections": [
+        2,
+        2,
+        2
+      ],
+      "measuredCollections": [
+        0,
+        0,
+        0
+      ],
+      "peakBytes": 262144,
+      "cpuCoreFraction": 0.0039028713233241114,
+      "subjectSha256": "146B13377E0FC1D7EDF346FD83C26648ACA96E113A02C73E1A99B825D4AE89F1",
+      "rawDirectory": "raw/s2-control",
+      "rawSha256": {
+        "stdout.json": "0005097b1c83c24bc42b6e195bbd2799294858cc81fd7ae7ce43a2e2941b6ae5",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process.receipt.json": "bd268afc928b40c0966ace2aec8b628a76d34bedf71416769ee32fe51f88b4d3"
+      },
+      "runtime": "10.0.12",
+      "processorCount": 28,
+      "subjectInformationalVersion": "0.10.0+a29c64db1d6c8814adf78111c5c9eb998320a05f",
+      "allocatedBytes": 91984,
+      "delayedHostCalls": 0
+    },
+    {
+      "session": 3,
+      "name": "control",
+      "passed": true,
+      "exclusion": null,
+      "samples": 1236,
+      "completed": 0,
+      "yieldedJobs": 0,
+      "elapsed": 20.0212884,
+      "hostGenerationsBefore": [
+        0,
+        0,
+        131072
+      ],
+      "preparationCollections": [
+        2,
+        2,
+        2
+      ],
+      "measuredCollections": [
+        0,
+        0,
+        0
+      ],
+      "peakBytes": 262144,
+      "cpuCoreFraction": 0.0039020965304111,
+      "subjectSha256": "146B13377E0FC1D7EDF346FD83C26648ACA96E113A02C73E1A99B825D4AE89F1",
+      "rawDirectory": "raw/s3-control",
+      "rawSha256": {
+        "stdout.json": "836c5ecc94dd0594981a0b054679f0d2c1473a4be66e3385f3b8e5e654e9d0f3",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process.receipt.json": "8fbe4788bb5f242cd29a4d128e11773d45a4a62f7622adc36b6798ef51a9b131"
+      },
+      "runtime": "10.0.12",
+      "processorCount": 28,
+      "subjectInformationalVersion": "0.10.0+a29c64db1d6c8814adf78111c5c9eb998320a05f",
+      "allocatedBytes": 90616,
+      "delayedHostCalls": 0
+    },
+    {
+      "session": 3,
+      "name": "csv-summary-async",
+      "passed": true,
+      "exclusion": null,
+      "samples": 1248,
+      "completed": 73,
+      "yieldedJobs": 73,
+      "elapsed": 20.1240171,
+      "hostGenerationsBefore": [
+        0,
+        0,
+        131072
+      ],
+      "preparationCollections": [
+        2,
+        2,
+        2
+      ],
+      "measuredCollections": [
+        3428,
+        2,
+        0
+      ],
+      "peakBytes": 262144,
+      "cpuCoreFraction": 0.18090945669093075,
+      "subjectSha256": "146B13377E0FC1D7EDF346FD83C26648ACA96E113A02C73E1A99B825D4AE89F1",
+      "rawDirectory": "raw/s3-csv-summary-async",
+      "rawSha256": {
+        "stdout.json": "9157fa90aa5d4dbb05d478c03113fe28767a6f0f228a3b88171ca1f2672283f0",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process.receipt.json": "be4d638b464d0749cc74a2af77f90d35534fe9b2342cbc7a9476c53641dc55a9"
+      },
+      "runtime": "10.0.12",
+      "processorCount": 28,
+      "subjectInformationalVersion": "0.10.0+a29c64db1d6c8814adf78111c5c9eb998320a05f",
+      "allocatedBytes": 849887808,
+      "delayedHostCalls": 511
+    },
+    {
+      "session": 3,
+      "name": "file-manifest-async",
+      "passed": true,
+      "exclusion": null,
+      "samples": 1234,
+      "completed": 47,
+      "yieldedJobs": 47,
+      "elapsed": 20.1889621,
+      "hostGenerationsBefore": [
+        0,
+        0,
+        131072
+      ],
+      "preparationCollections": [
+        2,
+        2,
+        2
+      ],
+      "measuredCollections": [
+        1,
+        0,
+        0
+      ],
+      "peakBytes": 16418,
+      "cpuCoreFraction": 0.027861759173840837,
+      "subjectSha256": "146B13377E0FC1D7EDF346FD83C26648ACA96E113A02C73E1A99B825D4AE89F1",
+      "rawDirectory": "raw/s3-file-manifest-async",
+      "rawSha256": {
+        "stdout.json": "ad8c5d35d19409ede0933732af0d941e2f1670e1757a8042ce13b39a86a2b6c8",
+        "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "process.receipt.json": "27eb4eda4cef94b15e8c640814ad34d9bca91de05e2164706fa93d05d26e6589"
+      },
+      "runtime": "10.0.12",
+      "processorCount": 28,
+      "subjectInformationalVersion": "0.10.0+a29c64db1d6c8814adf78111c5c9eb998320a05f",
+      "allocatedBytes": 19910376,
+      "delayedHostCalls": 611
+    }
+  ]
+}

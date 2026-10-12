@@ -103,7 +103,10 @@ job is not evidence for bounded streaming or host latency.
 Process-wide forced GC remains a containment concern. The separate
 [embedding-impact experiment](benchmarks/results/2026-10-12-embedding-impact/README.md)
 records host request tails, heartbeat stalls and collection counts; fewer full
-collections alone do not establish better host latency. Regex performance waits
+collections alone do not establish better host latency. A separate
+[Windows observer pilot](benchmarks/results/2026-10-12-embedding-observer-v2/README.md)
+passes its fixed setup/output gates for async CSV and file jobs; shared-machine
+data does not qualify host latency. Regex performance waits
 for [managed-only backend qualification](benchmarks/results/2026-10-12-regex-scalar-5/README.md).
 
 For an optimization round, use the existing seconds-long diagnostic command;
