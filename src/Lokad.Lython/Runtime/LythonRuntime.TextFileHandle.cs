@@ -8,7 +8,7 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
-        internal sealed class TextFileHandle : IPyAsyncContextManager, IPyIteratorValue, IPyAsyncIteratorValue, IExecutionFileWriter
+        internal sealed class TextFileHandle : IPyAsyncContextManager, IPyIteratorValue, IPyAsyncIteratorValue, IExecutionFileWriter, IPyOwnershipSnapshot
         {
             private TextFileHandle(
                 string path,
@@ -116,6 +116,15 @@ internal sealed partial class LythonRuntime
             // computed strings, or guest-owned arguments, so they need no second charge.
             private const long FileHandleValueBytes = 64;
 
+            bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes)
+                => OwnershipSnapshot.Owned(_context.MemoryGovernor, FileHandleValueBytes, out chargeBytes);
+
+            private static TextFileHandle RegisterOwnership(TextFileHandle handle)
+            {
+                handle._context.State.CallTemporaries.TrackFreshMutable(handle, FileHandleValueBytes);
+                return handle;
+            }
+
             private static void ChargeFileHandleValue(MemoryGovernor governor, LythonSourceSpan? span)
             {
                 governor.Reserve(FileHandleValueBytes, span);
@@ -134,7 +143,7 @@ internal sealed partial class LythonRuntime
                 {
                     state.Prime();
                     ChargeFileHandleValue(context.MemoryGovernor, null);
-                    return new TextFileHandle(path, state, context, encoding, errors);
+                    return RegisterOwnership(new TextFileHandle(path, state, context, encoding, errors));
                 }
                 catch
                 {
@@ -155,7 +164,7 @@ internal sealed partial class LythonRuntime
                 {
                     await state.PrimeAsync().ConfigureAwait(false);
                     ChargeFileHandleValue(context.MemoryGovernor, null);
-                    return new TextFileHandle(path, state, context, encoding, errors);
+                    return RegisterOwnership(new TextFileHandle(path, state, context, encoding, errors));
                 }
                 catch
                 {
@@ -243,19 +252,7 @@ internal sealed partial class LythonRuntime
                 TextEncodingMode encoding,
                 TextErrorMode errors,
                 TextNewlineMode newline)
-            {
-                ChargeFileHandleValue(context.MemoryGovernor, null);
-                // Outstanding writers publish at successful execution end when the
-                // script never closes them; registration lives on the shared run state.
-                TextFileHandle handle = new(
-                    path,
-                    new TextFileWriteState(path, TextFileWriteMode.Write, context, encoding, errors, newline, BigInteger.Zero),
-                    context,
-                    encoding,
-                    errors);
-                context.Services.State.TrackOpenFileWriter(handle);
-                return handle;
-            }
+                => CreateWriteHandle(path, TextFileWriteMode.Write, context, encoding, errors, newline, BigInteger.Zero);
 
             public static TextFileHandle ForAppend(
                 string path,
@@ -269,7 +266,7 @@ internal sealed partial class LythonRuntime
                 var appendBasePosition = stat is { Exists: true, IsFile: true }
                     ? stat.Size
                     : BigInteger.Zero;
-                return CreateAppendHandle(path, context, encoding, errors, newline, appendBasePosition);
+                return CreateWriteHandle(path, TextFileWriteMode.Append, context, encoding, errors, newline, appendBasePosition);
             }
 
             public static async ValueTask<TextFileHandle> ForAppendAsync(
@@ -284,7 +281,7 @@ internal sealed partial class LythonRuntime
                 var appendBasePosition = stat is { Exists: true, IsFile: true }
                     ? stat.Size
                     : BigInteger.Zero;
-                return CreateAppendHandle(path, context, encoding, errors, newline, appendBasePosition);
+                return CreateWriteHandle(path, TextFileWriteMode.Append, context, encoding, errors, newline, appendBasePosition);
             }
 
             public object Enter() => this;
@@ -486,8 +483,9 @@ internal sealed partial class LythonRuntime
                 return PyNone.Instance;
             }
 
-            private static TextFileHandle CreateAppendHandle(
+            private static TextFileHandle CreateWriteHandle(
                 string path,
+                TextFileWriteMode mode,
                 ExecutionContext context,
                 TextEncodingMode encoding,
                 TextErrorMode errors,
@@ -497,10 +495,13 @@ internal sealed partial class LythonRuntime
                 ChargeFileHandleValue(context.MemoryGovernor, null);
                 TextFileHandle handle = new(
                     path,
-                    new TextFileWriteState(path, TextFileWriteMode.Append, context, encoding, errors, newline, appendBasePosition),
+                    new TextFileWriteState(path, mode, context, encoding, errors, newline, appendBasePosition),
                     context,
                     encoding,
                     errors);
+                RegisterOwnership(handle);
+                // Outstanding writers remain live until successful publication;
+                // failed flushes retain this registration for end-of-run retry.
                 context.Services.State.TrackOpenFileWriter(handle);
                 return handle;
             }

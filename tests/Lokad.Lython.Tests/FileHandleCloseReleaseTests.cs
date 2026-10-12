@@ -6,7 +6,7 @@ namespace Lokad.Lython.Tests;
 
 /// <summary>
 /// N36: successful close releases Lython-owned write buffers even while the closed
-/// handle stays referenced; only the 64B handle shell remains charged.
+/// handle stays referenced; its shell and ownership registration stay charged.
 /// </summary>
 public sealed class FileHandleCloseReleaseTests
 {
@@ -20,7 +20,8 @@ public sealed class FileHandleCloseReleaseTests
         Assert.True(context.MemoryGovernor.CurrentCommittedBytes > 64);
         handle.Exit();
         GC.KeepAlive(handle);
-        Assert.Equal(64, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(64L + ChargeReclamationPool.EntryChargeBytes + context.State.CallTemporaries.CommittedBackingBytes,
+            context.MemoryGovernor.CurrentCommittedBytes);
     }
 
     [Fact]
@@ -33,6 +34,7 @@ public sealed class FileHandleCloseReleaseTests
         Assert.True(context.MemoryGovernor.CurrentCommittedBytes > 64);
         await handle.ExitAsync();
         GC.KeepAlive(handle);
-        Assert.Equal(64, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(64L + ChargeReclamationPool.EntryChargeBytes + context.State.CallTemporaries.CommittedBackingBytes,
+            context.MemoryGovernor.CurrentCommittedBytes);
     }
 }

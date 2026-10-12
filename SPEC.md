@@ -1321,6 +1321,15 @@ and ValueError. Sequential handles report seekable=False; seek and other random
 access operations fail explicitly. Binary read1/readinto/truncate/raw/descriptor
 APIs are outside this inventory.
 
+Text handles fund a 64-byte shell and its ordinary ownership-registration fees
+before publication. Successful close releases owned read/write buffers once;
+closed handles and captured methods keep the shell funded while reachable.
+Dropped closed handles reclaim through the existing owner pool, rather than
+accumulating one permanent charge per open. Read values retain their independent
+payload ownership after the file closes. A denied registration refunds the
+unpublished shell; read-construction failure also releases its private buffers.
+Registration metadata may reject very small execution budgets earlier.
+
 Readers acquire governed windows through optional ranged host methods. A short
 nonempty window is not EOF; empty windows end the stream. Stat and cumulative
 actual reads enforce host byte limits. The default host range method composes a

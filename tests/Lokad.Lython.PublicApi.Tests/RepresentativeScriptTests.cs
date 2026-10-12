@@ -206,4 +206,31 @@ public sealed class RepresentativeScriptTests
         Assert.Contains("cancel", result.Failure?.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Empty(result.StandardOutput);
     }
+
+    [Theory]
+    [InlineData("csv-summary", false)]
+    [InlineData("csv-summary", true)]
+    [InlineData("json-summary", false)]
+    [InlineData("json-summary", true)]
+    public async Task ConversionAndParseFailuresCloseTheirSourceBeforeGuestRecovery(string name, bool asynchronous)
+    {
+        var original = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "RepresentativeScripts", name + ".py")).Replace("\r\n", "\n");
+        var source = "try:\n" + string.Join('\n', original.Split('\n').Select(line => " " + line)) +
+            "\nexcept ValueError:\n return source.closed\n";
+        var script = new LythonEngine().Compile(source);
+        Assert.True(script.IsValid, string.Join("|", script.Diagnostics));
+        var delayed = asynchronous ? new DelayedLythonHost() : null;
+        var mock = asynchronous ? null : new MockLythonHost();
+        ILythonHost host = (ILythonHost?)delayed ?? mock!;
+        var path = name == "csv-summary" ? "/input.csv" : "/input.jsonl";
+        var input = name == "csv-summary" ? "kind,amount,note\nred,nope,invalid\n" : "{\"kind\":\"red\",\"amount\":invalid}\n";
+        if (delayed is not null) delayed.SeedFile(path, input); else mock!.SeedFile(path, input);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 262144 };
+        var result = asynchronous ? await script.RunAsync(host, options) : script.Run(host, options);
+        Assert.True(result.Success, result.Failure?.Message);
+        Assert.Equal(true, result.ReturnValue);
+        Assert.Empty(result.StandardOutput);
+        if (delayed is not null) Assert.True(delayed.CompletedAsynchronously > 0);
+        Assert.False(await host.ExistsAsync(name == "csv-summary" ? "/report.csv" : "/report.json", CancellationToken.None));
+    }
 }

@@ -5,8 +5,7 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-/// MG11: open handles own the 128B constructed-value shell plus the path
-/// payload at every construction funnel.
+/// Open handles fund their shell and its existing reclamation registration.
 /// </summary>
 public sealed class FileHandleAccountingTests
 {
@@ -20,7 +19,9 @@ public sealed class FileHandleAccountingTests
             ?? throw new InvalidOperationException("ForWrite not found.");
         _ = method.Invoke(null, ["/f.txt", context]);
         // One table slot; the path aliases caller-owned or governed strings.
-        Assert.Equal(64L, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(64L + ChargeReclamationPool.EntryChargeBytes + context.State.CallTemporaries.CommittedBackingBytes,
+            context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(1, context.State.CallTemporaries.Count);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 }
