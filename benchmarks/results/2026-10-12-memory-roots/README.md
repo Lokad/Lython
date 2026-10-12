@@ -80,3 +80,7 @@ Exact-head full Release/probe/package-consumer CI is a separate delivery gate.
 
 The bounded assessment stops at the named missing-root/resource requirements.
 No partial collector or premature refund is implemented.
+
+The [2026-10-13 follow-up](OWNERSHIP-RULE-2026-10-13.md) proposes an explicit
+ownership rule, adds native-accumulator/bound-buffer and complete native-consumer
+streaming controls, and identifies the bounded binary-file creation-scope fix.

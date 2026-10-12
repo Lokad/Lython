@@ -2766,6 +2766,9 @@ Runtime storage owners share the execution's pool; source abandonment releases
 that source's storage snapshot without retiring a separate pool or its aliases.
 Shared pool capacity remains accounted for its execution lifetime, avoiding
 repeated trim/regrow allocation. These metadata estimates can change accounted peaks.
+Escaping binary file handles retain their file storage and shared execution
+services. Unrelated local variables from a completed creating function remain
+reclaimable after its active calls and async continuations have unwound.
 Catching `MemoryError` does not release retained values or guarantee room for a
 new result container. Scripts that recover under a saturated budget must reuse
 funded storage or release storage before allocating again.

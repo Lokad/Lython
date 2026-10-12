@@ -383,22 +383,22 @@ internal sealed partial class LythonRuntime
             => AwaitHostAsync(() => Host.ReadBytesAsync(ContainedHostPath(path, span), Limits.CancellationToken), "read_bytes", span);
 
         public ReadOnlyMemory<byte> ReadHostBytesRange(string path, long offset, int count, LythonSourceSpan? span)
-            => AwaitHost(Host, () => Host.ReadBytesRangeAsync(ContainedHostPath(path, span), offset, count, Limits.CancellationToken), "read_bytes", span);
+            => Services.ReadHostBytesRange(path, offset, count, span);
 
         public ValueTask<ReadOnlyMemory<byte>> ReadHostBytesRangeAsync(string path, long offset, int count, LythonSourceSpan? span)
-            => AwaitHostAsync(() => Host.ReadBytesRangeAsync(ContainedHostPath(path, span), offset, count, Limits.CancellationToken), "read_bytes", span);
+            => Services.ReadHostBytesRangeAsync(path, offset, count, span);
 
         public void WriteHostBytes(string path, ReadOnlyMemory<byte> payload, LythonSourceSpan? span)
-            => AwaitHost(Host, () => Host.WriteBytesAsync(ContainedHostPath(path, span), payload, Limits.CancellationToken), "write_bytes", span);
+            => Services.WriteHostBytes(path, payload, span);
 
         public ValueTask WriteHostBytesAsync(string path, ReadOnlyMemory<byte> payload, LythonSourceSpan? span)
-            => AwaitHostAsync(() => Host.WriteBytesAsync(ContainedHostPath(path, span), payload, Limits.CancellationToken), "write_bytes", span);
+            => Services.WriteHostBytesAsync(path, payload, span);
 
         public void AppendHostBytes(string path, ReadOnlyMemory<byte> payload, LythonSourceSpan? span)
-            => AwaitHost(Host, () => Host.AppendBytesAsync(ContainedHostPath(path, span), payload, Limits.CancellationToken), "append_bytes", span);
+            => Services.AppendHostBytes(path, payload, span);
 
         public ValueTask AppendHostBytesAsync(string path, ReadOnlyMemory<byte> payload, LythonSourceSpan? span)
-            => AwaitHostAsync(() => Host.AppendBytesAsync(ContainedHostPath(path, span), payload, Limits.CancellationToken), "append_bytes", span);
+            => Services.AppendHostBytesAsync(path, payload, span);
 
         public bool HostExists(string path, LythonSourceSpan? span)
             => AwaitHost(Host, () => Host.ExistsAsync(ContainedHostPath(path, span), Limits.CancellationToken), "exists", span);
@@ -443,7 +443,7 @@ internal sealed partial class LythonRuntime
             => AwaitHostAsync(() => Host.StatAsync(ContainedHostPath(path, span), Limits.CancellationToken), "stat", span);
 
         private string ContainedHostPath(string path, LythonSourceSpan? span)
-            => PathOps.RequireContainedPath(PathOps.Normalize(path, Host.Cwd), span);
+            => Services.ContainedHostPath(path, span);
 
         public LythonSubprocessResult RunSubprocess(LythonSubprocessRequest request, LythonSourceSpan? span)
         {

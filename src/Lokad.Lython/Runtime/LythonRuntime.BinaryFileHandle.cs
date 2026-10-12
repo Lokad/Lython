@@ -14,7 +14,9 @@ internal sealed partial class LythonRuntime
             // payload capacities, which have separate governed charges.
             internal const long ShellBytes = 256;
             internal const int DefaultWindowBytes = 16 * 1024;
-            private readonly ExecutionContext _context;
+            // A file can escape its creating function, or stay registered for
+            // final publication. Keep authority/limits without pinning that frame.
+            private readonly ExecutionServices _services;
             private readonly TextFileOperation _operation;
             private readonly GovernedByteBuilder _writeBuffer;
             private readonly int _windowBytes;
@@ -32,7 +34,7 @@ internal sealed partial class LythonRuntime
             {
                 Path = path;
                 _operation = operation;
-                _context = context;
+                _services = context.Services;
                 _windowBytes = windowBytes;
                 _position = position;
                 context.MemoryGovernor.Reserve(ShellBytes, span);
@@ -45,7 +47,7 @@ internal sealed partial class LythonRuntime
             public bool IsClosed { get; private set; }
             internal long OwnedBytes => ShellBytes + _window.Length + _writeBuffer.CommittedCapacity;
             public bool TrySnapshotOwnership(out long chargeBytes)
-                => OwnershipSnapshot.Owned(_context.MemoryGovernor, OwnedBytes, out chargeBytes);
+                => OwnershipSnapshot.Owned(_services.MemoryGovernor, OwnedBytes, out chargeBytes);
 
             internal static async ValueTask<BinaryFileHandle> OpenAsync(string path, TextFileOperation operation,
                 ExecutionContext context, LythonSourceSpan span, bool asynchronous)
@@ -108,7 +110,7 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("TypeError", "a bytes-like object is required", span);
                 for (var offset = 0; offset < bytes.Length;)
                 {
-                    _context.CheckExecution(span);
+                    _services.CheckExecution(span);
                     var count = Math.Min(4096, bytes.Length - offset);
                     _writeBuffer.Append(bytes.Bytes.Slice(offset, count));
                     offset += count;
@@ -125,25 +127,25 @@ internal sealed partial class LythonRuntime
                 // Empty append must create a missing file too. Host calls receive
                 // an independent buffer held under reservation throughout suspension.
                 var length = _writeBuffer.Length;
-                using var staging = _context.MemoryGovernor.ReserveTemporary(32L + length, span);
+                using var staging = _services.MemoryGovernor.ReserveTemporary(32L + length, span);
                 var payload = new byte[length];
                 for (var offset = 0; offset < length;)
                 {
-                    _context.CheckExecution(span);
+                    _services.CheckExecution(span);
                     var count = Math.Min(4096, length - offset);
                     _writeBuffer.WrittenSpan.Slice(offset, count).CopyTo(payload.AsSpan(offset, count));
                     offset += count;
                 }
-                _context.RegisterHostCall(span);
+                _services.RegisterHostCall(span);
                 if (_operation == TextFileOperation.Append || _published)
                 {
-                    if (asynchronous) await _context.AppendHostBytesAsync(Path, payload, span).ConfigureAwait(false);
-                    else _context.AppendHostBytes(Path, payload, span);
+                    if (asynchronous) await _services.AppendHostBytesAsync(Path, payload, span).ConfigureAwait(false);
+                    else _services.AppendHostBytes(Path, payload, span);
                 }
                 else
                 {
-                    if (asynchronous) await _context.WriteHostBytesAsync(Path, payload, span).ConfigureAwait(false);
-                    else _context.WriteHostBytes(Path, payload, span);
+                    if (asynchronous) await _services.WriteHostBytesAsync(Path, payload, span).ConfigureAwait(false);
+                    else _services.WriteHostBytes(Path, payload, span);
                 }
                 _published = true;
                 _writeBuffer.Release();
@@ -167,13 +169,13 @@ internal sealed partial class LythonRuntime
                 if (IsClosed) return;
                 await FlushAsync(span, asynchronous).ConfigureAwait(false);
                 ReleaseBuffers();
-                _context.State.UntrackOpenFileWriter(this);
+                _services.State.UntrackOpenFileWriter(this);
                 IsClosed = true;
             }
 
             private void ReleaseBuffers()
             {
-                _context.MemoryGovernor.Release(_window.Length);
+                _services.MemoryGovernor.Release(_window.Length);
                 _window = [];
                 _windowLength = _windowConsumed = 0;
                 _writeBuffer.Release();

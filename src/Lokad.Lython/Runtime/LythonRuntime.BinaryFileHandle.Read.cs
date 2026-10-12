@@ -11,24 +11,24 @@ internal sealed partial class LythonRuntime
             private async ValueTask RefillAsync(LythonSourceSpan? span, bool asynchronous)
             {
                 if (_windowConsumed < _windowLength || _eof) return;
-                _context.CheckExecution(span);
+                _services.CheckExecution(span);
                 if (_window.Length == 0)
                 {
-                    _context.MemoryGovernor.Reserve(_windowBytes, span);
+                    _services.MemoryGovernor.Reserve(_windowBytes, span);
                     try { _window = new byte[_windowBytes]; }
-                    catch { _context.MemoryGovernor.ReleaseReserved(_windowBytes); throw; }
-                    _context.MemoryGovernor.Commit(_windowBytes);
+                    catch { _services.MemoryGovernor.ReleaseReserved(_windowBytes); throw; }
+                    _services.MemoryGovernor.Commit(_windowBytes);
                     ChargeReclamationPool.NotifyStorageReplaced(this, OwnedBytes);
                 }
-                using var acquisition = _context.MemoryGovernor.ReserveTemporary(32L + _windowBytes, span);
-                _context.RegisterHostCall(span);
+                using var acquisition = _services.MemoryGovernor.ReserveTemporary(32L + _windowBytes, span);
+                _services.RegisterHostCall(span);
                 var payload = asynchronous
-                    ? await _context.ReadHostBytesRangeAsync(Path, _nextOffset, _windowBytes, span).ConfigureAwait(false)
-                    : _context.ReadHostBytesRange(Path, _nextOffset, _windowBytes, span);
+                    ? await _services.ReadHostBytesRangeAsync(Path, _nextOffset, _windowBytes, span).ConfigureAwait(false)
+                    : _services.ReadHostBytesRange(Path, _nextOffset, _windowBytes, span);
                 if (payload.Length > _windowBytes)
                     throw RuntimeErrors.Runtime("host binary range exceeded requested byte count", span);
                 var acquired = _acquiredBytes + payload.Length;
-                if (_context.Limits.MaxHostReadBytes is { } maximum && acquired > maximum)
+                if (_services.Limits.MaxHostReadBytes is { } maximum && acquired > maximum)
                     throw RuntimeErrors.HostRead($"host binary read exceeded maximum bytes ({maximum})", maximum, acquired, span);
                 if (_nextOffset > long.MaxValue - payload.Length)
                     throw new LythonRuntimeException("OverflowError", "binary file offset is too large", span);
@@ -45,14 +45,14 @@ internal sealed partial class LythonRuntime
                 EnsureReadable(span);
                 if (!line && size < -1)
                     throw new LythonRuntimeException("ValueError", "read length must be non-negative or -1", span);
-                var result = new GovernedByteBuilder(_context.MemoryGovernor, span);
+                var result = new GovernedByteBuilder(_services.MemoryGovernor, span);
                 try
                 {
                     while (size != 0)
                     {
                         await RefillAsync(span, asynchronous).ConfigureAwait(false);
                         if (_eof) break;
-                        _context.CheckExecution(span);
+                        _services.CheckExecution(span);
                         var count = _windowLength - _windowConsumed;
                         if (size > 0) count = (int)Math.Min(count, size);
                         var ended = false;
@@ -60,7 +60,7 @@ internal sealed partial class LythonRuntime
                         {
                             for (var index = 0; index < count; index++)
                             {
-                                if ((index & 1023) == 0) _context.CheckExecution(span);
+                                if ((index & 1023) == 0) _services.CheckExecution(span);
                                 if (_window[_windowConsumed + index] == 10)
                                 {
                                     count = index + 1;
@@ -77,9 +77,9 @@ internal sealed partial class LythonRuntime
                     }
                     // Builder and independent returned bytes coexist until the
                     // fresh value is registered. Denial never strands scratch.
-                    _context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(result.Length), span);
+                    _services.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(result.Length), span);
                     var bytes = result.WrittenSpan.ToArray();
-                    return CreateBytes(bytes, _context, span);
+                    return CreateBytes(bytes, _services, span);
                 }
                 finally { result.Release(); }
             }
