@@ -1,6 +1,3 @@
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-
 namespace Lokad.Lython.Runtime;
 
 internal interface IPyDictStorage : IEnumerable<KeyValuePair<object, object>>
@@ -322,13 +319,12 @@ internal sealed class MapPyDictStorage : IPyDictStorage
 
     public bool TrySetExisting(object key, object value)
     {
-        ref var existing = ref CollectionsMarshal.GetValueRefOrNullRef(_items, key);
-        if (Unsafe.IsNullRef(ref existing))
+        if (!_items.ContainsKey(key))
         {
             return false;
         }
 
-        existing = value;
+        _items[key] = value;
         return true;
     }
 

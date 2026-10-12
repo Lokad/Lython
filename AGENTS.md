@@ -43,5 +43,13 @@ Release pack. Debug build/test outputs are not release artifacts.
 
 ## Safety Notes
 
+Lython must remain fully managed and memory-safe. This is a lasting project
+constraint: do not enable unsafe compilation or introduce unsafe C#, Unsafe
+APIs, raw pointers, P/Invoke, or native stack probing for performance or
+protection. Preserve managed stack admission and its validated nesting bounds.
+New runtime dependencies must be assessed against this constraint before promotion.
+Performance changes must preserve allocation preflights, live-memory protection,
+cooperative cancellation, cycle detection and bounded public projection.
+
 Lython is intended to be host-mediated and safe-by-design. Runtime file, directory, subprocess, stdin, stdout, and stderr access must remain mediated through the public host abstractions.
 
