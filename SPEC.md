@@ -207,6 +207,23 @@ Diagnostic truncation or an exhausted failure-projection budget preserves the
 original attribution in the constant-size emergency result; projection failure
 that replaces an otherwise successful return reports its own projection origin.
 `SystemExit(0)` retains the existing unsuccessful runtime result with exit code0.
+
+`LythonExecutionResult.Consumption` takes one immutable snapshot of existing
+counters when an admitted runtime execution finishes, including runtime failure,
+cancelled host I/O, `SystemExit`, and projection failure. It reports registered
+host-call attempts (including a count-limit trip and cleanup/publication calls)
+and retained UTF-8 stdout/stderr bytes. Capture counts survive truncation or
+failure of public output projection and describe accepted runtime bytes, rather
+than bytes necessarily delivered by the host.
+
+`ExecutionSteps` is present only when `MaxExecutionSteps` was explicitly supplied;
+it includes a checkpoint that exhausted the allowance. Counts describe runtime
+checkpoints, vary by backend/source layout and are not Python bytecodes or an
+external performance metric. Unmeasured differs from measured zero. Pre-execution
+rejection, failed runtime admission and manually constructed public-factory
+results have no snapshot. This adds no always-on instruction counting, resource
+ledger or deadline watchdog; cooperative cancellation and separate execution/
+projection memory accounting keep their existing contracts.
 Guest-visible Python exception shells charge160 bytes, including origin fields
 and their owner link. Constructor results and exposed handler/control values share
 one owner in the existing pool; rebinding or rethrowing an alias pays no second

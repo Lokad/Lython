@@ -386,7 +386,7 @@ internal sealed partial class LythonRuntime
         {
             standardOutput = CaptureStandardOutput(context, budget);
             standardError = CaptureStandardError(context, budget);
-            return AttachPeaks(LythonExecutionResult.Succeeded(
+            return AttachAccounting(LythonExecutionResult.Succeeded(
                 returnValue: NormalizePublicValue(returnValue, budget),
                 standardOutput: standardOutput,
                 standardError: standardError,
@@ -394,7 +394,7 @@ internal sealed partial class LythonRuntime
         }
         catch (ProjectionException ex)
         {
-            return AttachPeaks(LythonExecutionResult.RuntimeFailed(
+            return AttachAccounting(LythonExecutionResult.RuntimeFailed(
                 exitCode: 1,
                 failure: new LythonRuntimeFailure("ProjectionError", ex.Message, null, Array.Empty<LythonStackFrame>(), context?.SourcePath)
                     { Attribution = ex.Attribution },
@@ -413,7 +413,7 @@ internal sealed partial class LythonRuntime
         {
             standardOutput = CaptureStandardOutput(context, budget);
             standardError = CaptureStandardError(context, budget);
-            return AttachPeaks(LythonExecutionResult.Succeeded(
+            return AttachAccounting(LythonExecutionResult.Succeeded(
                 returnValue: NormalizePublicValue(signal.Value, budget),
                 standardOutput: standardOutput,
                 standardError: standardError,
@@ -421,7 +421,7 @@ internal sealed partial class LythonRuntime
         }
         catch (ProjectionException ex)
         {
-            return AttachPeaks(LythonExecutionResult.RuntimeFailed(
+            return AttachAccounting(LythonExecutionResult.RuntimeFailed(
                 exitCode: 1,
                 failure: new LythonRuntimeFailure("ProjectionError", ex.Message, null, Array.Empty<LythonStackFrame>(), context?.SourcePath)
                     { Attribution = ex.Attribution },
@@ -463,7 +463,7 @@ internal sealed partial class LythonRuntime
                 { Attribution = exception.Attribution };
         }
 
-        return AttachPeaks(
+        return AttachAccounting(
             LythonExecutionResult.RuntimeFailed(
                 exitCode: GetExitCode(exception),
                 failure: failure,
@@ -492,11 +492,20 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static LythonExecutionResult AttachPeaks(LythonExecutionResult result, ExecutionContext? context, ProjectionBudget? budget)
+    private static LythonExecutionResult AttachAccounting(LythonExecutionResult result, ExecutionContext? context, ProjectionBudget? budget)
     {
         result.PeakExecutionMemoryBytes = context?.State.MemoryGovernor.PeakAccountedBytes ?? 0;
         result.PeakProjectionMemoryBytes = budget?.CurrentBytes ?? 0;
         result.DeniedReservationBytes = context?.State.MemoryGovernor.LastDeniedReservationBytes ?? 0;
+        if (context is not null)
+        {
+            var state = context.State;
+            result.Consumption = new(
+                state.Limits.MaxExecutionSteps.HasValue ? state.Limits.ExecutionStepCount : null,
+                state.Limits.HostCallCount,
+                state.StandardOutput.Length,
+                state.StandardError.Length);
+        }
         return result;
     }
 

@@ -120,6 +120,14 @@ public sealed class LythonExecutionResult
     /// </summary>
     public long DeniedReservationBytes { get; internal set; }
 
+    /// <summary>Gets runtime consumption for an admitted run, including unsuccessful runs.</summary>
+    /// <remarks>
+    /// Null means execution did not reach runtime admission or this result was
+    /// constructed through a public factory. Unmeasured instruction work is null
+    /// within the snapshot, distinct from a measured zero.
+    /// </remarks>
+    public LythonExecutionConsumption? Consumption { get; internal set; }
+
     /// <summary>Gets projected Python exception details for a runtime failure.</summary>
     public LythonRuntimeFailure? Failure => (State as RuntimeFailedState)?.Failure;
 

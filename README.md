@@ -85,6 +85,48 @@ switch (result.State)
 
 The example elides the host implementation on purpose. In practice, `host` is your controlled bridge to files and directories through `ILythonHost`.
 
+Compile once for repeated inputs, with explicit module selection and finite
+limits on each invocation:
+
+```csharp
+var compiled = engine.Compile("""
+    import json
+    values = json.loads(payload)
+    print(len(values))
+    return sum(values)
+    """);
+foreach (var payload in new[] { "[1,2,3]", "[4,5]" })
+{
+    using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+    var result = compiled.Run(host, new LythonRunOptions
+    {
+        Globals = new Dictionary<string, object?> { ["payload"] = payload },
+        AllowedBuiltinModules = new HashSet<string> { "json" },
+        DisableLocalModuleImports = true,
+        CancellationToken = deadline.Token,
+        MaxExecutionSteps = 100_000,
+        MaxHostCalls = 100,
+        MaxCollectionSize = 10_000,
+        MaxStringLength = 65_536,
+        MaxHostReadBytes = 0,
+        MaxStandardOutputBytes = 4_096,
+        MaxStandardErrorBytes = 4_096,
+        MaxExecutionMemoryBytes = 8 * 1024 * 1024,
+        MaxProjectionMemoryBytes = 1024 * 1024,
+    });
+    Console.WriteLine(result.Success
+        ? $"sum={result.ReturnValue}, usage={result.Consumption}"
+        : $"failure={result.FailureAttribution}, usage={result.Consumption}");
+}
+```
+
+`Consumption` reports registered host-call attempts and retained UTF-8 output
+bytes. Instruction work is measured only with explicit fuel; it counts runtime
+checkpoints and varies by execution backend. Omitting fuel keeps this field null.
+It is a containment measure, not a CPython performance metric. Cancellation is
+cooperative, so the token does not promise a hard wall-clock deadline. Memory
+peaks report conservative accounting, independently from CLR heap size or RSS.
+
 The embedder supplies the complete `sys.argv`, including the program name:
 
 ```csharp

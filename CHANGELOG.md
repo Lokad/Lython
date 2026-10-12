@@ -4,6 +4,10 @@
 
 ## 0.10.0 - release candidate
 
+- Add immutable per-invocation built-in module selection, enforced across imports, attributes, registries and discovery without granting missing host capabilities.
+- Report typed terminal failure origins and guard quantities, preserving provenance through catches/rethrows and bounded diagnostic projection.
+- Own exception storage once across constructors, bindings and aliases; reclaim dropped records while retaining funded args, attributes and chains, and preserve native cleanup under exhaustion.
+- Expose existing runtime consumption counters without enabling implicit fuel: measured checkpoints, registered host-call attempts and retained UTF-8 capture bytes; add a compile-once policy/limits example and package-consumer controls.
 - Return ordinary Python lists from regex findall, including normal type identity, mutation, JSON encoding and CLR projection; reclaim discarded lazy-dot-star results.
 - Remove the implicit execution-step ceiling; retain enforced opt-in fuel for existing embedders, independent temporary-reclamation cadence, cancellation and default memory/stack/host-call protections.
 - Check cancellation and explicitly requested fuel during every lowered for-loop iteration, including pass-only range loops.

@@ -24,6 +24,27 @@ foreach (var result in new[] { compiled.Run(new PureHost()), await compiled.RunA
 }
 Console.WriteLine("Package consumer passed: " + expectedVersion);
 
+var inputs = engine.Compile("import json\nvalues = json.loads(payload)\nprint(len(values))\nreturn sum(values)");
+foreach (var (payload, total) in new[] { ("[1,2,3]", "6"), ("[4,5]", "9") })
+{
+    var options = new LythonRunOptions
+    {
+        Globals = new Dictionary<string, object?> { ["payload"] = payload },
+        AllowedBuiltinModules = new HashSet<string> { "json" },
+        DisableLocalModuleImports = true,
+        MaxExecutionSteps = 100000, MaxHostCalls = 100,
+        MaxCollectionSize = 10000, MaxStringLength = 65536, MaxHostReadBytes = 0,
+        MaxStandardOutputBytes = 4096, MaxStandardErrorBytes = 4096,
+        MaxExecutionMemoryBytes = 8 * 1024 * 1024, MaxProjectionMemoryBytes = 1024 * 1024,
+    };
+    foreach (var result in new[] { inputs.Run(new PureHost(), options), await inputs.RunAsync(new PureHost(), options) })
+    {
+        if (!result.Success || result.ReturnValue?.ToString() != total ||
+            result.Consumption is not { ExecutionSteps: > 0, HostCalls: 0, StandardOutputBytes: 2, StandardErrorBytes: 0 })
+            throw new Exception("Package consumer policy/consumption example failed.");
+    }
+}
+
 const string compatibilitySource = """
     import csv; import json; import re
     from collections import Counter, defaultdict
