@@ -236,7 +236,7 @@ public sealed class CsvExhaustedInputLifetimeTests
         public void Dispose()
         {
             GC.Collect();
-            InputAliveDuringDisposal = Input!.TryGetTarget(out _);
+            InputAliveDuringDisposal = InputIsAlive(Input!);
             Disposals++;
             if (fail) throw new LythonRuntimeException("RuntimeError", "sync cleanup", null);
         }
@@ -253,7 +253,7 @@ public sealed class CsvExhaustedInputLifetimeTests
         {
             await Task.Delay(1).ConfigureAwait(false);
             GC.Collect();
-            InputAliveDuringDisposal = Input!.TryGetTarget(out _);
+            InputAliveDuringDisposal = InputIsAlive(Input!);
             Disposals++;
             if (fail) throw new LythonRuntimeException("RuntimeError", "async cleanup", null);
         }
@@ -297,4 +297,9 @@ public sealed class CsvExhaustedInputLifetimeTests
         GC.WaitForPendingFinalizers();
         GC.Collect();
     }
+
+    // Sampling a live weak target temporarily creates a strong local. Keep it
+    // outside an async completion frame whose inline continuation collects it.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static bool InputIsAlive(WeakReference<object> input) => input.TryGetTarget(out _);
 }
