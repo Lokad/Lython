@@ -7,14 +7,14 @@ public sealed class InstanceOwnerLifetimeTests
 {
     public static IEnumerable<object[]> DroppedCases()
     {
-        foreach (var kind in new[] { "ordered", "instance", "empty", "init", "foreign", "shallow" })
+        foreach (var kind in new[] { "ordered", "instance", "child", "empty", "init", "foreign", "shallow" })
             foreach (var asynchronous in new[] { false, true })
                 yield return [kind, asynchronous];
     }
 
     public static IEnumerable<object[]> RetainedCases()
     {
-        foreach (var kind in new[] { "ordered", "instance", "empty", "init", "shallow" })
+        foreach (var kind in new[] { "ordered", "instance", "child", "empty", "init", "shallow" })
             foreach (var asynchronous in new[] { false, true })
                 yield return [kind, asynchronous];
     }
@@ -72,9 +72,11 @@ public sealed class InstanceOwnerLifetimeTests
                 operation = retain ? "saved.append(OrderedDict([(1, 1)]))" : "OrderedDict(source)";
                 break;
             case "instance":
+            case "child":
                 setup = "import copy\nclass Bomb:\n def __deepcopy__(self, memo):\n" +
-                    (retain ? "  saved.append(memo[id(source)])\n" : "") +
-                    "  raise ValueError('stop')\nclass Holder:\n pass\nsource = Holder()\nsource.first = 1\nsource.second = Bomb()\n";
+                    (retain ? kind == "child" ? "  saved.append(memo[id(source.first)])\n" : "  saved.append(memo[id(source)])\n" : "") +
+                    "  raise ValueError('stop')\nclass Holder:\n pass\nsource = Holder()\nsource.first = " +
+                    (kind == "child" ? "[1] * 32" : "1") + "\nsource.second = Bomb()\n";
                 operation = "copy.deepcopy(source)";
                 break;
             case "init":

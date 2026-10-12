@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Calls;
 using Lokad.Lython.Tests.Harness;
@@ -157,6 +158,45 @@ public sealed class InstanceStorageOwnershipTests
         governor.Reserve(bytes, Span);
         governor.Commit(bytes);
         return bytes;
+    }
+
+    [Fact]
+    public void CancellationDuringDeepcopyReleasesStagingButKeepsPinnedScratch()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions { CancellationToken = cancellation.Token });
+        var hookType = new PyType("Cancel", [], new() { ["__deepcopy__"] = new CancelCopy(cancellation) });
+        var child = new PyInstance(hookType, context.MemoryGovernor, Span);
+        var source = new PyInstance(Type(), context.MemoryGovernor, Span);
+        source.SetAttribute("child", child);
+        context.State.CallTemporaries.TrackFreshMutable(child, child.CommittedStorageBytes, Span);
+        context.State.CallTemporaries.TrackFreshMutable(source, source.CommittedStorageBytes, Span);
+        context.MemoryGovernor.Reserve(32, Span);
+        var memoType = typeof(LythonRuntime).GetNestedType("CopyMemo", BindingFlags.NonPublic)!;
+        var memo = (IDisposable)memoType.GetConstructors().Single(c => c.GetParameters().Length == 2).Invoke([context, Span]);
+        try
+        {
+            var copy = typeof(LythonRuntime).GetMethod("CopyValue", BindingFlags.NonPublic | BindingFlags.Static)!;
+            var error = Assert.Throws<TargetInvocationException>(() => copy.Invoke(null, [source, LythonRuntime.CopyDepth.Deep, context, Span, memo, 0]));
+            Assert.IsAssignableFrom<OperationCanceledException>(error.InnerException);
+        }
+        finally
+        {
+            memo.Dispose();
+        }
+        Assert.Equal(32, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.Equal(224, source.CommittedStorageBytes);
+        GC.KeepAlive(source);
+    }
+
+    private sealed class CancelCopy(CancellationTokenSource cancellation) : LythonRuntime.ICallable
+    {
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            cancellation.Cancel();
+            return System.Numerics.BigInteger.One;
+        }
+        public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context) => ValueTask.FromResult(Invoke(arguments, span, context));
     }
 
     private sealed class Allocator : LythonRuntime.ICallable

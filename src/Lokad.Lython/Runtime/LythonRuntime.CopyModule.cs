@@ -405,7 +405,10 @@ internal sealed partial class LythonRuntime
             }
 
             foreach (var pair in attributes)
+            {
+                context.Limits.CancellationToken.ThrowIfCancellationRequested();
                 clone.SetAttribute(pair.Key, pair.Value);
+            }
 
             return clone;
         }
