@@ -1,0 +1,118 @@
+# Lython performance against CPython
+
+| Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
+| --- | --- | ---: | ---: | ---: | --- |
+| Integer reduction loop [L] | 16,384 iterations | 3.58–3.72 ms | 0.578–0.666 ms | — | Historical diagnostic; failed control and cross-session stability |
+| Keyword calls [Q] | 2,048 calls | 1.378–1.404 ms | 0.137–0.145 ms | — | Historical diagnostic; failed invocation control |
+| Stable sort and output [Q] | 2,048 items | 5.150–7.889 ms | 0.306–0.313 ms | — | Historical diagnostic; spread/order checks also failed |
+| ASCII text pipeline [Q] | 1,024 eleven-character blocks | 0.618 ms | 0.0415 ms | — | Historical diagnostic; only one session before idle gate failed |
+| JSON transform and round trip [Q] | 128 records | 0.674–0.741 ms | 0.0610–0.0618 ms | — | Historical diagnostic; control floor/spread/interval checks failed |
+| CSV parse and retain [Q] | 128 data rows | 1.037–1.185 ms | 0.102–0.108 ms | — | Historical diagnostic; control/spread/order/interval checks failed |
+| Complete CSV summary script [S] | 0 / 16 / 1,024 fixture repeats | — | — | — | Output correctness verified; comparative timing pending |
+| Complete Unicode text summary [S] | 0 / 16 / 1,024 fixture repeats | — | — | — | Output correctness verified; comparative timing pending |
+| Complete JSON-lines summary [S] | 0 / 16 / 1,024 fixture repeats | — | — | — | Output correctness verified; comparative timing pending |
+| Complete file copy/checksum manifest [S] | 0 / 16 / 1,024 fixture repeats | — | — | — | Output correctness verified; comparative timing pending |
+
+**Ratio convention:** Lython elapsed time divided by CPython elapsed time;
+above 1 means Lython takes longer. A dash means unavailable or unqualified,
+never zero. The historical generated reports use the inverse convention;
+their ratios must not be copied into this column. Ranges above are the smallest
+and largest retained **session medians**, rounded for readability, not confidence
+intervals. The ASCII row has just one retained median.
+
+The historical measurements show substantial performance gaps on these jobs,
+including a loop whose cost grows with its iteration count. They support
+investigating interpreter dispatch and application workloads. **No workload
+multiplier qualified in either campaign. These timings do not describe today's
+HEAD:** subsequent interpreter and containment changes have been integrated.
+There is no current complete-script CPython timing baseline or overall speedup.
+
+## Which code and machine were measured?
+
+| Label | Date | Measured Lython revision | Evidence |
+| --- | --- | --- | --- |
+| Q | 2026-10-09 | `9358c4e72f1a29e55703eee02b28ea404d01bc0a` | [Four-lane run](benchmarks/results/2026-10-09-quick/README.md), [warm medians and exclusions](benchmarks/results/2026-10-09-quick/warm.md) |
+| L | 2026-10-09 | `56d4346d960b58f037da7d4590eb66c87ffec29e` | [Focused loop run](benchmarks/results/2026-10-09-core-loop/README.md), [all loop samples](benchmarks/results/2026-10-09-core-loop/warm.md) |
+| S | 2026-10-12 | `87c1a94c347a88bc94927ea603a138cec4376170` (correctness, no timings) | [Complete-script validation](benchmarks/results/2026-10-12-script-negative-cases/README.md), [fixture and host contract](benchmarks/results/2026-10-12-containment-scope/README.md) |
+
+Q and L used the same dedicated **Azure Standard_F4as_v7**: Ubuntu 24.04.4 LTS
+x86_64, four AMD EPYC 9V45 vCPUs, one thread per core, 16 GiB RAM, no swap.
+Lython was a clean Release build using **.NET SDK 10.0.401 / runtime 10.0.12**.
+The primary external reference was **CPython 3.13.16**, built with GCC 13.3,
+PGO/LTO, ordinary GIL and cyclic GC, without debug mode or JIT, launched with
+`-I -S`. Workers kept ordinary GC/tiering and public Lython limits; optional
+instruction fuel was unset. Both engines ran sequentially on that machine.
+The linked receipts identify binaries, inputs, toolchains and sampling policies.
+
+S verifies exact stdout and output-file bytes through Lython's public API in
+both synchronous and genuinely yielded asynchronous execution, plus independent
+CPython 3.13.2 checks on Windows. Its fixture repeats expand into different record/byte counts for
+each script; they are not a shared row count. Correctness tests are not timing
+measurements. The [original scripts](benchmarks/scripts) remain ordinary Python.
+
+## Execution, compilation and startup are separate
+
+The leading table uses **warm execution**: both engines reuse compiled code,
+create fresh invocation state, execute the complete module, capture/project
+output and perform the cheap golden check inside the worker timer. Compilation,
+worker launch, transport and full output hashing are outside it. Module imports
+retain their source positions and normal caches; invocation controls are never
+subtracted. Historical Q/L cases have in-memory fixtures, not disk file I/O.
+
+Lython's host boundary, memory governor and cooperative checks remain enabled.
+CPython has no equivalent in-process containment. These are application costs
+under the two ordinary execution contracts; neither a bare arithmetic test nor
+a claim that the contracts provide identical protection.
+
+| Boundary | Historical observation at Q | Status |
+| --- | --- | --- |
+| Warm invocation | See workload table above | No qualified workload ratios |
+| Compile and run | Compile source, then execute fresh state in persistent workers | Mostly incomplete after idle gates; [retained results](benchmarks/results/2026-10-09-quick/compile-run.md) |
+| Compilation only | Lython engine compilation versus CPython `compile()` | Mostly incomplete after idle gates; [retained results](benchmarks/results/2026-10-09-quick/compile.md) |
+| Fresh-process empty control | Lython 170.361–175.524 ms; CPython 29.628–29.947 ms | Startup control; [retained results](benchmarks/results/2026-10-09-quick/fresh-process.md) |
+
+Fresh-process timing includes parent-observed launch, compilation, execution,
+pipe drain and exit, with OS file caches retained. It must not be compared with
+warm execution. Its controls qualified, but workloads failed the required
+separation from startup; no workload ratio was published. Compilation samples
+and startup costs must not be folded into the warm table.
+
+## Improvements against earlier Lython revisions
+
+These compare Lython with earlier Lython, **not with CPython**. Each uses short
+diagnostic collections, ordinary protection/GC/tiering and unchanged worker
+boundaries. They have no milestone qualification or claimed confidence interval.
+The percentages must not be added or multiplied into a current CPython ratio.
+
+| Change and date | Baseline → candidate revision | Observed Lython time reduction | Evidence |
+| --- | --- | ---: | --- |
+| Synchronous instruction dispatch, 2026-10-09 | `56d4346d` → `891798a6` | 13.4–14.0%, 16,384-iteration loop | [Both collections](benchmarks/results/2026-10-09-sync-dispatch/README.md) |
+| Exact integer addition, 2026-10-09 | `891798a6` → `e97cd4da` | 10.7–14.1%, same loop | [Both collections and rejected alternative](benchmarks/results/2026-10-09-integer-addition/README.md) |
+| Function-scoped dispatch, 2026-10-11 | `1bf1e241` → `d10564e7` | 4.44% / 10.10%, complete method job | [Corrected producers, controls and safety evidence](benchmarks/results/2026-10-11-scoped-dispatch-corrected/README.md) |
+
+## Remaining uncertainty and maintenance
+
+The next useful comparison is the four complete CSV, text, JSON and file scripts,
+with identical input/output bytes and a declared file-host boundary. Their
+correctness is established; disk staging, reset, output validation and worker
+cleanup must be shared fairly before collecting timings. The older retained-CSV
+job is not evidence for bounded streaming or host latency.
+
+Process-wide forced GC remains a containment concern. The separate
+[embedding-impact experiment](benchmarks/results/2026-10-12-embedding-impact/README.md)
+records host request tails, heartbeat stalls and collection counts; fewer full
+collections alone do not establish better host latency. Regex performance waits
+for [managed-only backend qualification](benchmarks/results/2026-10-12-regex-scalar-4/README.md).
+
+For an optimization round, use the existing seconds-long diagnostic command;
+reserve ten-minute lanes for declared milestones. Keep failed/incomplete samples,
+ordinary limits and frozen acceptance rules. A new result must state its exact
+revision, reference version, date, machine, boundary and qualification status.
+Update this page's primary table only from that evidence, and retain the prior
+identity. Do not relabel historical receipts as current results.
+
+- [Measurement methods, commands and qualification rules](benchmarks/COMPARISON.md)
+- [Experimental history, profiles and rejected optimizations](benchmarks/EXPERIMENTS.md)
+- [Historical Lython-only BenchmarkDotNet scan baselines](benchmarks/Baselines.md)
+
+Documentation consolidated 2026-10-12; this date is not a new timing campaign.

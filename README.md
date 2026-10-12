@@ -10,6 +10,9 @@ Release notes are tracked in [CHANGELOG.md](CHANGELOG.md). Contributors can find
 the compilation, runtime, containment, and verification boundaries in
 [ARCHITECTURE.md](ARCHITECTURE.md).
 
+Performance against CPython, measured revisions and remaining gaps are summarized
+in [BENCHMARKS.md](BENCHMARKS.md).
+
 It is meant for the kind of Python a coding agent naturally writes when it needs to:
 
 - read and rewrite text files
