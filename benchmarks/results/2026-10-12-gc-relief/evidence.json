@@ -1,0 +1,515 @@
+{
+  "version": 1,
+  "date": "2026-10-12",
+  "purpose": "Avoid unconditional full collections while preserving accounted live-memory relief",
+  "qualifiedSource": {
+    "source": "e016b0eff42dc7d55dd85d0a9a683e38cc2ef233",
+    "production": "c2131a078fe93058d5e588b3373f88616f856b26",
+    "white": "d9fa943b98d1e00bbdb986d5d923df7d55c5ea98",
+    "public": "d9da218de723f02b5bca00b8c756b702f7b15d60",
+    "probe": "bfd4ee12ae4532e0a65a85db86792da8183eec9d",
+    "benchmark": "c194ce88a7e4d52c576f3929ef82bce60bf37e2d",
+    "worker": "fe209cb540a4187d82fbe1f6aa43aad294fbc128",
+    "productionLinesAdded": 15,
+    "productionLinesRemoved": 3,
+    "productionNetAdded": 12,
+    "codeNetAddedExcludingComments": 8,
+    "actualBuildProducers": {
+      "debugAll": "e016b0eff42dc7d55dd85d0a9a683e38cc2ef233",
+      "releaseAll": "e016b0eff42dc7d55dd85d0a9a683e38cc2ef233"
+    }
+  },
+  "qualifiedBinaries": [
+    {
+      "path": "src/Lokad.Lython/bin/Debug/net10.0/Lokad.Lython.dll",
+      "sha256": "4B234A8497AC38303DDCD5177B4F4900279421B0B743EFD6226D7EB4595D55D8"
+    },
+    {
+      "path": "tests/Lokad.Lython.Tests/bin/Debug/net10.0/Lokad.Lython.WhiteBox.Tests.dll",
+      "sha256": "00691B8323E4A4E5DC36DD9F59824A0D0A36F40C5D452DFF5D5800FB7672A711"
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/bin/Debug/net10.0/Lokad.Lython.PublicApi.Tests.dll",
+      "sha256": "D791B7772AB1B4999778471A4BFBB76C61B29256885D5020B4D803CF5A80209F"
+    },
+    {
+      "path": "tests/Lokad.Lython.WorkerFixture/bin/Debug/net10.0/Lokad.Lython.WorkerFixture.dll",
+      "sha256": "FDB247BA9D7BB7FE54E24B70CE02DA19CDDB551D0FC51A751DCC1FA7D1D24DDB"
+    },
+    {
+      "path": "tools/LythonProbe/bin/Debug/net10.0/LythonProbe.dll",
+      "sha256": "9D359CA3E71CEAFCFAAF516E5524AFAD679F51F836CA1E21FD42F1F28C92934B"
+    },
+    {
+      "path": "src/Lokad.Lython/bin/Release/net10.0/Lokad.Lython.dll",
+      "sha256": "B71BE94FAEBF45FECBC2A6A03AF1951BC3CF7301C0E24FD87C16F464DFA646ED"
+    },
+    {
+      "path": "tests/Lokad.Lython.Tests/bin/Release/net10.0/Lokad.Lython.WhiteBox.Tests.dll",
+      "sha256": "21324290B30BE5C75497CA8C99E293F019EB76E2B6DC8C30EF751F4FFA2903D0"
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/bin/Release/net10.0/Lokad.Lython.PublicApi.Tests.dll",
+      "sha256": "E762A3C95875B47FD2DF95280647B31BEDB24D7C5E72A98EF197E5C00DA83B96"
+    },
+    {
+      "path": "tests/Lokad.Lython.WorkerFixture/bin/Release/net10.0/Lokad.Lython.WorkerFixture.dll",
+      "sha256": "5CD6E2B32284C4183594AB709FDF00FAFD131DFED5E058255EEC6328B7FF127C"
+    },
+    {
+      "path": "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+      "sha256": "6DBD7C35BFCC1C0F3031292596EB188C89F777EA0557E9ADABF85AC0933495DE"
+    }
+  ],
+  "fullDebug": [
+    {
+      "file": "complete_net10.0_20261012093036.trx",
+      "sha256": "44073AFC1615E1FFED6CACBD14962213622097B767329EF97834C77ED5565E22",
+      "total": 2119,
+      "passed": 2119,
+      "failed": 0
+    },
+    {
+      "file": "complete_net10.0_20261012093700.trx",
+      "sha256": "FAA07EF2F1BAADC6D0DA581F19F604A995C8140ED0A95875CA89190722198C03",
+      "total": 8268,
+      "passed": 8268,
+      "failed": 0
+    }
+  ],
+  "focused": [
+    {
+      "stage": "root-focused-white-debug",
+      "process": {
+        "source": "e016b0eff42dc7d55dd85d0a9a683e38cc2ef233",
+        "production": "c2131a078fe93058d5e588b3373f88616f856b26",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "00691B8323E4A4E5DC36DD9F59824A0D0A36F40C5D452DFF5D5800FB7672A711",
+        "filter": "FullyQualifiedName~MemoryGovernor|FullyQualifiedName~FinalizableOwnershipTests|FullyQualifiedName~ChargeReclamationPoolTests.Relief|FullyQualifiedName~ChargeReclamationPoolTests.PartialRelief|FullyQualifiedName~ChargeReclamationPoolTests.ImpossibleRequest|FullyQualifiedName~ChargeReclamationPoolTests.EmptyPools|FullyQualifiedName~IterationCancellationTests",
+        "pid": 726056,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1215,
+        "stdoutSha256": "8A0C2782081E49DA0EA790BA9524B37FC3F61A38EE5FA374CA2C339B3D1061AB",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "39A5CB8EF741BFF48CF18DF0AFE128ED4D4363CDCD2284B36A3B665A1FDBAC44",
+        "total": 28,
+        "passed": 28,
+        "failed": 0
+      }
+    },
+    {
+      "stage": "root-focused-csv-public-debug",
+      "process": {
+        "source": "e016b0eff42dc7d55dd85d0a9a683e38cc2ef233",
+        "production": "c2131a078fe93058d5e588b3373f88616f856b26",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "D791B7772AB1B4999778471A4BFBB76C61B29256885D5020B4D803CF5A80209F",
+        "filter": "FullyQualifiedName~CsvGenerationReliefLifetimeTests|FullyQualifiedName~CsvDelayedHostTests",
+        "pid": 778168,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 17090,
+        "stdoutSha256": "0F6409C2FA6A841C2283571C51042585512A1016815467A97782CAFABFAA2056",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "E0538CC63FE823D5F3513AD03EED1676A3D154108CB882E6E9D881BBE8CABD29",
+        "total": 19,
+        "passed": 19,
+        "failed": 0
+      }
+    },
+    {
+      "stage": "root-focused-white-release",
+      "process": {
+        "source": "e016b0eff42dc7d55dd85d0a9a683e38cc2ef233",
+        "production": "c2131a078fe93058d5e588b3373f88616f856b26",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "21324290B30BE5C75497CA8C99E293F019EB76E2B6DC8C30EF751F4FFA2903D0",
+        "filter": "FullyQualifiedName~MemoryGovernor|FullyQualifiedName~FinalizableOwnershipTests|FullyQualifiedName~ChargeReclamationPoolTests.Relief|FullyQualifiedName~ChargeReclamationPoolTests.PartialRelief|FullyQualifiedName~ChargeReclamationPoolTests.ImpossibleRequest|FullyQualifiedName~ChargeReclamationPoolTests.EmptyPools|FullyQualifiedName~IterationCancellationTests",
+        "pid": 978896,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1489,
+        "stdoutSha256": "5D27B31D16811DD8911C2643897441A964961A57F3738099C81E658DB38B33AF",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "8BB3A962E5A15B29905A1D297FD10A09CC5D5354FD4C116609C984CF5FA2F9A0",
+        "total": 28,
+        "passed": 28,
+        "failed": 0
+      }
+    },
+    {
+      "stage": "root-focused-csv-public-release",
+      "process": {
+        "source": "e016b0eff42dc7d55dd85d0a9a683e38cc2ef233",
+        "production": "c2131a078fe93058d5e588b3373f88616f856b26",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "E762A3C95875B47FD2DF95280647B31BEDB24D7C5E72A98EF197E5C00DA83B96",
+        "filter": "FullyQualifiedName~CsvGenerationReliefLifetimeTests|FullyQualifiedName~CsvDelayedHostTests",
+        "pid": 1147656,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 15994,
+        "stdoutSha256": "9BD1117D834270F8CCEB73BCB6A7935FDDDE0C3A2CC3E5C032889DC30FAEE5D6",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "C72D9D2A2BCCB176514FDC2C48F857D6B32FC24CFE90F325AF80B06A37DC8523",
+        "total": 19,
+        "passed": 19,
+        "failed": 0
+      }
+    },
+    {
+      "stage": "root-focused-ownership-public-release",
+      "process": {
+        "source": "e016b0eff42dc7d55dd85d0a9a683e38cc2ef233",
+        "production": "c2131a078fe93058d5e588b3373f88616f856b26",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "E762A3C95875B47FD2DF95280647B31BEDB24D7C5E72A98EF197E5C00DA83B96",
+        "filter": "FullyQualifiedName~InstanceOwnerLifetimeTests|FullyQualifiedName~CopyOwnerLifetimeTests|FullyQualifiedName~CopyMemoViewAccountingScenarioTests",
+        "pid": 933104,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 5706,
+        "stdoutSha256": "293CF6C4CA619A7C5A3E808F56B79A298EE3F19B4CA56784410D76FF754B40AB",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "2FF71CC22DA921CB031624785336D3BCF85479DEC75FD4F50CED8E6A80AF5598",
+        "total": 57,
+        "passed": 57,
+        "failed": 0
+      }
+    }
+  ],
+  "assessment": {
+    "purpose": "Fixed-generation relief assessment only; not root qualification",
+    "phases": [
+      {
+        "phase": "original",
+        "process": {
+          "source": "0e1e70e4d99276cbaebd4b02dfe195d1731320e9",
+          "production": "913eba9821d7238edd7190b1f6ba33146717bd60",
+          "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\gc-relief-20261012\\original\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+          "assemblySha256": "5636D7BC41D783549F29DE4D0A67DF8C8ED6AB5FEBDE48C6636F469B7F0F3E00",
+          "filter": "FullyQualifiedName~FixedGenerationReliefDiagnosticTests",
+          "pid": 725332,
+          "hasExited": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "elapsedMillisecondsIncludingCleanup": 5252,
+          "stdoutSha256": "D5F12AB2ED87D163E65E3AE16ECDB355563A9C738B4904CA19D4D5B821307AD3",
+          "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        "trxSha256": "3AA2BDC04F3D558602B8135D68673EDE62939B10BFDCC2434EED3833E90C7DB1",
+        "outcomes": [
+          {
+            "file": "scan-False-False-4000.json",
+            "sha256": "0928F49C896DE5ED3A9DA7A08D9EFF5B547A54D349055D363D5B458969334441",
+            "value": {
+              "asynchronous": false,
+              "retained": false,
+              "rows": 4000,
+              "cap": 262144,
+              "Success": true,
+              "exceptionType": null,
+              "PeakExecutionMemoryBytes": 262138,
+              "collections": [
+                33,
+                33,
+                33
+              ],
+              "elapsedMilliseconds": 152
+            }
+          },
+          {
+            "file": "scan-False-False-40000.json",
+            "sha256": "050FBD0C6DC1E9168E7BDFC91C5A995BDCC4D17FDEC397F63A48B69B100C3C76",
+            "value": {
+              "asynchronous": false,
+              "retained": false,
+              "rows": 40000,
+              "cap": 262144,
+              "Success": true,
+              "exceptionType": null,
+              "PeakExecutionMemoryBytes": 262138,
+              "collections": [
+                344,
+                344,
+                344
+              ],
+              "elapsedMilliseconds": 1654
+            }
+          },
+          {
+            "file": "scan-False-True-4000.json",
+            "sha256": "AE9AB1F3D7F68034AEEF03F7F01C89299F9F306C5D53D5CF2D632006AE17B835",
+            "value": {
+              "asynchronous": false,
+              "retained": true,
+              "rows": 4000,
+              "cap": 262144,
+              "Success": false,
+              "exceptionType": "MemoryError",
+              "PeakExecutionMemoryBytes": 262104,
+              "collections": [
+                1,
+                1,
+                1
+              ],
+              "elapsedMilliseconds": 8
+            }
+          },
+          {
+            "file": "scan-True-False-4000.json",
+            "sha256": "EBE6B2146CB2E638E314897D00DD65D645D634AA452255D2D24B0F0300C7F0B4",
+            "value": {
+              "asynchronous": true,
+              "retained": false,
+              "rows": 4000,
+              "cap": 262144,
+              "Success": true,
+              "exceptionType": null,
+              "PeakExecutionMemoryBytes": 262138,
+              "collections": [
+                33,
+                33,
+                33
+              ],
+              "elapsedMilliseconds": 208
+            }
+          },
+          {
+            "file": "scan-True-False-40000.json",
+            "sha256": "E56B5178E0247A62CA97965F1193C109B01089A48EB886161A0D86A3C0FDEADB",
+            "value": {
+              "asynchronous": true,
+              "retained": false,
+              "rows": 40000,
+              "cap": 262144,
+              "Success": true,
+              "exceptionType": null,
+              "PeakExecutionMemoryBytes": 262138,
+              "collections": [
+                344,
+                344,
+                344
+              ],
+              "elapsedMilliseconds": 2046
+            }
+          },
+          {
+            "file": "scan-True-True-4000.json",
+            "sha256": "DD16A1E503DD2CDC23884043A608C106CEDB542061AF7BA5EB41E78043EAA5A2",
+            "value": {
+              "asynchronous": true,
+              "retained": true,
+              "rows": 4000,
+              "cap": 262144,
+              "Success": false,
+              "exceptionType": "MemoryError",
+              "PeakExecutionMemoryBytes": 262099,
+              "collections": [
+                1,
+                1,
+                1
+              ],
+              "elapsedMilliseconds": 9
+            }
+          }
+        ]
+      },
+      {
+        "phase": "candidate",
+        "process": {
+          "source": "ec652e2dc235501f808c9e43cf1083235a984d49",
+          "production": "9db1d65d9fe9998cf67022d9afb8c9a8257cff69",
+          "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\gc-relief-20261012\\original\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+          "assemblySha256": "B1F00B7CB7FD01FA80E96179CF730711F874107B010F22A637085EE6E8C83FC0",
+          "filter": "FullyQualifiedName~FixedGenerationReliefDiagnosticTests",
+          "pid": 330864,
+          "hasExited": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "elapsedMillisecondsIncludingCleanup": 2136,
+          "stdoutSha256": "BBC099B69AD681AF03761DDFDBD686DF6CD5F468BD97674CFC1E38D4AD324E1B",
+          "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+        },
+        "trxSha256": "B69AE870EC79DBB04A8C2CB450912182C2449183BD988A7CC6EB28DA3E9A2D13",
+        "outcomes": [
+          {
+            "file": "scan-False-False-4000.json",
+            "sha256": "13F7A0BE9260A11E62FF5CA18FFB58E628CF1EB7BECEC0DAF8BC7616F873F338",
+            "value": {
+              "asynchronous": false,
+              "retained": false,
+              "rows": 4000,
+              "cap": 262144,
+              "Success": true,
+              "exceptionType": null,
+              "PeakExecutionMemoryBytes": 262138,
+              "collections": [
+                33,
+                0,
+                0
+              ],
+              "elapsedMilliseconds": 39
+            }
+          },
+          {
+            "file": "scan-False-False-40000.json",
+            "sha256": "78C7AD913470AC0514B168D6E4C3D9889BB549836C4E5619AC609FA78A64C0FE",
+            "value": {
+              "asynchronous": false,
+              "retained": false,
+              "rows": 40000,
+              "cap": 262144,
+              "Success": true,
+              "exceptionType": null,
+              "PeakExecutionMemoryBytes": 262140,
+              "collections": [
+                537,
+                2,
+                0
+              ],
+              "elapsedMilliseconds": 410
+            }
+          },
+          {
+            "file": "scan-False-True-4000.json",
+            "sha256": "76977E3030C03CBCDFA796806F7299C63907E1CD2826E53F339613527A15974B",
+            "value": {
+              "asynchronous": false,
+              "retained": true,
+              "rows": 4000,
+              "cap": 262144,
+              "Success": false,
+              "exceptionType": "MemoryError",
+              "PeakExecutionMemoryBytes": 262104,
+              "collections": [
+                3,
+                2,
+                1
+              ],
+              "elapsedMilliseconds": 12
+            }
+          },
+          {
+            "file": "scan-True-False-4000.json",
+            "sha256": "51EF5E4ADE1F143A309E67FDB134E87C58EBD0ECE50F21385A5D430595140CBA",
+            "value": {
+              "asynchronous": true,
+              "retained": false,
+              "rows": 4000,
+              "cap": 262144,
+              "Success": true,
+              "exceptionType": null,
+              "PeakExecutionMemoryBytes": 262138,
+              "collections": [
+                34,
+                0,
+                0
+              ],
+              "elapsedMilliseconds": 46
+            }
+          },
+          {
+            "file": "scan-True-False-40000.json",
+            "sha256": "44E4672499EB8B7097D0693AF2E821CD85736439247757EB1A6D2B2CBB35DD39",
+            "value": {
+              "asynchronous": true,
+              "retained": false,
+              "rows": 40000,
+              "cap": 262144,
+              "Success": true,
+              "exceptionType": null,
+              "PeakExecutionMemoryBytes": 262138,
+              "collections": [
+                344,
+                0,
+                0
+              ],
+              "elapsedMilliseconds": 485
+            }
+          },
+          {
+            "file": "scan-True-True-4000.json",
+            "sha256": "7B76FE98A9FA94961C900171D6D115A22EB693872818CAD3E2008CA366242657",
+            "value": {
+              "asynchronous": true,
+              "retained": true,
+              "rows": 4000,
+              "cap": 262144,
+              "Success": false,
+              "exceptionType": "MemoryError",
+              "PeakExecutionMemoryBytes": 262099,
+              "collections": [
+                3,
+                2,
+                1
+              ],
+              "elapsedMilliseconds": 9
+            }
+          }
+        ]
+      }
+    ],
+    "sourceFileSha256": "D0900440719D79F386971938C7356C3DDA2CA01B83CBF1A6019E6DF6AB365A6A",
+    "assertedReturnsAndDenials": "All6Theory cases perphase PASS; dropped result equalsrowcount, retained MemoryError",
+    "performanceClaim": false,
+    "forcedGcIndependence": false
+  },
+  "measuredVariantEquivalentToRootExceptFourComments": true,
+  "sourceDifference": "diff --git a/src/Lokad.Lython/Runtime/MemoryGovernor.cs b/src/Lokad.Lython/Runtime/MemoryGovernor.cs\nindex e51f4ebe..370edbc4 100644\n--- a/src/Lokad.Lython/Runtime/MemoryGovernor.cs\n+++ b/src/Lokad.Lython/Runtime/MemoryGovernor.cs\n@@ -141,6 +141,10 @@ internal sealed class MemoryGovernor\n             return;\n         }\n \n+        // Most dropped streaming values are young. Collect only as far as\n+        // needed to fund this reservation; old unreachable storage still gets\n+        // a full collection before denial. CLR generations need no owner-age\n+        // registry, and all existing live snapshots remain charged.\n         for (var generation = 0; generation <= GC.MaxGeneration; generation++)\n         {\n             GC.Collect(generation);",
+  "priorPrivateSafety": {
+    "process": {
+      "source": "ec652e2dc235501f808c9e43cf1083235a984d49",
+      "production": "9db1d65d9fe9998cf67022d9afb8c9a8257cff69",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\gc-relief-20261012\\original\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "B1F00B7CB7FD01FA80E96179CF730711F874107B010F22A637085EE6E8C83FC0",
+      "filter": "FullyQualifiedName~MemoryGovernor|FullyQualifiedName~FinalizableOwnershipTests|FullyQualifiedName~ChargeReclamationPoolTests.Relief|FullyQualifiedName~ChargeReclamationPoolTests.PartialRelief|FullyQualifiedName~ChargeReclamationPoolTests.ImpossibleRequest|FullyQualifiedName~ChargeReclamationPoolTests.EmptyPools",
+      "pid": 293580,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1046,
+      "stdoutSha256": "4EC842D49977E198DEA12625559EC11718C6218872F7547E6681E7BB06AD7DC0",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "trx": {
+      "file": "tests.trx",
+      "sha256": "493DC4AC7CF6C7466904EB35EBA1C2ECA677D6A13AD1246E5637144A8ED7905F",
+      "total": 22,
+      "passed": 22,
+      "failed": 0
+    }
+  },
+  "forcedGcIndependence": false,
+  "pauseOrSpeedClaim": false,
+  "comparisonLaneCollected": false,
+  "vmCollection": false,
+  "tradeoff": "Pinned retention can attempt generation0,1,2 collections; repeated denial without allocation progress still skips relief",
+  "pending": [
+    "Weak-reclamation dependency and full forced-GC independence",
+    "Other storage ownership assessment",
+    "Counter protocol fidelity and malformed defaultdict category",
+    "Broader runtime/benchmark work and external Utf8Regex"
+  ]
+}
