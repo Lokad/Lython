@@ -39,7 +39,7 @@ public sealed class InstanceOwnerLifetimeTests
 
     public static IEnumerable<object[]> CopyAndConstructorGoldens()
     {
-        var cases = new[]
+        (string Source, object Expected)[] cases =
         {
             ("import copy, json\nseen = []\nclass Bomb:\n def __deepcopy__(self, memo):\n  dst = memo[id(source)]\n  seen.append([hasattr(dst, 'first'), hasattr(dst, 'second'), hasattr(dst, 'later'), dst.first])\n  raise ValueError('stop')\nclass Holder:\n pass\nsource = Holder()\nsource.first = 1\nsource.second = Bomb()\nsource.later = 3\ntry:\n copy.deepcopy(source)\nexcept ValueError:\n pass\nreturn json.dumps(seen)\n", "[[true, false, false, 1]]"),
             ("import copy\nclass Holder:\n pass\nsource = Holder()\nsource.loop = source\nsource.items = [source, source]\ndst = copy.deepcopy(source)\nreturn dst is not source and dst.loop is dst and dst.items[0] is dst and dst.items[1] is dst\n", true),
