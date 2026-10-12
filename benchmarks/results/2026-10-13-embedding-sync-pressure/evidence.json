@@ -1,0 +1,13 @@
+{
+  "measuredSource": "f67419a86ee0304de9d0f05c0e68ef15c860e508",
+  "production": "fc76a4a297f6f29e229b621bebf607d609a333fb",
+  "evidenceArchiveSha256": "831888337e2c600ba793f1c313d2bf3fd1254303c4e2f66048f6a43379e5b5b3",
+  "originalRows": 30,
+  "eligibleRows": 30,
+  "matchedPairs": 15,
+  "allLatencyTargetsMet": true,
+  "forcedGcIndependence": false,
+  "windowsImpactQualified": false,
+  "cpythonRatioMeasured": false,
+  "originalAccessReceiptProcessorCountCorrection": "Initial access probe counted a CPU-range string incorrectly; actual os.cpu_count and all measured Environment.ProcessorCount are4."
+}

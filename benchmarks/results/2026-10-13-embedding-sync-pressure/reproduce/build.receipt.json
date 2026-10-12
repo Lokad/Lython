@@ -1,0 +1,24 @@
+{
+  "pid": 2251808,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedIncludingPreparationSeconds": 9.416010018030647,
+  "source": "f67419a86ee0304de9d0f05c0e68ef15c860e508",
+  "productionTree": "fc76a4a297f6f29e229b621bebf607d609a333fb",
+  "command": [
+    "/home/lokad/lython-bench-toolchains/dotnet/10.0.401/dotnet",
+    "build",
+    "/home/lokad/lython-bench-checks/embedding-sync-pressure-f67419a8-20261013/subject/ImpactProbe/Probe.csproj",
+    "-c",
+    "Release",
+    "-p:SubjectRoot=/home/lokad/lython-bench-checks/embedding-sync-pressure-f67419a8-20261013/subject",
+    "-p:SourceRevisionId=f67419a86ee0304de9d0f05c0e68ef15c860e508",
+    "-p:RepositoryCommit=f67419a86ee0304de9d0f05c0e68ef15c860e508",
+    "-p:EnableSourceControlManagerQueries=false",
+    "-p:EnableSourceLink=false",
+    "--tl:off",
+    "--nologo",
+    "-v",
+    "minimal"
+  ]
+}

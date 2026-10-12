@@ -1,0 +1,82 @@
+{
+  "session": 2,
+  "name": "file-manifest-sync-control",
+  "startedUtc": "2026-10-12T23:43:47.428473+00:00",
+  "eligible": true,
+  "exclusion": null,
+  "idleCpuPercent": [
+    0.0,
+    0.0
+  ],
+  "pid": 2252322,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedIncludingCleanupSeconds": 6.430578694969881,
+  "stdoutSha256": "9b99186653d5b21edbe5dc90855043e20a1472fb762fd8858927a0e3a5ad14ac",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stealTicks": 0,
+  "noiseDelta": {
+    "pswpin": 0,
+    "pswpout": 0,
+    "pgmajfault": 0
+  },
+  "result": {
+    "policy": "embedding-v4-linux-sync-pressure",
+    "name": "file-manifest-sync-control",
+    "control": true,
+    "asynchronous": false,
+    "pressure": false,
+    "windowSeconds": 4,
+    "preparationCollections": [
+      2,
+      2,
+      2
+    ],
+    "capBytes": 262144,
+    "retainedPayloadBytes": 0,
+    "caughtDenialsPerJob": 0,
+    "warmupYieldedJobs": 0,
+    "warmupDelayedHostCalls": 0,
+    "yieldedJobs": 0,
+    "delayedHostCalls": 0,
+    "qualification": "prospective controlled model; supervisor determines eligibility",
+    "observationSeconds": 4.0004346,
+    "completed": 0,
+    "peakBytes": 16418,
+    "modeledHostBytes": 134217728,
+    "modeledHostObjects": 131072,
+    "hostGenerationsBefore": [
+      0,
+      0,
+      131072
+    ],
+    "samples": 3772,
+    "requestChecksum": 494976,
+    "allocatedBytes": 273208,
+    "gcCollections": [
+      0,
+      0,
+      0
+    ],
+    "cpuSeconds": 0.115559,
+    "cpuCoreFraction": 0.028886611469663818,
+    "processorCount": 4,
+    "runtime": "10.0.12",
+    "sourceSha256": "04853279AEBBA6F963432860F5F820503D0DE77FA8F4600C1EFAD035D7C7D747",
+    "originalSourceSha256": "04853279AEBBA6F963432860F5F820503D0DE77FA8F4600C1EFAD035D7C7D747",
+    "subjectInformationalVersion": "0.10.0+f67419a86ee0304de9d0f05c0e68ef15c860e508",
+    "subjectDllSha256": "DD89DFC6A3F426EEBAFE7AF902505B20EA5AAA33B98510C1F3978EAB85DD025C"
+  },
+  "request": {
+    "p50": 0.060275,
+    "p95": 0.061637,
+    "p99": 0.064411,
+    "max": 0.379347
+  },
+  "heartbeat": {
+    "p50": 0.059784,
+    "p95": 0.060435,
+    "p99": 0.061066,
+    "max": 0.378937
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "receipt": {
+    "pid": 2251808,
+    "exitCode": 0,
+    "timedOut": false,
+    "elapsedIncludingPreparationSeconds": 9.416010018030647,
+    "source": "f67419a86ee0304de9d0f05c0e68ef15c860e508",
+    "productionTree": "fc76a4a297f6f29e229b621bebf607d609a333fb",
+    "command": [
+      "/home/lokad/lython-bench-toolchains/dotnet/10.0.401/dotnet",
+      "build",
+      "/home/lokad/lython-bench-checks/embedding-sync-pressure-f67419a8-20261013/subject/ImpactProbe/Probe.csproj",
+      "-c",
+      "Release",
+      "-p:SubjectRoot=/home/lokad/lython-bench-checks/embedding-sync-pressure-f67419a8-20261013/subject",
+      "-p:SourceRevisionId=f67419a86ee0304de9d0f05c0e68ef15c860e508",
+      "-p:RepositoryCommit=f67419a86ee0304de9d0f05c0e68ef15c860e508",
+      "-p:EnableSourceControlManagerQueries=false",
+      "-p:EnableSourceLink=false",
+      "--tl:off",
+      "--nologo",
+      "-v",
+      "minimal"
+    ]
+  },
+  "identities": {
+    "Lokad.Lython.dll": "dd89dfc6a3f426eebafe7af902505b20ea5aaa33b98510c1f3978eab85dd025c",
+    "Lokad.Parsing.dll": "d71fea270f731e88cebea2263f9acd6f934f13c6b73f906bd07dada8d593ff12",
+    "Probe.runtimeconfig.json": "9950d4583cfc9a106857c0d5b8a75b53e8774852b57b80bc3823a74d44a4d87f",
+    "JetBrains.Annotations.dll": "a1b1edbdbf6c41b8e564e03da4014d09928bc86370b97ac6cd166a669127c77d",
+    "Lokad.Utf8Regex.dll": "aca1473ed739b255219cc877726f22a632482ad6471e267a15371b4abbf4a113",
+    "Lokad.Utf8Regex.PythonRe.dll": "74e534f682104217fca4dee22881ec8ca4b1a8e3d396bd5efc9af43f26869429",
+    "Probe.deps.json": "644aa9724d23577180c20488d8edd13a01bbbc4b3a65fadcae559d5c186b308f",
+    "Probe.dll": "2bfa8241c55e38ef9814b1c98aac43d7427781f691c8f73716c4ecb6d996bd32"
+  },
+  "dotnetSha256": "01d89e0a0191052bfea616cd4ce624c8faf13b05bbddf7f64499c23e2a9d9269"
+}

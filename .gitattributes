@@ -3,3 +3,6 @@ src/Lokad.Lython/Runtime/Text/Data/html5.json -text
 third_party/Python.LICENSE.txt -text -whitespace
 benchmarks/*.sh text eol=lf
 benchmarks/**/*.py text eol=lf
+# Preserve measured bytes and their recorded hashes for this frozen report.
+benchmarks/results/2026-10-13-embedding-sync-pressure/raw/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-13-embedding-sync-pressure/reproduce/** -text whitespace=cr-at-eol

@@ -109,7 +109,12 @@ passes its fixed setup/output gates for async CSV and file jobs; shared-machine
 data does not qualify host latency.
 The [Linux async comparison at `4cdfd6b9`](benchmarks/results/2026-10-12-embedding-async/README.md)
 qualifies all four complete jobs at that revision within its finite host model, while GC-independent
-accounting and broader host-impact qualification remain open. Regex performance waits
+accounting and broader host-impact qualification remain open. The
+[Linux sync/retained-pressure model at `f67419a8`](benchmarks/results/2026-10-13-embedding-sync-pressure/README.md)
+meets the same latency targets in 30 original samples: no Gen2 in the four complete
+streaming jobs, one Gen2 per fresh retained-pressure execution. It is a finite
+embedding model; Windows impact and GC-independent reclamation remain open.
+Regex performance waits
 for [managed-only backend qualification](benchmarks/results/2026-10-12-regex-scalar-5/README.md).
 
 For an optimization round, use the existing seconds-long diagnostic command;

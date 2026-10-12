@@ -1,0 +1,385 @@
+{
+  "source": "f67419a86ee0304de9d0f05c0e68ef15c860e508",
+  "production": "fc76a4a297f6f29e229b621bebf607d609a333fb",
+  "policy": "embedding-v4-linux-sync-pressure",
+  "eligibleRows": 30,
+  "independentRows": 30,
+  "campaignSeconds": 210.01434823602904,
+  "longestChildSeconds": 6.608772325969767,
+  "latencyTargetsMet": true,
+  "pairs": [
+    {
+      "job": "csv-summary",
+      "session": 1,
+      "eligible": true,
+      "addedP99Milliseconds": 0.790737,
+      "addedLargestHeartbeatMilliseconds": 0.849881,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": true,
+      "gen2PerCompleteJob": 0.0
+    },
+    {
+      "job": "csv-summary",
+      "session": 2,
+      "eligible": true,
+      "addedP99Milliseconds": 0.773099,
+      "addedLargestHeartbeatMilliseconds": 0.800562,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": true,
+      "gen2PerCompleteJob": 0.0
+    },
+    {
+      "job": "csv-summary",
+      "session": 3,
+      "eligible": true,
+      "addedP99Milliseconds": 0.777457,
+      "addedLargestHeartbeatMilliseconds": 0.8698359999999999,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": true,
+      "gen2PerCompleteJob": 0.0
+    },
+    {
+      "job": "text-summary",
+      "session": 1,
+      "eligible": true,
+      "addedP99Milliseconds": 0.25067,
+      "addedLargestHeartbeatMilliseconds": 0.327315,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": true,
+      "gen2PerCompleteJob": 0.0
+    },
+    {
+      "job": "text-summary",
+      "session": 2,
+      "eligible": true,
+      "addedP99Milliseconds": 0.25535599999999997,
+      "addedLargestHeartbeatMilliseconds": 0.29741,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": true,
+      "gen2PerCompleteJob": 0.0
+    },
+    {
+      "job": "text-summary",
+      "session": 3,
+      "eligible": true,
+      "addedP99Milliseconds": 0.25137,
+      "addedLargestHeartbeatMilliseconds": 0.331642,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": true,
+      "gen2PerCompleteJob": 0.0
+    },
+    {
+      "job": "json-summary",
+      "session": 1,
+      "eligible": true,
+      "addedP99Milliseconds": 0.6596089999999999,
+      "addedLargestHeartbeatMilliseconds": 1.087606,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": true,
+      "gen2PerCompleteJob": 0.0
+    },
+    {
+      "job": "json-summary",
+      "session": 2,
+      "eligible": true,
+      "addedP99Milliseconds": 0.652197,
+      "addedLargestHeartbeatMilliseconds": 0.983298,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": true,
+      "gen2PerCompleteJob": 0.0
+    },
+    {
+      "job": "json-summary",
+      "session": 3,
+      "eligible": true,
+      "addedP99Milliseconds": 0.657314,
+      "addedLargestHeartbeatMilliseconds": 1.061623,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": true,
+      "gen2PerCompleteJob": 0.0
+    },
+    {
+      "job": "file-manifest",
+      "session": 1,
+      "eligible": true,
+      "addedP99Milliseconds": 0.5285409999999999,
+      "addedLargestHeartbeatMilliseconds": 2.790884,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": true,
+      "gen2PerCompleteJob": 0.0
+    },
+    {
+      "job": "file-manifest",
+      "session": 2,
+      "eligible": true,
+      "addedP99Milliseconds": 0.585096,
+      "addedLargestHeartbeatMilliseconds": 2.620786,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": true,
+      "gen2PerCompleteJob": 0.0
+    },
+    {
+      "job": "file-manifest",
+      "session": 3,
+      "eligible": true,
+      "addedP99Milliseconds": 0.540378,
+      "addedLargestHeartbeatMilliseconds": 2.1542209999999997,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": true,
+      "gen2PerCompleteJob": 0.0
+    },
+    {
+      "job": "retained-pressure",
+      "session": 1,
+      "eligible": true,
+      "addedP99Milliseconds": 2.372421,
+      "addedLargestHeartbeatMilliseconds": 2.79129,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": false,
+      "gen2PerCompleteJob": 1.0
+    },
+    {
+      "job": "retained-pressure",
+      "session": 2,
+      "eligible": true,
+      "addedP99Milliseconds": 2.480645,
+      "addedLargestHeartbeatMilliseconds": 2.593114,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": false,
+      "gen2PerCompleteJob": 1.0
+    },
+    {
+      "job": "retained-pressure",
+      "session": 3,
+      "eligible": true,
+      "addedP99Milliseconds": 2.6073860000000004,
+      "addedLargestHeartbeatMilliseconds": 3.074353,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": false,
+      "gen2PerCompleteJob": 1.0
+    }
+  ],
+  "table": [
+    {
+      "job": "csv-summary",
+      "requestP99Ms": [
+        0.836669,
+        0.854867
+      ],
+      "addedP99Ms": [
+        0.773099,
+        0.790737
+      ],
+      "addedMaxHeartbeatMs": [
+        0.800562,
+        0.8698359999999999
+      ],
+      "collections": [
+        [
+          3845,
+          3986
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "jobs": [
+        81,
+        84
+      ],
+      "allocatedBytes": [
+        618691872,
+        640912472
+      ],
+      "cpuCoreFraction": [
+        1.1823806091838023,
+        1.1844355136237037
+      ]
+    },
+    {
+      "job": "text-summary",
+      "requestP99Ms": [
+        0.312677,
+        0.317644
+      ],
+      "addedP99Ms": [
+        0.25067,
+        0.25535599999999997
+      ],
+      "addedMaxHeartbeatMs": [
+        0.29741,
+        0.331642
+      ],
+      "collections": [
+        [
+          4009,
+          4180
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "jobs": [
+        211,
+        220
+      ],
+      "allocatedBytes": [
+        1556788928,
+        1622838736
+      ],
+      "cpuCoreFraction": [
+        1.1558024311407944,
+        1.1586702305771068
+      ]
+    },
+    {
+      "job": "json-summary",
+      "requestP99Ms": [
+        0.715777,
+        0.721806
+      ],
+      "addedP99Ms": [
+        0.652197,
+        0.6596089999999999
+      ],
+      "addedMaxHeartbeatMs": [
+        0.983298,
+        1.087606
+      ],
+      "collections": [
+        [
+          3036,
+          3036
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "jobs": [
+        82,
+        82
+      ],
+      "allocatedBytes": [
+        1211974256,
+        1212001120
+      ],
+      "cpuCoreFraction": [
+        1.1884259860172113,
+        1.1943508489879084
+      ]
+    },
+    {
+      "job": "file-manifest",
+      "requestP99Ms": [
+        0.592761,
+        0.649507
+      ],
+      "addedP99Ms": [
+        0.5285409999999999,
+        0.585096
+      ],
+      "addedMaxHeartbeatMs": [
+        2.1542209999999997,
+        2.790884
+      ],
+      "collections": [
+        [
+          448,
+          466
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "jobs": [
+        19856,
+        20646
+      ],
+      "allocatedBytes": [
+        7457277416,
+        7752599968
+      ],
+      "cpuCoreFraction": [
+        1.1804375774011326,
+        1.1816380965255442
+      ]
+    },
+    {
+      "job": "retained-pressure",
+      "requestP99Ms": [
+        2.434238,
+        2.669643
+      ],
+      "addedP99Ms": [
+        2.372421,
+        2.6073860000000004
+      ],
+      "addedMaxHeartbeatMs": [
+        2.593114,
+        3.074353
+      ],
+      "collections": [
+        [
+          3732,
+          4074
+        ],
+        [
+          2488,
+          2716
+        ],
+        [
+          1244,
+          1358
+        ]
+      ],
+      "jobs": [
+        1244,
+        1358
+      ],
+      "allocatedBytes": [
+        309665864,
+        335347896
+      ],
+      "cpuCoreFraction": [
+        1.097961667667643,
+        1.1036000603294354
+      ]
+    }
+  ],
+  "qualification": "finite Linux closed-loop sync and bare-caught-denial model only; no Windows/general SLO/GC independence/CPython ratio claim"
+}
