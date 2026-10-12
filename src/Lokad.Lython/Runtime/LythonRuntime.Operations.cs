@@ -266,7 +266,9 @@ internal sealed partial class LythonRuntime
             }
 
             var factory = left is PyDefaultDict leftDefault ? leftDefault.DefaultFactory : ((PyDefaultDict)right).DefaultFactory;
-            var merged = new PyDict(context.MemoryGovernor, span);
+            var unionResult = new PyDefaultDict(factory, context.MemoryGovernor, span);
+            context.Services.State.CallTemporaries.TrackFreshMutable(unionResult, unionResult.CommittedStorageBytes, span);
+            var merged = unionResult.InnerDict;
             foreach (var pair in leftPairs)
             {
                 merged.SetItem(pair.Key, pair.Value);
@@ -277,10 +279,6 @@ internal sealed partial class LythonRuntime
                 merged.SetItem(pair.Key, pair.Value);
             }
 
-            context.MemoryGovernor.Reserve(64L, span);
-            context.MemoryGovernor.Commit(64L);
-            var unionResult = new PyDefaultDict(factory, merged);
-            context.Services.State.CallTemporaries.TrackFreshMutable(unionResult, unionResult.CommittedStorageBytes);
             return unionResult;
         }
 

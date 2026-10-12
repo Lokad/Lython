@@ -2738,6 +2738,16 @@ iterators. Storage changes refresh the same charged owner, including after
 callback-visible partial mutation; unreachable wrapper/storage cycles remain
 collectible. Catching an exception does not undo prior callback side effects.
 
+Counter and defaultdict construction funds one 64-byte wrapper shell and its
+inner dictionary together; failed inner admission refunds the shell reservation.
+Default factories are validated before storage admission. Copies clone the inner
+storage once and fund the resulting wrapper shell, including inherited ownership.
+Fresh wrapper owners are registered before input population or deep-copy
+callbacks, so failed population remains reclaimable and an escaped partial clone
+keeps its live charges. Registration can therefore deny earlier before input
+callbacks under tight budgets. Counter input uses the same key-hashability
+validation as dictionaries, rejecting unhashable collections and tuple contents.
+
 Properties retain a 128-byte shell plus a conservative 64-byte allowance for
 each numeric accessor or documentation field, including Boolean and CLR integer
 ingress values. Aliased fields pay separately; ordinary callable, string and

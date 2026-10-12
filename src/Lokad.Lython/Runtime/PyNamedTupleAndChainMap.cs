@@ -1187,15 +1187,8 @@ internal sealed class PyChainMap : IMutablePySubscriptableValue, IDeletablePySub
         return copy;
     }
 
-    // The (factory, items) constructor leaves the 64 B wrapper shell uncommitted,
-    // so commit it here to keep the copy coupon exact.
     private static PyDefaultDict CopyDefaultDict(PyDefaultDict source, MemoryGovernor governor, LythonSourceSpan span)
-    {
-        var copy = new PyDefaultDict(source.DefaultFactory, new PyDict(source.InnerDict, governor, span));
-        governor.Reserve(64L, span);
-        governor.Commit(64L);
-        return copy;
-    }
+        => new(source.DefaultFactory, source.InnerDict, governor, span);
 
     // Update writes plain keys into the first mapping like CPython, whatever its
     // kind: dicts take the shared path, while defaultdicts and counters write

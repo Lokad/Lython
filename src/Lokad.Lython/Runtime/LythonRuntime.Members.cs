@@ -3439,15 +3439,7 @@ internal sealed partial class LythonRuntime
                 "copy" => BoundCallable.CreateNoArguments(dict, "defaultdict.copy", static (receiver, span, context) =>
                 {
                     using var _ambientScope = PyStructuralGuard.PushAmbient(context, span);
-                    var copy = new PyDict(context.MemoryGovernor, span);
-                    foreach (var pair in receiver.Items)
-                    {
-                        copy.SetItem(pair.Key, pair.Value);
-                    }
-
-                    context.MemoryGovernor.Reserve(64L, span);
-                    context.MemoryGovernor.Commit(64L);
-                    var copyResult = new PyDefaultDict(receiver.DefaultFactory, copy);
+                    var copyResult = new PyDefaultDict(receiver.DefaultFactory, receiver.InnerDict, context.MemoryGovernor, span);
                     context.Services.State.CallTemporaries.TrackFreshMutable(copyResult, copyResult.CommittedStorageBytes);
                     return copyResult;
                 }),
@@ -3517,7 +3509,9 @@ internal sealed partial class LythonRuntime
                     }
 
                     var factory = dict.DefaultFactory;
-                    var merged = new PyDict(context.MemoryGovernor, span);
+                    var unionResult = new PyDefaultDict(factory, context.MemoryGovernor, span);
+                    context.Services.State.CallTemporaries.TrackFreshMutable(unionResult, unionResult.CommittedStorageBytes, span);
+                    var merged = unionResult.InnerDict;
                     foreach (var pair in dict.Items)
                     {
                         merged.SetItem(pair.Key, pair.Value);
@@ -3528,10 +3522,6 @@ internal sealed partial class LythonRuntime
                         merged.SetItem(pair.Key, pair.Value);
                     }
 
-                    context.MemoryGovernor.Reserve(64L, span);
-                    context.MemoryGovernor.Commit(64L);
-                    var unionResult = new PyDefaultDict(factory, merged);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(unionResult, unionResult.CommittedStorageBytes);
                     return unionResult;
                 }, DefaultDictOrSignature),
                 "__ror__" => BoundCallable.Create((arguments, span, context) =>
@@ -3548,7 +3538,9 @@ internal sealed partial class LythonRuntime
                     }
 
                     var factory = arguments[0] is PyDefaultDict leftDefault ? leftDefault.DefaultFactory : dict.DefaultFactory;
-                    var merged = new PyDict(context.MemoryGovernor, span);
+                    var unionResult = new PyDefaultDict(factory, context.MemoryGovernor, span);
+                    context.Services.State.CallTemporaries.TrackFreshMutable(unionResult, unionResult.CommittedStorageBytes, span);
+                    var merged = unionResult.InnerDict;
                     foreach (var pair in MergeUnionPairs(arguments[0]).RequireNotNull())
                     {
                         merged.SetItem(pair.Key, pair.Value);
@@ -3559,10 +3551,6 @@ internal sealed partial class LythonRuntime
                         merged.SetItem(pair.Key, pair.Value);
                     }
 
-                    context.MemoryGovernor.Reserve(64L, span);
-                    context.MemoryGovernor.Commit(64L);
-                    var unionResult = new PyDefaultDict(factory, merged);
-                    context.Services.State.CallTemporaries.TrackFreshMutable(unionResult, unionResult.CommittedStorageBytes);
                     return unionResult;
                 }, DefaultDictROrSignature),
                 "__ior__" => BoundCallable.Create((arguments, span, context) =>

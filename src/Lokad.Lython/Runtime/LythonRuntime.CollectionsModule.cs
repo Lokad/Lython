@@ -302,6 +302,7 @@ internal sealed partial class LythonRuntime
         }
 
         var result = new PyDefaultDict(defaultFactory, context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
         if (hasSource)
         {
             PopulateDefaultDict(result, source, span, context);
@@ -315,7 +316,6 @@ internal sealed partial class LythonRuntime
             context.ObserveCollectionCount(result.Count, span);
         }
 
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -382,6 +382,7 @@ internal sealed partial class LythonRuntime
         }
 
         var result = new PyDefaultDict(defaultFactory, context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
         if (hasSource)
         {
             await PopulateDefaultDictAsync(result, source, span, context).ConfigureAwait(false);
@@ -395,7 +396,6 @@ internal sealed partial class LythonRuntime
             context.ObserveCollectionCount(result.Count, span);
         }
 
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -408,13 +408,13 @@ internal sealed partial class LythonRuntime
 
         var defaultFactory = arguments.Length >= 1 ? RuntimeValue(arguments[0]) : PyNone.Instance;
         var result = new PyDefaultDict(defaultFactory, context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
 
         if (arguments.Length == 2)
         {
             PopulateDefaultDict(result, arguments[1], span, context);
         }
 
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -456,13 +456,13 @@ internal sealed partial class LythonRuntime
         }
 
         var result = new PyCounter(context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
         if (hasSource)
         {
             PopulateCounter(result, source, span, context, subtract: false);
         }
 
         PopulateCounterKeywords(result, keywordItems, span, context, subtract: false);
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -506,13 +506,13 @@ internal sealed partial class LythonRuntime
         }
 
         var result = new PyCounter(context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
         if (hasSource)
         {
             await PopulateCounterAsync(result, source, span, context, subtract: false).ConfigureAwait(false);
         }
 
         PopulateCounterKeywords(result, keywordItems, span, context, subtract: false);
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
         return result;
     }
 
@@ -524,11 +524,11 @@ internal sealed partial class LythonRuntime
         }
 
         var result = new PyCounter(context.MemoryGovernor, span);
+        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes, span);
         if (arguments.Length == 1)
         {
             PopulateCounter(result, arguments[0], span, context, subtract: false);
         }
-        context.Services.State.CallTemporaries.TrackFreshMutable(result, result.CommittedStorageBytes);
 
         return result;
     }

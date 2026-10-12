@@ -10,29 +10,32 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
 {
     private readonly PyDict _items;
 
-    public PyDefaultDict(object defaultFactory)
-    {
-        DefaultFactory = ValidateDefaultFactory(defaultFactory);
-        _items = new PyDict();
-        _items.StorageOwner = this;
-    }
+    public PyDefaultDict(object defaultFactory) : this(defaultFactory, null, null, null) { }
 
     public PyDefaultDict(object defaultFactory, MemoryGovernor governor) : this(defaultFactory, governor, null) { }
 
     public PyDefaultDict(object defaultFactory, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
-    {
-        // Own the shell beside the governed inner dict.
-        governor.Reserve(64L, allocationSpan);
-        governor.Commit(64L);
-        DefaultFactory = ValidateDefaultFactory(defaultFactory);
-        _items = new PyDict(governor, allocationSpan);
-        _items.StorageOwner = this;
-    }
+        : this(defaultFactory, null, governor, allocationSpan) { }
 
     public PyDefaultDict(object defaultFactory, PyDict items)
+        : this(defaultFactory, items, items.OwnerMemoryGovernor, items.AllocationSpan) { }
+
+    public PyDefaultDict(object defaultFactory, PyDict? source, MemoryGovernor? governor, LythonSourceSpan? allocationSpan)
     {
         DefaultFactory = ValidateDefaultFactory(defaultFactory);
-        _items = new PyDict(items);
+        governor?.Reserve(64L, allocationSpan);
+        try
+        {
+            _items = source is null
+                ? governor is null ? new PyDict() : new PyDict(governor, allocationSpan)
+                : new PyDict(source, governor, allocationSpan);
+        }
+        catch
+        {
+            governor?.ReleaseReserved(64L);
+            throw;
+        }
+        governor?.Commit(64L);
         _items.StorageOwner = this;
     }
 
@@ -185,36 +188,36 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
 {
     private readonly PyDict _items;
 
-    public PyCounter()
-    {
-        _items = new PyDict();
-        _items.StorageOwner = this;
-    }
+    public PyCounter() : this((PyDict?)null, null, null) { }
 
     public PyCounter(MemoryGovernor governor) : this(governor, null) { }
 
     public PyCounter(MemoryGovernor governor, LythonSourceSpan? allocationSpan)
-    {
-        // Own the shell beside the governed inner dict.
-        governor.Reserve(64L, allocationSpan);
-        governor.Commit(64L);
-        _items = new PyDict(governor, allocationSpan);
-        _items.StorageOwner = this;
-    }
+        : this((PyDict?)null, governor, allocationSpan) { }
 
     public PyCounter(PyCounter other)
-    {
-        _items = new PyDict(other._items);
-        _items.StorageOwner = this;
-    }
+        : this(other._items, other.OwnerMemoryGovernor, other.AllocationSpan) { }
 
     public PyCounter(PyCounter other, MemoryGovernor governor) : this(other, governor, null) { }
 
     public PyCounter(PyCounter other, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+        : this(other._items, governor, allocationSpan) { }
+
+    private PyCounter(PyDict? source, MemoryGovernor? governor, LythonSourceSpan? allocationSpan)
     {
-        governor.Reserve(64L, allocationSpan);
-        governor.Commit(64L);
-        _items = new PyDict(other._items, governor, allocationSpan);
+        governor?.Reserve(64L, allocationSpan);
+        try
+        {
+            _items = source is null
+                ? governor is null ? new PyDict() : new PyDict(governor, allocationSpan)
+                : new PyDict(source, governor, allocationSpan);
+        }
+        catch
+        {
+            governor?.ReleaseReserved(64L);
+            throw;
+        }
+        governor?.Commit(64L);
         _items.StorageOwner = this;
     }
 
@@ -281,6 +284,7 @@ internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPy
 
     public void Increment(object key, object delta, LythonSourceSpan span, ChargeReclamationPool? pool)
     {
+        LythonRuntime.ValidateDictionaryKey(key, span);
         var incoming = _items.TryGetValue(key, out var value)
             ? LythonRuntime.AddCounterCounts(value, delta, span, OwnerMemoryGovernor, pool) : delta;
         _items.SetItem(key, incoming);
