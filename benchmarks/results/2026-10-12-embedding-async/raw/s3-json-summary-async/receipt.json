@@ -1,0 +1,78 @@
+{
+  "session": 3,
+  "name": "json-summary-async",
+  "startedUtc": "2026-10-12T19:39:52.538438+00:00",
+  "eligible": true,
+  "exclusion": null,
+  "idleCpuPercent": [
+    0.0,
+    0.0
+  ],
+  "pid": 2249161,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedIncludingCleanupSeconds": 7.35301817097934,
+  "stdoutSha256": "49da283d15b81af769b85ec9efd093829a23c3b8a68e41dbaf0cbbb8a3f6abe4",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stealTicks": 0,
+  "noiseDelta": {
+    "pswpin": 0,
+    "pswpout": 0,
+    "pgmajfault": 0
+  },
+  "result": {
+    "policy": "embedding-v3-linux-async",
+    "name": "json-summary-async",
+    "control": false,
+    "asynchronous": true,
+    "windowSeconds": 4,
+    "preparationCollections": [
+      2,
+      2,
+      2
+    ],
+    "warmupYieldedJobs": 2,
+    "warmupDelayedHostCalls": 20,
+    "yieldedJobs": 14,
+    "delayedHostCalls": 140,
+    "qualification": "prospective controlled model; supervisor determines eligibility",
+    "observationSeconds": 4.0894903,
+    "completed": 14,
+    "peakBytes": 262143,
+    "modeledHostBytes": 134217728,
+    "modeledHostObjects": 131072,
+    "hostGenerationsBefore": [
+      0,
+      0,
+      131072
+    ],
+    "samples": 3832,
+    "requestChecksum": 508266,
+    "allocatedBytes": 287644784,
+    "gcCollections": [
+      520,
+      0,
+      0
+    ],
+    "cpuSeconds": 1.049491,
+    "cpuCoreFraction": 0.2566312481533457,
+    "processorCount": 4,
+    "runtime": "10.0.12",
+    "sourceSha256": "BF9671D8D7154730F41E13DDE8AA295B520894F41439DBE8F2FF1C145CFA23E7",
+    "originalSourceSha256": "BF9671D8D7154730F41E13DDE8AA295B520894F41439DBE8F2FF1C145CFA23E7",
+    "subjectInformationalVersion": "0.10.0+4cdfd6b9f4f52e34ce713dfd20b7820083db8961",
+    "subjectDllSha256": "7FF4F3523F2C1C67DB8FC27B5257A026A49F0F25D10F44900ABF1EAA5B113F3E"
+  },
+  "request": {
+    "p50": 0.059796,
+    "p95": 0.063148,
+    "p99": 0.39455,
+    "max": 0.698073
+  },
+  "heartbeat": {
+    "p50": 0.059223,
+    "p95": 0.061146,
+    "p99": 0.393869,
+    "max": 0.697302
+  }
+}

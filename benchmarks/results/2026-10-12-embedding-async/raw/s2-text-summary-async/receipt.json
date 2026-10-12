@@ -1,0 +1,78 @@
+{
+  "session": 2,
+  "name": "text-summary-async",
+  "startedUtc": "2026-10-12T19:38:44.688270+00:00",
+  "eligible": true,
+  "exclusion": null,
+  "idleCpuPercent": [
+    0.0,
+    0.0
+  ],
+  "pid": 2248826,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedIncludingCleanupSeconds": 6.966609451978002,
+  "stdoutSha256": "ebf9f8649eb59c0a559c07d7ba2fa7ffaf62848d916552c7f015a9aaa8a79cee",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stealTicks": 0,
+  "noiseDelta": {
+    "pswpin": 0,
+    "pswpout": 0,
+    "pgmajfault": 0
+  },
+  "result": {
+    "policy": "embedding-v3-linux-async",
+    "name": "text-summary-async",
+    "control": false,
+    "asynchronous": true,
+    "windowSeconds": 4,
+    "preparationCollections": [
+      2,
+      2,
+      2
+    ],
+    "warmupYieldedJobs": 2,
+    "warmupDelayedHostCalls": 12,
+    "yieldedJobs": 22,
+    "delayedHostCalls": 132,
+    "qualification": "prospective controlled model; supervisor determines eligibility",
+    "observationSeconds": 4.0310495,
+    "completed": 22,
+    "peakBytes": 262138,
+    "modeledHostBytes": 134217728,
+    "modeledHostObjects": 131072,
+    "hostGenerationsBefore": [
+      0,
+      0,
+      131072
+    ],
+    "samples": 3779,
+    "requestChecksum": 496341,
+    "allocatedBytes": 319807400,
+    "gcCollections": [
+      418,
+      0,
+      0
+    ],
+    "cpuSeconds": 1.330815,
+    "cpuCoreFraction": 0.3301410712024251,
+    "processorCount": 4,
+    "runtime": "10.0.12",
+    "sourceSha256": "D34B08E1864B76F5BE1BEA22D8AEF6B43BE63262AED98E2AC5C0BC76E168253F",
+    "originalSourceSha256": "D34B08E1864B76F5BE1BEA22D8AEF6B43BE63262AED98E2AC5C0BC76E168253F",
+    "subjectInformationalVersion": "0.10.0+4cdfd6b9f4f52e34ce713dfd20b7820083db8961",
+    "subjectDllSha256": "7FF4F3523F2C1C67DB8FC27B5257A026A49F0F25D10F44900ABF1EAA5B113F3E"
+  },
+  "request": {
+    "p50": 0.060715,
+    "p95": 0.069869,
+    "p99": 0.29573,
+    "max": 0.700062
+  },
+  "heartbeat": {
+    "p50": 0.059924,
+    "p95": 0.068347,
+    "p99": 0.294198,
+    "max": 0.697939
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "session": 1,
+  "name": "file-manifest-async",
+  "startedUtc": "2026-10-12T19:38:05.475592+00:00",
+  "eligible": true,
+  "exclusion": null,
+  "idleCpuPercent": [
+    0.0,
+    0.0
+  ],
+  "pid": 2248696,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedIncludingCleanupSeconds": 7.438034161052201,
+  "stdoutSha256": "1ca92fb7fb6a54e7cd4e94d172d34e10b05bbc1b0c3bb47674bb792b01e125eb",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stealTicks": 0,
+  "noiseDelta": {
+    "pswpin": 0,
+    "pswpout": 0,
+    "pgmajfault": 0
+  },
+  "result": {
+    "policy": "embedding-v3-linux-async",
+    "name": "file-manifest-async",
+    "control": false,
+    "asynchronous": true,
+    "windowSeconds": 4,
+    "preparationCollections": [
+      2,
+      2,
+      2
+    ],
+    "warmupYieldedJobs": 2,
+    "warmupDelayedHostCalls": 28,
+    "yieldedJobs": 13,
+    "delayedHostCalls": 169,
+    "qualification": "prospective controlled model; supervisor determines eligibility",
+    "observationSeconds": 4.2686399,
+    "completed": 13,
+    "peakBytes": 16418,
+    "modeledHostBytes": 134217728,
+    "modeledHostObjects": 131072,
+    "hostGenerationsBefore": [
+      0,
+      0,
+      131072
+    ],
+    "samples": 4026,
+    "requestChecksum": 528259,
+    "allocatedBytes": 5781584,
+    "gcCollections": [
+      0,
+      0,
+      0
+    ],
+    "cpuSeconds": 0.580181,
+    "cpuCoreFraction": 0.135917063418725,
+    "processorCount": 4,
+    "runtime": "10.0.12",
+    "sourceSha256": "04853279AEBBA6F963432860F5F820503D0DE77FA8F4600C1EFAD035D7C7D747",
+    "originalSourceSha256": "04853279AEBBA6F963432860F5F820503D0DE77FA8F4600C1EFAD035D7C7D747",
+    "subjectInformationalVersion": "0.10.0+4cdfd6b9f4f52e34ce713dfd20b7820083db8961",
+    "subjectDllSha256": "7FF4F3523F2C1C67DB8FC27B5257A026A49F0F25D10F44900ABF1EAA5B113F3E"
+  },
+  "request": {
+    "p50": 0.059994,
+    "p95": 0.061186,
+    "p99": 0.069128,
+    "max": 0.108968
+  },
+  "heartbeat": {
+    "p50": 0.059353,
+    "p95": 0.060375,
+    "p99": 0.067295,
+    "max": 0.086003
+  }
+}

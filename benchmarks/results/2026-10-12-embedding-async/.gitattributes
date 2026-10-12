@@ -1,0 +1,2 @@
+*.json -text whitespace=cr-at-eol
+reproduce/* -text whitespace=cr-at-eol

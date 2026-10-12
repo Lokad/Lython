@@ -1,0 +1,78 @@
+{
+  "session": 2,
+  "name": "file-manifest-async-control",
+  "startedUtc": "2026-10-12T19:38:21.352213+00:00",
+  "eligible": true,
+  "exclusion": null,
+  "idleCpuPercent": [
+    0.0,
+    0.0
+  ],
+  "pid": 2248757,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedIncludingCleanupSeconds": 7.1729799170279875,
+  "stdoutSha256": "74e8ffc7b9171de16d22df0146ee3d2e5e369ccca25ea30589f2b764f1478b1a",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stealTicks": 0,
+  "noiseDelta": {
+    "pswpin": 0,
+    "pswpout": 0,
+    "pgmajfault": 0
+  },
+  "result": {
+    "policy": "embedding-v3-linux-async",
+    "name": "file-manifest-async-control",
+    "control": true,
+    "asynchronous": true,
+    "windowSeconds": 4,
+    "preparationCollections": [
+      2,
+      2,
+      2
+    ],
+    "warmupYieldedJobs": 2,
+    "warmupDelayedHostCalls": 28,
+    "yieldedJobs": 0,
+    "delayedHostCalls": 0,
+    "qualification": "prospective controlled model; supervisor determines eligibility",
+    "observationSeconds": 4.0009646,
+    "completed": 0,
+    "peakBytes": 16418,
+    "modeledHostBytes": 134217728,
+    "modeledHostObjects": 131072,
+    "hostGenerationsBefore": [
+      0,
+      0,
+      131072
+    ],
+    "samples": 3775,
+    "requestChecksum": 495555,
+    "allocatedBytes": 273424,
+    "gcCollections": [
+      0,
+      0,
+      0
+    ],
+    "cpuSeconds": 0.109831,
+    "cpuCoreFraction": 0.027451130159961926,
+    "processorCount": 4,
+    "runtime": "10.0.12",
+    "sourceSha256": "04853279AEBBA6F963432860F5F820503D0DE77FA8F4600C1EFAD035D7C7D747",
+    "originalSourceSha256": "04853279AEBBA6F963432860F5F820503D0DE77FA8F4600C1EFAD035D7C7D747",
+    "subjectInformationalVersion": "0.10.0+4cdfd6b9f4f52e34ce713dfd20b7820083db8961",
+    "subjectDllSha256": "7FF4F3523F2C1C67DB8FC27B5257A026A49F0F25D10F44900ABF1EAA5B113F3E"
+  },
+  "request": {
+    "p50": 0.059924,
+    "p95": 0.061155,
+    "p99": 0.063239,
+    "max": 0.104441
+  },
+  "heartbeat": {
+    "p50": 0.059193,
+    "p95": 0.060184,
+    "p99": 0.060485,
+    "max": 0.0707
+  }
+}

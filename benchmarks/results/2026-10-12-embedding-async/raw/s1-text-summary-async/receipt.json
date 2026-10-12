@@ -1,0 +1,78 @@
+{
+  "session": 1,
+  "name": "text-summary-async",
+  "startedUtc": "2026-10-12T19:37:34.565826+00:00",
+  "eligible": true,
+  "exclusion": null,
+  "idleCpuPercent": [
+    0.0,
+    0.0
+  ],
+  "pid": 2248489,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedIncludingCleanupSeconds": 7.0744712929590605,
+  "stdoutSha256": "32d415e3a256430cafbf1f35a830d876be7e93757627f8c7aaeaae81d3089c7a",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stealTicks": 0,
+  "noiseDelta": {
+    "pswpin": 0,
+    "pswpout": 0,
+    "pgmajfault": 0
+  },
+  "result": {
+    "policy": "embedding-v3-linux-async",
+    "name": "text-summary-async",
+    "control": false,
+    "asynchronous": true,
+    "windowSeconds": 4,
+    "preparationCollections": [
+      2,
+      2,
+      2
+    ],
+    "warmupYieldedJobs": 2,
+    "warmupDelayedHostCalls": 12,
+    "yieldedJobs": 23,
+    "delayedHostCalls": 138,
+    "qualification": "prospective controlled model; supervisor determines eligibility",
+    "observationSeconds": 4.1664479,
+    "completed": 23,
+    "peakBytes": 262138,
+    "modeledHostBytes": 134217728,
+    "modeledHostObjects": 131072,
+    "hostGenerationsBefore": [
+      0,
+      0,
+      131072
+    ],
+    "samples": 3905,
+    "requestChecksum": 512650,
+    "allocatedBytes": 334686136,
+    "gcCollections": [
+      437,
+      0,
+      0
+    ],
+    "cpuSeconds": 1.291482,
+    "cpuCoreFraction": 0.30997195476751316,
+    "processorCount": 4,
+    "runtime": "10.0.12",
+    "sourceSha256": "D34B08E1864B76F5BE1BEA22D8AEF6B43BE63262AED98E2AC5C0BC76E168253F",
+    "originalSourceSha256": "D34B08E1864B76F5BE1BEA22D8AEF6B43BE63262AED98E2AC5C0BC76E168253F",
+    "subjectInformationalVersion": "0.10.0+4cdfd6b9f4f52e34ce713dfd20b7820083db8961",
+    "subjectDllSha256": "7FF4F3523F2C1C67DB8FC27B5257A026A49F0F25D10F44900ABF1EAA5B113F3E"
+  },
+  "request": {
+    "p50": 0.060274,
+    "p95": 0.067545,
+    "p99": 0.362461,
+    "max": 0.56563
+  },
+  "heartbeat": {
+    "p50": 0.059373,
+    "p95": 0.065662,
+    "p99": 0.360949,
+    "max": 0.562304
+  }
+}

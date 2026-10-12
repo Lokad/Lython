@@ -106,7 +106,10 @@ records host request tails, heartbeat stalls and collection counts; fewer full
 collections alone do not establish better host latency. A separate
 [Windows observer pilot](benchmarks/results/2026-10-12-embedding-observer-v2/README.md)
 passes its fixed setup/output gates for async CSV and file jobs; shared-machine
-data does not qualify host latency. Regex performance waits
+data does not qualify host latency.
+The [current Linux async comparison](benchmarks/results/2026-10-12-embedding-async/README.md)
+qualifies all four complete jobs within its finite host model, while GC-independent
+accounting and broader host-impact qualification remain open. Regex performance waits
 for [managed-only backend qualification](benchmarks/results/2026-10-12-regex-scalar-5/README.md).
 
 For an optimization round, use the existing seconds-long diagnostic command;

@@ -1,0 +1,130 @@
+{
+  "source": "4cdfd6b9f4f52e34ce713dfd20b7820083db8961",
+  "policy": "embedding-v3-linux-async",
+  "independentRows": 24,
+  "eligibleRows": 24,
+  "campaignSeconds": 183.9735482460237,
+  "pairs": [
+    {
+      "session": 1,
+      "job": "csv-summary",
+      "eligible": true,
+      "addedP99Milliseconds": 0.34440099999999996,
+      "addedLargestHeartbeatMilliseconds": 0.461969,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noMeasuredGen2": true
+    },
+    {
+      "session": 1,
+      "job": "text-summary",
+      "eligible": true,
+      "addedP99Milliseconds": 0.30082499999999995,
+      "addedLargestHeartbeatMilliseconds": 0.49039200000000005,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noMeasuredGen2": true
+    },
+    {
+      "session": 1,
+      "job": "json-summary",
+      "eligible": true,
+      "addedP99Milliseconds": 0.325814,
+      "addedLargestHeartbeatMilliseconds": 0.528751,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noMeasuredGen2": true
+    },
+    {
+      "session": 1,
+      "job": "file-manifest",
+      "eligible": true,
+      "addedP99Milliseconds": 0.003925999999999999,
+      "addedLargestHeartbeatMilliseconds": 0.012248999999999996,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noMeasuredGen2": true
+    },
+    {
+      "session": 2,
+      "job": "csv-summary",
+      "eligible": true,
+      "addedP99Milliseconds": 0.356143,
+      "addedLargestHeartbeatMilliseconds": 0.381197,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noMeasuredGen2": true
+    },
+    {
+      "session": 2,
+      "job": "text-summary",
+      "eligible": true,
+      "addedP99Milliseconds": 0.233953,
+      "addedLargestHeartbeatMilliseconds": 0.40991999999999995,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noMeasuredGen2": true
+    },
+    {
+      "session": 2,
+      "job": "json-summary",
+      "eligible": true,
+      "addedP99Milliseconds": 0.339715,
+      "addedLargestHeartbeatMilliseconds": 0.650861,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noMeasuredGen2": true
+    },
+    {
+      "session": 2,
+      "job": "file-manifest",
+      "eligible": true,
+      "addedP99Milliseconds": 0.005102999999999996,
+      "addedLargestHeartbeatMilliseconds": 0.029585,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noMeasuredGen2": true
+    },
+    {
+      "session": 3,
+      "job": "csv-summary",
+      "eligible": true,
+      "addedP99Milliseconds": 0.35712099999999997,
+      "addedLargestHeartbeatMilliseconds": 0.550771,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noMeasuredGen2": true
+    },
+    {
+      "session": 3,
+      "job": "text-summary",
+      "eligible": true,
+      "addedP99Milliseconds": 0.199212,
+      "addedLargestHeartbeatMilliseconds": 0.33878199999999997,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noMeasuredGen2": true
+    },
+    {
+      "session": 3,
+      "job": "json-summary",
+      "eligible": true,
+      "addedP99Milliseconds": 0.333254,
+      "addedLargestHeartbeatMilliseconds": 0.625671,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noMeasuredGen2": true
+    },
+    {
+      "session": 3,
+      "job": "file-manifest",
+      "eligible": true,
+      "addedP99Milliseconds": 0.008231000000000002,
+      "addedLargestHeartbeatMilliseconds": 0.007017000000000009,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noMeasuredGen2": true
+    }
+  ],
+  "qualification": "finite Linux async closed-loop model only; no Windows/SLO/GC-independence/performance claim"
+}
