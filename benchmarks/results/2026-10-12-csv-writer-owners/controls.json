@@ -1,0 +1,1 @@
+["import csv\nclass Sink:\n def write(self,text):\n  return len(text)\ns=Sink()\nfor i in range(5000):\n w=csv.writer(s)\n w=None\nprint(i)\n", "import csv\nclass Sink:\n def write(self,text):\n  return len(text)\ns=Sink()\nfor i in range(5000):\n w=csv.DictWriter(s,[\"a\",\"b\"])\n w=None\nprint(i)\n"]

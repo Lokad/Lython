@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "source": "f5aa7a16e3886f5cbe2019ad6066b3436e46c788",
+  "productionTree": "6f5e6e8f9130fa0cd2349396ffddb32a157f4c9b",
+  "fullDebugTotal": 10458.0,
+  "fullDebug": [
+    {
+      "path": "complete_net10.0_20261012134855.trx",
+      "total": 2126,
+      "passed": 2126,
+      "sha256": "1BA388645C8D6A810D49D50E46B8342762A51695569B9B23D78F1A7182668A8B"
+    },
+    {
+      "path": "complete_net10.0_20261012135548.trx",
+      "total": 8332,
+      "passed": 8332,
+      "sha256": "5E60843695752B4102C6E4C0F7F858A8AB2B4B691C7A791CB92E64864AC56A64"
+    }
+  ],
+  "fullDebugReceiptSha256": "D7834B68EC479ACA23578683E9231A75B26EAAAE751FE440C990E7F51EDC3976",
+  "focusedReleaseTotal": 105.0,
+  "focusedRelease": [
+    {
+      "stage": "committed-storage-release",
+      "total": 17,
+      "passed": 17,
+      "receipt": {
+        "source": "f5aa7a16e3886f5cbe2019ad6066b3436e46c788",
+        "production": "6f5e6e8f9130fa0cd2349396ffddb32a157f4c9b",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "83C50ADB7B0F1DDF8CE2D401D6ACCF9B30A3DC0E75A23CFAED2709DC34B04625",
+        "filter": "FullyQualifiedName~CsvWriterOwnerStorageTests|FullyQualifiedName~CsvWriterHistory|FullyQualifiedName~CsvTextWriter|FullyQualifiedName~CsvHeaderDenial|FullyQualifiedName~CsvFieldNameStorage",
+        "pid": 928976,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1073,
+        "stdoutSha256": "0C226C445ACE8F56CAE797F6EA6454E008EC14EB8381DE5CF7968AFF48F71DA4",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "831188031CFC52EE2E816F98DEA66AB2FAA7C53801FDD44B722E75039ADBB64A"
+    },
+    {
+      "stage": "committed-lifetime-release",
+      "total": 55,
+      "passed": 55,
+      "receipt": {
+        "source": "f5aa7a16e3886f5cbe2019ad6066b3436e46c788",
+        "production": "6f5e6e8f9130fa0cd2349396ffddb32a157f4c9b",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "888E5FDFAC86AB92FDBBA6500109F5C3F3D1309536E7949BF58CF60E3012DA62",
+        "filter": "FullyQualifiedName~CsvWriterOwnerLifetimeTests|FullyQualifiedName~CsvObjectShellAccounting|FullyQualifiedName~CsvAccounting|FullyQualifiedName~CsvTextStream|FullyQualifiedName~CsvFieldNameLifetimeTests",
+        "pid": 1144724,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 4404,
+        "stdoutSha256": "78248E4120BD9F020F0FE5B5CFE09A916DB40B1AE744B38EB0B9FC8CB111678E",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "D20C54659A2E7259AFBA49AD09E1AE9F3432AF2FBFC9304C62746A2FBD6B22FD"
+    },
+    {
+      "stage": "committed-representative-release",
+      "total": 33,
+      "passed": 33,
+      "receipt": {
+        "source": "f5aa7a16e3886f5cbe2019ad6066b3436e46c788",
+        "production": "6f5e6e8f9130fa0cd2349396ffddb32a157f4c9b",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "888E5FDFAC86AB92FDBBA6500109F5C3F3D1309536E7949BF58CF60E3012DA62",
+        "filter": "FullyQualifiedName~RepresentativeScript|FullyQualifiedName~CsvIterator",
+        "pid": 173636,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 5850,
+        "stdoutSha256": "E68CFC0E525EBE619D00CD687777C627FFFF31BB64558BB5AACEE3199889F634",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trxSha256": "2D794719EE3F675783346F3358165A79B38E0D8DB01A971BE96F0436252A389F"
+    }
+  ],
+  "binaries": [
+    {
+      "configuration": "Debug",
+      "path": "src/Lokad.Lython/bin/Debug/net10.0/Lokad.Lython.dll",
+      "sha256": "AEACABE7E3B5EFB5A761969408EC6BCB207090047E5359246B6FB0EC1DDA2C43"
+    },
+    {
+      "configuration": "Debug",
+      "path": "tests/Lokad.Lython.Tests/bin/Debug/net10.0/Lokad.Lython.WhiteBox.Tests.dll",
+      "sha256": "06B7AA55E85ABBC9C5E94E9B6CAA247768C13C55C91B5DABB633B76E9B0A5AFB"
+    },
+    {
+      "configuration": "Debug",
+      "path": "tests/Lokad.Lython.PublicApi.Tests/bin/Debug/net10.0/Lokad.Lython.PublicApi.Tests.dll",
+      "sha256": "EDDEE8635C13FEE60901B6E1706BB48BDFC400A74A371A704B9203E157D578BE"
+    },
+    {
+      "configuration": "Release",
+      "path": "src/Lokad.Lython/bin/Release/net10.0/Lokad.Lython.dll",
+      "sha256": "4D1F28740A27785381357793F78E91BA7DDDBB34A009CBA38EB724611FDCA865"
+    },
+    {
+      "configuration": "Release",
+      "path": "tests/Lokad.Lython.Tests/bin/Release/net10.0/Lokad.Lython.WhiteBox.Tests.dll",
+      "sha256": "83C50ADB7B0F1DDF8CE2D401D6ACCF9B30A3DC0E75A23CFAED2709DC34B04625"
+    },
+    {
+      "configuration": "Release",
+      "path": "tests/Lokad.Lython.PublicApi.Tests/bin/Release/net10.0/Lokad.Lython.PublicApi.Tests.dll",
+      "sha256": "888E5FDFAC86AB92FDBBA6500109F5C3F3D1309536E7949BF58CF60E3012DA62"
+    }
+  ],
+  "newWhiteBoxCases": 4,
+  "newPublicCases": 18,
+  "productionLinesAdded": 39,
+  "productionLinesRemoved": 13,
+  "forcedGcRemoved": false,
+  "embeddingLatencyMeasured": false,
+  "vmRun": false,
+  "candidateCount": 1,
+  "originalControlBinaryIdentityRecorded": false,
+  "originalControlsSha256": "D859A92A691BF8C1498DFE74F04C8B4FBEE7CCEEFFA3AD07BFC60D7CDE586731",
+  "committedControlsSha256": "1F0FFB56210A36DEEBA5F5BC32C098CB6ED614FD2B9AC34A39878B6DB2719142",
+  "fixtureSha256": "3C07F687EFC552AE91A8583EC89BB6CA0E2DA9625A9911D7468D25F987D639EA",
+  "probeReceipt": {
+    "source": "f5aa7a16e3886f5cbe2019ad6066b3436e46c788",
+    "production": "6f5e6e8f9130fa0cd2349396ffddb32a157f4c9b",
+    "probeSha256": "B17B0E29F1253F616947D2AA5A4B5EA2C6BBF2135EECAF2420DE8406D09BF853",
+    "fixtureSha256": "3C07F687EFC552AE91A8583EC89BB6CA0E2DA9625A9911D7468D25F987D639EA",
+    "stdoutSha256": "1F0FFB56210A36DEEBA5F5BC32C098CB6ED614FD2B9AC34A39878B6DB2719142",
+    "pid": 371184,
+    "hasExited": true,
+    "exitCode": 0,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 425
+  }
+}

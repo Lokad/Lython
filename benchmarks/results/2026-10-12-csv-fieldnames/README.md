@@ -39,3 +39,7 @@ failure/callback lifetime validation. This array correction does not solve those
 charges or remove the weak-reclamation dependency on forced CLR collection.
 PLAN retains the bounded next ownership work and unfinished milestone gates.
 
+The subsequent [writer owner correction](../2026-10-12-csv-writer-owners/README.md)
+addresses that separate defect. This report preserves the earlier producer's
+qualification and remaining-fault observation.
+
