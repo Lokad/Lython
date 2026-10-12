@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "source": "ed9870879594b9567ccf9106c71d01ccdd194658",
+  "productionTree": "6f5e6e8f9130fa0cd2349396ffddb32a157f4c9b",
+  "productionSourceChanged": false,
+  "performanceQualified": false,
+  "operatingSystem": "Microsoft Windows NT 10.0.26200.0",
+  "pythonVersion": "Python 3.13.2",
+  "files": [
+    {
+      "path": "benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+      "sha256": "4CA5ABE60F8F509D7F41514DA5BBE0949DDC24D7F755B394FF9156CD9349A714"
+    },
+    {
+      "path": "src/Lokad.Lython/bin/Release/net10.0/Lokad.Lython.dll",
+      "sha256": "015494790271E65C9ED3301E3552AF5FE2AA29693615A4802BCF1E41C88DADE1"
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/bin/Release/net10.0/Lokad.Lython.PublicApi.Tests.dll",
+      "sha256": "27EEF004B057BE91ED7FFD5DB579BD83C3004DBBBCCCBE791978AA543A36B8C5"
+    },
+    {
+      "path": "tests/Lokad.Lython.WorkerFixture/bin/Release/net10.0/Lokad.Lython.WorkerFixture.dll",
+      "sha256": "4DCE0711B79741504969B52BE9522B7FDD498B5CFE1826AC23B62694F0A03A47"
+    }
+  ],
+  "receipts": [
+    {
+      "path": "committed-catalog.json",
+      "sha256": "592ED7DCBA1CA998CEF262387EC3BC22936635A07A44814AC0EBBC545A771F95"
+    },
+    {
+      "path": "committed-persistent.json",
+      "sha256": "C52DEDDDB53DCA5116BC8AF34197C373ADE8B94FE9536724E94B837800DBEC82"
+    },
+    {
+      "path": "committed-fresh.json",
+      "sha256": "E858CF0834353CC860E1DB78B4CFA07D51A9D74FCDF9FC75FD52F3E92D48D7A5"
+    },
+    {
+      "path": "committed-files-release/process.receipt.json",
+      "sha256": "37CAC6623FB1A52864BE0F8259994AAA8D36ECBFCBE70D5B43540CD4725DFE52"
+    },
+    {
+      "path": "committed-files-release/tests.trx",
+      "sha256": "86F47E31207F45003C312A62C89A2556D674F05B0517C1484AE8EFBE3B1E0D54"
+    },
+    {
+      "path": "committed-supervisor-release/process.receipt.json",
+      "sha256": "70184950BECDF15F420EE8E5E80F60FA7232CFB53ACC65E36007AA25722F1140"
+    },
+    {
+      "path": "committed-supervisor-release/tests.trx",
+      "sha256": "52C92DDB7B81B8B9728F6666B6BBE939AA0457D6CAF7EFAEB1C8C3A15FE70D65"
+    },
+    {
+      "path": "representative-workers.json",
+      "sha256": "21F98D63FA13F818D82FFC8DBE35C98AE220B39B5FC542F308CE48901B511E68"
+    }
+  ],
+  "focusedReleaseChecks": 89,
+  "persistentCases": 12,
+  "freshCases": 12,
+  "externalGroupLimitSeconds": 30,
+  "vmTimingRun": false
+}

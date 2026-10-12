@@ -94,8 +94,10 @@ The percentages must not be added or multiplied into a current CPython ratio.
 
 The next useful comparison is the four complete CSV, text, JSON and file scripts,
 with identical input/output bytes and a declared file-host boundary. Their
-correctness is established; disk staging, reset, output validation and worker
-cleanup must be shared fairly before collecting timings. The older retained-CSV
+correctness is established. The [file-worker delivery](benchmarks/results/2026-10-12-file-workers/README.md)
+at `ed987087` verifies all 12 cases against CPython 3.13.2 on Windows, in persistent
+and fresh processes, with matched disk staging/reset and output checks. Quiet-VM
+timing and qualification remain pending. The older retained-CSV
 job is not evidence for bounded streaming or host latency.
 
 Process-wide forced GC remains a containment concern. The separate

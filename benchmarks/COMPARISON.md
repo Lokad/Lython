@@ -96,6 +96,10 @@ all existing eligibility checks. A local correctness/timer smoke does not qualif
 comparative timings. Old workers without file-digest support cannot be used as
 successful file-job baselines.
 
+The legacy identity phrase `no forced GC` describes the benchmark adapter: it
+does not force collections between samples. Lython's runtime exhaustion relief
+remains enabled under ordinary public limits; these file workers do not change it.
+
 Successful responses include a separate file SHA-256 alongside stdout SHA-256:
 32-bit big-endian file count, then each ordinal UTF-16-sorted path's UTF-8 length
 and bytes, followed by content length and bytes. Missing, wrong-length,
