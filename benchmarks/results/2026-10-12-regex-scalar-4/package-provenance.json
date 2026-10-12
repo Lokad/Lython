@@ -1,0 +1,80 @@
+{
+  "SchemaVersion": 1,
+  "SourceRevision": "46d6c1f4db7f768467e7b41c0e26b842ae827970",
+  "Configuration": "Release",
+  "CleanSource": true,
+  "TrackedChanges": [],
+  "UntrackedSources": [],
+  "Packages": [
+    {
+      "Package": "Lokad.Utf8Regex.0.4.0-scalar.4.nupkg",
+      "PackageSha256": "6DF3440D03896CACA889F01343F7135DBAF0B7390AEAB694C64CF0DC14776BFD",
+      "NuSpecRevision": "46d6c1f4db7f768467e7b41c0e26b842ae827970",
+      "Assembly": "Lokad.Utf8Regex.dll",
+      "AssemblySha256": "763E86006E344E16C753DE63AE8CE7F55EA80E915CFE8ECBCD35541E152B4519",
+      "InformationalVersion": "0.4.0-scalar.4+46d6c1f4db7f768467e7b41c0e26b842ae827970",
+      "AssemblyRevision": "46d6c1f4db7f768467e7b41c0e26b842ae827970",
+      "CodeViewEntries": [
+        {
+          "Guid": "fb87bffc-8972-4f79-a765-327410a571d4",
+          "Stamp": 3240868832,
+          "Age": 1
+        }
+      ],
+      "SymbolPackage": "Lokad.Utf8Regex.0.4.0-scalar.4.snupkg",
+      "SymbolPackagePresent": true,
+      "SymbolPackageSha256": "147F7C66F7E410D7FB20AB333C98587DC2ABE328E5D4C4083034AFAE5FD0B8AF",
+      "PdbPresent": true,
+      "PdbSha256": "CF15F326829619D74396DFB3020267C22768ACAECB081EE2487E461D50B2FD9B",
+      "PdbGuid": "fb87bffc-8972-4f79-a765-327410a571d4",
+      "PdbStamp": 3240868832,
+      "SourceLinkRecords": [
+        {
+          "IsModuleRecord": true,
+          "Mappings": [
+            {
+              "Document": "/_/*",
+              "Url": "https://raw.githubusercontent.com/Lokad/Utf8Regex/46d6c1f4db7f768467e7b41c0e26b842ae827970/*",
+              "Revision": "46d6c1f4db7f768467e7b41c0e26b842ae827970"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Package": "Lokad.Utf8Regex.PythonRe.0.4.0-scalar.4.nupkg",
+      "PackageSha256": "A40EC4C1309B3DB6BFCB1D654A5B8B726AAB1F8DACA8677C601BFCF6BD820432",
+      "NuSpecRevision": "46d6c1f4db7f768467e7b41c0e26b842ae827970",
+      "Assembly": "Lokad.Utf8Regex.PythonRe.dll",
+      "AssemblySha256": "249C3C9DCD057C9D235C6338A3F9F2CD061D330EDB811231AED75281879B3121",
+      "InformationalVersion": "0.4.0-scalar.4+46d6c1f4db7f768467e7b41c0e26b842ae827970",
+      "AssemblyRevision": "46d6c1f4db7f768467e7b41c0e26b842ae827970",
+      "CodeViewEntries": [
+        {
+          "Guid": "89ad273e-4579-4ca2-a68e-95cdd2abea0f",
+          "Stamp": 3332550662,
+          "Age": 1
+        }
+      ],
+      "SymbolPackage": "Lokad.Utf8Regex.PythonRe.0.4.0-scalar.4.snupkg",
+      "SymbolPackagePresent": true,
+      "SymbolPackageSha256": "A65238619A95A2988CD4C486595FB8CCDD59E1BB45D64968E3E4575E530D90AB",
+      "PdbPresent": true,
+      "PdbSha256": "676C0FBA3CECFBC55E42791C10CE42B24F1DCB4E889D6C18AA3E23E8BA4023A1",
+      "PdbGuid": "89ad273e-4579-4ca2-a68e-95cdd2abea0f",
+      "PdbStamp": 3332550662,
+      "SourceLinkRecords": [
+        {
+          "IsModuleRecord": true,
+          "Mappings": [
+            {
+              "Document": "/_/*",
+              "Url": "https://raw.githubusercontent.com/Lokad/Utf8Regex/46d6c1f4db7f768467e7b41c0e26b842ae827970/*",
+              "Revision": "46d6c1f4db7f768467e7b41c0e26b842ae827970"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

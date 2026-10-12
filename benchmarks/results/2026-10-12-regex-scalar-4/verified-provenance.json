@@ -1,0 +1,15 @@
+{
+  "producer": "46d6c1f4db7f768467e7b41c0e26b842ae827970",
+  "releaseClaim": "Release",
+  "provenanceVerified": true,
+  "nuspecProducerVerified": true,
+  "symbolAndPdbHashesVerified": true,
+  "dependencies": [
+    {
+      "id": "Lokad.Utf8Regex",
+      "version": "0.4.0-scalar.4"
+    }
+  ],
+  "unsafeCompliance": false,
+  "downstreamPromoted": false
+}

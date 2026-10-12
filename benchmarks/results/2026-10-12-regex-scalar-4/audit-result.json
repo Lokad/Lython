@@ -1,0 +1,150 @@
+{
+  "total": 24,
+  "failed": 0,
+  "assemblies": [
+    {
+      "name": "Lokad.Utf8Regex.PythonRe",
+      "informationalVersion": "0.4.0-scalar.4\u002B46d6c1f4db7f768467e7b41c0e26b842ae827970",
+      "sha256": "249C3C9DCD057C9D235C6338A3F9F2CD061D330EDB811231AED75281879B3121"
+    },
+    {
+      "name": "Lokad.Utf8Regex",
+      "informationalVersion": "0.4.0-scalar.4\u002B46d6c1f4db7f768467e7b41c0e26b842ae827970",
+      "sha256": "763E86006E344E16C753DE63AE8CE7F55EA80E915CFE8ECBCD35541E152B4519"
+    }
+  ],
+  "unsafeApiReferences": [
+    "Lokad.Utf8Regex:System.Runtime.CompilerServices.Unsafe.Add",
+    "Lokad.Utf8Regex:System.Runtime.CompilerServices.Unsafe.As",
+    "Lokad.Utf8Regex:System.Runtime.CompilerServices.Unsafe.AsRef",
+    "Lokad.Utf8Regex:System.Runtime.CompilerServices.Unsafe.ReadUnaligned",
+    "Lokad.Utf8Regex:System.Runtime.CompilerServices.Unsafe.SizeOf",
+    "Lokad.Utf8Regex:System.Runtime.Intrinsics.Vector128.LoadUnsafe",
+    "Lokad.Utf8Regex:System.Runtime.Intrinsics.Vector256.LoadUnsafe",
+    "Lokad.Utf8Regex.PythonRe:System.Runtime.CompilerServices.Unsafe.Add",
+    "Lokad.Utf8Regex.PythonRe:System.Runtime.CompilerServices.Unsafe.As",
+    "Lokad.Utf8Regex.PythonRe:System.Runtime.CompilerServices.Unsafe.AsRef"
+  ],
+  "rows": [
+    {
+      "name": "capture/(?P\u003Cfirst\u003Ea)(b)",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "capture/(a)(?P\u003Csecond\u003Eb)",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "capture/((a))",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "capture/(?P\u003Couter\u003E(a))",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "capture/(?P\u003Couter\u003E(?P\u003Cinner\u003Ea))",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "capture/(a(b)?)\u002B",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "capture/(a)(?=(b))",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "capture/(?:(a)b|(a)c)",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "capture/(a)?b",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "capture/\uD83D\uDE00",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "capture/(?P\u003Couter\u003E(\uD83D\uDE00))",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "capture/(?P\u003Ca\u003Ea)(b)\\1\\2",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "finite-policy/work",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "finite-policy/depth",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "finite-policy/working",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "finite-policy/result",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "cursor/retained-owned-snapshot-and-alias-position",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "cursor/empty-progress-and-eof",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "cursor/live-cancel-between-advances",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "work/denial",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "result/denial",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "working/denial",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "depth/denial",
+      "passed": true,
+      "error": null
+    },
+    {
+      "name": "cursor/shared-work-exhaustion",
+      "passed": true,
+      "error": null
+    }
+  ]
+}

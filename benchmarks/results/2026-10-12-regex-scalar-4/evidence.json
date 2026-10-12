@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "version": "0.4.0-scalar.4",
+  "producer": "46d6c1f4db7f768467e7b41c0e26b842ae827970",
+  "productionPromoted": false,
+  "productionPythonRePin": "0.2.0",
+  "semanticControlsPassed": 24,
+  "semanticControlsTotal": 24,
+  "managedApiGatePassed": false,
+  "unsafeApiReferences": [
+    "Lokad.Utf8Regex:System.Runtime.CompilerServices.Unsafe.Add",
+    "Lokad.Utf8Regex:System.Runtime.CompilerServices.Unsafe.As",
+    "Lokad.Utf8Regex:System.Runtime.CompilerServices.Unsafe.AsRef",
+    "Lokad.Utf8Regex:System.Runtime.CompilerServices.Unsafe.ReadUnaligned",
+    "Lokad.Utf8Regex:System.Runtime.CompilerServices.Unsafe.SizeOf",
+    "Lokad.Utf8Regex:System.Runtime.Intrinsics.Vector128.LoadUnsafe",
+    "Lokad.Utf8Regex:System.Runtime.Intrinsics.Vector256.LoadUnsafe",
+    "Lokad.Utf8Regex.PythonRe:System.Runtime.CompilerServices.Unsafe.Add",
+    "Lokad.Utf8Regex.PythonRe:System.Runtime.CompilerServices.Unsafe.As",
+    "Lokad.Utf8Regex.PythonRe:System.Runtime.CompilerServices.Unsafe.AsRef"
+  ],
+  "adapterMatrixRun": false,
+  "embeddingLatencyMeasured": false,
+  "packageVerification": {
+    "producer": "46d6c1f4db7f768467e7b41c0e26b842ae827970",
+    "releaseClaim": "Release",
+    "provenanceVerified": true,
+    "nuspecProducerVerified": true,
+    "symbolAndPdbHashesVerified": true,
+    "dependencies": [
+      {
+        "id": "Lokad.Utf8Regex",
+        "version": "0.4.0-scalar.4"
+      }
+    ],
+    "unsafeCompliance": false,
+    "downstreamPromoted": false
+  },
+  "handoffSha256": "5087D45574AB4EA8B997D752E9A02439C3FDB27AEEED7CC9B9F68E1A12B0907F",
+  "reportFiles": [
+    {
+      "path": "candidate.json",
+      "sha256": "B9EE04F7A5088209B28CD95D8B0E6D73CBE1519A12FD91890F0AA5BACD9C977B"
+    },
+    {
+      "path": "package-provenance.json",
+      "sha256": "B34F1614AB4018B6779C2CEF819FC08D8F6349B11B101F22FA305A8C575EE392"
+    },
+    {
+      "path": "freeze.json",
+      "sha256": "C1EEE4331D1DF80F64E1B7FE69BD32C2BCC315BC458902A1D70A75D3B5AD55C3"
+    },
+    {
+      "path": "verified-provenance.json",
+      "sha256": "9BB6E17FD41E14B6FE532C93AAD8E2EBEA10C2B2A8EE9AA8FD3DBAF2A89B6989"
+    },
+    {
+      "path": "audit-result.json",
+      "sha256": "EC3013C10B24282A353CE37DDE2DAC83027595313AA3F4B215ACA275D7CA0F7A"
+    },
+    {
+      "path": "audit-process.json",
+      "sha256": "C72B40D722FE2856DD5F0DBAA9ACD3963691261F98EA8557344218084528D5A1"
+    }
+  ]
+}

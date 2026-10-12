@@ -1,0 +1,8 @@
+{
+  "version": "0.4.0-scalar.4",
+  "producer": "46d6c1f4db7f768467e7b41c0e26b842ae827970",
+  "candidateSha256": "B9EE04F7A5088209B28CD95D8B0E6D73CBE1519A12FD91890F0AA5BACD9C977B",
+  "packageCount": 2,
+  "verifiedSha256AndSha512": true,
+  "frozenUtc": "2026-10-12T11:48:52.5373339+00:00"
+}
