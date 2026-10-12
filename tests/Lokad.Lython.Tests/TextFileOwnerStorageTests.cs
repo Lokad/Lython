@@ -79,7 +79,7 @@ public sealed class TextFileOwnerStorageTests
         var closed = context.MemoryGovernor.CurrentCommittedBytes;
         Assert.True(closed < before);
         Assert.True(handle.IsClosed);
-        Assert.Contains(context.State.LiveReclamationPools(), pool => pool.IsTracked(line));
+        Assert.True(context.State.CallTemporaries.IsTracked(line));
         Assert.True(line.CommittedOwnedBytes > 0);
         if (asynchronous) { await handle.ExitAsync(); Assert.True(delayed!.CompletedAsynchronously > 0); }
         else handle.Exit();

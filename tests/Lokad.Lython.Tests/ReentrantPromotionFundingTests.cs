@@ -15,7 +15,6 @@ public sealed class ReentrantPromotionFundingTests
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),
             new LythonRunOptions { MaxExecutionMemoryBytes = cap });
         var governor = context.MemoryGovernor;
-        var owner = new object();
         var pool = new ChargeReclamationPool(governor);
         var retained = new List<PyString>();
         for (var index = 0; index < 8; index++)
@@ -31,14 +30,12 @@ public sealed class ReentrantPromotionFundingTests
             retained.Add(value);
             pool.TrackString(value);
         }
-        context.State.RegisterPool(owner, pool);
-        var donorOwner = new object();
         var donor = new ChargeReclamationPool(governor);
         var dead = DropDonor(governor, donor);
-        // Both owners stay live, like an active CSV source and its input cursor.
+        // Standalone governor fixtures keep both pools live.
         // Collected donor charges remain available if exhaustion relief needs
         // them, but sweeping the retained pool must not require any admission.
-        context.State.RegisterPool(donorOwner, donor);
+        governor.LivePoolProvider = () => new[] { pool, donor };
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
@@ -71,8 +68,6 @@ public sealed class ReentrantPromotionFundingTests
         Assert.Equal(before - 257, governor.CurrentCommittedBytes);
         Assert.Equal(0, governor.CurrentReservedBytes);
         Assert.True(governor.PeakAccountedBytes <= cap);
-        GC.KeepAlive(owner);
-        GC.KeepAlive(donorOwner);
         GC.KeepAlive(retained);
     }
 

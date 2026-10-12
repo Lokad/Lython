@@ -23,7 +23,7 @@ public sealed class TextReaderConstructionAccountingTests
         {
             Assert.Equal("MemoryError", await DeniedOpen(context, asynchronous));
             GC.Collect();
-            foreach (var pool in context.State.LiveReclamationPools()) pool.Sweep(full: true);
+            context.State.CallTemporaries.Sweep(full: true);
             // The shared pool retains funded capacity; no reader storage or
             // ownership entry may remain after a failed unpublished construction.
             Assert.Equal(before + context.State.CallTemporaries.CommittedBackingBytes, context.MemoryGovernor.CurrentCommittedBytes);

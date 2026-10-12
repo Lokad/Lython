@@ -159,12 +159,6 @@ internal sealed class MemoryGovernor
             }
         }
 
-        // A full sweep may have collected the last aliases from an abandoned
-        // source. Reconcile its now-empty registration/backing before deciding
-        // whether the pending allocation fits; those arrays can release too.
-        foreach (var _ in provider())
-        {
-        }
     }
 
     public void Reserve(long bytes, LythonSourceSpan? span)

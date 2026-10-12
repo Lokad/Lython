@@ -95,7 +95,7 @@ public sealed class TextReadEmissionOwnershipTests
             LythonRuntime.TextErrorMode.Strict,
             LythonRuntime.TextNewlineMode.TranslateUniversal, windowBytes: 4);
         var line = asynchronous ? await state.ReadLineAsync(-1) : state.ReadLine(-1);
-        var pool = context.State.LiveReclamationPools().Single(p => p.Count > 0);
+        var pool = context.State.CallTemporaries;
         Assert.True(pool.IsTracked(line));
         state.Release();
         var committed = context.MemoryGovernor.CurrentCommittedBytes;

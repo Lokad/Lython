@@ -2762,8 +2762,10 @@ pages of at most 8,192 entries to avoid large transient reference arrays. Sweeps
 allocate or require additional budget to keep live entries tracked; they release
 collected owners in place. Recent registrations are scanned promptly, while
 retained populations are visited in bounded quanta outside exhaustion relief.
-Pool capacity remains accounted until its owner is abandoned, avoiding repeated
-trim/regrow allocation. These metadata estimates can change accounted peaks.
+Runtime storage owners share the execution's pool; source abandonment releases
+that source's storage snapshot without retiring a separate pool or its aliases.
+Shared pool capacity remains accounted for its execution lifetime, avoiding
+repeated trim/regrow allocation. These metadata estimates can change accounted peaks.
 Catching `MemoryError` does not release retained values or guarantee room for a
 new result container. Scripts that recover under a saturated budget must reuse
 funded storage or release storage before allocating again.

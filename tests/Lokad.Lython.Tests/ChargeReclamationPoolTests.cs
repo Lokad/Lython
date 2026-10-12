@@ -210,37 +210,6 @@ public sealed class ChargeReclamationPoolTests
         GC.KeepAlive(keys);
     }
 
-    [Fact]
-    public void AbandonedPoolsReleaseBackingAndRegistration()
-    {
-        // A dropped pool owner takes its pool with it: abandonment sweeps the
-        // tracked values fully and releases tier backing plus the registration.
-        var host = new MockLythonHost();
-        var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
-        AbandonTrackedPool(context.State);
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-        var live = context.State.LiveReclamationPools().ToList();
-        Assert.Single(live);
-        Assert.Equal(0, context.MemoryGovernor.CurrentCommittedBytes);
-        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-    }
-
-    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-    private static void AbandonTrackedPool(ExecutionState state)
-    {
-        var pool = new ChargeReclamationPool(state.MemoryGovernor);
-        state.RegisterPool(new object(), pool);
-        var governor = state.MemoryGovernor;
-        for (var i = 0; i < 3; i++)
-        {
-            var key = new object();
-            governor.Reserve(100, null);
-            governor.Commit(100);
-            pool.Track(key, 100);
-        }
-    }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
     private static void DropAll(System.Collections.Generic.List<object> keys)
