@@ -1,0 +1,529 @@
+{
+  "version": 1,
+  "date": "2026-10-12",
+  "purpose": "Primitive retained-storage correction and numeric-gate consolidation",
+  "implementation": "9db0922944c8786ad63bda2c5e77cd11a1f02829",
+  "qualifiedSource": {
+    "source": "b602a4fe2dada5eb97fe4a3128c247e28d876589",
+    "production": "f62c6b9cbe24f97f1b6cd14f4aede74993699c70",
+    "white": "bd961142137c9c285ad6a51bf746f2700a97b570",
+    "public": "a2154482cbcf00bc5856e0793ebabce5c9a7d148",
+    "probe": "bfd4ee12ae4532e0a65a85db86792da8183eec9d",
+    "benchmark": "c194ce88a7e4d52c576f3929ef82bce60bf37e2d",
+    "debugFullWhite": 2086,
+    "debugFullPublic": 8198,
+    "total": 10284,
+    "focusedReleaseWhite": 199,
+    "focusedReleasePublic": 173,
+    "productionNetRemoved": 10,
+    "actualBuildProducers": {
+      "debugWhite": "b602a4fe2dada5eb97fe4a3128c247e28d876589",
+      "debugLibraryPublicProbeWorker": "9db0922944c8786ad63bda2c5e77cd11a1f02829",
+      "releaseWhite": "b602a4fe2dada5eb97fe4a3128c247e28d876589",
+      "releaseLibraryPublicProbeWorker": "0c67f2c555964d79dd348a8806127fb02ad591c1"
+    },
+    "completedPublicSuiteSource": "0c67f2c555964d79dd348a8806127fb02ad591c1"
+  },
+  "qualifiedBinaries": [
+    {
+      "path": "src/Lokad.Lython/bin/Debug/net10.0/Lokad.Lython.dll",
+      "sha256": "852DA52C48B54F80EAEC6D7ECF9A2A57A598030FE0D28C5E53D28BB4D02EE204"
+    },
+    {
+      "path": "tests/Lokad.Lython.Tests/bin/Debug/net10.0/Lokad.Lython.WhiteBox.Tests.dll",
+      "sha256": "BD1A29F023E3B829AFB67A8491174618110FCFDA5F004F353B0204D864507D74"
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/bin/Debug/net10.0/Lokad.Lython.PublicApi.Tests.dll",
+      "sha256": "70990F645D791844E53827AC763EDD7E065BE3863D7E85E8687596ABAEB0AC40"
+    },
+    {
+      "path": "tests/Lokad.Lython.WorkerFixture/bin/Debug/net10.0/Lokad.Lython.WorkerFixture.dll",
+      "sha256": "75B2DE9F334F48EB486A4E501E79906AF306F112583FECC7AAF7BE409C1A8567"
+    },
+    {
+      "path": "tools/LythonProbe/bin/Debug/net10.0/LythonProbe.dll",
+      "sha256": "D8635AC15B932B6B935A0CDF1772B6DDCE1ACBF4CA3DA68D496089EA056F1985"
+    },
+    {
+      "path": "src/Lokad.Lython/bin/Release/net10.0/Lokad.Lython.dll",
+      "sha256": "945D0ABF6FA153A6832AFB2D830754174F7ED9090D5B1C61B6D59FADBD5C17D8"
+    },
+    {
+      "path": "tests/Lokad.Lython.Tests/bin/Release/net10.0/Lokad.Lython.WhiteBox.Tests.dll",
+      "sha256": "9BF71CA18EE013330DF1A295722443801062D88CA0A6079DF46F0878BBFB75A9"
+    },
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/bin/Release/net10.0/Lokad.Lython.PublicApi.Tests.dll",
+      "sha256": "E9B3BD4D29E35FEC0DA54C5FD0A2652AB6BCE7994EDA4B60C3B431F133F31714"
+    },
+    {
+      "path": "tests/Lokad.Lython.WorkerFixture/bin/Release/net10.0/Lokad.Lython.WorkerFixture.dll",
+      "sha256": "13D87E54187465DF6F2B1B2E5CF1FFCE2EA2627D2EAD59BC414571BFAEDBD3DC"
+    },
+    {
+      "path": "tools/LythonProbe/bin/Release/net10.0/LythonProbe.dll",
+      "sha256": "D48D2EF9FE16FCA80A436FB407CE284260B3148A31D347F043596DF6FAD0F837"
+    }
+  ],
+  "original": {
+    "originalSource": "b4e3d8721da8d4eb0edf9c157f0673f5cc434cac",
+    "production": "a03c7bf73723df522eb45292d5dc4a8056bbe836",
+    "policyCases": [
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 0, value: True)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 1, value: 1)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 0, value: 1)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 1, value: PyDecimal { Exponent = -1, IsSigned = False, Value = 1.5 })",
+        "outcome": "Passed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 1, value: 1)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 1, value: -1)",
+        "outcome": "Passed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 1, value: 1)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 0, value: False)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 1, value: -1)",
+        "outcome": "Passed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 0, value: -1)",
+        "outcome": "Passed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 1, value: -1)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 1, value: False)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 0, value: 1.5)",
+        "outcome": "Passed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 1, value: -1)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 0, value: -1)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 1, value: True)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 2, value: 1)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 0, value: 1)",
+        "outcome": "Passed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 2, value: True)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 0, value: -1)",
+        "outcome": "Passed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 2, value: 1)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 0, value: 1)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 2, value: False)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 2, value: -1)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 2, value: 1.5)",
+        "outcome": "Passed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 2, value: 1)",
+        "outcome": "Passed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 2, value: 1)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 1, value: 1.5)",
+        "outcome": "Passed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 1, value: 1)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 2, value: -1)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 2, value: -1)",
+        "outcome": "Passed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 0, value: 1)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 2, value: PyDecimal { Exponent = -1, IsSigned = False, Value = 1.5 })",
+        "outcome": "Passed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 0, value: PyDecimal { Exponent = -1, IsSigned = False, Value = 1.5 })",
+        "outcome": "Passed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 0, value: 1)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 1, value: 1)",
+        "outcome": "Passed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 2, value: 1)",
+        "outcome": "Failed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 2, value: -1)",
+        "outcome": "Passed"
+      },
+      {
+        "testName": "Lokad.Lython.Tests.PrimitiveStorageOriginalTests.EveryRetainedNumericKindUsesTheSameOccupiedAllowance(container: 0, value: -1)",
+        "outcome": "Failed"
+      }
+    ],
+    "firstGroup": {
+      "source": "b4e3d8721da8d4eb0edf9c157f0673f5cc434cac",
+      "production": "a03c7bf73723df522eb45292d5dc4a8056bbe836",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\primitive-storage-20261012\\original\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "A69A743911EBC8150479F7243CCC1AC322080EF7258E1CAC3232FD571A0DD3AA",
+      "filter": "FullyQualifiedName~PrimitiveStorageOriginalTests",
+      "pid": 892220,
+      "hasExited": true,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1598,
+      "stdoutSha256": "D57574C7BB04994AC4E64DC9B76ABFCCA51599C6F3B3693E6187394B1102DD5A",
+      "stderrSha256": "3E54113F96BF538013DB2CE9B1A7BA2FC21C1DB992E3101B5068784A46B3B198"
+    },
+    "firstBoxMeasurement": "Serialization harness fault, not a production/accounting result; receipt preserved.",
+    "correctedMeasurement": {
+      "source": "e29d4a49f0f0a129b07dcaa663b403d7a20f0598",
+      "production": "a03c7bf73723df522eb45292d5dc4a8056bbe836",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\primitive-storage-20261012\\original\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "82491A77275E88D7A995FFC2B18BD2E26BE473F33CD62102F2C1C5776089C326",
+      "filter": "FullyQualifiedName~RetainedBooleanBoxesFitWithinTheConservativeStorageEstimate",
+      "pid": 1155380,
+      "hasExited": true,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 977,
+      "stdoutSha256": "1EDC151E6537A9F4CD909EA5EB082DF287D8C98A93D6C824952B1B20DEBD934F",
+      "stderrSha256": "D220FD90AB10DF2D7460D3DBCAB4F0B7AC489E192B227B00D983105E4FBDEA9A"
+    },
+    "boxObservation": {
+      "count": 4096,
+      "distinct": 4096,
+      "boxBytes": 98304,
+      "accounted": 65600,
+      "retainedCount": 4096
+    },
+    "classification": "24 proposed fee-policy failures; separate held-box accounting undercharge measured at a low-level container boundary. Public exploit/CPU/singleton policy not established.",
+    "release": {
+      "process": {
+        "source": "e29d4a49f0f0a129b07dcaa663b403d7a20f0598",
+        "production": "a03c7bf73723df522eb45292d5dc4a8056bbe836",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\primitive-storage-20261012\\original\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "9679EA23E6449859EE79B2F14D8E9918A75CC61A8763A454542EB5808D721AB0",
+        "filter": "FullyQualifiedName~PrimitiveStorageOriginalTests",
+        "pid": 498276,
+        "hasExited": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1541,
+        "stdoutSha256": "971C18978038732D96A37A8F52CD9DFCA6DB3355E72CD5D1AED9EB32536D2DFB",
+        "stderrSha256": "C00E0A14619B1F3AE1EBEAB1F71F40461820555CB4D1E96D8E15E2DD05206753"
+      },
+      "boxObservation": {
+        "count": 4096,
+        "distinct": 4096,
+        "boxBytes": 98304,
+        "accounted": 65600,
+        "retainedCount": 4096
+      },
+      "counts": {
+        "passed": 15,
+        "total": 40,
+        "measuredUndercharge": 1,
+        "policyFailures": 24
+      },
+      "trxSha256": "D046AA66B1894DEBD8C81A5FEB375163220D1132D060C7794B054DBD942DB558"
+    }
+  },
+  "fullDebug": {
+    "public": {
+      "file": "complete_net10.0_20261012053035.trx",
+      "sha256": "1B0E2BB5D99BB95D723991A6B485D5252AEB235E830303EF1D4090B9067EA85D",
+      "total": 8198,
+      "passed": 8198,
+      "failed": 0,
+      "outcome": "Completed",
+      "failures": []
+    },
+    "publicReusedAfterWhiteOnlyTestEdits": true,
+    "white": {
+      "file": "complete_net10.0_20261012053418.trx",
+      "sha256": "44FFC838F167A2BF17980B240687506F3B4D48EE4C882961B6E0E639C079EB14",
+      "total": 2086,
+      "passed": 2086,
+      "failed": 0,
+      "outcome": "Completed",
+      "failures": []
+    },
+    "publicProductionAndTestTreesMatched": true,
+    "total": 10284
+  },
+  "focused": [
+    {
+      "stage": "root-refined-focused-white-debug",
+      "process": {
+        "source": "0c67f2c555964d79dd348a8806127fb02ad591c1",
+        "production": "f62c6b9cbe24f97f1b6cd14f4aede74993699c70",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "E3DC9DE4DE1B23F21CD6B97B18870E92717D6433D4EFE02CFAE2C5ACB568EE88",
+        "filter": "FullyQualifiedName~PrimitiveStorageTests|FullyQualifiedName~ListNumericStoragePolicyTests|FullyQualifiedName~SetNumericStoragePolicyTests|FullyQualifiedName~ContainerScalarStorageTests|FullyQualifiedName~SmallTupleAdoptionTests|FullyQualifiedName~PropertyStorageTests|FullyQualifiedName~PropertyConstructorHostTests|FullyQualifiedName~PropertyRegistrationOriginalAccountingTests",
+        "pid": 765612,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1178,
+        "stdoutSha256": "F9E0C5C6CBA93F4B6C039E14985A81E877C216EDBF5625FF227D644A4BA5F81E",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "0FD0DF0E21F071F105000C99547350BC5919FE65C3FD4D6FC63EE0F6F30C9A3B",
+        "total": 146,
+        "passed": 146,
+        "failed": 0,
+        "outcome": "Completed",
+        "failures": []
+      }
+    },
+    {
+      "stage": "root-focused-public-debug",
+      "process": {
+        "source": "9db0922944c8786ad63bda2c5e77cd11a1f02829",
+        "production": "f62c6b9cbe24f97f1b6cd14f4aede74993699c70",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "70990F645D791844E53827AC763EDD7E065BE3863D7E85E8687596ABAEB0AC40",
+        "filter": "FullyQualifiedName~PrimitiveStorageLifetimeTests|FullyQualifiedName~HostIntegralInteropTests|FullyQualifiedName~IntegerAliasOwnershipTests|FullyQualifiedName~PropertyConstructorCompatibilityTests",
+        "pid": 1150280,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 3828,
+        "stdoutSha256": "13ACDFD6751D85D9590FDA26D675C257B625AB46873807CE48F3E6E88695F50C",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "59C1CA6AB8CF95670773E96B0BC69375D2D7C24C83005E72F50199B46E07BD8C",
+        "total": 173,
+        "passed": 173,
+        "failed": 0,
+        "outcome": "Completed",
+        "failures": []
+      }
+    },
+    {
+      "stage": "root-focused-white-release",
+      "process": {
+        "source": "b602a4fe2dada5eb97fe4a3128c247e28d876589",
+        "production": "f62c6b9cbe24f97f1b6cd14f4aede74993699c70",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "9BF71CA18EE013330DF1A295722443801062D88CA0A6079DF46F0878BBFB75A9",
+        "filter": "FullyQualifiedName~PrimitiveStorageTests|FullyQualifiedName~ListNumericStoragePolicyTests|FullyQualifiedName~SetNumericStoragePolicyTests|FullyQualifiedName~ContainerScalarStorageTests|FullyQualifiedName~SmallTupleAdoptionTests|FullyQualifiedName~PropertyStorageTests|FullyQualifiedName~PropertyConstructorHostTests|FullyQualifiedName~PropertyRegistrationOriginalAccountingTests|FullyQualifiedName~ChargeReclamationPoolTests|FullyQualifiedName~RuntimeStorageSubsystemTests",
+        "pid": 641960,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1452,
+        "stdoutSha256": "BFFD2E6D237392ED40290DE2569A4191F70CDB9C0E71962E696D6AD9D0CE6799",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "EA8259B5EA771FC41771B3CE7B91DCE4704FC7BB403A0A159342B34F245D64C0",
+        "total": 199,
+        "passed": 199,
+        "failed": 0,
+        "outcome": "Completed",
+        "failures": []
+      }
+    },
+    {
+      "stage": "root-focused-public-release",
+      "process": {
+        "source": "b602a4fe2dada5eb97fe4a3128c247e28d876589",
+        "production": "f62c6b9cbe24f97f1b6cd14f4aede74993699c70",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "E9B3BD4D29E35FEC0DA54C5FD0A2652AB6BCE7994EDA4B60C3B431F133F31714",
+        "filter": "FullyQualifiedName~PrimitiveStorageLifetimeTests|FullyQualifiedName~HostIntegralInteropTests|FullyQualifiedName~IntegerAliasOwnershipTests|FullyQualifiedName~PropertyConstructorCompatibilityTests",
+        "pid": 144628,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 4485,
+        "stdoutSha256": "A6FB2F840EC40C957E5E2E81118174F735BB4E3F1F078D6F49585A57B44F22A0",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "trx": {
+        "file": "tests.trx",
+        "sha256": "77D72489AC97F72E9BC6E74D78E252B7A7CEF64DD79CFC42A8BFC89FA35DF39B",
+        "total": 173,
+        "passed": 173,
+        "failed": 0,
+        "outcome": "Completed",
+        "failures": []
+      }
+    }
+  ],
+  "initialFocused": {
+    "trx": {
+      "file": "tests.trx",
+      "sha256": "19B03C1845231019E8536837959ED4396FF121864036230DAEAEDF11C2C164FC",
+      "total": 146,
+      "passed": 143,
+      "failed": 3,
+      "outcome": "Failed",
+      "failures": [
+        {
+          "testName": "Lokad.Lython.Tests.SetNumericStoragePolicyTests.NumericTwinRemovalOfABooleanDoesNotReleaseAnUnfundedAllowance(truth: True)",
+          "outcome": "Failed"
+        },
+        {
+          "testName": "Lokad.Lython.Tests.ListNumericStoragePolicyTests.ScalarFreeSlotsKeepTheOriginalBackingFee",
+          "outcome": "Failed"
+        },
+        {
+          "testName": "Lokad.Lython.Tests.SetNumericStoragePolicyTests.NumericTwinRemovalOfABooleanDoesNotReleaseAnUnfundedAllowance(truth: False)",
+          "outcome": "Failed"
+        }
+      ]
+    },
+    "process": {
+      "source": "9db0922944c8786ad63bda2c5e77cd11a1f02829",
+      "production": "f62c6b9cbe24f97f1b6cd14f4aede74993699c70",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "AC49898C84F24F709E57EDBC89C859323D73F234F3A39BACD2A8822843313909",
+      "filter": "FullyQualifiedName~PrimitiveStorageTests|FullyQualifiedName~ListNumericStoragePolicyTests|FullyQualifiedName~SetNumericStoragePolicyTests|FullyQualifiedName~ContainerScalarStorageTests|FullyQualifiedName~SmallTupleAdoptionTests|FullyQualifiedName~PropertyStorageTests|FullyQualifiedName~PropertyConstructorHostTests|FullyQualifiedName~PropertyRegistrationOriginalAccountingTests",
+      "pid": 128328,
+      "hasExited": true,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1211,
+      "stdoutSha256": "8E96F3554C2CD4D276009714DFE7E5EB858FD779D4F32058B403CDBADC7514E0",
+      "stderrSha256": "278D030FA03BF57FBA3ED2342EF25ED809F812F98B65DA928BAB304CF2D3D00E"
+    }
+  },
+  "initialFull": [
+    {
+      "file": "complete_net10.0_20261012052334.trx",
+      "sha256": "56E2AEB7875D6D74B5D3DF99B5A6AA12EC6E5CB105AB2950D399F22E09833FC9",
+      "total": 2084,
+      "passed": 2082,
+      "failed": 2,
+      "outcome": "Failed",
+      "failures": [
+        {
+          "testName": "Lokad.Lython.Tests.ChargeReclamationPoolTests.ReliefSurvivesNestedPromotionDenial",
+          "outcome": "Failed"
+        },
+        {
+          "testName": "Lokad.Lython.Tests.RuntimeStorageSubsystemTests.PyList_ScalarFreePromotionIsPreflighted",
+          "outcome": "Failed"
+        }
+      ]
+    },
+    {
+      "file": "complete_net10.0_20261012053035.trx",
+      "sha256": "1B0E2BB5D99BB95D723991A6B485D5252AEB235E830303EF1D4090B9067EA85D",
+      "total": 8198,
+      "passed": 8198,
+      "failed": 0,
+      "outcome": "Completed",
+      "failures": []
+    }
+  ],
+  "originalPartialRelief": {
+    "trx": {
+      "file": "tests.trx",
+      "sha256": "F5923C505F713D0700BDD566B70A7E87033E6227B18A14341E4DDCF70C2C0C4A",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "outcome": "Completed",
+      "failures": []
+    },
+    "source": "using System.Runtime.CompilerServices;\nusing System.Text.Json;\nusing Lokad.Lython.Runtime;\nusing Lokad.Lython.Tests.Harness;\n\nnamespace Lokad.Lython.Tests;\n\npublic sealed class PartialExhaustionReliefOriginalTests\n{\n    [Fact]\n    public void AlreadyCollectedSubsetCanRelieveWithoutCollectingAllDroppedTargets()\n    {\n        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(),\n            new LythonRunOptions { MaxExecutionMemoryBytes = 2000000 });\n        var governor = context.MemoryGovernor;\n        var pool = context.State.CallTemporaries;\n        var baseline = governor.CurrentCommittedBytes;\n        var keys = Track(pool, governor);\n        Drop(keys, 0, 100);\n        GC.Collect();\n        GC.WaitForPendingFinalizers();\n        GC.Collect();\n        Drop(keys, 100, 100);\n        using var hold = governor.ReserveTemporary(2000000 - governor.CurrentAccountedBytes - 15000, null);\n        var before = GC.CollectionCount(2);\n        governor.Reserve(25000, null);\n        var collections = GC.CollectionCount(2) - before;\n        var remaining = pool.Count;\n        var accounted = governor.CurrentAccountedBytes;\n        var directory = Environment.GetEnvironmentVariable(\"LYTHON_PRIMITIVE_PARTIAL_GC\")!;\n        File.WriteAllText(directory, JsonSerializer.Serialize(new { collections, remaining, accounted }));\n        Assert.Equal(0, collections);\n        Assert.Equal(100, remaining);\n        Assert.True(accounted <= 2000000);\n        Assert.Equal(baseline + pool.CommittedBackingBytes + remaining * 256L, governor.CurrentCommittedBytes);\n        GC.Collect();\n        GC.WaitForPendingFinalizers();\n        GC.Collect();\n        pool.Sweep(full: true);\n        Assert.Equal(0, pool.Count);\n        Assert.Equal(baseline + pool.CommittedBackingBytes, governor.CurrentCommittedBytes);\n        governor.ReleaseReserved(25000);\n        GC.KeepAlive(keys);\n    }\n\n    [MethodImpl(MethodImplOptions.NoInlining)]\n    private static List<object> Track(ChargeReclamationPool pool, MemoryGovernor governor)\n    {\n        var keys = new List<object>();\n        for (var i = 0; i < 200; i++)\n        {\n            var value = new object();\n            governor.Reserve(128, null);\n            governor.Commit(128);\n            pool.Track(value, 128);\n            keys.Add(value);\n        }\n        return keys;\n    }\n\n    [MethodImpl(MethodImplOptions.NoInlining)]\n    private static void Drop(List<object> keys, int start, int count)\n    {\n        for (var i = start; i < start + count; i++) keys[i] = null!;\n    }\n}",
+    "process": {
+      "source": "4150a40aeab69958c0fa6709fa700403dc1883f8",
+      "production": "a03c7bf73723df522eb45292d5dc4a8056bbe836",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\primitive-storage-20261012\\original\\tests\\Lokad.Lython.Tests\\bin\\Debug\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "2E64F5CF49A82F8661F8C035E3B20282A48B870719587449BD465447273049A7",
+      "filter": "FullyQualifiedName~PartialExhaustionReliefOriginalTests",
+      "pid": 996060,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1096,
+      "stdoutSha256": "1A079D4A0FD49743D9B1C4C2FF8A71647C9B6682221F8328BD7671BA6C6C3BCE",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "outcome": {
+      "collections": 0,
+      "remaining": 100,
+      "accounted": 1984400
+    }
+  },
+  "originalPrimitiveDiagnosticSource": "using System.Numerics;\nusing System.Runtime.CompilerServices;\nusing System.Text.Json;\nusing Lokad.Lython.Runtime;\n\nnamespace Lokad.Lython.Tests;\n\npublic sealed class PrimitiveStorageOriginalTests\n{\n    public static IEnumerable<object[]> Cases()\n    {\n        foreach (var value in new object[] { true, false, (sbyte)-1, (byte)1, (short)-1,\n            (ushort)1, -1, (uint)1, (long)-1, (ulong)1, new BigInteger(1), 1.5, new PyDecimal(1.5m) })\n            for (var container = 0; container < 3; container++)\n                yield return [container, value];\n    }\n\n    [Theory]\n    [MemberData(nameof(Cases))]\n    public void EveryRetainedNumericKindUsesTheSameOccupiedAllowance(int container, object value)\n    {\n        var governor = new MemoryGovernor(null);\n        var bytes = Make(container, [value, value], governor);\n        var baseline = Make(container, [PyNone.Instance, PyNone.Instance], new MemoryGovernor(null));\n        Assert.Equal(baseline + (container == 2 ? 64 : 128), bytes);\n        Assert.Equal(bytes, governor.CurrentCommittedBytes);\n        Assert.Equal(0, governor.CurrentReservedBytes);\n    }\n\n    private static long Make(int kind, object[] items, MemoryGovernor governor) => kind switch\n    {\n        0 => new PyList(items, governor).CommittedStorageBytes,\n        1 => new PyTuple(items, governor).CommittedStorageBytes,\n        _ => new PySet(items, governor).CommittedStorageBytes\n    };\n\n    [Fact]\n    public void RetainedBooleanBoxesFitWithinTheConservativeStorageEstimate()\n    {\n        const int count = 4096;\n        var items = new object[count];\n        Box(false);\n        var before = GC.GetAllocatedBytesForCurrentThread();\n        for (var i = 0; i < count; i++) items[i] = Box((i & 1) != 0);\n        var boxBytes = GC.GetAllocatedBytesForCurrentThread() - before;\n        var distinct = new HashSet<object>(items, ReferenceEqualityComparer.Instance).Count;\n        var governor = new MemoryGovernor(null);\n        var list = new PyList(items, governor);\n        var receipt = new { count, distinct, boxBytes, accounted = governor.CurrentCommittedBytes, retainedCount = list.Count };\n        var path = Environment.GetEnvironmentVariable(\"LYTHON_PRIMITIVE_STORAGE_DIAG\")!;\n        Assert.False(string.IsNullOrEmpty(path));\n        File.WriteAllText(path, JsonSerializer.Serialize(receipt));\n        Assert.Equal(count, distinct);\n        Assert.True(governor.CurrentCommittedBytes >= boxBytes,\n            $\"Retained Boolean boxes alone occupy {boxBytes}, but list storage accounts {governor.CurrentCommittedBytes}.\");\n        GC.KeepAlive(items);\n        GC.KeepAlive(list);\n    }\n\n    [MethodImpl(MethodImplOptions.NoInlining)]\n    private static object Box(bool value) => value;\n}",
+  "performanceClaim": false,
+  "comparisonLaneCollected": false,
+  "gcPolicyChanged": false
+}
