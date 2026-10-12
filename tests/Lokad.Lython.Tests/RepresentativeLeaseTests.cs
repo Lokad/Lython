@@ -97,7 +97,7 @@ public sealed class RepresentativeLeaseTests
         // A body conversion error leaves the Python CSV iterator resumable.
         // Its still-funded parser scratch is reclaimed on abandonment, rather
         // than disposing an iterator that a caller could have retained.
-        Assert.Equal(name == "csv-summary" && invalid ? 96 : 0, context.MemoryGovernor.CurrentReservedBytes);
+        Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.Equal(0, context.Limits.CurrentInterpreterDepth);
         Assert.Equal(0, context.Limits.CurrentRecursionDepth);
         var escaped = Assert.IsType<PyString>(context.Variables["escaped"]);

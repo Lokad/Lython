@@ -1852,12 +1852,15 @@ The default dialect is:
 - quote character `"`
 - line terminator `\n`
 
-Returned rows and field values may outlive their CSV reader. Collecting the
-reader releases its parser scratch, while the registered reclamation pool
-continues to track surviving values. The pool's tracking and backing remain
-funded until its last values are collected; exhaustion relief also reconciles
-empty abandoned pools before retrying allocation. Dropping a reader must not
-strand charges for values that are dropped later.
+Returned rows and field values may outlive their CSV reader. Source/parser shell
+and actual scratch capacities have one storage owner; emitted fields, rows and
+dictionaries register independently with the shared reclamation pool. EOF releases
+scratch without refunding surviving values. A body error preserves a resumable
+reader and its funded storage; abandonment reclaims its snapshot after collection.
+Field/list buffer growth preflights old/new overlap before allocation. Small
+retained scratch arrays remain charged until release, rather than being recharged
+only when reused. These ordinary storage charges can deny tiny budgets earlier.
+Dropping a reader must not strand charges for values that are dropped later.
 
 CSV field-name tables are preflighted and funded as actual array storage, with
 the normal reclamation registration fee. Their charges release when those arrays

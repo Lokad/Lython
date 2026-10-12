@@ -19,8 +19,10 @@ they do not qualify embedding latency or comparative performance.
 Alias controls retain one CSV note, JSON kind or Unicode line across the complete
 scan and source closure, collect before projection, and compare independent
 report bytes. Retaining all emitted values rejects at the same 256 KiB cap.
-White-box CSV/JSON success/error controls check acquisition/parser reservations
-and funded escaped storage after abandonment. A CSV body-conversion error leaves
+White-box CSV/JSON success/error controls check acquisition leases, parser storage
+and funded escaped storage after abandonment. CSV source/parser storage owns its
+shell and actual scratch capacities; emitted values use the shared pool. Field
+growth preflights replacement overlap before allocating. A CSV body-conversion error leaves
 the reader resumable and its scratch funded until EOF or collection; this evidence
 does not establish GC-independent reclamation. Caller-retained readers may resume.
 

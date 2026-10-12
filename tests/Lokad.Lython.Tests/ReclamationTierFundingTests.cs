@@ -126,7 +126,7 @@ public sealed class ReclamationTierFundingTests
         GC.Collect();
         Assert.False(row.TryGetTarget(out _));
         Assert.False(field.TryGetTarget(out _));
-        Assert.Equal(4, source.Pool.Count);
+        Assert.Equal(5, source.Pool.Count); // source plus three fields and row
         var governor = context.MemoryGovernor;
         var before = governor.CurrentCommittedBytes;
         var reservedBefore = governor.CurrentReservedBytes;
@@ -139,11 +139,11 @@ public sealed class ReclamationTierFundingTests
 
         Assert.NotNull(next);
         Assert.Equal("z", ((PyString)next[0]).AsString());
-        Assert.Equal(4, source.Pool.Count);
-        Assert.Equal(32, ActualBacking(source.Pool));
+        Assert.Equal(5, source.Pool.Count);
+        Assert.Equal(64, ActualBacking(source.Pool));
         Assert.Equal(ActualBacking(source.Pool), source.Pool.CommittedBackingBytes);
-        // The dead three-cell row and one dropped field refund exactly the
-        // new one-cell row/field charges. Existing slots need no growth.
+        // Both rows use the minimum four-slot backing. Dead row/field funding
+        // is reused without growing shared backing or losing source storage.
         Assert.Equal(before, governor.CurrentCommittedBytes);
         Assert.Equal(reservedBefore + pressure, governor.CurrentReservedBytes);
         Assert.True(governor.PeakAccountedBytes <= cap);

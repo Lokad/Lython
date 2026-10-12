@@ -498,12 +498,10 @@ internal sealed partial class LythonRuntime
     // Records parse one physical line at a time and stream through a shared
     // cursor: parsed rows are yielded once and never retained (except the
     // DictReader header row), so a full scan only carries the current record.
-    // Field payloads commit at parse time and register with the reclamation
-    // pool; sweeps release charges for fields the guest dropped while keeping
-    // every retained alias charged. The field-builder transient lives as long
-    // as the source; it is released once the source is exhausted, or held
-    // (safe direction) when the consumer abandons the tail.
-    internal sealed class CsvRecordSource
+    // Field/row payloads use the shared reclamation pool. Source/parser shell
+    // and actual scratch capacities have one separate source snapshot, so
+    // dropping that source never refunds an escaping field or row.
+    internal sealed class CsvRecordSource : IPyOwnershipSnapshot
     {
         private readonly CsvRecordParser _parser;
         private readonly IEnumerator<object>? _cursor;
@@ -513,11 +511,17 @@ internal sealed partial class LythonRuntime
         private int _position;
         private readonly ExecutionContext _context;
         private readonly LythonSourceSpan _span;
-        private readonly MemoryGovernor.TemporaryMemoryReservation _fieldScratch;
-        private readonly ChargeReclamationPool _pool;
         private PyList? _pushedBack;
-        private long _pulls;
         private bool _completed;
+
+        // Source/parser objects, builders and list shells; backing is charged
+        // from actual capacities, independently of emitted values.
+        internal const long ShellBytes = 512;
+        internal long OwnedBytes => ShellBytes + _parser.StorageBytes;
+        bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes)
+            => OwnershipSnapshot.Owned(_context.MemoryGovernor, OwnedBytes, out bytes);
+        internal bool Completed => _completed;
+        internal void StorageChanged() => ChargeReclamationPool.NotifyStorageReplaced(this, OwnedBytes);
 
         public CsvRecordSource(object source, CsvOptions options, LythonSourceSpan span, ExecutionContext context)
         {
@@ -530,23 +534,41 @@ internal sealed partial class LythonRuntime
             // cursor materializes lazily on first async use so synchronous runs
             // never pay for it; sharing one origin across modes interleaves
             // positions exactly like two readers over one file in CPython.
-            if (source is PyList list)
+            const long initialBytes = ShellBytes + 32; // initial 16-char builder
+            context.MemoryGovernor.Reserve(initialBytes, span);
+            try
             {
-                _indexed = list;
+                if (source is PyList list)
+                {
+                    _indexed = list;
+                }
+                else
+                {
+                    _cursor = ToSequence(source, span, context).GetEnumerator();
+                }
+                _parser = new CsvRecordParser(options, context, span, this);
+                context.MemoryGovernor.Commit(initialBytes);
             }
-            else
+            catch
             {
-                _cursor = ToSequence(source, span, context).GetEnumerator();
+                context.MemoryGovernor.ReleaseReserved(initialBytes);
+                _cursor?.Dispose();
+                throw;
             }
-            _fieldScratch = context.MemoryGovernor.ReserveTemporary(0, span);
-            _pool = new ChargeReclamationPool(context.MemoryGovernor);
-            context.State.RegisterCsvSource(this, _pool, _fieldScratch);
-            _parser = new CsvRecordParser(options, context, span, _fieldScratch, _pool);
+            try
+            {
+                context.State.CallTemporaries.TrackFreshMutable(this, OwnedBytes, span);
+            }
+            catch
+            {
+                _cursor?.Dispose();
+                throw;
+            }
         }
 
         public int PhysicalLineCount { get; private set; }
 
-        internal ChargeReclamationPool Pool => _pool;
+        internal ChargeReclamationPool Pool => _context.State.CallTemporaries;
 
         // The returned record stays live during conversion. The resulting
         // field-name table retains its strings; no extra header holder is needed.
@@ -628,7 +650,6 @@ internal sealed partial class LythonRuntime
 
         private void Pull()
         {
-            _context.State.NoteCsvPull();
             object current;
             if (_indexed is not null)
             {
@@ -689,15 +710,10 @@ internal sealed partial class LythonRuntime
                 throw;
             }
 
-            if ((++_pulls & 255) == 0)
-            {
-                _pool.Sweep();
-            }
         }
 
         private async ValueTask PullAsync()
         {
-            _context.State.NoteCsvPull();
             if (_indexed is not null)
             {
                 // Indexed lists never touch the host, so the async pull shares
@@ -766,10 +782,6 @@ internal sealed partial class LythonRuntime
                 throw;
             }
 
-            if ((++_pulls & 255) == 0)
-            {
-                _pool.Sweep();
-            }
         }
 
         private void FinishExhausted()
@@ -787,8 +799,7 @@ internal sealed partial class LythonRuntime
             finally
             {
                 _cursor?.Dispose();
-                _fieldScratch.Dispose();
-                _pool.Sweep(full: true);
+                _parser.ReleaseScratch();
             }
         }
 
@@ -813,8 +824,7 @@ internal sealed partial class LythonRuntime
                     _asyncCursor = null;
                 }
 
-                _fieldScratch.Dispose();
-                _pool.Sweep(full: true);
+                _parser.ReleaseScratch();
             }
         }
     }
@@ -828,26 +838,23 @@ internal sealed partial class LythonRuntime
         private readonly string? _quoteCharacter;
         private readonly string? _escapeCharacter;
         private readonly List<object> _row = new();
-        private long _chargedRowCapacity;
-        private readonly StringBuilder _field = new();
-        private readonly MemoryGovernor.TemporaryMemoryReservation _fieldScratch;
-        private readonly ChargeReclamationPool _pool;
+        private readonly StringBuilder _field = new(16);
+        private readonly CsvRecordSource _owner;
         private readonly List<PyList> _ready = new();
         private int _readyHead;
-        private long _chargedFieldCapacity;
-        private long _chargedReadyCapacity;
         private bool _inQuotes;
         private bool _fieldStarted;
         private bool _afterQuote;
         private bool _recordStarted;
 
-        public CsvRecordParser(CsvOptions options, ExecutionContext context, LythonSourceSpan span, MemoryGovernor.TemporaryMemoryReservation fieldScratch, ChargeReclamationPool pool)
+        internal long StorageBytes => checked(16L * _row.Capacity + 2L * _field.Capacity + 16L * _ready.Capacity);
+
+        public CsvRecordParser(CsvOptions options, ExecutionContext context, LythonSourceSpan span, CsvRecordSource owner)
         {
             _options = options;
             _context = context;
             _span = span;
-            _fieldScratch = fieldScratch;
-            _pool = pool;
+            _owner = owner;
             _delimiter = options.Delimiter.AsString();
             _quoteCharacter = options.QuoteChar?.AsString();
             _escapeCharacter = options.EscapeChar?.AsString();
@@ -859,6 +866,7 @@ internal sealed partial class LythonRuntime
         {
             if (_readyHead >= _ready.Count)
             {
+                if (_owner.Completed) ReleaseReadyStorage();
                 row = null!;
                 return false;
             }
@@ -872,12 +880,13 @@ internal sealed partial class LythonRuntime
                 _readyHead = 0;
             }
 
+            if (_owner.Completed && _readyHead >= _ready.Count) ReleaseReadyStorage();
+
             return true;
         }
 
         public void Feed(string text)
         {
-            NoteFieldCapacity();
             for (var i = 0; i < text.Length; i++)
             {
                 var c = text[i];
@@ -895,7 +904,7 @@ internal sealed partial class LythonRuntime
                         {
                             // A doubled quote denotes one literal quote, including for a
                             // non-BMP Python character represented by two UTF-16 code units.
-                            _field.Append(quoteCharacter);
+                            AppendField(quoteCharacter);
                             i += (2 * quoteCharacter.Length) - 1;
                         }
                         else
@@ -908,7 +917,7 @@ internal sealed partial class LythonRuntime
                         continue;
                     }
 
-                    _field.Append(c);
+                    AppendField(c);
                     continue;
                 }
 
@@ -960,14 +969,14 @@ internal sealed partial class LythonRuntime
 
                 _fieldStarted = true;
                 _recordStarted = true;
-                _field.Append(c);
+                AppendField(c);
             }
 
             if (_inQuotes)
             {
                 if (text.Length == 0 || (text[^1] != '\n' && text[^1] != '\r'))
                 {
-                    _field.Append('\n');
+                    AppendField('\n');
                 }
 
                 return;
@@ -1007,13 +1016,13 @@ internal sealed partial class LythonRuntime
                     throw CsvError("Invalid csv input.", _span);
                 }
 
-                _field.Append(_escapeCharacter);
+                AppendField(_escapeCharacter);
                 index += _escapeCharacter.Length - 1;
                 return true;
             }
 
             index += _escapeCharacter.Length;
-            _field.Append(text[index]);
+            AppendField(text[index]);
             _fieldStarted = true;
             _recordStarted = true;
             return true;
@@ -1021,61 +1030,56 @@ internal sealed partial class LythonRuntime
 
         private void AddRowCell(object cell)
         {
-            // The row scratch doubles geometrically like the drains beside
-            // it; cover each capacity step (including the old/new overlap)
-            // before the cell lands, and release the reservation with the
-            // finished record below.
-            if (_row.Count == _row.Capacity)
-            {
-                var predicted = _row.Capacity == 0 ? 4L : (long)_row.Capacity * 2L;
-                // The registered source scratch owns this reservation too,
-                // so abandonment returns it without retaining the parser.
-                // Fund the replacement beside the old array before allocating.
-                var replacementBytes = checked(16L * predicted);
-                _fieldScratch.Grow(replacementBytes, _span);
-                try
-                {
-                    _row.Capacity = checked((int)predicted);
-                }
-                catch
-                {
-                    _fieldScratch.Shrink(replacementBytes);
-                    throw;
-                }
-                _fieldScratch.Shrink(checked(16L * _chargedRowCapacity));
-                _chargedRowCapacity = predicted;
-            }
-            else if (_row.Capacity > _chargedRowCapacity)
-            {
-                // A completed record returned its funding; recharge the
-                // retained array before reusing it for another row.
-                _fieldScratch.Grow(checked(16L * (_row.Capacity - _chargedRowCapacity)), _span);
-                _chargedRowCapacity = _row.Capacity;
-            }
+            EnsureListCapacity(_row);
             _row.Add(cell);
         }
 
-        private void NoteFieldCapacity()
+        private void EnsureListCapacity<T>(List<T> values)
         {
-            // StringBuilder doubles geometrically; cover the live peak
-            // incrementally. Checked at Feed and FinishField boundaries so
-            // growth between checks stays within one physical line, which
-            // the line stage already bounds.
-            if (_field.Capacity > _chargedFieldCapacity)
-            {
-                _fieldScratch.Grow(checked(2L * (_field.Capacity - _chargedFieldCapacity)), _span);
-                _chargedFieldCapacity = _field.Capacity;
-            }
+            if (values.Count < values.Capacity) return;
+            var before = values.Capacity;
+            var next = before == 0 ? 4 : checked(before * 2);
+            // Fund old and replacement backing simultaneously; a denied or
+            // failed allocation leaves the old source snapshot unchanged.
+            using var replacement = _context.MemoryGovernor.ReserveTemporary(16L * next, _span);
+            values.Capacity = next;
+            replacement.Commit(16L * next);
+            _context.MemoryGovernor.Release(16L * before);
+            _owner.StorageChanged();
+        }
+
+        private void EnsureFieldCapacity(int additional)
+        {
+            var required = checked(_field.Length + additional);
+            if (required <= _field.Capacity) return;
+            var before = _field.Capacity;
+            var next = Math.Max(required, before == 0 ? 16 : checked(before * 2));
+            using var replacement = _context.MemoryGovernor.ReserveTemporary(2L * next, _span);
+            _field.EnsureCapacity(next);
+            replacement.Commit(2L * next);
+            _context.MemoryGovernor.Release(2L * before);
+            _owner.StorageChanged();
+        }
+
+        private void AppendField(char value)
+        {
+            EnsureFieldCapacity(1);
+            _field.Append(value);
+        }
+
+        private void AppendField(string value)
+        {
+            EnsureFieldCapacity(value.Length);
+            _field.Append(value);
         }
 
         private void FinishField()
         {
-            NoteFieldCapacity();
             // Decoded fields commit their payload here and register with the
             // reclamation pool; row and table backing is charged separately
             // by the governed row containers.
             var payload = PyString.FromString(_field.ToString(), _context.MemoryGovernor, _span);
-            _pool.TrackFreshString(payload, _span);
+            _context.State.CallTemporaries.TrackFreshString(payload, _span);
             AddRowCell(payload);
             _field.Clear();
             _fieldStarted = false;
@@ -1084,22 +1088,8 @@ internal sealed partial class LythonRuntime
 
         private void EnqueueRecord(PyList record)
         {
-            // Ready slots ride the field scratch beside the builder: one Feed
-            // call can complete many records, and the transient releases with
-            // the source once exhausted.
-            if (_ready.Count == _ready.Capacity)
-            {
-                var predicted = _ready.Capacity == 0 ? 4L : (long)_ready.Capacity * 2L;
-                _fieldScratch.Grow(checked(16L * (predicted - _chargedReadyCapacity)), _span);
-                _chargedReadyCapacity = _ready.Capacity == 0 ? 4L : (long)_ready.Capacity * 2L;
-            }
-
+            EnsureListCapacity(_ready);
             _ready.Add(record);
-            if (_ready.Capacity > _chargedReadyCapacity)
-            {
-                _fieldScratch.Grow(checked(16L * (_ready.Capacity - _chargedReadyCapacity)), _span);
-                _chargedReadyCapacity = _ready.Capacity;
-            }
         }
 
         private void FinishRecord()
@@ -1133,15 +1123,42 @@ internal sealed partial class LythonRuntime
 
         private void ReleaseRowScratch()
         {
-            _fieldScratch.Shrink(checked(16L * _chargedRowCapacity));
-            _chargedRowCapacity = 0;
             if (_row.Capacity > 1024)
             {
-                // A single wide record must not pin megabytes of scratch
-                // backing for the rest of the source; regrowth rides the
-                // reservation above.
+                var before = _row.Capacity;
                 _row.TrimExcess();
+                _context.MemoryGovernor.Release(16L * (before - _row.Capacity));
+                _owner.StorageChanged();
             }
+        }
+
+        internal void ReleaseScratch()
+        {
+            var before = StorageBytes;
+            _row.Clear();
+            _row.Capacity = 0;
+            _field.Clear();
+            _field.Capacity = 0;
+            // EOF can precede consumption of records already queued by Feed.
+            // Their slots stay funded until the last record is handed out.
+            if (_readyHead >= _ready.Count)
+            {
+                _ready.Clear();
+                _ready.Capacity = 0;
+                _readyHead = 0;
+            }
+            _context.MemoryGovernor.Release(before - StorageBytes);
+            _owner.StorageChanged();
+        }
+
+        private void ReleaseReadyStorage()
+        {
+            var before = _ready.Capacity;
+            _ready.Clear();
+            _ready.Capacity = 0;
+            _readyHead = 0;
+            _context.MemoryGovernor.Release(16L * before);
+            _owner.StorageChanged();
         }
 
         private PyList TrackRow(PyList record)
@@ -1150,7 +1167,7 @@ internal sealed partial class LythonRuntime
             // snapshotted backing charges once the row is dropped, while
             // wholesale replacement (Clear, slice-assignment) notifies the
             // pool through the value itself.
-            _pool.TrackFreshMutable(record, record.CommittedStorageBytes, _span);
+            _context.State.CallTemporaries.TrackFreshMutable(record, record.CommittedStorageBytes, _span);
             return record;
         }
 

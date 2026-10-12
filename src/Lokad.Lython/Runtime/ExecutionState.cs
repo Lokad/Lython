@@ -14,7 +14,6 @@ internal sealed class ExecutionState
     internal PyTuple? GzipFileMetaBases { get; set; }
     internal PyTuple? GzipFileMetaMro { get; set; }
     internal LythonRuntime.UrllibParseModule.UrlSplitCache? UrlSplitCache { get; set; }
-    private long _csvPulls;
     private long _boundCalls;
     private readonly ConditionalWeakTable<object, StrongBox<long>> _objectIds = new();
     private long _nextObjectId;
@@ -272,14 +271,6 @@ internal sealed class ExecutionState
     // stays registered while returned values still need reclamation tracking.
     // The governor also enumerates this registry for exhaustion
     // relief, so registered pools participate without a second registry.
-    internal void RegisterCsvSource(
-        LythonRuntime.CsvRecordSource source,
-        ChargeReclamationPool pool,
-        MemoryGovernor.TemporaryMemoryReservation scratch)
-    {
-        RegisterPool(source, pool, scratch);
-    }
-
     internal void RegisterPool(
         object owner,
         ChargeReclamationPool pool,
@@ -331,16 +322,6 @@ internal sealed class ExecutionState
         }
 
         yield return CallTemporaries;
-    }
-
-    internal void NoteCsvPull()
-    {
-        if ((++_csvPulls & 255) == 0)
-        {
-            foreach (var _ in LiveReclamationPools())
-            {
-            }
-        }
     }
 
     // Bound calls sweep the same pool as execution steps, and deliberately so:
