@@ -29,6 +29,19 @@ public sealed class TextReadEmissionOwnershipTests
         if (asynchronous) await state.PrimeAsync();
         else state.Prime();
 
+        // The state has warmed the shared pool's first four-entry page. Fill
+        // its remaining slots so the 159-byte case still denies 32-byte growth.
+        var retained = new List<object>();
+        if (registrationHeadroom == 159)
+            while (context.State.CallTemporaries.Count < 4)
+            {
+                var owner = new object();
+                context.MemoryGovernor.Reserve(1, null);
+                context.MemoryGovernor.Commit(1);
+                context.State.CallTemporaries.Track(owner, 1);
+                retained.Add(owner);
+            }
+
         var governor = context.MemoryGovernor;
         var committed = governor.CurrentCommittedBytes;
         var reserved = governor.CurrentReservedBytes;
@@ -66,6 +79,7 @@ public sealed class TextReadEmissionOwnershipTests
         Assert.Equal(0, governor.CurrentReservedBytes);
         GC.KeepAlive(state);
         GC.KeepAlive(next);
+        GC.KeepAlive(retained);
     }
 
     [Theory]
@@ -90,7 +104,8 @@ public sealed class TextReadEmissionOwnershipTests
         GC.Collect();
 
         Assert.Equal(0, pool.Sweep(full: true));
-        Assert.Equal(1, pool.Count);
+        Assert.Equal(2, pool.Count); // Live state shell plus the retained line.
+        Assert.True(pool.IsTracked(state));
         Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal("abc\n", line.AsString());
         GC.KeepAlive(line);

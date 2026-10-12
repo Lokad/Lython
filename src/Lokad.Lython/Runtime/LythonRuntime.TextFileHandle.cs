@@ -147,7 +147,7 @@ internal sealed partial class LythonRuntime
                 }
                 catch
                 {
-                    state.Release();
+                    state.ReleaseUnpublished();
                     throw;
                 }
             }
@@ -168,7 +168,7 @@ internal sealed partial class LythonRuntime
                 }
                 catch
                 {
-                    state.Release();
+                    state.ReleaseUnpublished();
                     throw;
                 }
             }

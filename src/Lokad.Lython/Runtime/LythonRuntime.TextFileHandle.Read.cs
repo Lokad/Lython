@@ -18,8 +18,9 @@ internal sealed partial class LythonRuntime
         // window charges release on replacement and the carry releases at close.
         // Window scratch (decoded strings, transient byte arrays) stays bounded by
         // the window, so it needs no reservation beyond the held infrastructure.
-        internal sealed class ChunkedTextFileReadState : TextFileState
+        internal sealed class ChunkedTextFileReadState : TextFileState, IPyOwnershipSnapshot
         {
+            internal const long ShellBytes = 192;
             internal const int DefaultWindowBytes = 16 * 1024;
             internal const int MinimumWindowBytes = 4 * 1024;
 
@@ -47,8 +48,12 @@ internal sealed partial class LythonRuntime
             private bool _eof;
             private bool _bomChecked;
             private bool _released;
-            private readonly ChargeReclamationPool _pool;
-            private int _emissions;
+            internal long OwnedBytes => ShellBytes + (_raw?.LongLength ?? 0) + _windowCharge;
+
+            bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes)
+                => OwnershipSnapshot.Owned(_context.MemoryGovernor, OwnedBytes, out chargeBytes);
+
+            private void RefreshOwnership() => ChargeReclamationPool.NotifyStorageReplaced(this, OwnedBytes);
 
             internal ChunkedTextFileReadState(
                 string path,
@@ -66,8 +71,9 @@ internal sealed partial class LythonRuntime
                 _errors = errors;
                 _newline = newline;
                 _windowBytes = windowBytes;
-                _pool = new ChargeReclamationPool(context.MemoryGovernor);
-                context.State.RegisterPool(this, _pool);
+                context.MemoryGovernor.Reserve(ShellBytes, null);
+                context.MemoryGovernor.Commit(ShellBytes);
+                context.State.CallTemporaries.TrackFreshMutable(this, ShellBytes);
             }
 
             public BigInteger Position => new(_position);
@@ -193,13 +199,20 @@ internal sealed partial class LythonRuntime
                 }
 
                 _released = true;
-                _pool.Sweep(full: true);
                 ReleaseWindow();
                 if (_raw is not null)
                 {
                     _context.MemoryGovernor.Release(_raw.Length);
                     _raw = null;
                 }
+                RefreshOwnership();
+            }
+
+            // Construction has exposed no state or emitted values to guest code.
+            public void ReleaseUnpublished()
+            {
+                Release();
+                _context.State.CallTemporaries.RefundUnpublishedValue(this);
             }
 
             private PyString ReadBounded(int size)
@@ -335,19 +348,13 @@ internal sealed partial class LythonRuntime
                 return text;
             }
 
-            // Registers emitted values so sweeps release charges for lines the
-            // guest dropped while keeping every retained alias charged, exactly
-            // like CSV field payloads. Sweeps run every 256 emissions so the
-            // registry itself stays a bounded 16KB of young-tier entries.
+            // Returned values own independent payloads; the shared pool retains
+            // them after this reader closes or is abandoned.
             private void TrackEmission(PyString value)
             {
                 // Every emission is freshly constructed and unpublished. If
                 // registration is denied, return its orphaned payload charge.
-                _pool.TrackFreshString(value);
-                if ((++_emissions & 255) == 0)
-                {
-                    _pool.Sweep();
-                }
+                _context.State.CallTemporaries.TrackFreshString(value);
             }
 
             private bool Drained()
@@ -679,6 +686,7 @@ internal sealed partial class LythonRuntime
                     var raw = new byte[length];
                     _context.MemoryGovernor.Commit(length);
                     _raw = raw;
+                    RefreshOwnership();
                 }
                 catch
                 {
@@ -773,6 +781,7 @@ internal sealed partial class LythonRuntime
                 _charConsumed = 0;
                 Buffer.BlockCopy(_raw!, head, _raw!, 0, _rawLength - head);
                 _rawLength -= head;
+                RefreshOwnership();
             }
 
             private void ReleaseWindow()
@@ -787,6 +796,7 @@ internal sealed partial class LythonRuntime
                 _decoded = string.Empty;
                 _windowConsumed = 0;
                 _charConsumed = 0;
+                RefreshOwnership();
             }
 
             private string TextReadKind() => UsesBinaryTextTransport(_encoding) ? "binary" : "text";

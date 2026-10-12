@@ -1330,6 +1330,16 @@ payload ownership after the file closes. A denied registration refunds the
 unpublished shell; read-construction failure also releases its private buffers.
 Registration metadata may reject very small execution budgets earlier.
 
+Text-reader state funds a conservative 192-byte storage shell, its raw carry
+and current decoded window through one mutable snapshot in the shared owner
+pool. Dropping an unclosed reader reclaims these private buffers when collected;
+retained readers, iterators and methods keep them funded. Close releases buffers
+and refreshes that snapshot once, leaving live shells charged. Returned values
+use the shared pool with independent payload ownership. No separate per-reader
+reclamation pool or abandonment registration is needed. Failed unpublished
+construction refunds the state and entry immediately; shared pool capacity
+remains funded for the run. CLR reclamation and exhaustion relief still apply.
+
 Readers acquire governed windows through optional ranged host methods. A short
 nonempty window is not EOF; empty windows end the stream. Stat and cumulative
 actual reads enforce host byte limits. The default host range method composes a

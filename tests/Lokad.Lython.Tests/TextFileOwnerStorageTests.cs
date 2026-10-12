@@ -23,8 +23,10 @@ public sealed class TextFileOwnerStorageTests
         var before = context.MemoryGovernor.CurrentCommittedBytes;
         GC.Collect();
         Assert.False(dropped.TryGetTarget(out _));
-        Assert.Equal(64 + ChargeReclamationPool.EntryChargeBytes, context.State.CallTemporaries.Sweep(full: true));
-        Assert.Equal(before - 64 - ChargeReclamationPool.EntryChargeBytes, context.MemoryGovernor.CurrentCommittedBytes);
+        var expected = 64 + ChargeReclamationPool.EntryChargeBytes + (mode == "r"
+            ? LythonRuntime.ExecutionContext.ChunkedTextFileReadState.ShellBytes + ChargeReclamationPool.EntryChargeBytes : 0);
+        Assert.Equal(expected, context.State.CallTemporaries.Sweep(full: true));
+        Assert.Equal(before - expected, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.True(context.State.CallTemporaries.IsTracked(kept));
         Assert.True(kept.IsClosed);
         Assert.True(((IPyOwnershipSnapshot)kept).TrySnapshotOwnership(out var shell));
