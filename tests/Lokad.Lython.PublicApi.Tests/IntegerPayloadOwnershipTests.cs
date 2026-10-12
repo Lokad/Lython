@@ -137,12 +137,23 @@ public sealed class IntegerPayloadOwnershipTests
     [Fact]
     public void DiscardedLoadsReclaimWithoutFalseDenial()
     {
-        // Dropped magnitudes release through the pool on sweep: twenty thousand
-        // discarded loads must not accumulate permanent charges (the R11 shape).
+        // Cumulative payload is over 4 MiB. A tighter fixed cap forces actual
+        // reclamation instead of depending on when the process GC happens to run.
+        const long cap = 1024 * 1024;
         var code = "import json\ns = \"7\" * 5000\nfor _ in range(2000):\n json.loads(s)\nreturn 0\n";
-        var result = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = 8 * 1024 * 1024 });
+        var result = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap });
         Assert.True(result.Success, result.Failure?.Message);
-        Assert.True(result.PeakExecutionMemoryBytes < 4 * 1024 * 1024, $"peak was {result.PeakExecutionMemoryBytes}");
+        Assert.InRange(result.PeakExecutionMemoryBytes, 1, cap);
+    }
+
+    [Fact]
+    public void RetainedLoadsRejectUnderTheSameFixedCap()
+    {
+        const long cap = 1024 * 1024;
+        var code = "import json\ns = \"7\" * 5000\nkept = []\nfor _ in range(2000):\n kept.append(json.loads(s))\nreturn 0\n";
+        var result = new LythonEngine().Run(code, new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap });
+        AssertError(result, "MemoryError", "execution memory budget exceeded");
+        Assert.InRange(result.PeakExecutionMemoryBytes, 1, cap);
     }
 
     [Fact]
