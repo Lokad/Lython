@@ -11,8 +11,12 @@ internal interface IPyAsyncDynamicAttributes
 
 // Lazy cells publish successes only. Failed resolutions can be retried after a
 // forward name is bound, and no host work runs while a type object is created.
-internal sealed class PyLazyTypeValue(LoweredExpression expression, LythonRuntime.ExecutionContext scope)
+internal sealed class PyLazyTypeValue(LoweredExpression expression, LythonRuntime.ExecutionContext scope) : IMemoryStorageEdges
 {
+    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+    {
+        visitor.Add(expression); visitor.Add(scope); visitor.Add(_value);
+    }
     private bool _resolved, _evaluating;
     private object _value = PyNone.Instance;
 
@@ -34,8 +38,13 @@ internal sealed class PyLazyTypeValue(LoweredExpression expression, LythonRuntim
 }
 
 internal sealed class PyTypeParameter : IPyContextualDynamicAttributes, IPyAsyncDynamicAttributes,
-    IPyRenderableValue, IPyIterableValue, IPyHashableValue, IPyGovernedValue, IPyOwnershipSnapshot
+    IPyRenderableValue, IPyIterableValue, IPyHashableValue, IPyGovernedValue, IPyOwnershipSnapshot, IMemoryStorageEdges
 {
+    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+    {
+        visitor.Add(_name); visitor.Add(_module); visitor.Add(_bound); visitor.Add(_default);
+        visitor.Add(_constantBound); visitor.Add(_constantDefault); visitor.Add(_unpacked); visitor.Add(_unpackedDefault);
+    }
     internal static readonly PyBuiltinRuntimeType TypeVarType = TypeObject("TypeVar", TypeParameterKind.TypeVar);
     internal static readonly PyBuiltinRuntimeType TypeVarTupleType = TypeObject("TypeVarTuple", TypeParameterKind.TypeVarTuple);
     internal static readonly PyBuiltinRuntimeType ParamSpecType = TypeObject("ParamSpec", TypeParameterKind.ParamSpec);
@@ -123,8 +132,9 @@ internal sealed class PyTypeParameter : IPyContextualDynamicAttributes, IPyAsync
         => PyString.FromString((InferVariance || Kind == TypeParameterKind.TypeVarTuple ? "" : Covariant ? "+" : Contravariant ? "-" : "~") + Name, context.Context.MemoryGovernor);
     public PyString RenderInterpolated(PyRenderingContext context) => RenderPython(context);
     private sealed class HasDefaultMethod(PyTypeParameter parameter, MemoryGovernor governor, LythonSourceSpan span) : LythonRuntime.ICallable,
-        LythonRuntime.IPyBoundEngineMethod, IPyGovernedValue, IPyOwnershipSnapshot
+        LythonRuntime.IPyBoundEngineMethod, IPyGovernedValue, IPyOwnershipSnapshot, IMemoryStorageEdges
     {
+        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor) => visitor.Add(parameter);
         public MemoryGovernor? OwnerMemoryGovernor => governor;
         public LythonSourceSpan? AllocationSpan => span;
         bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes) { bytes = 96; return true; }
@@ -160,8 +170,9 @@ internal sealed record PyUnpackedType(object Value) : IPyRenderableValue, IPyDyn
 }
 
 internal sealed record PyParamSpecPart(PyTypeParameter Parameter, bool Positional) : IPyRenderableValue, IPyDynamicAttributes,
-    IPyGovernedValue, IPyOwnershipSnapshot
+    IPyGovernedValue, IPyOwnershipSnapshot, IMemoryStorageEdges
 {
+    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor) => visitor.Add(Parameter);
     public MemoryGovernor? OwnerMemoryGovernor { get; private init; }
     public LythonSourceSpan? AllocationSpan { get; private init; }
     bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes) => OwnershipSnapshot.Owned(OwnerMemoryGovernor, 96, out bytes);
@@ -179,8 +190,12 @@ internal sealed record PyParamSpecPart(PyTypeParameter Parameter, bool Positiona
 }
 
 internal sealed class PyTypeAlias : IPyContextualDynamicAttributes, IPyAsyncDynamicAttributes, IPySubscriptableValue,
-    IPyRenderableValue, IPyHashableValue, IPyGovernedValue, IPyOwnershipSnapshot
+    IPyRenderableValue, IPyHashableValue, IPyGovernedValue, IPyOwnershipSnapshot, IMemoryStorageEdges
 {
+    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+    {
+        visitor.Add(_name); visitor.Add(_module); visitor.Add(TypeParameters); visitor.Add(_value);
+    }
     internal static readonly PyBuiltinRuntimeType RuntimeType = new("typing.TypeAliasType",
         static (arguments, span, context) => throw new LythonRuntimeException("TypeError", "Use a type statement to define a type alias in Lython.", span));
     private readonly PyString _name;
@@ -231,8 +246,12 @@ internal sealed class PyTypeAlias : IPyContextualDynamicAttributes, IPyAsyncDyna
 }
 
 internal sealed class PyGenericAlias : IPyDynamicAttributes, IPySubscriptableValue, IPyIterableValue,
-    IPyRenderableValue, LythonRuntime.ICallable, IPyHashableValue, IPyGovernedValue, IPyOwnershipSnapshot
+    IPyRenderableValue, LythonRuntime.ICallable, IPyHashableValue, IPyGovernedValue, IPyOwnershipSnapshot, IMemoryStorageEdges
 {
+    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+    {
+        visitor.Add(Origin); visitor.Add(Arguments); visitor.Add(Parameters); visitor.Add(_unpacked);
+    }
     internal static readonly PyBuiltinRuntimeType RuntimeType = new("types.GenericAlias",
         static (arguments, span, context) => throw new LythonRuntimeException("TypeError", "Use generic subscripting in Lython.", span));
     internal static readonly PyTypingAlias UnionOrigin = new("Union");

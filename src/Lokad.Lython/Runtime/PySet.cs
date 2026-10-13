@@ -2,8 +2,15 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue, IPyOwnershipSnapshot
+internal sealed class PySet : IEnumerable<object>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue, IPyOwnershipSnapshot, IMemoryStorageEdges
 {
+    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+    {
+        foreach (var value in _items) if (!visitor.Add(value)) return;
+        if (_protocol is not null)
+            foreach (var entry in _protocol) if (!visitor.Add(entry.Item)) return;
+        // The side index holds integer positions only.
+    }
     private HashSet<object> _items;
     private MemoryGovernor? _memoryGovernor;
     private LythonSourceSpan? _allocationSpan;

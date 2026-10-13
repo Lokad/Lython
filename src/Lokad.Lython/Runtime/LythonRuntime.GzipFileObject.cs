@@ -6,8 +6,12 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private sealed partial class GzipFileObject : IPyProtocolIterator, IPyRenderableValue, IPyFinalizableOwnership, IExecutionFileWriter
+    private sealed partial class GzipFileObject : IPyProtocolIterator, IPyRenderableValue, IPyFinalizableOwnership, IExecutionFileWriter, IMemoryStorageEdges
     {
+        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+        {
+            visitor.Add(_stream); visitor.Add(_name); visitor.Add(_operationContext); visitor.Add(_cursor);
+        }
         internal const long ShellBytes = 512;
         private const int WriteBufferBytes = 32768;
         private const int ReadBufferBytes = 8192;

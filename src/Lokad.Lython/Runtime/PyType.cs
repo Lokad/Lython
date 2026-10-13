@@ -12,8 +12,25 @@ internal enum JsonBaseKind
     Decoder,
 }
 
-internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyHashableValue
+internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyHashableValue, IMemoryStorageEdges
 {
+    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+    {
+        visitor.Add(NameValue);
+        visitor.Add(BasesTuple);
+        visitor.Add(MroTuple);
+        // Keep the actual retained collections, too: caller-supplied bases
+        // are not necessarily identical to the construction-time tuple copy.
+        visitor.Add(Bases);
+        visitor.Add(Mro);
+        visitor.Add(MetaType);
+        visitor.Add(DataclassFields);
+        visitor.Add(DataclassHelperFields);
+        visitor.Add(DataclassReprFields);
+        visitor.Add(DataclassComparableFields);
+        visitor.Add(DataclassFieldsByName);
+        foreach (var pair in _members) if (!visitor.Add(pair.Value)) return;
+    }
     internal static readonly PyBuiltinRuntimeType ModuleType = CreateOpaqueRuntimeType("module");
     private static readonly PyBuiltinRuntimeType PathType = CreateOpaqueRuntimeType("pathlib.Path");
     internal static readonly PyBuiltinRuntimeType RegexPatternType = CreateOpaqueRuntimeType("re.Pattern");

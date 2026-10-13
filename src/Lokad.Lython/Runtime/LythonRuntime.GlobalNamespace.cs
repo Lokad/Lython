@@ -20,7 +20,16 @@ internal sealed partial class LythonRuntime
         private long _nameIndexBytes;
         private long _nameBytes;
         private int _ownedVariables;
-        private sealed record NameEntry(object Key, string Name, long Bytes);
+        private sealed record NameEntry(object Key, string Name, long Bytes) : IMemoryStorageEdges
+        {
+            void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor) => visitor.Add(Key);
+        }
+
+        public void VisitStorageChildren(MemoryStorageWalk visitor)
+        {
+            visitor.Add(_root);
+            _entries.VisitStorageChildren(visitor);
+        }
 
         internal GlobalNamespaceStorage(ExecutionContext root, LythonSourceSpan span)
         {

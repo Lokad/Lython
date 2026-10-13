@@ -5,8 +5,12 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     internal sealed class PyGenerator : IPyAsyncIteratorValue, IPyDynamicAttributes, IPyTruthyValue,
-        IPyGovernedValue, IPyOwnershipSnapshot
+        IPyGovernedValue, IPyOwnershipSnapshot, IMemoryStorageEdges
     {
+        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+        {
+            visitor.Add(_interpreter); visitor.Add(_frame); visitor.Add(_suspendedException); visitor.Add(ReturnValue);
+        }
         private ExecutableFrameInterpreter? _interpreter;
         private ExecutionContext? _frame;
         private readonly LythonSourceSpan _span;

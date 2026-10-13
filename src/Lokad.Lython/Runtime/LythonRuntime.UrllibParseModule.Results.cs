@@ -71,8 +71,12 @@ internal sealed partial class LythonRuntime
         }
 
         internal sealed class UrlResult : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue,
-            IPyRenderableValue, IPyContextualDynamicAttributes, IPyHashableValue, IPyGovernedValue, IPyOwnershipSnapshot
+            IPyRenderableValue, IPyContextualDynamicAttributes, IPyHashableValue, IPyGovernedValue, IPyOwnershipSnapshot, IMemoryStorageEdges
         {
+            void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+            {
+                visitor.Add(_values); visitor.Add(Type);
+            }
             private const long ShellBytes = 64;
             private readonly PyTuple _values;
             internal UrlResultType Type { get; }

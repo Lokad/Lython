@@ -8,8 +8,10 @@ internal sealed partial class LythonRuntime
     internal sealed partial class ExecutionContext
     {
         internal sealed partial class BinaryFileHandle : IPyAsyncContextManager, IPyIteratorValue,
-            IPyAsyncIteratorValue, IPyDynamicAttributes, IPyOwnershipSnapshot, IExecutionFileWriter
+            IPyAsyncIteratorValue, IPyDynamicAttributes, IPyOwnershipSnapshot, IExecutionFileWriter, IMemoryStorageEdges
         {
+            // Byte backing, offsets and run capabilities contain no guest values.
+            void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor) { }
             // Covers the handle, its builder and retained array headers beside
             // payload capacities, which have separate governed charges.
             internal const long ShellBytes = 256;

@@ -4,8 +4,15 @@ using System.Runtime.InteropServices;
 
 namespace Lokad.Lython.Runtime.Text;
 
-internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexableValue, IPySliceableValue, IPyIterableValue, IPyRenderableValue, IPyHashableValue, IPyGovernedValue, IPySizedValue, IPyOwnershipSnapshot
+internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexableValue, IPySliceableValue, IPyIterableValue, IPyRenderableValue, IPyHashableValue, IPyGovernedValue, IPySizedValue, IPyOwnershipSnapshot, IMemoryStorageEdges
 {
+    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+    {
+        // Non-ASCII rune caches retain actual string objects; the governor and
+        // weak accounting entry are back-pointers, not stored guest children.
+        if (_cachedRunes is not null) visitor.Add(_cachedRunes);
+    }
+
     private readonly record struct RuneByteRange(int Start, int Length);
 
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
