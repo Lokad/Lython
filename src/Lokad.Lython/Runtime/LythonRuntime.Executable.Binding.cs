@@ -453,11 +453,10 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static object ExecuteExecutableCall(
+    private static CallArgumentValue[] PrepareExecutableCallArguments(
         ExecutableCallSite callSite,
         ref ExecutableValueStack stack,
-        ExecutionContext context,
-        ref ExecutableCallCache? cache)
+        out object target)
     {
         var valueCount = callSite.ArgumentCount + 1;
         if (valueCount < 0 || stack.Count < valueCount)
@@ -466,38 +465,81 @@ internal sealed partial class LythonRuntime
         }
 
         var start = stack.Count - valueCount;
-        var target = stack[start];
+        target = stack[start];
         var arguments = RentCallArguments(callSite.ArgumentCount);
-        for (var i = 0; i < callSite.ArgumentCount; i++)
+        try
         {
-            var spec = callSite.Arguments[i];
-            if (spec.Kind is CallArgumentKind.StarredList or CallArgumentKind.StarredDictionary)
+            for (var i = 0; i < callSite.ArgumentCount; i++)
             {
-                throw new InvalidOperationException($"Executable call site contains unsupported argument kind {spec.Kind}.");
+                var spec = callSite.Arguments[i];
+                if (spec.Kind is CallArgumentKind.StarredList or CallArgumentKind.StarredDictionary)
+                {
+                    throw new InvalidOperationException($"Executable call site contains unsupported argument kind {spec.Kind}.");
+                }
+
+                arguments[i] = spec.Kind == CallArgumentKind.Keyword
+                    ? CallArgumentValue.Keyword(spec.KeywordName, stack[start + i + 1])
+                    : CallArgumentValue.Positional(stack[start + i + 1]);
             }
-
-            arguments[i] = spec.Kind == CallArgumentKind.Keyword
-                ? CallArgumentValue.Keyword(spec.KeywordName, stack[start + i + 1])
-                : CallArgumentValue.Positional(stack[start + i + 1]);
+            return arguments;
         }
+        catch
+        {
+            ReturnCallArguments(arguments);
+            throw;
+        }
+    }
 
-        stack.RemoveTail(valueCount);
+    private static void CompleteExecutableCall(
+        ref ExecutableValueStack stack,
+        int start,
+        object result,
+        ExecutionContext context,
+        LythonSourceSpan span)
+    {
+        // Invocation has completed: inputs are no longer live unless retained
+        // by the result. Reuse the target slot, publishing before admission.
+        // No extra slot, hidden retained extent or per-opcode cleanup is needed.
+        stack.RemoveTail(stack.Count - start - 1);
+        stack[start] = result;
+        context.ObserveValue(stack[start], span);
+    }
+
+    private static void ExecuteExecutableCall(
+        ExecutableCallSite callSite,
+        ref ExecutableValueStack stack,
+        ExecutionContext context,
+        ref ExecutableCallCache? cache)
+    {
+        var arguments = PrepareExecutableCallArguments(callSite, ref stack, out var target);
+        var start = stack.Count - callSite.ArgumentCount - 1;
 
         try
         {
+            object result;
             if (cache is not null && ReferenceEquals(cache.Target, target))
             {
-                return InvokeCallableTarget(cache.Callable, callSite.TargetSpan, callSite.CallSpan, context, arguments);
+                result = InvokeCallableTarget(cache.Callable, callSite.TargetSpan, callSite.CallSpan, context, arguments);
             }
-
-            if (target is ICallable callable)
+            else if (target is ICallable callable)
             {
                 cache = new ExecutableCallCache(target, callable);
-                return InvokeCallableTarget(callable, callSite.TargetSpan, callSite.CallSpan, context, arguments);
+                result = InvokeCallableTarget(callable, callSite.TargetSpan, callSite.CallSpan, context, arguments);
+            }
+            else
+            {
+                cache = null;
+                result = RuntimeValue(InvokeCallableTarget(target, callSite.TargetSpan, callSite.CallSpan, context, arguments));
             }
 
-            cache = null;
-            return RuntimeValue(InvokeCallableTarget(target, callSite.TargetSpan, callSite.CallSpan, context, arguments));
+            CompleteExecutableCall(ref stack, start, result, context, callSite.CallSpan);
+        }
+        catch
+        {
+            // The tail contains inputs or the denied result, depending on how
+            // far the transfer progressed. Surrounding operands stay intact.
+            stack.RemoveTail(stack.Count - start);
+            throw;
         }
         finally
         {

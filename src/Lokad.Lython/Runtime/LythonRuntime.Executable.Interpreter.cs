@@ -416,12 +416,11 @@ internal sealed partial class LythonRuntime
                     break;
 
                 case ExecutableOpCode.Call:
-                    var callResult = ExecuteExecutableCall(
+                    ExecuteExecutableCall(
                         _codeObject.CallSites[instruction.CallSiteIndex],
                         ref _stack,
                         _context,
                         ref _callCaches[instruction.CallCacheIndex]);
-                    PushObserved(callResult, instruction.Span);
                     break;
 
                 case ExecutableOpCode.Subscript:

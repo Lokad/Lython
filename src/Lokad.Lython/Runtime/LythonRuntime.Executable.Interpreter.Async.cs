@@ -81,18 +81,18 @@ internal sealed partial class LythonRuntime
                     break;
                 case ExecutableOpCode.Call:
                     var call = _codeObject.CallSites[instruction.CallSiteIndex];
+                    var arguments = PrepareExecutableCallArguments(call, ref _stack, out var callable);
                     var start = _stack.Count - call.ArgumentCount - 1;
-                    var callable = _stack[start];
-                    var arguments = RentCallArguments(call.ArgumentCount);
-                    for (var i = 0; i < arguments.Length; i++)
-                        arguments[i] = call.Arguments[i].Kind == CallArgumentKind.Keyword
-                            ? CallArgumentValue.Keyword(call.Arguments[i].KeywordName, _stack[start + i + 1])
-                            : CallArgumentValue.Positional(_stack[start + i + 1]);
-                    _stack.RemoveTail(call.ArgumentCount + 1);
                     try
                     {
-                        PushObserved(await InvokeCallableTargetAsync(callable, call.TargetSpan, call.CallSpan, _context,
-                            () => new ValueTask<CallArgumentValue[]>(arguments)).ConfigureAwait(false), instruction.Span);
+                        var result = await InvokeCallableTargetAsync(callable, call.TargetSpan, call.CallSpan, _context,
+                            () => new ValueTask<CallArgumentValue[]>(arguments)).ConfigureAwait(false);
+                        CompleteExecutableCall(ref _stack, start, result, _context, instruction.Span);
+                    }
+                    catch
+                    {
+                        _stack.RemoveTail(_stack.Count - start);
+                        throw;
                     }
                     finally { ReturnCallArguments(arguments); }
                     break;
