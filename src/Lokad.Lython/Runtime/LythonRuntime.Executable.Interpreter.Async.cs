@@ -16,8 +16,7 @@ internal sealed partial class LythonRuntime
                         import.BoundModuleName, import.ImportedMembers, import.Span), _context).ConfigureAwait(false);
                     break;
                 case ExecutableOpCode.DefineFunction:
-                    await ExecuteExecutableFunctionDefinitionAsync(_codeObject, _codeObject.Functions[instruction.FunctionIndex],
-                        _locals, _localCells, _context, true).ConfigureAwait(false);
+                    await ExecuteLoweredFunctionDefinitionAsync(_codeObject.Functions[instruction.FunctionIndex].Function, _context).ConfigureAwait(false);
                     break;
                 default:
                     await DispatchLoweredStatementAsync(_codeObject.StatementFallbacks[instruction.StatementFallbackIndex].Statement,

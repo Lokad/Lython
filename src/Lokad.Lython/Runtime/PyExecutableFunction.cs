@@ -43,16 +43,4 @@ internal sealed class PyExecutableFunction : PyFunctionBase
         return LythonRuntime.ExecuteExecutableCodeObject(_codeObject, frame, boundArguments, _argumentSlotMap, _closureCells)
             ?? PyNone.Instance;
     }
-
-    protected override async ValueTask<object> ExecuteBodyAsync(
-        LythonRuntime.ExecutionContext frame, BoundCallArguments boundArguments, LythonSourceSpan span)
-    {
-        // Async functions historically expose their namespace. Keep argument
-        // aliases/cell mirroring while the existing executable driver owns state.
-        frame.MirrorLocalStores = true;
-        var names = BindingPlan.LayoutParameterNames;
-        for (var i = 0; i < names.Count; i++) frame.Variables[names[i]] = boundArguments.Values[i];
-        return await LythonRuntime.ExecuteExecutableCodeObjectAsync(_codeObject, frame, boundArguments,
-            _argumentSlotMap, _closureCells).ConfigureAwait(false) ?? PyNone.Instance;
-    }
 }
