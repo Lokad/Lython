@@ -9,7 +9,7 @@ embedding-latency qualification. [TESTING.md](../../../TESTING.md) gives the
 maintained development and checkpoint commands.
 
 Most lifetime regressions now use at most 2,048 iterations and 64 KiB instead
-of 20,000ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“100,000 iterations and 1ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“3 MiB. A 32-byte stranded charge per
+of 20,000 to 100,000 iterations and 1 to 3 MiB. A 32-byte stranded charge per
 iteration alone exhausts that small cap. Larger fixed live inputs require
 specific fixtures: regex compilation has an existing 64 KiB pattern charge,
 slices use 64 items, file scans stream 4,096 rows through a 128 KiB cap, and
@@ -39,7 +39,7 @@ integer, factorial, yielding-instance and list-growth checks report 0.881,
 0.255, 0.167 and 0.155 seconds respectively. Previously these were among the
 concurrent multi-minute cases. Other .NET test processes were observed during
 the final checkpoint; these durations are observations, not repeatable speedup
-ratios. Some unchanged CSV/protocol cases still take 24Ã¢â‚¬â€œ48 seconds in that full
+ratios. Some unchanged CSV/protocol cases still take 24 to 48 seconds in that full
 run. Use focused regressions and batch full gates; do not claim a one-minute
 whole suite or continue an open-ended fixture-tuning campaign.
 
