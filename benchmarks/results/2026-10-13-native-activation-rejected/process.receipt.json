@@ -1,0 +1,44 @@
+{
+  "pid": 2264737,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedIncludingCleanupSeconds": 8.541516600002069,
+  "idleBusyPercent": [
+    0.0,
+    0.0,
+    0.0,
+    0.990099009900991
+  ],
+  "noiseDelta": {
+    "pswpin": 0,
+    "pswpout": 0,
+    "pgmajfault": 0
+  },
+  "stealTicks": 0,
+  "runtimeOverrides": {},
+  "command": [
+    "/home/lokad/lython-bench-toolchains/dotnet/10.0.401/dotnet",
+    "/home/lokad/lython-bench-checks/native-activation-d159bbe6-20261013/after/Lokad.Lython.Benchmarks.dll",
+    "--compare",
+    "micro",
+    "--catalog",
+    "/home/lokad/lython-bench-checks/native-activation-d159bbe6-20261013/catalog.json",
+    "--dotnet",
+    "/home/lokad/lython-bench-toolchains/dotnet/10.0.401/dotnet",
+    "--baseline-worker",
+    "/home/lokad/lython-bench-checks/native-activation-d159bbe6-20261013/before/Lokad.Lython.Benchmarks.dll",
+    "--python",
+    "/home/lokad/lython-bench-toolchains/cpython/3.13.16/bin/python3.13",
+    "--python-worker",
+    "/home/lokad/lython-bench-checks/native-activation-d159bbe6-20261013/cpython-worker.py",
+    "--out",
+    "/home/lokad/lython-bench-checks/native-activation-d159bbe6-20261013/micro.json",
+    "--case",
+    "calls.keyword.large"
+  ],
+  "dotnetSha256": "01d89e0a0191052bfea616cd4ce624c8faf13b05bbddf7f64499c23e2a9d9269",
+  "pythonSha256": "673525f3e1ac992831891979187e259c06bbd5e331ab50c0bb697f274ecb0f2a",
+  "stdoutSha256": "ac0b2ec79c56d4f1a24b39cb0d8bee5808f843bdbbd9ced1d96fc8b443e89a81",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

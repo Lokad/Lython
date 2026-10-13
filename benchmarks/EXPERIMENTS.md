@@ -5,6 +5,12 @@ must not be read as measurements of current HEAD. See [BENCHMARKS.md](../BENCHMA
 for the authoritative comparison and [COMPARISON.md](COMPARISON.md) for methods.
 The original narratives and evidence links follow unchanged.
 
+The [2026-10-13 native activation array](results/2026-10-13-native-activation-rejected/README.md)
+passes its focused root/streaming gates but remains incomplete and adds recurring
+bookkeeping before a GC-independent rule exists. Its one short call measurement
+is inconclusive (+6.79% median,6.76% candidate spread). The standalone foundation
+is rejected and reverted; neither current-HEAD timing nor proven regression is claimed.
+
 The [2026-10-13 ownership inventory](results/2026-10-13-ownership-inventory/README.md)
 identifies native state, delegate and frontend-capture obligations beyond the
 34 snapshot-owner types. Its finite static audit and36 public root checks are

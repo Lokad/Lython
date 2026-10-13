@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 1,
+  "fixtureEncoding": "immutable literals rendered into shared source; mutable state created per invocation",
+  "entropySeed": "0x5EED1234",
+  "performanceQualified": false,
+  "cases": [
+    {
+      "id": "calls.keyword.large",
+      "family": "calls",
+      "category": "core",
+      "scale": "large",
+      "size": 16384,
+      "source": "N = 16384\ndef add(value, offset=1):\n    return value + offset\ntotal = 0\nfor i in range(N):\n    total += add(i, offset=5)\nprint(total)\n",
+      "fixtureJson": "{\"size\":16384,\"text\":null}",
+      "expectedOutput": "134291456\n",
+      "sourceUtf8Bytes": 134,
+      "expectedOutputUtf8Bytes": 10,
+      "fixtureTextUtf8Bytes": 0,
+      "fixtureTextCodePoints": 0,
+      "sourceSha256": "7f1630d2c6daf703fbf2bf275bc9a36434578af206faf56c9d002070ddd5294c",
+      "fixtureSha256": "c1c16fa8a40dac165afc8c9915fab90012d9af6a9836b6a2e03812eb3f441155",
+      "expectedOutputSha256": "e3192fb4610edfce643f6bcadbf4ca479df05a8197ff8430c5399354693375ed"
+    }
+  ]
+}

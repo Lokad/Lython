@@ -28,3 +28,7 @@ benchmarks/results/2026-10-13-ownership-inventory/*.json -text whitespace=cr-at-
 benchmarks/results/2026-10-13-ownership-inventory/*.cs -text whitespace=cr-at-eol
 benchmarks/results/2026-10-13-ownership-inventory/*.csproj -text whitespace=cr-at-eol
 benchmarks/results/2026-10-13-ownership-inventory/*.ps1 -text whitespace=cr-at-eol
+# Preserve the rejected native-activation diagnostic's evidence bytes.
+benchmarks/results/2026-10-13-native-activation-rejected/*.json -text whitespace=cr-at-eol
+benchmarks/results/2026-10-13-native-activation-rejected/*.txt -text whitespace=cr-at-eol
+benchmarks/results/2026-10-13-native-activation-rejected/*.py -text whitespace=cr-at-eol

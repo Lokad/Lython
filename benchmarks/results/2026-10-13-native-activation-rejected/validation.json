@@ -1,0 +1,157 @@
+{
+  "restoredProduction": "8a6cc16d29202c2e2552e0d32bcfd88404cbdc8b",
+  "accepted": false,
+  "revert": "db1ecc37cf4e0ea93db02dc321baced534f169ca",
+  "checks": {
+    "firstWorkingFixture": {
+      "scope": "external async test expected module instead of generator caller",
+      "passed": 7,
+      "failed": 1,
+      "receipt": {
+        "source": "candidate",
+        "production": "candidate",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "5065940C4B6FF9B6D518B3DC0B56CB82A59DDAC135F943FDCB5600C61803C81A",
+        "filter": "FullyQualifiedName~NativeActivationRootTests",
+        "pid": 147212,
+        "hasExited": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1426,
+        "stdoutSha256": "55C8A90F14DE5A4037608462559C25590AB006BC47325E1F7C333FF2D4EC8145",
+        "stderrSha256": "C6C4CC083E9D69734D5DC0DA06AE395F27E23D76F6C59F43CD26ACF75A859051"
+      }
+    },
+    "originalProbeBuild": {
+      "receipt": {
+        "pid": 237364,
+        "exitCode": 1,
+        "hasExited": true,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 12418,
+        "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+        "executableSha256": "21A46F1E5235CF4E844B9DE5429F0E198B9C97A41F0503A66442F1D639CA3EE6",
+        "arguments": [
+          "build",
+          "tests/Lokad.Lython.Tests/Lokad.Lython.Tests.csproj",
+          "-c",
+          "Release",
+          "--no-restore"
+        ]
+      },
+      "status": "failed analyzer"
+    },
+    "restoredBuild": {
+      "pid": 187608,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 36083,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "21A46F1E5235CF4E844B9DE5429F0E198B9C97A41F0503A66442F1D639CA3EE6",
+      "arguments": [
+        "build",
+        "Lokad.Lython.slnx",
+        "-c",
+        "Release",
+        "--no-restore"
+      ]
+    },
+    "publicNative": {
+      "receipt": {
+        "source": "candidate",
+        "production": "candidate",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "C01D9B5F3DBF29A0CE46B233E58ECDB359EC4B529E9832AD11A9171A3CF21585",
+        "filter": "FullyQualifiedName~RootLifetimeContainmentTests|FullyQualifiedName~NativeConsumerStreamingTests|FullyQualifiedName~ManagedStack|FullyQualifiedName~CooperativeCancellation",
+        "pid": 470980,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 6614,
+        "stdoutSha256": "558FC6FC05B1F943331EB131E0E4EF7B3C883A8DB95241FBC161BC68F6C1BFB6",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "passed": 54
+    },
+    "correctedNativeRoots": {
+      "receipt": {
+        "source": "candidate",
+        "production": "candidate",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "67EDD54E978735B4119F1E9FED3335A6B51E527ACECB7A8EADADBA13E0E5469F",
+        "filter": "FullyQualifiedName~NativeActivationRootTests",
+        "pid": 373820,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 2193,
+        "stdoutSha256": "6121080B44385559E91E2837C81903509C62E3C73DBCC518EBAE974769B06823",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "passed": 8
+    },
+    "existingWhite": {
+      "receipt": {
+        "source": "candidate",
+        "production": "candidate",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "26E6B87BC354E3D47FC7BF9EB7049A22A6D7E2B7D44F8A24DD5A694E6DBDD510",
+        "filter": "FullyQualifiedName~ExecutableCallTransferTests|FullyQualifiedName~CallBindingSubsystem|FullyQualifiedName~ExecutableInstruction|FullyQualifiedName~ChargeRegistration",
+        "pid": 1006456,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1751,
+        "stdoutSha256": "42FE00116B8122EB0767183B58F489E4B4931E6CA557D840335B0FD0A9CF0D79",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "passed": 37
+    },
+    "staleProbeFilter": {
+      "receipt": {
+        "source": "candidate",
+        "production": "candidate",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "26E6B87BC354E3D47FC7BF9EB7049A22A6D7E2B7D44F8A24DD5A694E6DBDD510",
+        "filter": "FullyQualifiedName~NativeActivationRootTests",
+        "pid": 317584,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1236,
+        "stdoutSha256": "A98B87247120C7AC9EA4389610B3CF824BCE7121F9B2178BD7AA982D662C1938",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "status": "no matching tests; not a pass"
+    }
+  },
+  "prototype": "d159bbe619fd9e947560713e914d691bb3f26503",
+  "exactCandidatePackage": "not run; not claimed",
+  "priorProductionCi": "38383376921 cached; no requery",
+  "prototypeProduction": "1fbfa4834ccddf66b936691db167e55c3dbefb92",
+  "micro": {
+    "workerTerminal": "inactive/dead/success/MainPID0/empty cgroup/lease free",
+    "groups": 1,
+    "timingDirection": "inconclusive",
+    "qualified": false,
+    "receipt": {
+      "pid": 558064,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 9591,
+      "executable": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "executableSha256": "BFB46AF89433268872DDB43D1CA7A3F433452EE91ED356A9786940F90118E285",
+      "arguments": [
+        "-NoProfile",
+        "-File",
+        ".git/agent-notes/frame-transfer-20261013/remote.ps1",
+        "-Command",
+        "sudo -n systemd-run --unit=lython-r17-native-d159bbe6 --wait --property=RuntimeMaxSec=28 --property=TimeoutStopSec=1 --property=KillMode=control-group --property=User=lokad --property=WorkingDirectory=/home/lokad/lython-bench-checks/native-activation-d159bbe6-20261013 /usr/bin/python3 /home/lokad/lython-bench-checks/native-activation-d159bbe6-20261013/run-micro.py"
+      ]
+    }
+  },
+  "fullCandidateSuite": "not run; not claimed",
+  "remaining": "M01/R01/R09, U01, B09 and R17 combined rule open"
+}
