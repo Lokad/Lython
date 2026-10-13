@@ -52,6 +52,11 @@ internal sealed class ChargeReclamationPool
     private int _recentStart;
     private int _sweepCursor;
     private long _backingBytes;
+    // A partial sweep cannot establish that every collected owner was visited.
+    // This is CLR collection progress, not an owner age or identity tier.
+    private int _lastFullSweepCollection = GC.CollectionCount(0);
+
+    internal bool HasCollectionSinceFullSweep => GC.CollectionCount(0) != _lastFullSweepCollection;
 
     internal sealed class ReclamationEntry
     {
@@ -343,6 +348,9 @@ internal sealed class ChargeReclamationPool
     // through CommittedBackingBytes and releases on pool abandonment.
     public long Sweep(bool full = false)
     {
+        // Snapshot before traversal: a collection during the scan must still
+        // permit a later pass over entries already visited by this one.
+        var collection = full ? GC.CollectionCount(0) : _lastFullSweepCollection;
         long released = 0;
         // Recent entries must not wait behind a large retained population.
         // Reverse removal only swaps in entries already visited in this pass.
@@ -359,6 +367,7 @@ internal sealed class ChargeReclamationPool
         if (full)
         {
             _sweepCursor = 0;
+            _lastFullSweepCollection = collection;
         }
         else
         {

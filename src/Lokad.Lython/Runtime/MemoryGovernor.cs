@@ -63,7 +63,17 @@ internal sealed class MemoryGovernor
                     LythonFailureReason.ExecutionMemoryLimit, maxAccountedBytes, CurrentAccountedBytes, bytes);
             }
 
-            if (_hasAllocatedSinceReclaim)
+            // CLR collection can make existing owners refundable without a
+            // guest allocation. Reconcile them without authorizing forced GC;
+            // unchanged pinned denials do not rescan the complete inventory.
+            if (!_hasAllocatedSinceReclaim && ReclamationPool is
+                { Count: > 0, HasCollectionSinceFullSweep: true } collectedPool)
+            {
+                collectedPool.Sweep(full: true);
+                nextAccounted = AddChecked(CurrentAccountedBytes, bytes, span);
+            }
+
+            if (nextAccounted > maxAccountedBytes && _hasAllocatedSinceReclaim)
             {
                 // Sweep/collection makes no admissions or guest callbacks.
                 // A failed pending allocation does not authorize another retry.

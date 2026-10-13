@@ -2800,7 +2800,13 @@ youngest to oldest, sweeping after each and stopping once enough committed
 storage has been reclaimed. Old unreachable storage can still require a full
 collection; live retained aliases and resources awaiting finalization stay
 funded. A pinned denial can therefore make several collection attempts. Repeated
-denials without allocation progress do not repeat relief. This automatic policy
+denials without allocation progress do not repeat forced collection. If the CLR
+has collected since the last complete owner sweep, a subsequent denied admission
+can reconcile already-collected storage without another collection. A partial
+sweep cannot claim full coverage, and a collection during traversal still permits
+a later complete sweep. Unchanged pinned denials do not repeatedly scan the full
+inventory. This does not authorize collection merely because a reference changed.
+This automatic policy
 has no owner-age tracking or configuration switch. Accounting still depends on
 CLR collection and these collections affect the embedding process; it does not
 guarantee pause isolation or replace live-memory bounds with allocation totals.
