@@ -32,10 +32,10 @@ internal sealed partial class LythonRuntime
             if ((flags & 16) != 0) await _cursor.SkipStringAsync(span, asynchronous).ConfigureAwait(false);
             if ((flags & 2) != 0) await _cursor.SkipAsync(2, span, asynchronous).ConfigureAwait(false);
             _mtime = time;
-            _context.MemoryGovernor.Reserve(ZlibModule.InflationScratchBytes, span);
+            _services.MemoryGovernor.Reserve(ZlibModule.InflationScratchBytes, span);
             try { _native = new DeflateStream(_cursor, CompressionMode.Decompress, true); }
-            catch { _context.MemoryGovernor.ReleaseReserved(ZlibModule.InflationScratchBytes); throw; }
-            _context.MemoryGovernor.Commit(ZlibModule.InflationScratchBytes);
+            catch { _services.MemoryGovernor.ReleaseReserved(ZlibModule.InflationScratchBytes); throw; }
+            _services.MemoryGovernor.Commit(ZlibModule.InflationScratchBytes);
             _nativeCharge = ZlibModule.InflationScratchBytes;
             _crc = uint.MaxValue; _memberSize = 0; _memberEnded = false;
             Changed();
@@ -61,20 +61,20 @@ internal sealed partial class LythonRuntime
             if (_windowPosition < _windowLength || _eof) return;
             if (_window.Length == 0)
             {
-                _context.MemoryGovernor.Reserve(ReadBufferBytes, span);
+                _services.MemoryGovernor.Reserve(ReadBufferBytes, span);
                 try { _window = new byte[ReadBufferBytes]; }
-                catch { _context.MemoryGovernor.ReleaseReserved(ReadBufferBytes); throw; }
-                _context.MemoryGovernor.Commit(ReadBufferBytes); Changed();
+                catch { _services.MemoryGovernor.ReleaseReserved(ReadBufferBytes); throw; }
+                _services.MemoryGovernor.Commit(ReadBufferBytes); Changed();
             }
             _windowPosition = _windowLength = 0;
             while (!_eof)
             {
-                _context.CheckExecution(span);
+                _services.CheckExecution(span);
                 if (_memberEnded) await ReadTrailerAsync(span, asynchronous).ConfigureAwait(false);
                 if (_native is null && !await ReadHeaderAsync(span, asynchronous).ConfigureAwait(false)) return;
                 while (_windowLength < _window.Length)
                 {
-                    if ((_windowLength & 255) == 0) _context.CheckExecution(span);
+                    if ((_windowLength & 255) == 0) _services.CheckExecution(span);
                     int count;
                     try
                     {
@@ -101,14 +101,14 @@ internal sealed partial class LythonRuntime
         {
             EnsureReadable(span, bufferedBase: line);
             if (!line && size < -1) throw RuntimeErrors.Value("read length must be non-negative or -1", span);
-            var output = new GovernedByteBuilder(_context.MemoryGovernor, span);
+            var output = new GovernedByteBuilder(_services.MemoryGovernor, span);
             try
             {
                 while (size != 0)
                 {
                     await RefillAsync(span, asynchronous).ConfigureAwait(false);
                     if (_eof) break;
-                    _context.CheckExecution(span);
+                    _services.CheckExecution(span);
                     var count = _windowLength - _windowPosition;
                     if (size > 0) count = (int)Math.Min(size, count);
                     var ended = false;
@@ -122,10 +122,10 @@ internal sealed partial class LythonRuntime
                     if (size > 0) size -= count;
                     if (ended) break;
                 }
-                using var copy = _context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(output.Length), span);
+                using var copy = _services.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(output.Length), span);
                 var bytes = output.WrittenSpan.ToArray();
                 output.Release(); copy.Dispose();
-                return CreateBytes(bytes, _context, span);
+                return CreateBytes(bytes, CurrentContext, span);
             }
             finally { output.Release(); }
         }
@@ -141,8 +141,8 @@ internal sealed partial class LythonRuntime
             {
                 if (Remaining > 0) return true;
                 if (_ended) return false;
-                owner._context.CheckExecution(span);
-                _input = await PyBinaryStream.ReadAsync(owner._stream, count, span, owner._context, asynchronous).ConfigureAwait(false);
+                owner._services.CheckExecution(span);
+                _input = await PyBinaryStream.ReadAsync(owner._stream, count, span, owner.CurrentContext, asynchronous).ConfigureAwait(false);
                 _position = 0; _ended = _input.Length == 0;
                 return !_ended;
             }
@@ -167,7 +167,7 @@ internal sealed partial class LythonRuntime
             {
                 while (count > 0)
                 {
-                    owner._context.CheckExecution(span);
+                    owner._services.CheckExecution(span);
                     if (!await AcquireAsync(Math.Min(count, 8192), span, asynchronous).ConfigureAwait(false)) throw GzipEnd(span);
                     var take = Math.Min(count, Remaining);
                     _position += take; _consumed += take; count -= take;
@@ -177,7 +177,7 @@ internal sealed partial class LythonRuntime
             {
                 while (true)
                 {
-                    owner._context.CheckExecution(span);
+                    owner._services.CheckExecution(span);
                     if (!await AcquireAsync(1, span, asynchronous).ConfigureAwait(false)) return;
                     var value = _input!.Bytes[_position++]; _consumed++;
                     if (value == 0) return;
@@ -187,7 +187,7 @@ internal sealed partial class LythonRuntime
             {
                 while (await AcquireAsync(1, span, asynchronous).ConfigureAwait(false))
                 {
-                    if ((_consumed & 255) == 0) owner._context.CheckExecution(span);
+                    if ((_consumed & 255) == 0) owner._services.CheckExecution(span);
                     if (_input!.Bytes[_position] != 0) return;
                     _position++; _consumed++;
                 }
@@ -201,14 +201,14 @@ internal sealed partial class LythonRuntime
             public override int Read(Span<byte> buffer)
             {
                 if (buffer.IsEmpty || !AcquireAsync(65536, owner._creationSpan, false).GetAwaiter().GetResult()) return 0;
-                if ((_consumed & 255) == 0) owner._context.CheckExecution(owner._creationSpan);
+                if ((_consumed & 255) == 0) owner._services.CheckExecution(owner._creationSpan);
                 buffer[0] = _input!.Bytes[_position++]; _consumed++;
                 return 1;
             }
             public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
             {
                 if (buffer.IsEmpty || !await AcquireAsync(65536, owner._creationSpan, true).ConfigureAwait(false)) return 0;
-                if ((_consumed & 255) == 0) owner._context.CheckExecution(owner._creationSpan);
+                if ((_consumed & 255) == 0) owner._services.CheckExecution(owner._creationSpan);
                 buffer.Span[0] = _input!.Bytes[_position++]; _consumed++;
                 return 1;
             }

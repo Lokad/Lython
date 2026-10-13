@@ -302,21 +302,21 @@ internal sealed class ExecutionState
     // exactly like an implicit close() on each handle, so a publication failure
     // surfaces as a failure rather than silent success. Flushes consume
     // host-call and memory budgets like explicit closes.
-    internal void CloseOpenFileWriters()
+    internal void CloseOpenFileWriters(LythonRuntime.ExecutionContext context)
     {
         while (_openFileWriters.Count > 0)
         {
             var handle = _openFileWriters[^1];
-            handle.Exit();
+            handle.Exit(context);
         }
     }
 
-    internal async ValueTask CloseOpenFileWritersAsync()
+    internal async ValueTask CloseOpenFileWritersAsync(LythonRuntime.ExecutionContext context)
     {
         while (_openFileWriters.Count > 0)
         {
             var handle = _openFileWriters[^1];
-            await handle.ExitAsync().ConfigureAwait(false);
+            await handle.ExitAsync(context).ConfigureAwait(false);
         }
     }
 
@@ -327,7 +327,7 @@ internal sealed class ExecutionState
     // stall the sweep. Cancellation skips publication entirely (checked by
     // the run entries): a cancelled run leaves no file behind, and host calls
     // against a canceled token would fail anyway.
-    internal void TryCloseOpenFileWriters()
+    internal void TryCloseOpenFileWriters(LythonRuntime.ExecutionContext context)
     {
         while (_openFileWriters.Count > 0)
         {
@@ -335,7 +335,7 @@ internal sealed class ExecutionState
             _openFileWriters.RemoveAt(_openFileWriters.Count - 1);
             try
             {
-                handle.Exit();
+                handle.Exit(context);
             }
             catch (Exception)
             {
@@ -343,7 +343,7 @@ internal sealed class ExecutionState
         }
     }
 
-    internal async ValueTask TryCloseOpenFileWritersAsync()
+    internal async ValueTask TryCloseOpenFileWritersAsync(LythonRuntime.ExecutionContext context)
     {
         while (_openFileWriters.Count > 0)
         {
@@ -351,7 +351,7 @@ internal sealed class ExecutionState
             _openFileWriters.RemoveAt(_openFileWriters.Count - 1);
             try
             {
-                await handle.ExitAsync().ConfigureAwait(false);
+                await handle.ExitAsync(context).ConfigureAwait(false);
             }
             catch (Exception)
             {

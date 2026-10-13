@@ -53,7 +53,7 @@ public sealed class TextFileOwnerStorageTests
         Assert.Equal(committed, governor.CurrentCommittedBytes);
         Assert.Equal(pressure, governor.CurrentReservedBytes);
         Assert.Equal(1, context.State.CallTemporaries.Count);
-        context.State.CloseOpenFileWriters();
+        context.State.CloseOpenFileWriters(context);
         Assert.False(await host.ExistsAsync("/denied", CancellationToken.None));
         Assert.True(governor.PeakAccountedBytes <= Cap);
         GC.KeepAlive(retained);

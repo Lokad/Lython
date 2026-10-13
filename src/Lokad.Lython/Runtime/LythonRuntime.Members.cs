@@ -2257,6 +2257,7 @@ internal sealed partial class LythonRuntime
     // nothing, so one-shot iterables reach the real conversion intact.
     private static bool IsIterableOperand(object value, LythonSourceSpan span, ExecutionContext context)
     {
+        if (value is IPyProtocolIterator) return true;
         if (value is PyInstance instance)
         {
             return instance.TryGetAttribute("__iter__", context, span, out _);

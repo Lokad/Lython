@@ -4,7 +4,7 @@ namespace Lokad.Lython.Runtime;
 // The shared run state owns the same lifecycle for text and binary handles.
 internal interface IExecutionFileWriter
 {
-    object Exit();
+    object Exit(LythonRuntime.ExecutionContext context);
 
-    ValueTask<object> ExitAsync();
+    ValueTask<object> ExitAsync(LythonRuntime.ExecutionContext context);
 }

@@ -276,7 +276,7 @@ internal sealed partial class LythonRuntime
                 // Successful execution publishes outstanding writers instead of
                 // silently discarding accepted writes; a publication failure
                 // converts to a failure result below.
-                context.Services.State.CloseOpenFileWriters();
+                context.Services.State.CloseOpenFileWriters(context!);
 
                 if (flow.Return is not null)
                 {
@@ -291,13 +291,13 @@ internal sealed partial class LythonRuntime
                 // publication failure replaces the return with a failure.
                 try
                 {
-                    context?.Services.State.CloseOpenFileWriters();
+                    context?.Services.State.CloseOpenFileWriters(context!);
                 }
                 catch (LythonRuntimeException ex)
                 {
                     if (context is not null && !context.Services.State.CancellationRequested)
                     {
-                        context.Services.State.TryCloseOpenFileWriters();
+                        context.Services.State.TryCloseOpenFileWriters(context!);
                     }
 
                     return CreateRuntimeFailureResult(ex, context, options);
@@ -312,7 +312,7 @@ internal sealed partial class LythonRuntime
                 // Cancellation skips publication: a cancelled run leaves no file behind.
                 if (context is not null && !context.Services.State.CancellationRequested)
                 {
-                    context.Services.State.TryCloseOpenFileWriters();
+                    context.Services.State.TryCloseOpenFileWriters(context!);
                 }
 
                 return CreateRuntimeFailureResult(ex, context, options);
@@ -615,7 +615,7 @@ internal sealed partial class LythonRuntime
             // Successful execution publishes outstanding writers instead of
             // silently discarding accepted writes; the await keeps delayed hosts
             // honest, and a publication failure converts to a failure result below.
-            await context.Services.State.CloseOpenFileWritersAsync().ConfigureAwait(false);
+            await context.Services.State.CloseOpenFileWritersAsync(context).ConfigureAwait(false);
 
             if (flow.Return is not null)
             {
@@ -632,14 +632,14 @@ internal sealed partial class LythonRuntime
             {
                 if (context is not null)
                 {
-                    await context.Services.State.CloseOpenFileWritersAsync().ConfigureAwait(false);
+                    await context.Services.State.CloseOpenFileWritersAsync(context).ConfigureAwait(false);
                 }
             }
             catch (LythonRuntimeException ex)
             {
                 if (context is not null && !context.Services.State.CancellationRequested)
                 {
-                    await context.Services.State.TryCloseOpenFileWritersAsync().ConfigureAwait(false);
+                    await context.Services.State.TryCloseOpenFileWritersAsync(context).ConfigureAwait(false);
                 }
 
                 return CreateRuntimeFailureResult(ex, context, options);
@@ -654,7 +654,7 @@ internal sealed partial class LythonRuntime
             // Cancellation skips publication: a cancelled run leaves no file behind.
             if (context is not null && !context.Services.State.CancellationRequested)
             {
-                await context.Services.State.TryCloseOpenFileWritersAsync().ConfigureAwait(false);
+                await context.Services.State.TryCloseOpenFileWritersAsync(context).ConfigureAwait(false);
             }
 
             return CreateRuntimeFailureResult(ex, context, options);

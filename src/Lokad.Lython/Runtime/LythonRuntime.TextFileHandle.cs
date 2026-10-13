@@ -288,6 +288,9 @@ internal sealed partial class LythonRuntime
 
             public object Enter() => this;
 
+            object IExecutionFileWriter.Exit(LythonRuntime.ExecutionContext context) => Exit();
+            ValueTask<object> IExecutionFileWriter.ExitAsync(LythonRuntime.ExecutionContext context) => ExitAsync();
+
             object IPyContextManager.Enter() => Enter();
 
             ValueTask<object> IPyAsyncContextManager.EnterAsync() => ValueTask.FromResult<object>(Enter());

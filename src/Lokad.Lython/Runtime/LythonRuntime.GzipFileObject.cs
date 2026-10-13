@@ -6,13 +6,13 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    private sealed partial class GzipFileObject : IPyDynamicAttributes, IPyAsyncContextManager,
-        IPyAsyncIteratorValue, IPyRenderableValue, IPyFinalizableOwnership, IExecutionFileWriter
+    private sealed partial class GzipFileObject : IPyProtocolIterator, IPyRenderableValue, IPyFinalizableOwnership, IExecutionFileWriter
     {
         internal const long ShellBytes = 512;
         private const int WriteBufferBytes = 32768;
         private const int ReadBufferBytes = 8192;
-        private readonly ExecutionContext _context;
+        private readonly ExecutionServices _services;
+        private ExecutionContext CurrentContext => _operationContext ?? throw new InvalidOperationException("Gzip operation has no caller.");
         private readonly LythonSourceSpan _creationSpan;
         private readonly bool _ownsStream;
         private readonly bool _reading;
@@ -42,7 +42,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context, LythonSourceSpan span)
         {
             _stream = stream; _ownsStream = ownsStream; _name = name; _reading = reading;
-            _context = context; _creationSpan = span;
+            _services = context.Services; _creationSpan = span;
             _pending = new GovernedByteBuilder(context.MemoryGovernor, span);
             _output = new GovernedByteBuilder(context.MemoryGovernor, span);
         }
@@ -61,7 +61,7 @@ internal sealed partial class LythonRuntime
         internal long OwnedBytes => ShellBytes + _nativeCharge + _window.Length
             + _pending.CommittedCapacity + _output.CommittedCapacity;
         public bool TrySnapshotOwnership(out long chargeBytes)
-            => OwnershipSnapshot.Owned(_context.MemoryGovernor, OwnedBytes, out chargeBytes);
+            => OwnershipSnapshot.Owned(_services.MemoryGovernor, OwnedBytes, out chargeBytes);
         private void Changed() => ChargeReclamationPool.NotifyStorageReplaced(this, OwnedBytes);
 
         internal static GzipFileObject Create(object stream, bool ownsStream, PyString name, bool reading,
@@ -77,14 +77,14 @@ internal sealed partial class LythonRuntime
         internal void InitializeCompressor(int level, LythonSourceSpan span)
         {
             _level = level;
-            _context.MemoryGovernor.Reserve(ZlibModule.CompressionScratchBytes, span);
+            _services.MemoryGovernor.Reserve(ZlibModule.CompressionScratchBytes, span);
             try
             {
                 _sink = new NativeWriteSink(this);
                 _native = new DeflateStream(_sink, new ZLibCompressionOptions { CompressionLevel = level }, true);
             }
-            catch { _context.MemoryGovernor.ReleaseReserved(ZlibModule.CompressionScratchBytes); throw; }
-            _context.MemoryGovernor.Commit(ZlibModule.CompressionScratchBytes);
+            catch { _services.MemoryGovernor.ReleaseReserved(ZlibModule.CompressionScratchBytes); throw; }
+            _services.MemoryGovernor.Commit(ZlibModule.CompressionScratchBytes);
             _nativeCharge = ZlibModule.CompressionScratchBytes;
             Changed();
         }
@@ -94,7 +94,7 @@ internal sealed partial class LythonRuntime
             ReleaseLocal();
             GC.SuppressFinalize(this);
             _closed = true;
-            _context.State.CallTemporaries.RefundUnpublishedValue(this);
+            _services.State.CallTemporaries.RefundUnpublishedValue(this);
         }
 
         private void ReleaseNative()
@@ -105,7 +105,7 @@ internal sealed partial class LythonRuntime
             finally
             {
                 _native = null; _sink = null;
-                _context.MemoryGovernor.Release(_nativeCharge);
+                _services.MemoryGovernor.Release(_nativeCharge);
                 _nativeCharge = 0;
                 Changed();
             }
@@ -116,7 +116,7 @@ internal sealed partial class LythonRuntime
             ReleaseNative();
             _cursor = null;
             _pending.Release(); _output.Release();
-            _context.MemoryGovernor.Release(_window.Length);
+            _services.MemoryGovernor.Release(_window.Length);
             _window = []; _windowLength = _windowPosition = 0;
             Changed();
         }
@@ -153,7 +153,7 @@ internal sealed partial class LythonRuntime
             public override void Write(ReadOnlySpan<byte> buffer)
             {
                 if (_discard) return;
-                owner._context.CheckExecution(owner._creationSpan);
+                owner._services.CheckExecution(owner._creationSpan);
                 owner._output.Append(buffer);
                 owner.Changed();
             }

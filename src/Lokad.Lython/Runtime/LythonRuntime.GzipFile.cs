@@ -131,7 +131,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("OverflowError", "Python int too large to convert to C int", span);
                     if (level is < -1 or > 9) throw RuntimeErrors.Value("Invalid initialization option", span);
                     result.InitializeCompressor((int)level, span);
-                    await result.WriteHeaderAsync(originalLevel, values[4], span, asynchronous).ConfigureAwait(false);
+                    await result.WriteHeaderAsync(originalLevel, values[4], context, span, asynchronous).ConfigureAwait(false);
                     context.State.TrackOpenFileWriter(result);
                 }
                 return result;

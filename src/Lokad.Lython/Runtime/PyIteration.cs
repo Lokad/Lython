@@ -8,8 +8,8 @@ internal static class PyIteration
 
     internal static GeneratorOuter AcquireGeneratorOuter(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
-        if (value is PyInstance instance)
-            return AcquiredUserOuter(new PyUserIterator(instance, context, span), span, context);
+        if (value is PyInstance or IPyProtocolIterator)
+            return AcquiredUserOuter(PyUserIterator.Create(value, context, span), span, context);
         if (value is IPyIteratorValue) return new(value, ToSequence(value, span, context));
         PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
         PyEnumerableIterator iterator;
@@ -24,8 +24,8 @@ internal static class PyIteration
     }
 
     internal static async ValueTask<GeneratorOuter> AcquireGeneratorOuterAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => value is PyInstance instance
-            ? AcquiredUserOuter(await PyUserIterator.CreateAsync(instance, context, span).ConfigureAwait(false), span, context)
+        => value is PyInstance or IPyProtocolIterator
+            ? AcquiredUserOuter(await PyUserIterator.CreateAsync(value, context, span).ConfigureAwait(false), span, context)
             : AcquireGeneratorOuter(value, span, context);
 
     private static GeneratorOuter AcquiredUserOuter(PyUserIterator user, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -38,7 +38,7 @@ internal static class PyIteration
     public static IEnumerable<object> ToSequence(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         => value is PyRange range ? new CheckedRange(range, span, context) : WithCheckpoints(value switch
         {
-            PyInstance instance => new PyUserIterator(instance, context, span).Iterate(),
+            PyInstance or IPyProtocolIterator => PyUserIterator.Create(value, context, span).Iterate(),
             // ChainMap iteration snapshots merged keys eagerly with lifetime
             // ownership; values and items keep live per-pull lookups over an
             // owned key order (see PyChainMap for the CPython behavior notes).
@@ -118,7 +118,7 @@ internal static class PyIteration
     public static IAsyncEnumerable<object> ToSequenceAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         => value switch
         {
-            PyInstance instance => EnumerateUserIteratorAsync(instance, context, span),
+            PyInstance or IPyProtocolIterator => EnumerateUserIteratorAsync(value, context, span),
             // Context-aware cursors retain the same owned ChainMap shapes as
             // the sync router and checkpoint primitive pulls in both modes.
             _ => EnumerateCursorAsync(Cursor.Create(value, span, context)),
@@ -341,15 +341,15 @@ internal static class PyIteration
         => await DrainLeasedAsync(ToSequenceAsync(value, span, context), span, context).ConfigureAwait(false);
 
     internal static async ValueTask<IAsyncEnumerable<object>> AcquireComprehensionSequenceAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => value is PyInstance instance
-            ? EnumerateAcquiredUserIteratorAsync(await PyUserIterator.CreateAsync(instance, context, span).ConfigureAwait(false), context, span)
+        => value is PyInstance or IPyProtocolIterator
+            ? EnumerateAcquiredUserIteratorAsync(await PyUserIterator.CreateAsync(value, context, span).ConfigureAwait(false), context, span)
             : ToSequenceAsync(value, span, context);
 
-    private static async IAsyncEnumerable<object> EnumerateUserIteratorAsync(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    private static async IAsyncEnumerable<object> EnumerateUserIteratorAsync(object source, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         // R08: both __iter__ resolution and __next__ advancement await real
         // suspension instead of routing through the synchronous protocol.
-        var iterator = await PyUserIterator.CreateAsync(instance, context, span).ConfigureAwait(false);
+        var iterator = await PyUserIterator.CreateAsync(source, context, span).ConfigureAwait(false);
         await foreach (var value in EnumerateAcquiredUserIteratorAsync(iterator, context, span).ConfigureAwait(false)) yield return value;
     }
 
@@ -471,9 +471,9 @@ internal static class PyIteration
         /// <summary>Creates a cursor that resolves user-defined <c>__iter__</c> through the active execution.</summary>
         public static Cursor Create(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            if (value is PyInstance instance)
+            if (value is PyInstance or IPyProtocolIterator)
             {
-                return new Cursor(value, span, new PyUserIterator(instance, context, span), context);
+                return new Cursor(value, span, PyUserIterator.Create(value, context, span), context);
             }
 
             // ChainMap cursors enumerate owned snapshots (see ToSequence above)
@@ -508,8 +508,8 @@ internal static class PyIteration
         }
 
         public static async ValueTask<Cursor> CreateAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-            => value is PyInstance instance
-                ? new Cursor(value, span, await PyUserIterator.CreateAsync(instance, context, span).ConfigureAwait(false), context)
+            => value is PyInstance or IPyProtocolIterator
+                ? new Cursor(value, span, await PyUserIterator.CreateAsync(value, context, span).ConfigureAwait(false), context)
                 : Create(value, span, context);
 
         public bool TryMoveNext([MaybeNullWhen(false)] out object value)

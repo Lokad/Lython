@@ -182,6 +182,9 @@ internal sealed partial class LythonRuntime
                 ChargeReclamationPool.NotifyStorageReplaced(this, OwnedBytes);
             }
 
+            object IExecutionFileWriter.Exit(LythonRuntime.ExecutionContext context) => Exit();
+            ValueTask<object> IExecutionFileWriter.ExitAsync(LythonRuntime.ExecutionContext context) => ExitAsync();
+
             object IPyContextManager.Enter() { EnsureOpen(null); return this; }
             ValueTask<object> IPyAsyncContextManager.EnterAsync()
                 => ValueTask.FromResult(((IPyContextManager)this).Enter());

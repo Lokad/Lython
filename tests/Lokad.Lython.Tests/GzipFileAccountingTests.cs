@@ -155,8 +155,7 @@ public sealed class GzipFileAccountingTests
         Assert.True(context.Limits.ExecutionStepCount > 50);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         // Runtime cleanup bypasses the already exhausted guest call budget.
-        Assert.False(Assert.IsAssignableFrom<IPyContextManager>(reader)
-            .Exit(PyNone.Instance, PyNone.Instance, PyNone.Instance));
+        Assert.Equal(false, Assert.IsAssignableFrom<IExecutionFileWriter>(reader).Exit(context));
         Assert.Equal(512, Snapshot(reader));
         GC.KeepAlive(raw); GC.KeepAlive(reader);
     }
@@ -180,10 +179,10 @@ public sealed class GzipFileAccountingTests
         Assert.Equal("execution canceled", error.Message);
         Assert.Equal(before, context.MemoryGovernor.CurrentCommittedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
-        var cleanup = Assert.IsAssignableFrom<IPyAsyncContextManager>(wrapper);
-        if (mode == "rb") Assert.False(await cleanup.ExitAsync(PyNone.Instance, PyNone.Instance, PyNone.Instance));
+        var cleanup = Assert.IsAssignableFrom<IExecutionFileWriter>(wrapper);
+        if (mode == "rb") Assert.Equal(false, await cleanup.ExitAsync(context));
         else await Assert.ThrowsAsync<LythonRuntimeException>(async () =>
-            await cleanup.ExitAsync(PyNone.Instance, PyNone.Instance, PyNone.Instance));
+            await cleanup.ExitAsync(context));
         Assert.Equal(512, Snapshot(wrapper));
         Assert.Equal(true, Get(wrapper, "closed"));
         Assert.True(raw.TryGetMember("closed", out var closed));

@@ -2465,6 +2465,17 @@ their wrapper. String and supported path-like filenames preserve their original
 spelling in `name`; host acquisition uses normalized contained paths. Byte paths
 fail explicitly.
 
+These wrappers retain shared execution services and their actual stream/storage,
+without retaining unrelated locals from the function that constructed them.
+Operations invoke guest methods and conversions through the current caller;
+execution-end publication uses the run context. That caller is retained only
+while the operation is active, including suspension, and is released on success
+or failure. Explicit stream/data aliases remain charged. Reentrant operations,
+including context-manager exit during a callback, fail with RuntimeError.
+`iter(wrapper)` preserves identity while open and raises ValueError after close.
+This lifetime rule preserves allocation preflights and current CLR-dependent
+reclamation; it does not establish GC-independent accounting.
+
 Modes `r`/`rb`, `w`/`wb` and `a`/`ab` expose canonical `rb` or `wb` metadata.
 Supplied objects also accept `x`/`xb` as writing; exclusive filename acquisition
 requires an atomic host contract and remains unsupported. Updating and text

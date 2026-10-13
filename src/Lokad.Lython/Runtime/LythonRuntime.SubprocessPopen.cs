@@ -48,7 +48,7 @@ internal sealed partial class LythonRuntime
 
     private static object Popen(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        static void ValidateCompatibilityOptions(object[] arguments, LythonSourceSpan span)
+        static void ValidateCompatibilityOptions(object[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             if (HasArgument(arguments, PopenBufsizeIndex) &&
                 !PyNumberOps.TryAsInteger(GetArgument(arguments, PopenBufsizeIndex), out _))
@@ -63,7 +63,7 @@ internal sealed partial class LythonRuntime
             RequirePopenBooleanDefault(arguments, PopenCloseFdsIndex, "close_fds", expected: true, span);
             RequirePopenBooleanDefault(arguments, PopenRestoreSignalsIndex, "restore_signals", expected: true, span);
             RequirePopenBooleanDefault(arguments, PopenStartNewSessionIndex, "start_new_session", expected: false, span);
-            RequirePopenEmptySequence(arguments, PopenPassFdsIndex, "pass_fds", span);
+            RequirePopenEmptySequence(arguments, PopenPassFdsIndex, "pass_fds", span, context);
             RequirePopenNone(arguments, PopenUserIndex, "user", span);
             RequirePopenNone(arguments, PopenGroupIndex, "group", span);
             RequirePopenNone(arguments, PopenExtraGroupsIndex, "extra_groups", span);
@@ -77,7 +77,7 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.Capability("subprocess is not available in this host.", span);
         }
 
-        ValidateCompatibilityOptions(arguments, span);
+        ValidateCompatibilityOptions(arguments, span, context);
         var pipelineInput = GetArgument(arguments, PopenStdinIndex) as PopenOutputStream;
         var layout = SubprocessRunArgumentLayout.Standard;
         var shared = new object[layout.UniversalNewlines + 1];
@@ -188,7 +188,7 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private static void RequirePopenEmptySequence(object[] arguments, int index, string name, LythonSourceSpan span)
+    private static void RequirePopenEmptySequence(object[] arguments, int index, string name, LythonSourceSpan span, ExecutionContext context)
     {
         if (!HasArgument(arguments, index))
         {
@@ -200,7 +200,7 @@ internal sealed partial class LythonRuntime
         bool hasElement;
         try
         {
-            using var enumerator = ToSequence(GetArgument(arguments, index), span).GetEnumerator();
+            using var enumerator = ToSequence(GetArgument(arguments, index), span, context).GetEnumerator();
             hasElement = enumerator.MoveNext();
         }
         catch (LythonRuntimeException)

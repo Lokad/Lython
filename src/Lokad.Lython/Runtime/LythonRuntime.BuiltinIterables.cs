@@ -356,9 +356,9 @@ internal sealed partial class LythonRuntime
 
             // R08: iter() returns whatever __iter__ produces (often the instance
             // itself), validated eagerly instead of wrapped sight unseen.
-            if (arguments[0] is PyInstance instance)
+            if (arguments[0] is PyInstance or IPyProtocolIterator)
             {
-                return new PyUserIterator(instance, context, span).Iterator;
+                return PyUserIterator.Create(arguments[0], context, span).Iterator;
             }
 
             PyIteratorBase.ChargeIteratorValue(context.MemoryGovernor, span);
@@ -386,15 +386,15 @@ internal sealed partial class LythonRuntime
     {
         // R08: only user-defined __iter__ resolution can suspend; every other
         // shape shares the synchronous implementation.
-        if (arguments.Length == 1 && arguments[0] is PyInstance instance)
+        if (arguments.Length == 1 && arguments[0] is PyInstance or IPyProtocolIterator)
         {
-            return ResolveIterAsync(instance, span, context);
+            return ResolveIterAsync(arguments[0], span, context);
         }
 
         return new ValueTask<object>(Iter(arguments, span, context));
     }
 
-    private static async ValueTask<object> ResolveIterAsync(PyInstance instance, LythonSourceSpan span, ExecutionContext context)
+    private static async ValueTask<object> ResolveIterAsync(object instance, LythonSourceSpan span, ExecutionContext context)
         => (await PyUserIterator.CreateAsync(instance, context, span).ConfigureAwait(false)).Iterator;
 
     private static object Reversed(object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -543,16 +543,16 @@ internal sealed partial class LythonRuntime
 
         // R08: direct next() over user iterators resolves __next__ through the
         // same protocol instead of rejecting non-wrapper iterators.
-        if (arguments[0] is PyInstance instance)
+        if (arguments[0] is PyInstance or IPyProtocolIterator)
         {
-            if (!PyUserIterator.HasNext(instance, context, span))
+            if (!PyUserIterator.HasNext(arguments[0], context, span))
             {
-                throw RuntimeErrors.NotAnIterator(instance, span);
+                throw RuntimeErrors.NotAnIterator(arguments[0], span);
             }
 
             try
             {
-                return RuntimeValue(PyUserIterator.InvokeNext(instance, context, span));
+                return RuntimeValue(PyUserIterator.InvokeNext(arguments[0], context, span));
             }
             catch (LythonRuntimeException ex) when (ex.ExceptionType == "StopIteration")
             {
@@ -592,16 +592,16 @@ internal sealed partial class LythonRuntime
         }
 
         PyIterationResult advanced;
-        if (arguments[0] is PyInstance instance)
+        if (arguments[0] is PyInstance or IPyProtocolIterator)
         {
-            if (!PyUserIterator.HasNext(instance, context, span))
+            if (!PyUserIterator.HasNext(arguments[0], context, span))
             {
-                throw RuntimeErrors.NotAnIterator(instance, span);
+                throw RuntimeErrors.NotAnIterator(arguments[0], span);
             }
 
             try
             {
-                return RuntimeValue(await PyUserIterator.InvokeNextAsync(instance, context, span).ConfigureAwait(false));
+                return RuntimeValue(await PyUserIterator.InvokeNextAsync(arguments[0], context, span).ConfigureAwait(false));
             }
             catch (LythonRuntimeException ex) when (ex.ExceptionType == "StopIteration")
             {

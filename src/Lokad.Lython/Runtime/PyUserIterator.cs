@@ -6,12 +6,10 @@ internal sealed class PyUserIterator : IPyIteratorValue
     private readonly LythonRuntime.ExecutionContext _context;
     private readonly LythonSourceSpan _span;
 
-    public PyUserIterator(PyInstance iterable, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-        : this(ResolveIterator(InvokeIter(iterable, context, span), context, span), context, span)
-    {
-    }
+    public static PyUserIterator Create(object iterable, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => new(ResolveIterator(InvokeIter(iterable, context, span), context, span), context, span);
 
-    public static async ValueTask<PyUserIterator> CreateAsync(PyInstance iterable, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    public static async ValueTask<PyUserIterator> CreateAsync(object iterable, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         var resolved = await InvokeIterAsync(iterable, context, span).ConfigureAwait(false);
         return new PyUserIterator(ResolveIterator(resolved, context, span), context, span);
@@ -30,8 +28,11 @@ internal sealed class PyUserIterator : IPyIteratorValue
     /// </summary>
     public object Iterator => _iterator;
 
-    private static object InvokeIter(PyInstance iterable, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    private static object InvokeIter(object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
+        if (value is IPyProtocolIterator)
+            return LythonRuntime.InvokeCallableTarget(NativeMember(value, "__iter__", context, span), span, span, context, static () => []);
+        var iterable = (PyInstance)value;
         if (!iterable.Type.TryLookupInMro("__iter__", 0, out var raw, out _))
         {
             if (iterable.Type.TryLookupInMro("__getitem__", 0, out _, out _))
@@ -42,8 +43,12 @@ internal sealed class PyUserIterator : IPyIteratorValue
         return LythonRuntime.InvokeCallableTarget(member, span, span, context, static () => []);
     }
 
-    private static async ValueTask<object> InvokeIterAsync(PyInstance iterable, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    private static async ValueTask<object> InvokeIterAsync(object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
+        if (value is IPyProtocolIterator)
+            return await LythonRuntime.InvokeCallableTargetAsync(NativeMember(value, "__iter__", context, span), span, span, context,
+                static () => ValueTask.FromResult<CallArgumentValue[]>([])).ConfigureAwait(false);
+        var iterable = (PyInstance)value;
         if (!iterable.Type.TryLookupInMro("__iter__", 0, out var raw, out _))
         {
             if (iterable.Type.TryLookupInMro("__getitem__", 0, out _, out _))
@@ -64,17 +69,23 @@ internal sealed class PyUserIterator : IPyIteratorValue
             return resolved;
         }
 
-        if (resolved is PyInstance instance &&
-            instance.Type.TryLookupInMro("__next__", 0, out _, out _))
+        if (HasNext(resolved, context, span))
         {
-            return instance;
+            return resolved;
         }
 
         throw new LythonRuntimeException("TypeError", "iter() returned non-iterator", span);
     }
 
-    internal static bool HasNext(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-        => instance.Type.TryLookupInMro("__next__", 0, out _, out _);
+    internal static bool HasNext(object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => value is PyInstance instance
+            ? instance.Type.TryLookupInMro("__next__", 0, out _, out _)
+            : value is IPyProtocolIterator && PyMemberAccess.TryResolve(value, "__next__", context, span, out var member)
+                && member is LythonRuntime.ICallable;
+
+    private static object NativeMember(object value, string name, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+        => PyMemberAccess.TryResolve(value, name, context, span, out var member) && member is LythonRuntime.ICallable
+            ? member : throw new PyNotIterableException("native iterator does not provide " + name, span);
 
     public bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
@@ -83,7 +94,7 @@ internal sealed class PyUserIterator : IPyIteratorValue
             return iterator.TryMoveNext(out value);
         }
 
-        return TryAdvanceInstance((PyInstance)_iterator, _context, _span, out value);
+        return TryAdvanceInstance(_iterator, _context, _span, out value);
     }
 
     public async ValueTask<PyIterationResult> TryMoveNextAsync()
@@ -98,10 +109,10 @@ internal sealed class PyUserIterator : IPyIteratorValue
                 : PyIterationResult.End;
         }
 
-        return await TryAdvanceInstanceAsync((PyInstance)_iterator, _context, _span).ConfigureAwait(false);
+        return await TryAdvanceInstanceAsync(_iterator, _context, _span).ConfigureAwait(false);
     }
 
-    internal static bool TryAdvanceInstance(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
+    internal static bool TryAdvanceInstance(object instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span, [MaybeNullWhen(false)] out object value)
     {
         try
         {
@@ -118,8 +129,11 @@ internal sealed class PyUserIterator : IPyIteratorValue
     // next() surfaces whatever __next__ raises (including a custom
     // StopIteration) like CPython instead of replacing it with the
     // end-of-iteration signal consumed by consuming loops.
-    internal static object InvokeNext(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    internal static object InvokeNext(object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
+        if (value is IPyProtocolIterator)
+            return LythonRuntime.InvokeCallableTarget(NativeMember(value, "__next__", context, span), span, span, context, static () => []);
+        var instance = (PyInstance)value;
         if (!instance.Type.TryLookupInMro("__next__", 0, out var raw, out _))
         {
             throw new LythonRuntimeException("TypeError", "iter() returned non-iterator", span);
@@ -129,8 +143,12 @@ internal sealed class PyUserIterator : IPyIteratorValue
         return LythonRuntime.InvokeCallableTarget(member, span, span, context, static () => []);
     }
 
-    internal static async ValueTask<object> InvokeNextAsync(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    internal static async ValueTask<object> InvokeNextAsync(object value, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
+        if (value is IPyProtocolIterator)
+            return await LythonRuntime.InvokeCallableTargetAsync(NativeMember(value, "__next__", context, span), span, span, context,
+                static () => ValueTask.FromResult<CallArgumentValue[]>([])).ConfigureAwait(false);
+        var instance = (PyInstance)value;
         if (!instance.Type.TryLookupInMro("__next__", 0, out var raw, out _))
         {
             throw new LythonRuntimeException("TypeError", "iter() returned non-iterator", span);
@@ -141,7 +159,7 @@ internal sealed class PyUserIterator : IPyIteratorValue
             static () => ValueTask.FromResult<CallArgumentValue[]>([])).ConfigureAwait(false);
     }
 
-    internal static async ValueTask<PyIterationResult> TryAdvanceInstanceAsync(PyInstance instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
+    internal static async ValueTask<PyIterationResult> TryAdvanceInstanceAsync(object instance, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
     {
         try
         {
