@@ -1,0 +1,16 @@
+{
+  "revision": "b43664e0f60aa78f3cbd638578e0ced28d926194",
+  "production": "e4039283988ee6f9ba9aeb11dabef0758f81f741",
+  "localReleasePassed": 10843,
+  "packageSha512": "6d6711e644b7520960afc502ebe5e8f65da349ba96143704c057f306deefdfd0ed119bc988c92f9a9c16c8d910a3759267d3f68cc209627218c8f127f1f5bfe0",
+  "microMedianMicroseconds": {
+    "baseline": 1152.2273333333335,
+    "candidate": 1162.0024814814815,
+    "CPython": 617.10424
+  },
+  "microQualified": false,
+  "vmService": "lython-r11-micro-b43664e0.service",
+  "vmTerminal": "inactive/dead/success, MainPID0, empty cgroup; original terminal output preserved in turn; flock lease acquisition succeeded",
+  "R01": "open",
+  "R09": "nested tuple recovery remains false denial in both modes; baseline/candidate each2pass2fail"
+}

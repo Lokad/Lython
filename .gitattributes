@@ -11,3 +11,7 @@ benchmarks/results/2026-10-13-embedding-exception-pressure/reproduce/** -text wh
 benchmarks/results/2026-10-13-embedding-exception-pressure/recovery/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-13-proved-string-admission/raw/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-13-proved-string-admission/reproduce/** -text whitespace=cr-at-eol
+# Preserve frozen shared-frame diagnostic input/output hashes across checkout.
+benchmarks/results/2026-10-13-shared-async-frames/*.json -text
+benchmarks/results/2026-10-13-shared-async-frames/*.txt -text
+benchmarks/results/2026-10-13-shared-async-frames/*.py -text

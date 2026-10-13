@@ -2,6 +2,7 @@
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Integer reduction loop [M] | 16,384 iterations | 1.162 ms | 0.617 ms | — | Short diagnostic at b43664e0; one run, no qualified multiplier |
 | Integer reduction loop [L] | 16,384 iterations | 3.58–3.72 ms | 0.578–0.666 ms | — | Historical diagnostic; failed control and cross-session stability |
 | Keyword calls [Q] | 2,048 calls | 1.378–1.404 ms | 0.137–0.145 ms | — | Historical diagnostic; failed invocation control |
 | Stable sort and output [Q] | 2,048 items | 5.150–7.889 ms | 0.306–0.313 ms | — | Historical diagnostic; spread/order checks also failed |
@@ -25,12 +26,15 @@ including a loop whose cost grows with its iteration count. They support
 investigating interpreter dispatch and application workloads. **No workload
 multiplier qualified in either campaign. These timings do not describe today's
 HEAD:** subsequent interpreter and containment changes have been integrated.
+The newer M row is a separate short diagnostic at its named revision; it does
+not qualify a current overall or complete-script multiplier.
 There is no current complete-script CPython timing baseline or overall speedup.
 
 ## Which code and machine were measured?
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| M | 2026-10-13 | `b43664e0f60aa78f3cbd638578e0ced28d926194` | [Shared frames and transfer cost](benchmarks/results/2026-10-13-shared-async-frames/README.md), [all attempts](benchmarks/results/2026-10-13-shared-async-frames/micro.json) |
 | Q | 2026-10-09 | `9358c4e72f1a29e55703eee02b28ea404d01bc0a` | [Four-lane run](benchmarks/results/2026-10-09-quick/README.md), [warm medians and exclusions](benchmarks/results/2026-10-09-quick/warm.md) |
 | L | 2026-10-09 | `56d4346d960b58f037da7d4590eb66c87ffec29e` | [Focused loop run](benchmarks/results/2026-10-09-core-loop/README.md), [all loop samples](benchmarks/results/2026-10-09-core-loop/warm.md) |
 | S | 2026-10-12 | `87c1a94c347a88bc94927ea603a138cec4376170` (correctness, no timings) | [Complete-script validation](benchmarks/results/2026-10-12-script-negative-cases/README.md), [fixture and host contract](benchmarks/results/2026-10-12-containment-scope/README.md) |
@@ -43,6 +47,11 @@ PGO/LTO, ordinary GIL and cyclic GC, without debug mode or JIT, launched with
 `-I -S`. Workers kept ordinary GC/tiering and public Lython limits; optional
 instruction fuel was unset. Both engines ran sequentially on that machine.
 The linked receipts identify binaries, inputs, toolchains and sampling policies.
+M ran on that dedicated four-vCPU Ubuntu VM under .NET 10.0.12 with the same
+CPython 3.13.16 reference. Its portable Windows Release libraries were built
+using SDK **10.0.300-preview.0.26177.108**; its identical benchmark observer and
+DLL hashes are frozen separately. Seven rounds in one 8.24-second owned group
+provide diagnostic context, with compilation/startup outside the warm timer.
 
 S verifies exact stdout and output-file bytes through Lython's public API in
 both synchronous and genuinely yielded asynchronous execution, plus independent
