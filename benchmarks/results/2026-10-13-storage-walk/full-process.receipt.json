@@ -1,0 +1,20 @@
+{
+  "source": "5130d9ef116ae58a4e7ae0098e2bc6b818549d89",
+  "production": "7250d0eb04694cea1fe59da99b818ee81f38b72c",
+  "binaries": [
+    {
+      "path": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "sha256": "ACB7E302AE52A40F695601061BA754CEA7F145291FAD9B3FA154D40A75413EE6"
+    },
+    {
+      "path": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+      "sha256": "4FFF760C596345B3DB60E55E3F4579D0B55B8DF7A72D27C15BB14EF562364BDF"
+    }
+  ],
+  "pid": 216580,
+  "hasExited": true,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 542731,
+  "purpose": "full Release suite gate; separate finite limit, not a diagnostic or benchmark"
+}

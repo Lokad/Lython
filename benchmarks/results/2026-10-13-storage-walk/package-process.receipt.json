@@ -1,0 +1,16 @@
+{
+  "pid": 617284,
+  "exitCode": 0,
+  "hasExited": true,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 34075,
+  "executable": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+  "executableSha256": "BFB46AF89433268872DDB43D1CA7A3F433452EE91ED356A9786940F90118E285",
+  "arguments": [
+    "-NoProfile",
+    "-File",
+    "tools/PackageSmokeTest/verify-package.ps1",
+    "-OutputDirectory",
+    ".git/agent-notes/storage-edges-20261013/package-output"
+  ]
+}
