@@ -42,3 +42,29 @@ suppression and retained aliases, and address actual withdrawal paths without
 introducing scalar identity tracking or a second ledger. It cannot be reported
 as GC-independent reclamation. The complete root/child/resource replacement,
 Windows embedding impact and CPython milestone remain open.
+
+## Follow-up recovery evidence at 20524d7b
+
+The [string-admission change](../2026-10-13-proved-string-admission/README.md)
+preserves relief eligibility when a funded immutable payload proves an admission
+impossible. It does not refund owners or make the root rule complete. Synchronous
+name rebinding and list withdrawal recover in its fixed controls; direct deletion
+and unsuspended async recovery remain sensitive to implicit CLR lifetimes.
+
+An expanded 14-case public fixture on Windows/.NET 10.0.12 Release passed 11 and
+failed three: unsuspended `RunAsync` name rebinding, list-element deletion and
+direct name deletion denied a fitting replacement. Retained aliases correctly
+rejected in both modes. Adding an unrelated `kept = None` binding made the
+synchronous deletion case succeed; the earlier simpler white fixture failed.
+Success in one execution shape therefore cannot close deletion recovery.
+
+Preventing local-store inlining did not change those outcomes. Preventing
+lowered-assignment wrapper inlining also left the three failures unchanged.
+Both candidates were removed. An executable async opcode experiment was removed
+without a claim about those failures: public `RunAsync` uses lowered execution
+and did not exercise that candidate. Private original fixtures, failed TRX and
+finite cleanup receipts are in `.git/agent-notes/withdrawn-temporaries-20261013/`.
+
+This stops speculative inlining-boundary changes. The next architectural step
+must identify actual retained fields or represent helper/root lifetimes explicitly.
+It must not refund from a partial root walk or weaken the managed stack policy.
