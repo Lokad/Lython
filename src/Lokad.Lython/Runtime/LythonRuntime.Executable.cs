@@ -54,8 +54,10 @@ internal sealed partial class LythonRuntime
 
     internal class ExecutableFrameState : IMemoryStorageEdges
     {
+        internal IMemoryStorageEdges? ActiveCaller { get; set; }
         public virtual void VisitStorageChildren(MemoryStorageWalk visitor)
         {
+            if (!visitor.Add(ActiveCaller)) return;
             foreach (var value in _locals)
             {
                 if (ReferenceEquals(value, UninitializedLocal))

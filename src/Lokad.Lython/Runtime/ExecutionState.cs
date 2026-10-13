@@ -7,7 +7,7 @@ internal sealed class ExecutionState : IMemoryStorageEdges
 {
     void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
     {
-        if (!visitor.Add(Args) || !visitor.Add(BuiltinVariables) ||
+        if (!visitor.Add(ActiveExecutionRoot) || !visitor.Add(Args) || !visitor.Add(BuiltinVariables) ||
             !visitor.Add(RegexCache) || !visitor.Add(StructuralTraversal) ||
             !visitor.Add(DecimalContext) || !visitor.Add(OsEnvironMapping) ||
             !visitor.Add(TypingGeneric) || !visitor.Add(UrlSplitFieldDefaults) ||
@@ -34,6 +34,7 @@ internal sealed class ExecutionState : IMemoryStorageEdges
     }
 
     private Dictionary<object, RuntimeMemberCacheEntry>? _runtimeMemberCaches;
+    internal IMemoryStorageEdges? ActiveExecutionRoot { get; set; }
     private Dictionary<PythonExceptionIdentity, PyTuple>? _exceptionBaseTuples;
     internal PyType? TypingGeneric { get; set; }
     internal PyDict? UrlSplitFieldDefaults { get; set; }

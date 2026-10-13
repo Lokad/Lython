@@ -308,11 +308,24 @@ internal sealed partial class LythonRuntime
 
         internal void EnterExecutableSlots(ExecutableFrameState frame)
         {
+            frame.ActiveCaller = State.ActiveExecutionRoot;
+            State.ActiveExecutionRoot = frame;
             CurrentExecutableFrame = frame;
             MirrorsExecutableLocals = frame.RequiresLocalVariableMirroring;
         }
 
-        internal void LeaveExecutableSlots(ExecutableFrameState? previous) => CurrentExecutableFrame = previous;
+        internal void LeaveExecutableSlots(ExecutableFrameState? previous)
+        {
+            // Creation can fail before any new executable frame is published.
+            // Simple-return bodies also enter no executable frame at all.
+            if (!ReferenceEquals(CurrentExecutableFrame, previous))
+            {
+                var leaving = CurrentExecutableFrame!;
+                State.ActiveExecutionRoot = leaving.ActiveCaller;
+                leaving.ActiveCaller = null;
+            }
+            CurrentExecutableFrame = previous;
+        }
 
         internal bool TryResolveOwnLocal(string name, [MaybeNullWhen(false)] out object value)
         {
@@ -867,9 +880,19 @@ internal sealed partial class LythonRuntime
 
         public void RegisterHostCall(LythonSourceSpan? span) => Services.RegisterHostCall(span);
 
-        public void EnterFunctionCall(LythonSourceSpan? span) => Services.EnterFunctionCall(span);
+        public void EnterFunctionCall(LythonSourceSpan? span)
+        {
+            Services.EnterFunctionCall(span);
+            ActiveCaller = State.ActiveExecutionRoot;
+            State.ActiveExecutionRoot = this;
+        }
 
-        public void LeaveFunctionCall() => Services.LeaveFunctionCall();
+        public void LeaveFunctionCall()
+        {
+            State.ActiveExecutionRoot = ActiveCaller;
+            ActiveCaller = null;
+            Services.LeaveFunctionCall();
+        }
 
         public void EnterInterpreterFrame(LythonSourceSpan? span) => Services.EnterInterpreterFrame(span);
 
