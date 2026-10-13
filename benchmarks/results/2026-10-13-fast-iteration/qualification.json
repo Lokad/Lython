@@ -1,0 +1,326 @@
+{
+  "producer": "c4cd4e9dfcb2fc5dfde87dbf9e43b1669f75e257",
+  "productionTree": "f15f46687ef29c864e6a75c43e9d9d93870fdac1",
+  "machine": {
+    "os": "Windows x64",
+    "model": "Alienware Aurora R16",
+    "cpu": "Intel Core i7-14700KF",
+    "logicalProcessors": 28,
+    "memoryGiB": 64,
+    "sdk": "10.0.300-preview.0.26177.108",
+    "runtime": "10.0.12",
+    "date": "2026-10-13",
+    "quietMachine": false
+  },
+  "defaultSuite": {
+    "process": {
+      "pid": 684308,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 292389,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "21A46F1E5235CF4E844B9DE5429F0E198B9C97A41F0503A66442F1D639CA3EE6",
+      "arguments": [
+        "test",
+        "Lokad.Lython.slnx",
+        "-c",
+        "Release",
+        "--no-build",
+        "--no-restore",
+        "--logger",
+        "trx",
+        "--results-directory",
+        ".git/agent-notes/fast-iteration-20261013/checkpoint-final-fast-suite"
+      ],
+      "purpose": "checkpoint test qualification, not a runtime benchmark"
+    },
+    "results": [
+      {
+        "file": "JoannesVermorel_LOKAD-0399_2026-10-13_16_42_05.trx",
+        "sha256": "EC4BB07F4F9C7B9755F7159AC8E37BFE0C98A76C77C35376EBD44C8B0040C650",
+        "total": 2271,
+        "passed": 2271,
+        "failed": 0
+      },
+      {
+        "file": "JoannesVermorel_LOKAD-0399_2026-10-13_16_42_07.trx",
+        "sha256": "04AB435140CA3A0BB95D46845D73CB8E280A411E2D33BF37E011CE6BD8F93047",
+        "total": 8667,
+        "passed": 8667,
+        "failed": 0
+      }
+    ]
+  },
+  "originalStress": {
+    "process": {
+      "pid": 1080236,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 218811,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "21A46F1E5235CF4E844B9DE5429F0E198B9C97A41F0503A66442F1D639CA3EE6",
+      "arguments": [
+        "test",
+        "Lokad.Lython.slnx",
+        "-c",
+        "Release",
+        "--no-build",
+        "--no-restore",
+        "--filter",
+        "Category=Stress",
+        "--logger",
+        "trx",
+        "--results-directory",
+        ".git/agent-notes/fast-iteration-20261013/checkpoint-original-stress"
+      ],
+      "purpose": "checkpoint test qualification, not a runtime benchmark"
+    },
+    "results": [
+      {
+        "file": "JoannesVermorel_LOKAD-0399_2026-10-13_16_48_39.trx",
+        "sha256": "17E7AE68FDCEA5F326BDB93CCDE9F1F9DC51469144FD55FE9257CAA4A6D06AE1",
+        "total": 0,
+        "passed": 0,
+        "failed": 0
+      },
+      {
+        "file": "JoannesVermorel_LOKAD-0399_2026-10-13_16_48_42.trx",
+        "sha256": "ED1C5DA1501E7580542AF193FFF333B2A1865A126A33E04EA03855DBA3BB7A74",
+        "total": 375,
+        "passed": 375,
+        "failed": 0
+      }
+    ]
+  },
+  "qualificationNotRuntimePerformance": true,
+  "forcedGcRemains": true,
+  "releasePackage": {
+    "producer": "c4cd4e9dfcb2fc5dfde87dbf9e43b1669f75e257",
+    "explicitReleasePack": true,
+    "compatibilityAndMediatedFileConsumerPassed": true,
+    "sha512": "6EB6084791A6AA6EFDCD592FCF99D6455FAD3E09BBD2BA51CA4560A6F88D0E45D1BD436D114F04A4012BF9125332D90CE3259BEEA3C409945AFE891246E150C4",
+    "dllSha256": "9ED25464C753BA16BDEC8FFE32C2954400AC7B38C8A08459A5C8D205C90A284D",
+    "process": {
+      "pid": 1101032,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 24821,
+      "executable": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "executableSha256": "BFB46AF89433268872DDB43D1CA7A3F433452EE91ED356A9786940F90118E285",
+      "arguments": [
+        "-NoProfile",
+        "-File",
+        "tools/PackageSmokeTest/verify-package.ps1",
+        "-OutputDirectory",
+        ".git/agent-notes/fast-iteration-20261013/package-output"
+      ]
+    }
+  },
+  "ci": "Cross-platform ordinary Release suite/package CI is a separate delivery gate; local original stress375 is complete. Terminal exact-head proof will be cached privately, without changing this measured producer.",
+  "binaries": [
+    {
+      "path": "tests/Lokad.Lython.PublicApi.Tests/bin/Release/net10.0/Lokad.Lython.PublicApi.Tests.dll",
+      "sha256": "2256F66451F13D79C0B04A73500543D644667C326801A0C946E5C19D14DB0353"
+    },
+    {
+      "path": "tests/Lokad.Lython.Tests/bin/Release/net10.0/Lokad.Lython.WhiteBox.Tests.dll",
+      "sha256": "F58B197107A8015B8FD7672A8F1EF8F7E1988CECFB83839BD48547EF7668C8E4"
+    },
+    {
+      "path": "src/Lokad.Lython/bin/Release/net10.0/Lokad.Lython.dll",
+      "sha256": "9ED25464C753BA16BDEC8FFE32C2954400AC7B38C8A08459A5C8D205C90A284D"
+    }
+  ],
+  "parallel-small-controls": {
+    "process": {
+      "source": "working-small-fixtures",
+      "production": "preserved-binding-gzip-work",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+      "assemblySha256": "B8B2725809447A10CD460029CF9617AAC3D5A103B0271AAEE036A167C3899FE7",
+      "filter": "Category!=Stress&(FullyQualifiedName~IntegerParseAccountingScenarioTests|FullyQualifiedName~IntegerBuiltinAccountingScenarioTests|FullyQualifiedName~YieldingUserIterableDiscardCompletes|FullyQualifiedName~DifferCompareDiscardCompletes|FullyQualifiedName~MatcherReseqDiscardCompletes|FullyQualifiedName~DictComprehensionsDiscardCompletes)",
+      "pid": 1110468,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 3126,
+      "stdoutSha256": "11C8D86EC3B30DB3341A66CD40A9CD3134C27904BE5F576D195F7BEA014C4130",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "purpose": "checkpoint test qualification, not a runtime benchmark"
+    },
+    "results": [
+      {
+        "file": "tests.trx",
+        "sha256": "393B49744BDFB44E96DFD5A793DBFD18F1D721368B54BB8781BD7D1C8E0E3668",
+        "total": 10,
+        "passed": 10,
+        "failed": 0
+      }
+    ]
+  },
+  "serial-small-controls": {
+    "process": {
+      "pid": 1069340,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 3530,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "21A46F1E5235CF4E844B9DE5429F0E198B9C97A41F0503A66442F1D639CA3EE6",
+      "arguments": [
+        "vstest",
+        "tests/Lokad.Lython.PublicApi.Tests/bin/Release/net10.0/Lokad.Lython.PublicApi.Tests.dll",
+        "--Settings:.git/agent-notes/fast-iteration-20261013/serial.runsettings",
+        "--TestCaseFilter:Category!=Stress&(FullyQualifiedName~IntegerParseAccountingScenarioTests|FullyQualifiedName~IntegerBuiltinAccountingScenarioTests|FullyQualifiedName~YieldingUserIterableDiscardCompletes|FullyQualifiedName~DifferCompareDiscardCompletes|FullyQualifiedName~MatcherReseqDiscardCompletes|FullyQualifiedName~DictComprehensionsDiscardCompletes)",
+        "--Logger:trx;LogFileName=tests.trx",
+        "--ResultsDirectory:.git/agent-notes/fast-iteration-20261013/serial-small-controls",
+        "--Logger:console;verbosity=normal"
+      ],
+      "purpose": "checkpoint test qualification, not a runtime benchmark"
+    },
+    "results": [
+      {
+        "file": "tests.trx",
+        "sha256": "A166685F7E72D929CEAF75D7C19124FF5BEFD29D45CB610F4B7914BC02A5430A",
+        "total": 10,
+        "passed": 10,
+        "failed": 0
+      }
+    ]
+  },
+  "stranded-charge-fault-controls": {
+    "process": {
+      "source": "deliberate-stranded-charge-and-magnitude-faults",
+      "production": "temporary-fault-control",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+      "assemblySha256": "5475E0BC483AF4709315E6CEEBB16D45FA4572C99188EE227F03CD214A231CE8",
+      "filter": "Category!=Stress&(FullyQualifiedName~IntegerParseAccountingScenarioTests|FullyQualifiedName~IntegerBuiltinAccountingScenarioTests|FullyQualifiedName~YieldingUserIterableDiscardCompletes|FullyQualifiedName~DifferCompareDiscardCompletes|FullyQualifiedName~MatcherReseqDiscardCompletes|FullyQualifiedName~DictComprehensionsDiscardCompletes|FullyQualifiedName~FullScanCompletesAtLargeScale|FullyQualifiedName~ListGrowDiscardCompletes|FullyQualifiedName~DiscardedLoopAndSubscriptRemaindersCompleteAtFixedCap|FullyQualifiedName~DiscardedAssignRemainders_DoNotDeny)",
+      "pid": 617984,
+      "hasExited": true,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 2291,
+      "stdoutSha256": "C69C4BBDE32B0662BAE1E920CA160642D9ACF4D170E587C68D956175F7911D39",
+      "stderrSha256": "20087776A88355CCED6A9B2E103178636A49063C37654DF786D3A518B5F33336",
+      "purpose": "checkpoint test qualification, not a runtime benchmark"
+    },
+    "results": [
+      {
+        "file": "tests.trx",
+        "sha256": "02967C2FEAAFB1276B01761B1B07EA559C5EEBA3D937654423BE956DCF1DFD96",
+        "total": 15,
+        "passed": 6,
+        "failed": 9
+      }
+    ]
+  },
+  "integer-ownership-fault-controls": {
+    "process": {
+      "source": "deliberately-omitted-integer-ownership",
+      "production": "temporary-fault-control",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+      "assemblySha256": "243ABDD874795B8470C9466D91CD8D51D4D87F9254E25EE4C75DDC1AF0495DA3",
+      "filter": "FullyQualifiedName~IntegerParseAccountingScenarioTests|FullyQualifiedName~IntegerBuiltinAccountingScenarioTests",
+      "pid": 1055328,
+      "hasExited": true,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 2036,
+      "stdoutSha256": "9612884E6D8F869E0BE4F8D0900882CDB445C77924F098DC1741640386CD4ACB",
+      "stderrSha256": "45B0CF4A6DCDAC216034E9C3D584566FAE29F20FEB6D59D92C88EAAAB3B2ED19",
+      "purpose": "checkpoint test qualification, not a runtime benchmark"
+    },
+    "results": [
+      {
+        "file": "tests.trx",
+        "sha256": "F5AE4B4F1E2F067FD1C2B05C0433369211632AF442A971ACCE86B2A4A77F7F49",
+        "total": 6,
+        "passed": 4,
+        "failed": 2
+      }
+    ]
+  },
+  "resumed-runtime-controls": {
+    "process": {
+      "source": "restored-runtime-with-cursor-edges",
+      "production": "working-bounded-simplifications",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "A21B15C4A18C1BA7AA382A4E7C3A52C1CBDCF57F11BDBB1C8F3D75D663005CC2",
+      "filter": "FullyQualifiedName~GzipFileAccountingTests|FullyQualifiedName~FinalizableOwnershipTests|FullyQualifiedName~GzipCallbackScopeLifetimeTests|FullyQualifiedName~CallBindingSubsystemTests|FullyQualifiedName~MemoryStorageWalkTests",
+      "pid": 326048,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1652,
+      "stdoutSha256": "534892D92F985906CBDF1F13D27E47453DB39B631E1304CEE0DA9BAFF55F8081",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "purpose": "checkpoint test qualification, not a runtime benchmark"
+    },
+    "results": [
+      {
+        "file": "tests.trx",
+        "sha256": "C0330F714C3B575CDA3EDD95F46E14A07A59E8A964B3CD20F2DB40337E671A74",
+        "total": 68,
+        "passed": 68,
+        "failed": 0
+      }
+    ]
+  },
+  "small-core-controls": {
+    "process": {
+      "source": "working-scaled-lifetime-fixtures",
+      "production": "preserved-binding-gzip-work",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+      "assemblySha256": "DBBBE8E5A2176C32FDCF081893AB30ABD6040E154FF9E82F13F95ACE6D1CE438",
+      "filter": "Category!=Stress&(FullyQualifiedName~IntegerParseAccountingScenarioTests|FullyQualifiedName~IntegerBuiltinAccountingScenarioTests|FullyQualifiedName~CsvBoundedScanScenarioTests|FullyQualifiedName~GrowthReclamationScenarioTests|FullyQualifiedName~OsIteratorAccountingScenarioTests|FullyQualifiedName~IntConversionAccountingTests|FullyQualifiedName~StarredLoopTargetTests)",
+      "pid": 680672,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 10669,
+      "stdoutSha256": "EB0D0E2EFD42BA84891E525EB2CC2E7E932F62A5EA93E22C5B53819CFC72535A",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "purpose": "checkpoint test qualification, not a runtime benchmark"
+    },
+    "results": [
+      {
+        "file": "tests.trx",
+        "sha256": "7A2F7B4941F6523401A031E3B95B374E2B1705BE13E825D039C8E0DEBE8EBAB5",
+        "total": 59,
+        "passed": 59,
+        "failed": 0
+      }
+    ]
+  },
+  "final-small-boundary-controls": {
+    "process": {
+      "source": "final-small-inputs-and-linear-fixture-builder",
+      "production": "f15f46687ef29c864e6a75c43e9d9d93870fdac1",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+      "assemblySha256": "BAF4253D529FD8D4FBD02E11F7C7589CC8E6EF9EDB7B566E40FD7CF69F4267FB",
+      "filter": "Category!=Stress&(FullyQualifiedName~SliceLifetimeScenarioTests|FullyQualifiedName~SplitLifetimeScenarioTests|FullyQualifiedName~ImportedCodeRetentionScenarioTests|FullyQualifiedName~CountedSampleDiscards_SucceedUnderBudget|FullyQualifiedName~FloydSampleDiscards_SucceedUnderBudget|FullyQualifiedName~FMeanDiscards_SucceedUnderBudget|FullyQualifiedName~MedianDiscards_SucceedUnderBudget|FullyQualifiedName~LargeScanStaysBounded|FullyQualifiedName~ImportedModuleScopeAccountingScenarioTests)",
+      "pid": 164104,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 4790,
+      "stdoutSha256": "FD70EFCAB4052E6B231BDCD322BF244FCB9CDEE578185C75D70CDD91688BB085",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "purpose": "checkpoint test qualification, not a runtime benchmark"
+    },
+    "results": [
+      {
+        "file": "tests.trx",
+        "sha256": "300862689E52F15F10655F76DA819EDF144F0F61B161FFED6F84E925E8D109DF",
+        "total": 36,
+        "passed": 36,
+        "failed": 0
+      }
+    ]
+  },
+  "frozenGovernorHistorySha256": "F496A90B1D68A0B314367907D1967579230DB81BF40B6CC1D8A127325AC69E20",
+  "temporaryFaultSourcesRestored": true,
+  "defaultExcludesDerivedStressClasses": true
+}
