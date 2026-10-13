@@ -179,12 +179,12 @@ internal sealed partial class LythonRuntime
             }
             finally
             {
-                _closed = true; _stream = PyNone.Instance;
-                ReleaseLocal();
-                GC.SuppressFinalize(this);
-                _services.State.UntrackOpenFileWriter(this);
-                if (_ownsStream)
-                    await PyBinaryStream.CallAsync(stream, "close", [], span, CurrentContext, asynchronous).ConfigureAwait(false);
+                try { RetireLocalStorage(); }
+                finally
+                {
+                    if (_ownsStream)
+                        await PyBinaryStream.CallAsync(stream, "close", [], span, CurrentContext, asynchronous).ConfigureAwait(false);
+                }
             }
         }
     }

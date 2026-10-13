@@ -57,8 +57,7 @@ internal sealed partial class LythonRuntime
             // the complete coupon until the finalized object is collected, and
             // execution-thread sweeps perform all accounting. A compressor's
             // final block is discarded without allocation or guest/host calls.
-            _sink?.Discard();
-            try { _native?.Dispose(); }
+            try { DiscardNative(); }
             catch (Exception) { /* A finalizer cannot report a guest failure. */ }
         }
 
@@ -95,20 +94,24 @@ internal sealed partial class LythonRuntime
 
         internal void AbortConstruction()
         {
-            ReleaseLocal();
-            GC.SuppressFinalize(this);
-            _closed = true;
-            _services.State.CallTemporaries.RefundUnpublishedValue(this);
+            try { RetireLocalStorage(); }
+            finally { _services.State.CallTemporaries.RefundUnpublishedValue(this); }
+        }
+
+        private void DiscardNative()
+        {
+            // Both finalization and execution-thread retirement discard a
+            // compressor's final block without allocation or publication.
+            _sink?.Discard();
+            try { _native?.Dispose(); }
+            finally { _native = null; _sink = null; }
         }
 
         private void ReleaseNative()
         {
-            // Discarding a failed compressor must never allocate more output.
-            _sink?.Discard();
-            try { _native?.Dispose(); }
+            try { DiscardNative(); }
             finally
             {
-                _native = null; _sink = null;
                 _services.MemoryGovernor.Release(_nativeCharge);
                 _nativeCharge = 0;
                 Changed();
@@ -117,12 +120,34 @@ internal sealed partial class LythonRuntime
 
         private void ReleaseLocal()
         {
-            ReleaseNative();
-            _cursor = null;
-            _pending.Release(); _output.Release();
-            _services.MemoryGovernor.Release(_window.Length);
-            _window = []; _windowLength = _windowPosition = 0;
-            Changed();
+            try { ReleaseNative(); }
+            finally
+            {
+                _cursor = null;
+                _pending.Release(); _output.Release();
+                _services.MemoryGovernor.Release(_window.Length);
+                _window = []; _windowLength = _windowPosition = 0;
+                Changed();
+            }
+        }
+
+        void IPyFinalizableOwnership.AbandonStorage()
+        {
+            if (_operationContext is not null)
+                throw new InvalidOperationException("Cannot abandon an active gzip operation.");
+            RetireLocalStorage();
+        }
+
+        private void RetireLocalStorage()
+        {
+            _closed = true;
+            _stream = PyNone.Instance;
+            try { ReleaseLocal(); }
+            finally
+            {
+                GC.SuppressFinalize(this);
+                _services.State.UntrackOpenFileWriter(this);
+            }
         }
 
         private void EnsureOpen(LythonSourceSpan span)

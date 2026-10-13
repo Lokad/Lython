@@ -1,11 +1,14 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.IO.Compression;
+using System.Reflection;
 using Lokad.Lython.Runtime;
 using Lokad.Lython.Runtime.Text;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
+[Collection("AllocationSensitive")]
 public sealed class GzipFileAccountingTests
 {
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
@@ -192,6 +195,208 @@ public sealed class GzipFileAccountingTests
 
     private static LythonRuntime.ExecutionContext Context(long? cap = null)
         => new(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap });
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task StoredCursorRetainsItsOwnerAndInputWithoutGuestCallbacks(bool asynchronous)
+    {
+        var context = Context(2_000_000);
+        var raw = Raw(context, Member);
+        var owner = await Construct(context, raw, "rb", asynchronous);
+        var escaped = await Call(owner, "read", context, asynchronous, BigInteger.One);
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        var cursorField = owner.GetType().GetField("_cursor", flags)!;
+        var cursor = cursorField.GetValue(owner)!;
+        var input = Assert.IsType<PyBytes>(cursor.GetType().GetField("_input", flags)!.GetValue(cursor));
+        Assert.IsAssignableFrom<IMemoryStorageEdges>(cursor);
+        var committed = context.MemoryGovernor.CurrentCommittedBytes;
+        using var walk = new MemoryStorageWalk(context.MemoryGovernor, 64);
+        Assert.True(walk.TryTraverse([cursor]));
+        var values = walk.Visited.ToArray();
+        Assert.Equal(1, values.Count(value => ReferenceEquals(value, owner)));
+        Assert.Contains(values, value => ReferenceEquals(value, input));
+        Assert.Contains(values, value => ReferenceEquals(value, raw));
+        Assert.DoesNotContain(values, value => ReferenceEquals(value, escaped));
+        Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
+
+        Assert.IsAssignableFrom<IPyFinalizableOwnership>(owner).AbandonStorage();
+        Assert.Null(cursorField.GetValue(owner));
+        Assert.True(walk.TryTraverse([owner]));
+        Assert.DoesNotContain(walk.Visited.ToArray(), value => ReferenceEquals(value, input));
+        // An independently retained cursor still retains its input and owner.
+        Assert.True(walk.TryTraverse([cursor]));
+        Assert.Contains(walk.Visited.ToArray(), value => ReferenceEquals(value, input));
+        Assert.Equal(512, Snapshot(owner));
+        GC.KeepAlive(escaped);
+    }
+
+    [Theory]
+    [InlineData("rb", false)]
+    [InlineData("rb", true)]
+    [InlineData("wb", false)]
+    [InlineData("wb", true)]
+    public async Task AbandonmentAtFullCancelledBudgetReleasesOnlyLocalStorage(string mode, bool asynchronous)
+    {
+        const long cap = 2_000_000;
+        using var cancellation = new CancellationTokenSource();
+        var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), new LythonRunOptions
+            { MaxExecutionMemoryBytes = cap, CancellationToken = cancellation.Token });
+        var raw = Raw(context, mode == "rb" ? Member : []);
+        var owner = await Construct(context, raw, mode, asynchronous);
+        PyBytes escaped;
+        if (mode == "rb")
+            escaped = Assert.IsType<PyBytes>(await Call(owner, "read", context, asynchronous, BigInteger.One));
+        else
+        {
+            await Call(owner, "write", context, asynchronous, new PyBytes(new byte[32769]));
+            escaped = raw.GetValue(Span);
+        }
+        var ownedBefore = Snapshot(owner);
+        var rawBytes = raw.OwnedBytes;
+        var rawLength = raw.Length;
+        var rawPosition = raw.Position;
+        var escapedBytes = escaped.CommittedStorageBytes;
+        var committed = context.MemoryGovernor.CurrentCommittedBytes;
+        using var pressure = context.MemoryGovernor.ReserveTemporary(cap - context.MemoryGovernor.CurrentAccountedBytes, Span);
+        cancellation.Cancel();
+        var finalizable = Assert.IsAssignableFrom<IPyFinalizableOwnership>(owner);
+        finalizable.AbandonStorage();
+        Assert.Equal(512, Snapshot(owner));
+        Assert.Equal(committed - ownedBefore + 512, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(rawBytes, raw.OwnedBytes);
+        Assert.Equal(rawLength, raw.Length);
+        Assert.Equal(rawPosition, raw.Position);
+        Assert.Equal(escapedBytes, escaped.CommittedStorageBytes);
+        Assert.Equal(false, Get(raw, "closed"));
+        Assert.Equal(true, Get(owner, "closed"));
+        Assert.Same(PyNone.Instance, Get(owner, "fileobj"));
+        var after = context.MemoryGovernor.CurrentCommittedBytes;
+        finalizable.AbandonStorage();
+        Assert.Equal(after, context.MemoryGovernor.CurrentCommittedBytes);
+        GC.KeepAlive(escaped);
+    }
+
+    [Fact]
+    public async Task AbandonmentDisposalFaultStillReleasesBuffersAndCanBeRepeated()
+    {
+        var context = Context(2_000_000);
+        var raw = Raw(context, []);
+        var owner = await Construct(context, raw, "wb", false);
+        await Call(owner, "write", context, false, new PyBytes(new byte[32769]));
+        var native = ReplaceNativeWithThrowingDisposer(owner);
+        var owned = Snapshot(owner);
+        var committed = context.MemoryGovernor.CurrentCommittedBytes;
+        var finalizable = Assert.IsAssignableFrom<IPyFinalizableOwnership>(owner);
+        Assert.Same(native.Failure, Assert.Throws<IOException>(finalizable.AbandonStorage));
+        Assert.Equal(512, Snapshot(owner));
+        Assert.Equal(committed - owned + 512, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(true, Get(owner, "closed"));
+        Assert.Equal(false, Get(raw, "closed"));
+        finalizable.AbandonStorage();
+        Assert.Equal(1, native.DisposeCount);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NormalCloseDisposalFaultStillClosesTheOwnedBaseStream(bool asynchronous)
+    {
+        var context = Context(2_000_000);
+        Assert.True(LythonRuntime.GzipModule.Instance.TryGetMember("GzipFile", out var member));
+        var constructor = Assert.IsAssignableFrom<LythonRuntime.ICallable>(member);
+        var owner = constructor.Invoke([CallArgumentValue.Positional(PyString.FromString("/file")),
+            CallArgumentValue.Positional(PyString.FromString("wb"))], Span, context);
+        var raw = Get(owner, "fileobj");
+        await Call(owner, "write", context, asynchronous, new PyBytes([1, 2, 3]));
+        var native = ReplaceNativeWithThrowingDisposer(owner);
+        var error = await Assert.ThrowsAsync<IOException>(async () => await Call(owner, "close", context, asynchronous));
+        Assert.Same(native.Failure, error);
+        Assert.Equal(512, Snapshot(owner));
+        Assert.Equal(true, Get(raw, "closed"));
+        context.State.CloseOpenFileWriters(context); // No terminal writer remains registered.
+        Assert.Equal(2, native.DisposeCount);
+    }
+
+    private static ThrowingDeflateStream ReplaceNativeWithThrowingDisposer(object owner)
+    {
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        var ownerType = owner.GetType();
+        var sink = ownerType.GetField("_sink", flags)!.GetValue(owner)!;
+        sink.GetType().GetMethod("Discard", flags)!.Invoke(sink, null);
+        var field = ownerType.GetField("_native", flags)!;
+        ((DeflateStream)field.GetValue(owner)!).Dispose();
+        var replacement = new ThrowingDeflateStream();
+        field.SetValue(owner, replacement);
+        return replacement;
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ActiveReadCallbackCannotAbandonItsOwner(bool asynchronous)
+    {
+        var context = Context(2_000_000);
+        var source = new CallbackReadSource();
+        var owner = await Construct(context, source, "rb", asynchronous);
+        var guarded = 0;
+        source.OnRead = () =>
+        {
+            var snapshot = Snapshot(owner);
+            var committed = context.MemoryGovernor.CurrentCommittedBytes;
+            Assert.Throws<InvalidOperationException>(Assert.IsAssignableFrom<IPyFinalizableOwnership>(owner).AbandonStorage);
+            Assert.Equal(snapshot, Snapshot(owner));
+            Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
+            Assert.Equal(false, Get(owner, "closed"));
+            guarded++;
+        };
+        var result = Assert.IsType<PyBytes>(await Call(owner, "read", context, asynchronous, BigInteger.One));
+        Assert.Equal(new byte[] { (byte)'a' }, result.Bytes.ToArray());
+        Assert.True(guarded > 0);
+        Assert.IsAssignableFrom<IPyFinalizableOwnership>(owner).AbandonStorage();
+        Assert.Equal(512, Snapshot(owner));
+        GC.KeepAlive(result);
+    }
+
+    private sealed class CallbackReadSource : IPyDynamicAttributes
+    {
+        internal Action OnRead = static () => { };
+        private int _position;
+        public bool TryGetMember(string name, out object value)
+        {
+            if (name == "read") { value = new ReadMethod(this); return true; }
+            value = null!;
+            return false;
+        }
+
+        private sealed class ReadMethod(CallbackReadSource source) : LythonRuntime.ICallable
+        {
+            public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+            {
+                source.OnRead();
+                var count = Math.Min((int)(BigInteger)arguments[0].Value, Member.Length - source._position);
+                var bytes = Member.AsSpan(source._position, count).ToArray();
+                source._position += count;
+                return new PyBytes(bytes);
+            }
+            public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+            {
+                await Task.Yield();
+                return Invoke(arguments, span, context);
+            }
+        }
+    }
+
+    private sealed class ThrowingDeflateStream() : DeflateStream(new MemoryStream(), CompressionLevel.Fastest)
+    {
+        internal IOException Failure { get; } = new("Controlled disposal failure after resource release.");
+        internal int DisposeCount { get; private set; }
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            if (disposing) { DisposeCount++; throw Failure; }
+        }
+    }
 
     private static LythonRuntime.BytesIOObject Raw(LythonRuntime.ExecutionContext context, byte[] initial)
     {

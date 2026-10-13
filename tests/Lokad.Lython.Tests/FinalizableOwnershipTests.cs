@@ -3,6 +3,7 @@ using Lokad.Lython.Runtime;
 
 namespace Lokad.Lython.Tests;
 
+[Collection("AllocationSensitive")]
 public sealed class FinalizableOwnershipTests
 {
     private const long NativeCoupon = 131072;
@@ -58,6 +59,7 @@ public sealed class FinalizableOwnershipTests
     private sealed class NativeOwner(FinalizerGates gates) : IPyFinalizableOwnership
     {
         public bool TrySnapshotOwnership(out long chargeBytes) { chargeBytes = NativeCoupon; return true; }
+        public void AbandonStorage() => throw new InvalidOperationException("This fixture tests finalizer retention only.");
         ~NativeOwner()
         {
             gates.Started.Set();
