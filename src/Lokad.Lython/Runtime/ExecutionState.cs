@@ -143,6 +143,10 @@ internal sealed class ExecutionState
 
     public MemoryGovernor MemoryGovernor { get; }
 
+    // Dynamic execution ancestry, distinct from lexical closure parents. The
+    // existing frame objects link only while executing, including suspension.
+    internal LythonRuntime.ExecutableFrameState? ActiveExecutableFrame { get; set; }
+
     // Per-call variadic materializations (overflow lists and tuples, keyword
     // dicts and key strings) register here instead of leaking durable commits
     // when dropped; sweeps release whatever the collector reclaimed while

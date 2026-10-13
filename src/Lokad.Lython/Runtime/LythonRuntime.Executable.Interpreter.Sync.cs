@@ -10,6 +10,13 @@ internal sealed partial class LythonRuntime
         // Operation handlers and abrupt routing retain the shared semantics.
         public void Execute()
         {
+            EnterActiveFrame(_context.State);
+            try { ExecuteCore(); }
+            finally { _stack.CompleteInstruction(); LeaveActiveFrame(_context.State); }
+        }
+
+        private void ExecuteCore()
+        {
             // Every control-flow edge must arrive at a block with the same value
             // stack depth. The first arrival records that depth; edge handling
             // below validates later arrivals. Abrupt signals remain separate so
@@ -155,6 +162,7 @@ internal sealed partial class LythonRuntime
                         RouteRuntimeException(ex, instruction.Span);
                         jumped = true;
                     }
+                    _stack.CompleteInstruction();
 
                     if (jumped)
                     {

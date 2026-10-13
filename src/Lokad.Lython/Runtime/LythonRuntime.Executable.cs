@@ -66,6 +66,22 @@ internal sealed partial class LythonRuntime
 
         public bool RequiresLocalVariableMirroring => _codeObject.RequiresLocalVariableMirroring;
 
+        internal ExecutableFrameState? ActiveCaller { get; private set; }
+        internal virtual ReadOnlySpan<object?> RetainedOperands => ReadOnlySpan<object?>.Empty;
+        internal virtual object? PendingObservedValue => null;
+
+        protected void EnterActiveFrame(ExecutionState state)
+        {
+            ActiveCaller = state.ActiveExecutableFrame;
+            state.ActiveExecutableFrame = this;
+        }
+
+        protected void LeaveActiveFrame(ExecutionState state)
+        {
+            state.ActiveExecutableFrame = ActiveCaller;
+            ActiveCaller = null;
+        }
+
         internal long KnownLiveStringBytes(MemoryGovernor governor, ref int remaining)
         {
             long largest = 0;
@@ -240,14 +256,18 @@ internal sealed partial class LythonRuntime
     private struct ExecutableValueStack
     {
         private object?[] _items;
+        private int _retainedCount;
 
         public ExecutableValueStack(int capacity)
         {
             _items = new object[Math.Max(4, capacity)];
             Count = 0;
+            _retainedCount = 0;
         }
 
         public int Count { get; private set; }
+
+        public ReadOnlySpan<object?> RetainedValues => _items.AsSpan(0, _retainedCount);
 
         public object this[int index]
         {
@@ -263,13 +283,13 @@ internal sealed partial class LythonRuntime
             }
 
             _items[Count++] = value;
+            _retainedCount = Math.Max(_retainedCount, Count);
         }
 
         public object Pop()
         {
             var index = Count - 1;
             var value = _items[index].RequireNotNull();
-            _items[index] = null;
             Count = index;
             return value;
         }
@@ -286,8 +306,17 @@ internal sealed partial class LythonRuntime
             var newCount = Count - count;
             for (var i = newCount; i < Count; i++)
                 if (_items[i] is IExecutableTemporaryValue temporary) temporary.Dispose();
-            Array.Clear(_items, newCount, count);
             Count = newCount;
+        }
+
+        // Discarded inputs remain explicit roots until the instruction has
+        // completed admission, callbacks and abrupt cleanup. No second array.
+        public void CompleteInstruction()
+        {
+            var discarded = _retainedCount - Count;
+            if (discarded == 1) _items[Count] = null;
+            else if (discarded > 1) Array.Clear(_items, Count, discarded);
+            _retainedCount = Count;
         }
     }
 
@@ -391,13 +420,14 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal static async ValueTask<object?> ExecuteExecutableCodeObjectAsync(ExecutableCodeObject codeObject, ExecutionContext context)
+    internal static async ValueTask<object?> ExecuteExecutableCodeObjectAsync(ExecutableCodeObject codeObject, ExecutionContext context,
+        BoundCallArguments boundArguments = default, int[]? argumentSlotMap = null, IReadOnlyList<ExecutableCell>? closureCells = null)
     {
         var previousExecutableFrame = context.CurrentExecutableFrame;
         context.EnterInterpreterFrame(null);
         try
         {
-            var interpreter = CreateExecutableInterpreter(codeObject, context, default, [], null);
+            var interpreter = CreateExecutableInterpreter(codeObject, context, boundArguments, argumentSlotMap ?? [], closureCells);
             context.EnterExecutableSlots(interpreter);
             await interpreter.ExecuteAsync().ConfigureAwait(false);
             return interpreter.HasFrameReturn ? interpreter.FrameReturnValue : null;

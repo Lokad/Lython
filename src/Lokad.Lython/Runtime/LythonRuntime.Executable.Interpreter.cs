@@ -33,6 +33,9 @@ internal sealed partial class LythonRuntime
         // The mutable stack lives in this interpreter, including across generator
         // suspension. Helpers must borrow it by reference rather than copy it.
         private ExecutableValueStack _stack;
+        private object? _pendingObservedValue;
+        internal override ReadOnlySpan<object?> RetainedOperands => _stack.RetainedValues;
+        internal override object? PendingObservedValue => _pendingObservedValue;
         private int _currentBlockIndex;
         private PendingAbruptSignal? _pendingAbrupt;
         private int _instructionIndex;
@@ -171,8 +174,13 @@ internal sealed partial class LythonRuntime
 
         private void PushObserved(object value, LythonSourceSpan span)
         {
-            _context.ObserveValue(value, span);
-            _stack.Push(value);
+            _pendingObservedValue = value;
+            try
+            {
+                _context.ObserveValue(value, span);
+                _stack.Push(value);
+            }
+            finally { _pendingObservedValue = null; }
         }
 
         // Pop's returned reference belongs to this completed transfer, rather
@@ -635,6 +643,13 @@ internal sealed partial class LythonRuntime
 
         public async ValueTask ExecuteAsync()
         {
+            EnterActiveFrame(_context.State);
+            try { await ExecuteCoreAsync().ConfigureAwait(false); }
+            finally { _stack.CompleteInstruction(); LeaveActiveFrame(_context.State); }
+        }
+
+        private async ValueTask ExecuteCoreAsync()
+        {
             // Every control-flow edge must arrive at a block with the same value
             // stack depth. The first arrival records that depth; edge handling
             // below validates later arrivals. Abrupt signals remain separate so
@@ -782,6 +797,7 @@ internal sealed partial class LythonRuntime
                         RouteRuntimeException(ex, instruction.Span);
                         jumped = true;
                     }
+                    _stack.CompleteInstruction();
 
                     if (jumped)
                     {

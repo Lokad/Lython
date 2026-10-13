@@ -2805,6 +2805,18 @@ Catching `MemoryError` does not release retained values or guarantee room for a
 new result container. Scripts that recover under a saturated budget must reuse
 funded storage or release storage before allocating again.
 
+Executing code-object frames expose their dynamic caller chain independently of
+lexical closures. Consumed operands remain in the existing stack backing until
+their instruction finishes admission, callbacks and cleanup; pending observed
+results remain explicit during preflight. Completed instructions clear discarded
+references, and completed or suspended frames detach their dynamic callers.
+RunAsync uses the same driver for compiler-supported function bindings, preserving
+awaited defaults/decorators and namespace/closure aliases. Unsupported executable
+bodies retain their lowered fallback. Instruction fuel remains implementation
+defined across these strategies. This frame representation neither performs
+logical refunds nor establishes complete native-helper/child coverage; the CLR
+reclamation dependency below remains.
+
 Before denying a reservation, exhaustion relief first sweeps already-collected
 owners. If that does not cover the shortfall, it collects CLR generations from
 youngest to oldest, sweeping after each and stopping once enough committed
