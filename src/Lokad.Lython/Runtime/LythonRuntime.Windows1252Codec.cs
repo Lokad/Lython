@@ -45,6 +45,10 @@ internal sealed partial class LythonRuntime
 
     internal static PyString DecodeWindows1252Text(ReadOnlySpan<byte> source, ExecutionContext context,
         LythonSourceSpan? span, TextErrorMode errors, TextNewlineMode newline)
+        => DecodeWindows1252Text(source, context.Services, span, errors, newline);
+
+    internal static PyString DecodeWindows1252Text(ReadOnlySpan<byte> source, ExecutionServices context,
+        LythonSourceSpan? span, TextErrorMode errors, TextNewlineMode newline)
     {
         long length = 0;
         for (var index = 0; index < source.Length; index++)

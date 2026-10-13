@@ -44,6 +44,11 @@ internal sealed partial class LythonRuntime
     internal static PyString DecodeUtf16Text(ReadOnlySpan<byte> source, TextEncodingMode encoding,
         ExecutionContext context, LythonSourceSpan? span, TextErrorMode errors,
         TextNewlineMode newline, bool stream = false)
+        => DecodeUtf16Text(source, encoding, context.Services, span, errors, newline, stream);
+
+    internal static PyString DecodeUtf16Text(ReadOnlySpan<byte> source, TextEncodingMode encoding,
+        ExecutionServices context, LythonSourceSpan? span, TextErrorMode errors,
+        TextNewlineMode newline, bool stream = false)
     {
         var originalLength = source.Length;
         encoding = ResolveUtf16ByteOrder(ref source, encoding, stream, span);
@@ -153,7 +158,7 @@ internal sealed partial class LythonRuntime
     }
 
     private static byte[] EncodeUtf16Text(PyString text, TextEncodingMode encoding,
-        TextNewlineMode newline, ExecutionContext context, LythonSourceSpan? span, bool outputAlreadyFunded)
+        TextNewlineMode newline, ExecutionServices context, LythonSourceSpan? span, bool outputAlreadyFunded)
     {
         var length = Utf16EncodedByteCount(text, encoding, newline, context, span);
         if (!outputAlreadyFunded) context.MemoryGovernor.EnsureCanReserve(PyBytes.EstimateApproximateBytes(length), span);
@@ -193,12 +198,16 @@ internal sealed partial class LythonRuntime
 
     private static MemoryGovernor.TemporaryMemoryReservation? ReserveUtf16Output(PyString text,
         TextEncodingMode encoding, TextNewlineMode newline, ExecutionContext context, LythonSourceSpan? span)
+        => ReserveUtf16Output(text, encoding, newline, context.Services, span);
+
+    private static MemoryGovernor.TemporaryMemoryReservation? ReserveUtf16Output(PyString text,
+        TextEncodingMode encoding, TextNewlineMode newline, ExecutionServices context, LythonSourceSpan? span)
         => IsUtf16Encoding(encoding)
             ? context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(Utf16EncodedByteCount(text, encoding, newline, context, span)), span)
             : null;
 
     private static int Utf16EncodedByteCount(PyString text, TextEncodingMode encoding,
-        TextNewlineMode newline, ExecutionContext context, LythonSourceSpan? span)
+        TextNewlineMode newline, ExecutionServices context, LythonSourceSpan? span)
     {
         var source = text.Utf8Bytes.Span;
         long length = encoding == TextEncodingMode.Utf16 ? 2 : 0;

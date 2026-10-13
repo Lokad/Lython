@@ -441,6 +441,16 @@ internal sealed partial class LythonRuntime
         ExecutionContext context,
         LythonSourceSpan? span,
         bool outputAlreadyFunded = false)
+        => EncodeText(text, encoding, errors, newline, context.Services, span, outputAlreadyFunded);
+
+    private static byte[] EncodeText(
+        PyString text,
+        TextEncodingMode encoding,
+        TextErrorMode errors,
+        TextNewlineMode newline,
+        ExecutionServices context,
+        LythonSourceSpan? span,
+        bool outputAlreadyFunded = false)
     {
         context.CheckExecution(span);
         if (IsUtf16Encoding(encoding)) return EncodeUtf16Text(text, encoding, newline, context, span, outputAlreadyFunded);
@@ -508,7 +518,7 @@ internal sealed partial class LythonRuntime
         TextEncodingMode encoding,
         TextErrorMode errors,
         TextNewlineMode newline,
-        ExecutionContext context,
+        ExecutionServices context,
         LythonSourceSpan? span)
     {
         var byteCount = 0;

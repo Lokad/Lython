@@ -2770,8 +2770,9 @@ and escaped fields keep their independent charges. Retained input aliases remain
 funded, and recoverable errors while reading a body keep the source resumable.
 Shared pool capacity remains accounted for its execution lifetime, avoiding
 repeated trim/regrow allocation. These metadata estimates can change accounted peaks.
-Escaping binary file handles retain their file storage and shared execution
-services. Unrelated local variables from a completed creating function remain
+Escaping binary and text file handles retain their file storage and shared
+execution services, including text reader and writer state. Unrelated local
+variables from a completed creating function remain
 reclaimable after its active calls and async continuations have unwound.
 Catching `MemoryError` does not release retained values or guarantee room for a
 new result container. Scripts that recover under a saturated budget must reuse

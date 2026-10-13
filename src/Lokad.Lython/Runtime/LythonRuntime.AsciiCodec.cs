@@ -16,6 +16,10 @@ internal sealed partial class LythonRuntime
 
     internal static PyString DecodeAsciiText(ReadOnlySpan<byte> source, ExecutionContext context,
         LythonSourceSpan? span, TextErrorMode errors, TextNewlineMode newline)
+        => DecodeAsciiText(source, context.Services, span, errors, newline);
+
+    internal static PyString DecodeAsciiText(ReadOnlySpan<byte> source, ExecutionServices context,
+        LythonSourceSpan? span, TextErrorMode errors, TextNewlineMode newline)
     {
         long length = 0;
         for (var index = 0; index < source.Length; index++)

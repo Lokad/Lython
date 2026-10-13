@@ -29,7 +29,7 @@ internal sealed partial class LythonRuntime
             private const int CarrySlackBytes = 8;
 
             private readonly string _path;
-            private readonly ExecutionContext _context;
+            private readonly ExecutionServices _services;
             private readonly TextEncodingMode _encoding;
             private TextEncodingMode _decodingEncoding;
             private readonly TextErrorMode _errors;
@@ -51,7 +51,7 @@ internal sealed partial class LythonRuntime
             internal long OwnedBytes => ShellBytes + (_raw?.LongLength ?? 0) + _windowCharge;
 
             bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes)
-                => OwnershipSnapshot.Owned(_context.MemoryGovernor, OwnedBytes, out chargeBytes);
+                => OwnershipSnapshot.Owned(_services.MemoryGovernor, OwnedBytes, out chargeBytes);
 
             private void RefreshOwnership() => ChargeReclamationPool.NotifyStorageReplaced(this, OwnedBytes);
 
@@ -65,7 +65,7 @@ internal sealed partial class LythonRuntime
                 : base(TextFileMode.Read)
             {
                 _path = path;
-                _context = context;
+                _services = context.Services;
                 _encoding = encoding;
                 _decodingEncoding = encoding;
                 _errors = errors;
@@ -136,7 +136,7 @@ internal sealed partial class LythonRuntime
                         {
                             var line = _window.SliceByByteRange(_windowConsumed, end);
                             Advance(end);
-                            _context.ObserveString(line, null); TrackEmission(line);
+                            _services.ObserveString(line, null); TrackEmission(line);
                             return line;
                         }
 
@@ -178,7 +178,7 @@ internal sealed partial class LythonRuntime
                         {
                             var line = _window.SliceByByteRange(_windowConsumed, end);
                             Advance(end);
-                            _context.ObserveString(line, null); TrackEmission(line);
+                            _services.ObserveString(line, null); TrackEmission(line);
                             return line;
                         }
 
@@ -202,7 +202,7 @@ internal sealed partial class LythonRuntime
                 ReleaseWindow();
                 if (_raw is not null)
                 {
-                    _context.MemoryGovernor.Release(_raw.Length);
+                    _services.MemoryGovernor.Release(_raw.Length);
                     _raw = null;
                 }
                 RefreshOwnership();
@@ -212,7 +212,7 @@ internal sealed partial class LythonRuntime
             public void ReleaseUnpublished()
             {
                 Release();
-                _context.State.CallTemporaries.RefundUnpublishedValue(this);
+                _services.State.CallTemporaries.RefundUnpublishedValue(this);
             }
 
             private PyString ReadBounded(int size)
@@ -234,7 +234,7 @@ internal sealed partial class LythonRuntime
                         {
                             var piece = _window.SliceByByteRange(_windowConsumed, take);
                             Advance(take);
-                            _context.ObserveString(piece, null); TrackEmission(piece);
+                            _services.ObserveString(piece, null); TrackEmission(piece);
                             return piece;
                         }
 
@@ -275,7 +275,7 @@ internal sealed partial class LythonRuntime
                         {
                             var piece = _window.SliceByByteRange(_windowConsumed, take);
                             Advance(take);
-                            _context.ObserveString(piece, null); TrackEmission(piece);
+                            _services.ObserveString(piece, null); TrackEmission(piece);
                             return piece;
                         }
 
@@ -340,10 +340,10 @@ internal sealed partial class LythonRuntime
                 // whole-buffer slices of the same content, then observe the same
                 // string-length limit that open-time observation enforced before.
                 // Growth reserves up front like materializing drains elsewhere.
-                using var reservation = _context.MemoryGovernor.ReserveTemporary(0, null);
+                using var reservation = _services.MemoryGovernor.ReserveTemporary(0, null);
                 reservation.Grow(32L + (4L * builder.Length), null);
-                var text = PyString.FromString(builder.ToString(), _context.MemoryGovernor, null);
-                _context.ObserveString(text, null);
+                var text = PyString.FromString(builder.ToString(), _services.MemoryGovernor, null);
+                _services.ObserveString(text, null);
                 TrackEmission(text);
                 return text;
             }
@@ -354,7 +354,7 @@ internal sealed partial class LythonRuntime
             {
                 // Every emission is freshly constructed and unpublished. If
                 // registration is denied, return its orphaned payload charge.
-                _context.State.CallTemporaries.TrackFreshString(value);
+                _services.State.CallTemporaries.TrackFreshString(value);
             }
 
             private bool Drained()
@@ -649,10 +649,10 @@ internal sealed partial class LythonRuntime
                 // The host transfer lands before the carry commits, so missing
                 // files (and other host failures) surface with no infrastructure
                 // charged, exactly like the prereserve fall-through before them.
-                _context.RegisterHostCall(null);
+                _services.RegisterHostCall(null);
                 var payload = UsesBinaryTextTransport(_encoding)
-                    ? _context.ReadHostBytesRange(_path, _nextOffset, _windowBytes, null)
-                    : _context.ReadTextUtf8Range(_path, _nextOffset, _windowBytes, null);
+                    ? _services.ReadHostBytesRange(_path, _nextOffset, _windowBytes, null)
+                    : _services.ReadTextUtf8Range(_path, _nextOffset, _windowBytes, null);
                 EnsureRaw();
                 return AcceptPayload(payload);
             }
@@ -664,10 +664,10 @@ internal sealed partial class LythonRuntime
                     return false;
                 }
 
-                _context.RegisterHostCall(null);
+                _services.RegisterHostCall(null);
                 var payload = UsesBinaryTextTransport(_encoding)
-                    ? await _context.ReadHostBytesRangeAsync(_path, _nextOffset, _windowBytes, null).ConfigureAwait(false)
-                    : await _context.ReadTextUtf8RangeAsync(_path, _nextOffset, _windowBytes, null).ConfigureAwait(false);
+                    ? await _services.ReadHostBytesRangeAsync(_path, _nextOffset, _windowBytes, null).ConfigureAwait(false)
+                    : await _services.ReadTextUtf8RangeAsync(_path, _nextOffset, _windowBytes, null).ConfigureAwait(false);
                 EnsureRaw();
                 return AcceptPayload(payload);
             }
@@ -680,17 +680,17 @@ internal sealed partial class LythonRuntime
                 }
 
                 var length = checked(_windowBytes + CarrySlackBytes);
-                _context.MemoryGovernor.Reserve(length, null);
+                _services.MemoryGovernor.Reserve(length, null);
                 try
                 {
                     var raw = new byte[length];
-                    _context.MemoryGovernor.Commit(length);
+                    _services.MemoryGovernor.Commit(length);
                     _raw = raw;
                     RefreshOwnership();
                 }
                 catch
                 {
-                    _context.MemoryGovernor.ReleaseReserved(length);
+                    _services.MemoryGovernor.ReleaseReserved(length);
                     throw;
                 }
             }
@@ -708,7 +708,7 @@ internal sealed partial class LythonRuntime
                 }
 
                 _cumulativeBytes = RuntimeMemoryEstimates.SaturatingAdd(_cumulativeBytes, take);
-                if (_context.Limits.MaxHostReadBytes is { } maxReadBytes && _cumulativeBytes > maxReadBytes)
+                if (_services.Limits.MaxHostReadBytes is { } maxReadBytes && _cumulativeBytes > maxReadBytes)
                 {
                     throw RuntimeErrors.HostRead($"host {TextReadKind()} read exceeded maximum bytes ({maxReadBytes})", maxReadBytes, _cumulativeBytes, null);
                 }
@@ -736,16 +736,16 @@ internal sealed partial class LythonRuntime
                 if (ownsDecodedWindow)
                 {
                     _window = _encoding == TextEncodingMode.Ascii
-                        ? DecodeAsciiText(source, _context, null, _errors, _newline)
+                        ? DecodeAsciiText(source, _services, null, _errors, _newline)
                         : _encoding == TextEncodingMode.Windows1252
-                            ? DecodeWindows1252Text(source, _context, null, _errors, _newline)
-                            : DecodeUtf16Text(source, _decodingEncoding, _context, null, _errors, _newline);
+                            ? DecodeWindows1252Text(source, _services, null, _errors, _newline)
+                            : DecodeUtf16Text(source, _decodingEncoding, _services, null, _errors, _newline);
                     _windowCharge = _window.OwnerMemoryGovernor is null ? 0 : _window.CommittedOwnedBytes;
                     try
                     {
                         var decodedCharge = _window.Length == 0 ? 0 : 32L + 2L * Encoding.UTF8.GetCharCount(_window.Utf8Bytes.Span);
-                        _context.MemoryGovernor.Reserve(decodedCharge, null);
-                        _context.MemoryGovernor.Commit(decodedCharge);
+                        _services.MemoryGovernor.Reserve(decodedCharge, null);
+                        _services.MemoryGovernor.Commit(decodedCharge);
                         _windowCharge += decodedCharge;
                         decoded = Encoding.UTF8.GetString(_window.Utf8Bytes.Span);
                     }
@@ -757,14 +757,14 @@ internal sealed partial class LythonRuntime
                 }
                 else if (_encoding == TextEncodingMode.Latin1)
                 {
-                    decoded = Encoding.UTF8.GetString(DecodeLatin1ToBytes(source, _newline, _context.State.Guards, null));
+                    decoded = Encoding.UTF8.GetString(DecodeLatin1ToBytes(source, _newline, _services.State.Guards, null));
                 }
                 else
                 {
-                    decoded = DecodeUtf8ToString(source, _errors, null, _context.State.Guards);
+                    decoded = DecodeUtf8ToString(source, _errors, null, _services.State.Guards);
                     if (_newline == TextNewlineMode.TranslateUniversal)
                     {
-                        decoded = NormalizeNewlineString(decoded, _context.State.Guards);
+                        decoded = NormalizeNewlineString(decoded, _services.State.Guards);
                     }
                 }
 
@@ -773,7 +773,7 @@ internal sealed partial class LythonRuntime
                     var utf8 = Encoding.UTF8.GetBytes(decoded);
                     _window = utf8.Length == 0
                         ? PyString.Empty
-                        : PyString.FromOwnedUtf8(utf8, _context.MemoryGovernor, null);
+                        : PyString.FromOwnedUtf8(utf8, _services.MemoryGovernor, null);
                     _windowCharge = utf8.Length == 0 ? 0 : PyString.EstimateApproximateBytes(utf8.Length);
                 }
                 _decoded = decoded;
@@ -788,7 +788,7 @@ internal sealed partial class LythonRuntime
             {
                 if (_windowCharge > 0)
                 {
-                    _context.MemoryGovernor.Release(_windowCharge);
+                    _services.MemoryGovernor.Release(_windowCharge);
                     _windowCharge = 0;
                 }
 

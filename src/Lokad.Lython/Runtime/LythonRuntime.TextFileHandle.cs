@@ -19,13 +19,15 @@ internal sealed partial class LythonRuntime
             {
                 Path = path;
                 _state = state;
-                _context = context;
+                _services = context.Services;
                 _encoding = encoding;
                 _errors = errors;
             }
 
             private readonly TextFileState _state;
-            private readonly ExecutionContext _context;
+            // File work needs run-wide services, not the opening call's locals.
+            // Reader and writer state follow the same lifetime rule.
+            private readonly ExecutionServices _services;
             private readonly TextEncodingMode _encoding;
             private readonly TextErrorMode _errors;
 
@@ -117,11 +119,11 @@ internal sealed partial class LythonRuntime
             private const long FileHandleValueBytes = 64;
 
             bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes)
-                => OwnershipSnapshot.Owned(_context.MemoryGovernor, FileHandleValueBytes, out chargeBytes);
+                => OwnershipSnapshot.Owned(_services.MemoryGovernor, FileHandleValueBytes, out chargeBytes);
 
             private static TextFileHandle RegisterOwnership(TextFileHandle handle)
             {
-                handle._context.State.CallTemporaries.TrackFreshMutable(handle, FileHandleValueBytes);
+                handle._services.State.CallTemporaries.TrackFreshMutable(handle, FileHandleValueBytes);
                 return handle;
             }
 
@@ -316,7 +318,7 @@ internal sealed partial class LythonRuntime
 
                 // Only reached after a successful flush: a failed close keeps its
                 // registration so end-of-run publication can retry it.
-                _context.Services.State.UntrackOpenFileWriter(this);
+                _services.State.UntrackOpenFileWriter(this);
                 IsClosed = true;
                 return false;
             }
@@ -341,7 +343,7 @@ internal sealed partial class LythonRuntime
 
                 // Only reached after a successful flush: a failed close keeps its
                 // registration so end-of-run publication can retry it.
-                _context.Services.State.UntrackOpenFileWriter(this);
+                _services.State.UntrackOpenFileWriter(this);
                 IsClosed = true;
                 return false;
             }
@@ -392,7 +394,7 @@ internal sealed partial class LythonRuntime
                     }
                 }
 
-                return new PyList(items, _context.MemoryGovernor, null);
+                return new PyList(items, _services.MemoryGovernor, null);
             }
 
             public IEnumerable<object> Iterate() => PyIteration.EnumerateIterator(this);
@@ -457,7 +459,7 @@ internal sealed partial class LythonRuntime
                     }
                 }
 
-                return new PyList(items, _context.MemoryGovernor, null);
+                return new PyList(items, _services.MemoryGovernor, null);
             }
 
             public BigInteger Write(PyString text)

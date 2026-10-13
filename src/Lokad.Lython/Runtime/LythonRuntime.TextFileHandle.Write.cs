@@ -11,7 +11,7 @@ internal sealed partial class LythonRuntime
         private sealed class TextFileWriteState : TextFileState
         {
             private readonly string _path;
-            private readonly ExecutionContext _context;
+            private readonly ExecutionServices _services;
             private readonly TextEncodingMode _encoding;
             private readonly TextErrorMode _errors;
             private readonly TextNewlineMode _newline;
@@ -36,7 +36,7 @@ internal sealed partial class LythonRuntime
                     : base(mode == TextFileWriteMode.Write ? TextFileMode.Write : TextFileMode.Append)
             {
                 _path = path;
-                _context = context;
+                _services = context.Services;
                 _encoding = encoding;
                 _errors = errors;
                 _newline = newline;
@@ -110,7 +110,7 @@ internal sealed partial class LythonRuntime
                     var source = text.Utf8Bytes.Span;
                     for (var offset = 0; offset < source.Length; position++)
                     {
-                        if ((position & 1023) == 0) _context.CheckExecution(null);
+                        if ((position & 1023) == 0) _services.CheckExecution(null);
                         _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
                         offset += consumed;
                         if (TryEncodeSingleByteScalar(rune.Value, _encoding, out _))
@@ -134,7 +134,7 @@ internal sealed partial class LythonRuntime
                 void EnsureBufferedLength(long additionalLength)
                 {
                     var bufferedLength = checked(_bufferedRuneLength + additionalLength);
-                    if (_context.Limits.MaxStringLength is { } maximumLength && bufferedLength > maximumLength)
+                    if (_services.Limits.MaxStringLength is { } maximumLength && bufferedLength > maximumLength)
                     {
                         throw RuntimeErrors.StringLength(maximumLength, bufferedLength, null);
                     }
@@ -148,7 +148,7 @@ internal sealed partial class LythonRuntime
                     var position = 0;
                     for (var offset = 0; offset < source.Length;)
                     {
-                        if ((position++ & 1023) == 0) _context.CheckExecution(null);
+                        if ((position++ & 1023) == 0) _services.CheckExecution(null);
                         _ = Rune.DecodeFromUtf8(source[offset..], out var rune, out var consumed);
                         offset += consumed;
                         if (rune.Value <= 0x7F)
@@ -194,20 +194,20 @@ internal sealed partial class LythonRuntime
                     return;
                 }
 
-                _context.RegisterHostCall(span);
+                _services.RegisterHostCall(span);
                 switch (pending.Value.Operation)
                 {
                     case PendingTextFlushOperation.WriteText:
-                        _context.WriteTextUtf8(_path, pending.Value.Payload, span);
+                        _services.WriteTextUtf8(_path, pending.Value.Payload, span);
                         break;
                     case PendingTextFlushOperation.AppendText:
-                        _context.AppendTextUtf8(_path, pending.Value.Payload, span);
+                        _services.AppendTextUtf8(_path, pending.Value.Payload, span);
                         break;
                     case PendingTextFlushOperation.WriteBytes:
-                        _context.WriteHostBytes(_path, pending.Value.Payload, span);
+                        _services.WriteHostBytes(_path, pending.Value.Payload, span);
                         break;
                     case PendingTextFlushOperation.AppendBytes:
-                        _context.AppendHostBytes(_path, pending.Value.Payload, span);
+                        _services.AppendHostBytes(_path, pending.Value.Payload, span);
                         break;
                 }
 
@@ -222,20 +222,20 @@ internal sealed partial class LythonRuntime
                     return;
                 }
 
-                _context.RegisterHostCall(span);
+                _services.RegisterHostCall(span);
                 switch (pending.Value.Operation)
                 {
                     case PendingTextFlushOperation.WriteText:
-                        await _context.WriteTextUtf8Async(_path, pending.Value.Payload, span).ConfigureAwait(false);
+                        await _services.WriteTextUtf8Async(_path, pending.Value.Payload, span).ConfigureAwait(false);
                         break;
                     case PendingTextFlushOperation.AppendText:
-                        await _context.AppendTextUtf8Async(_path, pending.Value.Payload, span).ConfigureAwait(false);
+                        await _services.AppendTextUtf8Async(_path, pending.Value.Payload, span).ConfigureAwait(false);
                         break;
                     case PendingTextFlushOperation.WriteBytes:
-                        await _context.WriteHostBytesAsync(_path, pending.Value.Payload, span).ConfigureAwait(false);
+                        await _services.WriteHostBytesAsync(_path, pending.Value.Payload, span).ConfigureAwait(false);
                         break;
                     case PendingTextFlushOperation.AppendBytes:
-                        await _context.AppendHostBytesAsync(_path, pending.Value.Payload, span).ConfigureAwait(false);
+                        await _services.AppendHostBytesAsync(_path, pending.Value.Payload, span).ConfigureAwait(false);
                         break;
                 }
 
@@ -265,9 +265,9 @@ internal sealed partial class LythonRuntime
                 var text = _buffer.Length == 0
                     ? PyString.Empty
                     : PyString.FromUtf8(_buffer.WrittenMemory);
-                var reservation = ReserveUtf16Output(text, effectiveEncoding, _newline, _context, span);
+                var reservation = ReserveUtf16Output(text, effectiveEncoding, _newline, _services, span);
                 byte[] payload;
-                try { payload = EncodeText(text, effectiveEncoding, _errors, _newline, _context, span, reservation is not null); }
+                try { payload = EncodeText(text, effectiveEncoding, _errors, _newline, _services, span, reservation is not null); }
                 catch { reservation?.Dispose(); throw; }
                 var operation = (isAppend, UsesBinaryTextTransport(effectiveEncoding)) switch
                 {
