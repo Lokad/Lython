@@ -11,7 +11,7 @@ internal sealed partial class LythonRuntime
         }
         if (!instance.TryGetAttribute("__delitem__", context, span, out var member) || member is not ICallable callable)
             throw new LythonRuntimeException("TypeError", $"'{instance.Type.Name}' object does not support item mutation", span);
-        _ = await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(callable, [CallArgumentValue.Positional(index)], span, context).ConfigureAwait(false);
+        _ = await callable.InvokeAsync([CallArgumentValue.Positional(index)], span, context).ConfigureAwait(false);
     }
 
     private static ValueTask ExecuteSliceDeletionAsync(object target, object? start, object? end, object? step, LythonSourceSpan span, ExecutionContext context)

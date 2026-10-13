@@ -158,7 +158,7 @@ internal static partial class PyDataclass
                     }
 
                     var postInitArguments = initVarValues.Select(value => CallArgumentValue.Positional(value)).ToArray();
-                    _ = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(postInitCallable, postInitArguments, span, context);
+                    _ = postInitCallable.Invoke(postInitArguments, span, context);
                 }
 
                 return PyNone.Instance;
@@ -178,7 +178,7 @@ internal static partial class PyDataclass
                 throw new LythonRuntimeException("TypeError", $"Dataclass field '{field.Name}' has a non-callable default_factory.", span);
             }
 
-            return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, [], span, context);
+            return callable.Invoke([], span, context);
         }
     }
 

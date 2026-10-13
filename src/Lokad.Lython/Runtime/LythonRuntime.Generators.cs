@@ -178,7 +178,7 @@ internal sealed partial class LythonRuntime
                         var values = arguments.Length > 1 && arguments[1].Value is not PyNone
                             ? arguments[1].Value is PyTuple tuple ? tuple.Select(CallArgumentValue.Positional).ToArray()
                                 : [CallArgumentValue.Positional(arguments[1].Value)] : Array.Empty<CallArgumentValue>();
-                        exception = asynchronous ? await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(callable, values, span, context).ConfigureAwait(false) : global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, values, span, context);
+                        exception = asynchronous ? await callable.InvokeAsync(values, span, context).ConfigureAwait(false) : callable.Invoke(values, span, context);
                     }
                     if (exception is not PyException raised || (arguments.Length == 3 && arguments[2].Value is not PyNone))
                         throw new LythonRuntimeException("TypeError", "exceptions must derive from BaseException; traceback must be None", span);
@@ -203,7 +203,7 @@ internal sealed partial class LythonRuntime
         public async ValueTask<PyIterationResult> AdvanceAsync(object sent, LythonRuntimeException? injected, bool asynchronous)
         {
             async ValueTask<object> Call(ICallable callable, CallArgumentValue[] arguments)
-                => asynchronous ? await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(callable, arguments, span, context).ConfigureAwait(false) : global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, arguments, span, context);
+                => asynchronous ? await callable.InvokeAsync(arguments, span, context).ConfigureAwait(false) : callable.Invoke(arguments, span, context);
             try
             {
                 object value;

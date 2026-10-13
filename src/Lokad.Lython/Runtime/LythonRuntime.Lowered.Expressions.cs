@@ -500,7 +500,7 @@ internal sealed partial class LythonRuntime
 
     private static void ThrowRaisedValue(object raised, bool hasCause, object? cause, ExecutionContext context, LythonSourceSpan span)
     {
-        if (raised is ExceptionTypeValue typeValue && global::Lokad.Lython.Runtime.CallableInvocation.Invoke(typeValue, [], span, context) is PyException constructed)
+        if (raised is ExceptionTypeValue typeValue && typeValue.Invoke([], span, context) is PyException constructed)
             raised = constructed;
         if (raised is not PyException instance) throw RuntimeErrors.RaiseExpectsException(span);
         var thrown = new LythonRuntimeException(instance.Identity, instance.Message, span, null, instance.Value);
@@ -571,6 +571,6 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "__init_subclass__ must be callable.", span);
         }
 
-        _ = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, keywordArguments, span, context);
+        _ = callable.Invoke(keywordArguments, span, context);
     }
 }

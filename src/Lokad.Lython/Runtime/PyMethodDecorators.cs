@@ -25,10 +25,10 @@ internal sealed class PyStaticMethod : IPyRenderableValue, IPyBindableCallable, 
         => _callable;
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => global::Lokad.Lython.Runtime.CallableInvocation.Invoke(_callable, arguments, span, context);
+        => _callable.Invoke(arguments, span, context);
 
     public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(_callable, arguments, span, context);
+        => _callable.InvokeAsync(arguments, span, context);
 
     // Like CPython, the wrapper names its wrapped callable (partial renders the
     // same way); only the callable repr varies, never an address here.
@@ -74,10 +74,10 @@ internal sealed class PyClassMethod : IPyRenderableValue, IPyBindableCallable, I
     }
 
     public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => global::Lokad.Lython.Runtime.CallableInvocation.Invoke(_callable, arguments, span, context);
+        => _callable.Invoke(arguments, span, context);
 
     public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(_callable, arguments, span, context);
+        => _callable.InvokeAsync(arguments, span, context);
 
     // Like CPython, the wrapper names its wrapped callable (partial renders the
     // same way); only the callable repr varies, never an address here.

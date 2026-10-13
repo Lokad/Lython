@@ -39,7 +39,6 @@ internal static class PyFunctionBinding
         }
 
         frame.EnterFunctionCall(span);
-        frame.State.SetNativeInvocationFrame(frame, boundArguments.Values);
         return frame;
     }
 

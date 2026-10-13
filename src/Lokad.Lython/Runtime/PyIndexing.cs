@@ -107,7 +107,7 @@ internal static class PyIndexing
             target is PyType type && (type.Name == "Generic" || type.TryGetMember("__type_params__", out _))))
         {
             var alias = LythonRuntime.CreateGenericSubscriptAsync(target, index, context, span, false).GetAwaiter().GetResult();
-            context.Services.State.TrackNativeCallResult(alias, span);
+            context.Services.State.CallTemporaries.TrackCallResult(alias, span);
             return alias;
         }
         return target switch

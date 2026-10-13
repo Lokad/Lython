@@ -221,8 +221,8 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(member, context) + "' object is not callable", span);
             }
             var converted = asynchronous
-                ? await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(callable, [], span, context).ConfigureAwait(false)
-                : global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, [], span, context);
+                ? await callable.InvokeAsync([], span, context).ConfigureAwait(false)
+                : callable.Invoke([], span, context);
             if (!PyNumberOps.TryAsInteger(converted, out var integer))
             {
                 throw new LythonRuntimeException("TypeError", "__index__ returned non-int (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);

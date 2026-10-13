@@ -47,7 +47,6 @@ internal sealed partial class LythonRuntime
 
     internal class ExecutableFrameState
     {
-        internal ExecutableFrameState? ActiveCaller { get; set; }
         protected readonly ExecutableCodeObject _codeObject;
         protected readonly object[] _locals;
         protected readonly ExecutableCell?[]? _localCells;

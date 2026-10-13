@@ -531,6 +531,6 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "__init_subclass__ must be callable.", span);
         }
 
-        _ = await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(callable, keywordArguments, span, context).ConfigureAwait(false);
+        _ = await callable.InvokeAsync(keywordArguments, span, context).ConfigureAwait(false);
     }
 }

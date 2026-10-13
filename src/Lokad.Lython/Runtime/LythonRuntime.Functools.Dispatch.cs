@@ -101,7 +101,7 @@ internal sealed partial class LythonRuntime
             }
 
             var callable = ResolveForValue(arguments[dispatchIndex].Value, context);
-            return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, arguments, span, context);
+            return callable.Invoke(arguments, span, context);
         }
 
         public object Bind(object self) => new PyBoundMethod(self, this);
@@ -502,7 +502,7 @@ internal sealed partial class LythonRuntime
             var forwarded = new CallArgumentValue[arguments.Length + 1];
             forwarded[0] = CallArgumentValue.Positional(_self);
             Array.Copy(arguments, 0, forwarded, 1, arguments.Length);
-            return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, forwarded, span, context);
+            return callable.Invoke(forwarded, span, context);
         }
 
         public PyString RenderPython(PyRenderingContext context)
@@ -606,7 +606,7 @@ internal sealed partial class LythonRuntime
 
             try
             {
-                return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(_callable, arguments, span, context);
+                return _callable.Invoke(arguments, span, context);
             }
             finally
             {

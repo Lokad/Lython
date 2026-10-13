@@ -791,7 +791,7 @@ internal sealed partial class LythonRuntime
                 throw NotCallableError(intMember, context, span);
             }
 
-            var converted = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(intCallable, [], span, context);
+            var converted = intCallable.Invoke([], span, context);
             if (!PyNumberOps.TryAsInteger(converted, out var integer))
             {
                 throw new LythonRuntimeException("TypeError", "__int__ returned non-int (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
@@ -820,7 +820,7 @@ internal sealed partial class LythonRuntime
                 throw NotCallableError(truncMember, context, span);
             }
 
-            var truncated = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(truncCallable, [], span, context);
+            var truncated = truncCallable.Invoke([], span, context);
             var indexed = truncated is PyInstance ? CoerceIndexProtocol(truncated, context, span) : truncated;
             BigInteger truncatedInteger;
             if (indexed is int smallTrunc)

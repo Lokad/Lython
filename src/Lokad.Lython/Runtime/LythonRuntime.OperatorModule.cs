@@ -498,7 +498,7 @@ internal sealed partial class LythonRuntime
             instance.TryGetAttribute("__length_hint__", context, span, out var member) &&
             member is ICallable callable)
         {
-            var hinted = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, [], span, context);
+            var hinted = callable.Invoke([], span, context);
             if (!PyNumberOps.TryAsInteger(hinted, out var length))
             {
                 throw new LythonRuntimeException("TypeError", "__length_hint__ must be an integer, not a non-integer value", span);

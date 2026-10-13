@@ -254,7 +254,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             var newArguments = new CallArgumentValue[arguments.Length + 1];
             newArguments[0] = CallArgumentValue.Positional(this);
             Array.Copy(arguments, 0, newArguments, 1, arguments.Length);
-            instance = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(newCallable, newArguments, span, context);
+            instance = newCallable.Invoke(newArguments, span, context);
         }
         else
         {
@@ -268,7 +268,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             return instance;
         }
 
-        context.Services.State.TrackNativeCallResult(pyInstance, span);
+        context.Services.State.CallTemporaries.TrackCallResult(pyInstance, span);
 
         if (JsonBase != JsonBaseKind.None && !LythonRuntime.JsonSubclassSupport.HasGuestInit(this, context))
         {
@@ -284,7 +284,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             }
 
             var bound = (LythonRuntime.ICallable)bindable.Bind(pyInstance);
-            var result = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(bound, arguments, span, context);
+            var result = bound.Invoke(arguments, span, context);
             if (!ReferenceEquals(result, PyNone.Instance))
             {
                 throw new LythonRuntimeException("TypeError", $"__init__ for class '{Name}' must return None.", span);
@@ -315,7 +315,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             var newArguments = new CallArgumentValue[arguments.Length + 1];
             newArguments[0] = CallArgumentValue.Positional(this);
             Array.Copy(arguments, 0, newArguments, 1, arguments.Length);
-            instance = await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(newCallable, newArguments, span, context).ConfigureAwait(false);
+            instance = await newCallable.InvokeAsync(newArguments, span, context).ConfigureAwait(false);
         }
         else
         {
@@ -329,7 +329,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             return instance;
         }
 
-        context.Services.State.TrackNativeCallResult(pyInstance, span);
+        context.Services.State.CallTemporaries.TrackCallResult(pyInstance, span);
 
         if (JsonBase != JsonBaseKind.None && !LythonRuntime.JsonSubclassSupport.HasGuestInit(this, context))
         {
@@ -345,7 +345,7 @@ internal sealed class PyType : IPyRenderableValue, LythonRuntime.ICallable, IPyH
             }
 
             var bound = (LythonRuntime.ICallable)bindable.Bind(pyInstance);
-            var result = await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(bound, arguments, span, context).ConfigureAwait(false);
+            var result = await bound.InvokeAsync(arguments, span, context).ConfigureAwait(false);
             if (!ReferenceEquals(result, PyNone.Instance))
             {
                 throw new LythonRuntimeException("TypeError", $"__init__ for class '{Name}' must return None.", span);

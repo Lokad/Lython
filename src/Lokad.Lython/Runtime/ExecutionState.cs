@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed partial class ExecutionState
+internal sealed class ExecutionState
 {
     private Dictionary<object, RuntimeMemberCacheEntry>? _runtimeMemberCaches;
     private Dictionary<PythonExceptionIdentity, PyTuple>? _exceptionBaseTuples;

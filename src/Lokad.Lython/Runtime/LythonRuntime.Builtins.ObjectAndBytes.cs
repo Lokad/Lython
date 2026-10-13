@@ -35,7 +35,7 @@ internal sealed partial class LythonRuntime
                     throw NotCallableError(member, context, span);
                 }
 
-                var converted = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, [], span, context);
+                var converted = callable.Invoke([], span, context);
                 if (converted is not double floating)
                 {
                     throw new LythonRuntimeException("TypeError", floatInstance.Type.Name + ".__float__ returned non-float (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
@@ -229,7 +229,7 @@ internal sealed partial class LythonRuntime
             BigInteger size;
             try
             {
-                var converted = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, [], span, context);
+                var converted = callable.Invoke([], span, context);
                 if (converted is int small)
                 {
                     size = new BigInteger(small);
@@ -515,7 +515,7 @@ internal sealed partial class LythonRuntime
                 await SetObjectInstanceAttributeAsync(instance, name.AsString(), arguments[2].Value, context, span).ConfigureAwait(false);
                 return PyNone.Instance;
             }
-            return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(this, arguments, span, context);
+            return Invoke(arguments, span, context);
         }
 
         // Unbound object slots render like CPython slot wrappers (quoted
@@ -654,7 +654,7 @@ internal sealed partial class LythonRuntime
             if (arguments.Length != 2 || arguments[0].IsKeyword || arguments[1].IsKeyword ||
                 !PyStringOps.TryAsString(arguments[1].Value, out var name))
                 throw new LythonRuntimeException("TypeError", "object.__delattr__(self, name) expects an instance and a string name.", span);
-            if (arguments[0].Value is not PyInstance instance) return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(this, arguments, span, context);
+            if (arguments[0].Value is not PyInstance instance) return Invoke(arguments, span, context);
             var memberName = name.AsString();
             if (instance.Type.TryLookupInMro(memberName, 0, out var rawValue, out _) &&
                 await PyAttributeLookup.TryDeleteDescriptorValueAsync(rawValue, instance, context, span).ConfigureAwait(false))
@@ -1270,7 +1270,7 @@ internal sealed partial class LythonRuntime
                 instance.TryGetAttribute("__repr__", context, span, out var member) &&
                 member is ICallable reprCallable)
             {
-                var text = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(reprCallable, [], span, context);
+                var text = reprCallable.Invoke([], span, context);
                 if (PyStringOps.TryAsString(text, out var rendered))
                 {
                     return rendered;
@@ -1502,7 +1502,7 @@ internal sealed partial class LythonRuntime
             var rest = new CallArgumentValue[arguments.Length - 1];
             Array.Copy(arguments, 0, rest, 0, receiverIndex);
             Array.Copy(arguments, receiverIndex + 1, rest, receiverIndex, rest.Length - receiverIndex);
-            return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(bound, rest, span, context);
+            return bound.Invoke(rest, span, context);
         }
 
         private static object FormatImpl(object receiver, object[] arguments, LythonSourceSpan span, ExecutionContext context)
@@ -1601,7 +1601,7 @@ internal sealed partial class LythonRuntime
             var rest = new CallArgumentValue[arguments.Length - 1];
             Array.Copy(arguments, 0, rest, 0, receiverIndex);
             Array.Copy(arguments, receiverIndex + 1, rest, receiverIndex, rest.Length - receiverIndex);
-            return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(bound, rest, span, context);
+            return bound.Invoke(rest, span, context);
         }
 
         // Listing delegates to the same helpers as the dir builtin so

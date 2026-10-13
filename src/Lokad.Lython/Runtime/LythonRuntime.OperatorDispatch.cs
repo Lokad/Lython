@@ -395,7 +395,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(unaryMember, context) + "' object is not callable", span);
             }
 
-            var value = await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(unaryCallable, [], span, context).ConfigureAwait(false);
+            var value = await unaryCallable.InvokeAsync([], span, context).ConfigureAwait(false);
             return SpecialMethodInvocation.Invoked(value);
         }
 
@@ -453,7 +453,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(unaryMember, context) + "' object is not callable", span);
             }
 
-            result = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(unaryCallable, [], span, context);
+            result = unaryCallable.Invoke([], span, context);
             return true;
         }
 

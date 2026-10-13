@@ -257,7 +257,7 @@ internal sealed partial class LythonRuntime
             var result = InvokeCallableTarget(callable, span, span, context, [CallArgumentValue.Positional(argument)]);
             // Plain adoption only: callback results may alias live values, so
             // a denial must never refund charges the caller still holds.
-            context.Services.State.TrackNativeCallResult(result, span);
+            context.Services.State.CallTemporaries.TrackCallResult(result, span);
             return result;
         }
 
@@ -266,7 +266,7 @@ internal sealed partial class LythonRuntime
             if (!asynchronous) return InvokeJsonCallback(callable, argument, context, span);
             var result = await InvokeCallableTargetAsync(callable, span, span, context,
                 () => ValueTask.FromResult(new[] { CallArgumentValue.Positional(argument) })).ConfigureAwait(false);
-            context.Services.State.TrackNativeCallResult(result, span);
+            context.Services.State.CallTemporaries.TrackCallResult(result, span);
             return result;
         }
 

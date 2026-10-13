@@ -809,7 +809,7 @@ internal sealed partial class LythonRuntime
         }
 
         if (value is ExceptionTypeValue typeValue &&
-            global::Lokad.Lython.Runtime.CallableInvocation.Invoke(typeValue, [], span, context) is PyException constructed)
+            typeValue.Invoke([], span, context) is PyException constructed)
         {
             return constructed;
         }

@@ -374,7 +374,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
 
         scratch.Grow(ArgumentSlotBytes * collected.Count, _span);
         var args = collected.ToArray();
-        value = LythonRuntime.RuntimeValue(global::Lokad.Lython.Runtime.CallableInvocation.Invoke(_function, args, _span, _context));
+        value = LythonRuntime.RuntimeValue(_function.Invoke(args, _span, _context));
         return true;
     }
 
@@ -402,7 +402,7 @@ internal sealed class PyStarmapIterator : PyIteratorBase
             args[index] = CallArgumentValue.Positional(LythonRuntime.RuntimeValue(values[index]));
         }
 
-        var value = LythonRuntime.RuntimeValue(await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(_function, args, _span, _context).ConfigureAwait(false));
+        var value = LythonRuntime.RuntimeValue(await _function.InvokeAsync(args, _span, _context).ConfigureAwait(false));
         return PyIterationResult.Yield(value);
     }
 

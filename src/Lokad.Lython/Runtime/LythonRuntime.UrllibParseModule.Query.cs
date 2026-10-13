@@ -157,7 +157,7 @@ internal sealed partial class LythonRuntime
             else
             {
                 var text = await FormatSuspendedFieldAsync(value, 's', null, context, span, asynchronous).ConfigureAwait(false);
-                context.State.TrackNativeCallResult(text, span);
+                context.State.CallTemporaries.TrackCallResult(text, span);
                 context.ObserveString(text, span);
                 parameters = [CallArgumentValue.Positional(text), CallArgumentValue.Positional(args[2]),
                     CallArgumentValue.Positional(args[3]), CallArgumentValue.Positional(args[4])];

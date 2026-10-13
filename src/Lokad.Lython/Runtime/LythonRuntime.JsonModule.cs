@@ -69,7 +69,7 @@ internal sealed partial class LythonRuntime
                 SplitArguments(arguments, out var standard, out var extras);
                 var bound = CallBinder.BindNamedArguments(standard, span, _signature, PythonCallableKind.Builtin);
                 var result = _implementation(bound, extras, span, context);
-                context.Services.State.TrackNativeCallResult(result, span);
+                context.Services.State.CallTemporaries.TrackCallResult(result, span);
                 return result;
             }
 
@@ -81,7 +81,7 @@ internal sealed partial class LythonRuntime
                 var result = _asyncImplementation is null
                     ? _implementation(bound, extras, span, context)
                     : await _asyncImplementation(bound, extras, span, context).ConfigureAwait(false);
-                context.Services.State.TrackNativeCallResult(result, span);
+                context.Services.State.CallTemporaries.TrackCallResult(result, span);
                 return result;
             }
 
@@ -239,7 +239,7 @@ internal sealed partial class LythonRuntime
             context.CheckExecution(span);
             var cls = ResolveEncoderClass(GetOptional(bound, 6), span);
             var forwarded = BuildEncoderForwardArgs(bound, extras, JsonDumpCallForm.Dump).ToArray();
-            var instance = await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(((ICallable)cls), forwarded, span, context).ConfigureAwait(false);
+            var instance = await ((ICallable)cls).InvokeAsync(forwarded, span, context).ConfigureAwait(false);
             var method = await PyTextStream.ResolveMemberAsync(instance, "iterencode", span, context).ConfigureAwait(false);
             var chunks = await InvokeCallableTargetAsync(method, span, span, context,
                 () => ValueTask.FromResult<CallArgumentValue[]>([CallArgumentValue.Positional(bound[0])])).ConfigureAwait(false);
@@ -353,7 +353,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(method, context) + "' object is not callable", span);
             }
 
-            return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, [CallArgumentValue.Positional(text)], span, context);
+            return callable.Invoke([CallArgumentValue.Positional(text)], span, context);
         }
 
         private async ValueTask<object> DecodeWithClassAsync(
@@ -375,7 +375,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(method, context) + "' object is not callable", span);
             }
 
-            return await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(callable, [CallArgumentValue.Positional(text)], span, context).ConfigureAwait(false);
+            return await callable.InvokeAsync([CallArgumentValue.Positional(text)], span, context).ConfigureAwait(false);
         }
 
         private static object ConstructDecoderClass(
@@ -386,7 +386,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context)
         {
             var forwarded = BuildDecoderForwardArgs(bound, extras).ToArray();
-            return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(((ICallable)clsValue), forwarded, span, context);
+            return ((ICallable)clsValue).Invoke(forwarded, span, context);
         }
 
         private static async ValueTask<object> ConstructDecoderClassAsync(
@@ -397,7 +397,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context)
         {
             var forwarded = BuildDecoderForwardArgs(bound, extras).ToArray();
-            return await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(((ICallable)clsValue), forwarded, span, context).ConfigureAwait(false);
+            return await ((ICallable)clsValue).InvokeAsync(forwarded, span, context).ConfigureAwait(false);
         }
 
         private static List<CallArgumentValue> BuildDecoderForwardArgs(
@@ -452,7 +452,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(method, context) + "' object is not callable", span);
             }
 
-            return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, [CallArgumentValue.Positional(value)], span, context);
+            return callable.Invoke([CallArgumentValue.Positional(value)], span, context);
         }
 
         private async ValueTask<object> EncodeWithClassAsync(
@@ -465,7 +465,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context)
         {
             var forwarded = BuildEncoderForwardArgs(bound, extras, callForm).ToArray();
-            var instance = await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(((ICallable)clsValue), forwarded, span, context).ConfigureAwait(false);
+            var instance = await ((ICallable)clsValue).InvokeAsync(forwarded, span, context).ConfigureAwait(false);
             if (!PyMemberAccess.TryResolve(instance, "encode", context, span, out var method))
             {
                 throw PyMemberAccess.CreateMissingMemberError(instance, "encode", span, context);
@@ -476,7 +476,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "'" + UnboundTypeMethod.PythonTypeName(method, context) + "' object is not callable", span);
             }
 
-            return await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(callable, [CallArgumentValue.Positional(value)], span, context).ConfigureAwait(false);
+            return await callable.InvokeAsync([CallArgumentValue.Positional(value)], span, context).ConfigureAwait(false);
         }
 
         private static object ConstructEncoderClass(
@@ -488,7 +488,7 @@ internal sealed partial class LythonRuntime
             ExecutionContext context)
         {
             var forwarded = BuildEncoderForwardArgs(bound, extras, callForm).ToArray();
-            return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(((ICallable)clsValue), forwarded, span, context);
+            return ((ICallable)clsValue).Invoke(forwarded, span, context);
         }
 
         private static List<CallArgumentValue> BuildEncoderForwardArgs(

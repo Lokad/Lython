@@ -43,7 +43,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", $"object of type '{instance.Type.Name}' has no len()", span);
         }
 
-        var value = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, [], span, context);
+        var value = callable.Invoke([], span, context);
         if (!PyNumberOps.TryAsInteger(value, out var length))
         {
             throw new LythonRuntimeException("TypeError", "__len__() should return an integer", span);
@@ -412,7 +412,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "__reversed__ must be callable.", span);
             }
 
-            return RuntimeValue(global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, [], span, context));
+            return RuntimeValue(callable.Invoke([], span, context));
         }
 
         if (target is IPyIndexableValue indexable)

@@ -146,7 +146,7 @@ internal sealed partial class LythonRuntime
         EnsureSupportedCopyFileObjLength(arguments, span);
         var read = GetCallableMember(arguments[0], "read", "shutil.copyfileobj", span, context);
         var write = GetCallableMember(arguments[1], "write", "shutil.copyfileobj", span, context);
-        var text = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(read, [], span, context);
+        var text = read.Invoke([], span, context);
         if (!PyStringOps.TryAsString(text, out var pyText))
         {
             throw new LythonRuntimeException("TypeError", "shutil.copyfileobj() expects fsrc.read() to return text.", span);
@@ -161,7 +161,7 @@ internal sealed partial class LythonRuntime
         EnsureSupportedCopyFileObjLength(arguments, span);
         var read = GetCallableMember(arguments[0], "read", "shutil.copyfileobj", span, context);
         var write = GetCallableMember(arguments[1], "write", "shutil.copyfileobj", span, context);
-        var text = await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(read, [], span, context).ConfigureAwait(false);
+        var text = await read.InvokeAsync([], span, context).ConfigureAwait(false);
         if (!PyStringOps.TryAsString(text, out var pyText))
         {
             throw new LythonRuntimeException("TypeError", "shutil.copyfileobj() expects fsrc.read() to return text.", span);

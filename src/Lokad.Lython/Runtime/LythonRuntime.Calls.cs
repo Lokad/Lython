@@ -65,12 +65,7 @@ internal sealed partial class LythonRuntime
         try
         {
             context.CheckExecution(callSpan);
-            using var activation = context.State.EnterNativeActivation(callable, null, context, callSpan);
-            var expanded = arguments.Expand();
-            activation.SetArguments(expanded);
-            var result = callable.Invoke(expanded, callSpan, context);
-            activation.SetResult(result);
-            return RuntimeValue(result);
+            return RuntimeValue(callable.Invoke(arguments.Expand(), callSpan, context));
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, callSpan, out var translated))
         {
@@ -98,12 +93,8 @@ internal sealed partial class LythonRuntime
         try
         {
             context.CheckExecution(callSpan);
-            using var activation = context.State.EnterNativeActivation(callable, null, context, callSpan);
             var arguments = await expandArguments().ConfigureAwait(false);
-            activation.SetArguments(arguments);
-            var result = await callable.InvokeAsync(arguments, callSpan, context).ConfigureAwait(false);
-            activation.SetResult(result);
-            return RuntimeValue(result);
+            return RuntimeValue(await callable.InvokeAsync(arguments, callSpan, context).ConfigureAwait(false));
         }
         catch (Exception ex) when (TryTranslateCallableException(ex, callSpan, out var translated))
         {
@@ -317,40 +308,20 @@ internal sealed partial class LythonRuntime
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecution(span);
-            object result;
-            if (PreservePresence)
-            {
-                var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind);
-                context.State.SetNativeBoundArguments(bound.Values);
-                result = InvokeBoundWithPresence(bound, span, context);
-            }
-            else
-            {
-                var bound = CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind);
-                context.State.SetNativeBoundArguments(bound);
-                result = InvokeBound(bound, span, context);
-            }
-            context.State.TrackNativeCallResult(result, span);
+            object result = PreservePresence
+                ? InvokeBoundWithPresence(CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind), span, context)
+                : InvokeBound(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind), span, context);
+            context.Services.State.CallTemporaries.TrackCallResult(result, span);
             return result;
         }
 
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             context.CheckExecution(span);
-            object result;
-            if (PreservePresence)
-            {
-                var bound = CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind);
-                context.State.SetNativeBoundArguments(bound.Values);
-                result = await InvokeBoundWithPresenceAsync(bound, span, context).ConfigureAwait(false);
-            }
-            else
-            {
-                var bound = CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind);
-                context.State.SetNativeBoundArguments(bound);
-                result = await InvokeBoundAsync(bound, span, context).ConfigureAwait(false);
-            }
-            context.State.TrackNativeCallResult(result, span);
+            object result = PreservePresence
+                ? await InvokeBoundWithPresenceAsync(CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind), span, context).ConfigureAwait(false)
+                : await InvokeBoundAsync(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind), span, context).ConfigureAwait(false);
+            context.Services.State.CallTemporaries.TrackCallResult(result, span);
             return result;
         }
 
@@ -820,7 +791,7 @@ internal sealed partial class LythonRuntime
             var rest = new CallArgumentValue[arguments.Length - 1];
             Array.Copy(arguments, 0, rest, 0, receiverIndex);
             Array.Copy(arguments, receiverIndex + 1, rest, receiverIndex, rest.Length - receiverIndex);
-            return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(boundCallable, rest, span, context);
+            return boundCallable.Invoke(rest, span, context);
         }
 
         internal object BindReceiver(object? receiver, LythonSourceSpan span, ExecutionContext context)
@@ -2280,13 +2251,13 @@ internal sealed partial class LythonRuntime
             if (ReferenceEquals(arguments[0].Value, _owner) &&
                 _owner is LythonRuntime.ICallable ownerCallable)
             {
-                return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(ownerCallable, arguments[1..], span, context);
+                return ownerCallable.Invoke(arguments[1..], span, context);
             }
 
             if (_owner is LythonRuntime.ExceptionTypeValue &&
                 arguments[0].Value is LythonRuntime.ExceptionTypeValue subclassCtor)
             {
-                return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(subclassCtor, arguments[1..], span, context);
+                return subclassCtor.Invoke(arguments[1..], span, context);
             }
 
             throw new LythonRuntimeException("TypeError", "type.__new__ construction expects the type as its first argument in Lython.", span);
@@ -2358,7 +2329,7 @@ internal sealed partial class LythonRuntime
             if (ReferenceEquals(arguments[0].Value, _owner) &&
                 _owner is LythonRuntime.ICallable ownerCallable)
             {
-                return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(ownerCallable, arguments[1..], span, context);
+                return ownerCallable.Invoke(arguments[1..], span, context);
             }
 
             throw new LythonRuntimeException("TypeError", "type.__new__ construction expects the type as its first argument in Lython.", span);
@@ -2972,7 +2943,7 @@ internal sealed partial class LythonRuntime
             context.CheckExecution(span);
             RejectArguments(arguments, span);
             var result = _implementation(_receiver, span, context);
-            context.Services.State.TrackNativeCallResult(result, span);
+            context.Services.State.CallTemporaries.TrackCallResult(result, span);
             return result;
         }
 
@@ -2983,7 +2954,7 @@ internal sealed partial class LythonRuntime
             if (_asyncImplementation is null)
             {
                 var immediate = _implementation(_receiver, span, context);
-                context.Services.State.TrackNativeCallResult(immediate, span);
+                context.Services.State.CallTemporaries.TrackCallResult(immediate, span);
                 return ValueTask.FromResult(immediate);
             }
 
@@ -2992,7 +2963,7 @@ internal sealed partial class LythonRuntime
             async ValueTask<object> InvokeAsyncCore()
             {
                 var result = await _asyncImplementation!(_receiver, span, context).ConfigureAwait(false);
-                context.Services.State.TrackNativeCallResult(result, span);
+                context.Services.State.CallTemporaries.TrackCallResult(result, span);
                 return result;
             }
         }

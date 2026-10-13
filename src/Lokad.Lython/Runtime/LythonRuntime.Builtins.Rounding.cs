@@ -27,7 +27,7 @@ internal sealed partial class LythonRuntime
 
             return hasDigits
                 ? CallableInvocation.InvokeUnary(roundCallable, arguments[1], span, context)
-                : global::Lokad.Lython.Runtime.CallableInvocation.Invoke(roundCallable, [], span, context);
+                : roundCallable.Invoke([], span, context);
         }
 
         int? digits = null;

@@ -265,7 +265,7 @@ internal sealed partial class LythonRuntime
         var args = new PyTuple(values, context.MemoryGovernor, span);
         context.Services.State.CallTemporaries.TrackFreshMutable(args, args.CommittedStorageBytes, span);
         value = PyGenericAlias.Create(PyGenericAlias.UnionOrigin, args, context.MemoryGovernor, span, context.Services.State.CallTemporaries);
-        context.Services.State.TrackNativeCallResult(value, span);
+        context.Services.State.CallTemporaries.TrackCallResult(value, span);
         return true;
 
         void Add(PyTuple items)

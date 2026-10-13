@@ -86,7 +86,7 @@ internal static class PyHashProtocols
                     throw new LythonRuntimeException("TypeError", "'" + LythonRuntime.UnboundTypeMethod.PythonTypeName(hashMember, context) + "' object is not callable", span);
                 }
 
-                var hashValue = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(hashCallable, [], span, context);
+                var hashValue = hashCallable.Invoke([], span, context);
                 if (!Numbers.PyNumberOps.TryAsInteger(hashValue, out var integerHash))
                 {
                     throw new LythonRuntimeException("TypeError", "__hash__ method should return an integer", span);

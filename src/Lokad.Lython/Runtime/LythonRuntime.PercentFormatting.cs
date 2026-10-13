@@ -298,7 +298,7 @@ internal sealed partial class LythonRuntime
                 var methodName = allowFloat ? "__int__" : "__index__";
                 if (instance.TryGetAttribute(methodName, _context, _span, out var member) && member is ICallable callable)
                 {
-                    var converted = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, [], _span, _context);
+                    var converted = callable.Invoke([], _span, _context);
                     if (PyNumberOps.TryAsInteger(converted, out integer))
                     {
                         return integer;
@@ -343,7 +343,7 @@ internal sealed partial class LythonRuntime
                     instance.TryGetAttribute("__float__", _context, _span, out var member) &&
                     member is ICallable callable:
                     {
-                        var converted = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, [], _span, _context);
+                        var converted = callable.Invoke([], _span, _context);
                         if (converted is double result)
                         {
                             return result;

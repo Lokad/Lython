@@ -73,7 +73,7 @@ internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallabl
         var bound = new CallArgumentValue[arguments.Length + 1];
         bound[0] = CallArgumentValue.Positional(_self);
         Array.Copy(arguments, 0, bound, 1, arguments.Length);
-        return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(_function, bound, span, context);
+        return _function.Invoke(bound, span, context);
     }
 
     public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -81,7 +81,7 @@ internal sealed class PyBoundMethod : IPyRenderableValue, LythonRuntime.ICallabl
         var bound = new CallArgumentValue[arguments.Length + 1];
         bound[0] = CallArgumentValue.Positional(_self);
         Array.Copy(arguments, 0, bound, 1, arguments.Length);
-        return global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(_function, bound, span, context);
+        return _function.InvokeAsync(bound, span, context);
     }
 
     public PyString RenderPython(PyRenderingContext context) => PyString.FromString(DisplayText(context));

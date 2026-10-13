@@ -4016,7 +4016,7 @@ internal sealed partial class LythonRuntime
                         throw new LythonRuntimeException("TypeError", " + RuntimeErrors.OperandTypeName(itemsMember) +  object is not callable", span);
                     }
 
-                    foreach (var element in ToSequence(RuntimeValue(global::Lokad.Lython.Runtime.CallableInvocation.Invoke(itemsCallable, [], span, context)), span, context))
+                    foreach (var element in ToSequence(RuntimeValue(itemsCallable.Invoke([], span, context)), span, context))
                     {
                         using var materialized = MaterializeUnpackingSequence(element, span, context);
                         var values = materialized.Items;

@@ -69,7 +69,7 @@ internal sealed partial class LythonRuntime
         {
             if (!instance.TryGetAttribute("__setitem__", context, span, out var member) || member is not ICallable callable)
                 throw new LythonRuntimeException("TypeError", $"'{instance.Type.Name}' object does not support item mutation", span);
-            _ = await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(callable, [CallArgumentValue.Positional(index), CallArgumentValue.Positional(value)], span, context).ConfigureAwait(false);
+            _ = await callable.InvokeAsync([CallArgumentValue.Positional(index), CallArgumentValue.Positional(value)], span, context).ConfigureAwait(false);
         }
         else SetSubscriptValue(receiver, index, value, span, context);
     }

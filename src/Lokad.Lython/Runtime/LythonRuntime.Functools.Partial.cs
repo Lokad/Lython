@@ -61,12 +61,12 @@ internal sealed partial class LythonRuntime
         }
 
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => global::Lokad.Lython.Runtime.CallableInvocation.Invoke(_callable, CombineArguments(arguments), span, context);
+            => _callable.Invoke(CombineArguments(arguments), span, context);
 
         public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
         {
             var combined = CombineArguments(arguments);
-            return await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(_callable, combined, span, context).ConfigureAwait(false);
+            return await _callable.InvokeAsync(combined, span, context).ConfigureAwait(false);
         }
 
         private CallArgumentValue[] CombineArguments(CallArgumentValue[] arguments)

@@ -220,7 +220,8 @@ internal sealed partial class LythonRuntime
         return protocol == TruthinessProtocol.Default
             ? true
             : InterpretTruthinessResult(protocol,
-                global::Lokad.Lython.Runtime.CallableInvocation.Invoke(RequireTruthinessCallable(PyAttributeLookup.BindForInstance(instance, rawMember, context, span), context, span), [], span, context), span);
+                RequireTruthinessCallable(PyAttributeLookup.BindForInstance(instance, rawMember, context, span), context, span)
+                    .Invoke([], span, context), span);
     }
 
     internal static async ValueTask<bool> IsTruthyAsync(object value, ExecutionContext context, LythonSourceSpan span)
@@ -238,7 +239,7 @@ internal sealed partial class LythonRuntime
 
         var member = await PyAttributeLookup.BindForInstanceAsync(instance, rawMember, context, span).ConfigureAwait(false);
         var callable = RequireTruthinessCallable(member, context, span);
-        var result = await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(callable, [], span, context).ConfigureAwait(false);
+        var result = await callable.InvokeAsync([], span, context).ConfigureAwait(false);
         return InterpretTruthinessResult(protocol, result, span);
     }
 
@@ -359,7 +360,7 @@ internal sealed partial class LythonRuntime
             return index;
         }
 
-        var converted = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, [], span, context);
+        var converted = callable.Invoke([], span, context);
         if (!PyNumberOps.TryAsInteger(converted, out var integer))
         {
             throw new LythonRuntimeException("TypeError", "__index__ returned non-int (type " + UnboundTypeMethod.PythonTypeName(converted, context) + ")", span);
@@ -389,7 +390,7 @@ internal sealed partial class LythonRuntime
             instance.TryGetAttribute("__fspath__", context, span, out var member) &&
             member is ICallable callable)
         {
-            var result = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, [], span, context);
+            var result = callable.Invoke([], span, context);
             if (PyStringOps.TryAsString(result, out var pathText))
             {
                 return pathText;

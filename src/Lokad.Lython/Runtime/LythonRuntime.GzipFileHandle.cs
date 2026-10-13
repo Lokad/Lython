@@ -482,7 +482,7 @@ internal sealed partial class LythonRuntime
                 return instance;
             }
 
-            var converted = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, [], span, context);
+            var converted = callable.Invoke([], span, context);
             if (!Numbers.PyNumberOps.TryAsInteger(converted, out _))
             {
                 throw new LythonRuntimeException("TypeError", "__index__ returned non-int", span);
