@@ -174,8 +174,9 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal abstract class ControlSignal : Exception
+    internal abstract class ControlSignal : Exception, IMemoryStorageEdges
     {
+        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor) { }
     }
 
     internal sealed class BreakSignal : ControlSignal

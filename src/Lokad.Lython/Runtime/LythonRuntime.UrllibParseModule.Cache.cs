@@ -154,8 +154,14 @@ internal sealed partial class LythonRuntime
                 : MembershipEquals(left, right, context, span);
         }
 
-        internal sealed class UrlSplitCache
+        internal sealed class UrlSplitCache : IMemoryStorageEdges
         {
+            void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+            {
+                if (!visitor.Add(_first) || !visitor.Add(_last) || !visitor.Add(_oldest)) return;
+                visitor.Add(_newest);
+            }
+
             private const int Capacity = 128;
             private const long ShellBytes = 96;
             private const long EntryBytes = 80;
@@ -272,16 +278,36 @@ internal sealed partial class LythonRuntime
                 CommittedBytes = 0;
             }
 
-            internal sealed class Entry(Key key, UrlResult result)
+            internal sealed class Entry(Key key, UrlResult result) : IMemoryStorageEdges
             {
+                void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+                {
+                    if (!visitor.Add(Key) || !visitor.Add(Result) ||
+                        !visitor.Add(Previous) || !visitor.Add(Next) || !visitor.Add(Older)) return;
+                    visitor.Add(Newer);
+                }
+
                 internal readonly Key Key = key;
                 internal readonly UrlResult Result = result;
                 internal Entry? Previous, Next, Older, Newer;
                 internal bool Active;
             }
 
-            internal sealed class Key(CallArgumentValue[] arguments, object[] types, MemoryGovernor governor, long bytes)
+            internal sealed class Key(CallArgumentValue[] arguments, object[] types, MemoryGovernor governor, long bytes) : IMemoryStorageEdges
             {
+                void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+                {
+                    foreach (var argument in Arguments) if (!visitor.Add(argument.Value)) return;
+                    foreach (var type in Types)
+                    {
+                        if (type is Type)
+                        {
+                            if (!visitor.InspectStorageItem()) return;
+                        }
+                        else if (!visitor.Add(type)) return;
+                    }
+                }
+
                 internal readonly CallArgumentValue[] Arguments = arguments;
                 internal readonly object[] Types = types;
                 internal readonly long Bytes = bytes;

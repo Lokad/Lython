@@ -11,8 +11,15 @@ internal sealed partial class LythonRuntime
     // stored in executable local slots and keeps the slot arrays non-nullable.
     private static readonly object UninitializedLocal = new();
 
-    internal sealed class ExecutableCell
+    internal sealed class ExecutableCell : IMemoryStorageEdges
     {
+        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+        {
+            // Value may read mirrored locals and initialize their dictionary.
+            // Both raw storage and its defining owner remain actual edges.
+            if (!ReferenceEquals(_value, UninitializedLocal) && !visitor.Add(_value)) return;
+            visitor.Add(_owner);
+        }
         private object _value;
         private readonly ExecutionContext? _owner;
         private readonly string? _name;
@@ -45,8 +52,23 @@ internal sealed partial class LythonRuntime
         internal bool RetentionCharged;
     }
 
-    internal class ExecutableFrameState
+    internal class ExecutableFrameState : IMemoryStorageEdges
     {
+        public virtual void VisitStorageChildren(MemoryStorageWalk visitor)
+        {
+            foreach (var value in _locals)
+            {
+                if (ReferenceEquals(value, UninitializedLocal))
+                {
+                    if (!visitor.InspectStorageItem()) return;
+                }
+                else if (!visitor.Add(value)) return;
+            }
+            if (!visitor.Add(_localCells) || !visitor.Add(_closureCells)) return;
+            // Code can contain runtime-created frontend captures. Keep it as
+            // an explicit edge; unaudited code shapes prevent completion.
+            visitor.Add(_codeObject);
+        }
         protected readonly ExecutableCodeObject _codeObject;
         protected readonly object[] _locals;
         protected readonly ExecutableCell?[]? _localCells;
@@ -215,9 +237,20 @@ internal sealed partial class LythonRuntime
 
     // A finally block may delay exactly one abrupt outcome. Distinct variants
     // prevent an impossible empty or multiply-populated pending state.
-    private abstract record PendingAbruptSignal
+    private abstract record PendingAbruptSignal : IMemoryStorageEdges
     {
         public int? CleanupId { get; set; }
+
+        public void VisitStorageChildren(MemoryStorageWalk visitor)
+        {
+            switch (this)
+            {
+                case PendingException error: visitor.Add(error.Exception); break;
+                case PendingReturn result: visitor.Add(result.Value); break;
+                case PendingJump jump: visitor.Add(jump.SavedPendingAbrupt); break;
+                case PendingControl control: visitor.Add(control.Control); break;
+            }
+        }
     }
 
     private sealed record PendingException(LythonRuntimeException Exception) : PendingAbruptSignal;
@@ -233,13 +266,30 @@ internal sealed partial class LythonRuntime
 
     private sealed record PendingControl(ControlSignal Control) : PendingAbruptSignal;
 
-    private sealed record ExecutableMemberCache(object Target, object Value);
+    private sealed record ExecutableMemberCache(object Target, object Value) : IMemoryStorageEdges
+    {
+        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+        {
+            if (visitor.Add(Target)) visitor.Add(Value);
+        }
+    }
 
-    private sealed record ExecutableCallCache(object Target, ICallable Callable);
+    private sealed record ExecutableCallCache(object Target, ICallable Callable) : IMemoryStorageEdges
+    {
+        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+        {
+            if (visitor.Add(Target)) visitor.Add(Callable);
+        }
+    }
 
     private struct ExecutableValueStack
     {
         private object?[] _items;
+
+        internal void VisitStorageChildren(MemoryStorageWalk visitor)
+        {
+            for (var i = 0; i < Count; i++) if (!visitor.Add(_items[i])) return;
+        }
 
         public ExecutableValueStack(int capacity)
         {
@@ -377,10 +427,10 @@ internal sealed partial class LythonRuntime
         try
         {
             var interpreter = CreateExecutableInterpreter(codeObject, context, boundArguments, argumentSlotMap, closureCells);
-            if (closureCells is not null || codeObject.CapturedLocalSlots.Count != 0 || codeObject.LocalNames.Count != 0)
-            {
-                context.EnterExecutableSlots(interpreter);
-            }
+            // Even a zero-local module has live operands during calls. Publish
+            // the same existing frame that the async entry publishes; local
+            // slot counts do not determine whether an invocation is active.
+            context.EnterExecutableSlots(interpreter);
             interpreter.Execute();
             return interpreter.HasFrameReturn ? interpreter.FrameReturnValue : null;
         }

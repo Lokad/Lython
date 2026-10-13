@@ -7,6 +7,12 @@ internal sealed class PyGeneratorFunction(LoweredFunctionDefinitionStatement def
     : PyFunctionBase(definition.Syntax.DeclaredName, definition.Parameters, closure, defaults,
         ScopeDirectiveFactsCollector.ForFunction(definition.Syntax))
 {
+    public override void VisitStorageChildren(MemoryStorageWalk visitor)
+    {
+        base.VisitStorageChildren(visitor);
+        if (visitor.Add(closureCells)) visitor.Add(definition);
+    }
+
     protected override bool RequiresArgumentMirroring => true;
 
     protected override object ExecuteBody(LythonRuntime.ExecutionContext frame, BoundCallArguments arguments, LythonSourceSpan span)

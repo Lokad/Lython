@@ -3,6 +3,12 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class PyFunction : PyFunctionBase
 {
+    public override void VisitStorageChildren(MemoryStorageWalk visitor)
+    {
+        base.VisitStorageChildren(visitor);
+        visitor.Add(_body);
+    }
+
     private readonly IReadOnlyList<LoweredStatement> _body;
 
     public PyFunction(

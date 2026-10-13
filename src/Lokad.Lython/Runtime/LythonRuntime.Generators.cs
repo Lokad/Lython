@@ -199,8 +199,14 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class GeneratorDelegation(object iterator, ExecutionContext context, LythonSourceSpan span)
+    private sealed class GeneratorDelegation(object iterator, ExecutionContext context, LythonSourceSpan span) : IMemoryStorageEdges
     {
+        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+        {
+            if (!visitor.Add(iterator) || !visitor.Add(context)) return;
+            visitor.Add(ReturnValue);
+        }
+
         public object ReturnValue { get; private set; } = PyNone.Instance;
         public PyIterationResult Advance(object sent, LythonRuntimeException? injected)
             => AdvanceAsync(sent, injected, false).GetAwaiter().GetResult();

@@ -3,6 +3,12 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed class PyExecutableFunction : PyFunctionBase
 {
+    public override void VisitStorageChildren(MemoryStorageWalk visitor)
+    {
+        base.VisitStorageChildren(visitor);
+        if (visitor.Add(_closureCells)) visitor.Add(_codeObject);
+    }
+
     private readonly ExecutableCodeObject _codeObject;
     private readonly IReadOnlyList<LythonRuntime.ExecutableCell> _closureCells;
     // Layout-to-slot map shared across invocations: layout index to frame

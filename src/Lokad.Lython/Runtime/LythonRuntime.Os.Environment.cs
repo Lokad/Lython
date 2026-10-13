@@ -129,8 +129,13 @@ internal sealed partial class LythonRuntime
         IPyIterableValue,
         IPyRenderableValue,
         IPyDynamicAttributes,
+        IMemoryStorageEdges,
         IEnumerable<object>
     {
+        // The environment table retains only CLR strings. Decoded Python keys
+        // and values are independently owned results, never cached here.
+        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor) { }
+
         private readonly Dictionary<string, string> _items;
         private readonly MemoryGovernor _governor;
         private readonly LythonSourceSpan? _allocationSpan;

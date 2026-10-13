@@ -1,5 +1,6 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using Lokad.Lython.Frontend;
 using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
@@ -62,8 +63,31 @@ internal sealed class MemoryStorageWalk : IDisposable
                     case object[] values:
                         foreach (var child in values) if (!Add(child)) break;
                         break;
+                    case Array { Length: 0 }:
+                        // An empty CLR array cannot retain a guest reference,
+                        // including empty typed code/cache tables.
+                        break;
+                    case Dictionary<string, object> namedValues:
+                        // Runtime namespace/default tables have CLR string keys.
+                        foreach (var pair in namedValues) if (!Add(pair.Value)) break;
+                        break;
+                    case List<object> values:
+                        foreach (var child in values) if (!Add(child)) break;
+                        break;
+                    case ExecutableCodeObject code:
+                        // Index-only instructions, names and source spans carry
+                        // no guest references. Capturable tables stay explicit;
+                        // unaudited lowered nodes stop the walk as unknown shapes.
+                        if (!Add(code.Constants) || !Add(code.Functions) ||
+                            !Add(code.MatchCases) || !Add(code.StatementFallbacks) ||
+                            !Add(code.ExpressionFallbacks) || !Add(code.LoopTargets)) break;
+                        Add(code.UnpackingTargets);
+                        break;
                     case List<PyType> types:
                         foreach (var child in types) if (!Add(child)) break;
+                        break;
+                    case List<LythonRuntime.ExecutableCell> cells:
+                        foreach (var child in cells) if (!Add(child)) break;
                         break;
                     case PyBytes or PyComplex or BigInteger:
                         // Immutable payload owners have no guest-value children.

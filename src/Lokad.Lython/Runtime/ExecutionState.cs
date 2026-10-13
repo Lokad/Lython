@@ -3,8 +3,36 @@ using System.Runtime.CompilerServices;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class ExecutionState
+internal sealed class ExecutionState : IMemoryStorageEdges
 {
+    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+    {
+        if (!visitor.Add(Args) || !visitor.Add(BuiltinVariables) ||
+            !visitor.Add(RegexCache) || !visitor.Add(StructuralTraversal) ||
+            !visitor.Add(DecimalContext) || !visitor.Add(OsEnvironMapping) ||
+            !visitor.Add(TypingGeneric) || !visitor.Add(UrlSplitFieldDefaults) ||
+            !visitor.Add(UrlParseFieldDefaults) || !visitor.Add(GzipFileMetaBases) ||
+            !visitor.Add(GzipFileMetaMro) || !visitor.Add(UrlSplitCache) ||
+            !visitor.Add(Stdin) || !visitor.Add(Stdout) || !visitor.Add(Stderr)) return;
+        foreach (var pair in ImportedModules) if (!visitor.Add(pair.Value)) return;
+        if (_exceptionBaseTuples is not null)
+            foreach (var pair in _exceptionBaseTuples) if (!visitor.Add(pair.Value)) return;
+        if (_runtimeMemberCaches is not null)
+            foreach (var pair in _runtimeMemberCaches)
+            {
+                if (!visitor.Add(pair.Key) || !visitor.Add(pair.Value.Target) ||
+                    !visitor.Add(pair.Value.Value)) return;
+            }
+        foreach (var writer in _openFileWriters) if (!visitor.Add(writer)) return;
+        // id() has conditional key-to-box retention. Do not silently treat
+        // its boxes as unreachable, or promote weak keys into strong roots.
+        // That unaudited ephemeron rule deliberately prevents completion.
+        if (_nextObjectId != 0) visitor.Add(_objectIds);
+        // Host/guards/governor/pool are capability and accounting back-edges.
+        // Random state, environment and warning records contain only scalars
+        // and CLR strings; capture builders contain byte storage, no guest refs.
+    }
+
     private Dictionary<object, RuntimeMemberCacheEntry>? _runtimeMemberCaches;
     private Dictionary<PythonExceptionIdentity, PyTuple>? _exceptionBaseTuples;
     internal PyType? TypingGeneric { get; set; }

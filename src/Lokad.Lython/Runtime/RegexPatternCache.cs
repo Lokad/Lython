@@ -11,8 +11,14 @@ namespace Lokad.Lython.Runtime;
 // retains it (capacity, like tier backing) while explicit purge releases it (like
 // Clear). Structures die with the run governor. Single-threaded like the rest of
 // the runtime.
-internal sealed class RegexPatternCache
+internal sealed class RegexPatternCache : IMemoryStorageEdges
 {
+    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+    {
+        // Dictionary traversal does not alter LRU order or invoke a key lookup.
+        foreach (var pair in _entries) if (!visitor.Add(pair.Value.Value.Pattern)) return;
+    }
+
     // CPython parity bound: at most this many compiled patterns stay shared.
     internal const int MaxEntries = 512;
 
