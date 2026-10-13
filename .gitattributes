@@ -19,3 +19,7 @@ benchmarks/results/2026-10-13-shared-async-frames/*.py -text whitespace=cr-at-eo
 benchmarks/results/2026-10-13-frame-transfer-rejected/*.json -text whitespace=cr-at-eol
 benchmarks/results/2026-10-13-frame-transfer-rejected/*.txt -text whitespace=cr-at-eol
 benchmarks/results/2026-10-13-frame-transfer-rejected/*.py -text whitespace=cr-at-eol
+# Preserve the ordinary-call transfer diagnostic's measured bytes and hashes.
+benchmarks/results/2026-10-13-call-transfer/*.json -text whitespace=cr-at-eol
+benchmarks/results/2026-10-13-call-transfer/*.txt -text whitespace=cr-at-eol
+benchmarks/results/2026-10-13-call-transfer/*.py -text whitespace=cr-at-eol

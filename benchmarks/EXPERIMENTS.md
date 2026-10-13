@@ -5,6 +5,12 @@ must not be read as measurements of current HEAD. See [BENCHMARKS.md](../BENCHMA
 for the authoritative comparison and [COMPARISON.md](COMPARISON.md) for methods.
 The original narratives and evidence links follow unchanged.
 
+The [2026-10-13 ordinary-call transfer](results/2026-10-13-call-transfer/README.md)
+preserves inputs and results in the existing operand stack at call boundaries,
+without universal instruction retention. Nine before/after probes validate this
+prerequisite; forced-GC independence remains open. The one short keyword-call
+diagnostic has uncertain recurring cost and supplies no qualified performance claim.
+
 The [2026-10-13 frame-transfer experiment](results/2026-10-13-frame-transfer-rejected/README.md)
 passed candidate correctness gates but added about 10% to the short integer-loop
 diagnostic. The universal retained extent/completion rule was rejected and
