@@ -5,6 +5,12 @@ must not be read as measurements of current HEAD. See [BENCHMARKS.md](../BENCHMA
 for the authoritative comparison and [COMPARISON.md](COMPARISON.md) for methods.
 The original narratives and evidence links follow unchanged.
 
+The [2026-10-13 ownership inventory](results/2026-10-13-ownership-inventory/README.md)
+identifies native state, delegate and frontend-capture obligations beyond the
+34 snapshot-owner types. Its finite static audit and36 public root checks are
+correctness/design evidence; no collector, logical refunds or performance claim
+is introduced. Forced-GC replacement remains open.
+
 The [2026-10-13 ordinary-call transfer](results/2026-10-13-call-transfer/README.md)
 preserves inputs and results in the existing operand stack at call boundaries,
 without universal instruction retention. Nine before/after probes validate this

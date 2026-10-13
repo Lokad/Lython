@@ -7,7 +7,7 @@ public sealed class RootLifetimeContainmentTests
 {
     public static IEnumerable<object[]> Cases()
     {
-        foreach (var root in new[] { "call-argument", "caller-local", "closure", "generator", "active-exception", "native-accumulator", "bound-buffer" })
+        foreach (var root in new[] { "call-argument", "caller-local", "closure", "generator", "active-exception", "native-accumulator", "bound-buffer", "reversed-list", "generator-outer" })
         foreach (var constrained in new[] { true, false })
         foreach (var asynchronous in new[] { false, true })
             yield return [root, constrained, asynchronous];
@@ -87,6 +87,16 @@ import io
 read = io.BytesIO(b'x' * 16000).getvalue
 candidate = allocating_rhs()
 return len(read()) + len(candidate)
+""",
+            "reversed-list" => """
+cursor = reversed(['x' * 16000])
+candidate = allocating_rhs()
+return len(next(cursor)) + len(candidate)
+""",
+            "generator-outer" => """
+cursor = (len(item) for item in ['x' * 16000])
+candidate = allocating_rhs()
+return next(cursor) + len(candidate)
 """,
             _ => throw new ArgumentOutOfRangeException(nameof(root))
         };
