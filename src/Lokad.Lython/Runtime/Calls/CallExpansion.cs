@@ -428,8 +428,17 @@ internal static class CallExpansion
         }
     }
 
-    internal sealed class CallArgumentAccumulator : IExecutableTemporaryValue
+    internal sealed class CallArgumentAccumulator : IExecutableTemporaryValue, IMemoryStorageEdges
     {
+        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+        {
+            if (!visitor.Add(_values) || !visitor.Add(_deferredStar) ||
+                !visitor.Add(_target)) return;
+            visitor.Add(_context);
+            // Keyword-name strings, spans and accounting handles are control
+            // metadata. The actual argument array is retained without copying.
+        }
+
         private const int BudgetCheckInterval = 64;
 
         private CallArgumentValue[] _values;
@@ -437,13 +446,14 @@ internal static class CallExpansion
         private int _addedSinceBudgetCheck;
         private LythonSourceSpan? _span;
         private readonly MemoryGovernor _governor;
-        private readonly LythonRuntime.ExecutionContext _context;
+        private LythonRuntime.ExecutionContext? _context;
+        private LythonRuntime.ExecutionContext Context => _context ?? throw new ObjectDisposedException(nameof(CallArgumentAccumulator));
         private readonly MemoryGovernor.TemporaryMemoryReservation? _reservation;
         private long _retainedBytes;
         private readonly bool _deferSingleStar;
         private object? _deferredStar;
         private LythonSourceSpan? _deferredSpan;
-        private readonly object _target;
+        private object? _target;
         private HashSet<string>? _keywordNames;
 
         public CallArgumentAccumulator(int sourceArgumentCount, LythonRuntime.ExecutionContext context, object target, bool retained = false, bool deferSingleStar = false)
@@ -479,6 +489,7 @@ internal static class CallExpansion
 
         public void Add(CallArgumentValue value, LythonSourceSpan? span)
         {
+            var context = Context;
             if (value.IsKeyword)
             {
                 // ** collisions are call-site errors even for constructors
@@ -492,7 +503,7 @@ internal static class CallExpansion
                 Grow(96, span);
                 if (!_keywordNames.Add(value.KeywordName))
                     throw new LythonRuntimeException("TypeError",
-                        (CallsiteCallableName(_target, _context) ?? "call") +
+                        (CallsiteCallableName(_target!, context) ?? "call") +
                         " got multiple values for keyword argument '" + value.KeywordName + "'", span);
             }
             if (_count == _values.Length)
@@ -505,23 +516,25 @@ internal static class CallExpansion
 
             _values[_count++] = value;
             _span = span;
-            _context.ObserveCollectionCount(_count, span);
+            context.ObserveCollectionCount(_count, span);
             if (++_addedSinceBudgetCheck >= BudgetCheckInterval)
             {
                 _addedSinceBudgetCheck = 0;
-                _context.CheckExecution(span);
+                context.CheckExecution(span);
             }
         }
 
         public void CheckDuplicateKeyword(string name, LythonSourceSpan span)
         {
+            var context = Context;
             if (_keywordNames?.Contains(name) == true)
-                throw new LythonRuntimeException("TypeError", (CallsiteCallableName(_target, _context) ?? "call") +
+                throw new LythonRuntimeException("TypeError", (CallsiteCallableName(_target!, context) ?? "call") +
                     " got multiple values for keyword argument '" + name + "'", span);
         }
 
         public CallArgumentValue[] ToArray()
         {
+            _ = Context;
             if (_count == _values.Length)
             {
                 return _values;
@@ -529,7 +542,7 @@ internal static class CallExpansion
 
             // The exact array coexists briefly with the growth buffer, so
             // reserve both before making the final allocation.
-            Grow(EstimateArgumentBytes(_count), _span);
+            Grow(32L + (32L * _count), _span);
             return _values[.._count];
         }
 
@@ -546,12 +559,12 @@ internal static class CallExpansion
                         _deferredSpan = span;
                         break;
                     }
-                    if (asynchronous) await AppendStarredValuesAsync(value, span, this, _target, _context).ConfigureAwait(false);
-                    else AppendStarredValues(value, span, this, _target, _context);
+                    if (asynchronous) await AppendStarredValuesAsync(value, span, this, _target!, Context).ConfigureAwait(false);
+                    else AppendStarredValues(value, span, this, _target!, Context);
                     break;
                 case CallArgumentKind.StarredDictionary:
-                    if (asynchronous) await AppendStarredDictionaryAsync(value, span, this, _target, _context).ConfigureAwait(false);
-                    else AppendStarredDictionary(value, span, this, _target, _context);
+                    if (asynchronous) await AppendStarredDictionaryAsync(value, span, this, _target!, Context).ConfigureAwait(false);
+                    else AppendStarredDictionary(value, span, this, _target!, Context);
                     break;
             }
         }
@@ -559,9 +572,12 @@ internal static class CallExpansion
         internal async ValueTask FinishDeferredStarAsync(bool asynchronous)
         {
             if (_deferredStar is not { } source) return;
-            _deferredStar = null;
-            if (asynchronous) await AppendStarredValuesAsync(source, _deferredSpan!, this, _target, _context).ConfigureAwait(false);
-            else AppendStarredValues(source, _deferredSpan!, this, _target, _context);
+            try
+            {
+                if (asynchronous) await AppendStarredValuesAsync(source, _deferredSpan!, this, _target!, Context).ConfigureAwait(false);
+                else AppendStarredValues(source, _deferredSpan!, this, _target!, Context);
+            }
+            finally { _deferredStar = null; _deferredSpan = null; }
         }
 
         internal async ValueTask<object> InvokeAsync(LythonSourceSpan targetSpan, LythonSourceSpan callSpan, bool asynchronous)
@@ -570,25 +586,31 @@ internal static class CallExpansion
             {
                 await FinishDeferredStarAsync(asynchronous).ConfigureAwait(false);
                 return asynchronous
-                    ? await LythonRuntime.InvokeCallableTargetAsync(_target, targetSpan, callSpan, _context,
+                    ? await LythonRuntime.InvokeCallableTargetAsync(_target!, targetSpan, callSpan, Context,
                         () => new ValueTask<CallArgumentValue[]>(ToArray())).ConfigureAwait(false)
-                    : LythonRuntime.InvokeCallableTarget(_target, targetSpan, callSpan, _context, ToArray);
+                    : LythonRuntime.InvokeCallableTarget(_target!, targetSpan, callSpan, Context, ToArray);
             }
             finally { Dispose(); }
         }
 
         public void Dispose()
         {
+            _values = [];
+            _count = 0;
+            _deferredStar = null;
+            _deferredSpan = null;
+            _keywordNames = null;
+            _context = null;
+            _target = null;
             _reservation?.Dispose();
             if (_retainedBytes == 0) return;
-            _values = [];
-            _deferredStar = null;
-            _keywordNames = null;
             _governor.Release(_retainedBytes);
             _retainedBytes = 0;
             ChargeReclamationPool.NotifyStorageReplaced(this, 0);
         }
 
-        private static long EstimateArgumentBytes(int count) => 64L + (32L * count);
+        // Empty construction allocates 264 bytes on managed x64 (shell, lease,
+        // minimum array). Cover its full fixed storage before publication.
+        private static long EstimateArgumentBytes(int count) => 192L + (32L * count);
     }
 }

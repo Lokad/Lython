@@ -66,7 +66,7 @@ public sealed class MemoryStorageWalkTests
         var captured = new LoweredCapturedExpression(syntax, list);
         using var walk = new MemoryStorageWalk(new MemoryGovernor(10000), 16);
         Assert.True(walk.TryTraverse([reversed, captured]));
-        Assert.Equal(4, walk.Visited.Length);
+        Assert.Equal(5, walk.Visited.Length); // Includes the actual list backing owner.
         Assert.Equal(1, walk.Visited.ToArray().Count(value => ReferenceEquals(value, payload)));
     }
 

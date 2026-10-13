@@ -3,15 +3,28 @@ namespace Lokad.Lython.Runtime;
 /// <summary>Provides stable sorting without relying on CLR comparer callbacks for Python effects.</summary>
 internal static class PyStableSort
 {
-    private const long BaseTemporaryBytes = 128;
+    // Active scratch/comparer/context fields make the two-entry working shape
+    // allocate 264 bytes on managed x64. Fund that shape before publication.
+    private const long BaseTemporaryBytes = 160;
     private const long TemporaryBytesPerEntry = 56;
 
     internal readonly record struct Entry(object Value, object Key);
 
-    internal sealed class Buffer : IReadOnlyCollection<object>, IDisposable
+    internal sealed class Buffer : IReadOnlyCollection<object>, IDisposable, IMemoryStorageEdges
     {
+        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+        {
+            foreach (var entry in _entries)
+                if (!visitor.Add(entry.Value) || !visitor.Add(entry.Key)) return;
+            if (!visitor.Add(_scratch) || !visitor.Add(_comparison)) return;
+            visitor.Add(_sortContext);
+        }
+
         private readonly List<Entry> _entries;
         private readonly MemoryGovernor.TemporaryMemoryReservation _reservation;
+        private Entry[]? _scratch;
+        private Delegate? _comparison;
+        private LythonRuntime.ExecutionContext? _sortContext;
 
         public Buffer(MemoryGovernor governor, LythonSourceSpan? span)
         {
@@ -32,29 +45,43 @@ internal static class PyStableSort
         public void Sort(bool reverse, Func<object, object, bool> isLessThan,
             LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
         {
+            EnsureIdle();
             context.CheckExecution(span);
             if (_entries.Count < 2)
             {
                 return;
             }
 
-            var scratch = new Entry[_entries.Count];
-            MergePasses(_entries, scratch, reverse, isLessThan, context, span);
-            context.CheckExecution(span);
+            try
+            {
+                _comparison = isLessThan;
+                _sortContext = context;
+                _scratch = new Entry[_entries.Count];
+                MergePasses(_entries, _scratch, reverse, isLessThan, context, span);
+                context.CheckExecution(span);
+            }
+            finally { _scratch = null; _comparison = null; _sortContext = null; }
         }
 
         public async ValueTask SortAsync(bool reverse, Func<object, object, ValueTask<bool>> isLessThan,
             LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
         {
+            EnsureIdle();
             context.CheckExecution(span);
             if (_entries.Count < 2)
             {
                 return;
             }
 
-            var scratch = new Entry[_entries.Count];
-            await MergePassesAsync(_entries, scratch, reverse, isLessThan, context, span).ConfigureAwait(false);
-            context.CheckExecution(span);
+            try
+            {
+                _comparison = isLessThan;
+                _sortContext = context;
+                _scratch = new Entry[_entries.Count];
+                await MergePassesAsync(_entries, _scratch, reverse, isLessThan, context, span).ConfigureAwait(false);
+                context.CheckExecution(span);
+            }
+            finally { _scratch = null; _comparison = null; _sortContext = null; }
         }
 
         public IEnumerator<object> GetEnumerator()
@@ -67,7 +94,18 @@ internal static class PyStableSort
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public void Dispose() => _reservation.Dispose();
+        public void Dispose()
+        {
+            EnsureIdle();
+            _entries.Clear();
+            _entries.Capacity = 0;
+            _reservation.Dispose();
+        }
+
+        private void EnsureIdle()
+        {
+            if (_comparison is not null) throw new InvalidOperationException("Sort buffer has an active operation.");
+        }
     }
 
     private static void MergePasses(

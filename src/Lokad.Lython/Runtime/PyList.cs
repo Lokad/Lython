@@ -6,7 +6,7 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
 {
     void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
     {
-        for (var i = 0; i < _items.Count; i++) if (!visitor.Add(_items[i])) return;
+        visitor.Add(_items);
     }
     private IPyListStorage _items;
     private MemoryGovernor? _memoryGovernor;

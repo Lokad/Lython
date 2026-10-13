@@ -2961,6 +2961,15 @@ keep their own preflight and payload charges. Retaining integer aliases therefor
 retains their original funding even after the source reference disappears;
 repeated aliases do not create new payload owners.
 
+Expanded calls preflight their argument-buffer shell, reservation and backing
+array together. Exact outgoing-array copies fund their own header and slots;
+retirement drops the buffer's stored arguments, deferred source and execution
+context before releasing its funding, preserving independently retained values.
+Native sorting likewise funds its buffer and active merge scratch, including
+values retained only by scratch during a merge. These conservative fixed charges
+can reject previously accepted tiny-budget calls or sorts earlier. They preserve
+live-memory accounting and do not charge cumulative allocation traffic.
+
 Lython does not need to promise a perfect hard memory ceiling from inside the same managed process, but it must provide conservative in-process resource controls that make runaway allocation materially harder.
 
 #### 14.6.1 Combined Peak Envelope

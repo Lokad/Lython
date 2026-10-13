@@ -80,8 +80,14 @@ internal sealed partial class PyList
     // owner reference keeps the list's aggregate live during exhaustion relief.
     internal sealed class DeferredSplitStorage(
         PyList owner, IPyListStorage inner, ChargeReclamationPool pool,
-        MemoryGovernor governor, LythonSourceSpan? span, long remainingBytes) : IPyListStorage
+        MemoryGovernor governor, LythonSourceSpan? span, long remainingBytes) : IPyListStorage, IMemoryStorageEdges
     {
+        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+        {
+            // The public indexer transfers pending ownership. Reading it during
+            // traversal would allocate registrations and change live funding.
+            if (visitor.Add(owner)) visitor.Add(inner);
+        }
         internal const long MetadataBytes = 128;
         private long _remainingBytes = remainingBytes;
         private int _nextIndex;

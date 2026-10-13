@@ -63,6 +63,18 @@ internal sealed class MemoryStorageWalk : IDisposable
                     case object[] values:
                         foreach (var child in values) if (!Add(child)) break;
                         break;
+                    case CallArgumentValue[] arguments:
+                        foreach (var argument in arguments) if (!Add(argument.Value)) break;
+                        break;
+                    case PyStableSort.Entry[] entries:
+                        foreach (var entry in entries)
+                            if (!Add(entry.Value) || !Add(entry.Key)) break;
+                        break;
+                    case Delegate { HasSingleTarget: true } callback:
+                        // Inspect the stored receiver, never invoke the method or
+                        // reflect into anonymous captures. Unknown targets stop.
+                        Add(callback.Target);
+                        break;
                     case Array { Length: 0 }:
                         // An empty CLR array cannot retain a guest reference,
                         // including empty typed code/cache tables.

@@ -96,15 +96,24 @@ internal sealed partial class LythonRuntime
                     PushObserved(tuple, span);
                     break;
                 case ExecutableStartCall call:
-                    _stack.Push(new CallExpansion.CallArgumentAccumulator(call.ArgumentCount, _context, Pop(ref _stack, span), retained: true, deferSingleStar: call.DeferSingleStar));
+                    var targetSlot = _stack.Count - 1;
+                    try { _stack[targetSlot] = new CallExpansion.CallArgumentAccumulator(call.ArgumentCount, _context, _stack[targetSlot], retained: true, deferSingleStar: call.DeferSingleStar); }
+                    catch { _stack.RemoveTail(_stack.Count - targetSlot); throw; }
                     break;
                 case ExecutableAppendCall argument:
-                    var argumentValue = Pop(ref _stack, span);
-                    await ((CallExpansion.CallArgumentAccumulator)Peek(ref _stack, span)).AppendAsync(argument.Form, argumentValue, span, asynchronous).ConfigureAwait(false);
+                    var argumentSlot = _stack.Count - 1;
+                    try { await ((CallExpansion.CallArgumentAccumulator)_stack[argumentSlot - 1]).AppendAsync(argument.Form, _stack[argumentSlot], span, asynchronous).ConfigureAwait(false); }
+                    finally { _stack.RemoveTail(_stack.Count - argumentSlot); }
                     break;
                 case ExecutableFinishCall call:
-                    using (var accumulator = (CallExpansion.CallArgumentAccumulator)Pop(ref _stack, span))
-                        PushObserved(await accumulator.InvokeAsync(call.TargetSpan, span, asynchronous).ConfigureAwait(false), span);
+                    var accumulatorSlot = _stack.Count - 1;
+                    try
+                    {
+                        var accumulator = (CallExpansion.CallArgumentAccumulator)_stack[accumulatorSlot];
+                        var result = await accumulator.InvokeAsync(call.TargetSpan, span, asynchronous).ConfigureAwait(false);
+                        CompleteExecutableValueTransfer(ref _stack, accumulatorSlot, result, _context, span);
+                    }
+                    catch { _stack.RemoveTail(_stack.Count - accumulatorSlot); throw; }
                     break;
                 case ExecutableConvertFormattedValue conversion:
                     PushObserved(await FormatSuspendedFieldAsync(Pop(ref _stack, span), conversion.Conversion,

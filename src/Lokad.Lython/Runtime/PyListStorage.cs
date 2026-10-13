@@ -129,8 +129,12 @@ internal static class PyListStorage
 
 }
 
-internal sealed class SmallPyListStorage : IPyListStorage
+internal sealed class SmallPyListStorage : IPyListStorage, IMemoryStorageEdges
 {
+    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+    {
+        for (var i = 0; i < _count; i++) if (!visitor.Add(_items[i])) return;
+    }
     private readonly object[] _items;
     private int _count;
     private long _committedBytes;
@@ -279,8 +283,12 @@ internal sealed class SmallPyListStorage : IPyListStorage
     System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
-internal sealed class ArrayPyListStorage : IPyListStorage
+internal sealed class ArrayPyListStorage : IPyListStorage, IMemoryStorageEdges
 {
+    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
+    {
+        foreach (var value in _items) if (!visitor.Add(value)) return;
+    }
     private readonly List<object> _items;
     private long _committedBytes;
 
