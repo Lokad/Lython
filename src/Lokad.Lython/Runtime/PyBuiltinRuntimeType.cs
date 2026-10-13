@@ -34,7 +34,7 @@ internal sealed class PyBuiltinRuntimeType : LythonRuntime.ICallable, IPyRendera
         => _constructor(arguments, span, context);
 
     public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => _asyncConstructor is null ? new(Invoke(arguments, span, context)) : _asyncConstructor(arguments, span, context);
+        => _asyncConstructor is null ? new(global::Lokad.Lython.Runtime.CallableInvocation.Invoke(this, arguments, span, context)) : _asyncConstructor(arguments, span, context);
 
     // Runtime types resolve __module__ through the shared label catalog and
     // __bases__/__mro__ per read: base objects mix global type singletons with

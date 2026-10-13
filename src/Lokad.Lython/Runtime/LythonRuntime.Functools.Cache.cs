@@ -93,7 +93,7 @@ internal sealed partial class LythonRuntime
             object result;
             try
             {
-                result = _callable.Invoke(arguments, span, context);
+                result = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(_callable, arguments, span, context);
             }
             catch
             {
@@ -133,7 +133,7 @@ internal sealed partial class LythonRuntime
             object result;
             try
             {
-                result = await _callable.InvokeAsync(arguments, span, context).ConfigureAwait(false);
+                result = await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(_callable, arguments, span, context).ConfigureAwait(false);
             }
             catch
             {
@@ -523,7 +523,7 @@ internal sealed partial class LythonRuntime
             }
 
             var callable = BindCallableForInstance(_callable, pyInstance, owner, context, span);
-            var value = callable.Invoke([], span, context);
+            var value = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, [], span, context);
             pyInstance.SetAttribute(Name, value);
             return value;
 
@@ -558,7 +558,7 @@ internal sealed partial class LythonRuntime
                 : new PyBoundMethod(instance, _callable);
             if (resolved is not ICallable callable)
                 throw new LythonRuntimeException("TypeError", "Descriptor target must resolve to a callable.", span);
-            var value = await callable.InvokeAsync([], span, context).ConfigureAwait(false);
+            var value = await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(callable, [], span, context).ConfigureAwait(false);
             pyInstance.SetAttribute(Name, value);
             return value;
         }

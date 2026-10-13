@@ -115,7 +115,7 @@ internal sealed partial class LythonRuntime
             if ((_newlines & 2) != 0) items[count++] = PyString.FromString("\n");
             if ((_newlines & 4) != 0) items[count] = PyString.FromString("\r\n");
             var result = new PyTuple(items, _services.MemoryGovernor, _creationSpan);
-            _services.State.CallTemporaries.TrackCallResult(result, _creationSpan);
+            _services.State.TrackNativeCallResult(result, _creationSpan);
             return result;
         }
 
@@ -191,7 +191,7 @@ internal sealed partial class LythonRuntime
                 ? await PyAttributeLookup.BindForInstanceAsync(instance, raw, context, span).ConfigureAwait(false)
                 : PyAttributeLookup.BindForInstance(instance, raw, context, span);
             if (member is not ICallable callable) throw new LythonRuntimeException("TypeError", "__index__ is not callable", span);
-            value = asynchronous ? await callable.InvokeAsync([], span, context).ConfigureAwait(false) : callable.Invoke([], span, context);
+            value = asynchronous ? await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(callable, [], span, context).ConfigureAwait(false) : global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, [], span, context);
             if (!PyNumberOps.TryAsInteger(value, out _)) throw new LythonRuntimeException("TypeError", "__index__ returned non-int", span);
         }
         if (!PyNumberOps.TryAsInteger(value, out var integer))

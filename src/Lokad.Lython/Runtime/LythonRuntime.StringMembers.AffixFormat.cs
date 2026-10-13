@@ -296,7 +296,7 @@ internal sealed partial class LythonRuntime
 
                 try
                 {
-                    value = getter.Invoke([CallArgumentValue.Positional(new BigInteger(ordinal))], span, context);
+                    value = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(getter, [CallArgumentValue.Positional(new BigInteger(ordinal))], span, context);
                     return true;
                 }
                 catch (LythonRuntimeException ex) when (ex.ExceptionType is "KeyError" or "IndexError" or "LookupError")

@@ -124,7 +124,7 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
             throw new LythonRuntimeException("TypeError", $"'{Type.Name}' object is not callable", span);
         }
 
-        return callable.Invoke(arguments, span, context);
+        return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, arguments, span, context);
     }
 
     public async ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
@@ -135,7 +135,7 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
             throw new LythonRuntimeException("TypeError", $"'{Type.Name}' object is not callable", span);
         }
 
-        return await callable.InvokeAsync(arguments, span, context).ConfigureAwait(false);
+        return await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(callable, arguments, span, context).ConfigureAwait(false);
     }
 
     public int GetPyHashCode()
@@ -159,7 +159,7 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
         if (TryGetAttribute("__repr__", context.Context, span, out var reprMember) &&
             reprMember is LythonRuntime.ICallable reprCallable)
         {
-            return RequireRenderedString(reprCallable.Invoke([], span, context.Context), "__repr__");
+            return RequireRenderedString(global::Lokad.Lython.Runtime.CallableInvocation.Invoke(reprCallable, [], span, context.Context), "__repr__");
         }
 
         if (Type.DataclassReprEnabled && Type.DataclassReprFields is { } renderedFields)
@@ -194,7 +194,7 @@ internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonR
         if (TryGetAttribute("__str__", context.Context, span, out var strMember) &&
             strMember is LythonRuntime.ICallable strCallable)
         {
-            return RequireRenderedString(strCallable.Invoke([], span, context.Context), "__str__");
+            return RequireRenderedString(global::Lokad.Lython.Runtime.CallableInvocation.Invoke(strCallable, [], span, context.Context), "__str__");
         }
 
         return RenderPython(context);

@@ -81,7 +81,7 @@ internal static partial class PyDataclass
             callArguments.Add(CallArgumentValue.Keyword(field.Name, existingValue ?? PyNone.Instance));
         }
 
-        return instance.Type.Invoke(callArguments.ToArray(), span, context);
+        return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(instance.Type, callArguments.ToArray(), span, context);
     }
 
     public static object IsDataclass(object[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)

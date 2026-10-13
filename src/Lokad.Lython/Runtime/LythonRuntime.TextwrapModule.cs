@@ -219,7 +219,7 @@ internal sealed partial class LythonRuntime
                 result = asynchronous
                     ? await CallableInvocation.InvokeUnaryAsync(callable, line, span, context).ConfigureAwait(false)
                     : CallableInvocation.InvokeUnary(callable, line, span, context);
-                context.Services.State.CallTemporaries.TrackCallResult(result, span);
+                context.Services.State.TrackNativeCallResult(result, span);
             }
             var truth = asynchronous
                 ? await IsTruthyAsync(result, context, span).ConfigureAwait(false)
@@ -237,7 +237,7 @@ internal sealed partial class LythonRuntime
                 ? await InvokeCallableTargetAsync(member, span, span, context,
                     () => ValueTask.FromResult(arguments)).ConfigureAwait(false)
                 : InvokeCallableTarget(member, span, span, context, () => arguments);
-            context.Services.State.CallTemporaries.TrackCallResult(result, span);
+            context.Services.State.TrackNativeCallResult(result, span);
             return result;
         }
 

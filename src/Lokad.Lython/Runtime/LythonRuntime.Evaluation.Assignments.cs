@@ -313,7 +313,7 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", $"'{instance.Type.Name}' object does not support item mutation", span);
         }
 
-        _ = callable.Invoke(arguments, span, context);
+        _ = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, arguments, span, context);
     }
 
     private static void ExecuteSliceAssignment(SliceAssignmentStatementSyntax statement, ExecutionContext context)

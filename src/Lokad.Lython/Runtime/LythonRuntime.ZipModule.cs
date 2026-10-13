@@ -193,7 +193,7 @@ internal sealed partial class LythonRuntime
         }
 
         public ValueTask<object> InvokeAsync(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
-            => ValueTask.FromResult(Invoke(arguments, span, context));
+            => ValueTask.FromResult(global::Lokad.Lython.Runtime.CallableInvocation.Invoke(this, arguments, span, context));
 
         public PyString RenderPython(PyRenderingContext context)
         {

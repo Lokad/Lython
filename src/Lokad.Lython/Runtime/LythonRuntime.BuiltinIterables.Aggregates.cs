@@ -102,6 +102,8 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "sum() can't sum bytes [use b''.join(seq) instead]", span);
         }
 
+        var activation = context.State.CurrentNativeActivation;
+        context.State.SetNativeWorkingStorage(activation, total);
         foreach (var item in ToSequence(arguments[0], span, context))
         {
             // Instances resolve __add__/__radd__ through operator dispatch like
@@ -109,6 +111,7 @@ internal sealed partial class LythonRuntime
             total = total is PyInstance || item is PyInstance
                 ? EvaluateBinaryOperator(BinaryOperatorSyntax.Add, total, item, context, span)
                 : EvaluateAdd(total, item, context, span);
+            context.State.SetNativeWorkingStorage(activation, total);
         }
 
         return total;
@@ -134,11 +137,14 @@ internal sealed partial class LythonRuntime
             throw new LythonRuntimeException("TypeError", "sum() can't sum bytes [use b''.join(seq) instead]", span);
         }
 
+        var activation = context.State.CurrentNativeActivation;
+        context.State.SetNativeWorkingStorage(activation, total);
         await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
         {
             total = total is PyInstance || item is PyInstance
                 ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Add, total, item, context, span).ConfigureAwait(false)
                 : EvaluateAdd(total, item, context, span);
+            context.State.SetNativeWorkingStorage(activation, total);
         }
 
         return total;

@@ -214,8 +214,7 @@ internal sealed partial class LythonRuntime
             var n = arguments.Length >= 8 && arguments[7] is not PyNone ? RequireInt32(arguments[7], "difflib.diff_bytes(..., n=...) expects n to be an integer.", span) : 3;
             var lineterm = ParseOptionalBytes(arguments, 8, [(byte)'\n'], "difflib.diff_bytes(..., lineterm=...)", span);
 
-            var result = callable.Invoke(
-                [
+            var result = global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable,                 [
                     CallArgumentValue.Positional(new PyList(a.Select(line => (object)BytesToDiffText(line)), context.MemoryGovernor, span)),
                     CallArgumentValue.Positional(new PyList(b.Select(line => (object)BytesToDiffText(line)), context.MemoryGovernor, span)),
                     CallArgumentValue.Positional(BytesToDiffText(fromfile)),

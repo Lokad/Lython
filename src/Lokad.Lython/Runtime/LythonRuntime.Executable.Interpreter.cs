@@ -634,6 +634,18 @@ internal sealed partial class LythonRuntime
 
         public async ValueTask ExecuteAsync()
         {
+            ActiveCaller = _context.State.ActiveExecutableFrame;
+            _context.State.ActiveExecutableFrame = this;
+            try { await ExecuteAsyncCore().ConfigureAwait(false); }
+            finally
+            {
+                _context.State.ActiveExecutableFrame = ActiveCaller;
+                ActiveCaller = null;
+            }
+        }
+
+        private async ValueTask ExecuteAsyncCore()
+        {
             // Every control-flow edge must arrive at a block with the same value
             // stack depth. The first arrival records that depth; edge handling
             // below validates later arrivals. Abrupt signals remain separate so

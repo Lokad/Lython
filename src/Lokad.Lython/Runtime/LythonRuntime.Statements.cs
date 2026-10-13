@@ -228,7 +228,7 @@ internal sealed partial class LythonRuntime
         var raised = EvaluateExpression(statement.Expression, context);
 
         if (raised is ExceptionTypeValue typeValue &&
-            typeValue.Invoke([], statement.Span, context) is PyException constructed)
+            global::Lokad.Lython.Runtime.CallableInvocation.Invoke(typeValue, [], statement.Span, context) is PyException constructed)
         {
             raised = constructed;
         }

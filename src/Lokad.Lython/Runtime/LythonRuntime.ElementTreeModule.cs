@@ -103,7 +103,7 @@ internal sealed partial class LythonRuntime
                 FundSlot();
                 var value = create();
                 _values.Add(value);
-                _context.Services.State.CallTemporaries.TrackCallResult(value, _span);
+                _context.Services.State.TrackNativeCallResult(value, _span);
                 if (value is PyString text) _context.ObserveString(text, _span);
                 if (shell is not null) ContainerShells.Add(value, shell);
                 return value;
@@ -119,7 +119,7 @@ internal sealed partial class LythonRuntime
                 => Create(() => DecodeText(bytes, mode, _context, _span,
                     TextErrorMode.Strict, TextNewlineMode.PreserveLineFeed));
             internal void Refresh(object value)
-                => _context.Services.State.CallTemporaries.TrackCallResult(value, _span);
+                => _context.Services.State.TrackNativeCallResult(value, _span);
             internal void Publish() => _published = true;
             public void Dispose()
             {

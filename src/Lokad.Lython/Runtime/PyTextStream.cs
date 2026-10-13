@@ -11,7 +11,7 @@ internal static class PyTextStream
     {
         var method = ResolveMember(stream, "read", span, context);
         var value = LythonRuntime.InvokeCallableTarget(method, span, span, context, static () => []);
-        context.Services.State.CallTemporaries.TrackCallResult(value, span);
+        context.Services.State.TrackNativeCallResult(value, span);
         return RequireText(value, span);
     }
 
@@ -20,7 +20,7 @@ internal static class PyTextStream
         var method = await ResolveMemberAsync(stream, "read", span, context).ConfigureAwait(false);
         var value = await LythonRuntime.InvokeCallableTargetAsync(method, span, span, context,
             static () => ValueTask.FromResult<CallArgumentValue[]>([])).ConfigureAwait(false);
-        context.Services.State.CallTemporaries.TrackCallResult(value, span);
+        context.Services.State.TrackNativeCallResult(value, span);
         return RequireText(value, span);
     }
 

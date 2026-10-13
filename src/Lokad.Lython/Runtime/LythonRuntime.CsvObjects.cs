@@ -436,7 +436,7 @@ internal sealed partial class LythonRuntime
 
             var result = InvokeCallableTarget(writer.WriteMethod, span, span, context,
                 () => [CallArgumentValue.Positional(rendered)]);
-            context.Services.State.CallTemporaries.TrackCallResult(result, span);
+            context.Services.State.TrackNativeCallResult(result, span);
             return result;
         }
 
@@ -450,7 +450,7 @@ internal sealed partial class LythonRuntime
 
             var result = await InvokeCallableTargetAsync(writer.WriteMethod, span, span, context,
                 () => ValueTask.FromResult<CallArgumentValue[]>([CallArgumentValue.Positional(rendered)])).ConfigureAwait(false);
-            context.Services.State.CallTemporaries.TrackCallResult(result, span);
+            context.Services.State.TrackNativeCallResult(result, span);
             return result;
         }
 

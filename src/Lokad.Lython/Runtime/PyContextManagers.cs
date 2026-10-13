@@ -141,7 +141,7 @@ internal static class PyContextManagers
         LythonSourceSpan span,
         LythonRuntime.ExecutionContext context) : IPyContextManager
     {
-        public object Enter() => enter.Invoke(Array.Empty<CallArgumentValue>(), span, context);
+        public object Enter() => global::Lokad.Lython.Runtime.CallableInvocation.Invoke(enter, Array.Empty<CallArgumentValue>(), span, context);
 
         public bool Exit(object exceptionType, object exceptionValue, object traceback)
         {
@@ -196,7 +196,7 @@ internal static class PyContextManagers
     private sealed partial class CallableContextManager
     {
         public async ValueTask<object> EnterAsync()
-            => await enter.InvokeAsync(Array.Empty<CallArgumentValue>(), span, context).ConfigureAwait(false);
+            => await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(enter, Array.Empty<CallArgumentValue>(), span, context).ConfigureAwait(false);
 
         public async ValueTask<bool> ExitAsync(object exceptionType, object exceptionValue, object traceback)
         {

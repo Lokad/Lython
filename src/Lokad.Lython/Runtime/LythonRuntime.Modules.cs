@@ -744,7 +744,7 @@ internal sealed partial class LythonRuntime
                 instance.TryGetAttribute(specialMethod, context, span, out var member) &&
                 member is ICallable callable)
             {
-                return callable.Invoke([], span, context);
+                return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, [], span, context);
             }
 
             if (value is PyDecimal decimalValue)

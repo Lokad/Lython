@@ -240,7 +240,7 @@ internal static class PyMemberAccess
             };
             if (bound is not LythonRuntime.ICallable callable)
                 throw new LythonRuntimeException("TypeError", "__setattr__ must be callable.", span);
-            _ = await callable.InvokeAsync([CallArgumentValue.Positional(PyString.FromString(memberName)), CallArgumentValue.Positional(value)], span, context).ConfigureAwait(false);
+            _ = await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(callable, [CallArgumentValue.Positional(PyString.FromString(memberName)), CallArgumentValue.Positional(value)], span, context).ConfigureAwait(false);
             return true;
         }
         return TryAssign(target, memberName, value, context, span);

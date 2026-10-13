@@ -117,7 +117,7 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("TypeError", "__replace__ must be callable.", span);
                 }
 
-                return replaceCallable.Invoke(changes.ToArray(), span, context);
+                return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(replaceCallable, changes.ToArray(), span, context);
             }
 
             if (PyMemberAccess.TryResolve(target, "_replace", context, span, out var namedTupleReplace) &&
@@ -128,7 +128,7 @@ internal sealed partial class LythonRuntime
                     throw new LythonRuntimeException("TypeError", "_replace must be callable.", span);
                 }
 
-                return replaceCallable.Invoke(changes.ToArray(), span, context);
+                return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(replaceCallable, changes.ToArray(), span, context);
             }
 
             throw new LythonRuntimeException("TypeError", "copy.replace(obj, /, **changes) expects a dataclass, namedtuple-like object, or object with __replace__.", span);
@@ -561,7 +561,7 @@ internal sealed partial class LythonRuntime
 
         value = depth == CopyDepth.Deep
             ? CallableInvocation.InvokeUnary(callable, memo.ExternalView, span, context)
-            : callable.Invoke([], span, context);
+            : global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, [], span, context);
         return true;
     }
 

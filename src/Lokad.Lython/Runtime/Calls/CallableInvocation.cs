@@ -2,6 +2,24 @@ namespace Lokad.Lython.Runtime;
 
 internal static class CallableInvocation
 {
+    internal static object Invoke(LythonRuntime.ICallable callable, CallArgumentValue[] arguments,
+        LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        using var activation = context.State.EnterNativeActivation(callable, arguments, context, span);
+        var result = callable.Invoke(arguments, span, context);
+        activation.SetResult(result);
+        return result;
+    }
+
+    internal static async ValueTask<object> InvokeAsync(LythonRuntime.ICallable callable, CallArgumentValue[] arguments,
+        LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+    {
+        using var activation = context.State.EnterNativeActivation(callable, arguments, context, span);
+        var result = await callable.InvokeAsync(arguments, span, context).ConfigureAwait(false);
+        activation.SetResult(result);
+        return result;
+    }
+
     [ThreadStatic]
     private static CallArgumentValue[]? _unaryArguments;
 
@@ -20,7 +38,7 @@ internal static class CallableInvocation
         var arguments = RentUnaryArguments(value);
         try
         {
-            return callable.Invoke(arguments, span, context);
+            return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, arguments, span, context);
         }
         finally
         {
@@ -37,7 +55,7 @@ internal static class CallableInvocation
         var arguments = RentUnaryArguments(value);
         try
         {
-            return await callable.InvokeAsync(arguments, span, context).ConfigureAwait(false);
+            return await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(callable, arguments, span, context).ConfigureAwait(false);
         }
         finally
         {
@@ -55,7 +73,7 @@ internal static class CallableInvocation
         var arguments = RentBinaryArguments(first, second);
         try
         {
-            return callable.Invoke(arguments, span, context);
+            return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, arguments, span, context);
         }
         finally
         {
@@ -73,7 +91,7 @@ internal static class CallableInvocation
         var arguments = RentBinaryArguments(first, second);
         try
         {
-            return await callable.InvokeAsync(arguments, span, context).ConfigureAwait(false);
+            return await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(callable, arguments, span, context).ConfigureAwait(false);
         }
         finally
         {
@@ -92,7 +110,7 @@ internal static class CallableInvocation
         var arguments = RentTernaryArguments(first, second, third);
         try
         {
-            return callable.Invoke(arguments, span, context);
+            return global::Lokad.Lython.Runtime.CallableInvocation.Invoke(callable, arguments, span, context);
         }
         finally
         {
@@ -111,7 +129,7 @@ internal static class CallableInvocation
         var arguments = RentTernaryArguments(first, second, third);
         try
         {
-            return await callable.InvokeAsync(arguments, span, context).ConfigureAwait(false);
+            return await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(callable, arguments, span, context).ConfigureAwait(false);
         }
         finally
         {

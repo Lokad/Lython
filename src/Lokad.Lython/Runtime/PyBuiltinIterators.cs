@@ -67,7 +67,7 @@ internal sealed class PyCallableSentinelIterator : PyIteratorBase
     public override bool TryMoveNext([MaybeNullWhen(false)] out object value)
     {
         _context.CheckExecution(_span);
-        var result = LythonRuntime.RuntimeValue(_callable.Invoke([], _span, _context));
+        var result = LythonRuntime.RuntimeValue(global::Lokad.Lython.Runtime.CallableInvocation.Invoke(_callable, [], _span, _context));
         if (PyEquality.AreEqual(result, _sentinel))
         {
             value = PyNone.Instance;
@@ -81,7 +81,7 @@ internal sealed class PyCallableSentinelIterator : PyIteratorBase
     public override async ValueTask<PyIterationResult> TryMoveNextAsync()
     {
         _context.CheckExecution(_span);
-        var result = LythonRuntime.RuntimeValue(await _callable.InvokeAsync([], _span, _context).ConfigureAwait(false));
+        var result = LythonRuntime.RuntimeValue(await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(_callable, [], _span, _context).ConfigureAwait(false));
         if (PyEquality.AreEqual(result, _sentinel))
         {
             return PyIterationResult.End;
@@ -167,7 +167,7 @@ internal sealed class PyMapIterator : PyIteratorBase
             arguments[i] = CallArgumentValue.Positional(LythonRuntime.RuntimeValue(current));
         }
 
-        value = LythonRuntime.RuntimeValue(_function.Invoke(arguments, _span, _context));
+        value = LythonRuntime.RuntimeValue(global::Lokad.Lython.Runtime.CallableInvocation.Invoke(_function, arguments, _span, _context));
         return true;
     }
 
@@ -185,7 +185,7 @@ internal sealed class PyMapIterator : PyIteratorBase
             arguments[i] = CallArgumentValue.Positional(LythonRuntime.RuntimeValue(current));
         }
 
-        var value = LythonRuntime.RuntimeValue(await _function.InvokeAsync(arguments, _span, _context).ConfigureAwait(false));
+        var value = LythonRuntime.RuntimeValue(await global::Lokad.Lython.Runtime.CallableInvocation.InvokeAsync(_function, arguments, _span, _context).ConfigureAwait(false));
         return PyIterationResult.Yield(value);
     }
 
