@@ -6,6 +6,7 @@ using Handle = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext.TextFileHandl
 
 namespace Lokad.Lython.Tests;
 
+[Collection("AllocationSensitive")]
 public sealed class TextFileScopeLifetimeTests
 {
     [Theory]

@@ -3,14 +3,14 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 // M05: datetime construction shells own lifetime like the other factory results do.
-public sealed class DatetimeLifetimeScenarioTests
+public class DatetimeLifetimeScenarioTests : LifetimeScenario
 {
-    private const long ThreeMib = 3145728;
-    private const long OneMib = 1048576;
+    private long StreamingBudget => Budget(3145728);
+    private long RetentionBudget => Budget(1048576);
 
-    private static LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = ThreeMib };
+    private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
 
-    private static async Task AssertCompletes(string source, string expected)
+    private async Task AssertCompletes(string source, string expected)
     {
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
@@ -25,17 +25,17 @@ public sealed class DatetimeLifetimeScenarioTests
     [Fact]
     public async Task DateCtorDiscardCompletes()
         => await AssertCompletes(
-            "import datetime\nfor i in range(50000):\n    x = datetime.date(2020, 1, 1)\nreturn 0\n", "0");
+            "import datetime\nfor i in range(" + Iterations(50000) + "):\n    x = datetime.date(2020, 1, 1)\nreturn 0\n", "0");
 
     [Fact]
     public async Task TimedeltaCtorDiscardCompletes()
         => await AssertCompletes(
-            "import datetime\nfor i in range(50000):\n    x = datetime.timedelta(days=1)\nreturn 0\n", "0");
+            "import datetime\nfor i in range(" + Iterations(50000) + "):\n    x = datetime.timedelta(days=1)\nreturn 0\n", "0");
 
     [Fact]
     public async Task DateArithDiscardCompletes()
         => await AssertCompletes(
-            "import datetime\nd = datetime.date(2020, 1, 1)\nt = datetime.timedelta(days=1)\nfor i in range(50000):\n    x = d + t\nreturn 0\n", "0");
+            "import datetime\nd = datetime.date(2020, 1, 1)\nt = datetime.timedelta(days=1)\nfor i in range(" + Iterations(50000) + "):\n    x = d + t\nreturn 0\n", "0");
 
     [Fact]
     public async Task DatetimeBehaves()
@@ -46,16 +46,16 @@ public sealed class DatetimeLifetimeScenarioTests
     public async Task RetainedDateDenied()
     {
         var script = new LythonEngine().Compile(
-            "import datetime\nobjs = []\ni = 0\nwhile i < 20000:\n    objs.append(datetime.date(2020, 1, 1))\n    i = i + 1\nreturn len(objs)\n");
+            "import datetime\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(datetime.date(2020, 1, 1))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = OneMib };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = RetentionBudget };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(sync.PeakExecutionMemoryBytes <= RetentionBudget);
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
-        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= RetentionBudget);
     }
 }

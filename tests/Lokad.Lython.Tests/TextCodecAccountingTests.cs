@@ -7,6 +7,7 @@ namespace Lokad.Lython.Tests;
 /// escapes expand each byte to four chars) before the governed result charge.
 /// The entry preflight bounds the worst case first.
 /// </summary>
+[Collection("AllocationSensitive")]
 public sealed class TextCodecAccountingTests
 {
     [Fact]

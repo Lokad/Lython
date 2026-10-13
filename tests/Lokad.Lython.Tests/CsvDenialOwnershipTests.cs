@@ -7,6 +7,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
+[Collection("AllocationSensitive")]
 public sealed class CsvDenialOwnershipTests
 {
     private const long Cap = 3L * 1024 * 1024;

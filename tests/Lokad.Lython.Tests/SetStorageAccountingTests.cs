@@ -7,6 +7,7 @@ namespace Lokad.Lython.Tests;
 // MG03/MG04: set snapshots own shell plus backing; Clear re-snapshots through
 // the value so a later sweep releases exactly the live charges (a stale
 // coupon would over-release the cleared backing).
+[Collection("AllocationSensitive")]
 public sealed class SetStorageAccountingTests
 {
     [Fact]

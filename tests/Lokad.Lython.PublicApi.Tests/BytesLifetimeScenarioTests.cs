@@ -3,14 +3,14 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 // M05: bytes results own lifetime like string results do.
-public sealed class BytesLifetimeScenarioTests
+public class BytesLifetimeScenarioTests : LifetimeScenario
 {
-    private const long ThreeMib = 3145728;
-    private const long OneMib = 1048576;
+    private long StreamingBudget => Budget(3145728);
+    private long RetentionBudget => Budget(1048576);
 
-    private static LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = ThreeMib };
+    private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
 
-    private static async Task AssertCompletes(string source, string expected)
+    private async Task AssertCompletes(string source, string expected)
     {
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
@@ -25,17 +25,17 @@ public sealed class BytesLifetimeScenarioTests
     [Fact]
     public async Task EncodedResultsDiscardCompletes()
         => await AssertCompletes(
-            "b = 'x' * 1024\nfor i in range(10000):\n    y = b.encode()\nreturn 0\n", "0");
+            "b = 'x' * 1024\nfor i in range(" + Iterations(10000) + "):\n    y = b.encode()\nreturn 0\n", "0");
 
     [Fact]
     public async Task HexDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(50000):\n    x = b\"abc\".hex()\nreturn 0\n", "0");
+            "for i in range(" + Iterations(50000) + "):\n    x = b\"abc\".hex()\nreturn 0\n", "0");
 
     [Fact]
     public async Task HexSeparatorDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(50000):\n    x = b\"abc\".hex(\" \", 1)\nreturn 0\n", "0");
+            "for i in range(" + Iterations(50000) + "):\n    x = b\"abc\".hex(\" \", 1)\nreturn 0\n", "0");
 
     [Fact]
     public async Task HexBehaves()
@@ -46,28 +46,28 @@ public sealed class BytesLifetimeScenarioTests
     public async Task RetainedHexDenied()
     {
         var script = new LythonEngine().Compile(
-            "objs = []\ni = 0\nwhile i < 20000:\n    objs.append(b\"abc\".hex())\n    i = i + 1\nreturn len(objs)\n");
+            "objs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(b\"abc\".hex())\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = OneMib };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = RetentionBudget };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(sync.PeakExecutionMemoryBytes <= RetentionBudget);
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
-        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= RetentionBudget);
     }
 
     [Fact]
     public async Task PartitionDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(50000):\n    x = b\"abc\".partition(b\"b\")\nreturn 0\n", "0");
+            "for i in range(" + Iterations(50000) + "):\n    x = b\"abc\".partition(b\"b\")\nreturn 0\n", "0");
 
     [Fact]
     public async Task RPartitionDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(50000):\n    x = b\"abc\".rpartition(b\"b\")\nreturn 0\n", "0");
+            "for i in range(" + Iterations(50000) + "):\n    x = b\"abc\".rpartition(b\"b\")\nreturn 0\n", "0");
 
     [Fact]
     public async Task PartitionBehaves()
@@ -78,16 +78,16 @@ public sealed class BytesLifetimeScenarioTests
     public async Task RetainedPartitionDenied()
     {
         var script = new LythonEngine().Compile(
-            "objs = []\ni = 0\nwhile i < 20000:\n    objs.append(b\"abc\".partition(b\"b\"))\n    i = i + 1\nreturn len(objs)\n");
+            "objs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(b\"abc\".partition(b\"b\"))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = OneMib };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = RetentionBudget };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(sync.PeakExecutionMemoryBytes <= RetentionBudget);
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
-        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= RetentionBudget);
     }
 }

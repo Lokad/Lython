@@ -12,6 +12,7 @@ namespace Lokad.Lython.Tests;
 /// bound-call sweep cadence keeps peaks flat. Deterministic via explicit
 /// collection plus a full drain.
 /// </summary>
+[Collection("AllocationSensitive")]
 public sealed class CallTemporariesAccountingTests
 {
     [Fact]

@@ -6,6 +6,7 @@ using Xunit.Abstractions;
 
 namespace Lokad.Lython.Tests;
 
+[Collection("AllocationSensitive")]
 public sealed class ProvedStringAdmissionTests(ITestOutputHelper output)
 {
     [Theory]

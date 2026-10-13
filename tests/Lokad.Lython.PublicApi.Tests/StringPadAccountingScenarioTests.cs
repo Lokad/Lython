@@ -6,6 +6,7 @@ namespace Lokad.Lython.PublicApi.Tests;
 /// MG07: padding expansions meet the budget before their buffers are built,
 /// instead of materializing first and charging after.
 /// </summary>
+[Collection("RuntimeStress")]
 public sealed class StringPadAccountingScenarioTests
 {
     [Fact]

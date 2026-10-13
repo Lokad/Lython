@@ -6,6 +6,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
+[Collection("AllocationSensitive")]
 public sealed class DeferredSplitOwnershipTests
 {
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);

@@ -10,6 +10,7 @@ namespace Lokad.Lython.Tests;
 // reclaimed: dropping 50 mid-stream sorted iterators then sweeping releases
 // their tracked scratch (~3MB), while a live iterator keeps streaming
 // correct chunks.
+[Collection("AllocationSensitive")]
 public sealed class JsonIterencodeAbandonedScratchAccountingTests
 {
     [Fact]

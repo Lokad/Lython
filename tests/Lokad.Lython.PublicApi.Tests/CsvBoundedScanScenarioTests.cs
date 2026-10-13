@@ -9,9 +9,11 @@ namespace Lokad.Lython.PublicApi.Tests;
 // small fixed budget. Retained output must still trip; collection counts and
 // allocations below ride failure messages only (process-global counters are
 // meaningless for pass-path asserts under parallel tests).
-public sealed class CsvBoundedScanScenarioTests
+public class CsvBoundedScanScenarioTests
 {
-    private const long ThreeMib = 3145728;
+    protected virtual long MemoryLimit => 65536;
+    protected virtual int SmallRows => 512;
+    protected virtual int LargeRows => 2048;
 
     private static string ScanSource(int rows)
         => "import csv\nr = csv.reader('a,b,c,d,e,f\\n' for i in range(" + rows + "))\ntotal = 0\nfor row in r:\n    total += 1\nreturn total\n";
@@ -20,20 +22,20 @@ public sealed class CsvBoundedScanScenarioTests
         => "success=" + result.Success + " type=" + result.Failure?.ExceptionType + " msg=" + result.Failure?.Message
         + " peak=" + result.PeakExecutionMemoryBytes + " gen2=" + gen2 + " alloc=" + allocated;
 
-    private static void AssertMemoryError(LythonExecutionResult result)
+    private void AssertMemoryError(LythonExecutionResult result)
     {
         Assert.False(result.Success);
         Assert.Equal("MemoryError", result.Failure?.ExceptionType);
-        Assert.True(result.PeakExecutionMemoryBytes <= ThreeMib);
+        Assert.True(result.PeakExecutionMemoryBytes <= MemoryLimit);
     }
 
     [Fact]
-    public async Task FullScanCompletesAt20k()
+    public async Task FullScanCompletesAtSmallScale()
     {
-        var script = new LythonEngine().Compile(ScanSource(20000));
+        var script = new LythonEngine().Compile(ScanSource(SmallRows));
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var expected = new BigInteger(20000);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
+        var expected = new BigInteger(SmallRows);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = MemoryLimit };
         var gen0 = GC.CollectionCount(2);
         var alloc0 = GC.GetAllocatedBytesForCurrentThread();
         var sync = script.Run(new MockLythonHost(), options);
@@ -48,12 +50,12 @@ public sealed class CsvBoundedScanScenarioTests
     }
 
     [Fact]
-    public async Task FullScanCompletesAt200k()
+    public async Task FullScanCompletesAtLargeScale()
     {
-        var script = new LythonEngine().Compile(ScanSource(200000));
+        var script = new LythonEngine().Compile(ScanSource(LargeRows));
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var expected = new BigInteger(200000);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
+        var expected = new BigInteger(LargeRows);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = MemoryLimit };
         var gen0 = GC.CollectionCount(2);
         var alloc0 = GC.GetAllocatedBytesForCurrentThread();
         var sync = script.Run(new MockLythonHost(), options);
@@ -71,9 +73,9 @@ public sealed class CsvBoundedScanScenarioTests
     public async Task RetainedScanRowsStayCharged()
     {
         var script = new LythonEngine().Compile(
-            "import csv\nr = csv.reader('a,b,c,d,e,f\\n' for i in range(20000))\nrows = list(r)\nreturn len(rows)\n");
+            "import csv\nr = csv.reader('a,b,c,d,e,f\\n' for i in range(" + SmallRows + "))\nrows = list(r)\nreturn len(rows)\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = MemoryLimit };
         AssertMemoryError(script.Run(new MockLythonHost(), options));
         AssertMemoryError(await script.RunAsync(new MockLythonHost(), options));
     }
@@ -82,7 +84,7 @@ public sealed class CsvBoundedScanScenarioTests
     public async Task DelayedFileScanCompletes()
     {
         var content = new StringBuilder();
-        for (var i = 0; i < 20000; i++)
+        for (var i = 0; i < SmallRows; i++)
         {
             content.Append("a,b,c,d,e,f\n");
         }
@@ -90,8 +92,8 @@ public sealed class CsvBoundedScanScenarioTests
         var script = new LythonEngine().Compile(
             "import csv\nwith open(\"/r.csv\") as f:\n    total = 0\n    for row in csv.reader(f):\n        total += 1\nreturn total\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var expected = new BigInteger(20000);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
+        var expected = new BigInteger(SmallRows);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = MemoryLimit };
         var host = new DelayedLythonHost();
         host.SeedFile("/r.csv", content.ToString());
         var asyncResult = await script.RunAsync(host, options);
@@ -113,9 +115,9 @@ public sealed class CsvBoundedScanScenarioTests
     public async Task CaughtScanFailureAllowsReuse()
     {
         var script = new LythonEngine().Compile(
-            "import csv\nok = False\ntry:\n    rows = list(csv.reader('a,b,c,d,e,f\\n' for i in range(20000)))\nexcept MemoryError:\n    ok = True\nreturn ok\n");
+            "import csv\nok = False\ntry:\n    rows = list(csv.reader('a,b,c,d,e,f\\n' for i in range(" + SmallRows + ")))\nexcept MemoryError:\n    ok = True\nreturn ok\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = MemoryLimit };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(true, sync.ReturnValue);
@@ -128,21 +130,13 @@ public sealed class CsvBoundedScanScenarioTests
     [Fact]
     public async Task BoundedScanPeakStaysFlatAcrossSizes()
     {
-        // Bounded scans retain only the current row: the 10x scan must not peak
-        // an order of magnitude above the 1x scan (a linear strand would show
-        // ~10x). Peaks are accounted math, but relief timing can wobble them,
-        // so the slope bound stays loose. The 200k peak rides near the budget
-        // ceiling (relief triggers at exhaustion) while the 20k peak is a
-        // GC-timed transient, so Windows CI shows ~2.6x. Bounded old-tier sweeps
-        // add release lag on top (measured 3.16x Debug, green Release on the same
-        // tree); 4x still catches linear retention (which would deny long before
-        // completing: a 400k scan at double budget completes with its peak
-        // pinned at the ceiling by relief, not by rows).
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = ThreeMib };
-        var peak20k = await ScanPeak(ScanSource(20000), 20000, options);
-        var peak200k = await ScanPeak(ScanSource(200000), 200000, options);
-        Assert.True(peak200k <= 4 * peak20k, "20k peak=" + peak20k + " 200k peak=" + peak200k);
-        Assert.True(peak200k <= ThreeMib, "200k peak=" + peak200k);
+        // Exact completion at a fixed cap is the leak oracle. Peak ratios are
+        // a secondary historical stress check and do not prove host latency.
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = MemoryLimit };
+        var smallPeak = await ScanPeak(ScanSource(SmallRows), SmallRows, options);
+        var largePeak = await ScanPeak(ScanSource(LargeRows), LargeRows, options);
+        Assert.True(largePeak <= 4 * smallPeak, "small peak=" + smallPeak + " large peak=" + largePeak);
+        Assert.True(largePeak <= MemoryLimit, "large peak=" + largePeak);
     }
 
     private static async Task<long> ScanPeak(string source, int rows, LythonRunOptions options)

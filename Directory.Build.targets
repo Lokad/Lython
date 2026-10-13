@@ -1,4 +1,8 @@
 <Project>
+  <!-- Ordinary development runs keep original stress scales separately selectable. -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Lokad.Lython.Tests' or '$(MSBuildProjectName)' == 'Lokad.Lython.PublicApi.Tests'">
+    <VSTestTestCaseFilter Condition="'$(VSTestTestCaseFilter)' == ''">Category!=Stress</VSTestTestCaseFilter>
+  </PropertyGroup>
   <ItemGroup>
     <AllowedPackageReference Include="BenchmarkDotNet" />
     <AllowedPackageReference Include="Lokad.Parsing" />

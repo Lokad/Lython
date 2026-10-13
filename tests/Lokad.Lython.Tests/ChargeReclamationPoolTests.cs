@@ -8,6 +8,7 @@ namespace Lokad.Lython.Tests;
 // quantum (no wrap-around revisits), and exhaustion relief skips collections
 // it cannot benefit from. Cursor/contents below are observed by reflection;
 // committed bytes prove release math.
+[Collection("AllocationSensitive")]
 public sealed class ChargeReclamationPoolTests
 {
     private static ChargeReclamationPool NewPool(MemoryGovernor governor)

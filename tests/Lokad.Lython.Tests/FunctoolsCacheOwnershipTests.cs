@@ -7,6 +7,7 @@ namespace Lokad.Lython.Tests;
 
 // N08 white-box: explicit key/infra/metadata ownership with exact release on
 // eviction, clear, insertion denial and wrapper drops.
+[Collection("AllocationSensitive")]
 public sealed class FunctoolsCacheOwnershipInvariantTests
 {
     private static object NewWrapper(LythonRuntime.ExecutionContext context, int? maxSize)

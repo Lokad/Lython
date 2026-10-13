@@ -1,4 +1,4 @@
-﻿using Lokad.Lython.Runtime;
+using Lokad.Lython.Runtime;
 
 namespace Lokad.Lython.Tests;
 
@@ -7,6 +7,7 @@ namespace Lokad.Lython.Tests;
 // roots, collecting, and sweeping fully, the released bytes equal exactly the
 // dropped coupons and the remaining commitment equals exactly the live
 // coupons plus peak tier backing (which never trims by design).
+[Collection("AllocationSensitive")]
 public sealed class ReclamationSeparationTests
 {
     [Fact]

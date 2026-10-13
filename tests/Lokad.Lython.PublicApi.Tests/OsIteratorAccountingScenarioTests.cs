@@ -7,12 +7,12 @@ namespace Lokad.Lython.PublicApi.Tests;
 /// MG11: directory iteration owns its iterator plus one entry object and
 /// array slot per entry; walk iterators own their constructed-value unit.
 /// </summary>
-public sealed class OsIteratorAccountingScenarioTests
+public class OsIteratorAccountingScenarioTests : LifetimeScenario
 {
     // 3000 scandir entries own 160B plus 80B each, so they fit 100KB pre-fix
     // and trip post-fix. 20k walk iterators own 128B plus a 16B slot each.
     private const long ScandirBudgetBytes = 100000;
-    private const long WalkBudgetBytes = 1572864;
+    private long WalkBudgetBytes => Budget(1572864);
 
     private static MockLythonHost SeededDirHost(int files)
     {
@@ -28,7 +28,7 @@ public sealed class OsIteratorAccountingScenarioTests
     [Fact]
     public async Task ManyScandirEntriesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine().Compile($"""
             import os
             it = os.scandir("/d")
             n = 0
@@ -52,11 +52,11 @@ public sealed class OsIteratorAccountingScenarioTests
     [Fact]
     public async Task ManyRetainedWalkIteratorsStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine().Compile($"""
             import os
             objs = []
             i = 0
-            while i < 20000:
+            while i < {Iterations(20000)}:
                 objs.append(os.walk("/d"))
                 i = i + 1
             return len(objs)
@@ -75,7 +75,7 @@ public sealed class OsIteratorAccountingScenarioTests
     [Fact]
     public async Task DirectoryIterationBehaves()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine().Compile($"""
             import os
             names = sorted([e.name for e in os.scandir("/d")])
             w = [x for x in os.walk("/d")]
@@ -97,16 +97,16 @@ public sealed class OsIteratorAccountingScenarioTests
     [Fact]
     public async Task DiscardedWalkIteratorsComplete()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine().Compile($"""
             import os
             i = 0
-            while i < 100000:
+            while i < {Iterations(100000)}:
                 x = os.walk("/d")
                 i = i + 1
             return 0
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3 * 1024 * 1024 };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = Budget(3 * 1024 * 1024) };
         var sync = script.Run(SeededDirHost(3), options);
         Assert.True(sync.Success, sync.Failure?.Message);
 
@@ -117,16 +117,16 @@ public sealed class OsIteratorAccountingScenarioTests
     [Fact]
     public async Task DiscardedScandirIteratorsComplete()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine().Compile($"""
             import os
             i = 0
-            while i < 100000:
+            while i < {Iterations(100000)}:
                 x = os.scandir("/d")
                 i = i + 1
             return 0
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3 * 1024 * 1024 };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = Budget(3 * 1024 * 1024) };
         var sync = script.Run(SeededDirHost(3), options);
         Assert.True(sync.Success, sync.Failure?.Message);
 
@@ -137,16 +137,16 @@ public sealed class OsIteratorAccountingScenarioTests
     [Fact]
     public async Task DiscardedListdirResultsComplete()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine().Compile($"""
             import os
             i = 0
-            while i < 100000:
+            while i < {Iterations(100000)}:
                 x = os.listdir("/d")
                 i = i + 1
             return 0
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3 * 1024 * 1024 };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = Budget(3 * 1024 * 1024) };
         var sync = script.Run(SeededDirHost(3), options);
         Assert.True(sync.Success, sync.Failure?.Message);
 
@@ -157,17 +157,17 @@ public sealed class OsIteratorAccountingScenarioTests
     [Fact]
     public async Task ExhaustedScandirReclaims()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine().Compile($"""
             import os
             i = 0
-            while i < 100000:
+            while i < {Iterations(100000)}:
                 for e in os.scandir("/d"):
                     pass
                 i = i + 1
             return 0
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3 * 1024 * 1024 };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = Budget(3 * 1024 * 1024) };
         var sync = script.Run(SeededDirHost(3), options);
         Assert.True(sync.Success, sync.Failure?.Message);
 
@@ -180,7 +180,7 @@ public sealed class OsIteratorAccountingScenarioTests
     [Fact]
     public async Task RetainedScandirEntriesStayCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine().Compile($"""
             import os
             it = os.scandir("/d")
             kept = [e for e in it]
@@ -209,17 +209,17 @@ public sealed class OsIteratorAccountingScenarioTests
     [Fact]
     public async Task ExhaustedWalkReclaims()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine().Compile($"""
             import os
             i = 0
-            while i < 100000:
+            while i < {Iterations(100000)}:
                 for t in os.walk("/d"):
                     pass
                 i = i + 1
             return 0
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3 * 1024 * 1024, MaxHostCalls = 1000000 };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = Budget(3 * 1024 * 1024), MaxHostCalls = 1000000 };
         var sync = script.Run(SeededDirHost(3), options);
         Assert.True(sync.Success, sync.Failure?.Message);
 
@@ -234,17 +234,17 @@ public sealed class OsIteratorAccountingScenarioTests
     [Fact]
     public async Task AbandonedWalkAfterFirstPullReclaims()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine().Compile($"""
             import os
             i = 0
-            while i < 100000:
+            while i < {Iterations(100000)}:
                 it = os.walk("/d")
                 t = next(it)
                 i = i + 1
             return 0
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3 * 1024 * 1024, MaxHostCalls = 1000000 };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = Budget(3 * 1024 * 1024), MaxHostCalls = 1000000 };
         var sync = script.Run(SeededDirHost(3), options);
         Assert.True(sync.Success, sync.Failure?.Message);
 
@@ -257,17 +257,17 @@ public sealed class OsIteratorAccountingScenarioTests
     [Fact]
     public async Task AbandonedWalkAfterBreakReclaims()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine().Compile($"""
             import os
             i = 0
-            while i < 100000:
+            while i < {Iterations(100000)}:
                 for t in os.walk("/d"):
                     break
                 i = i + 1
             return 0
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 3 * 1024 * 1024, MaxHostCalls = 1000000 };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = Budget(3 * 1024 * 1024), MaxHostCalls = 1000000 };
         var sync = script.Run(SeededDirHost(3), options);
         Assert.True(sync.Success, sync.Failure?.Message);
 
@@ -278,7 +278,7 @@ public sealed class OsIteratorAccountingScenarioTests
     [Fact]
     public async Task RetainedWalkUnpackingStaysCharged()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine().Compile($"""
             import os
             for d, dirs, files in os.walk("/d"):
                 kept = files
@@ -300,7 +300,7 @@ public sealed class OsIteratorAccountingScenarioTests
     [Fact]
     public async Task DeniedWalkYieldRecoversWhenFunded()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine().Compile($"""
             import os
             n = 0
             for t in os.walk("/d"):
@@ -324,7 +324,7 @@ public sealed class OsIteratorAccountingScenarioTests
     [Fact]
     public async Task DeniedScandirRecoversWhenFunded()
     {
-        var script = new LythonEngine().Compile("""
+        var script = new LythonEngine().Compile($"""
             import os
             n = 0
             for e in os.scandir("/d"):

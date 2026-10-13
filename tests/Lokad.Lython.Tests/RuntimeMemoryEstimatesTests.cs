@@ -8,6 +8,7 @@ namespace Lokad.Lython.Tests;
 /// and powers of two, so power/shift guards do not allocate in proportion to
 /// the operand before deciding the result fits.
 /// </summary>
+[Collection("AllocationSensitive")]
 public sealed class RuntimeMemoryEstimatesTests
 {
     [Theory]

@@ -6,6 +6,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
+[Collection("AllocationSensitive")]
 public sealed class CsvFieldNameStorageTests
 {
     private const long Cap = 262144;

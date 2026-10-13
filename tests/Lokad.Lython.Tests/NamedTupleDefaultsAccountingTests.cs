@@ -9,6 +9,7 @@ namespace Lokad.Lython.Tests;
 /// list backing to discover that. The drill measures per-thread allocations
 /// around a synchronous failure.
 /// </summary>
+[Collection("AllocationSensitive")]
 public sealed class NamedTupleDefaultsAccountingTests
 {
     private const string OversizedDefaults =

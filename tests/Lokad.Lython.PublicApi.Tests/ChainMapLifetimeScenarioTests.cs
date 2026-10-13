@@ -3,14 +3,14 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 // M05: fresh ChainMap maps own lifetime like the other factory results do.
-public sealed class ChainMapLifetimeScenarioTests
+public class ChainMapLifetimeScenarioTests : LifetimeScenario
 {
-    private const long ThreeMib = 3145728;
-    private const long OneMib = 1048576;
+    private long StreamingBudget => Budget(3145728);
+    private long RetentionBudget => Budget(1048576);
 
-    private static LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = ThreeMib };
+    private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
 
-    private static async Task AssertCompletes(string source, string expected)
+    private async Task AssertCompletes(string source, string expected)
     {
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
@@ -25,37 +25,37 @@ public sealed class ChainMapLifetimeScenarioTests
     [Fact]
     public async Task ChainMapEmptyDiscardCompletes()
         => await AssertCompletes(
-            "from collections import ChainMap\nfor i in range(50000):\n    x = ChainMap()\nreturn 0\n", "0");
+            "from collections import ChainMap\nfor i in range(" + Iterations(50000) + "):\n    x = ChainMap()\nreturn 0\n", "0");
 
     [Fact]
     public async Task ChainMapDefaultdictArgDiscardCompletes()
         => await AssertCompletes(
-            "from collections import ChainMap, defaultdict\nfor i in range(50000):\n    x = ChainMap(defaultdict(int, {'a': 1}))\nreturn 0\n", "0");
+            "from collections import ChainMap, defaultdict\nfor i in range(" + Iterations(50000) + "):\n    x = ChainMap(defaultdict(int, {'a': 1}))\nreturn 0\n", "0");
 
     [Fact]
     public async Task ChainMapCopyDiscardCompletes()
         => await AssertCompletes(
-            "from collections import ChainMap\nm = ChainMap({'a': 1})\nfor i in range(50000):\n    x = m.copy()\nreturn 0\n", "0");
+            "from collections import ChainMap\nm = ChainMap({'a': 1})\nfor i in range(" + Iterations(50000) + "):\n    x = m.copy()\nreturn 0\n", "0");
 
     [Fact]
     public async Task ChainMapOrMapDiscardCompletes()
         => await AssertCompletes(
-            "from collections import ChainMap\nm = ChainMap({'a': 1})\nfor i in range(50000):\n    x = m | {'b': 2}\nreturn 0\n", "0");
+            "from collections import ChainMap\nm = ChainMap({'a': 1})\nfor i in range(" + Iterations(50000) + "):\n    x = m | {'b': 2}\nreturn 0\n", "0");
 
     [Fact]
     public async Task ChainMapOrChainMapDiscardCompletes()
         => await AssertCompletes(
-            "from collections import ChainMap\na = ChainMap({'a': 1})\nb = ChainMap({'b': 2})\nfor i in range(50000):\n    x = a | b\nreturn 0\n", "0");
+            "from collections import ChainMap\na = ChainMap({'a': 1})\nb = ChainMap({'b': 2})\nfor i in range(" + Iterations(50000) + "):\n    x = a | b\nreturn 0\n", "0");
 
     [Fact]
     public async Task ChainMapNewChildDefaultdictDiscardCompletes()
         => await AssertCompletes(
-            "from collections import ChainMap, defaultdict\nm = ChainMap({'a': 1})\nfor i in range(50000):\n    x = m.new_child(defaultdict(int, {'b': 2}))\nreturn 0\n", "0");
+            "from collections import ChainMap, defaultdict\nm = ChainMap({'a': 1})\nfor i in range(" + Iterations(50000) + "):\n    x = m.new_child(defaultdict(int, {'b': 2}))\nreturn 0\n", "0");
 
     [Fact]
     public async Task ChainMapCounterArgDiscardCompletes()
         => await AssertCompletes(
-            "from collections import ChainMap, Counter\nfor i in range(50000):\n    x = ChainMap(Counter({'a': 1}))\nreturn 0\n", "0");
+            "from collections import ChainMap, Counter\nfor i in range(" + Iterations(50000) + "):\n    x = ChainMap(Counter({'a': 1}))\nreturn 0\n", "0");
 
     [Fact]
     public async Task ChainMapCounterBehaves()
@@ -66,17 +66,17 @@ public sealed class ChainMapLifetimeScenarioTests
     public async Task RetainedChainMapCounterDenied()
     {
         var script = new LythonEngine().Compile(
-            "from collections import ChainMap, Counter\nobjs = []\ni = 0\nwhile i < 20000:\n    objs.append(ChainMap(Counter({'a': 1})))\n    i = i + 1\nreturn len(objs)\n");
+            "from collections import ChainMap, Counter\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(ChainMap(Counter({'a': 1})))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = OneMib };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = RetentionBudget };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(sync.PeakExecutionMemoryBytes <= RetentionBudget);
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
-        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= RetentionBudget);
     }
     [Fact]
     public async Task ChainMapFreshBehaves()
@@ -87,16 +87,16 @@ public sealed class ChainMapLifetimeScenarioTests
     public async Task RetainedChainMapCopyDenied()
     {
         var script = new LythonEngine().Compile(
-            "from collections import ChainMap\nm = ChainMap({'a': 1})\nobjs = []\ni = 0\nwhile i < 20000:\n    objs.append(m.copy())\n    i = i + 1\nreturn len(objs)\n");
+            "from collections import ChainMap\nm = ChainMap({'a': 1})\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(m.copy())\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = OneMib };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = RetentionBudget };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(sync.PeakExecutionMemoryBytes <= RetentionBudget);
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
-        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= RetentionBudget);
     }
 }

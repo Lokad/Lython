@@ -3,12 +3,12 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 // M05: lambda instances own lifetime with reclamation.
-public sealed class LambdaLifetimeScenarioTests
-{    private const long ThreeMib = 3145728;
+public class LambdaLifetimeScenarioTests : LifetimeScenario
+{    private long StreamingBudget => Budget(3145728);
 
-    private static LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = ThreeMib };
+    private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
 
-    private static async Task AssertCompletes(string source, string expected)
+    private async Task AssertCompletes(string source, string expected)
     {
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
@@ -21,5 +21,5 @@ public sealed class LambdaLifetimeScenarioTests
     }    [Fact]
     public async Task LambdasDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(100000):\n    f = lambda: i\nreturn 0\n", "0");
+            "for i in range(" + Iterations(100000) + "):\n    f = lambda: i\nreturn 0\n", "0");
 }

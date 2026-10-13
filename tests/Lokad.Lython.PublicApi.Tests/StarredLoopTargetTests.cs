@@ -5,6 +5,7 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 // N25: one starred name per flat loop target binds the remainder as a list,
 // in leading, middle and trailing positions, across loops and comprehensions.
+[Collection("RuntimeStress")]
 public sealed class StarredLoopTargetTests
 {
     private static LythonCompiledScript Compile(string source)
@@ -279,7 +280,25 @@ public sealed class StarredLoopTargetTests
         return result.PeakExecutionMemoryBytes;
     }
 
+    [Theory]
+    [InlineData("for a, *b in ([0] * 20 for _ in range(2048)):\n    pass\nreturn \"done\"\n")]
+    [InlineData("d = {}\nrow = list(range(20))\nfor i in range(2048):\n    d[0], *d[1] = row\nreturn \"done\"\n")]
+    public async Task DiscardedLoopAndSubscriptRemaindersCompleteAtFixedCap(string source)
+    {
+        var script = Compile(source);
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 65536 };
+        var sync = script.Run(new MockLythonHost(), options);
+        Assert.True(sync.Success, sync.Failure?.Message);
+        Assert.Equal("done", sync.ReturnValue);
+        Assert.True(sync.PeakExecutionMemoryBytes <= 65536);
+        var asyncResult = await script.RunAsync(new MockLythonHost(), options);
+        Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
+        Assert.Equal("done", asyncResult.ReturnValue);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= 65536);
+    }
+
     [Fact]
+    [Trait("Category", "Stress")]
     public void DiscardedLoopRemaindersStayBounded()
     {
         // N32: abandoned remainders reclaim through the pool like display
@@ -293,6 +312,7 @@ public sealed class StarredLoopTargetTests
     }
 
     [Fact]
+    [Trait("Category", "Stress")]
     public void DiscardedAssignRemaindersStayBounded()
     {
         // N32: same bound through the standalone-unpacking path, whose
@@ -305,6 +325,14 @@ public sealed class StarredLoopTargetTests
 
     [Fact]
     public async Task DiscardedAssignRemainders_DoNotDeny()
+        => await AssertAssignRemainders(2048, 65536);
+
+    [Fact]
+    [Trait("Category", "Stress")]
+    public async Task DiscardedAssignRemaindersStress()
+        => await AssertAssignRemainders(20000, 16000000);
+
+    private static async Task AssertAssignRemainders(int iterations, long memoryLimit)
     {
         // N32/N35: deterministic pin for remainder reclamation on the
         // standalone-assign path. Peak-ratio bounds scale with GC timing
@@ -313,13 +341,13 @@ public sealed class StarredLoopTargetTests
         // 158 MB pre-fix), so 20000 iterations must deny a 16 MB budget
         // without the fix and succeed with it. Post-fix peaks stay near
         // the pool window (measured <= 6.5 MB at 400k), far below budget.
-        var script = Compile("""
+        var script = Compile($"""
             row = list(range(20))
-            for i in range(20000):
+            for i in range({iterations}):
                 a, *b = row
             return "done"
             """);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 16000000 };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = memoryLimit };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal("done", sync.ReturnValue);
@@ -329,6 +357,7 @@ public sealed class StarredLoopTargetTests
     }
 
     [Fact]
+    [Trait("Category", "Stress")]
     public void DiscardedSubscriptRemaindersStayBounded()
     {
         // N32: remainder stored through subscript targets rebinds (and
@@ -343,6 +372,16 @@ public sealed class StarredLoopTargetTests
     [InlineData(false)]
     [InlineData(true)]
     public async Task AsyncFileRowRemaindersStayBounded(bool capExecutionMemory)
+        => await AssertAsyncFileRowRemainders(capExecutionMemory, 1000, 4000, 131072);
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    [Trait("Category", "Stress")]
+    public async Task AsyncFileRowRemaindersStress(bool capExecutionMemory)
+        => await AssertAsyncFileRowRemainders(capExecutionMemory, 10000, 100000, 4L * 1024 * 1024);
+
+    private static async Task AssertAsyncFileRowRemainders(bool capExecutionMemory, int smallRows, int largeRows, long memoryLimit)
     {
         // N32: real suspension dimension; chunked file iteration stays lazy so
         // only per-line remainders turn over. Collect at chunk-read boundaries
@@ -362,7 +401,7 @@ public sealed class StarredLoopTargetTests
             };
             var script = Compile("with open(\"/r.txt\") as f:\n    for line in f:\n        first, *rest = line.split()\n    return \"done\"\n");
             var options = capExecutionMemory
-                ? new LythonRunOptions { MaxExecutionMemoryBytes = 4L * 1024 * 1024 }
+                ? new LythonRunOptions { MaxExecutionMemoryBytes = memoryLimit }
                 : null;
             var result = options is null ? await script.RunAsync(host) : await script.RunAsync(host, options);
             Assert.True(result.Success, result.Failure?.Message);
@@ -373,8 +412,8 @@ public sealed class StarredLoopTargetTests
             return result.PeakExecutionMemoryBytes;
         }
 
-        var small = await PeakOfRows(10000);
-        var large = await PeakOfRows(100000);
+        var small = await PeakOfRows(smallRows);
+        var large = await PeakOfRows(largeRows);
         Assert.True(large <= 8 * small, $"large={large} small={small}");
     }
 }

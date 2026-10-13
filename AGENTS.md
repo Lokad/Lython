@@ -34,6 +34,14 @@ semantics, and unsupported behavior should fail explicitly.
 
 ## CI
 
+Use focused Release regressions during development; see [TESTING.md](TESTING.md).
+Ordinary test runs exclude `Category=Stress` by default. An explicit test filter
+replaces that default. Preserve original stress coverage and batch its execution,
+full Windows/Ubuntu checks and explicit Release package consumers at meaningful
+checkpoints. Tests invoking process-wide GC or finalizer waits must share the
+existing nonparallel collection in their assembly. Never relax timeouts or
+containment assertions to make iteration faster.
+
 Anonymous GitHub API calls are capped at 60/hour: space CI status checks minutes apart, never poll in a tight loop.
 
 ## Packaging

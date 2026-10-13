@@ -359,6 +359,14 @@ public sealed class ChunkedFileReadTests
 
     [Fact]
     public async Task LargeScanStaysBounded()
+        => await AssertLargeScan(4096, 131072, 8192);
+
+    [Fact]
+    [Trait("Category", "Stress")]
+    public async Task LargeScanStress()
+        => await AssertLargeScan(100000, 8388608, 560000);
+
+    private static async Task AssertLargeScan(int rows, long budget, int prefixBytes)
     {
         // The milestone shape: 100k rows (~5.7MB) aggregate under an 8MB budget.
         // Whole-file acquisition could never fit that budget (~5.7MB of content
@@ -367,7 +375,7 @@ public sealed class ChunkedFileReadTests
         // pool like CSV fields do. Per-row int() parsing carries its own
         // arithmetic pressure (needs ~16MB here) and stays out of this pin.
         var content = new StringBuilder();
-        for (var i = 0; i < 100000; i++)
+        for (var i = 0; i < rows; i++)
         {
             content.Append(i).Append(',').Append('y', 50).Append('\n');
         }
@@ -382,31 +390,31 @@ public sealed class ChunkedFileReadTests
             return n
             """);
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = 8388608 };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = budget };
 
         // The 10x pair under one budget: ~10k leading rows complete with room
         // to spare and the full 100k complete under the same budget with a
         // documented peak.
         var smallHost = new MockLythonHost();
-        smallHost.SeedFile("/big.csv", content.ToString()[..560000]);
+        smallHost.SeedFile("/big.csv", content.ToString()[..prefixBytes]);
         var small = script.Run(smallHost, options);
         Assert.True(small.Success, small.Failure?.Message);
-        Assert.True(small.PeakExecutionMemoryBytes <= 8388608);
+        Assert.True(small.PeakExecutionMemoryBytes <= budget);
 
         var host = new MockLythonHost();
         host.SeedFile("/big.csv", content.ToString());
         var sync = script.Run(host, options);
         Assert.True(sync.Success, sync.Failure?.Message);
-        Assert.Equal(new BigInteger(100000), sync.ReturnValue);
-        Assert.True(sync.PeakExecutionMemoryBytes <= 8388608);
+        Assert.Equal(new BigInteger(rows), sync.ReturnValue);
+        Assert.True(sync.PeakExecutionMemoryBytes <= budget);
         Assert.True(host.MaxRangeBytesServed <= 16 * 1024, "no single ranged call exceeds the engine window");
 
         var host2 = new MockLythonHost();
         host2.SeedFile("/big.csv", content.ToString());
         var asyncResult = await script.RunAsync(host2, options);
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
-        Assert.Equal(new BigInteger(100000), asyncResult.ReturnValue);
-        Assert.True(asyncResult.PeakExecutionMemoryBytes <= 8388608);
+        Assert.Equal(new BigInteger(rows), asyncResult.ReturnValue);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= budget);
         Assert.True(host2.MaxRangeBytesServed <= 16 * 1024, "no single ranged call exceeds the engine window");
     }
 

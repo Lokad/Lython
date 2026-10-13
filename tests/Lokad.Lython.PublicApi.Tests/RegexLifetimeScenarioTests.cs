@@ -9,21 +9,26 @@ namespace Lokad.Lython.PublicApi.Tests;
 // helpers, match objects adopt their whole and capture values, and finditer
 // shells charge per live instance; drops reclaim on sweep while retained
 // results stay charged. Per-call pattern compilation is separate ownership.
-public sealed class RegexLifetimeScenarioTests
+public class RegexLifetimeScenarioTests : LifetimeScenario
 {
-    private const long ThreeMib = 3145728;
-    private const long OneMib = 1048576;
+    // Each distinct pattern has an existing conservative 64 KiB charge.
+    // Leave room for pattern compilation and results; 2,048 leaked strings
+    // still exceed this fixed cap.
+    protected override long Budget(long stressBudget) => Math.Min(stressBudget, 262144);
 
-    private static LythonRunOptions Budgeted(long budget) => new() { MaxExecutionMemoryBytes = budget };
+    private long StreamingBudget => Budget(3145728);
+    private long RetentionBudget => Budget(1048576);
 
-    private static async Task AssertCompletes(string source, string expected)
+    private LythonRunOptions Budgeted(long budget) => new() { MaxExecutionMemoryBytes = budget };
+
+    private async Task AssertCompletes(string source, string expected)
     {
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
-        var sync = script.Run(new MockLythonHost(), Budgeted(ThreeMib));
+        var sync = script.Run(new MockLythonHost(), Budgeted(StreamingBudget));
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, sync.ReturnValue?.ToString());
-        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(ThreeMib));
+        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(StreamingBudget));
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, asyncResult.ReturnValue?.ToString());
     }
@@ -31,22 +36,22 @@ public sealed class RegexLifetimeScenarioTests
     [Fact]
     public async Task FindAllDiscardCompletes()
         => await AssertCompletes(
-            "import re\np = re.compile(\",\")\nfor i in range(50000):\n    x = p.findall(\"a,b\")\nreturn 0\n", "0");
+            "import re\np = re.compile(\",\")\nfor i in range(" + Iterations(50000) + "):\n    x = p.findall(\"a,b\")\nreturn 0\n", "0");
 
     [Fact]
     public async Task FindAllGroupsDiscardCompletes()
         => await AssertCompletes(
-            "import re\np = re.compile(\"(a)(b)\")\nfor i in range(50000):\n    x = p.findall(\"ab\")\nreturn 0\n", "0");
+            "import re\np = re.compile(\"(a)(b)\")\nfor i in range(" + Iterations(50000) + "):\n    x = p.findall(\"ab\")\nreturn 0\n", "0");
 
     [Fact]
     public async Task MatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\np = re.compile(\"ab?\")\nfor i in range(50000):\n    x = p.match(\"abc\")\nreturn 0\n", "0");
+            "import re\np = re.compile(\"ab?\")\nfor i in range(" + Iterations(50000) + "):\n    x = p.match(\"abc\")\nreturn 0\n", "0");
 
     [Fact]
     public async Task FindIterDiscardCompletes()
         => await AssertCompletes(
-            "import re\np = re.compile(\",\")\nfor i in range(50000):\n    x = list(p.finditer(\"a,b\"))\nreturn 0\n", "0");
+            "import re\np = re.compile(\",\")\nfor i in range(" + Iterations(50000) + "):\n    x = list(p.finditer(\"a,b\"))\nreturn 0\n", "0");
 
     [Fact]
     public async Task RegexBehaves()
@@ -55,10 +60,10 @@ public sealed class RegexLifetimeScenarioTests
             "import re\np = re.compile(\"ab?\")\nm = p.match(\"abc\")\nreturn [p.findall(\"a,b\")[0], m.group(0)]\n");
         Assert.True(script.IsValid);
         var expected = new List<object?> { "a", "ab" };
-        var sync = script.Run(new MockLythonHost(), Budgeted(ThreeMib));
+        var sync = script.Run(new MockLythonHost(), Budgeted(StreamingBudget));
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(sync.ReturnValue));
-        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(ThreeMib));
+        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(StreamingBudget));
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
     }
@@ -67,38 +72,38 @@ public sealed class RegexLifetimeScenarioTests
     public async Task RetainedMatchesDenied()
     {
         var script = new LythonEngine().Compile(
-            "import re\np = re.compile(\"ab?\")\nobjs = []\ni = 0\nwhile i < 20000:\n    objs.append(p.match(\"abc\"))\n    i = i + 1\nreturn len(objs)\n");
+            "import re\np = re.compile(\"ab?\")\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(p.match(\"abc\"))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
-        var options = Budgeted(OneMib);
+        var options = Budgeted(RetentionBudget);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(sync.PeakExecutionMemoryBytes <= RetentionBudget);
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
-        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= RetentionBudget);
     }
 
     [Fact]
     public async Task CompileDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(20000):\n    p = re.compile(\",\")\nreturn 0\n", "0");
+            "import re\nfor i in range(" + Iterations(20000) + "):\n    p = re.compile(\",\")\nreturn 0\n", "0");
 
     [Fact]
     public async Task ModuleFindAllDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(20000):\n    x = re.findall(\",\", \"a,b\")\nreturn 0\n", "0");
+            "import re\nfor i in range(" + Iterations(20000) + "):\n    x = re.findall(\",\", \"a,b\")\nreturn 0\n", "0");
 
     [Fact]
     public async Task ModuleSubDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(20000):\n    x = re.sub(\",\", \";\", \"a,b\")\nreturn 0\n", "0");
+            "import re\nfor i in range(" + Iterations(20000) + "):\n    x = re.sub(\",\", \";\", \"a,b\")\nreturn 0\n", "0");
 
     [Fact]
     public async Task ModuleMatchDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(20000):\n    x = re.match(\"a\", \"abc\")\nreturn 0\n", "0");
+            "import re\nfor i in range(" + Iterations(20000) + "):\n    x = re.match(\"a\", \"abc\")\nreturn 0\n", "0");
 
     [Fact]
     public async Task ModuleSplitBehaves()
@@ -107,10 +112,10 @@ public sealed class RegexLifetimeScenarioTests
             "import re\nreturn re.split(\",\", \"a,b\")\n");
         Assert.True(script.IsValid);
         var expected = new List<object?> { "a", "b" };
-        var sync = script.Run(new MockLythonHost(), Budgeted(ThreeMib));
+        var sync = script.Run(new MockLythonHost(), Budgeted(StreamingBudget));
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(sync.ReturnValue));
-        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(ThreeMib));
+        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(StreamingBudget));
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
     }
@@ -121,25 +126,25 @@ public sealed class RegexLifetimeScenarioTests
         var script = new LythonEngine().Compile(
             "import re\nobjs = []\ni = 0\nwhile i < 200:\n    objs.append(re.compile(\"(a)(b)\" + str(i)))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
-        var options = Budgeted(OneMib);
+        var options = Budgeted(RetentionBudget);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(sync.PeakExecutionMemoryBytes <= RetentionBudget);
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
-        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= RetentionBudget);
     }
     [Fact]
     public async Task SubnDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(50000):\n    x = re.subn(\"a\", \"b\", \"aaa\")\nreturn 0\n", "0");
+            "import re\nfor i in range(" + Iterations(50000) + "):\n    x = re.subn(\"a\", \"b\", \"aaa\")\nreturn 0\n", "0");
 
     [Fact]
     public async Task SubnCallableDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(50000):\n    x = re.subn(\"a\", lambda m: \"b\", \"aaa\")\nreturn 0\n", "0");
+            "import re\nfor i in range(" + Iterations(50000) + "):\n    x = re.subn(\"a\", lambda m: \"b\", \"aaa\")\nreturn 0\n", "0");
 
     [Fact]
     public async Task SubnBehaves()
@@ -148,10 +153,10 @@ public sealed class RegexLifetimeScenarioTests
             "import re\nreturn re.subn(\"a\", \"b\", \"aaa\")\n");
         Assert.True(script.IsValid);
         var expected = new object?[] { "bbb", new BigInteger(3) };
-        var sync = script.Run(new MockLythonHost(), Budgeted(ThreeMib));
+        var sync = script.Run(new MockLythonHost(), Budgeted(StreamingBudget));
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<object[]>(sync.ReturnValue));
-        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(ThreeMib));
+        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(StreamingBudget));
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<object[]>(asyncResult.ReturnValue));
     }
@@ -160,22 +165,22 @@ public sealed class RegexLifetimeScenarioTests
     public async Task RetainedSubnDenied()
     {
         var script = new LythonEngine().Compile(
-            "import re\nobjs = []\ni = 0\nwhile i < 20000:\n    objs.append(re.subn(\"a\", \"b\", \"aaa\"))\n    i = i + 1\nreturn len(objs)\n");
+            "import re\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(re.subn(\"a\", \"b\", \"aaa\"))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
-        var options = Budgeted(OneMib);
+        var options = Budgeted(RetentionBudget);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(sync.PeakExecutionMemoryBytes <= RetentionBudget);
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
-        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= RetentionBudget);
     }
     [Fact]
     public async Task GroupdictDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(50000):\n    m = re.match(\"(?P<first>a)(?P<second>b)\", \"ab\")\n    x = m.groupdict()\nreturn 0\n", "0");
+            "import re\nfor i in range(" + Iterations(50000) + "):\n    m = re.match(\"(?P<first>a)(?P<second>b)\", \"ab\")\n    x = m.groupdict()\nreturn 0\n", "0");
 
     [Fact]
     public async Task GroupdictBehaves()
@@ -183,13 +188,13 @@ public sealed class RegexLifetimeScenarioTests
         var script = new LythonEngine().Compile(
             "import re\nreturn re.match(\"(?P<first>a)(?P<second>b)\", \"ab\").groupdict()\n");
         Assert.True(script.IsValid);
-        var sync = script.Run(new MockLythonHost(), Budgeted(ThreeMib));
+        var sync = script.Run(new MockLythonHost(), Budgeted(StreamingBudget));
         Assert.True(sync.Success, sync.Failure?.Message);
         var syncDict = Assert.IsType<Dictionary<object, object?>>(sync.ReturnValue);
         Assert.Equal(2, syncDict.Count);
         Assert.Equal("a", syncDict["first"]);
         Assert.Equal("b", syncDict["second"]);
-        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(ThreeMib));
+        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(StreamingBudget));
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         var asyncDict = Assert.IsType<Dictionary<object, object?>>(asyncResult.ReturnValue);
         Assert.Equal(2, asyncDict.Count);
@@ -201,32 +206,32 @@ public sealed class RegexLifetimeScenarioTests
     public async Task RetainedGroupdictDenied()
     {
         var script = new LythonEngine().Compile(
-            "import re\nobjs = []\ni = 0\nwhile i < 20000:\n    m = re.match(\"(?P<first>a)(?P<second>b)\", \"ab\")\n    objs.append(m.groupdict())\n    i = i + 1\nreturn len(objs)\n");
+            "import re\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    m = re.match(\"(?P<first>a)(?P<second>b)\", \"ab\")\n    objs.append(m.groupdict())\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
-        var options = Budgeted(OneMib);
+        var options = Budgeted(RetentionBudget);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(sync.PeakExecutionMemoryBytes <= RetentionBudget);
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
-        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= RetentionBudget);
     }
     [Fact]
     public async Task PartialSubDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(50000):\n    x = re.sub(\"a\", \"b\", \"xaay\", 0, 0, 1, 3)\nreturn 0\n", "0");
+            "import re\nfor i in range(" + Iterations(50000) + "):\n    x = re.sub(\"a\", \"b\", \"xaay\", 0, 0, 1, 3)\nreturn 0\n", "0");
 
     [Fact]
     public async Task PartialSubnDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(50000):\n    x = re.subn(\"a\", \"b\", \"xaay\", 0, 0, 1, 3)\nreturn 0\n", "0");
+            "import re\nfor i in range(" + Iterations(50000) + "):\n    x = re.subn(\"a\", \"b\", \"xaay\", 0, 0, 1, 3)\nreturn 0\n", "0");
 
     [Fact]
     public async Task PartialSubCallableDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(20000):\n    x = re.sub(\"a\", lambda m: \"b\", \"xaay\", 0, 0, 1, 3)\nreturn 0\n", "0");
+            "import re\nfor i in range(" + Iterations(20000) + "):\n    x = re.sub(\"a\", lambda m: \"b\", \"xaay\", 0, 0, 1, 3)\nreturn 0\n", "0");
 
     [Fact]
     public async Task PartialSubBehaves()
@@ -234,10 +239,10 @@ public sealed class RegexLifetimeScenarioTests
         var script = new LythonEngine().Compile(
             "import re\nreturn re.sub(\"a\", \"b\", \"xaay\", 0, 0, 1, 3)\n");
         Assert.True(script.IsValid);
-        var sync = script.Run(new MockLythonHost(), Budgeted(ThreeMib));
+        var sync = script.Run(new MockLythonHost(), Budgeted(StreamingBudget));
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal("xbby", sync.ReturnValue);
-        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(ThreeMib));
+        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(StreamingBudget));
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("xbby", asyncResult.ReturnValue);
     }
@@ -246,50 +251,50 @@ public sealed class RegexLifetimeScenarioTests
     public async Task RetainedPartialDenied()
     {
         var script = new LythonEngine().Compile(
-            "import re\nobjs = []\ni = 0\nwhile i < 20000:\n    objs.append(re.sub(\"a\", \"b\", \"xaay\", 0, 0, 1, 3))\n    i = i + 1\nreturn len(objs)\n");
+            "import re\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(re.sub(\"a\", \"b\", \"xaay\", 0, 0, 1, 3))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
-        var options = Budgeted(OneMib);
+        var options = Budgeted(RetentionBudget);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(sync.PeakExecutionMemoryBytes <= RetentionBudget);
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
-        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= RetentionBudget);
     }
     [Fact]
     public async Task SplitGovernedSubjectDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(50000):\n    t = \"x\" + str(i) + \"aay\"\n    x = re.split(\"a\", t, 0, 0, 1, 3)\nreturn 0\n", "0");
+            "import re\nfor i in range(" + Iterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = re.split(\"a\", t, 0, 0, 1, 3)\nreturn 0\n", "0");
     [Fact]
     public async Task SearchGovernedSubjectDiscardCompletes()
         => await AssertCompletes(
-            "import re\nfor i in range(50000):\n    t = \"x\" + str(i) + \"aay\"\n    x = re.search(\"a\", t, 0, 1, 3)\nreturn 0\n", "0");
+            "import re\nfor i in range(" + Iterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = re.search(\"a\", t, 0, 1, 3)\nreturn 0\n", "0");
     [Fact]
     public async Task CompiledSplitGovernedDiscardCompletes()
         => await AssertCompletes(
-            "import re\np = re.compile(\"a\")\nfor i in range(50000):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.split(t, 0, 1, 3)\nreturn 0\n", "0");
+            "import re\np = re.compile(\"a\")\nfor i in range(" + Iterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.split(t, 0, 1, 3)\nreturn 0\n", "0");
     [Fact]
     public async Task CompiledSearchGovernedDiscardCompletes()
         => await AssertCompletes(
-            "import re\np = re.compile(\"a\")\nfor i in range(50000):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.search(t, 1, 3)\nreturn 0\n", "0");
+            "import re\np = re.compile(\"a\")\nfor i in range(" + Iterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.search(t, 1, 3)\nreturn 0\n", "0");
     [Fact]
     public async Task CompiledMatchGovernedDiscardCompletes()
         => await AssertCompletes(
-            "import re\np = re.compile(\"a\")\nfor i in range(50000):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.match(t, 1, 3)\nreturn 0\n", "0");
+            "import re\np = re.compile(\"a\")\nfor i in range(" + Iterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.match(t, 1, 3)\nreturn 0\n", "0");
     [Fact]
     public async Task CompiledFindallGovernedDiscardCompletes()
         => await AssertCompletes(
-            "import re\np = re.compile(\"a\")\nfor i in range(50000):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.findall(t, 1, 3)\nreturn 0\n", "0");
+            "import re\np = re.compile(\"a\")\nfor i in range(" + Iterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.findall(t, 1, 3)\nreturn 0\n", "0");
     [Fact]
     public async Task CompiledSubGovernedDiscardCompletes()
         => await AssertCompletes(
-            "import re\np = re.compile(\"a\")\nfor i in range(50000):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.sub(\"b\", t, 0, 1, 3)\nreturn 0\n", "0");
+            "import re\np = re.compile(\"a\")\nfor i in range(" + Iterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.sub(\"b\", t, 0, 1, 3)\nreturn 0\n", "0");
     [Fact]
     public async Task CompiledFinditerGovernedDiscardCompletes()
         => await AssertCompletes(
-            "import re\np = re.compile(\"a\")\nfor i in range(50000):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.finditer(t, 1, 3)\nreturn 0\n", "0");
+            "import re\np = re.compile(\"a\")\nfor i in range(" + Iterations(50000) + "):\n    t = \"x\" + str(i) + \"aay\"\n    x = p.finditer(t, 1, 3)\nreturn 0\n", "0");
     [Fact]
     public async Task SplitGovernedBehaves()
     {
@@ -297,10 +302,10 @@ public sealed class RegexLifetimeScenarioTests
             "import re\nt = \"x\" + str(7) + \"aay\"\nreturn re.split(\"a\", t, 0, 0, 1, 3)\n");
         Assert.True(script.IsValid);
         var expected = new List<object?> { "7", "" };
-        var sync = script.Run(new MockLythonHost(), Budgeted(ThreeMib));
+        var sync = script.Run(new MockLythonHost(), Budgeted(StreamingBudget));
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(sync.ReturnValue));
-        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(ThreeMib));
+        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(StreamingBudget));
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal(expected, Assert.IsType<List<object?>>(asyncResult.ReturnValue));
     }
@@ -310,10 +315,10 @@ public sealed class RegexLifetimeScenarioTests
         var script = new LythonEngine().Compile(
             "import re\nt = \"x\" + str(7) + \"aay\"\nreturn re.search(\"a\", t, 0, 1, 3).group(0)\n");
         Assert.True(script.IsValid);
-        var sync = script.Run(new MockLythonHost(), Budgeted(ThreeMib));
+        var sync = script.Run(new MockLythonHost(), Budgeted(StreamingBudget));
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal("a", sync.ReturnValue);
-        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(ThreeMib));
+        var asyncResult = await script.RunAsync(new MockLythonHost(), Budgeted(StreamingBudget));
         Assert.True(asyncResult.Success, asyncResult.Failure?.Message);
         Assert.Equal("a", asyncResult.ReturnValue);
     }
@@ -321,33 +326,33 @@ public sealed class RegexLifetimeScenarioTests
     public async Task RetainedSplitGovernedDenied()
     {
         var script = new LythonEngine().Compile(
-            "import re\nobjs = []\ni = 0\nwhile i < 20000:\n    t = \"x\" + str(i) + \"aay\"\n    objs.append(re.split(\"a\", t, 0, 0, 1, 3))\n    i = i + 1\nreturn len(objs)\n");
+            "import re\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    t = \"x\" + str(i) + \"aay\"\n    objs.append(re.split(\"a\", t, 0, 0, 1, 3))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
-        var options = Budgeted(OneMib);
+        var options = Budgeted(RetentionBudget);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(sync.PeakExecutionMemoryBytes <= RetentionBudget);
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
-        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= RetentionBudget);
     }
     [Fact]
     public async Task RetainedSearchGovernedDenied()
     {
         var script = new LythonEngine().Compile(
-            "import re\nobjs = []\ni = 0\nwhile i < 20000:\n    t = \"x\" + str(i) + \"aay\"\n    objs.append(re.search(\"a\", t, 0, 1, 3))\n    i = i + 1\nreturn len(objs)\n");
+            "import re\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    t = \"x\" + str(i) + \"aay\"\n    objs.append(re.search(\"a\", t, 0, 1, 3))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
-        var options = Budgeted(OneMib / 4); // N19: shared-pattern retains fit 1MiB; match charges deny here.
+        var options = Budgeted(RetentionBudget / 4); // N19: shared-pattern retains fit 1MiB; match charges deny here.
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib / 4);
+        Assert.True(sync.PeakExecutionMemoryBytes <= RetentionBudget / 4);
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
-        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib / 4);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= RetentionBudget / 4);
     }
 
     [Fact]
@@ -359,7 +364,7 @@ public sealed class RegexLifetimeScenarioTests
         var script = new LythonEngine().Compile(
             "import re\nobjs = []\ni = 0\nwhile i < 200:\n    objs.append(re.compile(\"(a)(b)\"))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
-        var options = Budgeted(OneMib);
+        var options = Budgeted(RetentionBudget);
         var sync = script.Run(new MockLythonHost(), options);
         Assert.True(sync.Success, sync.Failure?.Message);
         Assert.Equal(new BigInteger(200), sync.ReturnValue);
@@ -383,7 +388,7 @@ public sealed class RegexLifetimeScenarioTests
         // not once per call (~159 MB before the per-execution cache). Rearranged
         // compilation identity is CPython parity: re.compile("a") is re.compile("a").
         var script = new LythonEngine().Compile(
-            "import re\nout = []\nfor i in range(1000):\n    t = \"ab\" + str(i)\n    out.append(re.search(\"a\", t, 0, 3))\nreturn [len(out), re.compile(\"a\") is re.compile(\"a\")]");
+            "import re\nout = []\nfor i in range(" + Iterations(1000) + "):\n    t = \"ab\" + str(i)\n    out.append(re.search(\"a\", t, 0, 3))\nreturn [len(out), re.compile(\"a\") is re.compile(\"a\")]");
         Assert.True(script.IsValid);
         var expected = new List<object?> { new BigInteger(1000), true };
         _ = script.Run(new MockLythonHost());

@@ -1,9 +1,9 @@
 namespace Lokad.Lython.Tests;
 
-// N35: allocation-threshold tests measure the process-wide GC allocation
-// counter, so parallel siblings allocating inside the measurement window trip
-// the budget. This collection opts out of parallelization to keep that
-// window quiet without weakening any budget.
+// Process-wide collection/finalizer and allocation-counter tests share one
+// quiet collection. A GC invoked by another fixture changes their lifetime
+// and generation observations even when each fixture has its own governor.
+// Ordinary semantic tests retain parallel execution; no budget is weakened.
 [CollectionDefinition("AllocationSensitive", DisableParallelization = true)]
 public sealed class AllocationSensitiveCollection
 {

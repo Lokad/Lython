@@ -6,6 +6,7 @@ using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
 
 namespace Lokad.Lython.Tests;
 
+[Collection("AllocationSensitive")]
 public sealed class MappingSliceKeyOwnershipTests
 {
     private static readonly LythonSourceSpan Span = new(0, 1, 1, 1);

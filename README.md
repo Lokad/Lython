@@ -449,6 +449,11 @@ Lython is designed to fail inside the runtime rather than by escaping into unman
 
 The model is intentionally conservative, not omniscient. Lython does not try to mirror the CLR heap perfectly, but it does aim to keep the main script-owned growth paths inside explicit runtime control.
 
+## Development
+
+Development checks and separately selected containment stress coverage are
+documented in [TESTING.md](TESTING.md).
+
 ## Dependencies
 
 - `Lokad.Parsing` for tokenization and the handwritten front-end infrastructure

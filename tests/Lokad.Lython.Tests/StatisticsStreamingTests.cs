@@ -12,6 +12,7 @@ namespace Lokad.Lython.Tests;
 /// per-pull source garbage from the measurement. Reflection reaches the
 /// private builtin; renames fail loudly here by design.
 /// </summary>
+[Collection("AllocationSensitive")]
 public sealed class StatisticsStreamingTests
 {
     private static object InvokeMean(IEnumerable<object> data, LythonSourceSpan span, LythonRuntime.ExecutionContext context)

@@ -10,6 +10,7 @@ namespace Lokad.Lython.Tests;
 /// trips the budget is never retained; a failed reservation leaves no
 /// uncharged history behind and commits nothing.
 /// </summary>
+[Collection("AllocationSensitive")]
 public sealed class CsvWriterHistoryAccountingTests
 {
     [Fact]

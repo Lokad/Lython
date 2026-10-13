@@ -3,13 +3,13 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 // M05: fresh hash shells own lifetime like the other factory results do.
-public sealed class HashlibLifetimeScenarioTests
+public class HashlibLifetimeScenarioTests : LifetimeScenario
 {
-    private const long ThreeMib = 3145728;
+    private long StreamingBudget => Budget(3145728);
 
-    private static LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = ThreeMib };
+    private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
 
-    private static async Task AssertCompletes(string source, string expected)
+    private async Task AssertCompletes(string source, string expected)
     {
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
@@ -24,17 +24,17 @@ public sealed class HashlibLifetimeScenarioTests
     [Fact]
     public async Task HashCtorDiscardCompletes()
         => await AssertCompletes(
-            "import hashlib\nfor i in range(50000):\n    h = hashlib.md5(b'x' * 10)\nreturn 0\n", "0");
+            "import hashlib\nfor i in range(" + Iterations(50000) + "):\n    h = hashlib.md5(b'x' * 10)\nreturn 0\n", "0");
 
     [Fact]
     public async Task HashNewDiscardCompletes()
         => await AssertCompletes(
-            "import hashlib\nfor i in range(50000):\n    h = hashlib.new('sha256', b'x' * 10)\nreturn 0\n", "0");
+            "import hashlib\nfor i in range(" + Iterations(50000) + "):\n    h = hashlib.new('sha256', b'x' * 10)\nreturn 0\n", "0");
 
     [Fact]
     public async Task HashCopyDiscardCompletes()
         => await AssertCompletes(
-            "import hashlib\nh = hashlib.md5(b'x' * 10)\nfor i in range(50000):\n    c = h.copy()\nreturn 0\n", "0");
+            "import hashlib\nh = hashlib.md5(b'x' * 10)\nfor i in range(" + Iterations(50000) + "):\n    c = h.copy()\nreturn 0\n", "0");
 
     [Fact]
     public async Task HashCopyBehaves()

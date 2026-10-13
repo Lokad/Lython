@@ -3,6 +3,7 @@ using Lokad.Lython.Runtime;
 
 namespace Lokad.Lython.Tests;
 
+[Collection("AllocationSensitive")]
 public sealed class ExecutionThreadsTests
 {
     private static ExecutionThreads Create(int maxIdle = 2, TimeSpan? timeout = null)

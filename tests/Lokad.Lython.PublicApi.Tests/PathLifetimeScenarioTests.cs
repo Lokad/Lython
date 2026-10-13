@@ -3,14 +3,14 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 // M05: fresh path shells own lifetime like the other factory results do.
-public sealed class PathLifetimeScenarioTests
+public class PathLifetimeScenarioTests : LifetimeScenario
 {
-    private const long ThreeMib = 3145728;
-    private const long OneMib = 1048576;
+    private long StreamingBudget => Budget(3145728);
+    private long RetentionBudget => Budget(1048576);
 
-    private static LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = ThreeMib };
+    private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
 
-    private static async Task AssertCompletes(string source, string expected)
+    private async Task AssertCompletes(string source, string expected)
     {
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
@@ -25,32 +25,32 @@ public sealed class PathLifetimeScenarioTests
     [Fact]
     public async Task PathCtorDiscardCompletes()
         => await AssertCompletes(
-            "from pathlib import Path\nfor i in range(100000):\n    x = Path('/a/b')\nreturn 0\n", "0");
+            "from pathlib import Path\nfor i in range(" + Iterations(100000) + "):\n    x = Path('/a/b')\nreturn 0\n", "0");
 
     [Fact]
     public async Task PathJoinDiscardCompletes()
         => await AssertCompletes(
-            "from pathlib import Path\nfor i in range(100000):\n    x = Path('/a') / 'b'\nreturn 0\n", "0");
+            "from pathlib import Path\nfor i in range(" + Iterations(100000) + "):\n    x = Path('/a') / 'b'\nreturn 0\n", "0");
 
     [Fact]
     public async Task PathJoinpathDiscardCompletes()
         => await AssertCompletes(
-            "from pathlib import Path\np = Path('/a/b/c.txt')\nfor i in range(100000):\n    x = p.joinpath('d')\nreturn 0\n", "0");
+            "from pathlib import Path\np = Path('/a/b/c.txt')\nfor i in range(" + Iterations(100000) + "):\n    x = p.joinpath('d')\nreturn 0\n", "0");
 
     [Fact]
     public async Task PathParentsDiscardCompletes()
         => await AssertCompletes(
-            "from pathlib import Path\nfor i in range(50000):\n    x = Path('/a/b/c/d/e/f/g').parents\nreturn 0\n", "0");
+            "from pathlib import Path\nfor i in range(" + Iterations(50000) + "):\n    x = Path('/a/b/c/d/e/f/g').parents\nreturn 0\n", "0");
 
     [Fact]
     public async Task PathPartsDiscardCompletes()
         => await AssertCompletes(
-            "from pathlib import Path\nfor i in range(50000):\n    x = Path('/a/b/c/d/e/f/g').parts\nreturn 0\n", "0");
+            "from pathlib import Path\nfor i in range(" + Iterations(50000) + "):\n    x = Path('/a/b/c/d/e/f/g').parts\nreturn 0\n", "0");
 
     [Fact]
     public async Task PathSuffixesDiscardCompletes()
         => await AssertCompletes(
-            "from pathlib import Path\nfor i in range(50000):\n    x = Path('/a/b.tar.gz.bz2.zip').suffixes\nreturn 0\n", "0");
+            "from pathlib import Path\nfor i in range(" + Iterations(50000) + "):\n    x = Path('/a/b.tar.gz.bz2.zip').suffixes\nreturn 0\n", "0");
 
     [Fact]
     public async Task PathPluralBehaves()
@@ -61,17 +61,17 @@ public sealed class PathLifetimeScenarioTests
     public async Task RetainedPathParentsDenied()
     {
         var script = new LythonEngine().Compile(
-            "from pathlib import Path\nobjs = []\ni = 0\nwhile i < 20000:\n    objs.append(Path('/a/b/c/d/e/f/g').parents)\n    i = i + 1\nreturn len(objs)\n");
+            "from pathlib import Path\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(Path('/a/b/c/d/e/f/g').parents)\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = OneMib };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = RetentionBudget };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(sync.PeakExecutionMemoryBytes <= RetentionBudget);
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
-        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= RetentionBudget);
     }
     [Fact]
     public async Task PathFreshBehaves()
@@ -82,16 +82,16 @@ public sealed class PathLifetimeScenarioTests
     public async Task RetainedPathJoinDenied()
     {
         var script = new LythonEngine().Compile(
-            "from pathlib import Path\nobjs = []\ni = 0\nwhile i < 20000:\n    objs.append(Path('/a') / 'b')\n    i = i + 1\nreturn len(objs)\n");
+            "from pathlib import Path\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(Path('/a') / 'b')\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = OneMib };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = RetentionBudget };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(sync.PeakExecutionMemoryBytes <= RetentionBudget);
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
-        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= RetentionBudget);
     }
 }

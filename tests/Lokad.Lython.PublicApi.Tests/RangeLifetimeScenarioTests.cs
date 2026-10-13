@@ -5,13 +5,13 @@ namespace Lokad.Lython.PublicApi.Tests;
 
 // M05: range and iterator shells own one charge per live instance with
 // reclamation through the pool once dropped.
-public sealed class RangeLifetimeScenarioTests
+public class RangeLifetimeScenarioTests : LifetimeScenario
 {
-    private const long ThreeMib = 3145728;
+    private long StreamingBudget => Budget(3145728);
 
-    private static LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = ThreeMib };
+    private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
 
-    private static async Task AssertCompletes(string source, string expected)
+    private async Task AssertCompletes(string source, string expected)
     {
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
@@ -27,42 +27,42 @@ public sealed class RangeLifetimeScenarioTests
     [Fact]
     public async Task RangesDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(100000):\n    x = range(2)\nreturn 0\n", "0");
+            "for i in range(" + Iterations(100000) + "):\n    x = range(2)\nreturn 0\n", "0");
 
     [Fact]
     public async Task EnumerateDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(100000):\n    x = enumerate([1])\nreturn 0\n", "0");
+            "for i in range(" + Iterations(100000) + "):\n    x = enumerate([1])\nreturn 0\n", "0");
 
     [Fact]
     public async Task MapDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(50000):\n    a = list(map(str, [1]))\nreturn 0\n", "0");
+            "for i in range(" + Iterations(50000) + "):\n    a = list(map(str, [1]))\nreturn 0\n", "0");
 
     [Fact]
     public async Task FilterDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(50000):\n    b = list(filter(None, [1]))\nreturn 0\n", "0");
+            "for i in range(" + Iterations(50000) + "):\n    b = list(filter(None, [1]))\nreturn 0\n", "0");
 
     [Fact]
     public async Task ZipDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(50000):\n    c = list(zip([1], [2]))\nreturn 0\n", "0");
+            "for i in range(" + Iterations(50000) + "):\n    c = list(zip([1], [2]))\nreturn 0\n", "0");
 
     [Fact]
     public async Task GeneratorsDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(100000):\n    g = (x for x in [1])\nreturn 0\n", "0");
+            "for i in range(" + Iterations(100000) + "):\n    g = (x for x in [1])\nreturn 0\n", "0");
 
     [Fact]
     public async Task EnumerateConsumedDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(50000):\n    c = list(enumerate([1]))\nreturn 0\n", "0");
+            "for i in range(" + Iterations(50000) + "):\n    c = list(enumerate([1]))\nreturn 0\n", "0");
 
     [Fact]
     public async Task TupleZipDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(50000):\n    c = tuple(zip([1], [2]))\nreturn 0\n", "0");
+            "for i in range(" + Iterations(50000) + "):\n    c = tuple(zip([1], [2]))\nreturn 0\n", "0");
 
     // Denial-mid-consumption pairing: each budget sits at a measured stable point
     // derived from roomy-budget peaks (enum 1545, zip ~2057). The script reports its own path as an
@@ -131,98 +131,98 @@ public sealed class RangeLifetimeScenarioTests
     [Fact]
     public async Task ReversedListDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(50000):\n    x = reversed([1, 2])\nreturn 0\n", "0");
+            "for i in range(" + Iterations(50000) + "):\n    x = reversed([1, 2])\nreturn 0\n", "0");
 
     [Fact]
     public async Task ReversedRangeDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(50000):\n    x = reversed(range(3))\nreturn 0\n", "0");
+            "for i in range(" + Iterations(50000) + "):\n    x = reversed(range(3))\nreturn 0\n", "0");
 
     [Fact]
     public async Task ReversedStrDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(50000):\n    x = reversed(\"ab\")\nreturn 0\n", "0");
+            "for i in range(" + Iterations(50000) + "):\n    x = reversed(\"ab\")\nreturn 0\n", "0");
 
     [Fact]
     public async Task ReversedDictDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(50000):\n    x = reversed({1: 2})\nreturn 0\n", "0");
+            "for i in range(" + Iterations(50000) + "):\n    x = reversed({1: 2})\nreturn 0\n", "0");
 
     [Fact]
     public async Task IterListDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(50000):\n    x = iter([1, 2])\nreturn 0\n", "0");
+            "for i in range(" + Iterations(50000) + "):\n    x = iter([1, 2])\nreturn 0\n", "0");
 
     [Fact]
     public async Task IterRangeDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(50000):\n    x = iter(range(3))\nreturn 0\n", "0");
+            "for i in range(" + Iterations(50000) + "):\n    x = iter(range(3))\nreturn 0\n", "0");
 
     [Fact]
     public async Task IterStrDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(50000):\n    x = iter(\"ab\")\nreturn 0\n", "0");
+            "for i in range(" + Iterations(50000) + "):\n    x = iter(\"ab\")\nreturn 0\n", "0");
 
     [Fact]
     public async Task ListDunderReversedCompletes()
         => await AssertCompletes(
-            "for i in range(50000):\n    x = [1, 2].__reversed__()\nreturn 0\n", "0");
+            "for i in range(" + Iterations(50000) + "):\n    x = [1, 2].__reversed__()\nreturn 0\n", "0");
 
     [Fact]
     public async Task DequeDunderReversedCompletes()
         => await AssertCompletes(
-            "import collections\nd = collections.deque([1, 2])\nfor i in range(50000):\n    x = d.__reversed__()\nreturn 0\n", "0");
+            "import collections\nd = collections.deque([1, 2])\nfor i in range(" + Iterations(50000) + "):\n    x = d.__reversed__()\nreturn 0\n", "0");
 
     [Fact]
     public async Task DictDunderReversedCompletes()
         => await AssertCompletes(
-            "d = {1: 2}\nfor i in range(50000):\n    x = d.__reversed__()\nreturn 0\n", "0");
+            "d = {1: 2}\nfor i in range(" + Iterations(50000) + "):\n    x = d.__reversed__()\nreturn 0\n", "0");
 
     [Fact]
     public async Task DictKeysDunderReversedCompletes()
         => await AssertCompletes(
-            "d = {1: 2}\nfor i in range(50000):\n    x = d.keys().__reversed__()\nreturn 0\n", "0");
+            "d = {1: 2}\nfor i in range(" + Iterations(50000) + "):\n    x = d.keys().__reversed__()\nreturn 0\n", "0");
 
     [Fact]
     public async Task DictValuesDunderReversedCompletes()
         => await AssertCompletes(
-            "d = {1: 2}\nfor i in range(50000):\n    x = d.values().__reversed__()\nreturn 0\n", "0");
+            "d = {1: 2}\nfor i in range(" + Iterations(50000) + "):\n    x = d.values().__reversed__()\nreturn 0\n", "0");
 
     [Fact]
     public async Task DictItemsDunderReversedCompletes()
         => await AssertCompletes(
-            "d = {1: 2}\nfor i in range(50000):\n    x = d.items().__reversed__()\nreturn 0\n", "0");
+            "d = {1: 2}\nfor i in range(" + Iterations(50000) + "):\n    x = d.items().__reversed__()\nreturn 0\n", "0");
 
     [Fact]
     public async Task DefaultDictDunderReversedCompletes()
         => await AssertCompletes(
-            "import collections\nd = collections.defaultdict(list)\nd[\"k\"] = 1\nfor i in range(50000):\n    x = d.__reversed__()\nreturn 0\n", "0");
+            "import collections\nd = collections.defaultdict(list)\nd[\"k\"] = 1\nfor i in range(" + Iterations(50000) + "):\n    x = d.__reversed__()\nreturn 0\n", "0");
 
     [Fact]
     public async Task CounterDunderReversedCompletes()
         => await AssertCompletes(
-            "import collections\nc = collections.Counter(\"ab\")\nfor i in range(50000):\n    x = c.__reversed__()\nreturn 0\n", "0");
+            "import collections\nc = collections.Counter(\"ab\")\nfor i in range(" + Iterations(50000) + "):\n    x = c.__reversed__()\nreturn 0\n", "0");
 
     // Member __iter__ dunders construct the same pooled shells as iter(); explicit
     // dunder calls in a loop strand without the call-site ownership below.
     [Fact]
     public async Task ListIterDunderCompletes()
         => await AssertCompletes(
-            "for i in range(50000):\n    x = [1, 2].__iter__()\nreturn 0\n", "0");
+            "for i in range(" + Iterations(50000) + "):\n    x = [1, 2].__iter__()\nreturn 0\n", "0");
 
     [Fact]
     public async Task DictKeysIterDunderCompletes()
         => await AssertCompletes(
-            "d = {1: 2}\nfor i in range(50000):\n    x = d.keys().__iter__()\nreturn 0\n", "0");
+            "d = {1: 2}\nfor i in range(" + Iterations(50000) + "):\n    x = d.keys().__iter__()\nreturn 0\n", "0");
 
     [Fact]
     public async Task StrIterDunderCompletes()
         => await AssertCompletes(
-            "for i in range(50000):\n    x = \"ab\".__iter__()\nreturn 0\n", "0");
+            "for i in range(" + Iterations(50000) + "):\n    x = \"ab\".__iter__()\nreturn 0\n", "0");
 
     [Fact]
     public async Task SetIterDunderCompletes()
         => await AssertCompletes(
-            "for i in range(50000):\n    x = {1, 2}.__iter__()\nreturn 0\n", "0");
+            "for i in range(" + Iterations(50000) + "):\n    x = {1, 2}.__iter__()\nreturn 0\n", "0");
 
 }

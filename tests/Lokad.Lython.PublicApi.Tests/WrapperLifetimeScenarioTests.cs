@@ -3,12 +3,12 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 // M05: collection wrappers own shell plus backing with reclamation.
-public sealed class WrapperLifetimeScenarioTests
-{    private const long ThreeMib = 3145728;
+public class WrapperLifetimeScenarioTests : LifetimeScenario
+{    private long StreamingBudget => Budget(3145728);
 
-    private static LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = ThreeMib };
+    private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
 
-    private static async Task AssertCompletes(string source, string expected)
+    private async Task AssertCompletes(string source, string expected)
     {
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
@@ -23,31 +23,31 @@ public sealed class WrapperLifetimeScenarioTests
     [Fact]
     public async Task CounterDiscardCompletes()
         => await AssertCompletes(
-            "from collections import Counter\nfor i in range(100000):\n    x = Counter(a=1)\nreturn 0\n", "0");
+            "from collections import Counter\nfor i in range(" + Iterations(100000) + "):\n    x = Counter(a=1)\nreturn 0\n", "0");
 
     [Fact]
     public async Task DefaultdictKwargsDiscardCompletes()
         => await AssertCompletes(
-            "from collections import defaultdict\nfor i in range(100000):\n    x = defaultdict(int, a=1)\nreturn 0\n", "0");
+            "from collections import defaultdict\nfor i in range(" + Iterations(100000) + "):\n    x = defaultdict(int, a=1)\nreturn 0\n", "0");
 
     [Fact]
     public async Task DictKwargsDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(100000):\n    x = dict(a=1)\nreturn 0\n", "0");
+            "for i in range(" + Iterations(100000) + "):\n    x = dict(a=1)\nreturn 0\n", "0");
 
     [Fact]
     public async Task DefaultdictDiscardCompletes()
         => await AssertCompletes(
-            "from collections import defaultdict\nfor i in range(100000):\n    x = defaultdict(list)\nreturn 0\n", "0");
+            "from collections import defaultdict\nfor i in range(" + Iterations(100000) + "):\n    x = defaultdict(list)\nreturn 0\n", "0");
     [Fact]
     public async Task FromKeysDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(100000):\n    x = dict.fromkeys(['a', 'b'], 0)\nreturn 0\n", "0");
+            "for i in range(" + Iterations(100000) + "):\n    x = dict.fromkeys(['a', 'b'], 0)\nreturn 0\n", "0");
 
     [Fact]
     public async Task FromKeysNoDefaultDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(100000):\n    x = {}.fromkeys(['a'])\nreturn 0\n", "0");
+            "for i in range(" + Iterations(100000) + "):\n    x = {}.fromkeys(['a'])\nreturn 0\n", "0");
 
     [Fact]
     public async Task FromKeysBehaves()
@@ -58,7 +58,7 @@ public sealed class WrapperLifetimeScenarioTests
     public async Task RetainedFromKeysDenied()
     {
         var script = new LythonEngine().Compile(
-            "objs = []\ni = 0\nwhile i < 20000:\n    objs.append(dict.fromkeys(['a', 'b'], 0))\n    i = i + 1\nreturn len(objs)\n");
+            "objs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(dict.fromkeys(['a', 'b'], 0))\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
         var sync = script.Run(new MockLythonHost(), options);
@@ -74,7 +74,7 @@ public sealed class WrapperLifetimeScenarioTests
     [Fact]
     public async Task DefaultdictUpdateKwargsDiscardCompletes()
         => await AssertCompletes(
-            "from collections import defaultdict\nfor i in range(50000):\n    d = defaultdict(int)\n    d.update(a=1)\nreturn 0\n", "0");
+            "from collections import defaultdict\nfor i in range(" + Iterations(50000) + "):\n    d = defaultdict(int)\n    d.update(a=1)\nreturn 0\n", "0");
 
     [Fact]
     public async Task DefaultdictUpdateKwargsBehaves()
@@ -85,7 +85,7 @@ public sealed class WrapperLifetimeScenarioTests
     public async Task RetainedDefaultdictUpdateDenied()
     {
         var script = new LythonEngine().Compile(
-            "from collections import defaultdict\nobjs = []\ni = 0\nwhile i < 20000:\n    d = defaultdict(int)\n    d.update(a=1)\n    objs.append(d)\n    i = i + 1\nreturn len(objs)\n");
+            "from collections import defaultdict\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    d = defaultdict(int)\n    d.update(a=1)\n    objs.append(d)\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
         var options = new LythonRunOptions { MaxExecutionMemoryBytes = 1048576 };
         var sync = script.Run(new MockLythonHost(), options);
@@ -101,7 +101,7 @@ public sealed class WrapperLifetimeScenarioTests
     [Fact]
     public async Task FromKeysAliasedDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(100000):\n    d = dict.fromkeys(['a', 'b'], 0)\n    e = d\n    x = (d, e)\nreturn 0\n", "0");
+            "for i in range(" + Iterations(100000) + "):\n    d = dict.fromkeys(['a', 'b'], 0)\n    e = d\n    x = (d, e)\nreturn 0\n", "0");
 
     [Fact]
     public async Task FromKeysDeniedRecoversWhenFunded()

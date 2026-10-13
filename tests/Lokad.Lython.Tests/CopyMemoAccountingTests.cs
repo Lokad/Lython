@@ -9,6 +9,7 @@ namespace Lokad.Lython.Tests;
 /// durable view storage; an unexposed view refunds deterministically on
 /// disposal, while user-supplied memo dicts keep their own ownership.
 /// </summary>
+[Collection("AllocationSensitive")]
 public sealed class CopyMemoAccountingTests
 {
     private static object NewInternalMemo(LythonRuntime.ExecutionContext context, LythonSourceSpan span)

@@ -6,6 +6,7 @@ namespace Lokad.Lython.Tests;
 // M03: deque shells charge once per governed instance and every release path
 // re-snapshots the pool coupon, so a dropped deque releases exactly shell
 // plus live nodes with no safe-direction residue beyond later growth.
+[Collection("AllocationSensitive")]
 public sealed class DequeReclamationTests
 {
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]

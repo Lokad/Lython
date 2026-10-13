@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Text;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
@@ -13,10 +14,11 @@ public sealed class ImportedModuleScopeAccountingScenarioTests
     private static MockLythonHost SeededHost(out HashSet<string> allowed)
     {
         var host = new MockLythonHost();
-        var body = "";
-        for (var k = 0; k < 40000; k++) { body += "v" + k + " = " + k + "\n"; }
-        body += "def f():\n    return 1\n";
-        host.SeedFile("/big.py", body);
+        // Build the exact same fixture without quadratic string-copy traffic.
+        var body = new StringBuilder();
+        for (var k = 0; k < 40000; k++) body.Append('v').Append(k).Append(" = ").Append(k).Append('\n');
+        body.Append("def f():\n    return 1\n");
+        host.SeedFile("/big.py", body.ToString());
         allowed = new HashSet<string>(StringComparer.Ordinal) { "big" };
         return host;
     }

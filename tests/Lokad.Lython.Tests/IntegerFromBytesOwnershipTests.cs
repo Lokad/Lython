@@ -6,6 +6,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
+[Collection("AllocationSensitive")]
 public sealed class IntegerFromBytesOwnershipTests
 {
     private static readonly LythonSourceSpan Span = new(12, 4, 2, 3);

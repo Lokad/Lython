@@ -3,6 +3,12 @@ name: ci
 on:
   push:
   pull_request:
+  workflow_dispatch:
+    inputs:
+      stress:
+        description: Include original containment stress scales at a delivery checkpoint
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -49,6 +55,12 @@ jobs:
       - name: Verify Release package consumer
         shell: pwsh
         run: ./tools/PackageSmokeTest/verify-package.ps1
+      - name: Test original stress scales
+        if: github.event_name == 'workflow_dispatch' && inputs.stress
+        shell: pwsh
+        run: |
+          try { dotnet test Lokad.Lython.slnx -c Release --no-build --filter 'Category=Stress' --blame-crash --blame-crash-dump-type mini --blame-hang-timeout 5m --blame-hang-dump-type mini 2>&1 | Tee-Object -FilePath stress-test.log } catch { exit 1 }
+          if ($LASTEXITCODE -ne 0) { exit 1 }
       - name: Publish crash dumps
         if: failure()
         uses: actions/upload-artifact@v4
@@ -64,4 +76,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-log-${{ matrix.os }}
-          path: test.log
+          path: |
+            test.log
+            stress-test.log

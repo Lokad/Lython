@@ -6,6 +6,7 @@ namespace Lokad.Lython.Tests;
 // MG11: the per-run identity registry owns one entry per distinct live
 // identity (shared across repeated lookups, released with dropped objects);
 // denied insertions strand nothing and recovery works after reclamation.
+[Collection("AllocationSensitive")]
 public sealed class IdentityRegistryAccountingTests
 {
     private static LythonRuntime.ExecutionContext NewRoot(long? budget, out MemoryGovernor governor)

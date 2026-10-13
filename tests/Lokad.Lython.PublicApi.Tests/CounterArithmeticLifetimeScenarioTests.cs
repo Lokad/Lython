@@ -3,14 +3,14 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 // M05: Counter arithmetic results own lifetime like the other operator factories do.
-public sealed class CounterArithmeticLifetimeScenarioTests
+public class CounterArithmeticLifetimeScenarioTests : LifetimeScenario
 {
-    private const long ThreeMib = 3145728;
-    private const long OneMib = 1048576;
+    private long StreamingBudget => Budget(3145728);
+    private long RetentionBudget => Budget(1048576);
 
-    private static LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = ThreeMib };
+    private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
 
-    private static async Task AssertCompletes(string source, string expected)
+    private async Task AssertCompletes(string source, string expected)
     {
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
@@ -25,42 +25,42 @@ public sealed class CounterArithmeticLifetimeScenarioTests
     [Fact]
     public async Task CounterAddDiscardCompletes()
         => await AssertCompletes(
-            "from collections import Counter\na = Counter(a=2)\nb = Counter(a=1, b=1)\nfor i in range(50000):\n    x = a + b\nreturn 0\n", "0");
+            "from collections import Counter\na = Counter(a=2)\nb = Counter(a=1, b=1)\nfor i in range(" + Iterations(50000) + "):\n    x = a + b\nreturn 0\n", "0");
 
     [Fact]
     public async Task CounterSubDiscardCompletes()
         => await AssertCompletes(
-            "from collections import Counter\na = Counter(a=2)\nb = Counter(a=1, b=1)\nfor i in range(50000):\n    x = a - b\nreturn 0\n", "0");
+            "from collections import Counter\na = Counter(a=2)\nb = Counter(a=1, b=1)\nfor i in range(" + Iterations(50000) + "):\n    x = a - b\nreturn 0\n", "0");
 
     [Fact]
     public async Task CounterOrDiscardCompletes()
         => await AssertCompletes(
-            "from collections import Counter\na = Counter(a=2)\nb = Counter(a=1, b=1)\nfor i in range(50000):\n    x = a | b\nreturn 0\n", "0");
+            "from collections import Counter\na = Counter(a=2)\nb = Counter(a=1, b=1)\nfor i in range(" + Iterations(50000) + "):\n    x = a | b\nreturn 0\n", "0");
 
     [Fact]
     public async Task CounterAndDiscardCompletes()
         => await AssertCompletes(
-            "from collections import Counter\na = Counter(a=2)\nb = Counter(a=1, b=1)\nfor i in range(50000):\n    x = a & b\nreturn 0\n", "0");
+            "from collections import Counter\na = Counter(a=2)\nb = Counter(a=1, b=1)\nfor i in range(" + Iterations(50000) + "):\n    x = a & b\nreturn 0\n", "0");
 
     [Fact]
     public async Task CounterUnaryDiscardCompletes()
         => await AssertCompletes(
-            "from collections import Counter\na = Counter(a=2, b=-1)\nfor i in range(50000):\n    x = +a\n    y = -a\nreturn 0\n", "0");
+            "from collections import Counter\na = Counter(a=2, b=-1)\nfor i in range(" + Iterations(50000) + "):\n    x = +a\n    y = -a\nreturn 0\n", "0");
 
     [Fact]
     public async Task CounterMixedOrDiscardCompletes()
         => await AssertCompletes(
-            "from collections import Counter\nc = Counter(a=1)\nfor i in range(50000):\n    x = c | {'b': 2}\n    y = {'b': 2} | c\nreturn 0\n", "0");
+            "from collections import Counter\nc = Counter(a=1)\nfor i in range(" + Iterations(50000) + "):\n    x = c | {'b': 2}\n    y = {'b': 2} | c\nreturn 0\n", "0");
 
     [Fact]
     public async Task CounterDecimalAddDiscardCompletes()
         => await AssertCompletes(
-            "from collections import Counter\nimport decimal\na = Counter({'x': decimal.Decimal('1')})\nb = Counter({'y': decimal.Decimal('2')})\nfor i in range(50000):\n    x = a + b\nreturn 0\n", "0");
+            "from collections import Counter\nimport decimal\na = Counter({'x': decimal.Decimal('1')})\nb = Counter({'y': decimal.Decimal('2')})\nfor i in range(" + Iterations(50000) + "):\n    x = a + b\nreturn 0\n", "0");
 
     [Fact]
     public async Task CounterDecimalUpdateDiscardCompletes()
         => await AssertCompletes(
-            "from collections import Counter\nimport decimal\nc = Counter()\nd = {'x': decimal.Decimal('1')}\nfor i in range(50000):\n    c.update(d)\nreturn 0\n", "0");
+            "from collections import Counter\nimport decimal\nc = Counter()\nd = {'x': decimal.Decimal('1')}\nfor i in range(" + Iterations(50000) + "):\n    c.update(d)\nreturn 0\n", "0");
 
     [Fact]
     public async Task CounterDecimalBehaves()
@@ -75,16 +75,16 @@ public sealed class CounterArithmeticLifetimeScenarioTests
     public async Task RetainedCounterArithmeticDenied()
     {
         var script = new LythonEngine().Compile(
-            "from collections import Counter\na = Counter(a=2)\nb = Counter(a=1, b=1)\nobjs = []\ni = 0\nwhile i < 20000:\n    objs.append(a + b)\n    i = i + 1\nreturn len(objs)\n");
+            "from collections import Counter\na = Counter(a=2)\nb = Counter(a=1, b=1)\nobjs = []\ni = 0\nwhile i < " + Iterations(20000) + ":\n    objs.append(a + b)\n    i = i + 1\nreturn len(objs)\n");
         Assert.True(script.IsValid);
-        var options = new LythonRunOptions { MaxExecutionMemoryBytes = OneMib };
+        var options = new LythonRunOptions { MaxExecutionMemoryBytes = RetentionBudget };
         var sync = script.Run(new MockLythonHost(), options);
         Assert.False(sync.Success);
         Assert.Equal("MemoryError", sync.Failure?.ExceptionType);
-        Assert.True(sync.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(sync.PeakExecutionMemoryBytes <= RetentionBudget);
         var asyncResult = await script.RunAsync(new MockLythonHost(), options);
         Assert.False(asyncResult.Success);
         Assert.Equal("MemoryError", asyncResult.Failure?.ExceptionType);
-        Assert.True(asyncResult.PeakExecutionMemoryBytes <= OneMib);
+        Assert.True(asyncResult.PeakExecutionMemoryBytes <= RetentionBudget);
     }
 }

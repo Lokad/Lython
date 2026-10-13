@@ -10,6 +10,7 @@ namespace Lokad.Lython.Tests;
 /// (Pairs arrive through a parameter; unbounded iterables validate with a
 /// bounded pull horizon, so the message stays generic past it.)
 /// </summary>
+[Collection("AllocationSensitive")]
 public sealed class DictUpdatePairsAccountingTests
 {
     private const string OversizedPair =

@@ -6,6 +6,7 @@ namespace Lokad.Lython.Tests;
 // MG03/MG04: factory snapshots mirror committed charges, so drops release
 // exactly; wholesale replacement re-snapshots through the value, so clears
 // release only the live remainder instead of the stale backing.
+[Collection("AllocationSensitive")]
 public sealed class FactoryStorageAccountingTests
 {
     [Fact]

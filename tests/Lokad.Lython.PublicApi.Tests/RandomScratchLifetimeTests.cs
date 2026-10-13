@@ -30,25 +30,41 @@ public sealed class RandomScratchLifetimeTests
 
     [Fact]
     public async Task CountedSampleDiscards_SucceedUnderBudget()
+        => await AssertCountedSample(128, 16, 3, 16384);
+
+    [Fact]
+    [Trait("Category", "Stress")]
+    public async Task CountedSampleStress()
+        => await AssertCountedSample(1000, 1000, 50, 4194304);
+
+    private static async Task AssertCountedSample(int iterations, int population, int picks, long budget)
         => await AssertCompletes(
-            """
+            $"""
             import random
-            for i in range(1000):
-                random.sample(range(1000), 50, counts=[50]*1000)
+            for i in range({iterations}):
+                random.sample(range({population}), {picks}, counts=[50]*{population})
             return "ok"
             """,
-            "ok", 4194304);
+            "ok", budget);
 
     [Fact]
     public async Task FloydSampleDiscards_SucceedUnderBudget()
+        => await AssertFloydSample(64, 1000, 3, 65536);
+
+    [Fact]
+    [Trait("Category", "Stress")]
+    public async Task FloydSampleStress()
+        => await AssertFloydSample(1000, 1000, 3, 1048576);
+
+    private static async Task AssertFloydSample(int iterations, int population, int picks, long budget)
         => await AssertCompletes(
-            """
+            $"""
             import random
-            for i in range(1000):
-                random.sample(range(1000), 3)
+            for i in range({iterations}):
+                random.sample(range({population}), {picks})
             return "ok"
             """,
-            "ok", 1048576);
+            "ok", budget);
 
     [Fact]
     public async Task WeightedChoicesFailRecover_SucceedsUnderBudget()

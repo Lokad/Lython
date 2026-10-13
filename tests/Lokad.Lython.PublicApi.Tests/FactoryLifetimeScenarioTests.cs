@@ -3,12 +3,12 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
 // M05: comprehension results own lifetime like displays do.
-public sealed class FactoryLifetimeScenarioTests
-{    private const long ThreeMib = 3145728;
+public class FactoryLifetimeScenarioTests : LifetimeScenario
+{    private long StreamingBudget => Budget(3145728);
 
-    private static LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = ThreeMib };
+    private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
 
-    private static async Task AssertCompletes(string source, string expected)
+    private async Task AssertCompletes(string source, string expected)
     {
         var script = new LythonEngine().Compile(source);
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Code + ":" + d.Message)));
@@ -21,25 +21,25 @@ public sealed class FactoryLifetimeScenarioTests
     }    [Fact]
     public async Task ListComprehensionsDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(100000):\n    x = [j for j in range(2)]\nreturn 0\n", "0");
+            "for i in range(" + Iterations(100000) + "):\n    x = [j for j in range(2)]\nreturn 0\n", "0");
 
     [Fact]
     public async Task DictComprehensionsDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(100000):\n    x = {j: j for j in range(2)}\nreturn 0\n", "0");
+            "for i in range(" + Iterations(100000) + "):\n    x = {j: j for j in range(2)}\nreturn 0\n", "0");
 
     [Fact]
     public async Task ListDisplaysDiscardCompletes()
         => await AssertCompletes(
-            "for i in range(100000):\n    x = [1, 2]\nreturn 0\n", "0");
+            "for i in range(" + Iterations(100000) + "):\n    x = [1, 2]\nreturn 0\n", "0");
 
     [Fact]
     public async Task SetComprehensionOverRangeCompletes()
         => await AssertCompletes(
-            "for i in range(100000):\n    x = {j for j in range(2)}\nreturn 0\n", "0");
+            "for i in range(" + Iterations(100000) + "):\n    x = {j for j in range(2)}\nreturn 0\n", "0");
 
     [Fact]
     public async Task SetComprehensionOverTupleCompletes()
         => await AssertCompletes(
-            "for i in range(100000):\n    x = {j for j in (1,)}\nreturn 0\n", "0");
+            "for i in range(" + Iterations(100000) + "):\n    x = {j for j in (1,)}\nreturn 0\n", "0");
 }

@@ -70,9 +70,17 @@ return [math.factorial(20), math.comb(52, 5), math.perm(20, 3), math.isqrt(17),
 
     [Fact]
     public void SqrtAndLcmLargeMagnitudesMatchCpython()
+        => AssertLargeMagnitudes(256);
+
+    [Fact]
+    [Trait("Category", "Stress")]
+    public void SqrtAndLcmVeryLargeMagnitudesMatchCpython()
+        => AssertLargeMagnitudes(20000);
+
+    private static void AssertLargeMagnitudes(int exponent)
     {
         var result = new LythonEngine().Run(
-            "import math\nreturn [math.isqrt(10**20000) == 10**10000, math.lcm(10**30, 10**30 + 1) == 10**30 * (10**30 + 1)]\n",
+            $"import math\nreturn [math.isqrt(10**{exponent}) == 10**{exponent / 2}, math.lcm(10**30, 10**30 + 1) == 10**30 * (10**30 + 1)]\n",
             new MockLythonHost());
         Assert.True(result.Success, result.Failure?.Message);
         Assert.Equal(new List<object?> { true, true }, result.ReturnValue);

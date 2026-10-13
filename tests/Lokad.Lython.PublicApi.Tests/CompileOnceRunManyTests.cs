@@ -6,6 +6,7 @@ namespace Lokad.Lython.PublicApi.Tests;
 // across invocations; per-invocation host analysis is shared per capability
 // fingerprint instead of re-walking the tree. Hosts that gain capabilities
 // between runs re-evaluate instead of serving stale denials.
+[Collection("RuntimeStress")]
 public sealed class CompileOnceRunManyTests
 {
     [Fact]

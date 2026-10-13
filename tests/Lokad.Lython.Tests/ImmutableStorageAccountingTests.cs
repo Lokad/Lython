@@ -4,6 +4,7 @@ using Lokad.Lython.Runtime;
 
 namespace Lokad.Lython.Tests;
 
+[Collection("AllocationSensitive")]
 public sealed class ImmutableStorageAccountingTests
 {
     [Fact]

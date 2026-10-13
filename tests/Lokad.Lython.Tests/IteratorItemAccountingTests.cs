@@ -11,6 +11,7 @@ namespace Lokad.Lython.Tests;
 /// dedup to the first registration, and abandoned pulls release through a full sweep.
 /// Deterministic via explicit collection plus a full drain.
 /// </summary>
+[Collection("AllocationSensitive")]
 public sealed class IteratorItemAccountingTests
 {
     [Fact]

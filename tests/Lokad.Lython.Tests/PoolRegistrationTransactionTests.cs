@@ -8,6 +8,7 @@ namespace Lokad.Lython.Tests;
 // R08/R09: pool registration is fully transactional and sweeps release exactly
 // on every exceptional exit. Each test pins deterministic governor/pool numbers
 // (not GC peak slopes) and runs under both Debug (strict pairing) and Release.
+[Collection("AllocationSensitive")]
 public sealed class PoolRegistrationTransactionTests
 {
     // R08 PLAN repro: 129 B funds a 1 B value plus the 128 B entry, but not the

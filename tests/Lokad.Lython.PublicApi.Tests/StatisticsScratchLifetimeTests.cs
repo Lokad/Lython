@@ -30,25 +30,41 @@ public sealed class StatisticsScratchLifetimeTests
 
     [Fact]
     public async Task FMeanDiscards_SucceedUnderBudget()
+        => await AssertFMean(64, 64, 16384);
+
+    [Fact]
+    [Trait("Category", "Stress")]
+    public async Task FMeanStress()
+        => await AssertFMean(1000, 1000, 262144);
+
+    private static async Task AssertFMean(int iterations, int population, long budget)
         => await AssertCompletes(
-            """
+            $"""
             import statistics
-            for i in range(1000):
-                statistics.fmean(range(1000))
+            for i in range({iterations}):
+                statistics.fmean(range({population}))
             return "ok"
             """,
-            "ok", 262144);
+            "ok", budget);
 
     [Fact]
     public async Task MedianDiscards_SucceedUnderBudget()
+        => await AssertMedian(64, 64, 16384);
+
+    [Fact]
+    [Trait("Category", "Stress")]
+    public async Task MedianStress()
+        => await AssertMedian(1000, 1000, 262144);
+
+    private static async Task AssertMedian(int iterations, int population, long budget)
         => await AssertCompletes(
-            """
+            $"""
             import statistics
-            for i in range(1000):
-                statistics.median(range(1000))
+            for i in range({iterations}):
+                statistics.median(range({population}))
             return "ok"
             """,
-            "ok", 262144);
+            "ok", budget);
 
     [Fact]
     public async Task WeightedFailRecover_SucceedsUnderBudget()

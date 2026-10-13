@@ -11,6 +11,7 @@ namespace Lokad.Lython.Tests;
 /// shared checkpoint cadence. Live rows and the pool's retained backing stay
 /// fully funded, and the surviving source keeps yielding correct rows.
 /// </summary>
+[Collection("AllocationSensitive")]
 public sealed class CsvAbandonedReaderAccountingTests
 {
     [Fact]

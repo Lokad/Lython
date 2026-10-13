@@ -3,6 +3,7 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
+[Collection("AllocationSensitive")]
 public sealed class TextReadEmissionOwnershipTests
 {
     [Theory]

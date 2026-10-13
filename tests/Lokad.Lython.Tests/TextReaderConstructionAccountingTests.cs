@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Lokad.Lython.Tests;
 
+[Collection("AllocationSensitive")]
 public sealed class TextReaderConstructionAccountingTests
 {
     [Theory]

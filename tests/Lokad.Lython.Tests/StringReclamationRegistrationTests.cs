@@ -4,6 +4,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Tests;
 
+[Collection("AllocationSensitive")]
 public sealed class StringReclamationRegistrationTests
 {
     [Fact]

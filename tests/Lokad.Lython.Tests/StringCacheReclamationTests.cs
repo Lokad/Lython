@@ -7,6 +7,7 @@ namespace Lokad.Lython.Tests;
 // M04: rune-offset tables and cached rune storage belong to the owning
 // string coupon: tracked strings release tables and runes with construction
 // on drop, and a denied mid-build cache rolls back to the pre-build coupon.
+[Collection("AllocationSensitive")]
 public sealed class StringCacheReclamationTests
 {
     [Fact]

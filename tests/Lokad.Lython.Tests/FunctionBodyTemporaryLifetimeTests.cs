@@ -6,6 +6,7 @@ using Context = Lokad.Lython.Runtime.LythonRuntime.ExecutionContext;
 
 namespace Lokad.Lython.Tests;
 
+[Collection("AllocationSensitive")]
 public sealed class FunctionBodyTemporaryLifetimeTests
 {
     private static readonly LythonSourceSpan Span = new(2000, 4, 90, 1);
