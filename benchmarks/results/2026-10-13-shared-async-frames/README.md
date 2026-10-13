@@ -77,3 +77,17 @@ stack admission, host mediation, cancellation, allocation preflights, retained
 alias funding and bounded public projection retain their contracts. Async fuel
 counts now follow compiled module operations where applicable; their internal
 unit remains implementation-defined as documented in SPEC.md.
+
+## CI cancellation-controller correction
+
+Delivery run 38345505644 passed Ubuntu but failed one Windows assertion in
+`CancellationDuringPrimitiveAggregationStopsTheActualRun`: the continuation of
+its nominal 100-ms `Task.Delay` observed a completed `min(range(n))` run after
+six seconds, before the test issued cancellation. The fixture depended on pool
+scheduling for its cancellation clock while synchronous runs can occupy workers.
+The corrected test uses a dedicated managed controller after the actual stdout
+checkpoint, still verifies the aggregate was unfinished at cancellation, checks
+the real cancelled result and joins both run and controller. Its 32 focused
+aggregation/cancellation/worker controls pass. The original failed workflow is
+preserved, not rerun or counted as green; a new descendant CI is required.
+Production tree `e4039283`, measured DLLs and timing receipts are unchanged.

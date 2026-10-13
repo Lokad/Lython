@@ -31,8 +31,8 @@ public sealed class BuiltinIterationCancellationTests
             + "print('started')\nprint(" + expression + ")\n");
         Assert.True(script.IsValid, string.Join("|", script.Diagnostics.Select(d => d.Message)));
         using var cancellation = new CancellationTokenSource();
-        var entered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var host = new MockLythonHost { OnStandardOutputWrite = () => entered.TrySetResult(true) };
+        using var entered = new ManualResetEventSlim();
+        var host = new MockLythonHost { OnStandardOutputWrite = entered.Set };
         var options = new LythonRunOptions
         {
             CancellationToken = cancellation.Token,
@@ -40,15 +40,25 @@ public sealed class BuiltinIterationCancellationTests
         var pending = asynchronous
             ? Task.Run(() => script.RunAsync(host, options, cancellation.Token))
             : Task.Run(() => script.Run(host, options));
+        var observedEntry = false;
+        var completedBeforeCancellation = false;
+        // The run can occupy a pool worker; a delayed pool continuation is not
+        // a reliable cancellation clock under concurrent CI load.
+        var controller = new Thread(() =>
+        {
+            observedEntry = entered.Wait(TimeSpan.FromSeconds(10));
+            if (observedEntry) Thread.Sleep(100);
+            completedBeforeCancellation = pending.IsCompleted;
+            cancellation.Cancel();
+        }) { IsBackground = true };
+        controller.Start();
         try
         {
-            await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
-            await Task.Delay(100);
-            Assert.False(pending.IsCompleted, pending.IsCompleted
-                ? "The aggregate ended before cancellation: " + (await pending).Failure?.Message
-                : "The aggregate must still be executing when canceled.");
-            cancellation.Cancel();
-            var result = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+            var result = await pending.WaitAsync(TimeSpan.FromSeconds(15));
+            Assert.True(controller.Join(TimeSpan.FromSeconds(1)), "Cancellation controller did not finish.");
+            Assert.True(observedEntry, "The actual run never reached the aggregate checkpoint.");
+            Assert.False(completedBeforeCancellation,
+                "The aggregate ended before cancellation: " + result.Failure?.Message);
             Assert.False(result.Success);
             Assert.Equal("RuntimeError", result.Failure?.ExceptionType);
             Assert.Contains("execution canceled", result.Failure?.Message ?? "", StringComparison.Ordinal);
@@ -57,9 +67,11 @@ public sealed class BuiltinIterationCancellationTests
         finally
         {
             cancellation.Cancel();
+            entered.Set();
             // A timeout must not masquerade as cancellation while leaving a
             // background interpreter running. Always join the actual run.
             await pending;
+            Assert.True(controller.Join(TimeSpan.FromSeconds(1)), "Cancellation controller cleanup did not finish.");
         }
     }
 
