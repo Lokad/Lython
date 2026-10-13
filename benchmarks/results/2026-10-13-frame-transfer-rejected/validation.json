@@ -1,0 +1,42 @@
+{
+  "candidate": "8366e832bf7de39ec0b8783ac705fe29efa3dea9",
+  "candidateProduction": "624f8a69704dd95020ca7ace2f58fe9598bfdec1",
+  "before": "9dcbf6fcaa480a642d6727f656d74578f2a93c3a",
+  "fullRelease": {
+    "total": "10893",
+    "executed": "10893",
+    "passed": "10893",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "candidatePackageSha512": "7b484a0d289cfe7aab6748ab50486257ed31a98a1996f1c26595883332caeba52f1c30ed8a7930b1df6bfaf9f45294822c3ba55b891c6a414d72f093bb286c45",
+  "candidatePackageDllSha256": "bb341e3b1b7465c7567a3071cc9ec0d13bc518382afb816ee85d89c354683711",
+  "medianMicroseconds": {
+    "baseline": 1152.7962307692308,
+    "candidate": 1268.06452,
+    "CPython": 616.1851960784314
+  },
+  "candidateIncreasePercent": 9.999016838722108,
+  "adoption": "rejected; reverted in 87b07244; production restored to325120a6",
+  "classification": "one short diagnostic, not qualified performance/latency or current-HEAD claim",
+  "publishedFilesSha256": {
+    "catalog.json": "51d15db48ee7d6e4c35f7387ce3f05c93b453792d99286fb1132171c14529f07",
+    "manifest.json": "06c6f24a51973377e7557ac5c3394ae77b013bd6b979474a1e331f4510f302ee",
+    "micro.json": "7c0e1307dae105a02d3bb6e8c51f74a41597902b155868d13baf4986f4e65972",
+    "process.receipt.json": "9e78523e69d91442ad8955e68ff9b3c4ec424248a9fa21f8a2365809cae17dcb",
+    "run-micro.py": "cb994f73efdbeca32281770c4a65193d7e354672d1f5cf001b1a1e0c89293782",
+    "stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout.txt": "c0ebe2550eaebbe1171fdda17c4a22e62b3fa6f0acb4925f1bdc8702a6313416"
+  }
+}

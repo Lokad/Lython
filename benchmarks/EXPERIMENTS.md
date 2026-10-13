@@ -5,6 +5,11 @@ must not be read as measurements of current HEAD. See [BENCHMARKS.md](../BENCHMA
 for the authoritative comparison and [COMPARISON.md](COMPARISON.md) for methods.
 The original narratives and evidence links follow unchanged.
 
+The [2026-10-13 frame-transfer experiment](results/2026-10-13-frame-transfer-rejected/README.md)
+passed candidate correctness gates but added about 10% to the short integer-loop
+diagnostic. The universal retained extent/completion rule was rejected and
+reverted. These candidate timings are historical; they do not describe HEAD.
+
 # Lython and CPython comparison contract
 
 Specification version **6**, used by the declared milestone collections. The catalog
@@ -422,4 +427,3 @@ not predicted savings. Twenty-seven independent invocation checks precede an
 isolated function-body strategy. Baseline and candidate each pass 9,395 Debug
 tests, 181 selected checks and 58 CPython comparisons. Fresh Release gates and
 short candidate micros remain pending; no gain or integration is claimed.
-

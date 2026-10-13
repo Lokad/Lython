@@ -15,3 +15,7 @@ benchmarks/results/2026-10-13-proved-string-admission/reproduce/** -text whitesp
 benchmarks/results/2026-10-13-shared-async-frames/*.json -text whitespace=cr-at-eol
 benchmarks/results/2026-10-13-shared-async-frames/*.txt -text whitespace=cr-at-eol
 benchmarks/results/2026-10-13-shared-async-frames/*.py -text whitespace=cr-at-eol
+# Preserve the rejected frame experiment's frozen evidence and hashes.
+benchmarks/results/2026-10-13-frame-transfer-rejected/*.json -text whitespace=cr-at-eol
+benchmarks/results/2026-10-13-frame-transfer-rejected/*.txt -text whitespace=cr-at-eol
+benchmarks/results/2026-10-13-frame-transfer-rejected/*.py -text whitespace=cr-at-eol
