@@ -417,8 +417,9 @@ internal sealed partial class LythonRuntime
             switch (instruction.OpCode)
             {
                 case ExecutableOpCode.GetIter:
-                    var iterable = Pop(ref _stack, instruction.Span);
-                    _stack.Push(ToSequence(iterable, instruction.Span, _context).GetEnumerator());
+                    var iterableSlot = _stack.Count - 1;
+                    try { _stack[iterableSlot] = ToSequence(_stack[iterableSlot], instruction.Span, _context).GetEnumerator(); }
+                    catch { _stack.RemoveTail(_stack.Count - iterableSlot); throw; }
                     break;
 
                 case ExecutableOpCode.ForNext:
@@ -443,13 +444,11 @@ internal sealed partial class LythonRuntime
                     break;
 
                 case ExecutableOpCode.Subscript:
-                    var index = Pop(ref _stack, instruction.Span);
-                    var target = Pop(ref _stack, instruction.Span);
-                    PushObserved(ReadSubscriptValue(target, index, instruction.Span, _context), instruction.Span);
-                    break;
-
                 case ExecutableOpCode.Slice:
-                    PushObserved(ExecuteExecutableSlice(ref _stack, instruction.SliceParts, instruction.Span, _context), instruction.Span);
+                case ExecutableOpCode.Binary:
+                case ExecutableOpCode.Augmented:
+                case ExecutableOpCode.Unary:
+                    ExecuteObservedValueOperation(instruction);
                     break;
 
                 case ExecutableOpCode.MakeSlice:
@@ -457,38 +456,39 @@ internal sealed partial class LythonRuntime
                     PushObserved(CreateSliceValue(start, stop, step, instruction.Span, _context), instruction.Span);
                     break;
 
-                case ExecutableOpCode.Binary:
-                    var binaryRight = Pop(ref _stack, instruction.Span);
-                    var binaryLeft = Pop(ref _stack, instruction.Span);
-                    PushObserved(EvaluateExecutableBinary(
-                        instruction.BinaryOperator,
-                        binaryLeft,
-                        binaryRight,
-                        instruction.Span,
-                        _context), instruction.Span);
-                    break;
-
-                case ExecutableOpCode.Augmented:
-                    var augmentedRight = Pop(ref _stack, instruction.Span);
-                    var augmentedLeft = Pop(ref _stack, instruction.Span);
-                    PushObserved(EvaluateExecutableAugmented(
-                        instruction.AugmentedOperator,
-                        augmentedLeft,
-                        augmentedRight,
-                        _context,
-                        instruction.Span), instruction.Span);
-                    break;
-
-                case ExecutableOpCode.Unary:
-                    PushObserved(EvaluateExecutableUnary(
-                        instruction.UnaryOperator,
-                        Pop(ref _stack, instruction.Span),
-                        _context,
-                        instruction.Span), instruction.Span);
-                    break;
             }
 
             return false;
+        }
+
+        private static int ValueOperationInputCount(in ExecutableInstruction instruction) => instruction.OpCode switch
+        {
+            ExecutableOpCode.Unary => 1,
+            ExecutableOpCode.Slice => 1 + System.Numerics.BitOperations.PopCount((uint)instruction.SliceParts),
+            _ => 2,
+        };
+
+        private void ExecuteObservedValueOperation(in ExecutableInstruction instruction)
+        {
+            var first = _stack.Count - ValueOperationInputCount(instruction);
+            try
+            {
+                // Borrow the actual operands through callback reentry. Completion
+                // reuses their first slot before result admission; no extra extent.
+                var result = instruction.OpCode switch
+                {
+                    ExecutableOpCode.Subscript => ReadSubscriptValue(_stack[first], _stack[first + 1], instruction.Span, _context),
+                    ExecutableOpCode.Slice => ExecuteExecutableSlice(ref _stack, instruction.SliceParts, instruction.Span, _context),
+                    ExecutableOpCode.Binary => EvaluateExecutableBinary(instruction.BinaryOperator,
+                        _stack[first], _stack[first + 1], instruction.Span, _context),
+                    ExecutableOpCode.Augmented => EvaluateExecutableAugmented(instruction.AugmentedOperator,
+                        _stack[first], _stack[first + 1], _context, instruction.Span),
+                    ExecutableOpCode.Unary => EvaluateExecutableUnary(instruction.UnaryOperator, _stack[first], _context, instruction.Span),
+                    _ => throw new InvalidOperationException("Unexpected observed value operation."),
+                };
+                CompleteExecutableValueTransfer(ref _stack, first, result, _context, instruction.Span);
+            }
+            catch { _stack.RemoveTail(_stack.Count - first); throw; }
         }
 
         // Ordinary returns deliver without throwing: a cleanup that handles

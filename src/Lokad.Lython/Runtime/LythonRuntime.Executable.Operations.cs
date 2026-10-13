@@ -75,31 +75,25 @@ internal sealed partial class LythonRuntime
 
     private static object ExecuteExecutableSlice(ref ExecutableValueStack stack, ExecutableSliceParts parts, LythonSourceSpan span, ExecutionContext context)
     {
-        var (start, end, step) = PopExecutableSliceBounds(ref stack, parts, span);
-        var target = Pop(ref stack, span);
+        var (start, end, step) = ReadExecutableSliceBounds(in stack, parts, out var first);
+        var target = stack[first - 1];
         return ReadSliceValue(target, start, end, step, span, context);
+    }
+
+    private static (object? Start, object? End, object? Step) ReadExecutableSliceBounds(in ExecutableValueStack stack, ExecutableSliceParts parts, out int first)
+    {
+        first = stack.Count;
+        var step = (parts & ExecutableSliceParts.Step) != 0 ? stack[--first] : null;
+        var end = (parts & ExecutableSliceParts.End) != 0 ? stack[--first] : null;
+        var start = (parts & ExecutableSliceParts.Start) != 0 ? stack[--first] : null;
+        return (start, end, step);
     }
 
     private static (object? Start, object? End, object? Step) PopExecutableSliceBounds(ref ExecutableValueStack stack, ExecutableSliceParts parts, LythonSourceSpan span)
     {
-        object? step = null;
-        object? end = null;
-        object? start = null;
-
-        if ((parts & ExecutableSliceParts.Step) != 0)
-        {
-            step = Pop(ref stack, span);
-        }
-        if ((parts & ExecutableSliceParts.End) != 0)
-        {
-            end = Pop(ref stack, span);
-        }
-        if ((parts & ExecutableSliceParts.Start) != 0)
-        {
-            start = Pop(ref stack, span);
-        }
-
-        return (start, end, step);
+        var bounds = ReadExecutableSliceBounds(in stack, parts, out var first);
+        while (stack.Count != first) _ = Pop(ref stack, span);
+        return bounds;
     }
 
     private static bool CanCacheRuntimeMemberTarget(object target)

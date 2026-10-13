@@ -57,7 +57,9 @@ internal sealed partial class LythonRuntime
             switch (instruction.OpCode)
             {
                 case ExecutableOpCode.GetIter:
-                    _stack.Push(await PyIteration.Cursor.CreateAsync(Pop(ref _stack, instruction.Span), instruction.Span, _context).ConfigureAwait(false));
+                    var iterableSlot = _stack.Count - 1;
+                    try { _stack[iterableSlot] = await PyIteration.Cursor.CreateAsync(_stack[iterableSlot], instruction.Span, _context).ConfigureAwait(false); }
+                    catch { _stack.RemoveTail(_stack.Count - iterableSlot); throw; }
                     break;
                 case ExecutableOpCode.ForNext:
                     var iterator = (PyIteration.Cursor)Peek(ref _stack, instruction.Span);
@@ -92,7 +94,7 @@ internal sealed partial class LythonRuntime
                                 () => new ValueTask<CallArgumentValue[]>(arguments)).ConfigureAwait(false);
                         }
                         finally { ReturnCallArguments(arguments); }
-                        CompleteExecutableCall(ref _stack, start, result, _context, instruction.Span);
+                        CompleteExecutableValueTransfer(ref _stack, start, result, _context, instruction.Span);
                     }
                     catch
                     {
@@ -101,32 +103,48 @@ internal sealed partial class LythonRuntime
                     }
                     break;
                 case ExecutableOpCode.Subscript:
-                    var index = Pop(ref _stack, instruction.Span);
-                    var receiver = Pop(ref _stack, instruction.Span);
-                    PushObserved(await ReadLoweredSubscriptAsync(receiver, index, instruction.Span, _context).ConfigureAwait(false), instruction.Span);
-                    break;
                 case ExecutableOpCode.Slice:
-                    var (sliceStart, sliceEnd, sliceStep) = PopExecutableSliceBounds(ref _stack, instruction.SliceParts, instruction.Span);
-                    var target = Pop(ref _stack, instruction.Span);
-                    PushObserved(await ReadSliceValueAsync(target, sliceStart, sliceEnd, sliceStep, instruction.Span, _context).ConfigureAwait(false), instruction.Span);
-                    break;
                 case ExecutableOpCode.Binary:
-                    var right = Pop(ref _stack, instruction.Span);
-                    var left = Pop(ref _stack, instruction.Span);
-                    PushObserved(await EvaluateBinaryOperatorAsync(MapExecutableBinary(instruction.BinaryOperator), left, right, _context, instruction.Span).ConfigureAwait(false), instruction.Span);
-                    break;
                 case ExecutableOpCode.Augmented:
-                    var augmentedRight = Pop(ref _stack, instruction.Span);
-                    var augmentedLeft = Pop(ref _stack, instruction.Span);
-                    PushObserved(await EvaluateAugmentedAssignmentAsync(augmentedLeft, augmentedRight,
-                        MapExecutableAugmented(instruction.AugmentedOperator), _context, instruction.Span).ConfigureAwait(false), instruction.Span);
-                    break;
                 case ExecutableOpCode.Unary:
-                    PushObserved(await EvaluateUnaryOperatorAsync(MapExecutableUnary(instruction.UnaryOperator), Pop(ref _stack, instruction.Span), _context, instruction.Span).ConfigureAwait(false), instruction.Span);
+                    await ExecuteObservedValueOperationAsync(instruction).ConfigureAwait(false);
                     break;
                 default: return ExecuteValueOperation(instruction);
             }
             return false;
+        }
+
+        private async ValueTask ExecuteObservedValueOperationAsync(ExecutableInstruction instruction)
+        {
+            var first = _stack.Count - ValueOperationInputCount(instruction);
+            try
+            {
+                object result;
+                switch (instruction.OpCode)
+                {
+                    case ExecutableOpCode.Subscript:
+                        result = await ReadLoweredSubscriptAsync(_stack[first], _stack[first + 1], instruction.Span, _context).ConfigureAwait(false);
+                        break;
+                    case ExecutableOpCode.Slice:
+                        var (start, end, step) = ReadExecutableSliceBounds(in _stack, instruction.SliceParts, out _);
+                        result = await ReadSliceValueAsync(_stack[first], start, end, step, instruction.Span, _context).ConfigureAwait(false);
+                        break;
+                    case ExecutableOpCode.Binary:
+                        result = await EvaluateBinaryOperatorAsync(MapExecutableBinary(instruction.BinaryOperator),
+                            _stack[first], _stack[first + 1], _context, instruction.Span).ConfigureAwait(false);
+                        break;
+                    case ExecutableOpCode.Augmented:
+                        result = await EvaluateAugmentedAssignmentAsync(_stack[first], _stack[first + 1],
+                            MapExecutableAugmented(instruction.AugmentedOperator), _context, instruction.Span).ConfigureAwait(false);
+                        break;
+                    case ExecutableOpCode.Unary:
+                        result = await EvaluateUnaryOperatorAsync(MapExecutableUnary(instruction.UnaryOperator), _stack[first], _context, instruction.Span).ConfigureAwait(false);
+                        break;
+                    default: throw new InvalidOperationException("Unexpected observed value operation.");
+                }
+                CompleteExecutableValueTransfer(ref _stack, first, result, _context, instruction.Span);
+            }
+            catch { _stack.RemoveTail(_stack.Count - first); throw; }
         }
 
         private async ValueTask<bool> ExecuteControlFlowAsync(ExecutableInstruction instruction)
