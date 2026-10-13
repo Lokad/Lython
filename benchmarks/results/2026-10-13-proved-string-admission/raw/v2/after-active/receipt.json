@@ -1,0 +1,71 @@
+{
+  "label": "after-active",
+  "startedUtc": "2026-10-13T02:23:16.648382+00:00",
+  "eligible": true,
+  "exclusion": null,
+  "idleCpuPercent": [
+    0.0,
+    0.0
+  ],
+  "pid": 2257369,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedIncludingCleanupSeconds": 3.39230479800608,
+  "stdoutSha256": "275be97786e151b447b55356bdf4fa8e61a4dedfde44ba1cb173a34f7a5a8c2e",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stealTicks": 0,
+  "noiseDelta": {
+    "pswpin": 0,
+    "pswpout": 0,
+    "pgmajfault": 0
+  },
+  "result": {
+    "policy": "r10-bound-error-micro-v2",
+    "name": "pressure-bound-sync",
+    "control": false,
+    "asynchronous": false,
+    "pressure": true,
+    "windowSeconds": 1,
+    "preparationCollections": [
+      2,
+      2,
+      2
+    ],
+    "capBytes": 48000,
+    "retainedPayloadBytes": 32000,
+    "caughtDenialsPerJob": 128,
+    "retainedExceptions": 0,
+    "exposedDenials": 0,
+    "warmupYieldedJobs": 0,
+    "warmupDelayedHostCalls": 0,
+    "yieldedJobs": 0,
+    "delayedHostCalls": 0,
+    "qualification": "prospective controlled model; supervisor determines eligibility",
+    "observationSeconds": 1.0021842,
+    "completed": 540,
+    "peakBytes": 47968,
+    "modeledHostBytes": 134217728,
+    "modeledHostObjects": 131072,
+    "hostGenerationsBefore": [
+      0,
+      0,
+      131072
+    ],
+    "samples": 931,
+    "requestChecksum": 120197,
+    "allocatedBytes": 177811688,
+    "gcCollections": [
+      1080,
+      0,
+      0
+    ],
+    "cpuSeconds": 1.171353,
+    "cpuCoreFraction": 1.1688001068067129,
+    "processorCount": 4,
+    "runtime": "10.0.12",
+    "sourceSha256": "20155DACB2A98C348F81404A611D837AD440B625CC52F1320B169283AEFAA0A9",
+    "originalSourceSha256": "20155DACB2A98C348F81404A611D837AD440B625CC52F1320B169283AEFAA0A9",
+    "subjectInformationalVersion": "0.10.0+db040f52580ed89c1e932cddef1ec6b95fe8d5e5",
+    "subjectDllSha256": "4E18E59D45384949C5CEA487AC3A9E7B1CE472BBCFFC8E14A1D7BAFEC80F6A17"
+  }
+}

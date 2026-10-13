@@ -1,0 +1,47 @@
+{
+  "receipt": {
+    "pid": 2257153,
+    "exitCode": 0,
+    "timedOut": false,
+    "elapsedSeconds": 9.197160484967753,
+    "command": [
+      "/home/lokad/lython-bench-toolchains/dotnet/10.0.401/dotnet",
+      "build",
+      "/home/lokad/lython-bench-checks/proved-string-admission-db040f52-micro2-20261013/subject/ImpactProbe/Probe.csproj",
+      "-c",
+      "Release",
+      "-p:SubjectRoot=/home/lokad/lython-bench-checks/proved-string-admission-db040f52-micro2-20261013/subject",
+      "-p:SourceRevisionId=db040f52580ed89c1e932cddef1ec6b95fe8d5e5",
+      "-p:RepositoryCommit=db040f52580ed89c1e932cddef1ec6b95fe8d5e5",
+      "-p:EnableSourceControlManagerQueries=false",
+      "-p:EnableSourceLink=false",
+      "--tl:off",
+      "--nologo",
+      "-v",
+      "minimal"
+    ]
+  },
+  "identities": {
+    "before": {
+      "Lokad.Lython.dll": "f632f6ba119d5e294c7bdd0e14a9c6e4702157118cb89cd9079f6a2996f5bfae",
+      "Lokad.Parsing.dll": "d71fea270f731e88cebea2263f9acd6f934f13c6b73f906bd07dada8d593ff12",
+      "Probe.runtimeconfig.json": "9950d4583cfc9a106857c0d5b8a75b53e8774852b57b80bc3823a74d44a4d87f",
+      "JetBrains.Annotations.dll": "a1b1edbdbf6c41b8e564e03da4014d09928bc86370b97ac6cd166a669127c77d",
+      "Lokad.Utf8Regex.dll": "aca1473ed739b255219cc877726f22a632482ad6471e267a15371b4abbf4a113",
+      "Lokad.Utf8Regex.PythonRe.dll": "74e534f682104217fca4dee22881ec8ca4b1a8e3d396bd5efc9af43f26869429",
+      "Probe.deps.json": "644aa9724d23577180c20488d8edd13a01bbbc4b3a65fadcae559d5c186b308f",
+      "Probe.dll": "7dd1d0deddb469bfd885c5821f66cf764ebf240bca3d4d36d5a01db3b6f047e9"
+    },
+    "after": {
+      "Lokad.Lython.dll": "4e18e59d45384949c5cea487ac3a9e7b1ce472bbcffc8e14a1d7bafec80f6a17",
+      "Lokad.Parsing.dll": "d71fea270f731e88cebea2263f9acd6f934f13c6b73f906bd07dada8d593ff12",
+      "Probe.runtimeconfig.json": "9950d4583cfc9a106857c0d5b8a75b53e8774852b57b80bc3823a74d44a4d87f",
+      "JetBrains.Annotations.dll": "a1b1edbdbf6c41b8e564e03da4014d09928bc86370b97ac6cd166a669127c77d",
+      "Lokad.Utf8Regex.dll": "aca1473ed739b255219cc877726f22a632482ad6471e267a15371b4abbf4a113",
+      "Lokad.Utf8Regex.PythonRe.dll": "74e534f682104217fca4dee22881ec8ca4b1a8e3d396bd5efc9af43f26869429",
+      "Probe.deps.json": "644aa9724d23577180c20488d8edd13a01bbbc4b3a65fadcae559d5c186b308f",
+      "Probe.dll": "7dd1d0deddb469bfd885c5821f66cf764ebf240bca3d4d36d5a01db3b6f047e9"
+    }
+  },
+  "dotnetSha256": "01d89e0a0191052bfea616cd4ce624c8faf13b05bbddf7f64499c23e2a9d9269"
+}

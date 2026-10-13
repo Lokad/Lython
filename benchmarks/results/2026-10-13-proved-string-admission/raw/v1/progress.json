@@ -1,0 +1,90 @@
+[
+  {
+    "label": "before-control",
+    "startedUtc": "2026-10-13T02:17:18.126837+00:00",
+    "eligible": false,
+    "exclusion": "owned child/output gate",
+    "idleCpuPercent": [
+      0.0,
+      0.0
+    ],
+    "pid": 2256444,
+    "exitCode": -6,
+    "timedOut": false,
+    "elapsedIncludingCleanupSeconds": 5.105727777001448,
+    "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderrSha256": "430b61e5e104a12ef3b09e1ce6cf52bf820c83815ea8774e73762dc03bcb60a3",
+    "stealTicks": 0,
+    "noiseDelta": {
+      "pswpin": 0,
+      "pswpout": 0,
+      "pgmajfault": 0
+    }
+  },
+  {
+    "label": "before-active",
+    "startedUtc": "2026-10-13T02:17:23.733639+00:00",
+    "eligible": false,
+    "exclusion": "owned child/output gate",
+    "idleCpuPercent": [
+      0.0,
+      0.0
+    ],
+    "pid": 2256461,
+    "exitCode": -6,
+    "timedOut": false,
+    "elapsedIncludingCleanupSeconds": 5.393251132045407,
+    "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderrSha256": "65ddc01270314b983f2e7a973036cd3fe31857c6073a189074c8a61c380c05d8",
+    "stealTicks": 0,
+    "noiseDelta": {
+      "pswpin": 0,
+      "pswpout": 0,
+      "pgmajfault": 0
+    }
+  },
+  {
+    "label": "after-control",
+    "startedUtc": "2026-10-13T02:17:29.627963+00:00",
+    "eligible": false,
+    "exclusion": "owned child/output gate",
+    "idleCpuPercent": [
+      0.0,
+      0.0
+    ],
+    "pid": 2256476,
+    "exitCode": -6,
+    "timedOut": false,
+    "elapsedIncludingCleanupSeconds": 4.4557137960218824,
+    "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderrSha256": "f96fa41f78ae33c5bd368726cfccf1e99c01c36c5d778c0ad08c36e98b906d18",
+    "stealTicks": 0,
+    "noiseDelta": {
+      "pswpin": 0,
+      "pswpout": 0,
+      "pgmajfault": 0
+    }
+  },
+  {
+    "label": "after-active",
+    "startedUtc": "2026-10-13T02:17:34.584777+00:00",
+    "eligible": false,
+    "exclusion": "owned child/output gate",
+    "idleCpuPercent": [
+      0.0,
+      0.0
+    ],
+    "pid": 2256491,
+    "exitCode": -6,
+    "timedOut": false,
+    "elapsedIncludingCleanupSeconds": 4.4612417700118385,
+    "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderrSha256": "05857245333c4513f64cba65204287494e043016332f6b1093bbf1c8563a4028",
+    "stealTicks": 0,
+    "noiseDelta": {
+      "pswpin": 0,
+      "pswpout": 0,
+      "pgmajfault": 0
+    }
+  }
+]

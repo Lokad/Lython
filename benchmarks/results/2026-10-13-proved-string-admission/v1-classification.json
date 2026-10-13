@@ -1,0 +1,9 @@
+{
+  "qualification": "invalid setup, zero eligible measurements",
+  "reason": "Unchanged old1000-observation assertion remained in the one-second observer; all four children aborted before metrics printing",
+  "source": "db040f52",
+  "observerPolicy": "r10-bound-error-micro-v1",
+  "originals": 4,
+  "replacedSamples": 0,
+  "next": "one explicit observer correction, separate v2 root/identity; preserve v1 originals"
+}

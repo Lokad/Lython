@@ -1,0 +1,22 @@
+{
+  "label": "after-control",
+  "startedUtc": "2026-10-13T02:17:29.627963+00:00",
+  "eligible": false,
+  "exclusion": "owned child/output gate",
+  "idleCpuPercent": [
+    0.0,
+    0.0
+  ],
+  "pid": 2256476,
+  "exitCode": -6,
+  "timedOut": false,
+  "elapsedIncludingCleanupSeconds": 4.4557137960218824,
+  "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderrSha256": "f96fa41f78ae33c5bd368726cfccf1e99c01c36c5d778c0ad08c36e98b906d18",
+  "stealTicks": 0,
+  "noiseDelta": {
+    "pswpin": 0,
+    "pswpout": 0,
+    "pgmajfault": 0
+  }
+}

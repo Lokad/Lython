@@ -1,0 +1,48 @@
+{
+  "candidate": "db040f52580ed89c1e932cddef1ec6b95fe8d5e5",
+  "production": "9c68d231f03f6190a9119a5c078d2951854019a8",
+  "before": "7f5fbf70222de9ff96e9f241f2eff227fa911055",
+  "campaignSeconds": 17.204312609974295,
+  "eligibleSamples": 4,
+  "pairs": {
+    "before": {
+      "completed": 4,
+      "observationSeconds": 1.2819433,
+      "meanJobMilliseconds": 320.485825,
+      "gcCollections": [
+        1536,
+        1024,
+        512
+      ],
+      "gen2PerJob": 128.0,
+      "cpuSeconds": 1.312036,
+      "cpuMillisecondsPerJob": 328.009,
+      "allocatedBytesPerJob": 527586.0,
+      "peakBytes": 33984,
+      "samples": 504,
+      "requestP99Ms": 2.572166,
+      "addedRequestP99Ms": 2.505792,
+      "addedHeartbeatMaxMs": 3.723805
+    },
+    "after": {
+      "completed": 540,
+      "observationSeconds": 1.0021842,
+      "meanJobMilliseconds": 1.8558966666666667,
+      "gcCollections": [
+        1080,
+        0,
+        0
+      ],
+      "gen2PerJob": 0.0,
+      "cpuSeconds": 1.171353,
+      "cpuMillisecondsPerJob": 2.1691722222222225,
+      "allocatedBytesPerJob": 329280.9037037037,
+      "peakBytes": 47968,
+      "samples": 931,
+      "requestP99Ms": 0.293247,
+      "addedRequestP99Ms": 0.22912699999999997,
+      "addedHeartbeatMaxMs": 0.008693000000000006
+    }
+  },
+  "status": "one short matched before/after diagnostic; no percentile/SLO/CPython qualification; invalid v1 preserved separately"
+}

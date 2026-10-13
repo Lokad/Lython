@@ -1,0 +1,71 @@
+{
+  "label": "after-control",
+  "startedUtc": "2026-10-13T02:23:12.753767+00:00",
+  "eligible": true,
+  "exclusion": null,
+  "idleCpuPercent": [
+    0.0,
+    0.0
+  ],
+  "pid": 2257358,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedIncludingCleanupSeconds": 3.3930958500131965,
+  "stdoutSha256": "664ab61cf9616eefd5d59cf38f59d1a2997e1a28737a7ce25f861702f7aef651",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stealTicks": 0,
+  "noiseDelta": {
+    "pswpin": 0,
+    "pswpout": 0,
+    "pgmajfault": 0
+  },
+  "result": {
+    "policy": "r10-bound-error-micro-v2",
+    "name": "pressure-bound-sync-control",
+    "control": true,
+    "asynchronous": false,
+    "pressure": true,
+    "windowSeconds": 1,
+    "preparationCollections": [
+      2,
+      2,
+      2
+    ],
+    "capBytes": 48000,
+    "retainedPayloadBytes": 32000,
+    "caughtDenialsPerJob": 128,
+    "retainedExceptions": 0,
+    "exposedDenials": 0,
+    "warmupYieldedJobs": 0,
+    "warmupDelayedHostCalls": 0,
+    "yieldedJobs": 0,
+    "delayedHostCalls": 0,
+    "qualification": "prospective controlled model; supervisor determines eligibility",
+    "observationSeconds": 1.0005608,
+    "completed": 0,
+    "peakBytes": 47968,
+    "modeledHostBytes": 134217728,
+    "modeledHostObjects": 131072,
+    "hostGenerationsBefore": [
+      0,
+      0,
+      131072
+    ],
+    "samples": 943,
+    "requestChecksum": 122267,
+    "allocatedBytes": 69504,
+    "gcCollections": [
+      0,
+      0,
+      0
+    ],
+    "cpuSeconds": 0.073749,
+    "cpuCoreFraction": 0.0737076647416129,
+    "processorCount": 4,
+    "runtime": "10.0.12",
+    "sourceSha256": "20155DACB2A98C348F81404A611D837AD440B625CC52F1320B169283AEFAA0A9",
+    "originalSourceSha256": "20155DACB2A98C348F81404A611D837AD440B625CC52F1320B169283AEFAA0A9",
+    "subjectInformationalVersion": "0.10.0+db040f52580ed89c1e932cddef1ec6b95fe8d5e5",
+    "subjectDllSha256": "4E18E59D45384949C5CEA487AC3A9E7B1CE472BBCFFC8E14A1D7BAFEC80F6A17"
+  }
+}

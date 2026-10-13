@@ -1,0 +1,71 @@
+{
+  "label": "before-control",
+  "startedUtc": "2026-10-13T02:23:03.359508+00:00",
+  "eligible": true,
+  "exclusion": null,
+  "idleCpuPercent": [
+    0.0,
+    0.0
+  ],
+  "pid": 2257332,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedIncludingCleanupSeconds": 4.0446702360059135,
+  "stdoutSha256": "470a103614802d6fdf213e3d127817fde46990f3b24e71ad5bbf924afaaa8550",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stealTicks": 0,
+  "noiseDelta": {
+    "pswpin": 0,
+    "pswpout": 0,
+    "pgmajfault": 0
+  },
+  "result": {
+    "policy": "r10-bound-error-micro-v2",
+    "name": "pressure-bound-sync-control",
+    "control": true,
+    "asynchronous": false,
+    "pressure": true,
+    "windowSeconds": 1,
+    "preparationCollections": [
+      2,
+      2,
+      2
+    ],
+    "capBytes": 48000,
+    "retainedPayloadBytes": 32000,
+    "caughtDenialsPerJob": 128,
+    "retainedExceptions": 0,
+    "exposedDenials": 0,
+    "warmupYieldedJobs": 0,
+    "warmupDelayedHostCalls": 0,
+    "yieldedJobs": 0,
+    "delayedHostCalls": 0,
+    "qualification": "prospective controlled model; supervisor determines eligibility",
+    "observationSeconds": 1.001191,
+    "completed": 0,
+    "peakBytes": 33984,
+    "modeledHostBytes": 134217728,
+    "modeledHostObjects": 131072,
+    "hostGenerationsBefore": [
+      0,
+      0,
+      131072
+    ],
+    "samples": 943,
+    "requestChecksum": 122267,
+    "allocatedBytes": 69504,
+    "gcCollections": [
+      0,
+      0,
+      0
+    ],
+    "cpuSeconds": 0.076103,
+    "cpuCoreFraction": 0.07601246914924326,
+    "processorCount": 4,
+    "runtime": "10.0.12",
+    "sourceSha256": "20155DACB2A98C348F81404A611D837AD440B625CC52F1320B169283AEFAA0A9",
+    "originalSourceSha256": "20155DACB2A98C348F81404A611D837AD440B625CC52F1320B169283AEFAA0A9",
+    "subjectInformationalVersion": "0.10.0+7f5fbf70222de9ff96e9f241f2eff227fa911055",
+    "subjectDllSha256": "F632F6BA119D5E294C7BDD0E14A9C6E4702157118CB89CD9079F6A2996F5BFAE"
+  }
+}

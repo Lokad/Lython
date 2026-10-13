@@ -1,0 +1,22 @@
+{
+  "pid": 2256163,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedSeconds": 8.489180313947145,
+  "command": [
+    "/home/lokad/lython-bench-toolchains/dotnet/10.0.401/dotnet",
+    "build",
+    "/home/lokad/lython-bench-checks/proved-string-admission-db040f52-20261013/subject/ImpactProbe/Probe.csproj",
+    "-c",
+    "Release",
+    "-p:SubjectRoot=/home/lokad/lython-bench-checks/proved-string-admission-db040f52-20261013/subject",
+    "-p:SourceRevisionId=db040f52580ed89c1e932cddef1ec6b95fe8d5e5",
+    "-p:RepositoryCommit=db040f52580ed89c1e932cddef1ec6b95fe8d5e5",
+    "-p:EnableSourceControlManagerQueries=false",
+    "-p:EnableSourceLink=false",
+    "--tl:off",
+    "--nologo",
+    "-v",
+    "minimal"
+  ]
+}

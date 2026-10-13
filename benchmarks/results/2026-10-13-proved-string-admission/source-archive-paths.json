@@ -1,0 +1,15 @@
+[
+  "src",
+  "Directory.Build.props",
+  "Directory.Build.targets",
+  "Directory.Build.rsp",
+  "Directory.Packages.props",
+  "global.json",
+  ".editorconfig",
+  "third_party",
+  "LICENSE.txt",
+  "icon.png",
+  "tests/Lokad.Lython.Tests/Harness/MockLythonHost.cs",
+  "tests/Lokad.Lython.Tests/Harness/DelayedLythonHost.cs",
+  "benchmarks/scripts"
+]
