@@ -117,6 +117,44 @@ public sealed class CallBindingSubsystemTests
     }
 
     [Fact]
+    public void PresenceBindingKeepsOptionalSlotsAndDistinguishesExplicitNone()
+    {
+        var payload = new object();
+        var omitted = CallBinder.BindNamedArgumentsWithPresence(
+            [CallArgumentValue.Positional(payload)], Span, OptionalDemoSignature, PythonCallableKind.Builtin);
+        var explicitNone = CallBinder.BindNamedArgumentsWithPresence(
+            [CallArgumentValue.Positional(payload), CallArgumentValue.Keyword("second", PyNone.Instance)],
+            Span, OptionalDemoSignature, PythonCallableKind.Builtin);
+        Assert.Equal(3, omitted.Values.Length);
+        Assert.Equal(3, explicitNone.Values.Length);
+        Assert.Same(payload, omitted.Values[0]);
+        Assert.Same(payload, explicitNone.Values[0]);
+        Assert.Same(PyNone.Instance, omitted.Values[1]);
+        Assert.Same(PyNone.Instance, explicitNone.Values[1]);
+        Assert.False(omitted.Assigned[1]);
+        Assert.True(explicitNone.Assigned[1]);
+        Assert.False(explicitNone.Assigned[2]);
+    }
+
+    [Fact]
+    public void PresenceBindingHasNoDiscardedPositionalArrays()
+    {
+        CallArgumentValue[] arguments = [CallArgumentValue.Positional(PyNone.Instance)];
+        for (var i = 0; i < 64; i++)
+            CallBinder.BindNamedArgumentsWithPresence(arguments, Span, OptionalDemoSignature, PythonCallableKind.Builtin);
+        const int iterations = 256;
+        BoundCallArguments last = default;
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        for (var i = 0; i < iterations; i++)
+            last = CallBinder.BindNamedArgumentsWithPresence(arguments, Span, OptionalDemoSignature, PythonCallableKind.Builtin);
+        var bytes = GC.GetAllocatedBytesForCurrentThread() - before;
+        GC.KeepAlive(last.Values);
+        // The existing conservative tuple-backing estimate covers one returned
+        // positional array. It cannot fund a trim and a second full-size copy.
+        Assert.True(bytes <= iterations * PyTuple.EstimateApproximateBytes(3), $"Binding allocated {bytes / iterations} bytes per call.");
+    }
+
+    [Fact]
     public void CallExpansion_ProducesSameArgumentsForRawAndLoweredCalls()
     {
         var context = new LythonRuntime.ExecutionContext(new MockLythonHost(), options: null);

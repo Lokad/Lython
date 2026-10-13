@@ -100,24 +100,13 @@ internal static class CallBinder
         LythonCallableSignature signature,
         PythonCallableKind callableKind)
     {
-        var bound = BindNamedArgumentsCore(
+        return BindNamedArgumentsCore(
             arguments,
             span,
             signature.Name,
             callableKind,
-            signature.Parameters);
-        if (signature.Parameters is not NamedCallableParameterLayout named ||
-            bound.Values.Length >= named.ParameterNames.Length)
-        {
-            return bound;
-        }
-
-        // Presence-aware consumers must distinguish an omitted optional argument
-        // from an explicit Python None, so retain the complete signature shape.
-        var values = new object[named.ParameterNames.Length];
-        Array.Fill(values, PyNone.Instance);
-        Array.Copy(bound.Values, values, bound.Values.Length);
-        return new BoundCallArguments(values, bound.Assigned.WithLength(named.ParameterNames.Length));
+            signature.Parameters,
+            preservePresence: true);
     }
 
     private static BoundCallArguments BindNamedArgumentsCore(
@@ -125,7 +114,8 @@ internal static class CallBinder
         LythonSourceSpan span,
         string callableName,
         PythonCallableKind callableKind,
-        CallableParameterLayout parameters)
+        CallableParameterLayout parameters,
+        bool preservePresence = false)
     {
         if (parameters is PositionalCallableParameterLayout)
         {
@@ -234,6 +224,10 @@ internal static class CallBinder
 
         if (extraPositional is null || extraPositional.Count == 0)
         {
+            // Presence-aware bodies borrow the original full shape. Trimming
+            // then reconstructing it creates discarded arrays and briefly
+            // retains another copy of every argument.
+            if (preservePresence) return new BoundCallArguments(bound, assigned);
             if (count != bound.Length)
             {
                 Array.Resize(ref bound, count);
