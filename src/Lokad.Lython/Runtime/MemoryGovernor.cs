@@ -43,7 +43,7 @@ internal sealed class MemoryGovernor
     // fail fast instead of paying a collection per caught trip.
     private bool _hasAllocatedSinceReclaim;
 
-    public void EnsureCanReserve(long bytes, LythonSourceSpan? span)
+    public void EnsureCanReserve(long bytes, LythonSourceSpan? span, long knownLiveBytes = 0)
     {
         if (bytes <= 0)
         {
@@ -53,10 +53,11 @@ internal sealed class MemoryGovernor
         var nextAccounted = AddChecked(CurrentAccountedBytes, bytes, span);
         if (MaxAccountedBytes is { } maxAccountedBytes && nextAccounted > maxAccountedBytes)
         {
-            if (bytes > maxAccountedBytes)
+            if (bytes > maxAccountedBytes || knownLiveBytes > maxAccountedBytes - bytes)
             {
-                // The request alone exceeds the budget: no relief could fit
-                // it, so deny without pausing the process for a collection.
+                // A request that cannot fit beside a certainly live payload
+                // needs no relief. Do not consume the opportunity to reclaim
+                // after a later withdrawal of that reference.
                 LastDeniedReservationBytes = bytes;
                 throw RuntimeErrors.Attributed("MemoryError", $"execution memory budget exceeded ({maxAccountedBytes})", span,
                     LythonFailureReason.ExecutionMemoryLimit, maxAccountedBytes, CurrentAccountedBytes, bytes);

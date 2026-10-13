@@ -217,10 +217,10 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return RepeatCore(count, _memoryGovernor, _allocationSpan);
     }
 
-    public PyString Repeat(int count, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
-        => RepeatCore(count, governor, allocationSpan);
+    public PyString Repeat(int count, MemoryGovernor governor, LythonSourceSpan? allocationSpan, long knownLiveBytes = 0)
+        => RepeatCore(count, governor, allocationSpan, knownLiveBytes);
 
-    private PyString RepeatCore(int count, MemoryGovernor? governor, LythonSourceSpan? allocationSpan)
+    private PyString RepeatCore(int count, MemoryGovernor? governor, LythonSourceSpan? allocationSpan, long knownLiveBytes = 0)
     {
         if (count <= 0 || _utf8.Length == 0)
         {
@@ -232,7 +232,7 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
             allocationSpan);
         var result = governor is null
             ? new byte[resultLength]
-            : AllocateGovernedUtf8(resultLength, governor, allocationSpan);
+            : AllocateGovernedUtf8(resultLength, governor, allocationSpan, knownLiveBytes);
         for (var i = 0; i < count; i++)
         {
             Buffer.BlockCopy(_utf8, 0, result, i * _utf8.Length, _utf8.Length);
@@ -794,9 +794,9 @@ internal sealed class PyString : IEquatable<PyString>, IPyTruthyValue, IPyIndexa
         return false;
     }
 
-    private static byte[] AllocateGovernedUtf8(int length, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
+    private static byte[] AllocateGovernedUtf8(int length, MemoryGovernor governor, LythonSourceSpan? allocationSpan, long knownLiveBytes = 0)
     {
-        governor.EnsureCanReserve(EstimateApproximateBytes(length), allocationSpan);
+        governor.EnsureCanReserve(EstimateApproximateBytes(length), allocationSpan, knownLiveBytes);
         return new byte[length];
     }
 

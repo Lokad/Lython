@@ -35,6 +35,42 @@ internal class ExecutionFrame
         return false;
     }
 
+    // A lower bound from existing strong fields, not a reachability collector.
+    // MAX avoids counting aliases twice. The fixed inspection budget bounds
+    // this cold search; missed values simply leave normal relief in place.
+    internal long KnownLiveStringBytes(MemoryGovernor governor, ref int remaining)
+    {
+        long largest = 0;
+        if (_variables is null) return largest;
+        foreach (var pair in _variables)
+        {
+            if (remaining == 0) break;
+            largest = Math.Max(largest, KnownLiveStringBytes(pair.Value, governor, ref remaining));
+        }
+        return largest;
+    }
+
+    internal static long KnownLiveStringBytes(object value, MemoryGovernor governor, ref int remaining)
+    {
+        if (remaining == 0) return 0;
+        remaining--;
+        if (value is Text.PyString text) return PayloadBytes(text, governor);
+        if (value is not PyList list) return 0;
+        long largest = 0;
+        for (var i = 0; i < list.Count && remaining > 0; i++)
+        {
+            remaining--;
+            if (list[i] is Text.PyString item)
+                largest = Math.Max(largest, PayloadBytes(item, governor));
+        }
+        return largest;
+
+        static long PayloadBytes(Text.PyString text, MemoryGovernor governor)
+            => ReferenceEquals(text.OwnerMemoryGovernor, governor) &&
+               text.ReclamationEntry is { } entry && entry.ValueCharge >= text.Utf8Bytes.Length
+                ? text.Utf8Bytes.Length : 0;
+    }
+
     private Dictionary<string, object> InitializeVariables()
     {
         var variables = new Dictionary<string, object>(StringComparer.Ordinal);

@@ -2789,6 +2789,17 @@ has no owner-age tracking or configuration switch. Accounting still depends on
 CLR collection and these collections affect the embedding process; it does not
 guarantee pause isolation or replace live-memory bounds with allocation totals.
 
+String repetition can reject before relief when one funded immutable UTF-8
+payload retained by existing execution state proves that the request cannot fit
+beside it. A bounded search reads existing bindings and direct list elements;
+it uses the largest single payload, preserving aliases without summing them.
+Missing evidence leaves normal relief in place. This proof refunds no storage,
+adds no ownership ledger and does not consume a reclamation opportunity when
+no reclamation was attempted. Accounted peaks and failure observations may then
+include dead storage that has not yet been swept. This does not guarantee recovery
+after every reference withdrawal: transient CLR references can remain until calls
+or asynchronous continuations unwind.
+
 Set construction refunds its private shell, backing storage and scalar charges
 if population fails before publication. Internal intersection and subset scratch
 sets release their charges when the operation exits, including on failure.

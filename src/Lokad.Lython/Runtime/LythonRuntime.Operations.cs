@@ -880,9 +880,34 @@ internal sealed partial class LythonRuntime
             throw RuntimeErrors.StringLength(maxStringLength, resultLength, span);
         }
 
-        var repeated = text.Repeat((int)count, context.MemoryGovernor, span);
+        long knownLiveBytes = 0;
+        if (text.Utf8Bytes.Length > 0 && context.MemoryGovernor.MaxAccountedBytes is { } cap)
+        {
+            var requested = RuntimeMemoryEstimates.SaturatingAdd(PyString.EstimateApproximateBytes(0),
+                RuntimeMemoryEstimates.SaturatingMultiply(text.Utf8Bytes.Length, (long)count));
+            if (requested <= cap && context.MemoryGovernor.CurrentAccountedBytes > cap - requested)
+                knownLiveBytes = KnownLiveStringBytes(context);
+        }
+        var repeated = text.Repeat((int)count, context.MemoryGovernor, span, knownLiveBytes);
         context.Services.State.CallTemporaries.TrackFreshString(repeated);
+        GC.KeepAlive(context);
         return repeated;
+    }
+
+    // Keep sampled references out of the interpreter/async caller's later stack.
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static long KnownLiveStringBytes(ExecutionContext context)
+    {
+        var remaining = 64;
+        long largest = 0;
+        for (var current = context; current is not null && remaining > 0; current = current.ParentContext)
+        {
+            remaining--; // Empty contexts must also consume the work bound.
+            if (current.CurrentExecutableFrame is { } frame)
+                largest = Math.Max(largest, frame.KnownLiveStringBytes(context.MemoryGovernor, ref remaining));
+            largest = Math.Max(largest, current.KnownLiveStringBytes(context.MemoryGovernor, ref remaining));
+        }
+        return largest;
     }
 
     // Bytes repetition mirrors RepeatString without a string-length cap:
