@@ -2,7 +2,7 @@
 
 Binding caught errors changes the cost dramatically: **128 Gen2 collections per
 completed job**, compared with **one** for unbound catches. Bound/exposed/retained
-models complete only 12–14 jobs per four-second window; unbound catches complete
+models complete only 12–14 jobs per nominal four-second window; unbound catches complete
 1,250–1,267. These scripts deliberately differ in their exception work; the counts
 show this model's cost, not a CPython ratio or a general throughput comparison.
 
@@ -12,7 +12,7 @@ added request p99 <=5 ms and largest added heartbeat <=25 ms. The fixed matrix t
 No sample was excluded or replaced. Latency acceptance leaves repeated process-wide
 full collections and GC-independent reclamation as architectural problems.
 
-| Catch behavior | Added request p99 (ms) | Largest added heartbeat (ms) | Jobs per 4s window | Gen2 per job |
+| Catch behavior | Added request p99 (ms) | Largest added heartbeat (ms) | Complete jobs (nominal 4s) | Gen2 per job |
 | --- | ---: | ---: | ---: | ---: |
 | unbound | 2.492–2.602 | 3.272–3.461 | 1,250–1,267 | 1 |
 | bound | 1.766–2.374 | 4.021–6.119 | 13–14 | 128 |
@@ -42,6 +42,9 @@ sleep while the caller completes jobs. Every active/control child receives the
 same retained 128-MiB host graph (131,072 arrays), two declared noncompacting full
 preparation collections, two real warm jobs, and a two-second pause. All arrays
 must be Gen2 before measurement. Controls then measure host requests alone.
+The window finishes its last complete job after the four-second target; measured
+active windows span 4.001–4.325 seconds. The table reports complete-job counts
+within those actual windows, rather than normalized jobs-per-second timings.
 Allocations, CPU and collection counts describe the whole process. The model has
 no production request queue and establishes neither Windows behavior nor a general
 application SLO. No forced-GC setting, GC mode or tiering override was used.

@@ -117,7 +117,8 @@ embedding model; Windows impact and GC-independent reclamation remain open.
 The [bound/exposed/retained-error model at `7f5fbf70`](benchmarks/results/2026-10-13-embedding-exception-pressure/README.md)
 also meets those latency targets in 24 original samples, but incurs 128 Gen2
 collections per completed job versus one for unbound catches. These cases
-complete 12–14 jobs per four-second window versus 1,250–1,267 for unbound catches.
+complete 12–14 jobs per nominal four-second window versus 1,250–1,267 for unbound catches;
+each window finishes its last complete job.
 The report also records failed memory recovery after reference withdrawal.
 Regex performance waits
 for [managed-only backend qualification](benchmarks/results/2026-10-12-regex-scalar-5/README.md).
