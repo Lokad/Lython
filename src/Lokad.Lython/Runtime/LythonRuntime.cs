@@ -583,20 +583,30 @@ internal sealed partial class LythonRuntime
     public async Task<LythonExecutionResult> RunAsync(
         LoweredScript script,
         ILythonHost host,
-        LythonRunOptions? options)
+        LythonRunOptions? options,
+        ExecutableCodeObject? executableEntry = null)
     {
 
         ExecutionContext? context = null;
         try
         {
-            context = new ExecutionContext(host, options);
+            // Async definitions and supported fallbacks resolve through the
+            // namespace; mirror compiled module slots for those shared closures.
+            context = new ExecutionContext(host, options) { MirrorLocalStores = executableEntry is not null };
             InitializeModuleAnnotations(script.Syntax.Statements, context);
             // MG25: no initial yield here. Yielding first would abandon the
             // calling thread (in particular the dedicated large stack the
             // public async entry runs on) to the pool before doing any work,
             // so deep recursion that never genuinely yields would nest on a
             // small pool thread instead. Genuine host delays still yield.
-            var flow = await ExecuteStatementsAsync(script.Statements, context).ConfigureAwait(false);
+            LoweredBlockFlow flow;
+            if (executableEntry is null)
+                flow = await ExecuteStatementsAsync(script.Statements, context).ConfigureAwait(false);
+            else
+            {
+                var returned = await ExecuteExecutableCodeObjectAsync(executableEntry, context).ConfigureAwait(false);
+                flow = returned is null ? default : new LoweredBlockFlow(null, new ReturnSignal(returned));
+            }
             if (flow.Control is BreakSignal or ContinueSignal)
             {
                 throw RuntimeErrors.TopLevelLoopControl(null);

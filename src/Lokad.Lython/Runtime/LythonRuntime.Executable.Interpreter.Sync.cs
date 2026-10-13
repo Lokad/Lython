@@ -45,7 +45,7 @@ internal sealed partial class LythonRuntime
                                 _stack.Push(LoadLocal(_codeObject, _locals, instruction.LocalSlot, instruction.Span, _context));
                                 break;
                             case ExecutableOpCode.StoreLocal:
-                                StoreLocalValue(_codeObject, _locals, _localCells, _context, instruction.LocalSlot, Pop(ref _stack, instruction.Span), instruction.Span);
+                                StoreLocalFromStack(instruction.LocalSlot, instruction.Span);
                                 break;
                             case ExecutableOpCode.ForNext:
                                 jumped = ExecuteForNext(instruction);

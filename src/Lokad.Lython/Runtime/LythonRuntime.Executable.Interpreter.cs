@@ -175,6 +175,13 @@ internal sealed partial class LythonRuntime
             _stack.Push(value);
         }
 
+        // Pop's returned reference belongs to this completed transfer, rather
+        // than the long-running dispatch loop. Keep the CLR temporary here so
+        // deleting a slot can make its payload collectible before frame exit.
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        private void StoreLocalFromStack(int slot, LythonSourceSpan span)
+            => StoreLocalValue(_codeObject, _locals, _localCells, _context, slot, Pop(ref _stack, span), span);
+
         private void ExecuteDefinitionOrFallback(in ExecutableInstruction instruction)
         {
             switch (instruction.OpCode)
@@ -262,7 +269,7 @@ internal sealed partial class LythonRuntime
                     break;
 
                 case ExecutableOpCode.StoreLocal:
-                    StoreLocalValue(_codeObject, _locals, _localCells, _context, instruction.LocalSlot, Pop(ref _stack, instruction.Span), instruction.Span);
+                    StoreLocalFromStack(instruction.LocalSlot, instruction.Span);
                     break;
 
                 case ExecutableOpCode.StoreClosure:
@@ -626,9 +633,7 @@ internal sealed partial class LythonRuntime
 
         internal object FrameReturnValue => _frameReturnValue.RequireNotNull();
 
-        public ValueTask ExecuteAsync() => ExecuteCoreAsync(true);
-
-        private async ValueTask ExecuteCoreAsync(bool asynchronous)
+        public async ValueTask ExecuteAsync()
         {
             // Every control-flow edge must arrive at a block with the same value
             // stack depth. The first arrival records that depth; edge handling
@@ -660,7 +665,7 @@ internal sealed partial class LythonRuntime
                         switch (instruction.OpCode)
                         {
                             case ExecutableOpCode.ApplyOperation:
-                                await ExecutePreparedOperationAsync((ExecutableOperation)_codeObject.Constants[instruction.ConstantIndex]!, instruction.Span, asynchronous).ConfigureAwait(false);
+                                await ExecutePreparedOperationAsync((ExecutableOperation)_codeObject.Constants[instruction.ConstantIndex]!, instruction.Span, true).ConfigureAwait(false);
                                 break;
                             case ExecutableOpCode.Yield:
                                 YieldValue = Pop(ref _stack, instruction.Span);
@@ -672,11 +677,10 @@ internal sealed partial class LythonRuntime
                                 if (_delegation is null)
                                 {
                                     var source = Pop(ref _stack, instruction.Span);
-                                    var iterator = asynchronous ? await IterAsync([source], instruction.Span, _context).ConfigureAwait(false) : Iter([source], instruction.Span, _context);
+                                    var iterator = await IterAsync([source], instruction.Span, _context).ConfigureAwait(false);
                                     _delegation = new GeneratorDelegation(iterator, _context, instruction.Span);
                                 }
-                                var delegated = asynchronous ? await _delegation.AdvanceAsync(_sentValue, _injectedException, true).ConfigureAwait(false)
-                                    : _delegation.Advance(_sentValue, _injectedException);
+                                var delegated = await _delegation.AdvanceAsync(_sentValue, _injectedException, true).ConfigureAwait(false);
                                 _sentValue = PyNone.Instance;
                                 _injectedException = null;
                                 if (delegated.HasValue)
@@ -691,8 +695,7 @@ internal sealed partial class LythonRuntime
                             case ExecutableOpCode.Import or
                                  ExecutableOpCode.DefineFunction or
                                  ExecutableOpCode.ExecuteFallbackStatement:
-                                if (asynchronous) await ExecuteDefinitionOrFallbackAsync(instruction).ConfigureAwait(false);
-                                else ExecuteDefinitionOrFallback(instruction);
+                                await ExecuteDefinitionOrFallbackAsync(instruction).ConfigureAwait(false);
                                 break;
 
                             case ExecutableOpCode.LoadConst or
@@ -709,9 +712,9 @@ internal sealed partial class LythonRuntime
                                  ExecutableOpCode.StoreName or
                                  ExecutableOpCode.Dup or
                                  ExecutableOpCode.PopTop:
-                                if (asynchronous && instruction.OpCode == ExecutableOpCode.EvaluateFallbackExpression)
+                                if (instruction.OpCode == ExecutableOpCode.EvaluateFallbackExpression)
                                     PushObserved(await EvaluateLoweredExpressionAsync(_codeObject.ExpressionFallbacks[instruction.ExpressionFallbackIndex].Expression, _context).ConfigureAwait(false), instruction.Span);
-                                else if (asynchronous && instruction.OpCode == ExecutableOpCode.LoadMember)
+                                else if (instruction.OpCode == ExecutableOpCode.LoadMember)
                                 {
                                     var target = Pop(ref _stack, instruction.Span);
                                     var name = _codeObject.Names[instruction.NameIndex];
@@ -730,7 +733,7 @@ internal sealed partial class LythonRuntime
                                  ExecutableOpCode.EnterContextManager or
                                  ExecutableOpCode.ExitContextManager or
                                  ExecutableOpCode.MatchCase:
-                                jumped = asynchronous ? await ExecuteStructureAsync(instruction).ConfigureAwait(false) : ExecuteStructure(instruction);
+                                jumped = await ExecuteStructureAsync(instruction).ConfigureAwait(false);
                                 break;
 
                             case ExecutableOpCode.GetIter or
@@ -744,7 +747,7 @@ internal sealed partial class LythonRuntime
                                  ExecutableOpCode.Binary or
                                  ExecutableOpCode.Augmented or
                                  ExecutableOpCode.Unary:
-                                jumped = asynchronous ? await ExecuteValueOperationAsync(instruction).ConfigureAwait(false) : ExecuteValueOperation(instruction);
+                                jumped = await ExecuteValueOperationAsync(instruction).ConfigureAwait(false);
                                 break;
 
                             case ExecutableOpCode.AbruptJump or ExecutableOpCode.JumpIfFalse or
@@ -757,7 +760,7 @@ internal sealed partial class LythonRuntime
                                  ExecutableOpCode.EndFinally or
                                  ExecutableOpCode.Return or
                                  ExecutableOpCode.ReturnNone:
-                                jumped = asynchronous ? await ExecuteControlFlowAsync(instruction).ConfigureAwait(false) : ExecuteControlFlow(instruction);
+                                jumped = await ExecuteControlFlowAsync(instruction).ConfigureAwait(false);
                                 break;
 
                             default:

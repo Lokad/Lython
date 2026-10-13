@@ -122,7 +122,7 @@ public sealed class LythonEngine
                 }
 
                 var runtime = new LythonRuntime();
-                return await runtime.RunAsync(loweredScript.RequireNotNull(), host, options).ConfigureAwait(false);
+                return await runtime.RunAsync(loweredScript.RequireNotNull(), host, options, executableScript?.EntryPoint).ConfigureAwait(false);
             });
     }
 

@@ -376,37 +376,8 @@ internal sealed partial class LythonRuntime
         context.EnterInterpreterFrame(null);
         try
         {
-            var locals = new object[codeObject.LocalNames.Count];
-            Array.Fill(locals, UninitializedLocal);
-            var needsLocalCells = codeObject.CapturedLocalSlots.Count != 0;
-            ExecutableCell?[]? localCells = null;
-            if (needsLocalCells)
-            {
-                localCells = new ExecutableCell[codeObject.LocalNames.Count];
-                for (var i = 0; i < codeObject.CapturedLocalSlots.Count; i++)
-                {
-                    localCells[codeObject.CapturedLocalSlots[i]] = new ExecutableCell(UninitializedLocal, context, codeObject.LocalNames[codeObject.CapturedLocalSlots[i]]);
-                }
-            }
-
-            for (var i = 0; i < argumentSlotMap.Length; i++)
-            {
-                var slot = argumentSlotMap[i];
-                if (slot < 0)
-                {
-                    continue;
-                }
-
-                var value = boundArguments.Values[i];
-                locals[slot] = value;
-                if (localCells?[slot] is ExecutableCell localCell)
-                {
-                    localCell.Value = value;
-                }
-            }
-
-            var interpreter = new ExecutableFrameInterpreter(codeObject, context, locals, localCells, closureCells);
-            if (closureCells is not null || localCells is not null || codeObject.LocalNames.Count != 0)
+            var interpreter = CreateExecutableInterpreter(codeObject, context, boundArguments, argumentSlotMap, closureCells);
+            if (closureCells is not null || codeObject.CapturedLocalSlots.Count != 0 || codeObject.LocalNames.Count != 0)
             {
                 context.EnterExecutableSlots(interpreter);
             }
@@ -418,6 +389,63 @@ internal sealed partial class LythonRuntime
             context.LeaveExecutableSlots(previousExecutableFrame);
             context.LeaveInterpreterFrame();
         }
+    }
+
+    internal static async ValueTask<object?> ExecuteExecutableCodeObjectAsync(ExecutableCodeObject codeObject, ExecutionContext context)
+    {
+        var previousExecutableFrame = context.CurrentExecutableFrame;
+        context.EnterInterpreterFrame(null);
+        try
+        {
+            var interpreter = CreateExecutableInterpreter(codeObject, context, default, [], null);
+            context.EnterExecutableSlots(interpreter);
+            await interpreter.ExecuteAsync().ConfigureAwait(false);
+            return interpreter.HasFrameReturn ? interpreter.FrameReturnValue : null;
+        }
+        finally
+        {
+            context.LeaveExecutableSlots(previousExecutableFrame);
+            context.LeaveInterpreterFrame();
+        }
+    }
+
+    private static ExecutableFrameInterpreter CreateExecutableInterpreter(
+        ExecutableCodeObject codeObject,
+        ExecutionContext context,
+        BoundCallArguments boundArguments,
+        int[] argumentSlotMap,
+        IReadOnlyList<ExecutableCell>? closureCells)
+    {
+        var locals = new object[codeObject.LocalNames.Count];
+        Array.Fill(locals, UninitializedLocal);
+        var needsLocalCells = codeObject.CapturedLocalSlots.Count != 0;
+        ExecutableCell?[]? localCells = null;
+        if (needsLocalCells)
+        {
+            localCells = new ExecutableCell[codeObject.LocalNames.Count];
+            for (var i = 0; i < codeObject.CapturedLocalSlots.Count; i++)
+            {
+                localCells[codeObject.CapturedLocalSlots[i]] = new ExecutableCell(UninitializedLocal, context, codeObject.LocalNames[codeObject.CapturedLocalSlots[i]]);
+            }
+        }
+
+        for (var i = 0; i < argumentSlotMap.Length; i++)
+        {
+            var slot = argumentSlotMap[i];
+            if (slot < 0)
+            {
+                continue;
+            }
+
+            var value = boundArguments.Values[i];
+            locals[slot] = value;
+            if (localCells?[slot] is ExecutableCell localCell)
+            {
+                localCell.Value = value;
+            }
+        }
+
+        return new ExecutableFrameInterpreter(codeObject, context, locals, localCells, closureCells);
     }
 
 }
