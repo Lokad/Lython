@@ -90,6 +90,21 @@ public sealed class ExecutableCallTransferTests
             new(new MockLythonHost(), new LythonRunOptions { MaxExecutionMemoryBytes = cap }));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CompletedCallScrubsArgumentBufferBeforeResultAdmission(bool asynchronous)
+    {
+        var (code, context) = Prepare("marker = 23\nreturn produce('x' * 16000)\n");
+        var value = new ObservedValue(context, false);
+        var producer = new Producer(value);
+        value.InputProducer = producer;
+        context.Variables["produce"] = producer;
+        Assert.Same(value, asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context) : Run(code, context));
+        Assert.True(value.Observed);
+        Assert.Empty(Operands(value.Frame!));
+    }
+
     private static object? Run(ExecutableScript code, LythonRuntime.ExecutionContext context)
         => LythonRuntime.ExecuteExecutableCodeObject(code.EntryPoint, context, default, [], null);
 
@@ -153,13 +168,19 @@ public sealed class ExecutableCallTransferTests
 
     private sealed class Producer(object value) : LythonRuntime.ICallable
     {
-        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context) => value;
+        internal CallArgumentValue[]? Arguments;
+        public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+        {
+            Arguments = arguments;
+            return value;
+        }
     }
 
     private sealed class ObservedValue(LythonRuntime.ExecutionContext context, bool deny) : IPyGovernedValue
     {
         internal bool Observed;
         internal object? Frame;
+        internal Producer? InputProducer;
         public MemoryGovernor? OwnerMemoryGovernor
         {
             get
@@ -167,6 +188,8 @@ public sealed class ExecutableCallTransferTests
                 Frame = context.CurrentExecutableFrame;
                 Assert.NotNull(Frame);
                 Assert.Same(this, Assert.Single(Operands(Frame!)));
+                if (InputProducer is { } producer)
+                    Assert.IsType<PyNone>(Assert.Single(producer.Arguments!).Value);
                 Observed = true;
                 if (deny)
                 {

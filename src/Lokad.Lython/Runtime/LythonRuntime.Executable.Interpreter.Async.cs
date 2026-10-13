@@ -85,8 +85,13 @@ internal sealed partial class LythonRuntime
                     var start = _stack.Count - call.ArgumentCount - 1;
                     try
                     {
-                        var result = await InvokeCallableTargetAsync(callable, call.TargetSpan, call.CallSpan, _context,
-                            () => new ValueTask<CallArgumentValue[]>(arguments)).ConfigureAwait(false);
+                        object result;
+                        try
+                        {
+                            result = await InvokeCallableTargetAsync(callable, call.TargetSpan, call.CallSpan, _context,
+                                () => new ValueTask<CallArgumentValue[]>(arguments)).ConfigureAwait(false);
+                        }
+                        finally { ReturnCallArguments(arguments); }
                         CompleteExecutableCall(ref _stack, start, result, _context, instruction.Span);
                     }
                     catch
@@ -94,7 +99,6 @@ internal sealed partial class LythonRuntime
                         _stack.RemoveTail(_stack.Count - start);
                         throw;
                     }
-                    finally { ReturnCallArguments(arguments); }
                     break;
                 case ExecutableOpCode.Subscript:
                     var index = Pop(ref _stack, instruction.Span);

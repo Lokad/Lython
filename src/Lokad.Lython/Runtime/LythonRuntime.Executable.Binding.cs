@@ -517,19 +517,28 @@ internal sealed partial class LythonRuntime
         try
         {
             object result;
-            if (cache is not null && ReferenceEquals(cache.Target, target))
+            try
             {
-                result = InvokeCallableTarget(cache.Callable, callSite.TargetSpan, callSite.CallSpan, context, arguments);
+                if (cache is not null && ReferenceEquals(cache.Target, target))
+                {
+                    result = InvokeCallableTarget(cache.Callable, callSite.TargetSpan, callSite.CallSpan, context, arguments);
+                }
+                else if (target is ICallable callable)
+                {
+                    cache = new ExecutableCallCache(target, callable);
+                    result = InvokeCallableTarget(callable, callSite.TargetSpan, callSite.CallSpan, context, arguments);
+                }
+                else
+                {
+                    cache = null;
+                    result = RuntimeValue(InvokeCallableTarget(target, callSite.TargetSpan, callSite.CallSpan, context, arguments));
+                }
             }
-            else if (target is ICallable callable)
+            finally
             {
-                cache = new ExecutableCallCache(target, callable);
-                result = InvokeCallableTarget(callable, callSite.TargetSpan, callSite.CallSpan, context, arguments);
-            }
-            else
-            {
-                cache = null;
-                result = RuntimeValue(InvokeCallableTarget(target, callSite.TargetSpan, callSite.CallSpan, context, arguments));
+                // Finished arguments must stop retaining dead inputs before
+                // result admission, including a re-entrant observation.
+                ReturnCallArguments(arguments);
             }
 
             CompleteExecutableCall(ref stack, start, result, context, callSite.CallSpan);
@@ -540,10 +549,6 @@ internal sealed partial class LythonRuntime
             // far the transfer progressed. Surrounding operands stay intact.
             stack.RemoveTail(stack.Count - start);
             throw;
-        }
-        finally
-        {
-            ReturnCallArguments(arguments);
         }
     }
 
