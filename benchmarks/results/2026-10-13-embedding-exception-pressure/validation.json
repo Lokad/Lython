@@ -1,0 +1,327 @@
+{
+  "source": "7f5fbf70222de9ff96e9f241f2eff227fa911055",
+  "production": "dcec7539f370c3622b55057a4fd91d0b5236e80c",
+  "policy": "embedding-v5-linux-exception-pressure",
+  "eligibleRows": 24,
+  "independentRows": 24,
+  "campaignSeconds": 178.12528998899506,
+  "longestChildSeconds": 7.409394025977235,
+  "latencyTargetsMet": true,
+  "pairs": [
+    {
+      "job": "pressure-unbound",
+      "session": 1,
+      "eligible": true,
+      "addedP99Milliseconds": 2.602218,
+      "addedLargestHeartbeatMilliseconds": 3.272182,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": false,
+      "gen2PerCompleteJob": 1.0
+    },
+    {
+      "job": "pressure-unbound",
+      "session": 2,
+      "eligible": true,
+      "addedP99Milliseconds": 2.576739,
+      "addedLargestHeartbeatMilliseconds": 3.461201,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": false,
+      "gen2PerCompleteJob": 1.0
+    },
+    {
+      "job": "pressure-unbound",
+      "session": 3,
+      "eligible": true,
+      "addedP99Milliseconds": 2.492213,
+      "addedLargestHeartbeatMilliseconds": 3.3310120000000003,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": false,
+      "gen2PerCompleteJob": 1.0
+    },
+    {
+      "job": "pressure-bound",
+      "session": 1,
+      "eligible": true,
+      "addedP99Milliseconds": 1.765953,
+      "addedLargestHeartbeatMilliseconds": 5.656694,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": false,
+      "gen2PerCompleteJob": 128.0
+    },
+    {
+      "job": "pressure-bound",
+      "session": 2,
+      "eligible": true,
+      "addedP99Milliseconds": 1.875107,
+      "addedLargestHeartbeatMilliseconds": 4.0211250000000005,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": false,
+      "gen2PerCompleteJob": 128.0
+    },
+    {
+      "job": "pressure-bound",
+      "session": 3,
+      "eligible": true,
+      "addedP99Milliseconds": 2.374123,
+      "addedLargestHeartbeatMilliseconds": 6.11872,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": false,
+      "gen2PerCompleteJob": 128.0
+    },
+    {
+      "job": "pressure-exposed",
+      "session": 1,
+      "eligible": true,
+      "addedP99Milliseconds": 1.749979,
+      "addedLargestHeartbeatMilliseconds": 3.794863,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": false,
+      "gen2PerCompleteJob": 128.0
+    },
+    {
+      "job": "pressure-exposed",
+      "session": 2,
+      "eligible": true,
+      "addedP99Milliseconds": 1.843782,
+      "addedLargestHeartbeatMilliseconds": 4.077962,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": false,
+      "gen2PerCompleteJob": 128.0
+    },
+    {
+      "job": "pressure-exposed",
+      "session": 3,
+      "eligible": true,
+      "addedP99Milliseconds": 1.6921519999999999,
+      "addedLargestHeartbeatMilliseconds": 3.725333,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": false,
+      "gen2PerCompleteJob": 128.0
+    },
+    {
+      "job": "pressure-retained",
+      "session": 1,
+      "eligible": true,
+      "addedP99Milliseconds": 2.402266,
+      "addedLargestHeartbeatMilliseconds": 3.957925,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": false,
+      "gen2PerCompleteJob": 128.0
+    },
+    {
+      "job": "pressure-retained",
+      "session": 2,
+      "eligible": true,
+      "addedP99Milliseconds": 2.035801,
+      "addedLargestHeartbeatMilliseconds": 4.775518,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": false,
+      "gen2PerCompleteJob": 128.0
+    },
+    {
+      "job": "pressure-retained",
+      "session": 3,
+      "eligible": true,
+      "addedP99Milliseconds": 2.2148220000000003,
+      "addedLargestHeartbeatMilliseconds": 4.147057,
+      "p99TargetMet": true,
+      "heartbeatTargetMet": true,
+      "noGen2": false,
+      "gen2PerCompleteJob": 128.0
+    }
+  ],
+  "table": [
+    {
+      "job": "pressure-unbound",
+      "requestP99Ms": [
+        2.555582,
+        2.664686
+      ],
+      "addedP99Ms": [
+        2.492213,
+        2.602218
+      ],
+      "addedMaxHeartbeatMs": [
+        3.272182,
+        3.461201
+      ],
+      "collections": [
+        [
+          3750,
+          3801
+        ],
+        [
+          2500,
+          2534
+        ],
+        [
+          1250,
+          1267
+        ]
+      ],
+      "jobs": [
+        1250,
+        1267
+      ],
+      "allocatedBytes": [
+        329667816,
+        334100312
+      ],
+      "cpuCoreFraction": [
+        1.0996536198891214,
+        1.1012965092720672
+      ],
+      "gen2PerJob": [
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "job": "pressure-bound",
+      "requestP99Ms": [
+        1.829001,
+        2.436311
+      ],
+      "addedP99Ms": [
+        1.765953,
+        2.374123
+      ],
+      "addedMaxHeartbeatMs": [
+        4.0211250000000005,
+        6.11872
+      ],
+      "collections": [
+        [
+          4992,
+          5376
+        ],
+        [
+          3328,
+          3584
+        ],
+        [
+          1664,
+          1792
+        ]
+      ],
+      "jobs": [
+        13,
+        14
+      ],
+      "allocatedBytes": [
+        6575904,
+        6989704
+      ],
+      "cpuCoreFraction": [
+        1.0223279732908461,
+        1.0296449591814074
+      ],
+      "gen2PerJob": [
+        128.0,
+        128.0
+      ]
+    },
+    {
+      "job": "pressure-exposed",
+      "requestP99Ms": [
+        1.757434,
+        1.907892
+      ],
+      "addedP99Ms": [
+        1.6921519999999999,
+        1.843782
+      ],
+      "addedMaxHeartbeatMs": [
+        3.725333,
+        4.077962
+      ],
+      "collections": [
+        [
+          4992,
+          4992
+        ],
+        [
+          3328,
+          3328
+        ],
+        [
+          1664,
+          1664
+        ]
+      ],
+      "jobs": [
+        13,
+        13
+      ],
+      "allocatedBytes": [
+        10171840,
+        10334416
+      ],
+      "cpuCoreFraction": [
+        1.0281881336507699,
+        1.0307221813286631
+      ],
+      "gen2PerJob": [
+        128.0,
+        128.0
+      ]
+    },
+    {
+      "job": "pressure-retained",
+      "requestP99Ms": [
+        2.099962,
+        2.464754
+      ],
+      "addedP99Ms": [
+        2.035801,
+        2.402266
+      ],
+      "addedMaxHeartbeatMs": [
+        3.957925,
+        4.775518
+      ],
+      "collections": [
+        [
+          4608,
+          4992
+        ],
+        [
+          3072,
+          3328
+        ],
+        [
+          1536,
+          1664
+        ]
+      ],
+      "jobs": [
+        12,
+        13
+      ],
+      "allocatedBytes": [
+        9829560,
+        10406224
+      ],
+      "cpuCoreFraction": [
+        1.029843875433294,
+        1.0314148245875745
+      ],
+      "gen2PerJob": [
+        128.0,
+        128.0
+      ]
+    }
+  ],
+  "qualification": "finite Linux closed-loop unbound/bound/exposed/retained-denial models only; no Windows/general SLO/GC independence/CPython ratio claim"
+}

@@ -1,0 +1,84 @@
+{
+  "session": 3,
+  "name": "pressure-retained-sync-control",
+  "startedUtc": "2026-10-13T00:32:14.090397+00:00",
+  "eligible": true,
+  "exclusion": null,
+  "idleCpuPercent": [
+    0.0,
+    0.0
+  ],
+  "pid": 2254314,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedIncludingCleanupSeconds": 7.073304365039803,
+  "stdoutSha256": "d026b3aa7fd0950d1542cbb1c3501ea60cb25382220ae4dd26d237fb8cd743a4",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stealTicks": 0,
+  "noiseDelta": {
+    "pswpin": 0,
+    "pswpout": 0,
+    "pgmajfault": 0
+  },
+  "result": {
+    "policy": "embedding-v5-linux-exception-pressure",
+    "name": "pressure-retained-sync-control",
+    "control": true,
+    "asynchronous": false,
+    "pressure": true,
+    "windowSeconds": 4,
+    "preparationCollections": [
+      2,
+      2,
+      2
+    ],
+    "capBytes": 48000,
+    "retainedPayloadBytes": 32000,
+    "caughtDenialsPerJob": 128,
+    "retainedExceptions": 8,
+    "exposedDenials": 128,
+    "warmupYieldedJobs": 0,
+    "warmupDelayedHostCalls": 0,
+    "yieldedJobs": 0,
+    "delayedHostCalls": 0,
+    "qualification": "prospective controlled model; supervisor determines eligibility",
+    "observationSeconds": 4.0020744,
+    "completed": 0,
+    "peakBytes": 36944,
+    "modeledHostBytes": 134217728,
+    "modeledHostObjects": 131072,
+    "hostGenerationsBefore": [
+      0,
+      0,
+      131072
+    ],
+    "samples": 3776,
+    "requestChecksum": 495750,
+    "allocatedBytes": 273496,
+    "gcCollections": [
+      0,
+      0,
+      0
+    ],
+    "cpuSeconds": 0.104208,
+    "cpuCoreFraction": 0.02603849643574842,
+    "processorCount": 4,
+    "runtime": "10.0.12",
+    "sourceSha256": "2120ABBF499E1BE01976B581952BDBAA39CDA01419BC1BBD5BCF89C9C1D4469A",
+    "originalSourceSha256": "2120ABBF499E1BE01976B581952BDBAA39CDA01419BC1BBD5BCF89C9C1D4469A",
+    "subjectInformationalVersion": "0.10.0+7f5fbf70222de9ff96e9f241f2eff227fa911055",
+    "subjectDllSha256": "F632F6BA119D5E294C7BDD0E14A9C6E4702157118CB89CD9079F6A2996F5BFAE"
+  },
+  "request": {
+    "p50": 0.059633,
+    "p95": 0.061366,
+    "p99": 0.063169,
+    "max": 0.117361
+  },
+  "heartbeat": {
+    "p50": 0.059193,
+    "p95": 0.060064,
+    "p99": 0.060355,
+    "max": 0.073014
+  }
+}

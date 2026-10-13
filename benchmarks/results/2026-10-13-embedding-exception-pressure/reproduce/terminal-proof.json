@@ -1,0 +1,24 @@
+{
+  "units": {
+    "prepare": {
+      "MainPID": "0",
+      "Result": "success",
+      "ExecMainStatus": "0",
+      "ControlGroup": "",
+      "ActiveState": "inactive",
+      "SubState": "dead"
+    },
+    "matrix": {
+      "MainPID": "0",
+      "Result": "success",
+      "ExecMainStatus": "0",
+      "ControlGroup": "",
+      "ActiveState": "inactive",
+      "SubState": "dead"
+    }
+  },
+  "leaseFree": true,
+  "remainingPids": [],
+  "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+  "processors": 4
+}

@@ -1,0 +1,84 @@
+{
+  "session": 2,
+  "name": "pressure-exposed-sync-control",
+  "startedUtc": "2026-10-13T00:30:53.612124+00:00",
+  "eligible": true,
+  "exclusion": null,
+  "idleCpuPercent": [
+    0.9900990099009901,
+    0.0
+  ],
+  "pid": 2254096,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedIncludingCleanupSeconds": 7.0292641579872,
+  "stdoutSha256": "1af0074ccc806a6a8a38ba1700ac8cfe5d0c92282190c4c69c5ff9ceb02e4ff7",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stealTicks": 0,
+  "noiseDelta": {
+    "pswpin": 0,
+    "pswpout": 0,
+    "pgmajfault": 0
+  },
+  "result": {
+    "policy": "embedding-v5-linux-exception-pressure",
+    "name": "pressure-exposed-sync-control",
+    "control": true,
+    "asynchronous": false,
+    "pressure": true,
+    "windowSeconds": 4,
+    "preparationCollections": [
+      2,
+      2,
+      2
+    ],
+    "capBytes": 48000,
+    "retainedPayloadBytes": 32000,
+    "caughtDenialsPerJob": 128,
+    "retainedExceptions": 0,
+    "exposedDenials": 128,
+    "warmupYieldedJobs": 0,
+    "warmupDelayedHostCalls": 0,
+    "yieldedJobs": 0,
+    "delayedHostCalls": 0,
+    "qualification": "prospective controlled model; supervisor determines eligibility",
+    "observationSeconds": 4.0007852,
+    "completed": 0,
+    "peakBytes": 34576,
+    "modeledHostBytes": 134217728,
+    "modeledHostObjects": 131072,
+    "hostGenerationsBefore": [
+      0,
+      0,
+      131072
+    ],
+    "samples": 3773,
+    "requestChecksum": 495168,
+    "allocatedBytes": 273264,
+    "gcCollections": [
+      0,
+      0,
+      0
+    ],
+    "cpuSeconds": 0.106937,
+    "cpuCoreFraction": 0.02672900309669212,
+    "processorCount": 4,
+    "runtime": "10.0.12",
+    "sourceSha256": "68238C01E034A37E85F8ED73369B6417A1AF676B139981C826008C1581266391",
+    "originalSourceSha256": "68238C01E034A37E85F8ED73369B6417A1AF676B139981C826008C1581266391",
+    "subjectInformationalVersion": "0.10.0+7f5fbf70222de9ff96e9f241f2eff227fa911055",
+    "subjectDllSha256": "F632F6BA119D5E294C7BDD0E14A9C6E4702157118CB89CD9079F6A2996F5BFAE"
+  },
+  "request": {
+    "p50": 0.060245,
+    "p95": 0.061216,
+    "p99": 0.06411,
+    "max": 0.130471
+  },
+  "heartbeat": {
+    "p50": 0.059774,
+    "p95": 0.060455,
+    "p99": 0.061326,
+    "max": 0.075017
+  }
+}

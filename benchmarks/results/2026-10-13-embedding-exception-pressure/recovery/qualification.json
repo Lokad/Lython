@@ -1,0 +1,31 @@
+{
+  "source": "7f5fbf70222de9ff96e9f241f2eff227fa911055",
+  "production": "dcec7539f370c3622b55057a4fd91d0b5236e80c",
+  "machine": "shared Windows development box; semantic outcomes only, no timing qualification",
+  "models": {
+    "drop-after-denial": {
+      "sourceSha256": "bcd6fa81afef29d6eeafee2c26152125d7f7861023926b64bb60075fc1b82b3e",
+      "outputSha256": "411f99ec6a3456580c5242100f75a94604e4cf7cc5d546af4d34fa465f06be73",
+      "success": false,
+      "peakBytes": 16288
+    },
+    "drop-with-allocation": {
+      "sourceSha256": "faea40dcabfeeb63c1eb186ee4863c83d175b8060892c07bc57fbc7770c05cc0",
+      "outputSha256": "2a7e8f5266fcda66695a0245f291c88b4c3357e778b8f3358641f8eadce3d4fd",
+      "success": true,
+      "peakBytes": 16546
+    },
+    "rebind-after-denial": {
+      "sourceSha256": "0e5e518910ab0bf08a47c9ee7d6803a62704ceff5059f18673088026b2b4b944",
+      "outputSha256": "411f99ec6a3456580c5242100f75a94604e4cf7cc5d546af4d34fa465f06be73",
+      "success": false,
+      "peakBytes": 16288
+    },
+    "container-drop-after-denial": {
+      "sourceSha256": "4c48a361bfc44b29c6ba5a22f6fbbfb967c476faf6f77d9f0bfb8a2c171ccfa6",
+      "outputSha256": "d51e4a13c069a48cc55cd52bad2a43047a25a39cab4c0faa4b02d5d35284f39a",
+      "success": false,
+      "peakBytes": 16608
+    }
+  }
+}

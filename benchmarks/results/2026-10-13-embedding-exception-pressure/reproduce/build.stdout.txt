@@ -1,0 +1,12 @@
+
+  Determining projects to restore...
+  Restored /home/lokad/lython-bench-checks/embedding-exception-pressure-7f5fbf70-20261013/subject/src/Lokad.Lython/Lokad.Lython.csproj (in 233 ms).
+  Restored /home/lokad/lython-bench-checks/embedding-exception-pressure-7f5fbf70-20261013/subject/ImpactProbe/Probe.csproj (in 233 ms).
+  Lokad.Lython -> /home/lokad/lython-bench-checks/embedding-exception-pressure-7f5fbf70-20261013/subject/src/Lokad.Lython/bin/Release/net10.0/Lokad.Lython.dll
+  Probe -> /home/lokad/lython-bench-checks/embedding-exception-pressure-7f5fbf70-20261013/subject/ImpactProbe/bin/Release/net10.0/Probe.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:09.57

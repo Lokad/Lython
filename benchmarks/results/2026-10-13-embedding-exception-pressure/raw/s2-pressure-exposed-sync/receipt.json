@@ -1,0 +1,84 @@
+{
+  "session": 2,
+  "name": "pressure-exposed-sync",
+  "startedUtc": "2026-10-13T00:30:45.932490+00:00",
+  "eligible": true,
+  "exclusion": null,
+  "idleCpuPercent": [
+    0.0,
+    0.0
+  ],
+  "pid": 2254085,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedIncludingCleanupSeconds": 7.17757005605381,
+  "stdoutSha256": "3b7f2f66dac52bc88d177a4567112d10ffcec33a3bfcd6edc4d1efb3c9e2a1a6",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stealTicks": 0,
+  "noiseDelta": {
+    "pswpin": 0,
+    "pswpout": 0,
+    "pgmajfault": 0
+  },
+  "result": {
+    "policy": "embedding-v5-linux-exception-pressure",
+    "name": "pressure-exposed-sync",
+    "control": false,
+    "asynchronous": false,
+    "pressure": true,
+    "windowSeconds": 4,
+    "preparationCollections": [
+      2,
+      2,
+      2
+    ],
+    "capBytes": 48000,
+    "retainedPayloadBytes": 32000,
+    "caughtDenialsPerJob": 128,
+    "retainedExceptions": 0,
+    "exposedDenials": 128,
+    "warmupYieldedJobs": 0,
+    "warmupDelayedHostCalls": 0,
+    "yieldedJobs": 0,
+    "delayedHostCalls": 0,
+    "qualification": "prospective controlled model; supervisor determines eligibility",
+    "observationSeconds": 4.127246,
+    "completed": 13,
+    "peakBytes": 34576,
+    "modeledHostBytes": 134217728,
+    "modeledHostObjects": 131072,
+    "hostGenerationsBefore": [
+      0,
+      0,
+      131072
+    ],
+    "samples": 1668,
+    "requestChecksum": 216508,
+    "allocatedBytes": 10171840,
+    "gcCollections": [
+      4992,
+      3328,
+      1664
+    ],
+    "cpuSeconds": 4.254044,
+    "cpuCoreFraction": 1.0307221813286631,
+    "processorCount": 4,
+    "runtime": "10.0.12",
+    "sourceSha256": "68238C01E034A37E85F8ED73369B6417A1AF676B139981C826008C1581266391",
+    "originalSourceSha256": "68238C01E034A37E85F8ED73369B6417A1AF676B139981C826008C1581266391",
+    "subjectInformationalVersion": "0.10.0+7f5fbf70222de9ff96e9f241f2eff227fa911055",
+    "subjectDllSha256": "F632F6BA119D5E294C7BDD0E14A9C6E4702157118CB89CD9079F6A2996F5BFAE"
+  },
+  "request": {
+    "p50": 1.460424,
+    "p95": 1.604151,
+    "p99": 1.907892,
+    "max": 6.394967
+  },
+  "heartbeat": {
+    "p50": 1.45853,
+    "p95": 1.602198,
+    "p99": 1.904136,
+    "max": 4.152979
+  }
+}

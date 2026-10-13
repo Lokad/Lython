@@ -1,0 +1,63 @@
+{
+  "revision": "7f5fbf70222de9ff96e9f241f2eff227fa911055",
+  "productionTree": "dcec7539f370c3622b55057a4fd91d0b5236e80c",
+  "files": {
+    "subject.tar": "606e7102cc34e0a6ab80377aa03f27def473589856f096b4cb299e723906ca9c",
+    "Program.cs": "9cc3d4941de88934006c09428416611093286dfc27e85d3fd9dacc0039aaa33f",
+    "Probe.csproj": "19be0137488a992aecb0f534761cfef853e823035facec75e6d63a07e5a15ee9",
+    "prepare-remote.py": "dddc50d32404f0b3766f2fc5fbd4ebbf0e491601c162525911d1681328b75073",
+    "run-matrix.py": "cdd92b0a3bbfcb90f6a12ae32c87894d00a3a75f0e8d4fcd21962ae2d92b7745",
+    "pressure-unbound.py": "b089ae02035c661bf560074110de23fb9e30a8263f36111f9dac6ccea4138d48",
+    "pressure-bound.py": "20155dacb2a98c348f81404a611d837ad440b625cc52f1320b169283aefaa0a9",
+    "pressure-exposed.py": "68238c01e034a37e85f8ed73369b6417a1af676b139981c826008c1581266391",
+    "pressure-retained.py": "2120abbf499e1be01976b581952bdbaa39cda01419bc1bbd5bcf89c9c1d4469a"
+  },
+  "fixtureHashes": {
+    "csv-summary-1024/input.csv": "8e97e17c87a723ca4d87e0ef4b35b13143542ba36a9faa3097e68036480fc07b",
+    "csv-summary-1024/report.csv": "17cf3e77ac206eef4a3d542be7df50632af604ea548921540cdb83bc52d0ab76",
+    "csv-summary-1024/stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "csv-summary-1024/stdout.bin": "88c2a96b4f37503d4803f8ab3e6dd5d18fc19e8cc3168705813a996f32f7d3b2",
+    "file-manifest-1024/manifest.json": "52c5ea5e452e8e27ba8fbf4e758149f6a588852b1b7f8de565f4980ac1daca93",
+    "file-manifest-1024/stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "file-manifest-1024/stdout.bin": "df4e26a04a444901b95afef44e4a96cfae34690fff2ad2c66389c70079cdff2b",
+    "json-summary-1024/input.jsonl": "d26f64bb57fe996b5850c5dc352284967a997e59593434c953fa6407b5f8ba3f",
+    "json-summary-1024/report.json": "9efa1d3e163c11dce3412445a85150acfff0045eb26a16eaf1fa3f6a9ec568b7",
+    "json-summary-1024/stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "json-summary-1024/stdout.bin": "88c2a96b4f37503d4803f8ab3e6dd5d18fc19e8cc3168705813a996f32f7d3b2",
+    "text-summary-1024/input.txt": "0a79ba23b9833a5d7c8e901f044b329be91f4e1a5deea7f39f5dfcc7de9c6783",
+    "text-summary-1024/report.txt": "a95b63596cabd48fb586b731f558811ece02ab9b76694c5cac7bc0c9bbad2e20",
+    "text-summary-1024/stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "text-summary-1024/stdout.bin": "33664cf5e0537a7f69e0914974613e989f4835c2219911c49258d24b621d4646",
+    "file-manifest-1024/inbox/a.bin": "8d606401e851bf5de5589a9f4bb5e8e331e29d0986ca05b34bddb1a7cf8b4848",
+    "file-manifest-1024/inbox/\u00e9.txt": "b2c137d874d77bc5faffc017c29a89cb8d15b027d5afe794c513b0c0b51a72fb",
+    "file-manifest-1024/outbox/a.bin": "8d606401e851bf5de5589a9f4bb5e8e331e29d0986ca05b34bddb1a7cf8b4848",
+    "file-manifest-1024/outbox/\u00e9.txt": "b2c137d874d77bc5faffc017c29a89cb8d15b027d5afe794c513b0c0b51a72fb"
+  },
+  "policy": "embedding-v5-linux-exception-pressure",
+  "windowSeconds": 4,
+  "sessions": 3,
+  "cases": [
+    "pressure-unbound-sync-control",
+    "pressure-unbound-sync",
+    "pressure-bound-sync-control",
+    "pressure-bound-sync",
+    "pressure-exposed-sync-control",
+    "pressure-exposed-sync",
+    "pressure-retained-sync-control",
+    "pressure-retained-sync"
+  ],
+  "campaignDeadlineSeconds": 240,
+  "childDeadlineSeconds": 28,
+  "cleanupSeconds": 1,
+  "originalTargets": {
+    "addedRequestP99Milliseconds": 5,
+    "addedHeartbeatMaxMilliseconds": 25
+  },
+  "pressureContract": {
+    "payloadBytes": 32000,
+    "capBytes": 48000,
+    "caughtDenialsPerJob": 128,
+    "retainedExceptions": 8,
+    "freshRunStatePerJob": true
+  }
+}

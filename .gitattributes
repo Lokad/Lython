@@ -6,3 +6,6 @@ benchmarks/**/*.py text eol=lf
 # Preserve measured bytes and their recorded hashes for this frozen report.
 benchmarks/results/2026-10-13-embedding-sync-pressure/raw/** -text whitespace=cr-at-eol
 benchmarks/results/2026-10-13-embedding-sync-pressure/reproduce/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-13-embedding-exception-pressure/raw/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-13-embedding-exception-pressure/reproduce/** -text whitespace=cr-at-eol
+benchmarks/results/2026-10-13-embedding-exception-pressure/recovery/** -text whitespace=cr-at-eol

@@ -1,0 +1,9 @@
+{
+  "pid": 125840,
+  "exitCode": 1,
+  "hasExited": true,
+  "timedOut": false,
+  "elapsedMillisecondsIncludingCleanup": 300,
+  "executableSha256": "21A46F1E5235CF4E844B9DE5429F0E198B9C97A41F0503A66442F1D639CA3EE6",
+  "stdoutSha256": "411f99ec6a3456580c5242100f75a94604e4cf7cc5d546af4d34fa465f06be73"
+}

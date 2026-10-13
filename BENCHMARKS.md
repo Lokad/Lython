@@ -114,6 +114,11 @@ accounting and broader host-impact qualification remain open. The
 meets the same latency targets in 30 original samples: no Gen2 in the four complete
 streaming jobs, one Gen2 per fresh retained-pressure execution. It is a finite
 embedding model; Windows impact and GC-independent reclamation remain open.
+The [bound/exposed/retained-error model at `7f5fbf70`](benchmarks/results/2026-10-13-embedding-exception-pressure/README.md)
+also meets those latency targets in 24 original samples, but incurs 128 Gen2
+collections per completed job versus one for unbound catches. These cases
+complete 12–14 jobs per four-second window versus 1,250–1,267 for unbound catches.
+The report also records failed memory recovery after reference withdrawal.
 Regex performance waits
 for [managed-only backend qualification](benchmarks/results/2026-10-12-regex-scalar-5/README.md).
 
