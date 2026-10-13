@@ -1,14 +1,12 @@
 {
-  "runtimeRevision": "02d3a0d0221fd7496a075e68b6c5271fd24de3c6",
-  "production": "c222a677ca0758b85d0441e8f96b67420afe4585",
+  "runtimeRevision": "f57003a8d185284eab0be0be3d6a132c04ffb69a",
+  "production": "8a6cc16d29202c2e2552e0d32bcfd88404cbdc8b",
   "fullyManagedConstraintPreserved": true,
   "logicalRefundsEnabled": false,
   "forcedGcRemoved": false,
   "checks": {
     "originalTransfers": {
       "failed": 9,
-      "tests": 9,
-      "passed": 0,
       "receipt": {
         "source": "6bed141e",
         "production": "325120a6",
@@ -22,11 +20,11 @@
         "elapsedMillisecondsIncludingCleanup": 1660,
         "stdoutSha256": "1BA6757F67A1DCE934A399AD66CF15659D8510E826AE5E282F77DBE8FE954AA8",
         "stderrSha256": "3D276B091EEFA808D53E07B5C2466D2AFE64749D94C720E7834A810A8E6EE481"
-      }
+      },
+      "passed": 0,
+      "tests": 9
     },
     "intermediateTransfers": {
-      "tests": 9,
-      "passed": 9,
       "receipt": {
         "source": "candidate",
         "production": "candidate",
@@ -40,11 +38,11 @@
         "elapsedMillisecondsIncludingCleanup": 1120,
         "stdoutSha256": "8D42FFD93819F08145189C51D390636266A615D1FAC1ED0F22C383D9C68C055C",
         "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
-      }
+      },
+      "passed": 9,
+      "tests": 9
     },
     "intermediateCallControls": {
-      "tests": 124,
-      "passed": 124,
       "receipt": {
         "source": "candidate",
         "production": "candidate",
@@ -58,12 +56,12 @@
         "elapsedMillisecondsIncludingCleanup": 1259,
         "stdoutSha256": "9FA3171D171A0D68E02912C5D6905C568319C4CB5537290D53AC86007623837D",
         "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
-      }
+      },
+      "passed": 124,
+      "tests": 124
     },
     "intermediateFullRelease": {
-      "tests": 10896,
       "revision": "09aeae83474eea40ed5950ee248c1861c83b9a70",
-      "passed": 10896,
       "receipt": {
         "source": "09aeae83474eea40ed5950ee248c1861c83b9a70",
         "production": "d3645bdc52954c3eaa37bd38d24fd8c13508961d",
@@ -84,12 +82,12 @@
         "elapsedMillisecondsIncludingCleanup": 483836,
         "purpose": "full Release suite gate; separate finite limit, not a diagnostic or benchmark"
       },
-      "historical": true
+      "historical": true,
+      "passed": 10896,
+      "tests": 10896
     },
     "intermediateBufferFailure": {
       "failed": 2,
-      "tests": 2,
-      "passed": 0,
       "receipt": {
         "source": "09aeae83",
         "production": "d3645bdc",
@@ -103,12 +101,11 @@
         "elapsedMillisecondsIncludingCleanup": 1808,
         "stdoutSha256": "6F89F0CC57A07835248DE66C8C2AA12F14860A2337EF32FA7983E8009D541FEA",
         "stderrSha256": "75358843E1A3F1C07EB31FE5CD076ED704C623D85B44B87E3BB2D73B4A8585B6"
-      }
+      },
+      "passed": 0,
+      "tests": 2
     },
     "correctedTransfers": {
-      "includesAll11TransferChecks": true,
-      "tests": 39,
-      "passed": 39,
       "receipt": {
         "source": "corrected-working-tree",
         "production": "corrected-working-tree",
@@ -122,11 +119,12 @@
         "elapsedMillisecondsIncludingCleanup": 1082,
         "stdoutSha256": "D256D49B2E238E78420060BB167B2D644B4709CBF099DF0FAED451F7C22CF376",
         "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
-      }
+      },
+      "includesAll11TransferChecks": true,
+      "passed": 39,
+      "tests": 39
     },
     "correctedFullWhite": {
-      "tests": 2240,
-      "passed": 2240,
       "receipt": {
         "source": "02d3a0d0221fd7496a075e68b6c5271fd24de3c6",
         "production": "c222a677ca0758b85d0441e8f96b67420afe4585",
@@ -142,11 +140,12 @@
         "timedOut": false,
         "elapsedMillisecondsIncludingCleanup": 55370,
         "purpose": "full Release suite gate; separate finite limit, not a diagnostic or benchmark"
-      }
+      },
+      "historical": true,
+      "passed": 2240,
+      "tests": 2240
     },
     "correctedPublicRoots": {
-      "tests": 64,
-      "passed": 64,
       "receipt": {
         "source": "02d3a0d0",
         "production": "c222a677",
@@ -160,10 +159,87 @@
         "elapsedMillisecondsIncludingCleanup": 6280,
         "stdoutSha256": "E0B909318A42C2ECAB0C354945B79F9786056D85A7CCD332C2206A3132AC96D5",
         "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
-      }
+      },
+      "historical": true,
+      "passed": 64,
+      "tests": 64
+    },
+    "unpooledBufferFailure": {
+      "failed": 2,
+      "receipt": {
+        "source": "02d3a0d0",
+        "production": "c222a677",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "E3270C6F3F7476830A54F7659CD793C2C098E7D3E6913F903185EEBB8638B2C2",
+        "filter": "FullyQualifiedName~CompletedCallScrubsArgumentBufferBeforeResultAdmission",
+        "pid": 1016472,
+        "hasExited": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1818,
+        "stdoutSha256": "EBEC72C2FB963ACEAB4A41DAAB65560A70B2D19625D12A0A93D39DA02334DEE3",
+        "stderrSha256": "45D0718E0B078AA7B32CD37DA4D2D4B2FA4F5BB7F429976A9E7B1314FA56169C"
+      },
+      "passed": 2,
+      "tests": 4
+    },
+    "finalTransfers": {
+      "receipt": {
+        "source": "final-working-tree",
+        "production": "final-working-tree",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+        "assemblySha256": "47FA0F99DB83D8D7593783FAB40AF5C994ED0BD0377196E9A49332ACE069E7E1",
+        "filter": "FullyQualifiedName~ExecutableCallTransferTests",
+        "pid": 717644,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 1091,
+        "stdoutSha256": "F174BCC9447AF69923D58A0B127448BF63153146990BAB95563BE0A749ACB9BC",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "passed": 13,
+      "tests": 13
+    },
+    "finalFullWhite": {
+      "receipt": {
+        "source": "f57003a8d185284eab0be0be3d6a132c04ffb69a",
+        "production": "8a6cc16d29202c2e2552e0d32bcfd88404cbdc8b",
+        "binaries": [
+          {
+            "path": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+            "sha256": "297EF259A629CDF266A6099A1E21F7435A2E9F7BAC46DB0A0F6B6A3E6D0C1D36"
+          }
+        ],
+        "pid": 131296,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 51941,
+        "purpose": "full Release suite gate; separate finite limit, not a diagnostic or benchmark"
+      },
+      "passed": 2242,
+      "tests": 2242
+    },
+    "finalPublicRoots": {
+      "receipt": {
+        "source": "f57003a8",
+        "production": "8a6cc16d",
+        "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+        "assemblySha256": "CD170B8C2C4751ADB3F7E215A089DDE0EC980A9DEC0ECF292DD4286042BA8A00",
+        "filter": "FullyQualifiedName~RootLifetimeContainment|FullyQualifiedName~NativeConsumerStreaming|FullyQualifiedName~CollectedMemoryRecovery|FullyQualifiedName~GzipCallbackScopeLifetime",
+        "pid": 495572,
+        "hasExited": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedMillisecondsIncludingCleanup": 5527,
+        "stdoutSha256": "1C1D84598917FE1F7DE86C9AAEEC7CFFB81BC3E140CD8FD7B7F9316CEECDC3A9",
+        "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "passed": 64,
+      "tests": 64
     },
     "publicDiagnosticCutoff": {
-      "status": "Incomplete",
       "receipt": {
         "source": "candidate",
         "production": "candidate",
@@ -177,10 +253,10 @@
         "elapsedMillisecondsIncludingCleanup": 28186,
         "stdoutSha256": "272F8A26565B42BE3503492FF7FE28C08387A5F69D6E5AAAB137D8A31A11D187",
         "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
-      }
+      },
+      "status": "Incomplete"
     },
     "mistakenSolutionFilename": {
-      "status": "Failed setup",
       "receipt": {
         "pid": 119500,
         "exitCode": 1,
@@ -196,7 +272,8 @@
           "Release",
           "--no-restore"
         ]
-      }
+      },
+      "status": "Failed setup"
     },
     "correctedSolutionBuild": {
       "pid": 497700,
@@ -214,15 +291,29 @@
         "--no-restore"
       ]
     },
+    "finalSolutionBuild": {
+      "pid": 225904,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 21920,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "21A46F1E5235CF4E844B9DE5429F0E198B9C97A41F0503A66442F1D639CA3EE6",
+      "arguments": [
+        "build",
+        "Lokad.Lython.slnx",
+        "-c",
+        "Release",
+        "--no-restore"
+      ]
+    },
     "finalPackage": {
-      "status": "Passed",
-      "sha512": "AC120AD4CBA29599A11DD86B0937B0B898592FB7577E3B53C458A0243EF700289FCC89A74790C15EB4BDEA41324269BFF2BF4104225AFC139F8BA77DB2442E11",
       "receipt": {
-        "pid": 621068,
+        "pid": 130608,
         "exitCode": 0,
         "hasExited": true,
         "timedOut": false,
-        "elapsedMillisecondsIncludingCleanup": 19543,
+        "elapsedMillisecondsIncludingCleanup": 23863,
         "executable": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
         "executableSha256": "BFB46AF89433268872DDB43D1CA7A3F433452EE91ED356A9786940F90118E285",
         "arguments": [
@@ -230,13 +321,32 @@
           "-File",
           "tools/PackageSmokeTest/verify-package.ps1",
           "-OutputDirectory",
-          ".git/agent-notes/call-transfer-20261013/corrected-package-output"
+          ".git/agent-notes/call-transfer-20261013/final-package-output"
         ]
-      }
+      },
+      "sha512": "C5F138B65342C77880D56B0BF1C18912E0D37420B534D6701B64C7936329017541588ED2D0C9A6C2C69A10CC69DDB455D52A3902ECA2695A286FCDE57999B008",
+      "status": "Passed"
     }
   },
   "micro": {
     "terminal": "inactive/dead/success/MainPID0/empty cgroup/lease free",
+    "initialServiceAttempt": "Failed before extraction: uploaded archive filename mismatch; no measurements",
+    "correctedAttemptReceipt": {
+      "pid": 1066564,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 9525,
+      "executable": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "executableSha256": "BFB46AF89433268872DDB43D1CA7A3F433452EE91ED356A9786940F90118E285",
+      "arguments": [
+        "-NoProfile",
+        "-File",
+        ".git/agent-notes/frame-transfer-20261013/remote.ps1",
+        "-Command",
+        "sudo -n systemd-run --unit=lython-r15-call-09aeae83 --wait --property=RuntimeMaxSec=28 --property=TimeoutStopSec=1 --property=KillMode=control-group --property=User=lokad --property=WorkingDirectory=/home/lokad/lython-bench-checks/call-transfer-09aeae83-20261013 /usr/bin/python3 /home/lokad/lython-bench-checks/call-transfer-09aeae83-20261013/run-micro.py"
+      ]
+    },
     "measuredGroups": 1,
     "initialAttemptReceipt": {
       "pid": 508548,
@@ -254,26 +364,9 @@
         "sudo -n systemd-run --unit=lython-r15-micro-09aeae83 --wait --collect --property=RuntimeMaxSec=28 --property=TimeoutStopSec=1 --property=KillMode=control-group --property=User=lokad --property=WorkingDirectory=/home/lokad/lython-bench-checks/call-transfer-09aeae83-20261013 /usr/bin/python3 /home/lokad/lython-bench-checks/call-transfer-09aeae83-20261013/run-micro.py"
       ]
     },
-    "correctedAttemptReceipt": {
-      "pid": 1066564,
-      "exitCode": 0,
-      "hasExited": true,
-      "timedOut": false,
-      "elapsedMillisecondsIncludingCleanup": 9525,
-      "executable": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
-      "executableSha256": "BFB46AF89433268872DDB43D1CA7A3F433452EE91ED356A9786940F90118E285",
-      "arguments": [
-        "-NoProfile",
-        "-File",
-        ".git/agent-notes/frame-transfer-20261013/remote.ps1",
-        "-Command",
-        "sudo -n systemd-run --unit=lython-r15-call-09aeae83 --wait --property=RuntimeMaxSec=28 --property=TimeoutStopSec=1 --property=KillMode=control-group --property=User=lokad --property=WorkingDirectory=/home/lokad/lython-bench-checks/call-transfer-09aeae83-20261013 /usr/bin/python3 /home/lokad/lython-bench-checks/call-transfer-09aeae83-20261013/run-micro.py"
-      ]
-    },
     "performanceQualified": false,
-    "measuredRevision": "09aeae83474eea40ed5950ee248c1861c83b9a70",
     "finalRuntimeMeasured": false,
-    "initialServiceAttempt": "Failed before extraction: uploaded archive filename mismatch; no measurements"
+    "measuredRevision": "09aeae83474eea40ed5950ee248c1861c83b9a70"
   },
   "finalBothPlatformFullSuite": "Exact-head CI required; local intermediate full suite is historical only"
 }

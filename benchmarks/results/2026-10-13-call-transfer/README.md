@@ -25,6 +25,13 @@ result admission. Correction `02d3a0d0221fd7496a075e68b6c5271fd24de3c6`
 (production `c222a677`) restores scrubbing immediately after invocation, before
 result admission. Both new failures become passes; all eleven transfer checks
 pass within 39 focused controls and 64 public root/native-streaming controls.
+Extending the same probe to four arguments exposed unpooled buffers retaining
+references too: two small-arity passes and two large-arity failures. Final
+correction `f57003a8d185284eab0be0be3d6a132c04ffb69a`
+(production `8a6cc16d`) scrubs these discarded buffers at the same boundary.
+All thirteen transfer checks, 2,242 full white Release cases and 64 public
+root/native-streaming controls pass on the final runtime; its exact Release
+package consumer also passes. Full both-platform delivery remains a separate CI gate.
 The first candidate's complete 10,896-case Release gate is historical evidence;
 the corrected runtime's normal checks are recorded separately. The broad public diagnostic
 hit its 28-second cutoff and remains **incomplete**; the normal full-suite gate
