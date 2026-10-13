@@ -91,11 +91,14 @@ public sealed class ExecutableCallTransferTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task CompletedCallScrubsArgumentBufferBeforeResultAdmission(bool asynchronous)
+    [InlineData(false, 1)]
+    [InlineData(true, 1)]
+    [InlineData(false, 4)]
+    [InlineData(true, 4)]
+    public async Task CompletedCallScrubsArgumentBufferBeforeResultAdmission(bool asynchronous, int count)
     {
-        var (code, context) = Prepare("marker = 23\nreturn produce('x' * 16000)\n");
+        var inputs = count == 1 ? "'x' * 16000" : "'x' * 16000, 1, 2, 3";
+        var (code, context) = Prepare($"marker = 23\nreturn produce({inputs})\n");
         var value = new ObservedValue(context, false);
         var producer = new Producer(value);
         value.InputProducer = producer;
@@ -189,7 +192,7 @@ public sealed class ExecutableCallTransferTests
                 Assert.NotNull(Frame);
                 Assert.Same(this, Assert.Single(Operands(Frame!)));
                 if (InputProducer is { } producer)
-                    Assert.IsType<PyNone>(Assert.Single(producer.Arguments!).Value);
+                    Assert.All(producer.Arguments!, argument => Assert.IsType<PyNone>(argument.Value));
                 Observed = true;
                 if (deny)
                 {

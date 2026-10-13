@@ -451,6 +451,13 @@ internal sealed partial class LythonRuntime
             arguments[2] = CallArgumentValue.Positional(PyNone.Instance);
             _pooledThreeCallArguments ??= arguments;
         }
+        else if (arguments.Length > 3)
+        {
+            // These buffers are not pooled, but the completed call helper can
+            // still hold the array while observing its result. Withdraw every
+            // input reference at the same boundary as the small pooled arities.
+            arguments.AsSpan().Fill(CallArgumentValue.Positional(PyNone.Instance));
+        }
     }
 
     private static CallArgumentValue[] PrepareExecutableCallArguments(
