@@ -1,0 +1,338 @@
+{
+  "producer": "28b8a95e2f40a25b014fe13845d0eca3bdf0dedd",
+  "production": "b7b526e54502dd89cecf6b2735aa90a2438d6008",
+  "combinedRuntimeCommits": [
+    "e5c4fcf1",
+    "a1319514",
+    "28b8a95e"
+  ],
+  "beforeRegressions": {
+    "receipt": {
+      "source": "actual-protocol-before",
+      "production": "6c61f086d9d418ec96fe72dfb0a55d4d1a02ea33",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "76105EA82995949CEC7D881B86BD88DAF433F4CD3DA9DCDE2236A1947F1CF978",
+      "filter": "FullyQualifiedName~ExecutableValueTransferTests",
+      "pid": 518032,
+      "hasExited": true,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1097,
+      "stdoutSha256": "A94BC3728489DCC436F8E995503DD044F7908FD90B22EA3F51B6319A358A5879",
+      "stderrSha256": "9538F0CE41C8AD2D74F95DE85BE74DF3CA99F912EF27A1CC8A725C3F8A4A0215"
+    },
+    "results": [
+      {
+        "sha256": "AA21F65FFE188FD2214F56A15948263DE62C9D39A139DC202E13BCD23CEADC91",
+        "counts": {
+          "total": "10",
+          "executed": "10",
+          "passed": "0",
+          "failed": "10",
+          "error": "0",
+          "timeout": "0",
+          "aborted": "0",
+          "inconclusive": "0",
+          "passedButRunAborted": "0",
+          "notRunnable": "0",
+          "notExecuted": "0",
+          "disconnected": "0",
+          "warning": "0",
+          "completed": "0",
+          "inProgress": "0",
+          "pending": "0"
+        }
+      }
+    ]
+  },
+  "finalFocusedWhite": {
+    "receipt": {
+      "source": "shared-slice-bound-decoding",
+      "production": "working-value-transfers",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "B1BFE04297403A1CBE69327EFFE59DA1A430B5EC093971AD44E523E3B14CB247",
+      "filter": "FullyQualifiedName~ExecutableValueTransferTests|FullyQualifiedName~ExecutableCallTransferTests|FullyQualifiedName~ExecutableOperandStackBoundaryTests|FullyQualifiedName~ExecutableAugmentedIntegerBoundaryTests|FullyQualifiedName~FrameStorageEdgesTests|FullyQualifiedName~ClassMethodExecutionBoundaryTests",
+      "pid": 266592,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1219,
+      "stdoutSha256": "4FA9BF924BE4E0A08C2E06089A027D097355AED26C7926C90C5F4C65AF8D0E1A",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "results": [
+      {
+        "sha256": "7D70E17162A7F7EEE3707D57D92BA9E460AAE701BEF32122A5937BFB267E238F",
+        "counts": {
+          "total": "119",
+          "executed": "119",
+          "passed": "119",
+          "failed": "0",
+          "error": "0",
+          "timeout": "0",
+          "aborted": "0",
+          "inconclusive": "0",
+          "passedButRunAborted": "0",
+          "notRunnable": "0",
+          "notExecuted": "0",
+          "disconnected": "0",
+          "warning": "0",
+          "completed": "0",
+          "inProgress": "0",
+          "pending": "0"
+        }
+      }
+    ]
+  },
+  "focusedPublicBeforeSliceConsolidation": {
+    "receipt": {
+      "source": "value-transfer-final",
+      "production": "working-value-transfers",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+      "assemblySha256": "6ED25CEB7CCFC5B44914D26DC64F3B95C531C37273524089062E434422C5EB01",
+      "filter": "Category!=Stress&(FullyQualifiedName~RootLifetimeContainmentTests|FullyQualifiedName~NativeConsumerStreamingTests|FullyQualifiedName~Operator|FullyQualifiedName~Slice|FullyQualifiedName~Subscript|FullyQualifiedName~GeneratorExpressionCompositionTests|FullyQualifiedName~GeneratorDefinitionCompositionTests|FullyQualifiedName~ReferenceWithdrawalRecoveryTests)",
+      "pid": 383332,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 6286,
+      "stdoutSha256": "2727D1A673ABDE093BE34DD10822DACC83098011E5CBE24BFA58998395E3B87E",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "results": [
+      {
+        "sha256": "A8DD04394ED2D4BB12606EFA20E44A1F092D2EB8CF0B11999F054E6943821F3D",
+        "counts": {
+          "total": "310",
+          "executed": "310",
+          "passed": "310",
+          "failed": "0",
+          "error": "0",
+          "timeout": "0",
+          "aborted": "0",
+          "inconclusive": "0",
+          "passedButRunAborted": "0",
+          "notRunnable": "0",
+          "notExecuted": "0",
+          "disconnected": "0",
+          "warning": "0",
+          "completed": "0",
+          "inProgress": "0",
+          "pending": "0"
+        }
+      }
+    ]
+  },
+  "ordinary": {
+    "receipt": {
+      "pid": 648708,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 290474,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "21A46F1E5235CF4E844B9DE5429F0E198B9C97A41F0503A66442F1D639CA3EE6",
+      "arguments": [
+        "test",
+        "Lokad.Lython.slnx",
+        "-c",
+        "Release",
+        "--no-build",
+        "--logger",
+        "trx",
+        "--results-directory",
+        ".git/agent-notes/value-transfer-20261013/checkpoint-ordinary-results",
+        "-v:q"
+      ]
+    },
+    "results": [
+      {
+        "sha256": "7D20046C1E81C14F7821CC6A97CBA81BF6FD2906F49C718919549795370A79D3",
+        "counts": {
+          "total": "2323",
+          "executed": "2323",
+          "passed": "2323",
+          "failed": "0",
+          "error": "0",
+          "timeout": "0",
+          "aborted": "0",
+          "inconclusive": "0",
+          "passedButRunAborted": "0",
+          "notRunnable": "0",
+          "notExecuted": "0",
+          "disconnected": "0",
+          "warning": "0",
+          "completed": "0",
+          "inProgress": "0",
+          "pending": "0"
+        }
+      },
+      {
+        "sha256": "DEB29C88DBBC53E808127AE79ED9D38D66D0D00572AED24216A3E485163D53D7",
+        "counts": {
+          "total": "8667",
+          "executed": "8667",
+          "passed": "8667",
+          "failed": "0",
+          "error": "0",
+          "timeout": "0",
+          "aborted": "0",
+          "inconclusive": "0",
+          "passedButRunAborted": "0",
+          "notRunnable": "0",
+          "notExecuted": "0",
+          "disconnected": "0",
+          "warning": "0",
+          "completed": "0",
+          "inProgress": "0",
+          "pending": "0"
+        }
+      }
+    ]
+  },
+  "originalStress": {
+    "receipt": {
+      "pid": 70532,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 186461,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "21A46F1E5235CF4E844B9DE5429F0E198B9C97A41F0503A66442F1D639CA3EE6",
+      "arguments": [
+        "test",
+        "Lokad.Lython.slnx",
+        "-c",
+        "Release",
+        "--no-build",
+        "--filter",
+        "Category=Stress",
+        "--logger",
+        "trx",
+        "--results-directory",
+        ".git/agent-notes/value-transfer-20261013/checkpoint-stress-results",
+        "-v:q"
+      ]
+    },
+    "results": [
+      {
+        "sha256": "AB893B7018D42BA9AA5A34A86172254C31338E087E19485415F1176AE052CD73",
+        "counts": {
+          "total": "0",
+          "executed": "0",
+          "passed": "0",
+          "failed": "0",
+          "error": "0",
+          "timeout": "0",
+          "aborted": "0",
+          "inconclusive": "0",
+          "passedButRunAborted": "0",
+          "notRunnable": "0",
+          "notExecuted": "0",
+          "disconnected": "0",
+          "warning": "0",
+          "completed": "0",
+          "inProgress": "0",
+          "pending": "0"
+        }
+      },
+      {
+        "sha256": "FCA8DEAF7F1A7C9EFDC408EA49B9241B5BEC0DF5617727640122D590B9269FC0",
+        "counts": {
+          "total": "375",
+          "executed": "375",
+          "passed": "375",
+          "failed": "0",
+          "error": "0",
+          "timeout": "0",
+          "aborted": "0",
+          "inconclusive": "0",
+          "passedButRunAborted": "0",
+          "notRunnable": "0",
+          "notExecuted": "0",
+          "disconnected": "0",
+          "warning": "0",
+          "completed": "0",
+          "inProgress": "0",
+          "pending": "0"
+        }
+      }
+    ]
+  },
+  "releasePackage": {
+    "receipt": {
+      "pid": 41364,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 17519,
+      "executable": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "executableSha256": "BFB46AF89433268872DDB43D1CA7A3F433452EE91ED356A9786940F90118E285",
+      "arguments": [
+        "-NoProfile",
+        "-File",
+        "tools/PackageSmokeTest/verify-package.ps1",
+        "-OutputDirectory",
+        ".git/agent-notes/value-transfer-20261013/package-output"
+      ]
+    }
+  },
+  "scope": "Stored-child descriptors and executable value transfers. No governor relief or logical refunds enabled. Full ownership and forced-GC independence remain open.",
+  "historicalSetups": [
+    "Initial fake type lacked __getattribute__, so its five failures were fixture failures.",
+    "TheoryData enumeration compile failure was corrected.",
+    "ordinary-micro selected no tests accidentally; it is not validation evidence."
+  ],
+  "costDiagnostic": {
+    "receipt": {
+      "pid": 947184,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 7323,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "21A46F1E5235CF4E844B9DE5429F0E198B9C97A41F0503A66442F1D639CA3EE6",
+      "arguments": [
+        "C:\\Users\\JoannesVermorel\\code\\Lython\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.Benchmarks.dll",
+        "--compare",
+        "micro",
+        "--catalog",
+        "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\value-transfer-20261013\\catalog.json",
+        "--dotnet",
+        "C:\\Program Files\\dotnet\\dotnet.exe",
+        "--baseline-worker",
+        "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\value-transfer-20261013\\before-worker\\Lokad.Lython.Benchmarks.dll",
+        "--python",
+        "C:\\Python313\\python.exe",
+        "--python-worker",
+        "C:\\Users\\JoannesVermorel\\code\\Lython\\benchmarks\\cpython-worker.py",
+        "--out",
+        "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\value-transfer-20261013\\cost-diagnostic.json",
+        "--case",
+        "calls.keyword.large"
+      ]
+    },
+    "summaries": [
+      {
+        "engine": "baseline",
+        "medianMicroseconds": 4180.9,
+        "iqrFraction": 0.12845559568513965
+      },
+      {
+        "engine": "candidate",
+        "medianMicroseconds": 3722.488888888889,
+        "iqrFraction": 0.10827134772434228
+      },
+      {
+        "engine": "CPython",
+        "medianMicroseconds": 1290.1280000000002,
+        "iqrFraction": 0.021997817270844478
+      }
+    ],
+    "scope": "One shared Windows workstation diagnostic before the final slice-decoder consolidation. No qualified improvement/regression, CPython ratio, final-HEAD or host-latency claim.",
+    "baselineProduction": "6c61f086d9d418ec96fe72dfb0a55d4d1a02ea33",
+    "baselineDllSha256": "2F9443F33B5FF998171C41CDB7FBDAEDD5F345865D43EAEC5C7CA3155359844F"
+  },
+  "packageSha512": "F40BF6A15907D2811CC520EFA5CAA73FE9F1DD5040147CA94649906274713A6817E664C03F83C23A012657EBCC6D89FC88E13DBE67BFB6595BC43727BEA6F60D",
+  "librarySha256": "285737137258B2BE2F59B7266134C27C829D4FB3622BDF8A4B197FC6349FCE82"
+}

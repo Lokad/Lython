@@ -445,3 +445,10 @@ not predicted savings. Twenty-seven independent invocation checks precede an
 isolated function-body strategy. Baseline and candidate each pass 9,395 Debug
 tests, 181 selected checks and 58 CPython comparisons. Fresh Release gates and
 short candidate micros remain pending; no gain or integration is claimed.
+
+The [stored-root and value-transfer checkpoint](results/2026-10-13-value-transfers/README.md)
+records the combined frame/code descriptors and operand publication at native
+callbacks, full Release/stress/package checks and one inconclusive short cost
+comparison. No logical reclamation or forced-GC removal is enabled. The
+[immutable scalar.44 assessment](results/2026-10-13-regex-scalar-44/README.md)
+records the remaining managed-only backend blocker separately.
