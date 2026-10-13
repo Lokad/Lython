@@ -144,13 +144,12 @@ public sealed class FrameStorageEdgesTests
     }
 
     [Fact]
-    public void UnhandledCodeBindingsPreventCompletion()
+    public void DescribedCodeBindingsTraverseNestedDefinitions()
     {
         var frame = new LythonRuntime.ExecutableFrameState(Compile("def f():\n    return None\n").EntryPoint, [], null, null);
         using var walk = new MemoryStorageWalk(new MemoryGovernor(16000), 256);
-        Assert.False(walk.TryTraverse([frame]));
-        Assert.Equal(MemoryStorageWalk.IncompleteReason.UnknownShape, walk.Incomplete);
-        Assert.Equal(typeof(ExecutableFunctionBinding), walk.UnsupportedType);
+        Assert.True(walk.TryTraverse([frame]));
+        Assert.Contains(walk.Visited.ToArray(), value => value is ExecutableFunctionBinding);
     }
 
     [Fact]

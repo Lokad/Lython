@@ -297,7 +297,7 @@ internal sealed record LoweredLambdaExpression(
     public ExecutableCodeObject? GeneratorCode { get; } = GeneratorSyntaxFacts.ContainsYield(Lambda.Body)
         ? ExecutableScript.CompileGenerator(Lambda.Parameters.Select(parameter => new LoweredFunctionParameter(
             parameter.Name, parameter.Kind, null, null)).ToArray(),
-            [new LoweredReturnStatement(new ReturnStatementSyntax(Lambda.Body, Lambda.Span), Body)],
+            new LoweredStatement[] { new LoweredReturnStatement(new ReturnStatementSyntax(Lambda.Body, Lambda.Span), Body) },
             ScopeDirectiveFactsCollector.ForLambda(Lambda)) : null;
 }
 

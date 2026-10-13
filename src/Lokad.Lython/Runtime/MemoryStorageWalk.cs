@@ -67,11 +67,11 @@ internal sealed class MemoryStorageWalk : IDisposable
                         // An empty CLR array cannot retain a guest reference,
                         // including empty typed code/cache tables.
                         break;
-                    case Dictionary<string, object> namedValues:
+                    case Dictionary<string, object> namedValues when namedValues.GetType() == typeof(Dictionary<string, object>):
                         // Runtime namespace/default tables have CLR string keys.
                         foreach (var pair in namedValues) if (!Add(pair.Value)) break;
                         break;
-                    case List<object> values:
+                    case List<object> values when values.GetType() == typeof(List<object>):
                         foreach (var child in values) if (!Add(child)) break;
                         break;
                     case ExecutableCodeObject code:
@@ -83,16 +83,17 @@ internal sealed class MemoryStorageWalk : IDisposable
                             !Add(code.ExpressionFallbacks) || !Add(code.LoopTargets)) break;
                         Add(code.UnpackingTargets);
                         break;
-                    case List<PyType> types:
+                    case List<PyType> types when types.GetType() == typeof(List<PyType>):
                         foreach (var child in types) if (!Add(child)) break;
                         break;
-                    case List<LythonRuntime.ExecutableCell> cells:
+                    case List<LythonRuntime.ExecutableCell> cells when cells.GetType() == typeof(List<LythonRuntime.ExecutableCell>):
                         foreach (var child in cells) if (!Add(child)) break;
                         break;
                     case PyBytes or PyComplex or BigInteger:
                         // Immutable payload owners have no guest-value children.
                         break;
                     default:
+                        if (MemoryCodeStorageEdges.TryVisit(value, this)) break;
                         Incomplete = IncompleteReason.UnknownShape;
                         UnsupportedType = value.GetType();
                         break;
