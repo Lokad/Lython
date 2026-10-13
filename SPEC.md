@@ -2449,6 +2449,12 @@ fail explicitly. File composition uses the existing mediated binary protocols.
 
 ### 11.23 Sequential Gzip Binary Wrappers
 
+Path-based `gzip.open` handles retain their actual read content or staged write
+history and the run's shared host, limits and accounting services. Escaping or
+closed handles do not retain the opening function's unrelated local variables.
+Explicit aliases of those variables remain subject to live-memory limits. This
+does not change materialization, append, codec, publication or retry semantics.
+
 `gzip.GzipFile(filename=None, mode=None, compresslevel=9, fileobj=None, mtime=None)`
 creates a sequential binary wrapper over a contained filename or an already
 supplied binary object. Filename acquisition uses the optional binary host

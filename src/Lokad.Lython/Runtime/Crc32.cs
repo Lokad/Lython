@@ -26,6 +26,9 @@ internal static class Crc32
     }
 
     public static uint Compute(ReadOnlySpan<byte> data, LythonRuntime.ExecutionContext context, LythonSourceSpan? span)
+        => Compute(data, context.Services, span);
+
+    public static uint Compute(ReadOnlySpan<byte> data, ExecutionServices context, LythonSourceSpan? span)
     {
         var crc = uint.MaxValue;
         for (var offset = 0; offset < data.Length; offset += BudgetChunkLength)

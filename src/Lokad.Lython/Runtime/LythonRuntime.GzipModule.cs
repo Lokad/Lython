@@ -429,7 +429,7 @@ internal sealed partial class LythonRuntime
 
             var compressionLevel = levelAssigned ? ParseCompressionLevel(level.RequireNotNull(), span) : 9;
             var modificationTime = mtimeAssigned ? ParseModificationTime(mtime.RequireNotNull(), span) : 0u;
-            return CreateBytes(CompressGzip(bytes.Bytes, compressionLevel, modificationTime, context, span), context, span);
+            return CreateBytes(CompressGzip(bytes.Bytes, compressionLevel, modificationTime, context.Services, span), context, span);
         }
 
         public PyString RenderPython(PyRenderingContext context)
@@ -447,7 +447,7 @@ internal sealed partial class LythonRuntime
         ReadOnlySpan<byte> data,
         int compressionLevel,
         uint modificationTime,
-        ExecutionContext context,
+        ExecutionServices context,
         LythonSourceSpan? span)
     {
         var maximumLength = checked((long)data.Length + (data.Length >> 12) + (data.Length >> 14) + (data.Length >> 25) + 31L);

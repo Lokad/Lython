@@ -23,7 +23,9 @@ internal sealed partial class LythonRuntime
         }
 
         private readonly GzipOpenOptions _options;
-        private readonly ExecutionContext _context;
+        // Path I/O and codecs need run services, never the opening scope's
+        // namespace. An escaping handle must not pin unrelated creation locals.
+        private readonly ExecutionServices _services;
         private readonly IGzipContent _content;
         private byte[] _compressedPrefix;
         private readonly GovernedByteBuilder _writeBuffer;
@@ -41,7 +43,7 @@ internal sealed partial class LythonRuntime
             bool dirty)
         {
             _options = options;
-            _context = context;
+            _services = context.Services;
             _content = content;
             _compressedPrefix = compressedPrefix;
             _writeBuffer = new GovernedByteBuilder(context.MemoryGovernor);
@@ -125,7 +127,7 @@ internal sealed partial class LythonRuntime
             var bytes = ((BinaryReadContent)_content).Value;
             if (_readCursor >= bytes.Length)
             {
-                return CreateBytes([], _context, span);
+                return CreateBytes([], _services, span);
             }
 
             var remaining = bytes.Length - _readCursor;
@@ -135,11 +137,11 @@ internal sealed partial class LythonRuntime
             // Cover the transient copy as well as the owned result that
             // CreateBytes charges; the reservation is released only after
             // ownership transfers, with no allocation in between.
-            using (_context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(length), span))
+            using (_services.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(length), span))
             {
                 var binary = bytes.Bytes.Slice(_readCursor, length).ToArray();
                 _readCursor = binaryEnd;
-                return CreateBytes(binary, _context, span);
+                return CreateBytes(binary, _services, span);
             }
         }
 
@@ -169,7 +171,7 @@ internal sealed partial class LythonRuntime
             var bytes = ((BinaryReadContent)_content).Value;
             if (_readCursor >= bytes.Length)
             {
-                return CreateBytes([], _context, span);
+                return CreateBytes([], _services, span);
             }
 
             // Plain line-feed scanning, shared with text readers and ZIP members.
@@ -184,11 +186,11 @@ internal sealed partial class LythonRuntime
             }
 
             var lineLength = binaryEnd - _readCursor;
-            using (_context.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(lineLength), span))
+            using (_services.MemoryGovernor.ReserveTemporary(PyBytes.EstimateApproximateBytes(lineLength), span))
             {
                 var lineBytes = bytes.Bytes.Slice(_readCursor, lineLength).ToArray();
                 _readCursor = binaryEnd;
-                return CreateBytes(lineBytes, _context, span);
+                return CreateBytes(lineBytes, _services, span);
             }
         }
 
@@ -197,7 +199,7 @@ internal sealed partial class LythonRuntime
             EnsureReadable(span);
             // Accumulate directly in the governed result so growth is charged
             // as it happens; no second copy is needed on return.
-            var lines = new PyList([], _context.MemoryGovernor, span);
+            var lines = new PyList([], _services.MemoryGovernor, span);
             var total = 0;
             while (true)
             {
@@ -209,10 +211,10 @@ internal sealed partial class LythonRuntime
 
                 lines.Add(line);
                 total += line is PyString text ? text.Utf8Bytes.Length : ((PyBytes)line).Length;
-                _context.ObserveCollectionCount(lines.Count, span);
+                _services.ObserveCollectionCount(lines.Count, span);
                 if ((lines.Count & 63) == 0)
                 {
-                    _context.CheckExecution(span);
+                    _services.CheckExecution(span);
                 }
 
                 if (hint > 0 && total > hint)
@@ -247,10 +249,10 @@ internal sealed partial class LythonRuntime
                     TextEncodingMode.Utf16 => TextEncodingMode.Utf16LittleEndian,
                     _ => _options.Encoding,
                 } : _options.Encoding;
-                using var reservation = ReserveUtf16Output(text, writeEncoding, _options.Newline, _context, span);
+                using var reservation = ReserveUtf16Output(text, writeEncoding, _options.Newline, _services, span);
                 try
                 {
-                    encoded = EncodeText(text, writeEncoding, _options.Errors, _options.Newline, _context, span, reservation is not null);
+                    encoded = EncodeText(text, writeEncoding, _options.Errors, _options.Newline, _services, span, reservation is not null);
                 }
                 catch
                 {
@@ -305,13 +307,13 @@ internal sealed partial class LythonRuntime
             var payload = CreateCompressedWritePayload(span);
             try
             {
-                _context.RegisterHostCall(span);
-                _context.WriteHostBytes(_options.Path, payload.Bytes, span);
+                _services.RegisterHostCall(span);
+                _services.WriteHostBytes(_options.Path, payload.Bytes, span);
                 _dirty = false;
             }
             finally
             {
-                _context.MemoryGovernor.Release(payload.MemoryCharge);
+                _services.MemoryGovernor.Release(payload.MemoryCharge);
             }
         }
 
@@ -326,13 +328,13 @@ internal sealed partial class LythonRuntime
             var payload = CreateCompressedWritePayload(span);
             try
             {
-                _context.RegisterHostCall(span);
-                await _context.WriteHostBytesAsync(_options.Path, payload.Bytes, span).ConfigureAwait(false);
+                _services.RegisterHostCall(span);
+                await _services.WriteHostBytesAsync(_options.Path, payload.Bytes, span).ConfigureAwait(false);
                 _dirty = false;
             }
             finally
             {
-                _context.MemoryGovernor.Release(payload.MemoryCharge);
+                _services.MemoryGovernor.Release(payload.MemoryCharge);
             }
         }
 
@@ -340,10 +342,10 @@ internal sealed partial class LythonRuntime
         {
             // Construct and account for the complete payload before either flush path
             // crosses the host boundary, so local failures cannot partially update a file.
-            var compressed = CompressGzip(_writeBuffer.WrittenSpan, _options.CompressionLevel, 0, _context, span);
+            var compressed = CompressGzip(_writeBuffer.WrittenSpan, _options.CompressionLevel, 0, _services, span);
             var compressedCharge = PyBytes.EstimateApproximateBytes(compressed.Length);
-            _context.MemoryGovernor.Reserve(compressedCharge, span);
-            _context.MemoryGovernor.Commit(compressedCharge);
+            _services.MemoryGovernor.Reserve(compressedCharge, span);
+            _services.MemoryGovernor.Commit(compressedCharge);
             if (_options.Operation != GzipOperation.Append || _compressedPrefix.Length == 0)
             {
                 return new GzipWritePayload(compressed, compressedCharge);
@@ -353,17 +355,17 @@ internal sealed partial class LythonRuntime
             var payloadCharge = PyBytes.EstimateApproximateBytes(length);
             try
             {
-                _context.MemoryGovernor.Reserve(payloadCharge, span);
+                _services.MemoryGovernor.Reserve(payloadCharge, span);
                 var payload = new byte[length];
                 _compressedPrefix.CopyTo(payload, 0);
                 compressed.CopyTo(payload, _compressedPrefix.Length);
-                _context.MemoryGovernor.Release(compressedCharge);
-                _context.MemoryGovernor.Commit(payloadCharge);
+                _services.MemoryGovernor.Release(compressedCharge);
+                _services.MemoryGovernor.Commit(payloadCharge);
                 return new GzipWritePayload(payload, payloadCharge);
             }
             catch
             {
-                _context.MemoryGovernor.Release(compressedCharge);
+                _services.MemoryGovernor.Release(compressedCharge);
                 throw;
             }
         }
@@ -414,7 +416,7 @@ internal sealed partial class LythonRuntime
         private void ReleaseWriteBuffers()
         {
             _writeBuffer.Release();
-            _context.MemoryGovernor.Release(_compressedPrefixCharge);
+            _services.MemoryGovernor.Release(_compressedPrefixCharge);
             _compressedPrefixCharge = 0;
             _compressedPrefix = [];
         }
