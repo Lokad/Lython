@@ -5,6 +5,12 @@ must not be read as measurements of current HEAD. See [BENCHMARKS.md](../BENCHMA
 for the authoritative comparison and [COMPARISON.md](COMPARISON.md) for methods.
 The original narratives and evidence links follow unchanged.
 
+The [2026-10-14 native state checkpoint](results/2026-10-14-native-working-state/README.md)
+combines native buffer descriptors, active caller links and stored sum state.
+It preserves bounded streaming and rejection controls; complete ownership and
+forced-GC independence remain open. One short generated-sum comparison is
+inconclusive and is not a qualified speed or embedding-latency claim.
+
 The [2026-10-13 native activation array](results/2026-10-13-native-activation-rejected/README.md)
 passes its focused root/streaming gates but remains incomplete and adds recurring
 bookkeeping before a GC-independent rule exists. Its one short call measurement

@@ -1,0 +1,365 @@
+{
+  "producer": "09d81bb153c006f3c248d8ba0dfdfe9cdbc70d63",
+  "production": "ec5f063033457c8456cf1637082dd72726e3ac61",
+  "combinedRuntimeCommits": [
+    "9cf386b8",
+    "146fb75b",
+    "09d81bb1"
+  ],
+  "beforeAggregate": {
+    "receipt": {
+      "source": "native-aggregate-before",
+      "production": "153d6c4e9e152d0d894210567bb921902858b534",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "3257BD8452920BD849686A3C1B4E6FFE7875F71F5BA94A7063D8A9F6C6779646",
+      "filter": "FullyQualifiedName~NativeAggregateStateTests",
+      "pid": 426916,
+      "hasExited": true,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1681,
+      "stdoutSha256": "58FDCC2656271B08C593FBBDC1F9E2F43A92E0516B2987A9CDA3725EF2979FF3",
+      "stderrSha256": "5A32E6045A88C62631F7016B2EA7EE518C1EB64855FD77B91DBB32C9DFEDFF98"
+    },
+    "results": [
+      {
+        "counts": {
+          "total": "8",
+          "executed": "8",
+          "passed": "0",
+          "failed": "8",
+          "error": "0",
+          "timeout": "0",
+          "aborted": "0",
+          "inconclusive": "0",
+          "passedButRunAborted": "0",
+          "notRunnable": "0",
+          "notExecuted": "0",
+          "disconnected": "0",
+          "warning": "0",
+          "completed": "0",
+          "inProgress": "0",
+          "pending": "0"
+        },
+        "trxSha256": "B23FA73E68A63E7840631E0875CA347A3A2016B3B3C541BB47DD50B1D36C9611",
+        "assemblyNamespace": "white"
+      }
+    ]
+  },
+  "focusedWhite": {
+    "receipt": {
+      "source": "146fb75b+native-aggregate-candidate",
+      "production": "uncommitted",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "E13AFAA83CC127BDFC3F7DA87F785062BC01FFBF8010094C73E0AA8F01664FBD",
+      "filter": "Category!=Stress&(FullyQualifiedName~NativeAggregateStateTests|FullyQualifiedName~ActiveExecutionCallerTests|FullyQualifiedName~NativeWorkingStorageEdgesTests|FullyQualifiedName~ClassMethodExecutionBoundaryTests)",
+      "pid": 29676,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1274,
+      "stdoutSha256": "44540A3F9808B4A8514F4EC3FC30EC89391FAD8E0E0D2FB37795129B53A5821C",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "results": [
+      {
+        "counts": {
+          "total": "83",
+          "executed": "83",
+          "passed": "83",
+          "failed": "0",
+          "error": "0",
+          "timeout": "0",
+          "aborted": "0",
+          "inconclusive": "0",
+          "passedButRunAborted": "0",
+          "notRunnable": "0",
+          "notExecuted": "0",
+          "disconnected": "0",
+          "warning": "0",
+          "completed": "0",
+          "inProgress": "0",
+          "pending": "0"
+        },
+        "trxSha256": "6054A23F923E3366067C9751307DE39EF7631AEF94DCAB707B2D780F6A8DA093",
+        "assemblyNamespace": "white"
+      }
+    ]
+  },
+  "focusedPublic": {
+    "receipt": {
+      "source": "146fb75b+native-aggregate-candidate",
+      "production": "uncommitted",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+      "assemblySha256": "F5A8AC33CC870211B576A12608638C1A6AB1ABC082A93B70B72EEC34B20EECDC",
+      "filter": "Category!=Stress&(FullyQualifiedName~RootLifetimeContainmentTests|FullyQualifiedName~NativeConsumerStreamingTests|FullyQualifiedName~BuiltinIteratorSequenceFunctionTests|FullyQualifiedName~BuiltinIterationCancellationTests|FullyQualifiedName~BuiltinValidationScenarioTests|FullyQualifiedName~IterableFailureTests|FullyQualifiedName~GeneratorDefinitionCompositionTests|FullyQualifiedName~GeneratorExpressionCompositionTests)",
+      "pid": 30260,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 7020,
+      "stdoutSha256": "834D5AE0F73AE9E8E2F040469E07273DCDB4A7542113F46499EC5F7E8538AB3E",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "results": [
+      {
+        "counts": {
+          "total": "649",
+          "executed": "649",
+          "passed": "649",
+          "failed": "0",
+          "error": "0",
+          "timeout": "0",
+          "aborted": "0",
+          "inconclusive": "0",
+          "passedButRunAborted": "0",
+          "notRunnable": "0",
+          "notExecuted": "0",
+          "disconnected": "0",
+          "warning": "0",
+          "completed": "0",
+          "inProgress": "0",
+          "pending": "0"
+        },
+        "trxSha256": "DDD277A42286EA0012EA25161A20CCBEA4784A965AB3B569DD8FE93D7A660119",
+        "assemblyNamespace": "public"
+      }
+    ]
+  },
+  "ordinary": {
+    "receipt": {
+      "pid": 28956,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 305520,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        "test",
+        "Lokad.Lython.slnx",
+        "-c",
+        "Release",
+        "--no-build",
+        "--no-restore",
+        "--logger",
+        "trx;LogFileName=ordinary.trx",
+        "--results-directory",
+        ".git/agent-notes/native-aggregate-20261013/combined-ordinary-release/results",
+        "--blame-hang-timeout",
+        "5m",
+        "--blame-hang-dump-type",
+        "mini",
+        "--tl:off"
+      ]
+    },
+    "results": [
+      {
+        "counts": {
+          "total": "2367",
+          "executed": "2367",
+          "passed": "2367",
+          "failed": "0",
+          "error": "0",
+          "timeout": "0",
+          "aborted": "0",
+          "inconclusive": "0",
+          "passedButRunAborted": "0",
+          "notRunnable": "0",
+          "notExecuted": "0",
+          "disconnected": "0",
+          "warning": "0",
+          "completed": "0",
+          "inProgress": "0",
+          "pending": "0"
+        },
+        "trxSha256": "CCB250C7A3AC5433855C92736FBBD68631D17627155BE3697BC6A56F8ED668BF",
+        "assemblyNamespace": "white"
+      },
+      {
+        "counts": {
+          "total": "8667",
+          "executed": "8667",
+          "passed": "8667",
+          "failed": "0",
+          "error": "0",
+          "timeout": "0",
+          "aborted": "0",
+          "inconclusive": "0",
+          "passedButRunAborted": "0",
+          "notRunnable": "0",
+          "notExecuted": "0",
+          "disconnected": "0",
+          "warning": "0",
+          "completed": "0",
+          "inProgress": "0",
+          "pending": "0"
+        },
+        "trxSha256": "52A75483C8A195580E76F6220A9FE7897B35EEC5A2877F86EA99AD3D1F37A843",
+        "assemblyNamespace": "public"
+      }
+    ]
+  },
+  "originalStress": {
+    "receipt": {
+      "pid": 22172,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 201619,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        "test",
+        "Lokad.Lython.slnx",
+        "-c",
+        "Release",
+        "--no-build",
+        "--no-restore",
+        "--filter",
+        "Category=Stress",
+        "--logger",
+        "trx;LogFilePrefix=stress",
+        "--results-directory",
+        ".git/agent-notes/native-aggregate-20261013/combined-original-stress/results",
+        "--blame-hang-timeout",
+        "5m",
+        "--blame-hang-dump-type",
+        "mini",
+        "--tl:off"
+      ]
+    },
+    "results": [
+      {
+        "counts": {
+          "total": "0",
+          "executed": "0",
+          "passed": "0",
+          "failed": "0",
+          "error": "0",
+          "timeout": "0",
+          "aborted": "0",
+          "inconclusive": "0",
+          "passedButRunAborted": "0",
+          "notRunnable": "0",
+          "notExecuted": "0",
+          "disconnected": "0",
+          "warning": "0",
+          "completed": "0",
+          "inProgress": "0",
+          "pending": "0"
+        },
+        "trxSha256": "2E0EEF77C175572686E57250E0C551CCDE64C7A7648E99D31388C123D99FE52A",
+        "assemblyNamespace": "none"
+      },
+      {
+        "counts": {
+          "total": "375",
+          "executed": "375",
+          "passed": "375",
+          "failed": "0",
+          "error": "0",
+          "timeout": "0",
+          "aborted": "0",
+          "inconclusive": "0",
+          "passedButRunAborted": "0",
+          "notRunnable": "0",
+          "notExecuted": "0",
+          "disconnected": "0",
+          "warning": "0",
+          "completed": "0",
+          "inProgress": "0",
+          "pending": "0"
+        },
+        "trxSha256": "A4E79CA891B6C9092244D8382A58E9DD7AC86E5AEE43B8F29FF51FF35043368D",
+        "assemblyNamespace": "public"
+      }
+    ]
+  },
+  "releasePackage": {
+    "receipt": {
+      "pid": 25484,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 11191,
+      "executable": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "executableSha256": "BFB46AF89433268872DDB43D1CA7A3F433452EE91ED356A9786940F90118E285",
+      "arguments": [
+        "-NoProfile",
+        "-File",
+        "tools/PackageSmokeTest/verify-package.ps1",
+        "-OutputDirectory",
+        ".git/agent-notes/native-aggregate-20261013/package-output"
+      ]
+    },
+    "results": []
+  },
+  "packageSha512": "48C24074CA6B8BFF1EEB1C859C661530081965FB1DD14CAE814A5C5A605868BDAB209B3181B59B03FEB59C0D770F4EE8B894E9C2B3E048257387460CE344FE73",
+  "librarySha256": "0FD2B74DCCFDD888CED716CDC0ED03214D27C1F775B94C7F3DAC0A412D2EB054",
+  "costDiagnostic": {
+    "receipt": {
+      "pid": 33164,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 7893,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        "D:\\code\\Lython\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.Benchmarks.dll",
+        "--compare",
+        "micro",
+        "--catalog",
+        "D:\\code\\Lython\\.git\\agent-notes\\native-aggregate-20261013\\aggregate-catalog.json",
+        "--dotnet",
+        "C:\\Program Files\\dotnet\\dotnet.exe",
+        "--baseline-worker",
+        "D:\\code\\Lython\\.git\\agent-notes\\native-aggregate-20261013\\before-source\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.Benchmarks.dll",
+        "--python",
+        "C:\\Python313\\python.exe",
+        "--python-worker",
+        "D:\\code\\Lython\\benchmarks\\cpython-worker.py",
+        "--out",
+        "D:\\code\\Lython\\.git\\agent-notes\\native-aggregate-20261013\\aggregate-cost-diagnostic.json",
+        "--case",
+        "aggregates.sum-generated"
+      ]
+    },
+    "results": [],
+    "summaries": [
+      {
+        "engine": "baseline",
+        "medianMicroseconds": 4067.5,
+        "iqrFraction": 0.07772280270436395
+      },
+      {
+        "engine": "candidate",
+        "medianMicroseconds": 3946.675,
+        "iqrFraction": 0.010198458195823155
+      },
+      {
+        "engine": "CPython",
+        "medianMicroseconds": 499.258064516129,
+        "iqrFraction": 0.05377334108677401
+      }
+    ],
+    "beforeSource": {
+      "producer": "146fb75bede012bb4a3ad969140922f2667d254f",
+      "production": "153d6c4e9e152d0d894210567bb921902858b534",
+      "archiveSha256": "540299b2722b65fa36e7e2acd9d434d30748d79e386ee3f954e7c353a1a3cbd8",
+      "workloadOrigin": "AsyncMaterializationBenchmarks.SumGeneratedAsync; shared print output replaces top-level return",
+      "source": "print(sum(value * value for value in range(20000)))\n"
+    },
+    "candidateSource": "146fb75b plus the sum implementation subsequently committed as09d81bb1; precommit informational metadata is not a clean146fb75b binary",
+    "boundary": "Warm synchronous public invocation, fresh state, captured/projected output and independent output check; compilation/startup excluded",
+    "status": "One inconclusive diagnostic; no qualified change, CPython multiplier, current HEAD or embedding-latency claim. Not repeated."
+  },
+  "scope": "Stored native buffers, active caller chain and native aggregate state. No logical refunds or forced-GC policy changes. Complete ownership, conditional identity and derived funded workspace remain open.",
+  "setupHistory": [
+    "Initial relocated workspace test invocation used the project filename rather than its WhiteBox assembly name; it ran no tests and is not evidence.",
+    "Private baseline extraction initially omitted git archive --format=zip; corrected before the build or measurement.",
+    "The shell denial fixture initially used nonexistent MaxBytes; its failed build was corrected before testing.",
+    "The full ordinary logger shared its output filename; the complete white TRX was preserved before the public writer replaced it. Stress uses LogFilePrefix."
+  ]
+}

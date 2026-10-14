@@ -1,0 +1,230 @@
+{
+  "producer": "146fb75bede012bb4a3ad969140922f2667d254f",
+  "production": "153d6c4e9e152d0d894210567bb921902858b534",
+  "before": {
+    "receipt": {
+      "source": "active-callers-before",
+      "production": "2f31b2bc99d5fdfc0627a552752769bb380eac74",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "2A00D746B53AB6AB0D0A4220660B79012D9BCF81501E095F2083390DD4831772",
+      "filter": "FullyQualifiedName~ActiveExecutionCallerTests",
+      "pid": 112752,
+      "hasExited": true,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1952,
+      "stdoutSha256": "0A4F58832328619CE008D0C608612BF6CD568C8FF2F9F84518BD17FE9E4A0638",
+      "stderrSha256": "F9754BB6317EE732D4A7620B3DE2CFDE4C8B20CAB4ECAFC2CD423C9DC254770E"
+    },
+    "counts": {
+      "total": "6",
+      "executed": "6",
+      "passed": "0",
+      "failed": "6",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "failures": [
+      {
+        "name": "Lokad.Lython.Tests.ActiveExecutionCallerTests.FunctionAdmissionFailurePublishesNoCallerLink",
+        "message": "Assert.Same() Failure: Values are not the same instance\r\nExpected: ExecutableFrameState { RequiresLocalVariableMirroring = False }\r\nActual:   null"
+      },
+      {
+        "name": "Lokad.Lython.Tests.ActiveExecutionCallerTests.FailedFunctionAndGeneratorRestoreTheExactPublishedCaller(asynchronous: False)",
+        "message": "Assert.Same() Failure: Values are not the same instance\r\nExpected: ExecutableFrameInterpreter { RequiresLocalVariableMirroring = True }\r\nActual:   null"
+      },
+      {
+        "name": "Lokad.Lython.Tests.ActiveExecutionCallerTests.FailedInterpreterCreationKeepsTheAlreadyPublishedCaller",
+        "message": "Assert.Same() Failure: Values are not the same instance\r\nExpected: ExecutableFrameState { RequiresLocalVariableMirroring = False }\r\nActual:   null"
+      },
+      {
+        "name": "Lokad.Lython.Tests.ActiveExecutionCallerTests.ResumedGeneratorIncludesItsDynamicCallerAndWithdrawsTheLinkAfterYield(asynchronous: False)",
+        "message": "Assert.Same() Failure: Values are not the same instance\r\nExpected: ExecutableFrameInterpreter { RequiresLocalVariableMirroring = True }\r\nActual:   null"
+      },
+      {
+        "name": "Lokad.Lython.Tests.ActiveExecutionCallerTests.FailedFunctionAndGeneratorRestoreTheExactPublishedCaller(asynchronous: True)",
+        "message": "Assert.Same() Failure: Values are not the same instance\r\nExpected: ExecutableFrameInterpreter { RequiresLocalVariableMirroring = True }\r\nActual:   null"
+      },
+      {
+        "name": "Lokad.Lython.Tests.ActiveExecutionCallerTests.ResumedGeneratorIncludesItsDynamicCallerAndWithdrawsTheLinkAfterYield(asynchronous: True)",
+        "message": "Assert.Same() Failure: Values are not the same instance\r\nExpected: ExecutableFrameInterpreter { RequiresLocalVariableMirroring = True }\r\nActual:   null"
+      }
+    ]
+  },
+  "firstCandidate": {
+    "receipt": {
+      "source": "active-caller-chain",
+      "production": "working-active-callers",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "2A39D164A60E449AD5C397245F857BF699087A50AAB7B63C25217BC5D2F2A6D4",
+      "filter": "FullyQualifiedName~ActiveExecutionCallerTests|FullyQualifiedName~FrameStorageEdgesTests|FullyQualifiedName~NativeWorkingStorageEdgesTests|FullyQualifiedName~ExecutableCallTransferTests|FullyQualifiedName~ClassMethodExecutionBoundaryTests",
+      "pid": 850624,
+      "hasExited": true,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1844,
+      "stdoutSha256": "8C764D8DEF8D782B2B30FD9EC4004C1D0955BEF36A2C9238E809973D2E47EB4D",
+      "stderrSha256": "F7905CBB29904AB45293DFFB4AA5B3E1A45E7D7AD8DC303C300D17E814721BF8"
+    },
+    "counts": {
+      "total": "94",
+      "executed": "94",
+      "passed": "92",
+      "failed": "2",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "failures": [
+      {
+        "name": "Lokad.Lython.Tests.ActiveExecutionCallerTests.FailedFunctionAndGeneratorRestoreTheExactPublishedCaller(asynchronous: True)",
+        "message": "Lokad.Lython.Runtime.LythonRuntimeException : name 'ValueError' is not defined"
+      },
+      {
+        "name": "Lokad.Lython.Tests.ActiveExecutionCallerTests.FailedFunctionAndGeneratorRestoreTheExactPublishedCaller(asynchronous: False)",
+        "message": "Lokad.Lython.Runtime.LythonRuntimeException : name 'ValueError' is not defined"
+      }
+    ]
+  },
+  "white": {
+    "receipt": {
+      "source": "final-active-caller-chain",
+      "production": "working-active-callers",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "F434742854A349D0AE7B4E1B8E6C3627DD58E392E7400914DBCB571A9A7477FA",
+      "filter": "FullyQualifiedName~ActiveExecutionCallerTests|FullyQualifiedName~FrameStorageEdgesTests|FullyQualifiedName~NativeWorkingStorageEdgesTests|FullyQualifiedName~ExecutableCallTransferTests|FullyQualifiedName~ClassMethodExecutionBoundaryTests",
+      "pid": 445172,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1221,
+      "stdoutSha256": "54948CBC6608B566230F386A390A6101FEF3D1D58874649D9989FBE768956A2B",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "counts": {
+      "total": "98",
+      "executed": "98",
+      "passed": "98",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "failures": []
+  },
+  "public": {
+    "receipt": {
+      "source": "active-caller-chain",
+      "production": "working-active-callers",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+      "assemblySha256": "636F790181FEFF282B503633B220C2EB017DB2429BA5F6F9FE17FF14B4A629C5",
+      "filter": "Category!=Stress&(FullyQualifiedName~RootLifetimeContainmentTests|FullyQualifiedName~NativeConsumerStreamingTests|FullyQualifiedName~GeneratorDefinitionCompositionTests|FullyQualifiedName~GeneratorExpressionCompositionTests|FullyQualifiedName~NamedArgumentSlotCompatibilityTests|FullyQualifiedName~ManagedStackAdmissionTests|FullyQualifiedName~CallBinderAccountingScenarioTests|FullyQualifiedName~PostfixCallAssignmentTests|FullyQualifiedName~CallableInstanceProtocolTests)",
+      "pid": 379328,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 4247,
+      "stdoutSha256": "330AE1E45019E5463DB29A11B4574E281A1952A2A475E899C744CF499B283A1B",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "counts": {
+      "total": "128",
+      "executed": "128",
+      "passed": "128",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "failures": []
+  },
+  "cost": {
+    "receipt": {
+      "pid": 766184,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 7524,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        "C:\\Users\\JoannesVermorel\\code\\Lython\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.Benchmarks.dll",
+        "--compare",
+        "micro",
+        "--catalog",
+        "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\active-callers-20261013\\catalog.json",
+        "--dotnet",
+        "C:\\Program Files\\dotnet\\dotnet.exe",
+        "--baseline-worker",
+        "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\active-callers-20261013\\before-worker\\Lokad.Lython.Benchmarks.dll",
+        "--python",
+        "C:\\Python313\\python.exe",
+        "--python-worker",
+        "C:\\Users\\JoannesVermorel\\code\\Lython\\benchmarks\\cpython-worker.py",
+        "--out",
+        "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\active-callers-20261013\\caller-cost-diagnostic.json",
+        "--case",
+        "calls.keyword.large"
+      ]
+    }
+  },
+  "costSummaries": [
+    {
+      "engine": "baseline",
+      "medianMicroseconds": 3758.255555555556,
+      "iqrFraction": 0.06639900899649094
+    },
+    {
+      "engine": "candidate",
+      "medianMicroseconds": 3910.3250000000003,
+      "iqrFraction": 0.056501058096194046
+    },
+    {
+      "engine": "CPython",
+      "medianMicroseconds": 1220.569230769231,
+      "iqrFraction": 0.006707147988958674
+    }
+  ],
+  "baselineProduction": "2f31b2bc99d5fdfc0627a552752769bb380eac74",
+  "baselineDllSha256": "0F5EF10FD6FAEBFD19A52197CD7CB279ED949454EE43669419AADC018560F552",
+  "scope": "Focused Release and one shared-workstation diagnostic only. No full/package/new CI or qualified performance claim.",
+  "setupHistory": "Copied source timestamps allowed a 0.42s incremental build to skip recompilation; no candidate checks used that binary. A forced rebuild preceded testing. Two initial candidate failures lacked the restored ValueError builtin and were corrected. Empty patch failed without modifying files.",
+  "remaining": "Native evolving values/current items/results, partial-construction publication, conditional identity, complete roots and funded capacity. No governor relief/refund hook enabled."
+}

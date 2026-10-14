@@ -2,6 +2,7 @@
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Sum generated squares [A] | 20,000 items | 3.947 ms | 0.499 ms | — | One short diagnostic at 09d81bb1 source; no qualified multiplier |
 | Integer reduction loop [M] | 16,384 iterations | 1.162 ms | 0.617 ms | — | Short diagnostic at b43664e0; one run, no qualified multiplier |
 | Integer reduction loop [L] | 16,384 iterations | 3.58–3.72 ms | 0.578–0.666 ms | — | Historical diagnostic; failed control and cross-session stability |
 | Keyword calls [Q] | 2,048 calls | 1.378–1.404 ms | 0.137–0.145 ms | — | Historical diagnostic; failed invocation control |
@@ -26,7 +27,7 @@ including a loop whose cost grows with its iteration count. They support
 investigating interpreter dispatch and application workloads. **No workload
 multiplier qualified in either campaign. These timings do not describe today's
 HEAD:** subsequent interpreter and containment changes have been integrated.
-The newer M row is a separate short diagnostic at its named revision; it does
+The newer A and M rows are separate short diagnostics at their named revisions; they do
 not qualify a current overall or complete-script multiplier.
 There is no current complete-script CPython timing baseline or overall speedup.
 
@@ -34,6 +35,7 @@ There is no current complete-script CPython timing baseline or overall speedup.
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| A | 2026-10-14 | `09d81bb153c006f3c248d8ba0dfdfe9cdbc70d63` source, built before commit | [Native state qualification](benchmarks/results/2026-10-14-native-working-state/README.md), [all attempts and loaded identities](benchmarks/results/2026-10-14-native-working-state/micro.json) |
 | M | 2026-10-13 | `b43664e0f60aa78f3cbd638578e0ced28d926194` | [Shared frames and transfer cost](benchmarks/results/2026-10-13-shared-async-frames/README.md), [all attempts](benchmarks/results/2026-10-13-shared-async-frames/micro.json) |
 | Q | 2026-10-09 | `9358c4e72f1a29e55703eee02b28ea404d01bc0a` | [Four-lane run](benchmarks/results/2026-10-09-quick/README.md), [warm medians and exclusions](benchmarks/results/2026-10-09-quick/warm.md) |
 | L | 2026-10-09 | `56d4346d960b58f037da7d4590eb66c87ffec29e` | [Focused loop run](benchmarks/results/2026-10-09-core-loop/README.md), [all loop samples](benchmarks/results/2026-10-09-core-loop/warm.md) |
@@ -47,6 +49,14 @@ PGO/LTO, ordinary GIL and cyclic GC, without debug mode or JIT, launched with
 `-I -S`. Workers kept ordinary GC/tiering and public Lython limits; optional
 instruction fuel was unset. Both engines ran sequentially on that machine.
 The linked receipts identify binaries, inputs, toolchains and sampling policies.
+A ran on the shared Windows 11 x64 development workstation: i7-14700KF,
+28 logical processors, 64 GiB RAM; SDK 10.0.300-preview.0.26177.108,
+.NET 10.0.13 and CPython 3.13.2, ordinary GIL/GC, launched with `-I -S`.
+Its 7.893-second owned group uses the existing generated-sum workload with
+shared printed output. The candidate library's informational metadata names
+the preceding commit; frozen hashes identify the added sum implementation.
+Compilation and startup are excluded. This diagnostic does not qualify a
+CPython multiplier or an improvement over earlier Lython.
 M ran on that dedicated four-vCPU Ubuntu VM under .NET 10.0.12 with the same
 CPython 3.13.16 reference. Its portable Windows Release libraries were built
 using SDK **10.0.300-preview.0.26177.108**; its identical benchmark observer and

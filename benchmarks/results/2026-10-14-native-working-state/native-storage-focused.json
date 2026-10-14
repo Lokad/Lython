@@ -1,0 +1,309 @@
+{
+  "producer": "9cf386b8ecb1ae1b440e06983d3bd455b460a6c6",
+  "production": "2f31b2bc99d5fdfc0627a552752769bb380eac74",
+  "beforeSource": "7a9c8e22 / b7b526e54502dd89cecf6b2735aa90a2438d6008",
+  "originalFourFailures": {
+    "receipt": {
+      "source": "native-storage-before",
+      "production": "b7b526e54502dd89cecf6b2735aa90a2438d6008",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "05C31195C8714828AF9179E947C735F5CB39FE2A70A9C41344BC2994CEC65E08",
+      "filter": "FullyQualifiedName~NativeWorkingStorageEdgesTests",
+      "pid": 631196,
+      "hasExited": true,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 982,
+      "stdoutSha256": "2A17CEDB2307435EDD0772467EFF1AF1AA83C60855B4D9669797BB54B0DAD9D2",
+      "stderrSha256": "398F22C422561186584D3EA6D7DB418CAB15616FCD4CAFF4953D405BBE7DA8BA"
+    },
+    "counts": {
+      "total": "4",
+      "executed": "4",
+      "passed": "0",
+      "failed": "4",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "trxSha256": "F9C6357B42936EEFCEA4CE0ECB96ACDF89F9025139090A21703189BE6F7CB124",
+    "failures": [
+      {
+        "name": "Lokad.Lython.Tests.NativeWorkingStorageEdgesTests.PartialListStorageExposesItsActualChildren(count: 2)",
+        "message": "Assert.True() Failure\r\nExpected: True\r\nActual:   False"
+      },
+      {
+        "name": "Lokad.Lython.Tests.NativeWorkingStorageEdgesTests.ExpandedArgumentShellFundingCoversItsMeasuredConstruction",
+        "message": "admitted 192, allocated 264"
+      },
+      {
+        "name": "Lokad.Lython.Tests.NativeWorkingStorageEdgesTests.DeferredSplitWalkDoesNotAcquireOwnershipOrChangeFunding",
+        "message": "Assert.Equal() Failure: Values differ\r\nExpected: 0\r\nActual:   112"
+      },
+      {
+        "name": "Lokad.Lython.Tests.NativeWorkingStorageEdgesTests.PartialListStorageExposesItsActualChildren(count: 20)",
+        "message": "Assert.True() Failure\r\nExpected: True\r\nActual:   False"
+      }
+    ]
+  },
+  "unchangedSortFundingControl": {
+    "receipt": {
+      "source": "native-sort-before",
+      "production": "b7b526e54502dd89cecf6b2735aa90a2438d6008",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "951A902AC73B3BD3555968E5D48EBF660BCE234AF16F66508E923E785029732C",
+      "filter": "FullyQualifiedName~SmallSortFundingCoversItsMeasuredWorkingStorage",
+      "pid": 430412,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 984,
+      "stdoutSha256": "C783D983B3308D46B0F5FF5DB47E1B694624F931C1D746430CC39545C057D8DE",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "counts": {
+      "total": "1",
+      "executed": "1",
+      "passed": "1",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "trxSha256": "286479045AA61DFC78333763FB2A633A96C8D08CAEE568BE51FBC5E8F84F7A3A",
+    "failures": []
+  },
+  "candidateFundingAndBackingNodeFailures": {
+    "receipt": {
+      "source": "native-storage-candidate",
+      "production": "working-native-storage",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "96C28A9DC4F993092FBBD47802A210FA0CF0DBA31209801EBF0D2765B9000575",
+      "filter": "FullyQualifiedName~NativeWorkingStorageEdgesTests|FullyQualifiedName~MemoryStorageWalkTests|FullyQualifiedName~FrameStorageEdgesTests|FullyQualifiedName~CodeStorageEdgesTests|FullyQualifiedName~StableSortCancellationTests|FullyQualifiedName~ExecutionSortTests|FullyQualifiedName~ListConstructionAbortAccountingTests",
+      "pid": 93280,
+      "hasExited": true,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1097,
+      "stdoutSha256": "8918A0B7D64105DF1F6D4212163AC8ACDC204588CAB0C5C315904AEC27644F7D",
+      "stderrSha256": "957EC95FB5C85DF5371C834F0BF215DB548A7BBB4E42D63EE501389F88D46096"
+    },
+    "counts": {
+      "total": "77",
+      "executed": "77",
+      "passed": "75",
+      "failed": "2",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "trxSha256": "FD0C136E0144394509F2C3344186FA9F6E62C68793F64B004A4D7B08246B57FA",
+    "failures": [
+      {
+        "name": "Lokad.Lython.Tests.NativeWorkingStorageEdgesTests.SmallSortFundingCoversItsMeasuredWorkingStorage",
+        "message": "admitted 240, allocated 264"
+      },
+      {
+        "name": "Lokad.Lython.Tests.MemoryStorageWalkTests.DelegateReceiverAndFrontendCaptureReachTheSamePayload",
+        "message": "Assert.Equal() Failure: Values differ\r\nExpected: 4\r\nActual:   5"
+      }
+    ]
+  },
+  "preparedPublicationFailures": {
+    "receipt": {
+      "source": "native-prepared-buffer-before",
+      "production": "working-native-storage",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "E5928673AB4746ED665E222826E69E2CD5E8498DC1295B28C7BDEB26D2B7C03A",
+      "filter": "FullyQualifiedName~PreparedCallKeepsTheActualArgumentBufferPublishedUntilInvocationCompletes",
+      "pid": 532048,
+      "hasExited": true,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1112,
+      "stdoutSha256": "7673FDA28B406C59F882F6D7C256E3EF6D8749BDD210FDC02B811483801BC108",
+      "stderrSha256": "00A3958E0282B74674F5D9BF04A3D0F79C442168DF46A3BC9B46339FEBE2F517"
+    },
+    "counts": {
+      "total": "2",
+      "executed": "2",
+      "passed": "0",
+      "failed": "2",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "trxSha256": "D15FDD96B887128CAFE9178E7E0E42F8E3F363FF28B04ABAC15C79BDCE364B8D",
+    "failures": [
+      {
+        "name": "Lokad.Lython.Tests.NativeWorkingStorageEdgesTests.PreparedCallKeepsTheActualArgumentBufferPublishedUntilInvocationCompletes(asynchronous: True)",
+        "message": "Assert.Contains() Failure: Filter not matched in collection\r\nCollection: [ExecutableFrameInterpreter { RequiresLocalVariableMirroring = True }, [], ExecutableCodeObject { Blocks = [ExecutableBasicBlock { Index = 0, InstructionArray = Lokad.Lython.Frontend.ExecutableInstruction[], Instructions = Lokad.Lython.Frontend.ExecutableInstruction[] }], CallCacheCount = 0, CallSites = [], CapturedLocalSlots = [], ClosureNames = [], \u00b7\u00b7\u00b7 }, ExecutionContext { DecimalContext = PyDecimalContext { Capitals = 1, Clamp = 0, Emax = 999999, Emin = -999999, Precision = 28, \u00b7\u00b7\u00b7 }, Frame = ExecutionContext { DecimalContext = PyDecimalContext { \u00b7\u00b7\u00b7 }, Frame = ExecutionContext { \u00b7\u00b7\u00b7 }, FunctionClosureContext = ExecutionContext { \u00b7\u00b7\u00b7 }, FunctionName = \"f\", Host = MockLythonHost { \u00b7\u00b7\u00b7 }, \u00b7\u00b7\u00b7 }, FunctionClosureContext = ExecutionContext { DecimalContext = PyDecimalContext { \u00b7\u00b7\u00b7 }, Frame = ExecutionContext { \u00b7\u00b7\u00b7 }, FunctionClosureContext = ExecutionContext { \u00b7\u00b7\u00b7 }, FunctionName = \"f\", Host = MockLythonHost { \u00b7\u00b7\u00b7 }, \u00b7\u00b7\u00b7 }, FunctionName = \"f\", Host = MockLythonHost { CompletesSynchronously = True, Cwd = \"/\", LastSubprocessRequest = null, LocalNow = 2024-01-02T04:04:05.0000000+01:00, MaxRangeBytesServed = 0, \u00b7\u00b7\u00b7 }, \u00b7\u00b7\u00b7 }, need, \u00b7\u00b7\u00b7]"
+      },
+      {
+        "name": "Lokad.Lython.Tests.NativeWorkingStorageEdgesTests.PreparedCallKeepsTheActualArgumentBufferPublishedUntilInvocationCompletes(asynchronous: False)",
+        "message": "Assert.Contains() Failure: Filter not matched in collection\r\nCollection: [ExecutableFrameInterpreter { RequiresLocalVariableMirroring = True }, [], ExecutableCodeObject { Blocks = [ExecutableBasicBlock { Index = 0, InstructionArray = Lokad.Lython.Frontend.ExecutableInstruction[], Instructions = Lokad.Lython.Frontend.ExecutableInstruction[] }], CallCacheCount = 0, CallSites = [], CapturedLocalSlots = [], ClosureNames = [], \u00b7\u00b7\u00b7 }, ExecutionContext { DecimalContext = PyDecimalContext { Capitals = 1, Clamp = 0, Emax = 999999, Emin = -999999, Precision = 28, \u00b7\u00b7\u00b7 }, Frame = ExecutionContext { DecimalContext = PyDecimalContext { \u00b7\u00b7\u00b7 }, Frame = ExecutionContext { \u00b7\u00b7\u00b7 }, FunctionClosureContext = ExecutionContext { \u00b7\u00b7\u00b7 }, FunctionName = \"f\", Host = MockLythonHost { \u00b7\u00b7\u00b7 }, \u00b7\u00b7\u00b7 }, FunctionClosureContext = ExecutionContext { DecimalContext = PyDecimalContext { \u00b7\u00b7\u00b7 }, Frame = ExecutionContext { \u00b7\u00b7\u00b7 }, FunctionClosureContext = ExecutionContext { \u00b7\u00b7\u00b7 }, FunctionName = \"f\", Host = MockLythonHost { \u00b7\u00b7\u00b7 }, \u00b7\u00b7\u00b7 }, FunctionName = \"f\", Host = MockLythonHost { CompletesSynchronously = True, Cwd = \"/\", LastSubprocessRequest = null, LocalNow = 2024-01-02T04:04:05.0000000+01:00, MaxRangeBytesServed = 0, \u00b7\u00b7\u00b7 }, \u00b7\u00b7\u00b7 }, need, \u00b7\u00b7\u00b7]"
+      }
+    ]
+  },
+  "focusedWhite": {
+    "receipt": {
+      "source": "published-native-storage",
+      "production": "working-native-storage",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "2705586A70B1F7E9E55E3DD62D6DF6A004B6669AD686FB49C727CF3DCD1C0100",
+      "filter": "FullyQualifiedName~NativeWorkingStorageEdgesTests|FullyQualifiedName~MemoryStorageWalkTests|FullyQualifiedName~FrameStorageEdgesTests|FullyQualifiedName~CodeStorageEdgesTests|FullyQualifiedName~StableSortCancellationTests|FullyQualifiedName~ExecutionSortTests|FullyQualifiedName~ListConstructionAbortAccountingTests|FullyQualifiedName~ExecutableValueTransferTests|FullyQualifiedName~ExecutableCallTransferTests|FullyQualifiedName~ClassMethodExecutionBoundaryTests",
+      "pid": 551812,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1251,
+      "stdoutSha256": "C92A89262D63ADCB20BAC387CFC19F164DD9102C0B2A2319A6E9D64C6BAF7A47",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "counts": {
+      "total": "160",
+      "executed": "160",
+      "passed": "160",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "trxSha256": "43F4C95A47994747EFAB8AA9AE35587E125B856302595A0502C9BCCFDB96486C",
+    "failures": []
+  },
+  "focusedPublic": {
+    "receipt": {
+      "source": "native-storage-final-prepared",
+      "production": "working-native-storage",
+      "assembly": "C:\\Users\\JoannesVermorel\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+      "assemblySha256": "E946BD2DF4FC0A3EECA7219855ADF79B25CB1FF89C848C561BF8946D78F6A4C0",
+      "filter": "Category!=Stress&(FullyQualifiedName~CallBinderAccountingScenarioTests|FullyQualifiedName~NamedArgumentSlotCompatibilityTests|FullyQualifiedName~SortKeyScenarioTests|FullyQualifiedName~IntegerSortKeyTests|FullyQualifiedName~SortedLifetimeScenarioTests|FullyQualifiedName~DeferredSplitBehaviorTests|FullyQualifiedName~SplitLifetimeScenarioTests|FullyQualifiedName~RootLifetimeContainmentTests|FullyQualifiedName~NativeConsumerStreamingTests|FullyQualifiedName~GeneratorDefinitionCompositionTests|FullyQualifiedName~GeneratorExpressionCompositionTests|FullyQualifiedName~JsonSuspendingCallbackTests|FullyQualifiedName~StarmapMaterializationParityTests)",
+      "pid": 863716,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 4805,
+      "stdoutSha256": "2E75F2E30904FFB59D2886E3FEDD3107F6FD6272F7122D1DAA3F27F4081E91E6",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "counts": {
+      "total": "149",
+      "executed": "149",
+      "passed": "149",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "trxSha256": "EBDD29D25BEB3C0CAEE9B461183F08F057C389F634BC7D0243F3C4C8385545EA",
+    "failures": []
+  },
+  "costDiagnostic": {
+    "receipt": {
+      "pid": 460648,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 7401,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "21A46F1E5235CF4E844B9DE5429F0E198B9C97A41F0503A66442F1D639CA3EE6",
+      "arguments": [
+        "C:\\Users\\JoannesVermorel\\code\\Lython\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.Benchmarks.dll",
+        "--compare",
+        "micro",
+        "--catalog",
+        "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\native-storage-20261013\\catalog.json",
+        "--dotnet",
+        "C:\\Program Files\\dotnet\\dotnet.exe",
+        "--baseline-worker",
+        "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\native-storage-20261013\\before-worker\\Lokad.Lython.Benchmarks.dll",
+        "--python",
+        "C:\\Python313\\python.exe",
+        "--python-worker",
+        "C:\\Users\\JoannesVermorel\\code\\Lython\\benchmarks\\cpython-worker.py",
+        "--out",
+        "C:\\Users\\JoannesVermorel\\code\\Lython\\.git\\agent-notes\\native-storage-20261013\\sort-cost-diagnostic.json",
+        "--case",
+        "lists.stable-sort.medium"
+      ]
+    }
+  },
+  "costSummaries": [
+    {
+      "engine": "baseline",
+      "medianMicroseconds": 3654.475,
+      "iqrFraction": 0.2222856908311044
+    },
+    {
+      "engine": "candidate",
+      "medianMicroseconds": 2891.575,
+      "iqrFraction": 0.08101121361195898
+    },
+    {
+      "engine": "CPython",
+      "medianMicroseconds": 450.37746478873237,
+      "iqrFraction": 0.1258193440244176
+    }
+  ],
+  "qualification": "Focused Release only, not full suite/package/cross-platform or a qualified performance result. Last delivered checkpoint remains 7a9c8e22 with cached terminal CI38435573542.",
+  "protection": "No governor relief or logical refunds enabled. Native aggregate state, dynamic callers, partial-construction publication, conditional identity and workspace capacity remain open.",
+  "historicalFailures": [
+    "Initial missing Calls namespace prevented compilation; subsequent no-match run is not evidence.",
+    "xUnit2013 collection-size analyzer error corrected."
+  ]
+}

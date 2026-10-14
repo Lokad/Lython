@@ -1,0 +1,1058 @@
+{
+  "schemaVersion": 1,
+  "protocolVersion": 1,
+  "performanceQualified": false,
+  "purpose": "short old/new Lython microbenchmark with CPython context; no noise or milestone qualification",
+  "state": "Completed",
+  "started": "2026-10-14T09:46:53.1574641+00:00",
+  "updated": "2026-10-14T09:47:00.6123584+00:00",
+  "collectionSeconds": 15,
+  "requiredExternalHardDeadlineSeconds": 30,
+  "rounds": 7,
+  "warmupSeconds": 1,
+  "batchSeconds": 0.025,
+  "catalogSha256": "ce947c6dcc97624f5e42d66d32a8bd9a1e771ca16fbe554e2f4c7b47b6d3777b",
+  "workload": {
+    "id": "aggregates.sum-generated",
+    "family": "aggregates",
+    "category": "core",
+    "scale": "large",
+    "size": 20000,
+    "source": "print(sum(value * value for value in range(20000)))\n",
+    "fixtureJson": "{\"size\":20000,\"text\":null}",
+    "expectedOutput": "2666466670000\n",
+    "sourceUtf8Bytes": 52,
+    "expectedOutputUtf8Bytes": 14,
+    "fixtureTextUtf8Bytes": 0,
+    "fixtureTextCodePoints": 0,
+    "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+    "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+    "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c"
+  },
+  "files": [
+    {
+      "path": "D:\\code\\Lython\\.git\\agent-notes\\native-aggregate-20261013\\aggregate-catalog.json",
+      "sha256": "ce947c6dcc97624f5e42d66d32a8bd9a1e771ca16fbe554e2f4c7b47b6d3777b"
+    },
+    {
+      "path": "D:\\code\\Lython\\.git\\agent-notes\\native-aggregate-20261013\\before-source\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.Benchmarks.dll",
+      "sha256": "c5d44466e2b0d8811771c6c199297c9907bbe5d40d62393e271e1df560d0b4e7"
+    },
+    {
+      "path": "D:\\code\\Lython\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.Benchmarks.dll",
+      "sha256": "518bd4d4a72bf0dad76721e55ffb48b40f7dfa5f0475974329393d1940f386ed"
+    },
+    {
+      "path": "D:\\code\\Lython\\.git\\agent-notes\\native-aggregate-20261013\\before-source\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.dll",
+      "sha256": "57910ce7ea812278feff7c116c99c9b4682b3b5956fc159a450110e752f08482"
+    },
+    {
+      "path": "D:\\code\\Lython\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.dll",
+      "sha256": "7b54f0702fd8ab5513b8c1a7da2f40fadc9d5cb9247271aa912d62800fbc473d"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "sha256": "abce6623a6729059cf39bb0f728c4a7804f625895099c88c17e6e704661e09eb"
+    },
+    {
+      "path": "C:\\Python313\\python.exe",
+      "sha256": "7d96a4ed35d6e596cd9dd8933feafc66349cc21f75be3b15c89fd336e50140c1"
+    },
+    {
+      "path": "D:\\code\\Lython\\benchmarks\\cpython-worker.py",
+      "sha256": "b94d1a40de46301dd1a3aaa395da32f23302dbb4dd4635fe99e6a2f5ecaeb173"
+    },
+    {
+      "path": "D:\\code\\Lython\\.git\\agent-notes\\native-aggregate-20261013\\before-source\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.Benchmarks.deps.json",
+      "sha256": "8be1819c65d74bf65db38969ee99ed7a6eebb0429e20fd7e970da77bdc8da870"
+    },
+    {
+      "path": "D:\\code\\Lython\\.git\\agent-notes\\native-aggregate-20261013\\before-source\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.Benchmarks.runtimeconfig.json",
+      "sha256": "c230a317a54dd960bcbeb5f347f52e18dc665a26f7efda2159fced9a5ac7e097"
+    },
+    {
+      "path": "D:\\code\\Lython\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.Benchmarks.deps.json",
+      "sha256": "8be1819c65d74bf65db38969ee99ed7a6eebb0429e20fd7e970da77bdc8da870"
+    },
+    {
+      "path": "D:\\code\\Lython\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.Benchmarks.runtimeconfig.json",
+      "sha256": "c230a317a54dd960bcbeb5f347f52e18dc665a26f7efda2159fced9a5ac7e097"
+    }
+  ],
+  "identities": {
+    "baseline": {
+      "protocolVersion": 1,
+      "status": "Ready",
+      "engine": "Lython",
+      "catalogSha256": "ce947c6dcc97624f5e42d66d32a8bd9a1e771ca16fbe554e2f4c7b47b6d3777b",
+      "catalogVersion": 1,
+      "processId": 33692,
+      "runtime": ".NET 10.0.13",
+      "fileFixtureDirectory": null,
+      "runtimeVersion": "10.0.13",
+      "architecture": "X64",
+      "platform": "Microsoft Windows 10.0.26200",
+      "processorCount": 28,
+      "serverGc": false,
+      "gcLatencyMode": "Interactive",
+      "runtimeOverrides": {
+        "DOTNET_gcServer": null,
+        "COMPlus_gcServer": null,
+        "DOTNET_GCHeapCount": null,
+        "COMPlus_GCHeapCount": null,
+        "DOTNET_GCHeapHardLimit": null,
+        "COMPlus_GCHeapHardLimit": null,
+        "DOTNET_GCHeapHardLimitPercent": null,
+        "COMPlus_GCHeapHardLimitPercent": null,
+        "DOTNET_TieredCompilation": null,
+        "COMPlus_TieredCompilation": null,
+        "DOTNET_TieredPGO": null,
+        "COMPlus_TieredPGO": null,
+        "DOTNET_TC_QuickJit": null,
+        "COMPlus_TC_QuickJit": null,
+        "DOTNET_TC_QuickJitForLoops": null,
+        "COMPlus_TC_QuickJitForLoops": null,
+        "DOTNET_ReadyToRun": null,
+        "COMPlus_ReadyToRun": null,
+        "DOTNET_PROCESSOR_COUNT": null
+      },
+      "clockFrequency": 10000000,
+      "clockHighResolution": true,
+      "maximumFrameBytes": 4194304,
+      "maximumBatchIterations": 1000000,
+      "maximumBatchSeconds": 60,
+      "publicLimits": "ordinary defaults; instruction fuel unset; no forced GC",
+      "benchmarkDotNetLoaded": false,
+      "libraries": [
+        {
+          "path": "D:\\code\\Lython\\.git\\agent-notes\\native-aggregate-20261013\\before-source\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.dll",
+          "sha256": "57910ce7ea812278feff7c116c99c9b4682b3b5956fc159a450110e752f08482",
+          "version": "0.10.0",
+          "configuration": "Release",
+          "buildSdk": "10.0.300-preview.0.26177.108",
+          "moduleId": "7cffd7bb-c8ea-4f48-a045-ccce81c5ac08"
+        },
+        {
+          "path": "D:\\code\\Lython\\.git\\agent-notes\\native-aggregate-20261013\\before-source\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.Benchmarks.dll",
+          "sha256": "c5d44466e2b0d8811771c6c199297c9907bbe5d40d62393e271e1df560d0b4e7",
+          "version": "1.0.0",
+          "configuration": "Release",
+          "buildSdk": "10.0.300-preview.0.26177.108",
+          "moduleId": "32230c74-43ca-4354-9451-b6819df4800b"
+        },
+        {
+          "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\10.0.13\\System.Private.CoreLib.dll",
+          "sha256": "0a175cdd09067c52f8b2477cfcebf894b2f926d7302e55ae76fc921529662c7b",
+          "version": "10.0.13-servicing.26504.104+4099f83977f4d29604a9aeb971fb0a7bc1d5f699",
+          "configuration": "Release",
+          "buildSdk": null,
+          "moduleId": "10c7af6c-87cb-4196-92d9-c65dbf30e709"
+        }
+      ]
+    },
+    "candidate": {
+      "protocolVersion": 1,
+      "status": "Ready",
+      "engine": "Lython",
+      "catalogSha256": "ce947c6dcc97624f5e42d66d32a8bd9a1e771ca16fbe554e2f4c7b47b6d3777b",
+      "catalogVersion": 1,
+      "processId": 18724,
+      "runtime": ".NET 10.0.13",
+      "fileFixtureDirectory": null,
+      "runtimeVersion": "10.0.13",
+      "architecture": "X64",
+      "platform": "Microsoft Windows 10.0.26200",
+      "processorCount": 28,
+      "serverGc": false,
+      "gcLatencyMode": "Interactive",
+      "runtimeOverrides": {
+        "DOTNET_gcServer": null,
+        "COMPlus_gcServer": null,
+        "DOTNET_GCHeapCount": null,
+        "COMPlus_GCHeapCount": null,
+        "DOTNET_GCHeapHardLimit": null,
+        "COMPlus_GCHeapHardLimit": null,
+        "DOTNET_GCHeapHardLimitPercent": null,
+        "COMPlus_GCHeapHardLimitPercent": null,
+        "DOTNET_TieredCompilation": null,
+        "COMPlus_TieredCompilation": null,
+        "DOTNET_TieredPGO": null,
+        "COMPlus_TieredPGO": null,
+        "DOTNET_TC_QuickJit": null,
+        "COMPlus_TC_QuickJit": null,
+        "DOTNET_TC_QuickJitForLoops": null,
+        "COMPlus_TC_QuickJitForLoops": null,
+        "DOTNET_ReadyToRun": null,
+        "COMPlus_ReadyToRun": null,
+        "DOTNET_PROCESSOR_COUNT": null
+      },
+      "clockFrequency": 10000000,
+      "clockHighResolution": true,
+      "maximumFrameBytes": 4194304,
+      "maximumBatchIterations": 1000000,
+      "maximumBatchSeconds": 60,
+      "publicLimits": "ordinary defaults; instruction fuel unset; no forced GC",
+      "benchmarkDotNetLoaded": false,
+      "libraries": [
+        {
+          "path": "D:\\code\\Lython\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.dll",
+          "sha256": "7b54f0702fd8ab5513b8c1a7da2f40fadc9d5cb9247271aa912d62800fbc473d",
+          "version": "0.10.0+146fb75bede012bb4a3ad969140922f2667d254f",
+          "configuration": "Release",
+          "buildSdk": "10.0.300-preview.0.26177.108",
+          "moduleId": "068e3c22-4ec9-4356-b92a-60a51ad4a027"
+        },
+        {
+          "path": "D:\\code\\Lython\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.Benchmarks.dll",
+          "sha256": "518bd4d4a72bf0dad76721e55ffb48b40f7dfa5f0475974329393d1940f386ed",
+          "version": "1.0.0+146fb75bede012bb4a3ad969140922f2667d254f",
+          "configuration": "Release",
+          "buildSdk": "10.0.300-preview.0.26177.108",
+          "moduleId": "4b759f04-d958-4e57-932c-19107f035da0"
+        },
+        {
+          "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\10.0.13\\System.Private.CoreLib.dll",
+          "sha256": "0a175cdd09067c52f8b2477cfcebf894b2f926d7302e55ae76fc921529662c7b",
+          "version": "10.0.13-servicing.26504.104+4099f83977f4d29604a9aeb971fb0a7bc1d5f699",
+          "configuration": "Release",
+          "buildSdk": null,
+          "moduleId": "10c7af6c-87cb-4196-92d9-c65dbf30e709"
+        }
+      ]
+    },
+    "CPython": {
+      "protocolVersion": 1,
+      "status": "Ready",
+      "engine": "CPython",
+      "catalogSha256": "ce947c6dcc97624f5e42d66d32a8bd9a1e771ca16fbe554e2f4c7b47b6d3777b",
+      "catalogVersion": 1,
+      "processId": 12064,
+      "version": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+      "executable": "C:\\Python313\\python.exe",
+      "fileFixtureDirectory": null,
+      "executableSha256": "7d96a4ed35d6e596cd9dd8933feafc66349cc21f75be3b15c89fd336e50140c1",
+      "adapterSha256": "b94d1a40de46301dd1a3aaa395da32f23302dbb4dd4635fe99e6a2f5ecaeb173",
+      "architecture": "AMD64",
+      "platform": "Windows-11-10.0.26200-SP0",
+      "flags": "sys.flags(debug=0, inspect=0, interactive=0, optimize=0, dont_write_bytecode=0, no_user_site=1, no_site=1, ignore_environment=1, verbose=0, bytes_warning=0, quiet=0, hash_randomization=1, isolated=1, dev_mode=False, utf8_mode=0, warn_default_encoding=0, safe_path=True, int_max_str_digits=4300)",
+      "paths": [
+        "C:\\Python313\\python313.zip",
+        "C:\\Python313\\DLLs",
+        "C:\\Python313\\Lib",
+        "C:\\Python313"
+      ],
+      "configArgs": null,
+      "debug": false,
+      "freeThreaded": false,
+      "gilEnabled": true,
+      "gcEnabled": true,
+      "clockFrequency": 1000000000,
+      "clockResolutionSeconds": 1e-07,
+      "clockMonotonic": true,
+      "clockImplementation": "QueryPerformanceCounter()",
+      "maximumFrameBytes": 4194304,
+      "maximumBatchIterations": 1000000,
+      "maximumBatchSeconds": 60,
+      "captureByteLimit": 16777216
+    }
+  },
+  "attempts": [
+    {
+      "engine": "baseline",
+      "phase": "verify",
+      "requestedIterations": 2,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 1,
+        "caseId": "aggregates.sum-generated",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "warmup",
+      "requestedIterations": 32,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 2,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 32,
+        "elapsedTicks": 8951679,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "warmup",
+      "requestedIterations": 5,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 3,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 5,
+        "elapsedTicks": 208343,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "warmup",
+      "requestedIterations": 26,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 4,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 26,
+        "elapsedTicks": 1073604,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "calibrate",
+      "requestedIterations": 1,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 5,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 1,
+        "elapsedTicks": 39190,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "calibrate",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 6,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 342021,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "verify",
+      "requestedIterations": 2,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 1,
+        "caseId": "aggregates.sum-generated",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "warmup",
+      "requestedIterations": 32,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 2,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 32,
+        "elapsedTicks": 7699604,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "warmup",
+      "requestedIterations": 12,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 3,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 12,
+        "elapsedTicks": 491264,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "warmup",
+      "requestedIterations": 56,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 4,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 56,
+        "elapsedTicks": 2268999,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "calibrate",
+      "requestedIterations": 1,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 5,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 1,
+        "elapsedTicks": 42356,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "calibrate",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 6,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 404894,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "verify",
+      "requestedIterations": 2,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 1,
+        "caseId": "aggregates.sum-generated",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "warmup",
+      "requestedIterations": 32,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 2,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 32,
+        "elapsedTicks": 15977300,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "warmup",
+      "requestedIterations": 2464,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 3,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 2464,
+        "elapsedTicks": 1289313100,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "calibrate",
+      "requestedIterations": 1,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 4,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 1,
+        "elapsedTicks": 507800,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "calibrate",
+      "requestedIterations": 62,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 5,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 62,
+        "elapsedTicks": 30655400,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 7,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 350193,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 7,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 315734,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "measure",
+      "requestedIterations": 62,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 6,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 62,
+        "elapsedTicks": 30954000,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 8,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 314796,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 8,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 322429,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "measure",
+      "requestedIterations": 62,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 7,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 62,
+        "elapsedTicks": 31026100,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "measure",
+      "requestedIterations": 62,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 8,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 62,
+        "elapsedTicks": 30788000,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 9,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 346871,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 9,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 323188,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 10,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 377200,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "measure",
+      "requestedIterations": 62,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 9,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 62,
+        "elapsedTicks": 35683900,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 10,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 316864,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 11,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 313110,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "measure",
+      "requestedIterations": 62,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 10,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 62,
+        "elapsedTicks": 30567700,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 11,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 325400,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "measure",
+      "requestedIterations": 62,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 11,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 62,
+        "elapsedTicks": 33719300,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 12,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 311241,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 12,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 324053,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 13,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 318203,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "measure",
+      "requestedIterations": 8,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 13,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 8,
+        "elapsedTicks": 317482,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "measure",
+      "requestedIterations": 62,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 12,
+        "caseId": "aggregates.sum-generated",
+        "status": "Completed",
+        "completedInvocations": 62,
+        "elapsedTicks": 30628400,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "baseline",
+      "phase": "verify",
+      "requestedIterations": 2,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 14,
+        "caseId": "aggregates.sum-generated",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "candidate",
+      "phase": "verify",
+      "requestedIterations": 2,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 14,
+        "caseId": "aggregates.sum-generated",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 10000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    },
+    {
+      "engine": "CPython",
+      "phase": "verify",
+      "requestedIterations": 2,
+      "response": {
+        "protocolVersion": 1,
+        "requestId": 13,
+        "caseId": "aggregates.sum-generated",
+        "status": "Equivalent",
+        "completedInvocations": 2,
+        "elapsedTicks": null,
+        "clockFrequency": 1000000000,
+        "sourceSha256": "78d7888e6e06431381ee302ddc5b5267858546e99968948cb20a29b6a2c3e387",
+        "fixtureSha256": "42a824bccc3fcf5228da5025229e6afcc2d1c5de382f6e2036f016e5c855d992",
+        "expectedOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "actualOutputSha256": "b5ba78ec3df2256f572f55d08eb2530acdb375cdb371045335b2c7dda5a1095c",
+        "reason": null
+      }
+    }
+  ],
+  "summaries": [
+    {
+      "engine": "baseline",
+      "medianMicroseconds": 4067.5,
+      "iqrFraction": 0.07772280270436395
+    },
+    {
+      "engine": "candidate",
+      "medianMicroseconds": 3946.675,
+      "iqrFraction": 0.010198458195823155
+    },
+    {
+      "engine": "CPython",
+      "medianMicroseconds": 499.258064516129,
+      "iqrFraction": 0.05377334108677401
+    }
+  ],
+  "error": null
+}
