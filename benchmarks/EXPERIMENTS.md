@@ -7,6 +7,10 @@ The original narratives and evidence links follow unchanged. Collector-first
 ownership experiments below are historical and superseded by governed memory;
 their reproduction sources are evidence and are outside the supported runtime.
 
+The [2026-10-14 complete file comparison](results/2026-10-14-representative-file/README.md)
+records identical Lython controls against CPython. Background JIT and fixture
+costs limit CPU attribution; no speculative runtime branch or timing repeat.
+
 The [2026-10-14 complete text comparison](results/2026-10-14-representative-text/README.md)
 records one final-sigma lookup candidate and rejects its inconclusive timing.
 The exhaustive ASCII context regression remains; the runtime shortcut was removed.

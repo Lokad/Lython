@@ -2,6 +2,7 @@
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Complete file copy/checksum manifest [F] | 2 files / 4,107 bytes | 6.103–6.254 ms | 0.442 ms | — | One warm diagnostic; two identical Lython controls, up to15.1% spread |
 | Complete Unicode text summary [T] | 6,144 words / 35,840 UTF-8 bytes | 8.018 ms | 1.258 ms | — | One warm diagnostic at ca432c22; noisy ASCII candidate rejected |
 | Complete JSON-lines summary [J] | 4,096 records / 110,592 UTF-8 bytes | 11.537 ms | 4.225 ms | — | One warm candidate diagnostic; timing inconclusive (11.8% spread), allocation reduction measured |
 | Complete CSV summary [C] | 4,096 records / 57,361 UTF-8 bytes | 7.530 ms | 3.483 ms | — | One warm diagnostic at f95fb734; inconclusive baseline spread (15.4%) |
@@ -17,7 +18,7 @@
 | Other CSV summary sizes [S] | 0 / 16 fixture repeats | — | — | — | Output correctness verified; timing pending |
 | Other Unicode text summary sizes [S] | 0 / 16 fixture repeats | — | — | — | Output correctness verified; timing pending |
 | Other JSON-lines summary sizes [S] | 0 / 16 fixture repeats | — | — | — | Output correctness verified; timing pending |
-| Complete file copy/checksum manifest [S] | 0 / 16 / 1,024 fixture repeats | — | — | — | Output correctness verified; comparative timing pending |
+| Other file copy/checksum manifest sizes [S] | 0 / 16 fixture repeats | — | — | — | Output correctness verified; timing pending |
 
 **Ratio convention:** Lython elapsed time divided by CPython elapsed time;
 above 1 means Lython takes longer. A dash means unavailable or unqualified,
@@ -31,15 +32,17 @@ including a loop whose cost grows with its iteration count. They support
 investigating interpreter dispatch and application workloads. **No workload
 multiplier qualified in either campaign. These timings do not describe today's
 HEAD:** subsequent interpreter and containment changes have been integrated.
-The newer T, J, C, G, A and M rows are separate short diagnostics at their named revisions; they do
+The newer F, T, J, C, G, A and M rows are separate short diagnostics at their named revisions; they do
 not qualify a current overall or complete-script multiplier.
-The T, J and C rows supply complete-script comparisons; their candidate improvement
-evidence remains inconclusive. No complete-script multiplier or overall speedup is qualified.
+The F, T, J and C rows supply complete-script comparisons; their timing evidence
+remains inconclusive. F is a range of medians from two identical Lython control
+processes, not two revisions. No complete-script multiplier or overall speedup is qualified.
 
 ## Which code and machine were measured?
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| F | 2026-10-14 | ca432c22, two identical worker/binary controls; runtime tree matches7736b6c0 | [Complete file diagnostic](benchmarks/results/2026-10-14-representative-file/README.md), [loaded identities](benchmarks/results/2026-10-14-representative-file/micro.json) |
 | T | 2026-10-14 | ca432c22, governed runtime and worker ownership; ASCII candidate rejected | [Complete text diagnostic](benchmarks/results/2026-10-14-representative-text/README.md), [loaded identities](benchmarks/results/2026-10-14-representative-text/micro.json) |
 | J | 2026-10-14 | Working direct-decoder candidate on 64ec1fd4, with identical f95fb734 worker | [Complete JSON diagnostic](benchmarks/results/2026-10-14-representative-json/README.md), [timing identities](benchmarks/results/2026-10-14-representative-json/micro.json) |
 | C | 2026-10-14 | f95fb734, governed runtime and worker ownership; parser candidate rejected | [Complete CSV diagnostic](benchmarks/results/2026-10-14-representative-csv/README.md), [loaded identities](benchmarks/results/2026-10-14-representative-csv/micro.json) |
@@ -88,7 +91,7 @@ The leading table uses **warm execution**: both engines reuse compiled code,
 create fresh invocation state, execute the complete module, capture/project
 output and perform the cheap golden check inside the worker timer. Compilation,
 worker launch, transport and full output hashing are outside it. For complete
-file-backed T/J/C jobs, file reset/staging and exact output-file byte checks are
+file-backed F/T/J/C jobs, file reset/staging and exact output-file byte checks are
 inside both worker timers, as defined in [COMPARISON.md](benchmarks/COMPARISON.md).
 Module imports
 retain their source positions and normal caches; invocation controls are never
