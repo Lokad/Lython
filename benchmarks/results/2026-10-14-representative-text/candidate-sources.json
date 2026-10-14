@@ -1,0 +1,8 @@
+{
+  "baseline": "ca432c2211fe900b026c32a04f0374323a177cc4",
+  "candidateFile": "src\\Lokad.Lython\\Runtime\\Text\\PyStringOps.Sigma.cs",
+  "sha256": "e93fa5cab74d785bc8659e6cb7b64bb076df59baa6062dbf661684369d30c4ad",
+  "oneShortComparison": true,
+  "retries": false,
+  "decision": "reject if inconclusive"
+}

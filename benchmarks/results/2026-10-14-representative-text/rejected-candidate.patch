@@ -1,0 +1,10 @@
+--- a/src/Lokad.Lython/Runtime/Text/PyStringOps.Sigma.cs
++++ b/src/Lokad.Lython/Runtime/Text/PyStringOps.Sigma.cs
+@@ -118,0 +119,7 @@
++        // These are the ASCII subsets of the generated Unicode properties below.
++        // Lowercasing consults them for every rune, even when no sigma is present.
++        if ((uint)scalar < 0x80)
++            return ReferenceEquals(ranges, SigmaCasedRanges)
++                ? scalar is >= 'A' and <= 'Z' or >= 'a' and <= 'z'
++                : scalar is '\'' or '.' or ':' or '^' or '`';
++

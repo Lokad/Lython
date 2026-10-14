@@ -3,7 +3,13 @@
 Historical records preserved on 2026-10-12. Revision-specific findings below
 must not be read as measurements of current HEAD. See [BENCHMARKS.md](../BENCHMARKS.md)
 for the authoritative comparison and [COMPARISON.md](COMPARISON.md) for methods.
-The original narratives and evidence links follow unchanged.
+The original narratives and evidence links follow unchanged. Collector-first
+ownership experiments below are historical and superseded by governed memory;
+their reproduction sources are evidence and are outside the supported runtime.
+
+The [2026-10-14 complete text comparison](results/2026-10-14-representative-text/README.md)
+records one final-sigma lookup candidate and rejects its inconclusive timing.
+The exhaustive ASCII context regression remains; the runtime shortcut was removed.
 
 The [2026-10-14 list and enumeration checkpoint](results/2026-10-14-list-and-enumeration/README.md)
 records published list construction and explicit sequence wrapper state. Separate
