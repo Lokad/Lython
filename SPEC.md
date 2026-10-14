@@ -2970,11 +2970,19 @@ values retained only by scratch during a merge. These conservative fixed charges
 can reject previously accepted tiny-budget calls or sorts earlier. They preserve
 live-memory accounting and do not charge cumulative allocation traffic.
 
-Native `sum` preflights a conservative 128-byte execution-state shell. Its
+Native `sum` and nonempty-argument `list` conversion preflight a conservative
+128-byte execution-state shell. The aggregate's
 accumulator, current item and iterator remain stored through callbacks,
 asynchronous suspension, iterator cleanup and result registration. The shell
 charge is released after cleanup and registration; returned values retain their
 own ownership. This fixed charge can reject previously accepted tiny budgets.
+List conversion stores its populated result throughout iteration and registers
+it before withdrawing the operation. Numeric slots are charged as they are
+appended; failed construction, cleanup or registration drops and refunds only
+the unpublished list's backing and slot allowances. Existing element aliases
+retain their own funding. Async conversion fills the actual governed list
+directly. Collection and memory limits can therefore reject an input earlier
+during consumption than the former drain-then-copy implementation.
 
 Lython does not need to promise a perfect hard memory ceiling from inside the same managed process, but it must provide conservative in-process resource controls that make runaway allocation materially harder.
 

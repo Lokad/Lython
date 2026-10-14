@@ -29,6 +29,29 @@ internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexa
 
     public PyList(IEnumerable<object> items, MemoryGovernor governor) : this(items, governor, null) { }
 
+    // The native constructor publishes this owner before it starts consuming
+    // arbitrary iterables. Known capacity keeps the existing upfront preflight.
+    internal PyList(int capacity, MemoryGovernor governor, LythonSourceSpan allocationSpan)
+    {
+        _memoryGovernor = governor;
+        _allocationSpan = allocationSpan;
+        _items = capacity <= PyListStorage.SmallCapacity
+            ? new SmallPyListStorage(governor, allocationSpan)
+            : new ArrayPyListStorage(capacity, governor, allocationSpan);
+    }
+
+    // Only a fresh constructor result that has never been exposed or registered.
+    // Drop its actual backing before refunding; guest values keep their owners.
+    internal void DiscardUnpublishedStorage()
+    {
+        if (ReclamationEntry is not null)
+            throw new InvalidOperationException("A registered list cannot discard unpublished storage.");
+        var charge = _items.ReleaseCommittedBytes() + _numericStorageBytes;
+        _items = null!;
+        _numericStorageBytes = 0;
+        _memoryGovernor!.Release(charge);
+    }
+
     public PyList(IEnumerable<object> items, MemoryGovernor governor, LythonSourceSpan? allocationSpan)
     {
         _memoryGovernor = governor;

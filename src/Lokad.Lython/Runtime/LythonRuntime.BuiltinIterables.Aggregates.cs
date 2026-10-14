@@ -85,16 +85,16 @@ internal sealed partial class LythonRuntime
     private static object Sum(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var total = ValidateSumStart(arguments, span);
-        var operation = SumOperation.Create(arguments[0], total, context, span);
+        var operation = NativeIterableOperation.Create(arguments[0], total, context, span);
         try
         {
             operation.Iterator = ToSequence(operation.Source, span, context).GetEnumerator();
             while (operation.Iterator.MoveNext())
             {
                 operation.Current = operation.Iterator.Current;
-                operation.Total = operation.Total is PyInstance || operation.Current is PyInstance
-                    ? EvaluateBinaryOperator(BinaryOperatorSyntax.Add, operation.Total, operation.Current, context, span)
-                    : EvaluateAdd(operation.Total, operation.Current, context, span);
+                operation.Result = operation.Result is PyInstance || operation.Current is PyInstance
+                    ? EvaluateBinaryOperator(BinaryOperatorSyntax.Add, operation.Result, operation.Current, context, span)
+                    : EvaluateAdd(operation.Result, operation.Current, context, span);
                 operation.Current = PyNone.Instance;
             }
             operation.FinishIteration();
@@ -106,16 +106,16 @@ internal sealed partial class LythonRuntime
     private static async ValueTask<object> SumAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
         var total = ValidateSumStart(arguments, span);
-        var operation = SumOperation.Create(arguments[0], total, context, span);
+        var operation = NativeIterableOperation.Create(arguments[0], total, context, span);
         try
         {
             operation.AsyncIterator = ToSequenceAsync(operation.Source, span, context).GetAsyncEnumerator();
             while (await operation.AsyncIterator.MoveNextAsync().ConfigureAwait(false))
             {
                 operation.Current = operation.AsyncIterator.Current;
-                operation.Total = operation.Total is PyInstance || operation.Current is PyInstance
-                    ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Add, operation.Total, operation.Current, context, span).ConfigureAwait(false)
-                    : EvaluateAdd(operation.Total, operation.Current, context, span);
+                operation.Result = operation.Result is PyInstance || operation.Current is PyInstance
+                    ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Add, operation.Result, operation.Current, context, span).ConfigureAwait(false)
+                    : EvaluateAdd(operation.Result, operation.Current, context, span);
                 operation.Current = PyNone.Instance;
             }
             await operation.FinishIterationAsync().ConfigureAwait(false);

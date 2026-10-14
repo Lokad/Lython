@@ -55,7 +55,7 @@ public sealed class NativeAggregateStateTests
     }
 
     private static Func<object, object, LythonRuntime.ExecutionContext, LythonSourceSpan, ExecutionFrame> CreateAggregate()
-        => typeof(LythonRuntime).GetNestedType("SumOperation", BindingFlags.NonPublic)!
+        => typeof(LythonRuntime).GetNestedType("NativeIterableOperation", BindingFlags.NonPublic)!
             .GetMethod("Create", BindingFlags.Static | BindingFlags.NonPublic)!
             .CreateDelegate<Func<object, object, LythonRuntime.ExecutionContext, LythonSourceSpan, ExecutionFrame>>();
 
@@ -198,7 +198,7 @@ public sealed class NativeAggregateStateTests
         object? current = context.State.ActiveExecutionRoot;
         while (current is not null)
         {
-            if (current.GetType().Name == "SumOperation") return current;
+            if (current.GetType().Name == "NativeIterableOperation") return current;
             current = current.GetType().GetProperty("ActiveCaller", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(current);
         }
         throw new InvalidOperationException("No published sum operation.");
@@ -231,7 +231,7 @@ public sealed class NativeAggregateStateTests
         public bool TrySnapshotOwnership(out long chargeBytes)
         {
             var aggregate = FindAggregate(context);
-            Assert.Same(this, aggregate.GetType().GetField("Total", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(aggregate));
+            Assert.Same(this, aggregate.GetType().GetField("Result", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(aggregate));
             Checked = true;
             if (fail) throw new InvalidOperationException("controlled registration failure");
             chargeBytes = 0;

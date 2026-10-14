@@ -311,12 +311,13 @@ internal sealed partial class LythonRuntime
             object result = PreservePresence
                 ? InvokeBoundWithPresence(CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind), span, context)
                 : InvokeBound(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind), span, context);
-            if (result is SumOperation aggregate)
+            if (result is NativeIterableOperation aggregate)
             {
                 try
                 {
-                    context.State.CallTemporaries.TrackCallResult(aggregate.Total, span);
-                    return aggregate.Total;
+                    context.State.CallTemporaries.TrackCallResult(aggregate.Result, span);
+                    aggregate.ResultRegistered();
+                    return aggregate.Result;
                 }
                 finally { aggregate.Dispose(); }
             }
@@ -330,12 +331,13 @@ internal sealed partial class LythonRuntime
             object result = PreservePresence
                 ? await InvokeBoundWithPresenceAsync(CallBinder.BindNamedArgumentsWithPresence(arguments, span, Signature, _callableKind), span, context).ConfigureAwait(false)
                 : await InvokeBoundAsync(CallBinder.BindNamedArguments(arguments, span, Signature, _callableKind), span, context).ConfigureAwait(false);
-            if (result is SumOperation aggregate)
+            if (result is NativeIterableOperation aggregate)
             {
                 try
                 {
-                    context.State.CallTemporaries.TrackCallResult(aggregate.Total, span);
-                    return aggregate.Total;
+                    context.State.CallTemporaries.TrackCallResult(aggregate.Result, span);
+                    aggregate.ResultRegistered();
+                    return aggregate.Result;
                 }
                 finally { await aggregate.DisposeAsync().ConfigureAwait(false); }
             }

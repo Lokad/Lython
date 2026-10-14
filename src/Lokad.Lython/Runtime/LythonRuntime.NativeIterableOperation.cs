@@ -2,35 +2,36 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    // The aggregate's actual evolving state, using the same active head/caller
+    // The native consumer's actual evolving state, using the same active head/caller
     // link as function and executable frames. No separate activation registry.
-    private sealed class SumOperation : ExecutionFrame, IDisposable, IAsyncDisposable
+    private sealed class NativeIterableOperation : ExecutionFrame, IDisposable, IAsyncDisposable
     {
         private const long ShellBytes = 128;
         private readonly MemoryGovernor _governor;
         private ExecutionContext? _context;
         private object _source;
-        internal object Total;
+        internal object Result;
         internal object Current = PyNone.Instance;
         internal IEnumerator<object>? Iterator;
         internal IAsyncEnumerator<object>? AsyncIterator;
         private long _funding;
+        private bool _unpublishedList;
 
-        private SumOperation(object source, object total, ExecutionContext context)
+        private NativeIterableOperation(object source, object result, ExecutionContext context)
         {
             _source = source;
-            Total = total;
+            Result = result;
             _context = context;
             _governor = context.MemoryGovernor;
             _funding = ShellBytes;
         }
 
-        internal static SumOperation Create(object source, object total, ExecutionContext context, LythonSourceSpan span)
+        internal static NativeIterableOperation Create(object source, object result, ExecutionContext context, LythonSourceSpan span)
         {
             context.MemoryGovernor.Reserve(ShellBytes, span);
             try
             {
-                var operation = new SumOperation(source, total, context) { ActiveCaller = context.State.ActiveExecutionRoot };
+                var operation = new NativeIterableOperation(source, result, context) { ActiveCaller = context.State.ActiveExecutionRoot };
                 context.State.ActiveExecutionRoot = operation;
                 return operation;
             }
@@ -39,9 +40,17 @@ internal sealed partial class LythonRuntime
 
         internal object Source => _source;
 
+        internal void BeginList(int capacity, LythonSourceSpan span)
+        {
+            Result = new PyList(capacity, _governor, span);
+            _unpublishedList = true;
+        }
+
+        internal void ResultRegistered() => _unpublishedList = false;
+
         public override void VisitStorageChildren(MemoryStorageWalk visitor)
         {
-            if (!visitor.Add(Total) || !visitor.Add(Current) || !visitor.Add(_source) ||
+            if (!visitor.Add(Result) || !visitor.Add(Current) || !visitor.Add(_source) ||
                 !visitor.Add(Iterator) || !visitor.Add(AsyncIterator) || !visitor.Add(_context)) return;
             // Compiler enumerators may contain additional unmodeled working
             // references. Their unknown shape prevents complete traversal.
@@ -87,10 +96,16 @@ internal sealed partial class LythonRuntime
             ActiveCaller = null;
             _context = null;
             _source = PyNone.Instance;
-            Total = PyNone.Instance;
+            var privateList = _unpublishedList ? (PyList)Result : null;
+            Result = PyNone.Instance;
             Current = PyNone.Instance;
-            _governor.ReleaseReserved(_funding);
-            _funding = 0;
+            _unpublishedList = false;
+            try { privateList?.DiscardUnpublishedStorage(); }
+            finally
+            {
+                _governor.ReleaseReserved(_funding);
+                _funding = 0;
+            }
         }
     }
 }
