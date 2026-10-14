@@ -1294,8 +1294,9 @@ The `getter`, `setter` and `deleter` methods create fresh descriptors; passing
 again from the resulting getter when a derivative is created. Explicit doc
 objects remain aliased. `RunAsync` awaits documentation lookup and accessor
 calls, including calls through supported explicit descriptor methods. Descriptor
-shells, adopted scalar metadata and reclamation entries remain memory governed;
-rejected construction or metadata updates publish no partial change.
+shells, backing capacity and conservative scalar estimates remain charged to
+the execution owner; rejected construction or metadata updates publish no
+partial change.
 
 `globals()` returns one live dictionary for the actual module namespace.
 Assignments, deletions and dictionary mutations share that namespace, including
@@ -2535,11 +2536,13 @@ flush/close publication uses the existing mediated raw-handle contract. This
 streaming wrapper has a separate lifecycle from gzip.open's materializing and
 retryable whole-payload contract.
 
-Persistent native state owns conservative compression/inflation coupons;
+Persistent compression/inflation state has a conservative storage estimate;
 retained windows/builders and exact publication copies fund separately. Close
 releases native state and buffered ownership while retaining the live shell.
-Dropped native owners finalize without guest/host callbacks, and reclamation
-retains their coupons until finalization and subsequent collection complete.
+Execution cleanup releases its working allowance after users and cleanup finish.
+The finalizer is a last-resort physical resource cleanup without guest/host
+callbacks; accounting is owned by explicit scopes and does not wait for CLR
+finalization or collection. Dropping a guest alias alone does not promise a refund.
 Input/output loops and zero-output compressed blocks check work/cancellation.
 Seeking, rewinding, descriptors, mutable-buffer readinto APIs, peek/read1 and
 other uninventoried stream methods remain unsupported.
@@ -2751,7 +2754,7 @@ limits. Refused entries leave their counters and traversal state unpublished.
 
 Ordinary execution has no implicit instruction allowance. The embedding application owns its execution deadline and must provide and cancel a token when finite execution time is required. Cancellation checkpoints must remain effective for pure computation, including non-allocating loops that avoid host calls. Memory bounds alone do not terminate such a loop.
 
-The published `MaxExecutionSteps` option remains an enforced opt-in allowance for embedders requiring deterministic fuel; null means no step ceiling, independently of `DisableDefaultLimits`. `DefaultMaxExecutionSteps` retains the historical 50,000,000 value for source compatibility and does not configure an ordinary run. The internal notion of a step is implementation-defined. Fuel accounting runs only when the embedder requests an allowance and must not replace cancellation or govern temporary reclamation cadence.
+The published `MaxExecutionSteps` option remains an enforced opt-in allowance for embedders requiring deterministic fuel; null means no step ceiling, independently of `DisableDefaultLimits`. `DefaultMaxExecutionSteps` retains the historical 50,000,000 value for source compatibility and does not configure an ordinary run. The internal notion of a step is implementation-defined. Fuel accounting runs only when the embedder requests an allowance and must not replace cancellation or change explicit ownership lifetimes.
 
 When executable compilation succeeds, synchronous and asynchronous module runs
 use the same compiled code and frame representation. Async runs use the existing
@@ -2763,7 +2766,7 @@ Managed stack admission, the synchronous startup stack and host mediation retain
 their existing policies. Compiled local-slot stores consume the popped operand
 in a completed transfer helper, rather than in the long-running dispatch loop.
 
-Shared execution checkpoints perform cancellation independently of optional fuel. Memory admission and explicit owner cleanup do not use a reclamation cadence. Recursion/interpreter-depth and CLR stack-headroom guards, memory preflights, collection/string/read/output bounds, CLR projection funding, and the separate host-call quota remain effective.
+Shared execution checkpoints perform cancellation independently of optional fuel. Memory admission and explicit owner cleanup are independent of optional fuel. Recursion/interpreter-depth and CLR stack-headroom guards, memory preflights, collection/string/read/output bounds, CLR projection funding, and the separate host-call quota remain effective.
 
 Long builtin traversals must observe cancellation at meaningful intervals. Operations that cannot interrupt promptly retain operation-local size, depth, allocation or work safeguards; an outer token does not make an indivisible dependency call interruptible. Bounded CLR/native conversion and parsing calls finish before the next checkpoint; host implementations must honor the token during their own operations. The PythonRe implementation limitation in section 11.7 remains separate dependency work. Guest exception handling must not suppress host cancellation indefinitely, and canceled writers retain their cleanup/publication contract.
 

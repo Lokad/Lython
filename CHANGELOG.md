@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Align packaged release notes and property/gzip contracts with explicit ownership lifetimes; preserve older collector changes as labeled history.
+
 - Bind builtin json.load/loads options directly into the existing parser, avoiding temporary decoder attributes and bound-method allocation while preserving custom classes, explicit decoders, hooks and error behavior.
 
 - Add Lython-owned shared memory budgets, empty ownership scopes and resizable reservations with immediate cooperative admission and deterministic refunds.
@@ -10,7 +12,10 @@
 - Preserve allocation preflights, rollback, cancellation cleanup and Python identity. Correct enumerate alignment after a consumed item encounters result admission failure, and keep refused compilation associated with its supplied budget.
 - Migrate collector-only fixtures to shared-budget batches and independent retained-data/admission controls; keep longer stress totals separately. Document approximation and host headroom in MEMORY.md, included in the Release package.
 
-## 0.10.0 - release candidate
+## 0.10.0 - earlier release candidate
+
+This candidate predates the governed-memory migration. Collector-specific entries
+below are historical and superseded by Unreleased and [MEMORY.md](MEMORY.md).
 
 - Add immutable per-invocation built-in module selection, enforced across imports, attributes, registries and discovery without granting missing host capabilities.
 - Report typed terminal failure origins and guard quantities, preserving provenance through catches/rethrows and bounded diagnostic projection.
