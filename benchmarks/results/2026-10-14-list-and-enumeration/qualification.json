@@ -1,0 +1,190 @@
+{
+  "producer": "d1a8823c17ca92732fed4f7487eb04b8edbeea0d",
+  "production": "9f8880844b766af4095fa6d2bfc3a51d89a400b8",
+  "combinedRuntimeCommits": [
+    "6c7f0316",
+    "d1a8823c"
+  ],
+  "ordinary": {
+    "receipt": {
+      "pid": 35668,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 317366,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        "test",
+        "Lokad.Lython.slnx",
+        "-c",
+        "Release",
+        "--no-build",
+        "--no-restore",
+        "--logger",
+        "trx;LogFilePrefix=ordinary",
+        "--results-directory",
+        ".git/agent-notes/enumerable-state-20261014/combined-ordinary/results",
+        "--blame-hang-timeout",
+        "5m",
+        "--blame-hang-dump-type",
+        "mini",
+        "--tl:off"
+      ]
+    },
+    "results": [
+      {
+        "counts": {
+          "total": "2393",
+          "executed": "2393",
+          "passed": "2393",
+          "failed": "0",
+          "error": "0",
+          "timeout": "0",
+          "aborted": "0",
+          "inconclusive": "0",
+          "passedButRunAborted": "0",
+          "notRunnable": "0",
+          "notExecuted": "0",
+          "disconnected": "0",
+          "warning": "0",
+          "completed": "0",
+          "inProgress": "0",
+          "pending": "0"
+        },
+        "trxSha256": "E516F55CCC4DD940C925558EF4653272E4984899814D1764A817865F70825F5C"
+      },
+      {
+        "counts": {
+          "total": "8667",
+          "executed": "8667",
+          "passed": "8667",
+          "failed": "0",
+          "error": "0",
+          "timeout": "0",
+          "aborted": "0",
+          "inconclusive": "0",
+          "passedButRunAborted": "0",
+          "notRunnable": "0",
+          "notExecuted": "0",
+          "disconnected": "0",
+          "warning": "0",
+          "completed": "0",
+          "inProgress": "0",
+          "pending": "0"
+        },
+        "trxSha256": "EE911F4E03EB982D4F5A37D472CC34EC59AF6FDF6962B1A1AB1EEC336FC55334"
+      }
+    ]
+  },
+  "originalStress": {
+    "receipt": {
+      "pid": 35908,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 186291,
+      "executable": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+      "arguments": [
+        "test",
+        "Lokad.Lython.slnx",
+        "-c",
+        "Release",
+        "--no-build",
+        "--no-restore",
+        "--filter",
+        "Category=Stress",
+        "--logger",
+        "trx;LogFilePrefix=stress",
+        "--results-directory",
+        ".git/agent-notes/enumerable-state-20261014/combined-stress/results",
+        "--blame-hang-timeout",
+        "5m",
+        "--blame-hang-dump-type",
+        "mini",
+        "--tl:off"
+      ]
+    },
+    "results": [
+      {
+        "counts": {
+          "total": "0",
+          "executed": "0",
+          "passed": "0",
+          "failed": "0",
+          "error": "0",
+          "timeout": "0",
+          "aborted": "0",
+          "inconclusive": "0",
+          "passedButRunAborted": "0",
+          "notRunnable": "0",
+          "notExecuted": "0",
+          "disconnected": "0",
+          "warning": "0",
+          "completed": "0",
+          "inProgress": "0",
+          "pending": "0"
+        },
+        "trxSha256": "7F6C4AF62980C771B74A1C0A717DB80AABA3A31D65442E632C8104E0C099306F"
+      },
+      {
+        "counts": {
+          "total": "375",
+          "executed": "375",
+          "passed": "375",
+          "failed": "0",
+          "error": "0",
+          "timeout": "0",
+          "aborted": "0",
+          "inconclusive": "0",
+          "passedButRunAborted": "0",
+          "notRunnable": "0",
+          "notExecuted": "0",
+          "disconnected": "0",
+          "warning": "0",
+          "completed": "0",
+          "inProgress": "0",
+          "pending": "0"
+        },
+        "trxSha256": "4FAC6B31A05080651DE925988E00CD88B3E557F91A27ED15C6CEE41424DF1487"
+      }
+    ]
+  },
+  "releasePackage": {
+    "receipt": {
+      "pid": 42744,
+      "exitCode": 0,
+      "hasExited": true,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 10870,
+      "executable": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "executableSha256": "BFB46AF89433268872DDB43D1CA7A3F433452EE91ED356A9786940F90118E285",
+      "arguments": [
+        "-NoProfile",
+        "-File",
+        "tools/PackageSmokeTest/verify-package.ps1",
+        "-OutputDirectory",
+        ".git/agent-notes/enumerable-state-20261014/package-output"
+      ]
+    }
+  },
+  "packageSha512": "4AD7FFED1517310C9D6D25DEC3D99A2ED022079A57933F943BF6831D2196EC11719DBF3DCB6CD880EB82DCA8F0BD70E98C1D92B1673A0D8512989BD04FB39DA3",
+  "librarySha256": "6DFBCFFD6B7D5471F8DBBB3BC743832C2F527DB1B73C9D39E63497164DE65EE1",
+  "scope": "Published native list construction and explicit sequence wrapper state. Complete ownership and GC-independent reclamation remain open. No live-value logical refunds or forced-GC policy changes.",
+  "microStatus": "Two distinct fixed short diagnostics, each run once. No qualified performance change, CPython multiplier or embedding-latency claim.",
+  "incompleteRepresentativeDiagnostic": {
+    "source": "6c7f031613dc9babcd607bd9fc80fec7a895faf3",
+    "production": "239cd65a09aae09df59767681c69f36730cb04e2",
+    "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+    "assemblySha256": "A0B02CC771BF393879A128731F9DAAA2F2FAA188F9B556E0D3489C6C4571B4A6",
+    "filter": "Category!=Stress&(FullyQualifiedName~RepresentativeScriptTests|FullyQualifiedName~RepresentativeAliasTests|FullyQualifiedName~RepresentativeFileRetentionTests|FullyQualifiedName~RepresentativeProtocolCancellationTests)",
+    "pid": 35376,
+    "hasExited": true,
+    "exitCode": -1,
+    "timedOut": true,
+    "elapsedMillisecondsIncludingCleanup": 28935,
+    "stdoutSha256": "3611AF2EDA1A822FDCE0CCA1109A2FF485083CA25C344D3557620701A7FC4DF8",
+    "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  }
+}

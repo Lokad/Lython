@@ -5,6 +5,11 @@ must not be read as measurements of current HEAD. See [BENCHMARKS.md](../BENCHMA
 for the authoritative comparison and [COMPARISON.md](COMPARISON.md) for methods.
 The original narratives and evidence links follow unchanged.
 
+The [2026-10-14 list and enumeration checkpoint](results/2026-10-14-list-and-enumeration/README.md)
+records published list construction and explicit sequence wrapper state. Separate
+list+sum and generator/drain diagnostics remain inconclusive; the combined
+correctness gates do not establish GC-independent reclamation or host latency.
+
 The [2026-10-14 native state checkpoint](results/2026-10-14-native-working-state/README.md)
 combines native buffer descriptors, active caller links and stored sum state.
 It preserves bounded streaming and rejection controls; complete ownership and

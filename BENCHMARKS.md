@@ -150,6 +150,11 @@ revision, reference version, date, machine, boundary and qualification status.
 Update this page's primary table only from that evidence, and retain the prior
 identity. Do not relabel historical receipts as current results.
 
+The [list and enumeration checkpoint](benchmarks/results/2026-10-14-list-and-enumeration/README.md)
+preserves two additional short comparisons and their preceding-source identities.
+Both are inconclusive; neither supplies a qualified speed change or CPython
+multiplier. Complete ownership and forced-GC independence remain open.
+
 - [Measurement methods, commands and qualification rules](benchmarks/COMPARISON.md)
 - [Experimental history, profiles and rejected optimizations](benchmarks/EXPERIMENTS.md)
 - [Historical Lython-only BenchmarkDotNet scan baselines](benchmarks/Baselines.md)
