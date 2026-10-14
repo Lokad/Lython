@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Bind builtin json.load/loads options directly into the existing parser, avoiding temporary decoder attributes and bound-method allocation while preserving custom classes, explicit decoders, hooks and error behavior.
+
 - Add Lython-owned shared memory budgets, empty ownership scopes and resizable reservations with immediate cooperative admission and deterministic refunds.
 - Give compiled programs and execution results explicit disposal lifetimes; forward the borrowed budget through nested execution and host command requests. Retained aliases require their owners to remain alive.
 - Replace weak reclamation registrations, identity tables, paging/sweeps, forced collections and dormant guest-heap traversal with conservative batch ownership. Long streams use bounded host-driven executions; arbitrary reference withdrawal no longer promises an immediate refund.

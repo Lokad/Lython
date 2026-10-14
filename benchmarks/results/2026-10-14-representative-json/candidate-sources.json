@@ -1,0 +1,7 @@
+{
+  "candidate": "working-tree direct builtin decode on 64ec1fd4; built with unchanged f95fb734 worker",
+  "sourceSha256": {
+    "LythonRuntime.JsonModule.cs": "17312C15D06DBF0B877F2F8FB655419F1735B414B1C59AF9C69325A943CD9EF3",
+    "LythonRuntime.Json.Decoder.cs": "81DBFBD607864ADE11819BC01A51D5C6285F34E0770508DFC64046FF2E192C28"
+  }
+}

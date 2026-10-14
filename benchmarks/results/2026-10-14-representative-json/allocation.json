@@ -1,0 +1,49 @@
+{
+  "diagnosticOnly": true,
+  "timingClaim": false,
+  "processWideManagedAllocation": true,
+  "baseline": {
+    "caseId": "scripts.json-summary.large",
+    "warmup": 16,
+    "fixedCount": 100,
+    "allocatedBytes": 1378967560,
+    "bytesPerInvocation": 13789675.6,
+    "diagnosticOnly": true,
+    "normalTiming": false,
+    "processWideManagedAllocation": true,
+    "usesExactComparisonCompileAndInvoke": true,
+    "checksCompleteOutputEveryInvocation": true,
+    "noForcedCollections": true,
+    "runtime": "10.0.12",
+    "workerSha256": "2bb4242632db5bf7d3fd700d9b5abdfa3773013ed708f2f963134113ae9270c0",
+    "librarySha256": "479cd58f1fb7421294d092378ee725a4c437f405e08c9e20f854545dd213f9c0",
+    "producer": "1.0.0+f95fb7340366571ceb949d53569e26667729de2e",
+    "catalogSha256": "dd5cf1306782c7e0a0ad923ea7303b4ce1fa66a59c11c5d98c9304b1c4832abe"
+  },
+  "candidate": {
+    "caseId": "scripts.json-summary.large",
+    "warmup": 16,
+    "fixedCount": 100,
+    "allocatedBytes": 992294552,
+    "bytesPerInvocation": 9922945.52,
+    "diagnosticOnly": true,
+    "normalTiming": false,
+    "processWideManagedAllocation": true,
+    "usesExactComparisonCompileAndInvoke": true,
+    "checksCompleteOutputEveryInvocation": true,
+    "noForcedCollections": true,
+    "runtime": "10.0.12",
+    "workerSha256": "421aefb407b80fc833c80d65f565e140e8323a04212f34d6e67f504ef2224cef",
+    "librarySha256": "d2dd7b41235da33354704e8baa4767f663617d7eb8f9f37297ae27b50865db9d",
+    "producer": "1.0.0+f95fb7340366571ceb949d53569e26667729de2e",
+    "catalogSha256": "dd5cf1306782c7e0a0ad923ea7303b4ce1fa66a59c11c5d98c9304b1c4832abe"
+  },
+  "bytesSavedPerCompleteJob": 3866730.08,
+  "percentReduction": 28.040761742067378,
+  "helperSourceSha256": "0dc5af86ba375e01ed48987906709d239a6c26f559c98d6f3ce1ec172f7dd785",
+  "ownedElapsedMillisecondsIncludingCleanup": {
+    "baseline": 3370,
+    "candidate": 3132
+  },
+  "checks": "Exact worker compile/invoke; 16 warmups plus 100 complete jobs per isolated process; every file/stdout golden checked. Result/compilation owners disposed and shared accounting zero; no forced collections. This is cumulative managed allocation, not retained size, RSS or a reclamation policy."
+}

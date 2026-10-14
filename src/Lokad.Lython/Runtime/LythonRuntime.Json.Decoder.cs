@@ -181,6 +181,9 @@ internal sealed partial class LythonRuntime
         }
 
         internal static JsonDecoderObject BindDecoderOptions(CallArgumentValue[] arguments, LythonSourceSpan span, ExecutionContext context)
+            => new(BindLoadOptions(arguments, span), context);
+
+        internal static JsonLoadOptions BindLoadOptions(CallArgumentValue[] arguments, LythonSourceSpan span)
         {
             ICallable? objectHook = null;
             ICallable? parseFloat = null;
@@ -227,7 +230,7 @@ internal sealed partial class LythonRuntime
                 throw new LythonRuntimeException("TypeError", "JSONDecoder.__init__() takes 1 positional argument but " + (positional + 1) + " were given.", span);
             }
 
-            return new JsonDecoderObject(new JsonLoadOptions(objectHook, parseFloat, parseInt, parseConstant, objectPairsHook, strict), context);
+            return new JsonLoadOptions(objectHook, parseFloat, parseInt, parseConstant, objectPairsHook, strict);
         }
 
         public PyString RenderPython(PyRenderingContext context)

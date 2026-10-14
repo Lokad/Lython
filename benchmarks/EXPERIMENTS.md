@@ -486,3 +486,20 @@ The useful funded-capacity denial/resumption regression remains. This bounded
 experiment stops here, without replacement samples, a full lane or a speed claim.
 [Complete evidence, caveats and rejected patch](results/2026-10-14-representative-csv/README.md)
 keeps CPython as the primary external baseline.
+
+
+## Complete JSON loads: remove temporary decoder machinery (2026-10-14)
+
+The existing option binder now returns scanner options for both explicit decoders
+and exact builtin load/loads. Module loads avoid temporary decoder attributes,
+constant callable and bound method/argument binding; custom classes still construct
+and dispatch. The same parser, validation, hooks and safety guards remain.
+
+One CPU profile supplies the construction/binding lead. One short complete-job
+comparison is inconclusive (3.7% nominal change, 11.8% candidate spread). A separate
+reused managed-allocation helper measures 13.790MB versus9.923MB per exact job,
+28.0% lower, with ordinary CLR GC and deterministic shared-budget cleanup. Retain
+for measured allocation reduction and simpler runtime work; make no elapsed-time
+or embedding-latency claim. No timing repeat or new parser/cache/framework.
+[Identities, all results and qualification](results/2026-10-14-representative-json/README.md)
+preserve the distinct CPython and earlier-Lython comparisons.

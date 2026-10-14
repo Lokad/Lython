@@ -329,9 +329,9 @@ internal sealed partial class LythonRuntime
         }
 
         // Dispatches decoding through the selected class like CPython
-        // cls(**kw).decode(s): engine defaults and guest subclasses construct
-        // through their own binding, then the instance method (possibly an
-        // override) runs. Anything outside the JSON family fails explicitly.
+        // cls(**kw).decode(s): guest subclasses retain construction and method
+        // override dispatch. The exact builtin binds the same scanner options
+        // without creating an unobservable temporary decoder and public attributes.
         private object DecodeWithClass(
             PyString text,
             object clsValue,
@@ -340,6 +340,12 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span,
             ExecutionContext context)
         {
+            if (ReferenceEquals(clsValue, JsonDecoderClass.Instance))
+            {
+                context.CheckExecution(span);
+                var options = JsonDecoderClass.BindLoadOptions(BuildDecoderForwardArgs(bound, extras).ToArray(), span);
+                return ParseJsonText(text, options, context, span);
+            }
             var instance = ConstructDecoderClass(clsValue, bound, extras, span, context);
             if (!PyMemberAccess.TryResolve(instance, "decode", context, span, out var method))
             {
@@ -362,6 +368,12 @@ internal sealed partial class LythonRuntime
             LythonSourceSpan span,
             ExecutionContext context)
         {
+            if (ReferenceEquals(clsValue, JsonDecoderClass.Instance))
+            {
+                context.CheckExecution(span);
+                var options = JsonDecoderClass.BindLoadOptions(BuildDecoderForwardArgs(bound, extras).ToArray(), span);
+                return await ParseJsonTextAsync(text, options, context, span).ConfigureAwait(false);
+            }
             var instance = await ConstructDecoderClassAsync(clsValue, bound, extras, span, context).ConfigureAwait(false);
             if (!PyMemberAccess.TryResolve(instance, "decode", context, span, out var method))
             {

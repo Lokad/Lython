@@ -2,6 +2,7 @@
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Complete JSON-lines summary [J] | 4,096 records / 110,592 UTF-8 bytes | 11.537 ms | 4.225 ms | — | One warm candidate diagnostic; timing inconclusive (11.8% spread), allocation reduction measured |
 | Complete CSV summary [C] | 4,096 records / 57,361 UTF-8 bytes | 7.530 ms | 3.483 ms | — | One warm diagnostic at f95fb734; inconclusive baseline spread (15.4%) |
 | CSV parse and discard [G] | 16 data rows | 0.0780 ms | 0.0285 ms | — | One short governed-memory diagnostic; uncommitted source, unqualified |
 | Sum generated squares [A] | 20,000 items | 3.947 ms | 0.499 ms | — | One short diagnostic at 09d81bb1 source; no qualified multiplier |
@@ -14,7 +15,7 @@
 | CSV parse and retain [Q] | 128 data rows | 1.037–1.185 ms | 0.102–0.108 ms | — | Historical diagnostic; control/spread/order/interval checks failed |
 | Other CSV summary sizes [S] | 0 / 16 fixture repeats | — | — | — | Output correctness verified; timing pending |
 | Complete Unicode text summary [S] | 0 / 16 / 1,024 fixture repeats | — | — | — | Output correctness verified; comparative timing pending |
-| Complete JSON-lines summary [S] | 0 / 16 / 1,024 fixture repeats | — | — | — | Output correctness verified; comparative timing pending |
+| Other JSON-lines summary sizes [S] | 0 / 16 fixture repeats | — | — | — | Output correctness verified; timing pending |
 | Complete file copy/checksum manifest [S] | 0 / 16 / 1,024 fixture repeats | — | — | — | Output correctness verified; comparative timing pending |
 
 **Ratio convention:** Lython elapsed time divided by CPython elapsed time;
@@ -29,15 +30,16 @@ including a loop whose cost grows with its iteration count. They support
 investigating interpreter dispatch and application workloads. **No workload
 multiplier qualified in either campaign. These timings do not describe today's
 HEAD:** subsequent interpreter and containment changes have been integrated.
-The newer C, G, A and M rows are separate short diagnostics at their named revisions; they do
+The newer J, C, G, A and M rows are separate short diagnostics at their named revisions; they do
 not qualify a current overall or complete-script multiplier.
-The C row supplies one complete-script comparison; its Lython spread remains
+The J and C rows supply complete-script comparisons; their Lython spread remains
 inconclusive. No complete-script multiplier or overall speedup is qualified.
 
 ## Which code and machine were measured?
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| J | 2026-10-14 | Working direct-decoder candidate on 64ec1fd4, with identical f95fb734 worker | [Complete JSON diagnostic](benchmarks/results/2026-10-14-representative-json/README.md), [timing identities](benchmarks/results/2026-10-14-representative-json/micro.json) |
 | C | 2026-10-14 | f95fb734, governed runtime and worker ownership; parser candidate rejected | [Complete CSV diagnostic](benchmarks/results/2026-10-14-representative-csv/README.md), [loaded identities](benchmarks/results/2026-10-14-representative-csv/micro.json) |
 | G | 2026-10-14 | Working migration on `9fc7e37e`, before local-import simplification | [Governed-memory diagnostic](benchmarks/results/2026-10-14-governed-memory/README.md), [loaded identities](benchmarks/results/2026-10-14-governed-memory/micro.json) |
 | A | 2026-10-14 | `09d81bb153c006f3c248d8ba0dfdfe9cdbc70d63` source, built before commit | [Native state qualification](benchmarks/results/2026-10-14-native-working-state/README.md), [all attempts and loaded identities](benchmarks/results/2026-10-14-native-working-state/micro.json) |
@@ -167,6 +169,11 @@ multiplier. Complete ownership and forced-GC independence remain open.
 The [zip containment diagnostic](benchmarks/results/2026-10-14-zip-state/README.md)
 retains a higher candidate median with substantial noise. Its status is
 inconclusive; it does not establish today's HEAD performance or async pull cost.
+
+The [complete JSON decoder experiment](benchmarks/results/2026-10-14-representative-json/README.md)
+records 28.0% less managed allocation against earlier Lython. Its nominal 3.7%
+lower time remains inconclusive at 11.8% candidate spread. CPython remains the
+external timing baseline; allocation totals establish neither RSS nor latency.
 
 The [complete CSV profile and comparison](benchmarks/results/2026-10-14-representative-csv/README.md)
 uses the dedicated four-vCPU Ubuntu VM, .NET 10.0.12 and isolated UTF-8 CPython
