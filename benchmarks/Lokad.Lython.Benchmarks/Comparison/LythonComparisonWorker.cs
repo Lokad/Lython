@@ -13,10 +13,24 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest, string
     private readonly Dictionary<string, LythonCompiledScript> _compiled = new(StringComparer.Ordinal);
     private readonly HashSet<string> _verified = new(StringComparer.Ordinal);
     private readonly Dictionary<string, ComparisonFileHost> _files = new(StringComparer.Ordinal);
+    internal LythonMemoryBudget MemoryBudget { get; } = new();
+    private LythonExecutionResult? _lastResult;
     private IReadOnlyDictionary<string, byte[]>? _lastFiles;
     private int _lastRequestId;
 
     public async Task RunAsync(Stream input, Stream output, CancellationToken cancellationToken = default)
+    {
+        try { await ProcessRequestsAsync(input, output, cancellationToken).ConfigureAwait(false); }
+        finally
+        {
+            _lastResult?.Dispose();
+            _lastResult = null;
+            foreach (var script in _compiled.Values) script.Dispose();
+            _compiled.Clear();
+        }
+    }
+
+    private async Task ProcessRequestsAsync(Stream input, Stream output, CancellationToken cancellationToken)
     {
         await ComparisonProtocol.WriteAsync(output, CreateIdentity(manifest), cancellationToken).ConfigureAwait(false);
         while (true)
@@ -50,6 +64,10 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest, string
                 : Batch(workload, requestId, request.GetProperty("lane").GetString()!,
                     request.GetProperty("iterations").GetInt32(), cancellationToken);
             await ComparisonProtocol.WriteAsync(output, response, cancellationToken).ConfigureAwait(false);
+            // The response contains hashes and a consumed failure message, not
+            // a result payload. Wait for its final borrower before refunding.
+            _lastResult?.Dispose();
+            _lastResult = null;
         }
     }
 
@@ -61,9 +79,13 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest, string
         {
             // Reuse one compilation and prove fresh state twice before a batch.
             var script = _compiled.TryGetValue(workload.Id, out var existing) ? existing : Compile(workload);
-            var files = FileHost(workload);
-            for (; completed < 2; completed++) actual = Invoke(script, workload, files);
             _compiled[workload.Id] = script;
+            var files = FileHost(workload);
+            for (; completed < 2; completed++)
+            {
+                actual = null;
+                actual = Invoke(script, workload, files);
+            }
             _verified.Add(workload.Id);
             return Response(workload, requestId, "Equivalent", completed, null, actual);
         }
@@ -92,14 +114,33 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest, string
                 cancellationToken.ThrowIfCancellationRequested();
                 if (Stopwatch.GetElapsedTime(started).TotalSeconds >= ComparisonProtocol.MaximumBatchSeconds)
                     throw new WorkerJobException("Timeout", "Batch exceeded its internal 60-second ceiling.");
-                var script = lane == "warm" ? _compiled[workload.Id] : Compile(workload);
-                if (lane == "compile") lastCompiled = script;
-                else actual = Invoke(script, workload, files);
+                if (lane == "compile")
+                {
+                    var script = Compile(workload);
+                    lastCompiled?.Dispose();
+                    lastCompiled = script;
+                }
+                else if (lane == "compile-run")
+                {
+                    using var script = Compile(workload);
+                    actual = null;
+                    actual = Invoke(script, workload, files);
+                }
+                else
+                {
+                    actual = null;
+                    actual = Invoke(_compiled[workload.Id], workload, files);
+                }
             }
             var elapsedTicks = Stopwatch.GetTimestamp() - started;
             // Retain the final compiled object; hashing/artifact encoding stays
             // outside the clock. No forced collections or result subtraction.
-            if (lastCompiled is not null) _compiled[workload.Id] = lastCompiled;
+            if (lastCompiled is not null)
+            {
+                _compiled[workload.Id].Dispose();
+                _compiled[workload.Id] = lastCompiled;
+                lastCompiled = null;
+            }
             return Response(workload, requestId, "Completed", completed, elapsedTicks, actual);
         }
         catch (WorkerJobException failure)
@@ -107,13 +148,18 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest, string
             _verified.Remove(workload.Id);
             return Response(workload, requestId, failure.Status, completed, null, failure.ActualOutput, failure.Message);
         }
+        finally { lastCompiled?.Dispose(); }
     }
 
     private LythonCompiledScript Compile(ComparisonWorkload workload)
     {
-        var script = _engine.Compile(workload.Source);
+        var script = _engine.Compile(workload.Source, MemoryBudget);
         if (!script.IsValid)
-            throw new WorkerJobException("Unsupported", string.Join(" | ", script.Diagnostics.Select(d => d.Message)));
+        {
+            var message = string.Join(" | ", script.Diagnostics.Select(d => d.Message));
+            script.Dispose();
+            throw new WorkerJobException("Unsupported", message);
+        }
         return script;
     }
 
@@ -131,9 +177,12 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest, string
         // Default per-invocation public options/context/capture/projection stay
         // inside timing. File cases expose only the declared fixture directory.
         _lastFiles = null;
+        _lastResult?.Dispose();
+        _lastResult = null;
         try { files?.Reset(); }
         catch (IOException error) { throw new WorkerJobException("Failure", "File fixture reset failed: " + error.Message); }
         var result = script.Run((ILythonHost?)files ?? _host);
+        _lastResult = result;
         if (!result.Success)
             throw new WorkerJobException(result.DeniedReservationBytes > 0 || result.Failure?.ExceptionType == "MemoryError"
                 ? "BudgetDenied" : "Failure", result.Failure?.Message ?? "Lython execution failed.", result.StandardOutput);
@@ -175,6 +224,7 @@ internal sealed class LythonComparisonWorker(ComparisonManifest manifest, string
             maximumBatchIterations = ComparisonProtocol.MaximumBatchIterations,
             maximumBatchSeconds = ComparisonProtocol.MaximumBatchSeconds,
             publicLimits = "ordinary defaults; instruction fuel unset; no forced GC",
+            ownershipBoundary = "shared unbounded budget; prior-result and per-invocation compilation cleanup timed; final result retained through response; cached compilations disposed on exit",
             benchmarkDotNetLoaded = AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "BenchmarkDotNet"),
             libraries = new[] { Identity(library), Identity(adapter), Identity(core) },
         };

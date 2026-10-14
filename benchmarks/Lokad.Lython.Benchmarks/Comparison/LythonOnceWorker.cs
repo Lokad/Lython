@@ -14,15 +14,15 @@ internal static class LythonOnceWorker
         var completed = 0;
         string? fileDigest = null;
         var files = workload.Files is { } fixture ? new ComparisonFileHost(fixture, Environment.CurrentDirectory) : null;
-        var script = new LythonEngine().Compile(workload.Source);
+        using var script = new LythonEngine().Compile(workload.Source);
+        if (script.IsValid) files?.Reset();
+        using var result = script.IsValid ? script.Run(host ?? (ILythonHost?)files ?? new ComparisonHost()) : null;
         if (!script.IsValid) reason = string.Join(" | ", script.Diagnostics.Select(d => d.Message));
         else
         {
             // Exactly one public invocation, with ordinary limits and a fresh
             // context. No warmup or verification run precedes it in this process.
-            files?.Reset();
-            var result = script.Run(host ?? (ILythonHost?)files ?? new ComparisonHost());
-            actual = result.StandardOutput;
+            actual = result!.StandardOutput;
             if (!result.Success)
             {
                 status = result.DeniedReservationBytes > 0 || result.Failure?.ExceptionType == "MemoryError" ? "BudgetDenied" : "Failure";

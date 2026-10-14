@@ -12,18 +12,25 @@ public sealed class ComparisonWorkerProtocolTests
     {
         using var catalog = new TestCatalog("print(42)\n", "42\n");
         var worker = new LythonComparisonWorker(ComparisonManifest.Load(catalog.Path));
-        async Task Verify(int requestId)
+        using var input = new MemoryStream();
+        await ComparisonProtocol.WriteAsync(input, Request(catalog.Case, 1, "verify"));
+        await ComparisonProtocol.WriteAsync(input, Request(catalog.Case, 2, "verify"));
+        input.Position = 0;
+        LythonCompiledScript? warmed = null;
+        var checks = 0;
+        using var output = new ObservedOutput(() =>
         {
-            using var input = new MemoryStream(); using var output = new MemoryStream();
-            await ComparisonProtocol.WriteAsync(input, Request(catalog.Case, requestId, "verify")); input.Position = 0;
-            await worker.RunAsync(input, output);
-        }
-        await Verify(1);
-        var compiled = (Dictionary<string, LythonCompiledScript>)typeof(LythonComparisonWorker)
-            .GetField("_compiled", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(worker)!;
-        var warmed = compiled[catalog.Case.Id];
-        await Verify(2);
-        Assert.Same(warmed, compiled[catalog.Case.Id]);
+            var compiled = (Dictionary<string, LythonCompiledScript>)typeof(LythonComparisonWorker)
+                .GetField("_compiled", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(worker)!;
+            if (!compiled.TryGetValue(catalog.Case.Id, out var current)) return;
+            if (warmed is null) warmed = current;
+            else Assert.Same(warmed, current);
+            checks++;
+        });
+        await worker.RunAsync(input, output);
+        Assert.Equal(2, checks);
+        Assert.Equal(0, worker.MemoryBudget.ReservedBytes);
+        Assert.Throws<ObjectDisposedException>(() => warmed!.Run(new Lokad.Lython.Tests.Harness.MockLythonHost()));
     }
 
     [Theory]
@@ -41,7 +48,9 @@ public sealed class ComparisonWorkerProtocolTests
         await ComparisonProtocol.WriteAsync(input, new { protocolVersion = 1, requestId = 4, operation = "quit" });
         input.Position = 0;
         using var output = new MemoryStream();
-        await new LythonComparisonWorker(manifest).RunAsync(input, output);
+        var worker = new LythonComparisonWorker(manifest);
+        await worker.RunAsync(input, output);
+        Assert.Equal(0, worker.MemoryBudget.ReservedBytes);
         output.Position = 0;
         using var identity = await ComparisonProtocol.ReadAsync(output);
         Assert.Equal(manifest.Sha256, identity!.RootElement.GetProperty("catalogSha256").GetString());
@@ -66,6 +75,34 @@ public sealed class ComparisonWorkerProtocolTests
         using var closed = await ComparisonProtocol.ReadAsync(output);
         Assert.Equal("Closed", closed!.RootElement.GetProperty("status").GetString());
         Assert.Null(await ComparisonProtocol.ReadAsync(output));
+    }
+
+    private sealed class ObservedOutput(Action inspect) : MemoryStream
+    {
+        public override Task FlushAsync(CancellationToken cancellationToken)
+        {
+            inspect();
+            return base.FlushAsync(cancellationToken);
+        }
+    }
+
+    [Fact]
+    public async Task FailedResponseWriteReleasesResultAndCompilationOwners()
+    {
+        using var catalog = new TestCatalog("print('x' * 8192)\n", new string('x', 8192) + "\n");
+        var worker = new LythonComparisonWorker(ComparisonManifest.Load(catalog.Path));
+        using var input = new MemoryStream();
+        await ComparisonProtocol.WriteAsync(input, Request(catalog.Case, 1, "verify"));
+        input.Position = 0;
+        var frames = 0;
+        using var output = new ObservedOutput(() =>
+        {
+            if (++frames != 2) return;
+            Assert.True(worker.MemoryBudget.ReservedBytes > 8192);
+            throw new IOException("Response consumer failed");
+        });
+        await Assert.ThrowsAsync<IOException>(() => worker.RunAsync(input, output));
+        Assert.Equal(0, worker.MemoryBudget.ReservedBytes);
     }
 
     [Fact]

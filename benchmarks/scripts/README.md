@@ -7,8 +7,10 @@ Text reports explicitly use LF on Windows and Linux. Each run needs fresh input
 files and a writable working directory; the file job creates its output directory.
 
 `RepresentativeScriptTests` supplies independent fixtures and checks exact file
-bytes at 0, 16 and 1,024 repetitions, through synchronous and genuinely delayed
-asynchronous hosts under a 256 KiB execution cap. Cancellation controls interrupt
+bytes at 0, 16 and 1,024 repetitions through synchronous and genuinely delayed
+asynchronous hosts. Small cases use a 256 KiB execution cap; the finite 1,024-repeat
+cases use 8 MiB for conservative in-execution retention. Shared-budget host batches
+check reuse independently of CLR collection. Cancellation controls interrupt
 real host reads. Publication controls pause each complete job's report write,
 cancel it, and verify that the previous file bytes remain intact. The file job's
 earlier successful binary copies remain published: atomic replacement is per
@@ -21,10 +23,10 @@ scan and source closure, collect before projection, and compare independent
 report bytes. Retaining all emitted values rejects at the same 256 KiB cap.
 White-box CSV/JSON success/error controls check acquisition leases, parser storage
 and funded escaped storage after abandonment. CSV source/parser storage owns its
-shell and actual scratch capacities; emitted values use the shared pool. Field
+shell and actual scratch capacities; emitted values stay charged to their execution owner. Field
 growth preflights replacement overlap before allocating. A CSV body-conversion error leaves
-the reader resumable and its scratch funded until EOF or collection; this evidence
-does not establish GC-independent reclamation. Caller-retained readers may resume.
+the reader resumable and its scratch funded until private storage retirement or
+batch cleanup. Caller-retained readers may resume within their execution lifetime.
 
 The fixed file-retention control copies64 distinct8 KiB inputs at the same
 256 KiB execution cap, checking every output byte and an independently assembled

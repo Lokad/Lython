@@ -7,6 +7,16 @@ candidate narratives are preserved in [EXPERIMENTS.md](EXPERIMENTS.md), with the
 original evidence links and exclusions. Specification version **6** applies to
 the declared milestone collections.
 
+The governed-memory worker uses one shared unbounded allowance. Compiled caches
+stay charged until worker exit. Previous results are relinquished before the next
+invocation; the final result stays alive through response hashing and writing.
+Per-invocation compilation disposal is inside the compile-run timer. Earlier
+compile-only objects are disposed during the batch, while the final compiled
+artifact remains cached outside the timer. Final response/cached-code cleanup is
+outside timing. Worker identity records this ownership boundary. Historical
+measurements predating this change retain their original boundary and do not
+describe the current worker. Normal execution/projection limits still apply.
+
 ## Short improvement rounds
 
 Build the old and candidate benchmark workers in Release before timing. The
