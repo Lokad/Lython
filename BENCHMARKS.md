@@ -155,6 +155,10 @@ preserves two additional short comparisons and their preceding-source identities
 Both are inconclusive; neither supplies a qualified speed change or CPython
 multiplier. Complete ownership and forced-GC independence remain open.
 
+The [zip containment diagnostic](benchmarks/results/2026-10-14-zip-state/README.md)
+retains a higher candidate median with substantial noise. Its status is
+inconclusive; it does not establish today's HEAD performance or async pull cost.
+
 - [Measurement methods, commands and qualification rules](benchmarks/COMPARISON.md)
 - [Experimental history, profiles and rejected optimizations](benchmarks/EXPERIMENTS.md)
 - [Historical Lython-only BenchmarkDotNet scan baselines](benchmarks/Baselines.md)

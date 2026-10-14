@@ -1,0 +1,190 @@
+{
+  "producer": "a00fc0eaf79058e5b3222a4bbb9da89703ba9701",
+  "production": "7c6c6134e31bef738a74bec560bda78e08b19a3c",
+  "before": {
+    "receipt": {
+      "source": "344147a9+zip-probes",
+      "production": "9f8880844b766af4095fa6d2bfc3a51d89a400b8",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "A22B566723693CFDADB2E8CE05F991092C10485552725E20985A4B56A15975E2",
+      "filter": "FullyQualifiedName~ZipStatePreflightTests",
+      "pid": 37848,
+      "hasExited": true,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 966,
+      "stdoutSha256": "F3E513A9673A1E9A9569627124DB30203FD267D7438329DB2853CA514964EB85",
+      "stderrSha256": "D89AB9B61BA0017E374F2A1B4C05E3B99E94D2E9920ED0E2DCD12650CBFEC460"
+    },
+    "counts": {
+      "total": "2",
+      "executed": "2",
+      "passed": "0",
+      "failed": "2",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "trxSha256": "2B2E5C418A63C1C657139921A957F7EC200C638F6F12F057F6EE269DA6C4A58B"
+  },
+  "focusedWhite": {
+    "receipt": {
+      "source": "344147a9+zip-candidate",
+      "production": "working",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.Tests\\bin\\Release\\net10.0\\Lokad.Lython.WhiteBox.Tests.dll",
+      "assemblySha256": "FE04B355650E7CE880B5146B947D8910783684A1F6CCF708EFF3CE805931DF5F",
+      "filter": "Category!=Stress&(FullyQualifiedName~ZipStatePreflightTests|FullyQualifiedName~IteratorValueAccountingTests|FullyQualifiedName~IteratorItemAccountingTests|FullyQualifiedName~EnumerableStateTests|FullyQualifiedName~IterationCancellationTests|FullyQualifiedName~NativeAggregateStateTests)",
+      "pid": 47560,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 1360,
+      "stdoutSha256": "0B3A8C50A04100EFC1E189C10A29834D673BB2BE414A2DA999ECD78494379F9E",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "counts": {
+      "total": "50",
+      "executed": "50",
+      "passed": "50",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "trxSha256": "5B6A883B9B0502C3A387A31C5B83661081260A05D5C3CB73AF7566B6E58D6656"
+  },
+  "focusedPublic": {
+    "receipt": {
+      "source": "344147a9+zip-candidate",
+      "production": "working",
+      "assembly": "D:\\code\\Lython\\tests\\Lokad.Lython.PublicApi.Tests\\bin\\Release\\net10.0\\Lokad.Lython.PublicApi.Tests.dll",
+      "assemblySha256": "E6B1A3086E8FDE1D54F1B141A35B62838E889408DC3B31D0B2C9FA90C31F4C9F",
+      "filter": "Category!=Stress&(FullyQualifiedName~BuiltinIteratorSequenceFunctionTests|FullyQualifiedName~BuiltinIterationCancellationTests|FullyQualifiedName~BuiltinValidationScenarioTests|FullyQualifiedName~IterableFailureTests|FullyQualifiedName~IteratorProtocolScenarioTests|FullyQualifiedName~RootLifetimeContainmentTests|FullyQualifiedName~NativeConsumerStreamingTests)",
+      "pid": 30276,
+      "hasExited": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedMillisecondsIncludingCleanup": 6838,
+      "stdoutSha256": "B63EC53FB1909765131D1EB7C10CABF338E94C9B0AD43C41706F0651EBF325C4",
+      "stderrSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "counts": {
+      "total": "601",
+      "executed": "601",
+      "passed": "601",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "trxSha256": "AB2A207CCECA761F777DC1DFA7B8F0694A345DF151A48852A313DEB96FC26419"
+  },
+  "costReceipt": {
+    "pid": 13380,
+    "exitCode": 0,
+    "hasExited": true,
+    "timedOut": false,
+    "elapsedMillisecondsIncludingCleanup": 11853,
+    "executable": "C:/Program Files/dotnet/dotnet.exe",
+    "executableSha256": "ABCE6623A6729059CF39BB0F728C4A7804F625895099C88C17E6E704661E09EB",
+    "arguments": [
+      "D:/code/Lython/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+      "--compare",
+      "micro",
+      "--catalog",
+      "D:/code/Lython/.git/agent-notes/enumerable-state-20261014/catalog.json",
+      "--dotnet",
+      "C:/Program Files/dotnet/dotnet.exe",
+      "--baseline-worker",
+      "D:/code/Lython/.git/agent-notes/enumerable-state-20261014/before-zip-source/benchmarks/Lokad.Lython.Benchmarks/bin/Release/net10.0/Lokad.Lython.Benchmarks.dll",
+      "--python",
+      "C:/Python313/python.exe",
+      "--python-worker",
+      "D:/code/Lython/benchmarks/cpython-worker.py",
+      "--out",
+      "D:/code/Lython/.git/agent-notes/enumerable-state-20261014/zip-cost.json",
+      "--case",
+      "iterators.zip-enumerate.large"
+    ]
+  },
+  "costSummaries": [
+    {
+      "engine": "baseline",
+      "medianMicroseconds": 42905.6,
+      "iqrFraction": 0.5525316042661099
+    },
+    {
+      "engine": "candidate",
+      "medianMicroseconds": 60651,
+      "iqrFraction": 0.3931954955400573
+    },
+    {
+      "engine": "CPython",
+      "medianMicroseconds": 5116.183333333334,
+      "iqrFraction": 0.026623036052265587
+    }
+  ],
+  "baseline": {
+    "producer": "344147a91f4591a9a5d58595de2197f18cb3d16e",
+    "production": "9f8880844b766af4095fa6d2bfc3a51d89a400b8",
+    "archiveSha256": "72B668426958FE70162396633356477EABFD29660F1298A9E8825B5D606977FE"
+  },
+  "candidateDlls": [
+    {
+      "path": "D:\\code\\Lython\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.dll",
+      "sha256": "208d51cd3190951f08f3b9e417529d5795b781ba16579661eddbb9362ff2d561",
+      "version": "0.10.0+344147a91f4591a9a5d58595de2197f18cb3d16e",
+      "configuration": "Release",
+      "buildSdk": "10.0.300-preview.0.26177.108",
+      "moduleId": "b8087b70-fd50-4d87-a927-c28d3d019077"
+    },
+    {
+      "path": "D:\\code\\Lython\\benchmarks\\Lokad.Lython.Benchmarks\\bin\\Release\\net10.0\\Lokad.Lython.Benchmarks.dll",
+      "sha256": "8fc51869ff41a475adb8361260941d80dceec77ce6e5ed5b9fa7317192e35da8",
+      "version": "1.0.0+344147a91f4591a9a5d58595de2197f18cb3d16e",
+      "configuration": "Release",
+      "buildSdk": "10.0.300-preview.0.26177.108",
+      "moduleId": "ee6f1378-8ec5-4f3b-b699-7a3b56b3b7c5"
+    },
+    {
+      "path": "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\10.0.13\\System.Private.CoreLib.dll",
+      "sha256": "0a175cdd09067c52f8b2477cfcebf894b2f926d7302e55ae76fc921529662c7b",
+      "version": "10.0.13-servicing.26504.104+4099f83977f4d29604a9aeb971fb0a7bc1d5f699",
+      "configuration": "Release",
+      "buildSdk": null,
+      "moduleId": "10c7af6c-87cb-4196-92d9-c65dbf30e709"
+    }
+  ],
+  "qualification": "Focused Release only. Source was built before the producer commit; the identities retain344147a9 metadata. Public checks precede whitespace formatting; final white checks compile the formatted production and the final denial fixtures. Full/stress/package/Windows/Ubuntu checks wait for a coherent checkpoint.",
+  "beforeFailure": "Original constructor charged128 bytes after allocation; measured304/2784 bytes for1/32 inputs. Both controls fail on344147a9.",
+  "scope": "Preflight zip cursor storage; publish constructor/result and partial rows through the existing native active caller chain, including reentrant and truly async pulls. Transfer the fresh row array into its tuple. Existing strict peeking and cursor cancellation cadence remain. No logical refunds or forced-GC change.",
+  "setupFailures": "The new reentry fixture initially had an unused primary-constructor argument. Constructor fixtures first read their probe before invocation and expected an unwrapped protocol exception; corrected before final checks. These failed receipts remain in private evidence.",
+  "costStatus": "One existing-tool16,384-row zip/enumerate/materialize/render job,11.853s including cleanup. Medians42.906/60.651ms, IQR/median55.25%/39.32%; CPython5.116ms,2.66%. Higher candidate median remains visible but noisy; no qualified improvement/regression/CPython ratio or latency claim. No repeat. Does not measure genuinely async per-row overhead."
+}

@@ -463,3 +463,9 @@ callbacks, full Release/stress/package checks and one inconclusive short cost
 comparison. No logical reclamation or forced-GC removal is enabled. The
 [immutable scalar.44 assessment](results/2026-10-13-regex-scalar-44/README.md)
 records the remaining managed-only backend blocker separately.
+
+The [zip construction and row continuation](results/2026-10-14-zip-state/README.md)
+records the demonstrated cursor admission gap, focused publication/denial/alias
+controls, removal of a redundant row copy, and one inconclusive cost comparison.
+The higher candidate median is retained; no gain or regression is established.
+Full/platform/package qualification is deferred to the next coherent checkpoint.
