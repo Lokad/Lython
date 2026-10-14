@@ -50,6 +50,7 @@ public sealed class IterationCancellationTests
         // Cancellation starts on pull 90. A shared checkpoint must stop the
         // next bounded chunk, rather than draining the remaining 1,000 items.
         Assert.InRange(source.Produced, 90, 154);
+        Assert.Equal(128, source.Produced);
         Assert.True(source.Disposed);
     }
 

@@ -2,7 +2,7 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal static class PyIteration
+internal static partial class PyIteration
 {
     internal readonly record struct GeneratorOuter(object Iterator, IEnumerable<object> Sequence, IAsyncEnumerable<object>? AsyncSequence = null);
 
@@ -29,7 +29,7 @@ internal static class PyIteration
             : AcquireGeneratorOuter(value, span, context);
 
     private static GeneratorOuter AcquiredUserOuter(PyUserIterator user, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        => new(user.Iterator, WithCheckpoints(user.Iterate(), span, context), EnumerateAcquiredUserIteratorAsync(user, context, span));
+        => new(user.Iterator, WithCheckpoints(user.Iterate(), span, context), new AsyncSequence(user, span, context));
 
     public static IEnumerable<object> ToSequence(object value, LythonSourceSpan span)
         => GetSyncEnumerable(value, span);
@@ -66,13 +66,17 @@ internal static class PyIteration
 
     internal class CheckedSequence(
         IEnumerable<object> source, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        : IEnumerable<object>
+        : IEnumerable<object>, IMemoryStorageEdges
     {
         internal IEnumerable<object> Source => source;
         protected LythonSourceSpan Span { get; } = span;
         protected LythonRuntime.ExecutionContext Context { get; } = context;
-        public virtual IEnumerator<object> GetEnumerator() => EnumerateChecked(source, Span, Context).GetEnumerator();
+        public virtual IEnumerator<object> GetEnumerator() => new CheckedEnumerator(source, Span, Context);
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+        public void VisitStorageChildren(MemoryStorageWalk visitor)
+        {
+            if (visitor.Add(source)) visitor.Add(Context);
+        }
     }
 
     private sealed class CheckedRange(
@@ -90,38 +94,17 @@ internal static class PyIteration
         public int Count => source.Count;
     }
 
-    private static IEnumerable<object> EnumerateChecked(
-        IEnumerable<object> sequence, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-    {
-        using var enumerator = sequence.GetEnumerator();
-        var movesUntilCheckpoint = 0;
-        while (true)
-        {
-            // Primitive iterables do not enter guest calls. Check before the
-            // first pull and every 64 pulls, including non-materializing
-            // consumers such as sum, any/all and min/max.
-            if (movesUntilCheckpoint-- == 0)
-            {
-                movesUntilCheckpoint = 63;
-                context.CheckExecution(span);
-            }
-
-            if (!enumerator.MoveNext()) yield break;
-            yield return enumerator.Current;
-        }
-    }
-
     public static IAsyncEnumerable<object> ToSequenceAsync(object value, LythonSourceSpan span)
-        => EnumerateCursorAsync(Cursor.Create(value, span));
+        => new AsyncSequence(Cursor.Create(value, span), span, null);
 
     /// <summary>Resolves the Python iteration protocol for asynchronous execution, driving synchronous user protocols when needed.</summary>
     public static IAsyncEnumerable<object> ToSequenceAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         => value switch
         {
-            PyInstance or IPyProtocolIterator => EnumerateUserIteratorAsync(value, context, span),
+            PyInstance or IPyProtocolIterator => new AsyncSequence(value, span, context),
             // Context-aware cursors retain the same owned ChainMap shapes as
             // the sync router and checkpoint primitive pulls in both modes.
-            _ => EnumerateCursorAsync(Cursor.Create(value, span, context)),
+            _ => new AsyncSequence(Cursor.Create(value, span, context), span, null),
         };
 
     /// <summary>Materializes an arbitrary iterable in asynchronous execution, resolving user-defined <c>__iter__</c>.</summary>
@@ -342,37 +325,8 @@ internal static class PyIteration
 
     internal static async ValueTask<IAsyncEnumerable<object>> AcquireComprehensionSequenceAsync(object value, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         => value is PyInstance or IPyProtocolIterator
-            ? EnumerateAcquiredUserIteratorAsync(await PyUserIterator.CreateAsync(value, context, span).ConfigureAwait(false), context, span)
+            ? new AsyncSequence(await PyUserIterator.CreateAsync(value, context, span).ConfigureAwait(false), span, context)
             : ToSequenceAsync(value, span, context);
-
-    private static async IAsyncEnumerable<object> EnumerateUserIteratorAsync(object source, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-    {
-        // R08: both __iter__ resolution and __next__ advancement await real
-        // suspension instead of routing through the synchronous protocol.
-        var iterator = await PyUserIterator.CreateAsync(source, context, span).ConfigureAwait(false);
-        await foreach (var value in EnumerateAcquiredUserIteratorAsync(iterator, context, span).ConfigureAwait(false)) yield return value;
-    }
-
-    private static async IAsyncEnumerable<object> EnumerateAcquiredUserIteratorAsync(PyUserIterator iterator, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
-    {
-        var movesUntilCheckpoint = 0;
-        while (true)
-        {
-            // __iter__ may return a primitive iterator with no guest __next__.
-            if (movesUntilCheckpoint-- == 0)
-            {
-                movesUntilCheckpoint = 63;
-                context.CheckExecution(span);
-            }
-            var (hasValue, value) = await iterator.TryMoveNextAsync().ConfigureAwait(false);
-            if (!hasValue)
-            {
-                yield break;
-            }
-
-            yield return value;
-        }
-    }
 
     public static IEnumerable<object> EnumerateIterator(IPyIteratorValue iterator)
     {
@@ -418,28 +372,7 @@ internal static class PyIteration
         };
     }
 
-    private static async IAsyncEnumerable<object> EnumerateCursorAsync(Cursor cursor)
-    {
-        try
-        {
-            while (true)
-            {
-                var (hasValue, value) = await cursor.TryMoveNextAsync().ConfigureAwait(false);
-                if (!hasValue)
-                {
-                    yield break;
-                }
-
-                yield return value;
-            }
-        }
-        finally
-        {
-            await cursor.DisposeAsync().ConfigureAwait(false);
-        }
-    }
-
-    internal sealed class Cursor : IDisposable, IAsyncDisposable
+    internal sealed class Cursor : IDisposable, IAsyncDisposable, IMemoryStorageEdges
     {
         private readonly object _value;
         private readonly LythonSourceSpan _span;
@@ -448,6 +381,16 @@ internal static class PyIteration
         private int _movesUntilCheckpoint;
         private IEnumerator<object>? _syncEnumerator;
         private IAsyncEnumerator<object>? _asyncEnumerator;
+
+        public void VisitStorageChildren(MemoryStorageWalk visitor)
+        {
+            if (!visitor.Add(_value) || !visitor.Add(_userIterator) || !visitor.Add(_syncEnumerator)
+                || !visitor.Add(_asyncEnumerator)) return;
+            visitor.Add(_context);
+        }
+
+        internal static Cursor FromAcquired(PyUserIterator iterator, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
+            => new(iterator.Iterator, span, iterator, context);
 
         private Cursor(object value, LythonSourceSpan span, PyUserIterator? userIterator = null,
             LythonRuntime.ExecutionContext? context = null)
