@@ -84,37 +84,47 @@ internal sealed partial class LythonRuntime
 
     private static object Sum(object[] arguments, LythonSourceSpan span, ExecutionContext context)
     {
-        if (arguments.Length is < 1 or > 2)
+        var total = ValidateSumStart(arguments, span);
+        var operation = SumOperation.Create(arguments[0], total, context, span);
+        try
         {
-            throw new LythonRuntimeException("TypeError", "sum(iterable[, start]) expects one iterable and optional start argument.", span);
+            operation.Iterator = ToSequence(operation.Source, span, context).GetEnumerator();
+            while (operation.Iterator.MoveNext())
+            {
+                operation.Current = operation.Iterator.Current;
+                operation.Total = operation.Total is PyInstance || operation.Current is PyInstance
+                    ? EvaluateBinaryOperator(BinaryOperatorSyntax.Add, operation.Total, operation.Current, context, span)
+                    : EvaluateAdd(operation.Total, operation.Current, context, span);
+                operation.Current = PyNone.Instance;
+            }
+            operation.FinishIteration();
+            return operation; // Bound-call registration still needs this root.
         }
-
-        var total = arguments.Length == 2 ? arguments[1] : BigInteger.Zero;
-        // A string or bytes start fails up front with the join hint like
-        // CPython; item failures surface through binary dispatch instead.
-        if (PyStringOps.TryAsString(total, out _))
-        {
-            throw new LythonRuntimeException("TypeError", "sum() can't sum strings [use ''.join(seq) instead]", span);
-        }
-
-        if (total is PyBytes)
-        {
-            throw new LythonRuntimeException("TypeError", "sum() can't sum bytes [use b''.join(seq) instead]", span);
-        }
-
-        foreach (var item in ToSequence(arguments[0], span, context))
-        {
-            // Instances resolve __add__/__radd__ through operator dispatch like
-            // CPython; plain values take the direct path with identical results.
-            total = total is PyInstance || item is PyInstance
-                ? EvaluateBinaryOperator(BinaryOperatorSyntax.Add, total, item, context, span)
-                : EvaluateAdd(total, item, context, span);
-        }
-
-        return total;
+        catch { operation.Dispose(); throw; }
     }
 
     private static async ValueTask<object> SumAsync(object[] arguments, LythonSourceSpan span, ExecutionContext context)
+    {
+        var total = ValidateSumStart(arguments, span);
+        var operation = SumOperation.Create(arguments[0], total, context, span);
+        try
+        {
+            operation.AsyncIterator = ToSequenceAsync(operation.Source, span, context).GetAsyncEnumerator();
+            while (await operation.AsyncIterator.MoveNextAsync().ConfigureAwait(false))
+            {
+                operation.Current = operation.AsyncIterator.Current;
+                operation.Total = operation.Total is PyInstance || operation.Current is PyInstance
+                    ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Add, operation.Total, operation.Current, context, span).ConfigureAwait(false)
+                    : EvaluateAdd(operation.Total, operation.Current, context, span);
+                operation.Current = PyNone.Instance;
+            }
+            await operation.FinishIterationAsync().ConfigureAwait(false);
+            return operation;
+        }
+        catch { await operation.DisposeAsync().ConfigureAwait(false); throw; }
+    }
+
+    private static object ValidateSumStart(object[] arguments, LythonSourceSpan span)
     {
         if (arguments.Length is < 1 or > 2)
         {
@@ -132,13 +142,6 @@ internal sealed partial class LythonRuntime
         if (total is PyBytes)
         {
             throw new LythonRuntimeException("TypeError", "sum() can't sum bytes [use b''.join(seq) instead]", span);
-        }
-
-        await foreach (var item in ToSequenceAsync(arguments[0], span, context).ConfigureAwait(false))
-        {
-            total = total is PyInstance || item is PyInstance
-                ? await EvaluateBinaryOperatorAsync(BinaryOperatorSyntax.Add, total, item, context, span).ConfigureAwait(false)
-                : EvaluateAdd(total, item, context, span);
         }
 
         return total;
