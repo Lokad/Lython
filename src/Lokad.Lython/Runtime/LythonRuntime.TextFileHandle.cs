@@ -8,9 +8,8 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext
     {
-        internal sealed class TextFileHandle : IPyAsyncContextManager, IPyIteratorValue, IPyAsyncIteratorValue, IExecutionFileWriter, IPyOwnershipSnapshot, IMemoryStorageEdges
+        internal sealed class TextFileHandle : IPyAsyncContextManager, IPyIteratorValue, IPyAsyncIteratorValue, IExecutionFileWriter, IPyOwnershipSnapshot
         {
-            void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor) => visitor.Add(_state);
             private TextFileHandle(
                 string path,
                 TextFileState state,

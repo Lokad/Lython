@@ -2,12 +2,8 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPyOwnershipSnapshot, IMemoryStorageEdges
+internal sealed partial class PyList : IMutablePySequenceValue, IMutablePyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPyOwnershipSnapshot
 {
-    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-    {
-        visitor.Add(_items);
-    }
     private IPyListStorage _items;
     private MemoryGovernor? _memoryGovernor;
     private LythonSourceSpan? _allocationSpan;

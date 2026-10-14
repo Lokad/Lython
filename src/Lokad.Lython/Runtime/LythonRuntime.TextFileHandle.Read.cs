@@ -18,10 +18,9 @@ internal sealed partial class LythonRuntime
         // window charges release on replacement and the carry releases at close.
         // Window scratch (decoded strings, transient byte arrays) stays bounded by
         // the window, so it needs no reservation beyond the held infrastructure.
-        internal sealed class ChunkedTextFileReadState : TextFileState, IPyOwnershipSnapshot, IMemoryStorageEdges
+        internal sealed class ChunkedTextFileReadState : TextFileState, IPyOwnershipSnapshot
         {
             // The decoded Python window is stored beside byte/carry backing.
-            void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor) => visitor.Add(_window);
             internal const long ShellBytes = 192;
             internal const int DefaultWindowBytes = 16 * 1024;
             internal const int MinimumWindowBytes = 4 * 1024;

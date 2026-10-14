@@ -9,10 +9,9 @@ internal sealed partial class LythonRuntime
     // Positions and capacity count Python characters, including non-BMP scalars.
     // Retain execution services, not the lexical scope that created the stream.
     internal sealed partial class StringIOObject : IPyIteratorValue, IPyContextManager,
-        IPyDynamicAttributes, IPyTruthyValue, IPyRenderableValue, IPyOwnershipSnapshot, IMemoryStorageEdges
+        IPyDynamicAttributes, IPyTruthyValue, IPyRenderableValue, IPyOwnershipSnapshot
     {
         // Character backing and run capabilities retain no guest-value children.
-        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor) { }
         internal const long ShellBytes = 128;
         private readonly ExecutionServices _services;
         private readonly LythonSourceSpan _creationSpan;

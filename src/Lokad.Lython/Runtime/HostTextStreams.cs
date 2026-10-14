@@ -3,11 +3,10 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class HostTextInputHandle : IPyRenderableValue, IMemoryStorageEdges
+internal sealed class HostTextInputHandle : IPyRenderableValue
 {
     // The host capability and run-state links are back-pointers; this handle
     // retains no decoded guest values between operations.
-    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor) { }
 
     private readonly ILythonTextInput? _input;
     private readonly ExecutionState _state;
@@ -94,10 +93,9 @@ internal sealed class HostTextInputHandle : IPyRenderableValue, IMemoryStorageEd
 
 }
 
-internal sealed class HostTextOutputHandle : IPyRenderableValue, IMemoryStorageEdges
+internal sealed class HostTextOutputHandle : IPyRenderableValue
 {
     // Captured bytes belong to the persistent run builder, not guest children.
-    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor) { }
 
     private readonly OutputDestination _destination;
     private readonly string _name;

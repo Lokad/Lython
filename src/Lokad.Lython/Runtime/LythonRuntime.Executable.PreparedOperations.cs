@@ -150,12 +150,8 @@ internal sealed partial class LythonRuntime
     }
 
     private sealed class CapturedComprehensionClauses(
-        IReadOnlyList<LoweredComprehensionClause> source, LoweredComprehensionClause first) : IReadOnlyList<LoweredComprehensionClause>, IMemoryStorageEdges
+        IReadOnlyList<LoweredComprehensionClause> source, LoweredComprehensionClause first) : IReadOnlyList<LoweredComprehensionClause>
     {
-        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-        {
-            if (visitor.Add(source)) visitor.Add(first);
-        }
 
         public int Count => source.Count;
         public LoweredComprehensionClause this[int index] => index == 0 ? first : source[index];

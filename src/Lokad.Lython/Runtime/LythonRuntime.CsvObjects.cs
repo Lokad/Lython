@@ -175,18 +175,8 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal sealed class CsvWriterObject : IPyOwnershipSnapshot, IMemoryStorageEdges
+    internal sealed class CsvWriterObject : IPyOwnershipSnapshot
     {
-        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-        {
-            if (!visitor.Add(WriteMethod)) return;
-            for (var i = 0; i < Rows.Count; i++)
-            {
-                if (!visitor.InspectStorageItem()) return;
-                for (var j = 0; j < Rows[i].Length; j++)
-                    if (!visitor.Add(Rows[i][j].Text)) return;
-            }
-        }
         public CsvWriterObject(CsvOptions options, ICallable? writeMethod, MemoryGovernor governor, LythonSourceSpan span)
         {
             // Own the shell beside the governed row history.
@@ -217,12 +207,8 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal sealed class CsvDictWriterObject : IPyOwnershipSnapshot, IMemoryStorageEdges
+    internal sealed class CsvDictWriterObject : IPyOwnershipSnapshot
     {
-        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-        {
-            visitor.Add(Writer); visitor.Add(FieldNames); visitor.Add(RestValue);
-        }
         public CsvDictWriterObject(CsvWriterObject writer, PyString[] fieldNames, object restValue, CsvExtrasAction extrasAction, LythonSourceSpan? span = null)
         {
             writer.MemoryGovernor.Reserve(64L, span);
@@ -276,9 +262,8 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    internal sealed class DictKeysView : IReadOnlyCollection<object>, IPyOwnershipSnapshot, IMemoryStorageEdges
+    internal sealed class DictKeysView : IReadOnlyCollection<object>, IPyOwnershipSnapshot
     {
-        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor) => visitor.Add(_dict);
         private readonly PyDict _dict;
 
         bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes)
@@ -301,9 +286,8 @@ internal sealed partial class LythonRuntime
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
-    internal sealed class DictValuesView : IReadOnlyCollection<object>, IPyOwnershipSnapshot, IMemoryStorageEdges
+    internal sealed class DictValuesView : IReadOnlyCollection<object>, IPyOwnershipSnapshot
     {
-        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor) => visitor.Add(_dict);
         private readonly PyDict _dict;
 
         bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes)
@@ -326,9 +310,8 @@ internal sealed partial class LythonRuntime
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
-    internal sealed class DictItemsView : IReadOnlyCollection<object>, IPyOwnershipSnapshot, IMemoryStorageEdges
+    internal sealed class DictItemsView : IReadOnlyCollection<object>, IPyOwnershipSnapshot
     {
-        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor) => visitor.Add(_dict);
         private readonly PyDict _dict;
 
         bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes)

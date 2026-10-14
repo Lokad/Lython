@@ -501,13 +501,8 @@ internal sealed partial class LythonRuntime
     // Field/row payloads use the shared reclamation pool. Source/parser shell
     // and actual scratch capacities have one separate source snapshot, so
     // dropping that source never refunds an escaping field or row.
-    internal sealed class CsvRecordSource : IPyOwnershipSnapshot, IMemoryStorageEdges
+    internal sealed class CsvRecordSource : IPyOwnershipSnapshot
     {
-        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-        {
-            visitor.Add(_origin); visitor.Add(_cursor); visitor.Add(_asyncCursor);
-            visitor.Add(_indexed); visitor.Add(_pushedBack); visitor.Add(_context); visitor.Add(_parser);
-        }
         private readonly CsvRecordParser _parser;
         private IEnumerator<object>? _cursor;
         private object? _origin;

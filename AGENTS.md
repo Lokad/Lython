@@ -59,5 +59,11 @@ New runtime dependencies must be assessed against this constraint before promoti
 Performance changes must preserve allocation preflights, live-memory protection,
 cooperative cancellation, cycle detection and bounded public projection.
 
+Memory work follows cooperative admission and explicit ownership lifetimes.
+Do not introduce general guest-heap tracing, root inventories or dormant collector
+scaffolding. Replace weak reclamation and forced GC with working ownership scopes;
+do not wrap the old subsystem in a new scope API. Preserve conservative estimates,
+allocation rollback, deterministic cleanup and funding for retained aliases.
+
 Lython is intended to be host-mediated and safe-by-design. Runtime file, directory, subprocess, stdin, stdout, and stderr access must remain mediated through the public host abstractions.
 

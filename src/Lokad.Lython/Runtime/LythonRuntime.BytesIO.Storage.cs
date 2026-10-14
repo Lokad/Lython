@@ -6,10 +6,9 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     internal sealed partial class BytesIOObject : IPyIteratorValue, IPyContextManager,
-        IPyDynamicAttributes, IPyTruthyValue, IPyRenderableValue, IPyOwnershipSnapshot, IMemoryStorageEdges
+        IPyDynamicAttributes, IPyTruthyValue, IPyRenderableValue, IPyOwnershipSnapshot
     {
         // Byte backing and run capabilities retain no guest-value children.
-        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor) { }
         internal const long ShellBytes = 128;
         private readonly ExecutionServices _services;
         private readonly LythonSourceSpan _creationSpan;

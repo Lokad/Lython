@@ -2985,10 +2985,9 @@ directly. Collection and memory limits can therefore reject an input earlier
 during consumption than the former drain-then-copy implementation.
 
 Native `zip` preflights its shell, cursor array and a conservative allowance per
-input before iterator acquisition. Partial initialization stays published through
-its native operation and failed construction refunds its unpublished storage.
-Each pull preflights a row buffer and keeps partial items and the produced tuple
-stored through callback reentry and result registration. The tuple takes ownership
+input before iterator acquisition. Failed construction drops and refunds its
+unpublished cursor storage. Each pull preflights a row buffer before consuming
+inputs. The tuple takes ownership
 of that buffer, preserving fresh tuple identity without a second array copy.
 New helper admissions can reject a tiny budget before consuming inputs; denials
 after a completed pull retain the existing consumption behavior. Held inputs and

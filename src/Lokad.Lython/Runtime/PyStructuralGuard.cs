@@ -11,16 +11,8 @@ namespace Lokad.Lython.Runtime;
 // of which pool thread resumes the continuation. Sharing one mutable set
 // across runs is never done: states are per-run, never stored in AsyncLocal,
 // and sequential execution within a run never mutates them concurrently.
-internal sealed class StructuralGuardState : IMemoryStorageEdges
+internal sealed class StructuralGuardState
 {
-    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-    {
-        if (Pairs is not null)
-            foreach (var pair in Pairs)
-                if (!visitor.Add(pair.Left) || !visitor.Add(pair.Right)) return;
-        if (Singles is not null)
-            foreach (var value in Singles) if (!visitor.Add(value)) return;
-    }
 
     internal int Depth;
     internal HashSet<PyStructuralGuard.StructuralPair>? Pairs;

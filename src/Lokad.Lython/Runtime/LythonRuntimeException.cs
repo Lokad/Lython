@@ -2,17 +2,8 @@ namespace Lokad.Lython.Runtime;
 
 // Unsealed for PyNotIterableException (R17): protocol absence carries a
 // distinct type so catchers never match English message text.
-internal class LythonRuntimeException : Exception, IMemoryStorageEdges
+internal class LythonRuntimeException : Exception
 {
-    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-    {
-        if (!visitor.Add(Payload) || !visitor.Add(OriginalPythonException) ||
-            !visitor.Add(PythonCause) || !visitor.Add(PythonExplicitArgs) ||
-            !visitor.Add(PythonContext)) return;
-        // Unknown host exceptions stop traversal rather than having arbitrary
-        // CLR fields inspected. Frames/attribution retain only diagnostic data.
-        visitor.Add(InnerException);
-    }
 
     public LythonRuntimeException(string exceptionType, string message, LythonSourceSpan? span)
         : this(PythonExceptionIdentity.FromRuntimeTypeName(exceptionType), message, span, null, null) { }

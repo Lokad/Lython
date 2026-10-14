@@ -11,19 +11,6 @@ internal sealed partial class LythonRuntime
     /// </summary>
     private sealed partial class ExecutableFrameInterpreter : ExecutableFrameState
     {
-        public override void VisitStorageChildren(MemoryStorageWalk visitor)
-        {
-            base.VisitStorageChildren(visitor);
-            if (visitor.Incomplete != MemoryStorageWalk.IncompleteReason.None) return;
-            _stack.VisitStorageChildren(visitor);
-            if (!visitor.Add(_context) || !visitor.Add(_pendingAbrupt) ||
-                !visitor.Add(_sentValue) || !visitor.Add(_injectedException) ||
-                !visitor.Add(_delegation) || !visitor.Add(YieldValue) ||
-                !visitor.Add(_frameReturnValue) || !visitor.Add(_entryActiveException) ||
-                !visitor.Add(_memberCaches) || !visitor.Add(_callCaches)) return;
-            if (_savedActiveExceptions is not null)
-                foreach (var saved in _savedActiveExceptions) if (!visitor.Add(saved)) return;
-        }
 
         private readonly ExecutionContext _context;
 
@@ -79,12 +66,8 @@ internal sealed partial class LythonRuntime
 
         private PyException? _entryActiveException;
 
-        private sealed class ActiveExceptionSave(PyException? savedException, int? suiteStartBlockIndex, int? suiteEndBlockIndex, PendingAbruptSignal? savedPendingAbrupt = null) : IMemoryStorageEdges
+        private sealed class ActiveExceptionSave(PyException? savedException, int? suiteStartBlockIndex, int? suiteEndBlockIndex, PendingAbruptSignal? savedPendingAbrupt = null)
         {
-            void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-            {
-                if (visitor.Add(SavedException)) visitor.Add(SavedPendingAbrupt);
-            }
 
             public PyException? SavedException { get; set; } = savedException;
             public int? SuiteStartBlockIndex { get; } = suiteStartBlockIndex;

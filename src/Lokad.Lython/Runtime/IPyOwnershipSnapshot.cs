@@ -19,8 +19,7 @@ internal interface IPyOwnershipSnapshot
 // call the host or mutate a governor (both belong to the execution thread).
 internal interface IPyFinalizableOwnership : IPyOwnershipSnapshot
 {
-    // Only a future complete root/child collector may invoke this on an
-    // unreachable owner. Release local resources on the execution thread,
+    // Relinquish an inactive owner's local resources on the execution thread,
     // without guest/host calls or new governed storage. The owner shell and
     // independently owned aliases remain charged until separately retired.
     void AbandonStorage();

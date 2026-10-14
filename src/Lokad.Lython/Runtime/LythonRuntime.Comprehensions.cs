@@ -36,14 +36,8 @@ internal sealed partial class LythonRuntime
         // This is a lexical binding lifetime, not an invocation frame. Eager
         // expressions execute with the original context; closures retain the
         // real iteration namespace while enclosing cells stay untouched.
-        internal sealed class InlinedComprehensionScope : IDisposable, IMemoryStorageEdges
+        internal sealed class InlinedComprehensionScope : IDisposable
         {
-            void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-            {
-                if (!visitor.Add(_context) || !visitor.Add(_previousClosure) ||
-                    !visitor.Add(Previous)) return;
-                visitor.Add(Bindings);
-            }
 
             private readonly ExecutionContext _context;
             private readonly ExecutionContext _previousClosure;

@@ -9,9 +9,8 @@ internal abstract record LoweredExpression
 }
 
 // Used only for already evaluated operands in a resumed executable operation.
-internal sealed record LoweredCapturedExpression(ExpressionSyntax Original, object Value) : LoweredExpression, Lokad.Lython.Runtime.IMemoryStorageEdges
+internal sealed record LoweredCapturedExpression(ExpressionSyntax Original, object Value) : LoweredExpression
 {
-    void Lokad.Lython.Runtime.IMemoryStorageEdges.VisitStorageChildren(Lokad.Lython.Runtime.MemoryStorageWalk visitor) => visitor.Add(Value);
     public override ExpressionSyntax Syntax => Original;
 }
 

@@ -42,10 +42,9 @@ internal sealed partial class LythonRuntime
         // wrapper also needs a fixed coupon, including an empty attrib alias.
         // Ephemeron ownership ties that coupon to the container, without parent
         // links or a global strong reference keeping abandoned graphs alive.
-        private sealed class ContainerShell : IPyOwnershipSnapshot, IMemoryStorageEdges
+        private sealed class ContainerShell : IPyOwnershipSnapshot
         {
             // The owning wrapper owns all contents; this record owns only its shell.
-            void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor) { }
             private const long Bytes = 256; // Wrapper, empty storage and ephemeron entry.
             internal ContainerShell(MemoryGovernor governor, LythonSourceSpan span)
             {
@@ -393,12 +392,8 @@ internal sealed partial class LythonRuntime
         }
 
         internal sealed class Element : IPyMutableDynamicAttributes, IPyIterableValue, IPyIndexableValue,
-            IPySizedValue, IPyTruthyValue, IPyGovernedValue, IPyOwnershipSnapshot, IMemoryStorageEdges
+            IPySizedValue, IPyTruthyValue, IPyGovernedValue, IPyOwnershipSnapshot
         {
-            void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-            {
-                visitor.Add(Tag); visitor.Add(Attributes); visitor.Add(Children); visitor.Add(Text); visitor.Add(Tail);
-            }
             private const long ShellBytes = 128;
             internal readonly PyString Tag;
             internal readonly PyDict Attributes;

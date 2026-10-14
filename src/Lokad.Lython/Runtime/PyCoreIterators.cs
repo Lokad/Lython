@@ -314,7 +314,7 @@ internal sealed class PyEnumerateIterator : PyIteratorBase
     public override PyString RenderPython(PyRenderingContext context) => PyString.FromString("<enumerate object>");
 }
 
-internal sealed class PyZipIterator : PyIteratorBase, IPyOwnershipSnapshot, IMemoryStorageEdges
+internal sealed class PyZipIterator : PyIteratorBase, IPyOwnershipSnapshot
 {
     private PyIteration.Cursor[] _cursors;
     private readonly MemoryGovernor _governor;
@@ -323,17 +323,11 @@ internal sealed class PyZipIterator : PyIteratorBase, IPyOwnershipSnapshot, IMem
     private readonly LythonSourceSpan _span;
     private bool _finished;
     private long _storageBytes;
-    private readonly LythonRuntime.ExecutionContext _context;
 
     internal long CommittedStorageBytes => _storageBytes;
     bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long chargeBytes)
         => OwnershipSnapshot.Owned(_governor, _storageBytes, out chargeBytes);
 
-    public void VisitStorageChildren(MemoryStorageWalk visitor)
-    {
-        foreach (var cursor in _cursors) if (!visitor.Add(cursor)) return;
-        visitor.Add(_context);
-    }
 
     public PyZipIterator(object[] iterables, bool strict, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         : this(iterables.Length, strict, span, context)
@@ -343,14 +337,13 @@ internal sealed class PyZipIterator : PyIteratorBase, IPyOwnershipSnapshot, IMem
     }
 
     // Allocate the actual owner and preflight its cursor storage before any
-    // source __iter__ can run. The builtin publishes it before initialization.
+    // source __iter__ can run.
     internal PyZipIterator(int count, bool strict, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
     {
         _governor = context.MemoryGovernor;
         _pool = context.Services.State.CallTemporaries;
         _strict = strict;
         _span = span;
-        _context = context;
         var bytes = checked(IteratorValueBytes + 32L + 256L * count);
         _governor.Reserve(bytes, span);
         try { _cursors = new PyIteration.Cursor[count]; }
@@ -389,12 +382,12 @@ internal sealed class PyZipIterator : PyIteratorBase, IPyOwnershipSnapshot, IMem
         }
 
         var funding = checked(32L + 80L * _cursors.Length);
-        using var operation = LythonRuntime.NativeIterableOperation.Create(this, PyNone.Instance, _context, _span);
+
         _governor.Reserve(funding, _span);
         try
         {
             var items = new object[_cursors.Length];
-            operation.Current = items;
+
             for (var i = 0; i < _cursors.Length; i++)
             {
                 if (_cursors[i].TryMoveNext(out var item))
@@ -430,14 +423,14 @@ internal sealed class PyZipIterator : PyIteratorBase, IPyOwnershipSnapshot, IMem
             // Each yielded item is a fresh governed tuple: track it at this factory
             // so dropped items reclaim through the pool; later registrations dedup.
             var produced = PyTuple.FromOwnedArray(items, _governor, _span);
-            operation.Result = produced;
+
             _pool.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
             value = produced;
             return true;
         }
         finally
         {
-            operation.Current = PyNone.Instance;
+
             _governor.ReleaseReserved(funding);
         }
     }
@@ -450,12 +443,12 @@ internal sealed class PyZipIterator : PyIteratorBase, IPyOwnershipSnapshot, IMem
         }
 
         var funding = checked(32L + 80L * _cursors.Length);
-        await using var operation = LythonRuntime.NativeIterableOperation.Create(this, PyNone.Instance, _context, _span);
+
         _governor.Reserve(funding, _span);
         try
         {
             var items = new object[_cursors.Length];
-            operation.Current = items;
+
             for (var i = 0; i < _cursors.Length; i++)
             {
                 var (hasValue, item) = await _cursors[i].TryMoveNextAsync().ConfigureAwait(false);
@@ -489,13 +482,13 @@ internal sealed class PyZipIterator : PyIteratorBase, IPyOwnershipSnapshot, IMem
 
             // Same fresh-tuple ownership as the sync path above.
             var produced = PyTuple.FromOwnedArray(items, _governor, _span);
-            operation.Result = produced;
+
             _pool.TrackFreshMutable(produced, produced.CommittedStorageBytes, _span);
             return PyIterationResult.Yield(produced);
         }
         finally
         {
-            operation.Current = PyNone.Instance;
+
             _governor.ReleaseReserved(funding);
         }
     }

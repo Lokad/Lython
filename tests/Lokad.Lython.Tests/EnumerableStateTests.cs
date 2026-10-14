@@ -69,7 +69,7 @@ public sealed class EnumerableStateTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task OwnedEnumeratorStateIsWalkableAndRetiresWithoutCallbacks(bool asynchronous)
+    public async Task EnumeratorAcquiresOnceAndCleanupIsIdempotent(bool asynchronous)
     {
         var context = Context();
         var payload = PyString.FromString(new string('x', 16000));
@@ -90,50 +90,16 @@ public sealed class EnumerableStateTests
             enumerator = iterator;
         }
         Assert.Equal(1, source.Acquired);
-        using var walk = new MemoryStorageWalk(context.MemoryGovernor, 128);
-        var before = GC.GetAllocatedBytesForCurrentThread();
-        var complete = walk.TryTraverse([enumerator]);
-        var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
-        Assert.True(complete, walk.UnsupportedType?.FullName);
-        Assert.Equal(0, allocated);
-        Assert.Contains(walk.Visited.ToArray(), value => ReferenceEquals(value, payload));
         Assert.Equal(1, source.CurrentReads);
         if (asynchronous) await ((IAsyncDisposable)enumerator).DisposeAsync();
         else ((IDisposable)enumerator).Dispose();
         Assert.Equal(1, source.Disposed);
-        Assert.True(walk.TryTraverse([enumerator]));
-        Assert.Single(walk.Visited.ToArray());
         if (asynchronous) Assert.False(await ((IAsyncEnumerator<object>)enumerator).MoveNextAsync());
         else Assert.False(((IEnumerator<object>)enumerator).MoveNext());
         Assert.Equal(1, source.Disposed);
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task OpaqueUpstreamStillPreventsCompleteTraversal(bool asynchronous)
-    {
-        var context = Context();
-        var source = new OpaqueSource();
-        object enumerator;
-        if (asynchronous)
-        {
-            var iterator = PyIteration.ToSequenceAsync(source, Span, context).GetAsyncEnumerator();
-            Assert.True(await iterator.MoveNextAsync());
-            enumerator = iterator;
-        }
-        else
-        {
-            var iterator = PyIteration.ToSequence(source, Span, context).GetEnumerator();
-            Assert.True(iterator.MoveNext());
-            enumerator = iterator;
-        }
-        using var walk = new MemoryStorageWalk(context.MemoryGovernor, 128);
-        Assert.False(walk.TryTraverse([enumerator]));
-        Assert.Equal(MemoryStorageWalk.IncompleteReason.UnknownShape, walk.Incomplete);
-        if (asynchronous) await ((IAsyncDisposable)enumerator).DisposeAsync();
-        else ((IDisposable)enumerator).Dispose();
-    }
+
 
     [Fact]
     public void SynchronousAcquisitionStillPrecedesTheFirstCancellationCheckpoint()
@@ -154,7 +120,7 @@ public sealed class EnumerableStateTests
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public async Task CurrentAndCleanupFailuresDisposeOnceAndDropTheWrapperRoots(bool asynchronous, bool cleanupFailure)
+    public async Task CurrentAndCleanupFailuresDisposeOnce(bool asynchronous, bool cleanupFailure)
     {
         var context = Context();
         var source = new OwnedSource(PyString.FromString(new string('x', 16000)))
@@ -182,9 +148,6 @@ public sealed class EnumerableStateTests
             iterator.Dispose();
         }
         Assert.Equal(1, source.Disposed);
-        using var walk = new MemoryStorageWalk(context.MemoryGovernor, 128);
-        Assert.True(walk.TryTraverse([enumerator]));
-        Assert.Single(walk.Visited.ToArray());
     }
 
     private static LythonRuntime.ExecutionContext Context(CancellationToken cancellation = default)
@@ -211,7 +174,7 @@ public sealed class EnumerableStateTests
         }
     }
 
-    private sealed class OwnedSource(object payload) : IEnumerable<object>, IPyAsyncIterableValue, IMemoryStorageEdges
+    private sealed class OwnedSource(object payload) : IEnumerable<object>, IPyAsyncIterableValue
     {
         internal int Acquired;
         internal int Disposed;
@@ -222,9 +185,9 @@ public sealed class EnumerableStateTests
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         public IEnumerable<object> Iterate() => this;
         public IAsyncEnumerable<object> IterateAsync() => new AsyncEnumerable(this, payload);
-        public void VisitStorageChildren(MemoryStorageWalk visitor) => visitor.Add(payload);
 
-        private sealed class Enumerator(OwnedSource owner, object payload) : IEnumerator<object>, IMemoryStorageEdges
+
+        private sealed class Enumerator(OwnedSource owner, object payload) : IEnumerator<object>
         {
             private bool _moved;
             public object Current { get { owner.CurrentReads++; if (owner.FailCurrent) throw new InvalidOperationException("current failed"); return payload; } }
@@ -232,7 +195,7 @@ public sealed class EnumerableStateTests
             public bool MoveNext() { if (_moved) return false; _moved = true; return true; }
             public void Reset() => throw new NotSupportedException();
             public void Dispose() { owner.Disposed++; if (owner.FailDispose) throw new InvalidOperationException("cleanup failed"); }
-            public void VisitStorageChildren(MemoryStorageWalk visitor) => visitor.Add(payload);
+
         }
 
         private sealed class AsyncEnumerable(OwnedSource owner, object payload) : IAsyncEnumerable<object>
@@ -244,7 +207,7 @@ public sealed class EnumerableStateTests
             }
         }
 
-        private sealed class AsyncEnumerator(OwnedSource owner, object payload) : IAsyncEnumerator<object>, IMemoryStorageEdges
+        private sealed class AsyncEnumerator(OwnedSource owner, object payload) : IAsyncEnumerator<object>
         {
             private bool _moved;
             public object Current { get { owner.CurrentReads++; if (owner.FailCurrent) throw new InvalidOperationException("current failed"); return payload; } }
@@ -256,14 +219,14 @@ public sealed class EnumerableStateTests
                 return true;
             }
             public ValueTask DisposeAsync() { owner.Disposed++; if (owner.FailDispose) throw new InvalidOperationException("cleanup failed"); return ValueTask.CompletedTask; }
-            public void VisitStorageChildren(MemoryStorageWalk visitor) => visitor.Add(payload);
+
         }
     }
 
-    private sealed class OpaqueSource : IEnumerable<object>, IMemoryStorageEdges
+    private sealed class OpaqueSource : IEnumerable<object>
     {
         public IEnumerator<object> GetEnumerator() { yield return BigInteger.One; }
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-        public void VisitStorageChildren(MemoryStorageWalk visitor) { }
+
     }
 }

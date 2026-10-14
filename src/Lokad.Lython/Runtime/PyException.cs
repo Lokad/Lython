@@ -6,13 +6,8 @@ internal sealed record PyException(
     PythonExceptionIdentity Identity,
     string Message,
     object Value,
-    PyTuple? ExplicitArgs) : IPyHashableValue, IPyGovernedValue, IPyOwnershipSnapshot, IMemoryStorageEdges
+    PyTuple? ExplicitArgs) : IPyHashableValue, IPyGovernedValue, IPyOwnershipSnapshot
 {
-    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-    {
-        visitor.Add(Value); visitor.Add(ExplicitArgs); visitor.Add(ArgsOverride);
-        visitor.Add(CustomDict); visitor.Add(Cause); visitor.Add(Context);
-    }
     // Fixed record storage, including inline provenance and its governor link.
     // Referenced args, payloads, attributes and exception chains own their own
     // storage; this shell owns those references, never their aliased payloads.

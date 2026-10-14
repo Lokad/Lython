@@ -5,12 +5,8 @@ namespace Lokad.Lython.Runtime;
 internal sealed partial class LythonRuntime
 {
     internal sealed class PyGenerator : IPyAsyncIteratorValue, IPyDynamicAttributes, IPyTruthyValue,
-        IPyGovernedValue, IPyOwnershipSnapshot, IMemoryStorageEdges
+        IPyGovernedValue, IPyOwnershipSnapshot
     {
-        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-        {
-            visitor.Add(_interpreter); visitor.Add(_frame); visitor.Add(_suspendedException); visitor.Add(ReturnValue);
-        }
         private ExecutableFrameInterpreter? _interpreter;
         private ExecutionContext? _frame;
         private readonly LythonSourceSpan _span;
@@ -199,13 +195,8 @@ internal sealed partial class LythonRuntime
         }
     }
 
-    private sealed class GeneratorDelegation(object iterator, ExecutionContext context, LythonSourceSpan span) : IMemoryStorageEdges
+    private sealed class GeneratorDelegation(object iterator, ExecutionContext context, LythonSourceSpan span)
     {
-        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-        {
-            if (!visitor.Add(iterator) || !visitor.Add(context)) return;
-            visitor.Add(ReturnValue);
-        }
 
         public object ReturnValue { get; private set; } = PyNone.Instance;
         public PyIterationResult Advance(object sent, LythonRuntimeException? injected)

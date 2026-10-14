@@ -2,12 +2,8 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyHashableValue, IPyGovernedValue, IPyOwnershipSnapshot, IMemoryStorageEdges
+internal sealed class PyTuple : IPySequenceValue, IPyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyHashableValue, IPyGovernedValue, IPyOwnershipSnapshot
 {
-    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-    {
-        foreach (var value in _items) if (!visitor.Add(value)) return;
-    }
     private readonly object[] _items;
     private readonly MemoryGovernor? _memoryGovernor;
     private readonly LythonSourceSpan? _allocationSpan;

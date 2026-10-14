@@ -131,22 +131,22 @@ public sealed class ExecutableValueTransferTests
         return items.Take(count).Select(item => item!).ToArray();
     }
 
-    private sealed class Factory(object value) : LythonRuntime.ICallable, IMemoryStorageEdges
+    private sealed class Factory(object value) : LythonRuntime.ICallable
     {
         // Test-control references are deliberately outside the guest graph.
-        public void VisitStorageChildren(MemoryStorageWalk visitor) { }
+
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context) => value;
     }
 
-    private sealed class Lookup(string method, Probe probe) : LythonRuntime.ICallable, IMemoryStorageEdges
+    private sealed class Lookup(string method, Probe probe) : LythonRuntime.ICallable
     {
-        public void VisitStorageChildren(MemoryStorageWalk visitor) { }
+
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
             => Assert.IsType<PyString>(arguments[0].Value).AsString() == method ? probe
                 : throw new LythonRuntimeException("AttributeError", "missing test member", span);
     }
 
-    private sealed class Probe(LythonRuntime.ExecutionContext context, int count) : LythonRuntime.ICallable, IMemoryStorageEdges
+    private sealed class Probe(LythonRuntime.ExecutionContext context, int count) : LythonRuntime.ICallable
     {
         internal PyInstance Left = null!;
         internal PyString Payload = null!;
@@ -154,16 +154,13 @@ public sealed class ExecutableValueTransferTests
         internal bool Checked;
         internal Exception? Failure;
         internal object Result = new BigInteger(7);
-        public void VisitStorageChildren(MemoryStorageWalk visitor) { }
+
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext caller)
         {
             Frame = context.CurrentExecutableFrame;
             var operands = Operands(Frame!);
             Assert.Equal(count, operands.Length);
             Assert.Contains(operands, value => ReferenceEquals(value, Left));
-            using var walk = new MemoryStorageWalk(context.MemoryGovernor, 1024);
-            Assert.True(walk.TryTraverse([context.CurrentExecutableFrame!]));
-            Assert.Contains(walk.Visited.ToArray(), value => ReferenceEquals(value, Payload));
             Checked = true;
             if (Failure is not null) throw Failure;
             return Result;

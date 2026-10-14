@@ -7,7 +7,7 @@ internal sealed partial class LythonRuntime
 {
     // Only keys and insertion order live here. String-key values always come
     // from the actual module namespace; extra dictionary keys keep ordinary values.
-    internal sealed class GlobalNamespaceStorage : IPyDictStorage, IMemoryStorageEdges
+    internal sealed class GlobalNamespaceStorage : IPyDictStorage
     {
         // Bridge covers the adapter, lookup-table shell and fixed array headers;
         // entries cover the record and decoded string, plus its UTF-16 payload.
@@ -20,17 +20,10 @@ internal sealed partial class LythonRuntime
         private long _nameIndexBytes;
         private long _nameBytes;
         private int _ownedVariables;
-        private sealed record NameEntry(object Key, string Name, long Bytes) : IMemoryStorageEdges
+        private sealed record NameEntry(object Key, string Name, long Bytes)
         {
-            void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor) => visitor.Add(Key);
         }
 
-        public void VisitStorageChildren(MemoryStorageWalk visitor)
-        {
-            if (!visitor.Add(_root)) return;
-            _entries.VisitStorageChildren(visitor);
-            foreach (var pair in _names) if (!visitor.Add(pair.Value)) return;
-        }
 
         internal GlobalNamespaceStorage(ExecutionContext root, LythonSourceSpan span)
         {

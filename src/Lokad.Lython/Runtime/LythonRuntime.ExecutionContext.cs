@@ -16,18 +16,6 @@ internal sealed partial class LythonRuntime
 {
     internal sealed partial class ExecutionContext : ExecutionFrame
     {
-        public override void VisitStorageChildren(MemoryStorageWalk visitor)
-        {
-            base.VisitStorageChildren(visitor);
-            if (!visitor.Add(GlobalNamespace) || !visitor.Add(GlobalNamespaceBacking) || !visitor.Add(FunctionClosureContext) ||
-                !visitor.Add(ClassCell) || !visitor.Add(ImplicitSuperClassCell) ||
-                !visitor.Add(CurrentExecutableFrame) || !visitor.Add(_inlinedComprehension) ||
-                !visitor.Add(Services.CurrentException)) return;
-            foreach (var pair in NonlocalTargets) if (!visitor.Add(pair.Value)) return;
-            // Services/state/host are control back-pointers. Persistent run
-            // roots must be supplied independently by a complete root policy.
-            // ScopeFacts and handler-name ranges contain no guest values.
-        }
 
         internal PyDict? GlobalNamespace;
         internal GlobalNamespaceStorage? GlobalNamespaceBacking;
@@ -308,22 +296,12 @@ internal sealed partial class LythonRuntime
 
         internal void EnterExecutableSlots(ExecutableFrameState frame)
         {
-            frame.ActiveCaller = State.ActiveExecutionRoot;
-            State.ActiveExecutionRoot = frame;
             CurrentExecutableFrame = frame;
             MirrorsExecutableLocals = frame.RequiresLocalVariableMirroring;
         }
 
         internal void LeaveExecutableSlots(ExecutableFrameState? previous)
         {
-            // Creation can fail before any new executable frame is published.
-            // Simple-return bodies also enter no executable frame at all.
-            if (!ReferenceEquals(CurrentExecutableFrame, previous))
-            {
-                var leaving = CurrentExecutableFrame!;
-                State.ActiveExecutionRoot = leaving.ActiveCaller;
-                leaving.ActiveCaller = null;
-            }
             CurrentExecutableFrame = previous;
         }
 
@@ -883,14 +861,10 @@ internal sealed partial class LythonRuntime
         public void EnterFunctionCall(LythonSourceSpan? span)
         {
             Services.EnterFunctionCall(span);
-            ActiveCaller = State.ActiveExecutionRoot;
-            State.ActiveExecutionRoot = this;
         }
 
         public void LeaveFunctionCall()
         {
-            State.ActiveExecutionRoot = ActiveCaller;
-            ActiveCaller = null;
             Services.LeaveFunctionCall();
         }
 

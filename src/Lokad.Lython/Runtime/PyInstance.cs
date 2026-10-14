@@ -3,13 +3,8 @@ using System.Runtime.CompilerServices;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonRuntime.ICallable, IPyGovernedValue, IPyOwnershipSnapshot, IMemoryStorageEdges
+internal sealed class PyInstance : IPyRenderableValue, IPyHashableValue, LythonRuntime.ICallable, IPyGovernedValue, IPyOwnershipSnapshot
 {
-    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-    {
-        if (!visitor.Add(Type)) return;
-        foreach (var pair in _attributes) if (!visitor.Add(pair.Value)) return;
-    }
     private readonly Dictionary<string, object> _attributes;
 
     // Attribute tables grow one CLR entry per guest attribute name; charge

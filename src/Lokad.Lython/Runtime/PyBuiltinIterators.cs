@@ -97,14 +97,8 @@ internal sealed class PyCallableSentinelIterator : PyIteratorBase
     }
 }
 
-internal sealed class PyReversedIterator : PyIteratorBase, IMemoryStorageEdges
+internal sealed class PyReversedIterator : PyIteratorBase
 {
-    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-    {
-        // A method-group target is a named receiver. Anonymous closure targets
-        // remain unknown shapes; this never reflects into their captured fields.
-        visitor.Add(_getIndex.HasSingleTarget ? _getIndex.Target : _getIndex);
-    }
     private readonly Func<int, object> _getIndex;
     private int _nextIndex;
 

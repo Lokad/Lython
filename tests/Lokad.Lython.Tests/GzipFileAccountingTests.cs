@@ -199,7 +199,7 @@ public sealed class GzipFileAccountingTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task StoredCursorRetainsItsOwnerAndInputWithoutGuestCallbacks(bool asynchronous)
+    public async Task AbandonmentDetachesCursorAndPreservesEscapedInput(bool asynchronous)
     {
         var context = Context(2_000_000);
         var raw = Raw(context, Member);
@@ -209,26 +209,11 @@ public sealed class GzipFileAccountingTests
         var cursorField = owner.GetType().GetField("_cursor", flags)!;
         var cursor = cursorField.GetValue(owner)!;
         var input = Assert.IsType<PyBytes>(cursor.GetType().GetField("_input", flags)!.GetValue(cursor));
-        Assert.IsAssignableFrom<IMemoryStorageEdges>(cursor);
-        var committed = context.MemoryGovernor.CurrentCommittedBytes;
-        using var walk = new MemoryStorageWalk(context.MemoryGovernor, 64);
-        Assert.True(walk.TryTraverse([cursor]));
-        var values = walk.Visited.ToArray();
-        Assert.Equal(1, values.Count(value => ReferenceEquals(value, owner)));
-        Assert.Contains(values, value => ReferenceEquals(value, input));
-        Assert.Contains(values, value => ReferenceEquals(value, raw));
-        Assert.DoesNotContain(values, value => ReferenceEquals(value, escaped));
-        Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
-
         Assert.IsAssignableFrom<IPyFinalizableOwnership>(owner).AbandonStorage();
         Assert.Null(cursorField.GetValue(owner));
-        Assert.True(walk.TryTraverse([owner]));
-        Assert.DoesNotContain(walk.Visited.ToArray(), value => ReferenceEquals(value, input));
-        // An independently retained cursor still retains its input and owner.
-        Assert.True(walk.TryTraverse([cursor]));
-        Assert.Contains(walk.Visited.ToArray(), value => ReferenceEquals(value, input));
         Assert.Equal(512, Snapshot(owner));
         GC.KeepAlive(escaped);
+        GC.KeepAlive(input);
     }
 
     [Theory]

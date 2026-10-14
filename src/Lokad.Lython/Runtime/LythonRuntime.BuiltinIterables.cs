@@ -291,9 +291,7 @@ internal sealed partial class LythonRuntime
             strict = IsTruthy(argument.Value);
         }
 
-        using var operation = NativeIterableOperation.Create(arguments, PyNone.Instance, context, span);
         var zipResult = new PyZipIterator(positionalCount, strict, span, context);
-        operation.Result = zipResult;
         try
         {
             zipResult.InitializeCursors(arguments, context);

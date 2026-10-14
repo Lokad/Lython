@@ -10,15 +10,8 @@ internal static class PyStableSort
 
     internal readonly record struct Entry(object Value, object Key);
 
-    internal sealed class Buffer : IReadOnlyCollection<object>, IDisposable, IMemoryStorageEdges
+    internal sealed class Buffer : IReadOnlyCollection<object>, IDisposable
     {
-        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-        {
-            foreach (var entry in _entries)
-                if (!visitor.Add(entry.Value) || !visitor.Add(entry.Key)) return;
-            if (!visitor.Add(_scratch) || !visitor.Add(_comparison)) return;
-            visitor.Add(_sortContext);
-        }
 
         private readonly List<Entry> _entries;
         private readonly MemoryGovernor.TemporaryMemoryReservation _reservation;

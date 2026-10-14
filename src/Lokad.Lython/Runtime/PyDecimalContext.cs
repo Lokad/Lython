@@ -17,12 +17,8 @@ internal enum DecimalRoundingMode
     ZeroFiveUp,
 }
 
-internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRenderableValue, IPyTruthyValue, IMemoryStorageEdges
+internal sealed class PyDecimalContext : IPyMutableDynamicAttributes, IPyRenderableValue, IPyTruthyValue
 {
-    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-    {
-        if (visitor.Add(_flags)) visitor.Add(_traps);
-    }
 
     public const string RoundCeiling = "ROUND_CEILING";
     public const string RoundFloor = "ROUND_FLOOR";

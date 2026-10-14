@@ -73,9 +73,8 @@ internal sealed class PyComplex(double real, double imaginary) : IPyRenderableVa
         return method;
     }
     private sealed class Method(PyComplex receiver, bool conjugate, MemoryGovernor governor, LythonSourceSpan span) : LythonRuntime.ICallable,
-        IPyDynamicAttributes, LythonRuntime.IPyBoundEngineMethod, IPyGovernedValue, IPyOwnershipSnapshot, IMemoryStorageEdges
+        IPyDynamicAttributes, LythonRuntime.IPyBoundEngineMethod, IPyGovernedValue, IPyOwnershipSnapshot
     {
-        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor) => visitor.Add(receiver);
         public MemoryGovernor? OwnerMemoryGovernor => governor;
         public LythonSourceSpan? AllocationSpan => span;
         bool IPyOwnershipSnapshot.TrySnapshotOwnership(out long bytes) { bytes = 96; return true; }

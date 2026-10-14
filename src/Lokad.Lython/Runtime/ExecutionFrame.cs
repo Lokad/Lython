@@ -1,18 +1,9 @@
 namespace Lokad.Lython.Runtime;
 
-internal class ExecutionFrame : IMemoryStorageEdges
+internal class ExecutionFrame
 {
     private Dictionary<string, object>? _variables;
-    internal IMemoryStorageEdges? ActiveCaller { get; set; }
 
-    public virtual void VisitStorageChildren(MemoryStorageWalk visitor)
-    {
-        if (!visitor.Add(Parent) || !visitor.Add(ActiveCaller)) return;
-        // Variables allocates a namespace on first access. The stored-field
-        // walk must neither create it nor call name-resolution machinery.
-        if (_variables is not null)
-            foreach (var pair in _variables) if (!visitor.Add(pair.Value)) return;
-    }
 
     protected ExecutionFrame() { }
 

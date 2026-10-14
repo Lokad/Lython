@@ -5,7 +5,7 @@ internal static partial class PyIteration
     // Actual wrapper state replaces compiler-generated forwarding iterators.
     // Upstream enumerators retain their own contract: unknown shapes still
     // prevent complete walking. No collection or guest code runs during visits.
-    private sealed class CheckedEnumerator : IEnumerator<object>, IMemoryStorageEdges
+    private sealed class CheckedEnumerator : IEnumerator<object>
     {
         private IEnumerable<object>? _source;
         private LythonRuntime.ExecutionContext? _context;
@@ -61,26 +61,17 @@ internal static partial class PyIteration
             }
         }
 
-        public void VisitStorageChildren(MemoryStorageWalk visitor)
-        {
-            if (!visitor.Add(_source) || !visitor.Add(_current) || !visitor.Add(_upstream)) return;
-            visitor.Add(_context);
-        }
     }
 
     private sealed class AsyncSequence(object source, LythonSourceSpan span, LythonRuntime.ExecutionContext? context)
-        : IAsyncEnumerable<object>, IMemoryStorageEdges
+        : IAsyncEnumerable<object>
     {
         public IAsyncEnumerator<object> GetAsyncEnumerator(CancellationToken cancellationToken = default)
             => new AsyncEnumerator(source, span, context);
 
-        public void VisitStorageChildren(MemoryStorageWalk visitor)
-        {
-            if (visitor.Add(source)) visitor.Add(context);
-        }
     }
 
-    private sealed class AsyncEnumerator : IAsyncEnumerator<object>, IMemoryStorageEdges
+    private sealed class AsyncEnumerator : IAsyncEnumerator<object>
     {
         private object? _source;
         private LythonRuntime.ExecutionContext? _context;
@@ -133,10 +124,5 @@ internal static partial class PyIteration
             }
         }
 
-        public void VisitStorageChildren(MemoryStorageWalk visitor)
-        {
-            if (!visitor.Add(_source) || !visitor.Add(_current) || !visitor.Add(_cursor)) return;
-            visitor.Add(_context);
-        }
     }
 }

@@ -6,12 +6,8 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPyMutableDynamicAttributes, IPySizedValue, IChainMapSource, IPyOwnershipSnapshot, IMemoryStorageEdges
+internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPyMutableDynamicAttributes, IPySizedValue, IChainMapSource, IPyOwnershipSnapshot
 {
-    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-    {
-        visitor.Add(_items); visitor.Add(DefaultFactory);
-    }
     private readonly PyDict _items;
 
     public PyDefaultDict(object defaultFactory) : this(defaultFactory, null, null, null) { }
@@ -188,9 +184,8 @@ internal sealed class PyDefaultDict : IEnumerable<KeyValuePair<object, object>>,
             _ => throw new LythonRuntimeException("TypeError", "defaultdict default_factory must be callable or None.", null)
         };
 }
-internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue, IChainMapSource, IPyOwnershipSnapshot, IMemoryStorageEdges
+internal sealed class PyCounter : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue, IChainMapSource, IPyOwnershipSnapshot
 {
-    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor) => visitor.Add(_items);
     private readonly PyDict _items;
 
     public PyCounter() : this((PyDict?)null, null, null) { }
@@ -394,12 +389,8 @@ internal sealed class PyDequeFullException : InvalidOperationException
     }
 }
 
-internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPyOwnershipSnapshot, IMemoryStorageEdges
+internal sealed class PyDeque : IMutablePySequenceValue, IMutablePyIndexableValue, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPyOwnershipSnapshot
 {
-    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-    {
-        for (var node = _items.First; node is not null; node = node.Next) if (!visitor.Add(node.Value)) return;
-    }
     private readonly LinkedList<object> _items = [];
 
     // Each live node owns its links plus conservative small-value headroom.

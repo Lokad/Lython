@@ -30,7 +30,6 @@ internal interface IPyDictStorage : IEnumerable<KeyValuePair<object, object>>
 
     long ReleaseCommittedBytes();
 
-    void VisitStorageChildren(MemoryStorageWalk visitor);
 }
 
 internal static class PyDictStorage
@@ -103,13 +102,6 @@ internal static class PyDictStorage
 
 internal sealed class SmallPyDictStorage : IPyDictStorage
 {
-    public void VisitStorageChildren(MemoryStorageWalk visitor)
-    {
-        for (var i = 0; i < _items.Count; i++)
-        {
-            if (!visitor.Add(_items[i].Key) || !visitor.Add(_items[i].Value)) return;
-        }
-    }
     private readonly List<KeyValuePair<object, object>> _items = [];
     private long _committedBytes;
 
@@ -262,15 +254,6 @@ internal sealed class SmallPyDictStorage : IPyDictStorage
 
 internal sealed class MapPyDictStorage : IPyDictStorage
 {
-    public void VisitStorageChildren(MemoryStorageWalk visitor)
-    {
-        // Dictionary's concrete struct enumerator performs no guest hashing
-        // or equality and allocates no iterator at the exhausted-budget walk.
-        foreach (var pair in _items)
-        {
-            if (!visitor.Add(pair.Key) || !visitor.Add(pair.Value)) return;
-        }
-    }
     private readonly Dictionary<object, object> _items;
     private int _capacity;
     private long _committedBytes;

@@ -66,17 +66,13 @@ internal static partial class PyIteration
 
     internal class CheckedSequence(
         IEnumerable<object> source, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
-        : IEnumerable<object>, IMemoryStorageEdges
+        : IEnumerable<object>
     {
         internal IEnumerable<object> Source => source;
         protected LythonSourceSpan Span { get; } = span;
         protected LythonRuntime.ExecutionContext Context { get; } = context;
         public virtual IEnumerator<object> GetEnumerator() => new CheckedEnumerator(source, Span, Context);
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-        public void VisitStorageChildren(MemoryStorageWalk visitor)
-        {
-            if (visitor.Add(source)) visitor.Add(Context);
-        }
     }
 
     private sealed class CheckedRange(
@@ -372,7 +368,7 @@ internal static partial class PyIteration
         };
     }
 
-    internal sealed class Cursor : IDisposable, IAsyncDisposable, IMemoryStorageEdges
+    internal sealed class Cursor : IDisposable, IAsyncDisposable
     {
         private readonly object _value;
         private readonly LythonSourceSpan _span;
@@ -382,12 +378,6 @@ internal static partial class PyIteration
         private IEnumerator<object>? _syncEnumerator;
         private IAsyncEnumerator<object>? _asyncEnumerator;
 
-        public void VisitStorageChildren(MemoryStorageWalk visitor)
-        {
-            if (!visitor.Add(_value) || !visitor.Add(_userIterator) || !visitor.Add(_syncEnumerator)
-                || !visitor.Add(_asyncEnumerator)) return;
-            visitor.Add(_context);
-        }
 
         internal static Cursor FromAcquired(PyUserIterator iterator, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
             => new(iterator.Iterator, span, iterator, context);

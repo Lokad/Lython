@@ -130,12 +130,8 @@ internal sealed partial class LythonRuntime
             finally { output.Release(); }
         }
 
-        private sealed class GzipStreamCursor(GzipFileObject owner) : Stream, IMemoryStorageEdges
+        private sealed class GzipStreamCursor(GzipFileObject owner) : Stream
         {
-            void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-            {
-                if (visitor.Add(owner)) visitor.Add(_input);
-            }
 
             private PyBytes? _input;
             private int _position;

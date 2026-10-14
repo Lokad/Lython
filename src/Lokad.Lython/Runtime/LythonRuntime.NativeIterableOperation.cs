@@ -2,13 +2,11 @@ namespace Lokad.Lython.Runtime;
 
 internal sealed partial class LythonRuntime
 {
-    // The native consumer's actual evolving state, using the same active head/caller
-    // link as function and executable frames. No separate activation registry.
-    internal sealed class NativeIterableOperation : ExecutionFrame, IDisposable, IAsyncDisposable
+    // Native working storage and rollback stay owned through result registration.
+    internal sealed class NativeIterableOperation : IDisposable, IAsyncDisposable
     {
         private const long ShellBytes = 128;
         private readonly MemoryGovernor _governor;
-        private ExecutionContext? _context;
         private object _source;
         internal object Result;
         internal object Current = PyNone.Instance;
@@ -21,7 +19,6 @@ internal sealed partial class LythonRuntime
         {
             _source = source;
             Result = result;
-            _context = context;
             _governor = context.MemoryGovernor;
             _funding = ShellBytes;
         }
@@ -31,9 +28,7 @@ internal sealed partial class LythonRuntime
             context.MemoryGovernor.Reserve(ShellBytes, span);
             try
             {
-                var operation = new NativeIterableOperation(source, result, context) { ActiveCaller = context.State.ActiveExecutionRoot };
-                context.State.ActiveExecutionRoot = operation;
-                return operation;
+                return new NativeIterableOperation(source, result, context);
             }
             catch { context.MemoryGovernor.ReleaseReserved(ShellBytes); throw; }
         }
@@ -48,14 +43,6 @@ internal sealed partial class LythonRuntime
 
         internal void ResultRegistered() => _unpublishedList = false;
 
-        public override void VisitStorageChildren(MemoryStorageWalk visitor)
-        {
-            if (!visitor.Add(Result) || !visitor.Add(Current) || !visitor.Add(_source) ||
-                !visitor.Add(Iterator) || !visitor.Add(AsyncIterator) || !visitor.Add(_context)) return;
-            // Compiler enumerators may contain additional unmodeled working
-            // references. Their unknown shape prevents complete traversal.
-            base.VisitStorageChildren(visitor);
-        }
 
         internal void FinishIteration()
         {
@@ -92,9 +79,6 @@ internal sealed partial class LythonRuntime
 
         private void Withdraw()
         {
-            _context!.State.ActiveExecutionRoot = ActiveCaller;
-            ActiveCaller = null;
-            _context = null;
             _source = PyNone.Instance;
             var privateList = _unpublishedList ? (PyList)Result : null;
             Result = PyNone.Instance;

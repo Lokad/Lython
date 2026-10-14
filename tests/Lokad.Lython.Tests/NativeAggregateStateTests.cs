@@ -28,16 +28,15 @@ public sealed class NativeAggregateStateTests
         before = GC.GetAllocatedBytesForCurrentThread();
         ((IDisposable)operation).Dispose();
         Assert.Equal(0, GC.GetAllocatedBytesForCurrentThread() - before);
-        Assert.Null(context.State.ActiveExecutionRoot);
+
         Assert.Equal(initial, context.MemoryGovernor.CurrentReservedBytes);
-        using var walk = new MemoryStorageWalk(context.MemoryGovernor, 64);
-        Assert.True(walk.TryTraverse([operation]));
-        Assert.DoesNotContain(walk.Visited.ToArray(), value => ReferenceEquals(value, context)
-            || ReferenceEquals(value, source) || ReferenceEquals(value, total));
+        Assert.Same(PyNone.Instance, ((LythonRuntime.NativeIterableOperation)operation).Source);
+        Assert.Same(PyNone.Instance, ((LythonRuntime.NativeIterableOperation)operation).Result);
+        Assert.Same(PyNone.Instance, ((LythonRuntime.NativeIterableOperation)operation).Current);
     }
 
     [Fact]
-    public void DeniedAggregateAdmissionPreservesThePublishedCaller()
+    public void DeniedAggregateAdmissionPreservesTheExecutableFrame()
     {
         var context = Context();
         var create = CreateAggregate();
@@ -48,16 +47,16 @@ public sealed class NativeAggregateStateTests
         var initial = context.MemoryGovernor.CurrentReservedBytes;
         var failure = Assert.Throws<LythonRuntimeException>(() => create(PyNone.Instance, BigInteger.Zero, context, Span));
         Assert.Equal("MemoryError", failure.ExceptionType);
-        Assert.Same(previous, context.State.ActiveExecutionRoot);
+        Assert.Same(previous, context.CurrentExecutableFrame);
         Assert.Equal(initial, context.MemoryGovernor.CurrentReservedBytes);
         context.MemoryGovernor.ReleaseReserved(funding);
         context.LeaveExecutableSlots(null);
     }
 
-    private static Func<object, object, LythonRuntime.ExecutionContext, LythonSourceSpan, ExecutionFrame> CreateAggregate()
+    private static Func<object, object, LythonRuntime.ExecutionContext, LythonSourceSpan, LythonRuntime.NativeIterableOperation> CreateAggregate()
         => typeof(LythonRuntime).GetNestedType("NativeIterableOperation", BindingFlags.NonPublic)!
             .GetMethod("Create", BindingFlags.Static | BindingFlags.NonPublic)!
-            .CreateDelegate<Func<object, object, LythonRuntime.ExecutionContext, LythonSourceSpan, ExecutionFrame>>();
+            .CreateDelegate<Func<object, object, LythonRuntime.ExecutionContext, LythonSourceSpan, LythonRuntime.NativeIterableOperation>>();
 
     [Theory]
     [InlineData(false)]
@@ -73,14 +72,14 @@ public sealed class NativeAggregateStateTests
             : Run(code, context);
         Assert.Equal(16000, Assert.IsType<PyString>(result).Utf8Bytes.Length);
         Assert.True(probe.Checked);
-        Assert.Null(context.State.ActiveExecutionRoot);
+
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task EvolvingAccumulatorRemainsStoredDuringGeneratorReentry(bool asynchronous)
+    public async Task EvolvingAccumulatorSurvivesGeneratorReentry(bool asynchronous)
     {
         var context = Context();
         var probe = new Probe();
@@ -91,24 +90,25 @@ public sealed class NativeAggregateStateTests
             : Run(code, context);
         Assert.Equal(16000, Assert.IsType<PyString>(result).Utf8Bytes.Length);
         Assert.True(probe.Checked);
-        Assert.Null(context.State.ActiveExecutionRoot);
+
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task CurrentItemRemainsStoredDuringAdditionProtocol(bool asynchronous)
+    public async Task AdditionProtocolReceivesTheCurrentItem(bool asynchronous)
     {
         var context = Context();
         var probe = new ItemProbe();
         context.Variables["probe"] = probe;
         context.Variables["sum"] = context.State.BuiltinVariables["sum"];
-        var code = Compile("class Total:\n    def __add__(self, item):\n        probe()\n        return self\nreturn sum(['x' * 16000], Total())\n");
-        if (asynchronous) await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context);
-        else Run(code, context);
+        var code = Compile("class Total:\n    def __add__(self, item):\n        probe()\n        return item\nreturn sum(['x' * 16000], Total())\n");
+        var result = asynchronous ? await LythonRuntime.ExecuteExecutableCodeObjectAsync(code.EntryPoint, context)
+            : Run(code, context);
+        Assert.Equal(16000, Assert.IsType<PyString>(result).Utf8Bytes.Length);
         Assert.True(probe.Checked);
-        Assert.Null(context.State.ActiveExecutionRoot);
+
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -117,7 +117,7 @@ public sealed class NativeAggregateStateTests
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public async Task IteratorCleanupRunsWhileTheAggregateIsStillPublished(bool asynchronous, bool fail)
+    public async Task IteratorCleanupKeepsOperationFundingUntilCompletion(bool asynchronous, bool fail)
     {
         var context = Context();
         var source = new CleanupSource(context, fail);
@@ -130,7 +130,7 @@ public sealed class NativeAggregateStateTests
         }
         else Assert.Equal(BigInteger.One, asynchronous ? await sum.InvokeAsync(arguments, Span, context) : sum.Invoke(arguments, Span, context));
         Assert.True(source.Checked);
-        Assert.Null(context.State.ActiveExecutionRoot);
+
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
@@ -139,7 +139,7 @@ public sealed class NativeAggregateStateTests
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public async Task ReturnedValueStaysPublishedThroughNativeRegistration(bool asynchronous, bool fail)
+    public async Task ResultRegistrationKeepsOperationFundingUntilCompletion(bool asynchronous, bool fail)
     {
         var context = Context();
         var sum = Assert.IsAssignableFrom<LythonRuntime.ICallable>(context.State.BuiltinVariables["sum"]);
@@ -153,14 +153,14 @@ public sealed class NativeAggregateStateTests
         }
         else Assert.Same(value, asynchronous ? await sum.InvokeAsync(arguments, Span, context) : sum.Invoke(arguments, Span, context));
         Assert.True(value.Checked);
-        Assert.Null(context.State.ActiveExecutionRoot);
+
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task IteratorFailureWithdrawsAggregateAndRestoresItsCaller(bool asynchronous)
+    public async Task IteratorFailureRefundsOperationWithoutReplacingTheExecutableFrame(bool asynchronous)
     {
         var context = Context();
         var previous = new LythonRuntime.ExecutableFrameState(Compile("pass\n").EntryPoint, [], null, null);
@@ -170,7 +170,7 @@ public sealed class NativeAggregateStateTests
         CallArgumentValue[] arguments = [CallArgumentValue.Positional(source)];
         if (asynchronous) await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await sum.InvokeAsync(arguments, Span, context));
         else Assert.ThrowsAny<OperationCanceledException>(() => sum.Invoke(arguments, Span, context));
-        Assert.Same(previous, context.State.ActiveExecutionRoot);
+        Assert.Same(previous, context.CurrentExecutableFrame);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
         Assert.True(source.Checked);
         context.LeaveExecutableSlots(null);
@@ -193,28 +193,14 @@ public sealed class NativeAggregateStateTests
         return context;
     }
 
-    private static object FindAggregate(LythonRuntime.ExecutionContext context)
-    {
-        object? current = context.State.ActiveExecutionRoot;
-        while (current is not null)
-        {
-            if (current.GetType().Name == "NativeIterableOperation") return current;
-            current = current.GetType().GetProperty("ActiveCaller", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(current);
-        }
-        throw new InvalidOperationException("No published sum operation.");
-    }
 
-    private sealed class Probe : LythonRuntime.ICallable, IMemoryStorageEdges
+
+    private sealed class Probe : LythonRuntime.ICallable
     {
         internal bool Checked;
-        public void VisitStorageChildren(MemoryStorageWalk visitor) { }
+
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            var aggregate = FindAggregate(context);
-            using var walk = new MemoryStorageWalk(context.MemoryGovernor, 2048);
-            Assert.False(walk.TryTraverse([aggregate])); // Opaque compiler iterator is a remaining obligation.
-            Assert.Equal(MemoryStorageWalk.IncompleteReason.UnknownShape, walk.Incomplete);
-            Assert.Contains(walk.Visited.ToArray(), value => value is PyString { Utf8Bytes.Length: 16000 });
             Checked = true;
             return PyNone.Instance;
         }
@@ -230,8 +216,7 @@ public sealed class NativeAggregateStateTests
         internal bool Checked;
         public bool TrySnapshotOwnership(out long chargeBytes)
         {
-            var aggregate = FindAggregate(context);
-            Assert.Same(this, aggregate.GetType().GetField("Result", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(aggregate));
+            Assert.True(context.MemoryGovernor.CurrentReservedBytes >= 128);
             Checked = true;
             if (fail) throw new InvalidOperationException("controlled registration failure");
             chargeBytes = 0;
@@ -239,15 +224,12 @@ public sealed class NativeAggregateStateTests
         }
     }
 
-    private sealed class ItemProbe : LythonRuntime.ICallable, IMemoryStorageEdges
+    private sealed class ItemProbe : LythonRuntime.ICallable
     {
         internal bool Checked;
-        public void VisitStorageChildren(MemoryStorageWalk visitor) { }
+
         public object Invoke(CallArgumentValue[] arguments, LythonSourceSpan span, LythonRuntime.ExecutionContext context)
         {
-            var aggregate = FindAggregate(context);
-            var item = aggregate.GetType().GetField("Current", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(aggregate);
-            Assert.Equal(16000, Assert.IsType<PyString>(item).Utf8Bytes.Length);
             Checked = true;
             return PyNone.Instance;
         }
@@ -263,7 +245,7 @@ public sealed class NativeAggregateStateTests
         internal bool Checked;
         private void Check()
         {
-            _ = FindAggregate(context);
+            Assert.True(context.MemoryGovernor.CurrentReservedBytes >= 128);
             Checked = true;
             if (fail) throw new InvalidOperationException("controlled iterator cleanup failure");
         }
@@ -288,7 +270,7 @@ public sealed class NativeAggregateStateTests
         internal bool Checked;
         private void Check()
         {
-            _ = FindAggregate(context);
+            Assert.True(context.MemoryGovernor.CurrentReservedBytes >= 128);
             Checked = true;
             throw new OperationCanceledException();
         }

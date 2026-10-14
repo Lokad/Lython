@@ -1,15 +1,11 @@
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyUserIterator : IPyIteratorValue, IMemoryStorageEdges
+internal sealed class PyUserIterator : IPyIteratorValue
 {
     private readonly object _iterator;
     private readonly LythonRuntime.ExecutionContext _context;
     private readonly LythonSourceSpan _span;
 
-    public void VisitStorageChildren(MemoryStorageWalk visitor)
-    {
-        if (visitor.Add(_iterator)) visitor.Add(_context);
-    }
 
     public static PyUserIterator Create(object iterable, LythonRuntime.ExecutionContext context, LythonSourceSpan span)
         => new(ResolveIterator(InvokeIter(iterable, context, span), context, span), context, span);

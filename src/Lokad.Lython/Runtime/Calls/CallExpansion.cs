@@ -428,16 +428,8 @@ internal static class CallExpansion
         }
     }
 
-    internal sealed class CallArgumentAccumulator : IExecutableTemporaryValue, IMemoryStorageEdges
+    internal sealed class CallArgumentAccumulator : IExecutableTemporaryValue
     {
-        void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-        {
-            if (!visitor.Add(_values) || !visitor.Add(_deferredStar) ||
-                !visitor.Add(_target)) return;
-            visitor.Add(_context);
-            // Keyword-name strings, spans and accounting handles are control
-            // metadata. The actual argument array is retained without copying.
-        }
 
         private const int BudgetCheckInterval = 64;
 

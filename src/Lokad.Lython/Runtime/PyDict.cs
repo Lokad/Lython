@@ -2,16 +2,8 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue, IChainMapSource, IPyOwnershipSnapshot, IMemoryStorageEdges
+internal sealed class PyDict : IEnumerable<KeyValuePair<object, object>>, IPyTruthyValue, IPyIterableValue, IPyRenderableValue, IPyGovernedValue, IPySizedValue, IChainMapSource, IPyOwnershipSnapshot
 {
-    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-    {
-        _items.VisitStorageChildren(visitor);
-        if (!visitor.Add(StorageOwner)) return;
-        if (_protocol is not null)
-            foreach (var entry in _protocol) if (!visitor.Add(entry.Key)) return;
-        // The side index holds integer positions only.
-    }
     private IPyDictStorage _items;
     private MemoryGovernor? _memoryGovernor;
     private LythonSourceSpan? _allocationSpan;

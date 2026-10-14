@@ -10,12 +10,8 @@ internal interface IPyDeletableDescriptor
 
 internal sealed class PyProperty : IPyRenderableValue, IPyDescriptor, IPySettableDescriptor,
     IPyDeletableDescriptor, IClassOwnedMember, IClassNamedMember, IPyMutableDynamicAttributes,
-    IPyDeletableDynamicAttributes, IPyGovernedValue, IPyOwnershipSnapshot, IMemoryStorageEdges
+    IPyDeletableDynamicAttributes, IPyGovernedValue, IPyOwnershipSnapshot
 {
-    void IMemoryStorageEdges.VisitStorageChildren(MemoryStorageWalk visitor)
-    {
-        visitor.Add(_getter); visitor.Add(_setter); visitor.Add(_deleter); visitor.Add(_doc);
-    }
     // Accessors, documentation and ownership metadata live in this shell.
     // Numeric fields carry conservative storage allowances, without identity maps.
     internal const long ShellBytes = 128;

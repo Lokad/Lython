@@ -3,15 +3,8 @@ using Lokad.Lython.Runtime.Text;
 
 namespace Lokad.Lython.Runtime;
 
-internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable, IClassOwnedMember, IPyMutableDynamicAttributes, IMemoryStorageEdges
+internal abstract class PyFunctionBase : IPyRenderableValue, IPyBindableCallable, IClassOwnedMember, IPyMutableDynamicAttributes
 {
-    public virtual void VisitStorageChildren(MemoryStorageWalk visitor)
-    {
-        if (!visitor.Add(_closure) || !visitor.Add(OwnerType) ||
-            !visitor.Add(_nameValue) || !visitor.Add(_qualNameValue) ||
-            !visitor.Add(_bindingPlan.DefaultValues) || !visitor.Add(_bindingPlan.Parameters)) return;
-        foreach (var pair in _metadata) if (!visitor.Add(pair.Value)) return;
-    }
 
     private readonly FunctionBindingPlan _bindingPlan;
     private readonly LythonRuntime.ExecutionContext _closure;
