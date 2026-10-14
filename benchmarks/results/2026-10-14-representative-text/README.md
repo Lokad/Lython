@@ -26,9 +26,9 @@ Measured 2026-10-14 on the dedicated Azure Standard_F4as_v7, four AMD EPYC 9V45
 vCPUs, 16 GiB RAM, Ubuntu 24.04.4 LTS, .NET SDK 10.0.401/runtime 10.0.12,
 CPython 3.13.16 with ordinary GIL/GC and `-I -S -X utf8`. Both engines reuse
 compiled code, create fresh guest state and use identical file staging/reset and
-independent stdout/report goldens. The warm boundary includes complete execution,
-capture/projection and the cheap golden check; compilation, startup, transport,
-file setup/reset and full response hashing are outside it. Lython retains ordinary
+independent stdout/report goldens. The warm boundary includes file reset/staging, complete execution,
+capture/projection and exact stdout/output-file byte checks. Compilation, startup,
+transport and full response hashing are outside it. Lython retains ordinary
 public policy limits and a shared unbounded host allowance. No artificial CPython
 containment limit is imposed.
 

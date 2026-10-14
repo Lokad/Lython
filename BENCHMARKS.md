@@ -87,7 +87,10 @@ diagnostic; later local-import changes are unmeasured.
 The leading table uses **warm execution**: both engines reuse compiled code,
 create fresh invocation state, execute the complete module, capture/project
 output and perform the cheap golden check inside the worker timer. Compilation,
-worker launch, transport and full output hashing are outside it. Module imports
+worker launch, transport and full output hashing are outside it. For complete
+file-backed T/J/C jobs, file reset/staging and exact output-file byte checks are
+inside both worker timers, as defined in [COMPARISON.md](benchmarks/COMPARISON.md).
+Module imports
 retain their source positions and normal caches; invocation controls are never
 subtracted. Historical Q/L cases have in-memory fixtures, not disk file I/O.
 
