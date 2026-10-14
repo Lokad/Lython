@@ -112,54 +112,28 @@ public sealed class CounterDecimalAccountingTests
             return counter;
         }
 
-        static long Committed(LythonRuntime.ExecutionContext context) => context.MemoryGovernor.CurrentCommittedBytes;
-
-        // Warm the reclamation tiers past geometric backing growth (0->4, doubling; growth at
-        // registrations 1, 5, 9, 17, 33): pooled Counter results would otherwise land tier growth
-        // inside a measured int run and break int/dec symmetry. Forty warmups reach capacity 64,
-        // comfortably holding the measured registrations below.
-        for (var warmup = 0; warmup < 40; warmup++)
-        {
-            _ = InvokeOperator("EvaluateAdd", context, span,
-                CounterWith(context, span, key, new BigInteger(1)), CounterWith(context, span, key, new BigInteger(2)));
-        }
-        var beforeIntAdd = Committed(context);
-        _ = InvokeOperator("EvaluateAdd", context, span,
-            CounterWith(context, span, key, new BigInteger(1)), CounterWith(context, span, key, new BigInteger(2)));
-        var intAddBacking = Committed(context) - beforeIntAdd;
-        var beforeDecAdd = Committed(context);
         var sum = (PyCounter)InvokeOperator("EvaluateAdd", context, span,
             CounterWith(context, span, key, new PyDecimal(1m)), CounterWith(context, span, key, new PyDecimal(2m)));
         Assert.True(sum.TryGetValue(key, out var sumValue));
         Assert.Equal(3m, ((PyDecimal)sumValue).Value);
-        // Both sides pay identical entry allowances. The separately governed
-        // decimal result retains its payload and registry charge.
+        // Fresh results stay funded without a pending construction reservation.
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
 
-        var beforeIntSub = Committed(context);
-        _ = InvokeOperator("EvaluateSubtract", context, span,
-            CounterWith(context, span, key, new BigInteger(2)), CounterWith(context, span, key, new BigInteger(1)));
-        var intSubBacking = Committed(context) - beforeIntSub;
-        var beforeDecSub = Committed(context);
         var diff = (PyCounter)InvokeOperator("EvaluateSubtract", context, span,
             CounterWith(context, span, key, new PyDecimal(2m)), CounterWith(context, span, key, new PyDecimal(1m)));
         Assert.True(diff.TryGetValue(key, out var diffValue));
         Assert.Equal(1m, ((PyDecimal)diffValue).Value);
-        // Same one-sided result adoption as addition above: +128.
 
-        var beforeIntNeg = Committed(context);
         var intNeg = (PyCounter)InvokeOperator("EvaluateUnaryMinus", context, span,
             CounterWith(context, span, key, new BigInteger(2)));
-        var intNegBacking = Committed(context) - beforeIntNeg;
         Assert.Equal(0, intNeg.Count);
-        var beforeDecNeg = Committed(context);
         var neg = (PyCounter)InvokeOperator("EvaluateUnaryMinus", context, span,
             CounterWith(context, span, key, new PyDecimal(2m)));
         Assert.Equal(0, neg.Count);
     }
 
     [Fact]
-    public void CounterBitwiseSelectionsStayFree()
+    public void CounterBitwiseSelectionsPreserveAliasesAndFundStorage()
     {
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
@@ -176,15 +150,6 @@ public sealed class CounterDecimalAccountingTests
 
         var leftCount = new PyDecimal(1m);
         var rightCount = new PyDecimal(2m);
-        // Warm the reclamation tiers past geometric backing growth (0->4, doubling; growth at
-        // registrations 1, 5, 9, 17, 33): pooled Counter results would otherwise land tier growth
-        // inside a measured int run and break int/dec symmetry. Forty warmups reach capacity 64,
-        // comfortably holding the measured registrations below.
-        for (var warmup = 0; warmup < 40; warmup++)
-        {
-            _ = InvokeOperator("EvaluateBitwiseOr", context, span,
-                CounterWith(context, span, key, new BigInteger(1)), CounterWith(context, span, key, new BigInteger(2)));
-        }
         var beforeIntOr = Committed(context);
         _ = InvokeOperator("EvaluateBitwiseOr", context, span,
             CounterWith(context, span, key, new BigInteger(1)), CounterWith(context, span, key, new BigInteger(2)));

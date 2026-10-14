@@ -2,11 +2,9 @@ using System.Numerics;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
-// M05: collection wrappers own shell plus backing with reclamation.
+// Collection wrappers fund shell and backing within finite host batches.
 public class WrapperLifetimeScenarioTests : LifetimeScenario
 {    private long StreamingBudget => Budget(3145728);
-
-    private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
 
     private Task AssertCompletes(string source, string expected, int iterations = 0) => AssertBatchCompletes(source, expected, StreamingBudget, iterations);
 

@@ -7,10 +7,8 @@ namespace Lokad.Lython.PublicApi.Tests;
 /// MG20: wide graphs copy under the same budget discipline as deep ones.
 /// Twenty thousand distinct one-element lists fail a 4MiB budget (memo
 /// scratch plus copy construction) and round-trip at 32MiB, in both modes.
-/// The round-trip peak (about 26.0MB measured, both modes) includes one 128 B registry entry
-/// per retained display list and clone on top of the memo, identity and backing charges,
-/// plus N06 adoption coupons on the original and the clones (cross-container aliases
-/// double-charge: 20000 x 2 x 64 B).
+/// Memo scratch, source/clone capacity and conservative numeric-slot estimates
+/// remain funded; the test does not assume identity-deduplicated accounting.
 /// </summary>
 public sealed class CopyWideDagAccountingScenarioTests
 {

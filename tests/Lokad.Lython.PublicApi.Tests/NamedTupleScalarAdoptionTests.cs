@@ -4,7 +4,7 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.PublicApi.Tests;
 
 // Immutable records charge numeric fields conservatively per slot. Their
-// backing owner carries the total until ordinary drop reclamation.
+// execution owner conservatively retains the total until batch cleanup.
 public sealed class NamedTupleScalarAdoptionTests
 {
     private const long ThreeMib = 3145728;

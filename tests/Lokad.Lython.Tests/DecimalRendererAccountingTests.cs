@@ -21,9 +21,8 @@ public sealed class DecimalRendererAccountingTests
         var text = tuple.RenderPython(rendering);
         Assert.Equal("DecimalTuple(sign=0, digits=(1, 5), exponent=-1)", text.AsString());
         Assert.Same(context.MemoryGovernor, text.OwnerMemoryGovernor);
-        // M05 join ownership: the two nested digit renders are pool-owned now
-        // (2 x 128 B entries plus one 32 B tier growth), reclaimable instead of
-        // stranded; the outer CLR interpolation is unchanged.
+        // Nested digit renders remain conservatively charged to this execution;
+        // no pending construction reservation remains after rendering.
         Assert.True(context.MemoryGovernor.CurrentCommittedBytes >= text.CommittedOwnedBytes);
         Assert.Equal(0, context.MemoryGovernor.CurrentReservedBytes);
     }

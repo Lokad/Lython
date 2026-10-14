@@ -6,7 +6,7 @@ namespace Lokad.Lython.PublicApi.Tests;
 /// <summary>
 /// MG10/M03: deque nodes stay charged for their lifetime, and each governed deque
 /// owns one shell charge, so neither large nor numerous empty deques bypass the
-/// execution memory budget. Dropped deques reclaim through the pool.
+/// execution memory budget. Finite host batches release their working allowance.
 /// </summary>
 public sealed class DequeAccountingScenarioTests
 :LifetimeScenario{

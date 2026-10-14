@@ -3,9 +3,8 @@ using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.Tests;
 
-// M05: bytes.partition builds its result tuple beside self-tracked item
-// slices, and the raw callable bypasses every funnel, so the container
-// adopts at its factory with refund; drops reclaim on sweep.
+// bytes.partition funds its result tuple and item slices at construction.
+// Their estimates remain with the finite execution owner.
 public sealed class BytesPartitionAccountingTests
 {
     [Fact]

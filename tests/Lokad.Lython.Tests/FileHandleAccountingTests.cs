@@ -5,7 +5,7 @@ using Lokad.Lython.Tests.Harness;
 namespace Lokad.Lython.Tests;
 
 /// <summary>
-/// Open handles fund their shell and its existing reclamation registration.
+/// Open handles fund their retained table storage under the execution owner.
 /// </summary>
 public sealed class FileHandleAccountingTests
 {

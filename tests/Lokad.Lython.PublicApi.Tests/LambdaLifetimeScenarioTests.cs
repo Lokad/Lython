@@ -2,11 +2,9 @@ using System.Numerics;
 using Lokad.Lython.Tests.Harness;
 
 namespace Lokad.Lython.PublicApi.Tests;
-// M05: lambda instances own lifetime with reclamation.
+// Finite host batches release lambda working storage at execution cleanup.
 public class LambdaLifetimeScenarioTests : LifetimeScenario
 {    private long StreamingBudget => Budget(3145728);
-
-    private LythonRunOptions Budgeted() => new() { MaxExecutionMemoryBytes = StreamingBudget };
 
     private Task AssertCompletes(string source, string expected, int iterations = 0) => AssertBatchCompletes(source, expected, StreamingBudget, iterations);    [Fact]
     public async Task LambdasDiscardCompletes()

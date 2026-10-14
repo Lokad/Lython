@@ -28,11 +28,10 @@ public sealed class ContainerScalarStorageTests
     }
 
     [Fact]
-    public void ListRemovalRefreshesThePoolSnapshot()
+    public void ListRemovalUpdatesItsStorageEstimate()
     {
-        // Removing adopted identities must refresh the tracked snapshot, or a
-        // later drop sweep would release the stale (higher) charge and corrupt
-        // the governor balance.
+        // Removing numeric slots updates the retained storage estimate and
+        // returns their allowance without changing backing capacity.
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);
@@ -139,10 +138,10 @@ public sealed class ContainerScalarStorageTests
     }
 
     [Fact]
-    public void SetRemovalRefreshesThePoolSnapshot()
+    public void SetRemovalUpdatesItsStorageEstimate()
     {
-        // Like lists: released coupons must refresh the tracked snapshot, or a
-        // later drop sweep would over-release.
+        // Removing numeric slots updates the retained storage estimate while
+        // keeping the set backing funded.
         var host = new MockLythonHost();
         var context = new LythonRuntime.ExecutionContext(host, new LythonRunOptions());
         var span = new LythonSourceSpan(0, 0, 0, 0);

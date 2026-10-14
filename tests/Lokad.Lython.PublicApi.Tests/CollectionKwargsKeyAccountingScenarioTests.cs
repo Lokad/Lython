@@ -12,8 +12,8 @@ namespace Lokad.Lython.PublicApi.Tests;
 public sealed class CollectionKwargsKeyAccountingScenarioTests
 {
     private const long CounterBudgetBytes = 6291456;
-    // 20k retained keywords dicts own ~300B each, so they trip 5MB now that dropped
-    // partial shells reclaim instead of stranding ~128B each on top.
+    // Retained keyword dictionaries and their construction temporaries must
+    // refuse within this finite execution allowance.
     private const long KeywordsBudgetBytes = 5242880;
 
     [Fact]
