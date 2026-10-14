@@ -1,0 +1,32 @@
+--- baseline/src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs
++++ rejected/src/Lokad.Lython/Runtime/LythonRuntime.CsvModule.cs
+@@ -937,7 +937,28 @@
+ 
+                 _fieldStarted = true;
+                 _recordStarted = true;
+-                AppendField(c);
++                if (_escapeCharacter is null && _delimiter.Length == 1
++                    && (_quoteCharacter is null || _quoteCharacter.Length == 1))
++                {
++                    // Token handling above remains authoritative. Batch only
++                    // ordinary text; multi-code-unit dialect characters and
++                    // escapes retain the existing character-by-character path.
++                    // Keep the existing growth/admission boundaries: scan no
++                    // farther than the backing already funded for this field.
++                    EnsureFieldCapacity(1);
++                    var limit = i + Math.Min(text.Length - i, _field.Capacity - _field.Length);
++                    var end = i + 1;
++                    while (end < limit)
++                    {
++                        var next = text[end];
++                        if (next is '\r' or '\n' || next == _delimiter[0]
++                            || (_quoteCharacter is not null && next == _quoteCharacter[0])) break;
++                        end++;
++                    }
++                    _field.Append(text, i, end - i);
++                    i = end - 1;
++                }
++                else AppendField(c);
+             }
+ 
+             if (_inQuotes)

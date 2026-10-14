@@ -469,3 +469,20 @@ records the demonstrated cursor admission gap, focused publication/denial/alias
 controls, removal of a redundant row copy, and one inconclusive cost comparison.
 The higher candidate median is retained; no gain or regression is established.
 Full/platform/package qualification is deferred to the next coherent checkpoint.
+
+
+## Governed worker ownership and complete CSV field runs (2026-10-14)
+
+Worker lifetime cleanup is accepted at f95fb734: a shared unbounded allowance,
+previous-result/per-call compilation disposal, final response borrowing and cached
+compilation cleanup are part of the recorded boundary. 190 focused controls pass,
+with 12 local and five VM representative cases matching isolated UTF-8 CPython.
+
+One ten-second kernel CPU profile locates dictionary CSV iteration/parser work;
+one 8.725s paired diagnostic tests unquoted field runs. The candidate preserves
+capacity admission and Python results, but its nominal 2.2% lower median is smaller
+than 15.4% baseline spread. It is rejected and its runtime branch is removed.
+The useful funded-capacity denial/resumption regression remains. This bounded
+experiment stops here, without replacement samples, a full lane or a speed claim.
+[Complete evidence, caveats and rejected patch](results/2026-10-14-representative-csv/README.md)
+keeps CPython as the primary external baseline.

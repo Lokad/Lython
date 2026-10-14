@@ -2,6 +2,7 @@
 
 | Workload | Input size | Lython time | CPython time | Lython / CPython | Measurement status |
 | --- | --- | ---: | ---: | ---: | --- |
+| Complete CSV summary [C] | 4,096 records / 57,361 UTF-8 bytes | 7.530 ms | 3.483 ms | — | One warm diagnostic at f95fb734; inconclusive baseline spread (15.4%) |
 | CSV parse and discard [G] | 16 data rows | 0.0780 ms | 0.0285 ms | — | One short governed-memory diagnostic; uncommitted source, unqualified |
 | Sum generated squares [A] | 20,000 items | 3.947 ms | 0.499 ms | — | One short diagnostic at 09d81bb1 source; no qualified multiplier |
 | Integer reduction loop [M] | 16,384 iterations | 1.162 ms | 0.617 ms | — | Short diagnostic at b43664e0; one run, no qualified multiplier |
@@ -11,7 +12,7 @@
 | ASCII text pipeline [Q] | 1,024 eleven-character blocks | 0.618 ms | 0.0415 ms | — | Historical diagnostic; only one session before idle gate failed |
 | JSON transform and round trip [Q] | 128 records | 0.674–0.741 ms | 0.0610–0.0618 ms | — | Historical diagnostic; control floor/spread/interval checks failed |
 | CSV parse and retain [Q] | 128 data rows | 1.037–1.185 ms | 0.102–0.108 ms | — | Historical diagnostic; control/spread/order/interval checks failed |
-| Complete CSV summary script [S] | 0 / 16 / 1,024 fixture repeats | — | — | — | Output correctness verified; comparative timing pending |
+| Other CSV summary sizes [S] | 0 / 16 fixture repeats | — | — | — | Output correctness verified; timing pending |
 | Complete Unicode text summary [S] | 0 / 16 / 1,024 fixture repeats | — | — | — | Output correctness verified; comparative timing pending |
 | Complete JSON-lines summary [S] | 0 / 16 / 1,024 fixture repeats | — | — | — | Output correctness verified; comparative timing pending |
 | Complete file copy/checksum manifest [S] | 0 / 16 / 1,024 fixture repeats | — | — | — | Output correctness verified; comparative timing pending |
@@ -28,14 +29,16 @@ including a loop whose cost grows with its iteration count. They support
 investigating interpreter dispatch and application workloads. **No workload
 multiplier qualified in either campaign. These timings do not describe today's
 HEAD:** subsequent interpreter and containment changes have been integrated.
-The newer G, A and M rows are separate short diagnostics at their named revisions; they do
+The newer C, G, A and M rows are separate short diagnostics at their named revisions; they do
 not qualify a current overall or complete-script multiplier.
-There is no current complete-script CPython timing baseline or overall speedup.
+The C row supplies one complete-script comparison; its Lython spread remains
+inconclusive. No complete-script multiplier or overall speedup is qualified.
 
 ## Which code and machine were measured?
 
 | Label | Date | Measured Lython revision | Evidence |
 | --- | --- | --- | --- |
+| C | 2026-10-14 | f95fb734, governed runtime and worker ownership; parser candidate rejected | [Complete CSV diagnostic](benchmarks/results/2026-10-14-representative-csv/README.md), [loaded identities](benchmarks/results/2026-10-14-representative-csv/micro.json) |
 | G | 2026-10-14 | Working migration on `9fc7e37e`, before local-import simplification | [Governed-memory diagnostic](benchmarks/results/2026-10-14-governed-memory/README.md), [loaded identities](benchmarks/results/2026-10-14-governed-memory/micro.json) |
 | A | 2026-10-14 | `09d81bb153c006f3c248d8ba0dfdfe9cdbc70d63` source, built before commit | [Native state qualification](benchmarks/results/2026-10-14-native-working-state/README.md), [all attempts and loaded identities](benchmarks/results/2026-10-14-native-working-state/micro.json) |
 | M | 2026-10-13 | `b43664e0f60aa78f3cbd638578e0ced28d926194` | [Shared frames and transfer cost](benchmarks/results/2026-10-13-shared-async-frames/README.md), [all attempts](benchmarks/results/2026-10-13-shared-async-frames/micro.json) |
@@ -164,6 +167,12 @@ multiplier. Complete ownership and forced-GC independence remain open.
 The [zip containment diagnostic](benchmarks/results/2026-10-14-zip-state/README.md)
 retains a higher candidate median with substantial noise. Its status is
 inconclusive; it does not establish today's HEAD performance or async pull cost.
+
+The [complete CSV profile and comparison](benchmarks/results/2026-10-14-representative-csv/README.md)
+uses the dedicated four-vCPU Ubuntu VM, .NET 10.0.12 and isolated UTF-8 CPython
+3.13.16. Its parser candidate is removed: a nominal 2.2% difference is smaller than
+15.4% baseline spread. The source and single capture remain historical evidence;
+no repeat, qualified ratio or embedding-latency claim follows.
 
 The [governed-memory CSV diagnostic](benchmarks/results/2026-10-14-governed-memory/README.md)
 keeps the earlier Lython comparison separate from the primary CPython baseline.

@@ -14,6 +14,33 @@ public sealed class CsvDenialOwnershipTests
     private static readonly LythonSourceSpan Span = new(0, 0, 0, 0);
 
     [Fact]
+    public void UnquotedFieldStopsAtTheFundedCapacityBeforeDeniedGrowth()
+    {
+        var context = Context();
+        var source = new LythonRuntime.CsvRecordSource(new PyList([]), Options(), Span, context);
+        var parser = Parser(source);
+        var field = (StringBuilder)typeof(LythonRuntime.CsvRecordParser)
+            .GetField("_field", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(parser)!;
+        var capacity = field.Capacity;
+        var committed = context.MemoryGovernor.CurrentCommittedBytes;
+        var pressure = Cap - context.MemoryGovernor.CurrentAccountedBytes;
+        context.MemoryGovernor.Reserve(pressure, Span);
+
+        var error = Assert.Throws<LythonRuntimeException>(() => parser.Feed(new string('x', capacity + 1) + "\n"));
+
+        Assert.Equal("MemoryError", error.ExceptionType);
+        Assert.Equal(new string('x', capacity), field.ToString());
+        Assert.Equal(capacity, field.Capacity);
+        Assert.Equal(committed, context.MemoryGovernor.CurrentCommittedBytes);
+        Assert.Equal(pressure, context.MemoryGovernor.CurrentReservedBytes);
+        context.MemoryGovernor.ReleaseReserved(pressure);
+        parser.ResetRecord();
+        parser.Feed("ok\n");
+        Assert.True(parser.TryTakeReady(out var row));
+        Assert.Equal("ok", ((PyString)row[0]).AsString());
+    }
+
+    [Fact]
     public void DeniedFieldGrowthPreservesPhysicalCapacityAndFunding()
     {
         var context = Context();
